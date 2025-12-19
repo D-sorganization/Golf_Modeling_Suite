@@ -282,7 +282,7 @@ class TestOutputManagerErrors:
             invalid_path = "Z:\\invalid\\path\\that\\does\\not\\exist"
         else:  # Unix/Linux
             invalid_path = "/invalid/path/that/does/not/exist"
-        
+
         try:
             manager = OutputManager(invalid_path)
             manager.create_output_structure()
