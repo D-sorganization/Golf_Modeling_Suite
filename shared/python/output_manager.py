@@ -11,7 +11,7 @@ import pickle
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Any, BinaryIO
+from typing import Any
 
 import numpy as np
 import pandas as pd
