@@ -140,7 +140,7 @@ class TestEngineIntegration:
         available_engines = manager.get_available_engines()
         performance_results = {}
 
-        # Mock simulation with realistic timing - moved outside loop to avoid closure issues
+        # Mock simulation with realistic timing - moved outside loop to avoid closure
         def mock_simulate(engine_type):
             # Simulate different performance characteristics
             if engine_type == EngineType.MUJOCO:

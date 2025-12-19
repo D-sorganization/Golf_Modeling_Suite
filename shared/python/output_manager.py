@@ -336,7 +336,7 @@ class OutputManager:
                 def json_serializer(obj: Any) -> Any:
                     if isinstance(obj, np.ndarray):
                         return obj.tolist()
-                    elif isinstance(obj, (np.integer, np.floating)):
+                    elif isinstance(obj, np.integer | np.floating):
                         return float(obj)
                     elif isinstance(obj, datetime):
                         return obj.isoformat()
@@ -451,7 +451,7 @@ class OutputManager:
 
         # Add data to table
         for key, value in data.items():
-            if not isinstance(value, (dict, list)):
+            if not isinstance(value, dict | list):
                 html += f"<tr><td><strong>{key}</strong></td><td>{value}</td></tr>"
 
         html += f"""
