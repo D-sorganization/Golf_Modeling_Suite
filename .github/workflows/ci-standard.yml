@@ -101,6 +101,7 @@ jobs:
   javascript-tests:
     needs: quality-gate
     runs-on: ubuntu-latest
+    if: false  # Disabled - no JavaScript components in this project
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -128,6 +129,7 @@ jobs:
   arduino-build:
     needs: quality-gate
     runs-on: ubuntu-latest
+    if: false  # Disabled - no Arduino components in this project
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
