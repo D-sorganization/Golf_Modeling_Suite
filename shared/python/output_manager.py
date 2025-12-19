@@ -201,9 +201,9 @@ class OutputManager:
                     "timestamp": datetime.now(),
                     "engine": engine,
                 }
-                # Use binary mode for pickle - ignore type checking for this line
-                with open(file_path, "wb") as f:  # type: ignore[assignment]
-                    pickle.dump(output_data, f)  # type: ignore[arg-type]
+                # Use binary mode for pickle
+                with open(file_path, "wb") as f:
+                    pickle.dump(output_data, f)
 
             elif format_type == OutputFormat.PARQUET:
                 if isinstance(results, pd.DataFrame):
