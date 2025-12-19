@@ -451,7 +451,7 @@ class OutputManager:
 
         # Add data to table
         for key, value in data.items():
-            if not isinstance(value, dict | list):
+            if not isinstance(value, (dict, list)):
                 html += f"<tr><td><strong>{key}</strong></td><td>{value}</td></tr>"
 
         html += f"""
