@@ -9,7 +9,6 @@ are working correctly and provides a comprehensive status report.
 import importlib.util
 import sys
 from pathlib import Path
-from typing import Dict
 
 
 class Phase1Validator:
@@ -20,7 +19,7 @@ class Phase1Validator:
         self.results = {}
         self.errors = []
 
-    def run_validation(self) -> Dict[str, bool]:
+    def run_validation(self) -> dict[str, bool]:
         """Run all validation checks."""
         print("🔍 Validating Phase 1 Comprehensive Upgrades")
         print("=" * 50)
@@ -101,10 +100,10 @@ class Phase1Validator:
             return False
 
         try:
-            import tomllib
+            import tomllib  # type: ignore[no-redef]
         except ImportError:
             try:
-                import tomli as tomllib
+                import tomli as tomllib  # type: ignore[no-redef]
             except ImportError:
                 print("   Warning: Cannot parse TOML (tomllib/tomli not available)")
                 return True  # Assume valid if we can't parse
@@ -332,6 +331,10 @@ class Phase1Validator:
             spec = importlib.util.spec_from_file_location(
                 "output_manager", output_manager_path
             )
+            if spec is None or spec.loader is None:
+                print("   Failed to load output_manager spec")
+                return False
+
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
 
@@ -340,7 +343,7 @@ class Phase1Validator:
                 print("   Missing OutputManager class")
                 return False
 
-            manager_class = getattr(module, "OutputManager")
+            manager_class = module.OutputManager
             required_methods = [
                 "create_output_structure",
                 "save_simulation_results",

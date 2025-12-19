@@ -4,6 +4,7 @@ Integration tests between different physics engines.
 
 import sys
 from pathlib import Path
+from typing import Any
 from unittest.mock import Mock
 
 import numpy as np
@@ -118,7 +119,7 @@ class TestEngineIntegration:
         available_engines = manager.get_available_engines()
 
         # Test that parameters can be set for each engine
-        for engine in available_engines:
+        for _engine in available_engines:
             # Mock engine instance
             mock_instance = Mock()
 
@@ -142,7 +143,7 @@ class TestEngineIntegration:
 
         for engine in available_engines:
             # Mock simulation with realistic timing
-            def mock_simulate():
+            def mock_simulate(engine=engine):
                 # Simulate different performance characteristics
                 if engine == EngineType.MUJOCO:
                     time.sleep(0.01)  # Slower but more accurate
@@ -167,7 +168,7 @@ class TestEngineIntegration:
         assert len(performance_results) > 0
 
         # All simulations should complete successfully
-        for engine, perf_data in performance_results.items():
+        for _engine, perf_data in performance_results.items():
             assert "simulation_time" in perf_data
             assert "result" in perf_data
             assert perf_data["result"]["ball_distance"] == 250.0
@@ -190,7 +191,7 @@ class TestEngineDataFlow:
         }
 
         # Test that swing data can be processed by all engines
-        for engine in available_engines:
+        for _engine in available_engines:
             mock_instance = Mock()
 
             # Test data input
@@ -220,11 +221,11 @@ class TestEngineDataFlow:
             "position": [[0, 0, 0], [1, 0, 1], [2, 0, 2]],
         }
 
-        for engine in available_engines:
+        for _engine in available_engines:
             mock_instance = Mock()
 
             # Mock consistent output format
-            mock_result = {field: 0.0 for field in expected_fields}
+            mock_result: dict[str, Any] = {field: 0.0 for field in expected_fields}
             mock_result["trajectory_data"] = mock_trajectory
 
             mock_instance.simulate.return_value = mock_result
@@ -241,7 +242,7 @@ class TestEngineDataFlow:
         manager = EngineManager()
         available_engines = manager.get_available_engines()
 
-        for engine in available_engines:
+        for _engine in available_engines:
             mock_instance = Mock()
 
             # Test invalid parameter handling
