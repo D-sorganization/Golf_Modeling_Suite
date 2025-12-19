@@ -11,7 +11,7 @@ import pickle
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import Any, BinaryIO
 
 import numpy as np
 import pandas as pd
@@ -202,7 +202,7 @@ class OutputManager:
                     "engine": engine,
                 }
                 with open(file_path, "wb") as f:
-                    pickle.dump(output_data, f)
+                    pickle.dump(output_data, f)  # type: ignore[arg-type]
 
             elif format_type == OutputFormat.PARQUET:
                 if isinstance(results, pd.DataFrame):

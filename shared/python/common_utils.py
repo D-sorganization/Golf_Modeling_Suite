@@ -174,9 +174,9 @@ def convert_units(value: float, from_unit: str, to_unit: str) -> float:
     """
     # Angle conversions
     if from_unit == "deg" and to_unit == "rad":
-        return np.deg2rad(value)
+        return float(np.deg2rad(value))
     elif from_unit == "rad" and to_unit == "deg":
-        return np.rad2deg(value)
+        return float(np.rad2deg(value))
 
     # Length conversions
     elif from_unit == "m" and to_unit == "mm":
