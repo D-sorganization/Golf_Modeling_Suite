@@ -253,6 +253,9 @@ document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT') return;
 
   if (e.key === ' ' || e.key === 'Spacebar') {
+    // If a button is focused, let the browser handle the click (Space activates buttons)
+    if (e.target.tagName === 'BUTTON') return;
+
     e.preventDefault();
     animationId ? pause() : start();
   } else if (e.key === 'r' || e.key === 'R') {
