@@ -55,6 +55,33 @@ class AdvancedGolfAnalysisWindow(QtWidgets.QMainWindow, AdvancedGuiMethodsMixin)
         self.setWindowTitle("Golf Swing Biomechanical Analysis Suite")
         self.resize(1600, 900)
 
+        # Apply Global Stylesheet
+        self.setStyleSheet("""
+            QPushButton {
+                border-radius: 5px;
+                padding: 5px;
+            }
+            QPushButton:hover {
+                border: 1px solid #4a90e2;
+            }
+            QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox {
+                border-radius: 4px;
+                padding: 4px;
+                background-color: #333;
+                color: white;
+            }
+            QGroupBox {
+                border: 1px solid #555;
+                border-radius: 5px;
+                margin-top: 10px;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px;
+            }
+        """)
+
         # Model configurations
         self.model_configs = [
             {
