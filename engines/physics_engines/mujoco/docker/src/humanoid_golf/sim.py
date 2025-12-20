@@ -341,6 +341,7 @@ def run_simulation(
                     pass
 
     # 4. Setup Controller
+    controller: BaseController
     if control_mode == "lqr":
         # Calculate height scale (assuming standard 1.56m ref)
         h_scale = target_height / 1.56

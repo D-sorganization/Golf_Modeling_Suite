@@ -43,10 +43,13 @@ mock_qt_widgets = MagicMock()
 # Define widget mocks
 class MockQWidget:
     def __init__(self, parent=None):
-        pass
+        self._window_title = ""
 
     def setWindowTitle(self, title):
-        pass
+        self._window_title = title
+
+    def windowTitle(self):
+        return self._window_title
 
     def resize(self, w, h):
         pass
@@ -200,7 +203,7 @@ class TestDockerThreads:
         # Verify text was loaded (mock read_text called)
         mock_read.assert_called_once()
         # Verify title
-        assert dialog.windowTitle() == "Help & Documentation"
+        assert dialog.windowTitle() == "Golf Suite - Help"
         # Verify text was set
         # Since we mocked QTextEdit, we can't easily verify internal state without
         # capturing the instance. But simpler is just ensuring it runs without error.
