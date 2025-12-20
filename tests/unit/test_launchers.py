@@ -102,7 +102,7 @@ class TestLauncherModule:
             import launch_golf_suite
 
             # Test GUI launcher with missing dependencies
-            with patch("launchers.golf_launcher.UnifiedLauncher") as mock_launcher:
+            with patch("launchers.golf_launcher.GolfLauncher") as mock_launcher:
                 mock_launcher.side_effect = ImportError("Module not found")
 
                 result = launch_golf_suite.launch_gui_launcher()
