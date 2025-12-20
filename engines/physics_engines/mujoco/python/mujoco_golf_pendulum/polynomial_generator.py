@@ -306,34 +306,19 @@ class PolynomialGeneratorWidget(QtWidgets.QWidget):
 
         if self.mode == "draw" and event.button == 1:
             self.drawn_points.append((event.xdata, event.ydata))
-            # Optimization: only redraw every N points or use blitting?
-            # For now, simple redraw is fine for low frequency
             if len(self.drawn_points) % 5 == 0:
                 self._update_plot()
 
         elif self.mode == "drag" and self.dragging_curve and self.drag_start_pos:
-            # Horizontal shift not implemented (dx unused)
-            # dx = event.xdata - self.drag_start_pos[0]
+            dx = event.xdata - self.drag_start_pos[0]
             dy = event.ydata - self.drag_start_pos[1]
 
-            # Update polynomial coefficients (shift)
-            # Vertical shift is easy: just add dy to the constant term (last coeff)
-            # Horizontal shift is harder for general polynomial coefficients
-            # For now, let's just do vertical shift as it's safer visually
-
-            if self.drag_start_coeffs is not None:
-                new_coeffs = self.drag_start_coeffs.copy()
-                # poly1d coeffs are [cn, ..., c1, c0]
-                new_coeffs[-1] += dy
-
-                self.polynomial_coeffs = new_coeffs
-
-                # Sync points with vertical shift
-                if self.drag_start_points:
-                    self.current_points = [
-                        (x, y + dy) for x, y in self.drag_start_points
-                    ]
-
+            # Sync points with 2D shift and re-fit
+            if self.drag_start_points:
+                self.current_points = [
+                    (x + dx, y + dy) for x, y in self.drag_start_points
+                ]
+                self._calculate_poly_fit()
                 self._update_plot()
 
     def _clear_data(self) -> None:
@@ -344,39 +329,68 @@ class PolynomialGeneratorWidget(QtWidgets.QWidget):
         self.result_text.clear()
         self._update_plot()
 
+    def _calculate_poly_fit(self) -> bool:
+        """Calculate the polynomial fit without UI interactions.
+
+        Returns:
+            bool: True if fit was successful, False otherwise.
+        """
+        if len(self.current_points) < 7:
+            return False
+
+        try:
+            xs, ys = zip(*self.current_points, strict=True)
+            # Fit 6th order
+            self.polynomial_coeffs = np.polyfit(xs, ys, 6)
+            return True
+        except Exception as e:
+            logger.error(f"Fitting error: {e}")
+            return False
+
     def _fit_polynomial(self) -> None:
-        """Fit a 6th order polynomial to the current points."""
+        """Fit a 6th order polynomial to the current points and update UI."""
         if len(self.current_points) < 7:
             QtWidgets.QMessageBox.warning(
                 self, "Insufficient Data", "Need at least 7 points for a 6th order fit."
             )
             return
 
-        try:
-            xs, ys = zip(*self.current_points, strict=True)
-            # Fit 6th order
-            self.polynomial_coeffs = np.polyfit(xs, ys, 6)
+        if self._calculate_poly_fit():
             self._update_plot()
             self._display_results()
 
             # Emit signal
             joint = self.joint_combo.currentText()
-            self.polynomial_generated.emit(joint, list(self.polynomial_coeffs))
-
-        except Exception as e:
-            QtWidgets.QMessageBox.critical(self, "Fit Error", str(e))
-            logger.error(f"Fitting error: {e}")
+            if self.polynomial_coeffs is not None:
+                self.polynomial_generated.emit(joint, list(self.polynomial_coeffs))
+        else:
+            QtWidgets.QMessageBox.warning(
+                self, "Fit Error", "Failed to fit polynomial to points."
+            )
 
     def _generate_from_equation(self) -> None:
         """Generate points from the user-provided equation."""
-        eq_str = self.equation_input.text()
+        eq_str = self.equation_input.text().strip()
         if not eq_str:
             return
 
         try:
             x = sympy.symbols("x")
-            # Parse equation safely
-            expr = sympy.sympify(eq_str)
+            # Parse equation using a restricted set of symbols and functions
+            allowed_symbols = {"x": x}
+            allowed_functions = {
+                "sin": sympy.sin,
+                "cos": sympy.cos,
+                "tan": sympy.tan,
+                "asin": sympy.asin,
+                "acos": sympy.acos,
+                "atan": sympy.atan,
+                "exp": sympy.exp,
+                "log": sympy.log,
+                "sqrt": sympy.sqrt,
+            }
+            allowed_locals = {**allowed_symbols, **allowed_functions}
+            expr = sympy.sympify(eq_str, locals=allowed_locals, evaluate=True)
 
             # Generate points
             x_vals = np.linspace(self.x_min_spin.value(), self.x_max_spin.value(), 20)
