@@ -54,7 +54,7 @@ def check_nvidia_docker():
             else:
                 return False, "NVIDIA runtime not active (warning)"
         else:
-             return False, "Could not query docker info"
+            return False, "Could not query docker info"
     except Exception as e:
         return False, f"Docker check failed: {e}"
 
