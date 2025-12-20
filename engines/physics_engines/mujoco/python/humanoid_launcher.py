@@ -711,7 +711,6 @@ class HumanoidLauncher(QMainWindow):
             subprocess.call(["xdg-open", str(path)])
 
 
-
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
