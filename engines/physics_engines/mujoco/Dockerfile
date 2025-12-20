@@ -100,15 +100,10 @@ RUN pip install \
 # Stage: Drake
 # ==========================================
 FROM base AS drake
-# TODO: Implement Drake installation tailored to user needs.
-# Currently, Drake often requires system-specific apt packages or a specific wheel URL.
-# See https://drake.mit.edu/python_bindings.html for details.
-# Example: RUN pip install drake
-# For now, this stage inherits base and is ready for customization.
-# NOTE: Drake is a very large package with extensive dependencies.
-# Installing it will significantly increase build time and image size.
-# Uncomment the following line ONLY if you require Drake for your workflow.
-# RUN pip install drake # (Placeholder, usually requires specific wheel or apt install)
+# TODO: Drake installation is currently a placeholder.
+# Users should add specific installation commands here (e.g. pip install drake)
+# See https://drake.mit.edu/python_bindings.html
+RUN echo "Drake stage is a placeholder"
 
 # ==========================================
 # Stage: All (Default)

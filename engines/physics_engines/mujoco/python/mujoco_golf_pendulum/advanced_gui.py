@@ -2080,10 +2080,10 @@ class AdvancedGolfAnalysisWindow(QtWidgets.QMainWindow, AdvancedGuiMethodsMixin)
         container_layout.addWidget(step_widget)
 
         # Store references to all parameter widgets for showing/hiding
-        # Use typing.cast to avoid type errors with custom attributes
-        typing.cast(typing.Any, control_type_combo).polynomial_widget = poly_widget
-        typing.cast(typing.Any, control_type_combo).sine_widget = sine_widget
-        typing.cast(typing.Any, control_type_combo).step_widget = step_widget
+        # Attach as dynamic attributes using setattr to avoid typing.cast abuse
+        setattr(control_type_combo, "polynomial_widget", poly_widget)  # noqa: B010
+        setattr(control_type_combo, "sine_widget", sine_widget)  # noqa: B010
+        setattr(control_type_combo, "step_widget", step_widget)  # noqa: B010
 
         return container
 

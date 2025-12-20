@@ -711,7 +711,11 @@ class HumanoidLauncher(QMainWindow):
             return
 
         if platform.system() == "Windows" and hasattr(os, "startfile"):
-            os.startfile(str(path))
+            # Ensure path exists before opening
+            if path.exists():
+                os.startfile(str(path))
+            else:
+                logging.error(f"Cannot open non-existent file: {path}")
         elif platform.system() == "Darwin":
             subprocess.run(["open", str(path)], check=False)
         else:

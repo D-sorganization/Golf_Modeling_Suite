@@ -194,9 +194,13 @@ class TestDockerThreads:
     @patch("pathlib.Path.read_text", return_value="# Help")
     @patch("pathlib.Path.exists", return_value=True)
     def test_help_dialog(self, mock_exists, mock_read):
-        """Test HelpDialog initialization."""
+        """Test HelpDialog initialization and content loading."""
         dialog = HelpDialog()
         assert dialog is not None
+        # Verify text was loaded (mock read_text called)
+        mock_read.assert_called_once()
+        # Verify title
+        assert dialog.windowTitle() == "Help & Documentation"
         # Verify text was set
         # Since we mocked QTextEdit, we can't easily verify internal state without
         # capturing the instance. But simpler is just ensuring it runs without error.

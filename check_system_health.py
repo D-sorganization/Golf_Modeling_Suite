@@ -90,7 +90,7 @@ def main():
                 "-c",
                 "dpkg -l libegl1 libxkbcommon-x11-0 libxcb-cursor0",
             ]
-            res = subprocess.run(cmd, capture_output=True, text=True)
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
             if res.returncode == 0:
                 print_result("Docker Libs (libEGL/XCB)", "OK", "Installed")
             else:

@@ -68,7 +68,6 @@ class ChaoticPendulumController(abc.ABC):
     @abc.abstractmethod
     def control(self, time: float) -> tuple[float, float]:
         """Calculate control inputs. Should be overridden."""
-        return 0.0, 0.0
 
     def apply_control(self, base_force, pendulum_torque) -> None:
         """Apply control inputs to the system."""
