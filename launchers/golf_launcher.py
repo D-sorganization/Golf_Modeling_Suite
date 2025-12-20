@@ -40,20 +40,21 @@ ASSETS_DIR = Path(__file__).parent / "assets"
 DOCKER_IMAGE_NAME = "robotics_env"
 
 MODELS_DICT = {
-    "MuJoCo (Humanoid)": "engines/physics_engines/mujoco",
-    "MuJoCo (Comprehensive)": "engines/physics_engines/mujoco",
+    "MuJoCo Humanoid": "engines/physics_engines/mujoco",
+    "MuJoCo Dashboard": "engines/physics_engines/mujoco",
     "Drake Golf Model": "engines/physics_engines/drake",
     "Pinocchio Golf Model": "engines/physics_engines/pinocchio",
 }
 
 MODEL_IMAGES = {
-    "MuJoCo (Humanoid)": "mujoco.png",
-    "MuJoCo (Comprehensive)": "mujoco.png",
+    "MuJoCo Humanoid": "mujoco.png",
+    "MuJoCo Dashboard": "mujoco.png",
     "Drake Golf Model": "drake.png",
     "Pinocchio Golf Model": "pinocchio.png",
 }
 
 DOCKER_STAGES = ["all", "mujoco", "pinocchio", "drake", "base"]
+
 
 
 class DockerCheckThread(QThread):
@@ -355,8 +356,7 @@ class GolfLauncher(QMainWindow):
         self.apply_styles()
 
         # Select first model by default
-        first_model = list(MODELS_DICT.keys())[0]
-        self.select_model(first_model)
+        self.select_model("MuJoCo Humanoid")
 
 
     def create_model_card(self, name):
@@ -548,7 +548,7 @@ class GolfLauncher(QMainWindow):
         try:
             if "Humanoid" in model_name:
                 self._custom_launch_humanoid(abs_repo_path)
-            elif "Comprehensive" in model_name:
+            elif "Dashboard" in model_name:
                 self._custom_launch_comprehensive(abs_repo_path)
             else:
                 self._launch_docker_container(model_name, abs_repo_path)
