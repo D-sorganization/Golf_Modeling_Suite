@@ -16,6 +16,7 @@ def print_result(component, status, message=""):
     reset = "\033[0m"
     print(f"{component:<30} [{color}{status}{reset}] {message}")
 
+
 def check_python_module(module_name):
     try:
         __import__(module_name)
@@ -25,12 +26,11 @@ def check_python_module(module_name):
     except Exception as e:
         return False, f"Error: {e}"
 
+
 def check_docker_image(image_name):
     try:
         result = subprocess.run(
-            ["docker", "image", "inspect", image_name],
-            capture_output=True,
-            text=True
+            ["docker", "image", "inspect", image_name], capture_output=True, text=True
         )
         if result.returncode == 0:
             return True, "Found"
@@ -39,12 +39,13 @@ def check_docker_image(image_name):
     except FileNotFoundError:
         return False, "Docker command not found"
 
+
 def check_nvidia_docker():
     try:
         result = subprocess.run(
             ["docker", "run", "--rm", "--gpus", "all", "hello-world"],
             capture_output=True,
-            text=True
+            text=True,
         )
         # We don't necessarily fail if hello-world fails (maybe missing image),
         # but if returncode is 125/127 it means docker error.
@@ -55,6 +56,7 @@ def check_nvidia_docker():
     except Exception:
         return False, "Docker check failed"
 
+
 def main():
     print("=" * 60)
     print(f"System Health Check - {time.strftime('%Y-%m-%d %H:%M:%S')}")
@@ -62,12 +64,7 @@ def main():
 
     # 1. Local Python Environment
     print("\n--- Local Python Environment ---")
-    modules = [
-        "mujoco",
-        "PyQt6",
-        "numpy",
-        "matplotlib"
-    ]
+    modules = ["mujoco", "PyQt6", "numpy", "matplotlib"]
 
     for mod in modules:
         ok, msg = check_python_module(mod)
@@ -83,8 +80,13 @@ def main():
     if docker_ok:
         try:
             cmd = [
-                "docker", "run", "--rm", "robotics_env",
-                "sh", "-c", "dpkg -l libegl1 libxkbcommon-x11-0 libxcb-cursor0"
+                "docker",
+                "run",
+                "--rm",
+                "robotics_env",
+                "sh",
+                "-c",
+                "dpkg -l libegl1 libxkbcommon-x11-0 libxcb-cursor0",
             ]
             res = subprocess.run(cmd, capture_output=True, text=True)
             if res.returncode == 0:
@@ -95,14 +97,14 @@ def main():
                 )
                 print(res.stderr)
         except Exception as e:
-             print_result("Docker Libs (libEGL/XCB)", "FAIL", str(e))
+            print_result("Docker Libs (libEGL/XCB)", "FAIL", str(e))
 
     print("\n--- File Integrity ---")
     # Check for critical launcher files
     files = [
         "launchers/golf_launcher.py",
         "engines/physics_engines/mujoco/python/humanoid_launcher.py",
-        "engines/physics_engines/mujoco/python/mujoco_golf_pendulum/advanced_gui.py"
+        "engines/physics_engines/mujoco/python/mujoco_golf_pendulum/advanced_gui.py",
     ]
 
     root = Path(__file__).parent.resolve()
@@ -115,6 +117,7 @@ def main():
 
     print("\n" + "=" * 60)
     print("Check complete.")
+
 
 if __name__ == "__main__":
     main()

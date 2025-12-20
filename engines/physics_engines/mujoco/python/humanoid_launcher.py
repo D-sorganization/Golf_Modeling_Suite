@@ -46,8 +46,7 @@ from PyQt6.QtWidgets import (
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -73,6 +72,7 @@ DEFAULT_CONFIG = {
     "enhance_face": False,
     "articulated_fingers": False,
 }
+
 
 class SimulationWorker(QThread):
     """Worker thread for running Docker simulation to avoid freezing GUI."""
@@ -115,7 +115,7 @@ class SimulationWorker(QThread):
             stdout, stderr = self.process.communicate()
             if stdout:
                 for line in stdout.splitlines():
-                     self.log_signal.emit(line)
+                    self.log_signal.emit(line.strip())
             if stderr:
                 # Docker often outputs to stderr for info
                 for line in stderr.splitlines():
@@ -133,8 +133,10 @@ class SimulationWorker(QThread):
         if self.process:
             self.process.terminate()
 
+
 class ModernDarkPalette(QPalette):
     """Custom Dark Palette for a modern look."""
+
     def __init__(self):
         super().__init__()
         self.setColor(QPalette.ColorRole.Window, QColor(43, 43, 43))
@@ -150,6 +152,7 @@ class ModernDarkPalette(QPalette):
         self.setColor(QPalette.ColorRole.Link, QColor(42, 130, 218))
         self.setColor(QPalette.ColorRole.Highlight, QColor(42, 130, 218))
         self.setColor(QPalette.ColorRole.HighlightedText, Qt.GlobalColor.black)
+
 
 class HumanoidLauncher(QMainWindow):
     def __init__(self):
@@ -200,12 +203,14 @@ class HumanoidLauncher(QMainWindow):
 
         # Tabs
         self.tabs = QTabWidget()
-        self.tabs.setStyleSheet("""
+        self.tabs.setStyleSheet(
+            """
             QTabWidget::pane { border: 1px solid #444; background: #2b2b2b; }
             QTabBar::tab { background: #333; color: #ccc; padding: 10px 20px; }
             QTabBar::tab:selected { background: #0078d4; color: white; }
             QTabBar::tab:hover { background: #444; }
-        """)
+        """
+        )
 
         self.setup_sim_tab()
         self.setup_appearance_tab()
@@ -368,8 +373,11 @@ class HumanoidLauncher(QMainWindow):
         self.color_buttons = {}
 
         parts = [
-            ("Shirt", "shirt"), ("Pants", "pants"), ("Shoes", "shoes"),
-            ("Skin", "skin"), ("Club", "club")
+            ("Shirt", "shirt"),
+            ("Pants", "pants"),
+            ("Shoes", "shoes"),
+            ("Skin", "skin"),
+            ("Club", "club"),
         ]
 
         for i, (name, key) in enumerate(parts):
@@ -377,7 +385,7 @@ class HumanoidLauncher(QMainWindow):
 
             btn = QPushButton()
             btn.setFixedSize(50, 25)
-            rgba = self.config["colors"].get(key, [1,1,1,1])
+            rgba = self.config["colors"].get(key, [1, 1, 1, 1])
             self.set_btn_color(btn, rgba)
             btn.clicked.connect(lambda checked, k=key, b=btn: self.pick_color(k, b))
 
@@ -409,7 +417,7 @@ class HumanoidLauncher(QMainWindow):
 
         club_layout.addWidget(QLabel("Club Length (m):"), 0, 0)
         self.slider_length = QSlider(Qt.Orientation.Horizontal)
-        self.slider_length.setRange(50, 150) # 0.5 to 1.5 * 100
+        self.slider_length.setRange(50, 150)  # 0.5 to 1.5 * 100
         self.slider_length.setValue(int(self.config.get("club_length", 1.0) * 100))
 
         self.lbl_length_val = QLabel(f"{self.slider_length.value()/100:.2f} m")
@@ -422,7 +430,7 @@ class HumanoidLauncher(QMainWindow):
 
         club_layout.addWidget(QLabel("Club Mass (kg):"), 1, 0)
         self.slider_mass = QSlider(Qt.Orientation.Horizontal)
-        self.slider_mass.setRange(10, 200) # 0.1 to 2.0 * 100
+        self.slider_mass.setRange(10, 200)  # 0.1 to 2.0 * 100
         self.slider_mass.setValue(int(self.config.get("club_mass", 0.5) * 100))
 
         self.lbl_mass_val = QLabel(f"{self.slider_mass.value()/100:.2f} kg")
@@ -508,7 +516,9 @@ class HumanoidLauncher(QMainWindow):
 
     def pick_color(self, key, btn):
         current = self.config["colors"][key]
-        initial = QColor(int(current[0]*255), int(current[1]*255), int(current[2]*255))
+        initial = QColor(
+            int(current[0] * 255), int(current[1] * 255), int(current[2] * 255)
+        )
 
         color = QColorDialog.getColor(initial, self, f"Choose {key} Color")
         if color.isValid():
@@ -595,9 +605,9 @@ class HumanoidLauncher(QMainWindow):
         else:
             cmd = ["docker", "run"]
 
-        cmd.extend([
-            "--rm", "-v", f"{mount_path}:/workspace", "-w", "/workspace/python"
-        ])
+        cmd.extend(
+            ["--rm", "-v", f"{mount_path}:/workspace", "-w", "/workspace/python"]
+        )
 
         # Display settings
         if self.config["live_view"]:
@@ -614,13 +624,15 @@ class HumanoidLauncher(QMainWindow):
             cmd.extend(["-e", "MUJOCO_GL=osmesa"])
 
         # Image and Command
-        cmd.extend([
-            "robotics_env",
-            "/opt/robotics_env/bin/python",
-            "-u",
-            "-m",
-            "mujoco_golf_pendulum"
-        ])
+        cmd.extend(
+            [
+                "robotics_env",
+                "/opt/robotics_env/bin/python",
+                "-u",
+                "-m",
+                "mujoco_golf_pendulum",
+            ]
+        )
 
         return cmd
 
@@ -657,9 +669,10 @@ class HumanoidLauncher(QMainWindow):
 
     def rebuild_docker(self):
         reply = QMessageBox.question(
-            self, "Rebuild Environment",
+            self,
+            "Rebuild Environment",
             "This will rebuild the Docker environment. Continue?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
 
         if reply == QMessageBox.StandardButton.Yes:
@@ -696,16 +709,15 @@ class HumanoidLauncher(QMainWindow):
             os.startfile(str(path))
         else:
             subprocess.call(["xdg-open", str(path)])
-        if platform.system() == "Windows" and hasattr(os, "startfile"):
-            os.startfile(str(path))
-        else:
-            subprocess.call(["xdg-open", str(path)])
+
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     # Global Stylesheet for Rounded Buttons and Modern Look
-    app.setStyleSheet("""
+    app.setStyleSheet(
+        """
         QPushButton {
             border-radius: 5px;
             padding: 5px;
@@ -720,7 +732,8 @@ if __name__ == "__main__":
             background-color: #333;
             color: white;
         }
-    """)
+    """
+    )
 
     window = HumanoidLauncher()
     window.show()

@@ -56,7 +56,8 @@ class AdvancedGolfAnalysisWindow(QtWidgets.QMainWindow, AdvancedGuiMethodsMixin)
         self.resize(1600, 900)
 
         # Apply Global Stylesheet
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             QPushButton {
                 border-radius: 5px;
                 padding: 5px;
@@ -80,7 +81,8 @@ class AdvancedGolfAnalysisWindow(QtWidgets.QMainWindow, AdvancedGuiMethodsMixin)
                 left: 10px;
                 padding: 0 5px;
             }
-        """)
+        """
+        )
 
         # Model configurations
         self.model_configs = [
@@ -416,10 +418,12 @@ class AdvancedGolfAnalysisWindow(QtWidgets.QMainWindow, AdvancedGuiMethodsMixin)
         for mech_name in LINKAGE_CATALOG:
             self.model_combo.addItem(f"Mechanism: {mech_name}")
             mech_config = LINKAGE_CATALOG[mech_name]
-            self.model_descriptions[idx] = str(mech_config.get(
-                "description",
-                "Mechanical linkage system",
-            ))
+            self.model_descriptions[idx] = str(
+                mech_config.get(
+                    "description",
+                    "Mechanical linkage system",
+                )
+            )
             idx += 1
 
         self.model_combo.currentIndexChanged.connect(self.on_model_changed)
@@ -493,20 +497,15 @@ class AdvancedGolfAnalysisWindow(QtWidgets.QMainWindow, AdvancedGuiMethodsMixin)
         style = self.style()
         if style:
             self.play_pause_btn.setIcon(
-                style.standardIcon(
-                    QtWidgets.QStyle.StandardPixmap.SP_MediaPause
-                ),
+                style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_MediaPause),
             )
 
         self.reset_btn = QtWidgets.QPushButton("Reset")
         self.reset_btn.clicked.connect(self.on_reset_clicked)
         self.reset_btn.setToolTip("Reset simulation to initial state (Shortcut: R)")
-        style = self.style()
         if style:
             self.reset_btn.setIcon(
-                style.standardIcon(
-                    QtWidgets.QStyle.StandardPixmap.SP_BrowserReload
-                ),
+                style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_BrowserReload),
             )
 
         self.record_btn = QtWidgets.QPushButton("Start Recording")
@@ -2274,9 +2273,7 @@ class AdvancedGolfAnalysisWindow(QtWidgets.QMainWindow, AdvancedGuiMethodsMixin)
             self.play_pause_btn.setText("Pause")
             if style:
                 self.play_pause_btn.setIcon(
-                    style.standardIcon(
-                        QtWidgets.QStyle.StandardPixmap.SP_MediaPause
-                    ),
+                    style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_MediaPause),
                 )
             self.sim_widget.set_running(True)
 

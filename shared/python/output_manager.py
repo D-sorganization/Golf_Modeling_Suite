@@ -8,6 +8,7 @@ managing file organization, and exporting analysis reports.
 import json
 import logging
 import pickle
+import typing
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
@@ -254,8 +255,6 @@ class OutputManager:
                 return data.get("results", data)
 
             elif format_type == OutputFormat.HDF5:
-                # Cast the result to DataFrame as we know we saved a DataFrame
-                import typing
                 return typing.cast(pd.DataFrame, pd.read_hdf(file_path, key="data"))
 
             elif format_type == OutputFormat.PICKLE:
