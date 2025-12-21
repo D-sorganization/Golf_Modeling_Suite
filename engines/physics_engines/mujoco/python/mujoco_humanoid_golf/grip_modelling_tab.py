@@ -58,6 +58,18 @@ class GripModellingTab(QtWidgets.QWidget):
         self.control_layout.addWidget(self.combo_hand)
 
         self.control_layout.addSpacing(10)
+        
+        # Physics Controls
+        self.control_layout.addWidget(QtWidgets.QLabel("<b>Physics Controls</b>"))
+        self.chk_kinematic = QtWidgets.QCheckBox("Kinematic Mode (Pose Only)")
+        self.chk_kinematic.setToolTip(
+            "Disable physics integration to pose hands without gravity/collisions"
+        )
+        self.chk_kinematic.setChecked(True)  # Default to kinematic for posing
+        self.chk_kinematic.toggled.connect(self._on_kinematic_toggled)
+        self.control_layout.addWidget(self.chk_kinematic)
+
+        self.control_layout.addSpacing(10)
         self.control_layout.addWidget(QtWidgets.QLabel("<b>Joint Controls</b>"))
 
         # Sliders Area
@@ -82,6 +94,12 @@ class GripModellingTab(QtWidgets.QWidget):
 
         # Initial Load
         QtCore.QTimer.singleShot(100, self.load_current_hand_model)
+
+    def _on_kinematic_toggled(self, checked: bool) -> None:
+        """Handle kinematic mode toggle."""
+        if self.sim_widget:
+            mode = "kinematic" if checked else "dynamic"
+            self.sim_widget.set_operating_mode(mode)
 
     def load_current_hand_model(self) -> None:
         """Load the selected hand model with a test cylinder."""
@@ -132,6 +150,9 @@ class GripModellingTab(QtWidgets.QWidget):
 
         # Rebuild controls
         self.rebuild_joint_controls()
+        
+        # Apply initial kinematic state
+        self._on_kinematic_toggled(self.chk_kinematic.isChecked())
 
     def _prepare_scene_xml(
         self, scene_path: Path, folder_path: Path, is_both: bool = False
@@ -160,6 +181,12 @@ class GripModellingTab(QtWidgets.QWidget):
                         logger.info("Injecting freejoint into %s", filename)
                         insertion = match.group(1) + "\n      <freejoint/>"
                         content = content.replace(match.group(1), insertion)
+                    else:
+                        logger.warning(
+                            "Could not find body '%s' in %s to inject freejoint",
+                            body_name_pattern,
+                            filename,
+                        )
 
                 # Strip <mujoco> tags to allow embedding
                 content = re.sub(r"<mujoco[^>]*>", "", content)
@@ -167,7 +194,7 @@ class GripModellingTab(QtWidgets.QWidget):
                 return content
             except Exception:
                 logger.exception("Failed to process hand file %s", filename)
-                return ""
+                return ""  # Return empty only on catastrophic failure
 
         if is_both:
             right_content = get_hand_content("right_hand.xml", "rh_forearm")
