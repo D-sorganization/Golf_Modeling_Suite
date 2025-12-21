@@ -82,6 +82,69 @@ def test_mujoco_ballistic_energy_conservation():
     not is_engine_available(EngineType.PINOCCHIO), reason="Pinocchio not installed"
 )
 def test_pinocchio_energy_check():
-    """Placeholder for Pinocchio energy validation."""
-    # Logic similar to above but using Pinocchio API
-    pass
+    """Verify energy conservation with Pinocchio using explicit integration."""
+    import pinocchio
+
+    # 1. Create Model (Free floating body)
+    model = pinocchio.Model()
+
+    # Add a free flyer joint for the body
+    joint_name = "particle_joint"
+    joint_id = model.addJoint(
+        0, pinocchio.JointModelFreeFlyer(), pinocchio.SE3.Identity(), joint_name
+    )
+
+    # Add a body with mass 1.0 at origin of joint
+    mass = 1.0
+    inertia = pinocchio.Inertia.FromSphere(mass, 0.1)
+    model.appendBodyToJoint(joint_id, inertia, pinocchio.SE3.Identity())
+    model.addBodyFrame("particle", joint_id, pinocchio.SE3.Identity(), -1)
+
+    data = model.createData()
+
+    # 2. Initial Conditions
+    # q = [x, y, z, qx, qy, qz, qw] (7D for SE3)
+    # v = [vx, vy, vz, wx, wy, wz] (6D se3)
+    q = pinocchio.neutral(model)
+    q[2] = 10.0  # z = 10m
+
+    v = np.zeros(model.nv)
+
+    # 3. Simulation Loop (Symplectic Euler / Semi-implicit)
+    dt = 0.001
+    steps = 1000
+
+    # Pinocchio calculates potential energy automatically if gravity is set?
+    # No, model.gravity needs to be set.
+    model.gravity = pinocchio.Motion(np.array([0, 0, -9.81, 0, 0, 0]))
+
+    # Pre-compute initial energy
+    pinocchio.computeTotalEnergy(model, data, q, v)
+    initial_energy = data.kinetic_energy + data.potential_energy
+
+    errors = []
+
+    for _ in range(steps):
+        # Forward Dynamics (ABA) -> returns acceleration
+        a = pinocchio.aba(model, data, q, v, np.zeros(model.nv))
+
+        # Semi-implicit Euler
+        v_next = v + a * dt
+        q_next = pinocchio.integrate(model, q, v_next * dt)
+
+        q = q_next
+        v = v_next
+
+        # Check Energy
+        # Note: Symplectic Euler is stable but not perfectly energy conversing
+        # It oscillates around the true energy.
+        pinocchio.computeTotalEnergy(model, data, q, v)
+        current_energy = data.kinetic_energy + data.potential_energy
+
+        errors.append(abs(current_energy - initial_energy))
+
+    max_error = np.max(errors)
+    logger.info(f"Max Energy Error (Pinocchio): {max_error:.6f} J")
+
+    # Allow slightly higher error due to simple integrator
+    assert max_error < 0.05, f"Pinocchio energy check failed. Error: {max_error}"
