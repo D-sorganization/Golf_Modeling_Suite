@@ -43,9 +43,11 @@ def test_pinocchio_golfer_stability():
         pytest.skip(f"Golfer URDF not found at {urdf_path}")
 
     # 2. Load Model
-    # Use just the URDF path;
-    # Pinocchio might need package dirs if meshes are referenced.
-    # Assuming relative paths in URDF are correct or no meshes for basic load.
+    # Use just the URDF path.
+    # Pinocchio might need package directories or environment configuration
+    # (for example, ROS_PACKAGE_PATH or the package_dirs argument) if the URDF
+    # references meshes. For this basic validation we assume either no meshes
+    # are required or that relative paths in the URDF resolve correctly.
     try:
         model = pinocchio.buildModelFromUrdf(str(urdf_path))
     except Exception as e:
