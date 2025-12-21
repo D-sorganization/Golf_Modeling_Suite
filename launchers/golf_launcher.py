@@ -78,8 +78,8 @@ MODEL_DESCRIPTIONS = {
     "physically consistent swing paths. Features stabilizing controllers and inverse "
     "dynamics solvers.",
     "Pinocchio Golf Model": "Ultra-fast rigid body dynamics engine based on "
-    "Featherstone's spatial algebra. "
-    "Specialized for rapid iteration and derivative computation. "
+    "Featherstone's spatial algebra."
+    " Specialized for rapid iteration and derivative computation. "
     "Validates kinematic chains and provides baseline capabilities for trajectory "
     "optimization algorithms.",
 }
