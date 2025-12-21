@@ -65,9 +65,9 @@ class TestEngineProbes:
     def test_engine_manager_probes_available(self):
         """Verify EngineManager has probe functionality."""
         suite_root = Path(__file__).parent.parent.parent
-        sys.path.insert(0, str(suite_root / "shared" / "python"))
+        sys.path.insert(0, str(suite_root))
 
-        from engine_manager import EngineManager
+        from shared.python.engine_manager import EngineManager
 
         manager = EngineManager()
 
@@ -78,10 +78,10 @@ class TestEngineProbes:
     def test_probe_all_engines(self):
         """Test probing all engines."""
         suite_root = Path(__file__).parent.parent.parent
-        sys.path.insert(0, str(suite_root / "shared" / "python"))
+        sys.path.insert(0, str(suite_root))
 
-        from engine_manager import EngineManager
-        from engine_probes import ProbeStatus
+        from shared.python.engine_manager import EngineManager
+        from shared.python.engine_probes import ProbeStatus
 
         manager = EngineManager()
         results = manager.probe_all_engines()
@@ -98,9 +98,9 @@ class TestEngineProbes:
     def test_diagnostic_report_generation(self):
         """Test generating diagnostic report."""
         suite_root = Path(__file__).parent.parent.parent
-        sys.path.insert(0, str(suite_root / "shared" / "python"))
+        sys.path.insert(0, str(suite_root))
 
-        from engine_manager import EngineManager
+        from shared.python.engine_manager import EngineManager
 
         manager = EngineManager()
         report = manager.get_diagnostic_report()
@@ -115,10 +115,10 @@ class TestEngineProbes:
     def test_at_least_one_engine_available(self):
         """Verify at least one engine is available or properly diagnosed."""
         suite_root = Path(__file__).parent.parent.parent
-        sys.path.insert(0, str(suite_root / "shared" / "python"))
+        sys.path.insert(0, str(suite_root))
 
-        from engine_manager import EngineManager
-        from engine_probes import ProbeStatus
+        from shared.python.engine_manager import EngineManager
+        from shared.python.engine_probes import ProbeStatus
 
         manager = EngineManager()
         results = manager.probe_all_engines()
