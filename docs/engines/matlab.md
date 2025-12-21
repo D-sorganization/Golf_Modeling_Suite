@@ -4,7 +4,7 @@ The MATLAB integration allows the Golf Modeling Suite to leverage existing Simsc
 
 ## ✨ Key Features
 - **Simscape Multibody**: Physical modeling blocks for biomechanics.
-- **Legacy Compatibility**: reuse of validated specialized golf models.
+- **Legacy Compatibility**: Reuse of validated specialized golf models.
 - **Symbolic Math**: MATLAB's symbolic toolbox capabilities.
 
 ## ⚠️ Prerequisites

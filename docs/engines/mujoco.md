@@ -21,4 +21,4 @@ engines/physics_engines/mujoco/
 
 MuJoCo models are defined in `.xml` (MJCF) format. The main entry point is `golf_swing.xml`.
 
-paramters can be tuned in `shared/python/physics_parameters.py`.
+parameters can be tuned in `shared/python/physics_parameters.py`.

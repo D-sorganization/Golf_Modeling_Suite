@@ -11,7 +11,7 @@ python launch_golf_suite.py
 ```
 
 This opens a GUI where you can:
-- specificy specific physics engine (MuJoCo, Drake, etc.)
+- specify specific physics engine (MuJoCo, Drake, etc.)
 - Configure simulation parameters
 - Visualize results
 - Export data

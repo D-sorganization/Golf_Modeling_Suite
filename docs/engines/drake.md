@@ -1,6 +1,6 @@
 # Drake Engine
 
-rake is a C++ toolbox for model-based design and verification of robotics, developed by the Toyota Research Institute. It provides high-accuracy dynamics and advanced system analysis capabilities.
+Drake is a C++ toolbox for model-based design and verification of robotics, developed by the Toyota Research Institute. It provides high-accuracy dynamics and advanced system analysis capabilities.
 
 ## ✨ Key Features
 - **Rigid Body Dynamics**: Uses `MultibodyPlant` for continuous physics.

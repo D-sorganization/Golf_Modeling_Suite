@@ -10,7 +10,7 @@ Welcome to the Golf Modeling Suite development team! We follow strict engineerin
 - Docker (optional, but recommended for full physics validation)
 - MATLAB (optional, for Simscape models)
 
-### installation
+### Installation
 
 ```bash
 # Clone the repository
