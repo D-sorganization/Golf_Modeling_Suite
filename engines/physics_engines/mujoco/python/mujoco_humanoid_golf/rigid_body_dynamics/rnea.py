@@ -57,7 +57,7 @@ def rnea(  # noqa: PLR0915
         >>> qdd = np.array([0.5, -0.2])
         >>> tau = rnea(model, q, qd, qdd)
     """
-    # Use ravel() instead of flatten() to avoid copying data when possible (e.g. 1D input)
+    # Use ravel() to avoid copying data when possible
     q = np.asarray(q).ravel()
     qd = np.asarray(qd).ravel()
     qdd = np.asarray(qdd).ravel()

@@ -62,7 +62,7 @@ def aba(  # noqa: C901, PLR0912, PLR0915
         >>> tau = np.array([1.5, 0.5])
         >>> qdd = aba(model, q, qd, tau)
     """
-    # Use ravel() instead of flatten() to avoid copying data when possible (e.g. 1D input)
+    # Use ravel() to avoid copying data when possible
     q = np.asarray(q).ravel()
     qd = np.asarray(qd).ravel()
     tau = np.asarray(tau).ravel()
