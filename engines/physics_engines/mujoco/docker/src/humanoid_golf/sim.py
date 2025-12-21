@@ -308,6 +308,17 @@ def run_simulation(
     # Use duration from config if specified, otherwise use function parameter
     duration = config.get("simulation_duration", duration)
 
+    if use_viewer:
+        print("\n" + "=" * 50)
+        print("VIEWER CONTROLS:")
+        print("  [Space]     : Pause / Unpause")
+        print("  [Backspace] : Restart Episode (Reset to Address)")
+        print("  [F]         : Toggle Contact Forces")
+        print("  [C]         : Toggle Contact Constraints")
+        print("  [T]         : Toggle Translucency")
+        print("  [H]         : Toggle Help info")
+        print("=" * 50 + "\n", flush=True)
+
     club_params = {
         "length": float(config.get("club_length", 1.0)),
         "mass": float(config.get("club_mass", 0.5)),
