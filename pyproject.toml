@@ -44,6 +44,10 @@ dev = [
     "types-PyYAML>=6.0.12.12",
     "pandas-stubs>=2.0.0",
     "types-requests>=2.31.0",
+    "sphinx>=7.0.0",
+    "sphinx-rtd-theme>=2.0.0",
+    "sphinx-autodoc-typehints>=2.0.0",
+    "myst-parser>=2.0.0",
 ]
 engines = [
     "drake>=1.22.0,<2.0.0",
