@@ -84,11 +84,11 @@ def run_tests(engine_filter: str, test_type: str) -> bool:
         )
 
         if result.returncode == 0:
-            logger.info("OK Physics Validation PASSED")
+            logger.info("Physics Validation PASSED")
             return True
         else:
             logger.error(
-                f"X Physics Validation FAILED (Exit Code: {result.returncode})"
+                f"Physics Validation FAILED (Exit Code: {result.returncode})"
             )
             return False
 
