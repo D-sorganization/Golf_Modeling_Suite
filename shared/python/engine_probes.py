@@ -168,7 +168,6 @@ class MuJoCoProbe(EngineProbe):
         )
 
 
-
 class DrakeProbe(EngineProbe):
     """Probe for Drake physics engine."""
 
@@ -183,13 +182,14 @@ class DrakeProbe(EngineProbe):
         # Check for pydrake package
         try:
             import pydrake
+
             version = getattr(pydrake, "__version__", "unknown")
-            
+
             # Verify core modules
             try:
                 import pydrake.multibody
             except ImportError:
-                 return EngineProbeResult(
+                return EngineProbeResult(
                     engine_name=self.engine_name,
                     status=ProbeStatus.MISSING_BINARY,
                     version=version,

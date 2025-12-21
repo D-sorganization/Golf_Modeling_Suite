@@ -22,9 +22,7 @@ def run_command(cmd: list[str], cwd: Path | None = None) -> None:
 def main() -> None:
     """Main execution flow."""
     root_dir = Path(__file__).parent.parent.resolve()
-    dockerfile_path = (
-        root_dir / "engines" / "physics_engines" / "mujoco" / "Dockerfile"
-    )
+    dockerfile_path = root_dir / "engines" / "physics_engines" / "mujoco" / "Dockerfile"
 
     if not dockerfile_path.exists():
         print(f"Error: Dockerfile not found at {dockerfile_path}")

@@ -6,7 +6,13 @@ import numpy as np
 class AnalyticalPendulum:
     """Exact solution for a simple pendulum."""
 
-    def __init__(self, length: float = 1.0, mass: float = 1.0, g: float = 9.81, inertia: float | None = None):
+    def __init__(
+        self,
+        length: float = 1.0,
+        mass: float = 1.0,
+        g: float = 9.81,
+        inertia: float | None = None,
+    ):
         self.L = length
         self.m = mass
         self.g = g
