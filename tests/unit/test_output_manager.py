@@ -91,9 +91,6 @@ def test_save_load_json(output_manager):
     assert loaded == [1.0, 2.0, 3.0]
 
 
-
-
-
 def test_get_simulation_list(output_manager):
     """Test retrieving simulation list."""
     # Create some dummy files

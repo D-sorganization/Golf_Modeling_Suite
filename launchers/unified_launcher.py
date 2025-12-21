@@ -38,6 +38,7 @@ class UnifiedLauncher:
         """
         self.launcher.show()
         if self.app is None:
+            print("Error: QApplication failed to initialize.")
             return 1
         return self.app.exec()
 

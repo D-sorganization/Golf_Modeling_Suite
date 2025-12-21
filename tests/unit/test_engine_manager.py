@@ -90,8 +90,6 @@ class TestEngineManager:
                     manager.get_engine_status(engine_type) == EngineStatus.UNAVAILABLE
                 )
 
-
-
     def test_switch_engine_unavailable(self):
         """Test switching to unavailable engine."""
         with tempfile.TemporaryDirectory() as temp_dir:

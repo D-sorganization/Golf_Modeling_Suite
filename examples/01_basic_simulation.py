@@ -79,7 +79,7 @@ def main():
 
     metadata = {
         "example": "01_basic_simulation",
-        "engine": "Mujoco (Simulated)",
+        "engine": "MuJoCo (Simulated)",
         "date": time.strftime("%Y-%m-%d"),
     }
 

@@ -51,7 +51,6 @@ def launch_local_launcher():
     return True
 
 
-
 def _validate_and_get_workdir(script_path: Path) -> Path:
     """Validate script existence and return working directory.
 
