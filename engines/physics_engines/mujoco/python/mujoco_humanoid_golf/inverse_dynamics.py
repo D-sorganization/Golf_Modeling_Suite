@@ -86,7 +86,8 @@ class InverseDynamicsSolver:
         self.has_constraints = (model.neq > 0) or self._detect_closed_chains()
 
         # Optimization: Pre-allocate Jacobian arrays and detect API signature
-        # This avoids try-except overhead in tight loops (e.g. compute_end_effector_forces)
+        # This avoids try-except overhead in tight loops
+        # (e.g. compute_end_effector_forces)
         self._use_flat_jacobian = False
         try:
             # Test with dummy arrays to check signature
