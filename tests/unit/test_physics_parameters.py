@@ -1,4 +1,3 @@
-
 import pytest
 
 from shared.python.physics_parameters import (

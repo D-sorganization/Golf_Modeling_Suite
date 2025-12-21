@@ -37,6 +37,8 @@ class UnifiedLauncher:
             Exit code from the application
         """
         self.launcher.show()
+        if self.app is None:
+            return 1
         return self.app.exec()
 
     def show_status(self) -> None:

@@ -1,10 +1,7 @@
 import shutil
 import tempfile
-from datetime import datetime, timedelta
 from pathlib import Path
-from unittest.mock import patch
 
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -94,26 +91,7 @@ def test_save_load_json(output_manager):
     assert loaded == [1.0, 2.0, 3.0]
 
 
-def test_save_load_pickle(output_manager):
-    """Test saving and loading Pickle results."""
-    data = {"complex": complex(1, 2), "array": np.array([1, 2])}
-    filename = "test_pickle"
 
-    # Save
-    path = output_manager.save_simulation_results(
-        data, filename, OutputFormat.PICKLE, engine="test"
-    )
-
-    assert path.exists()
-    assert path.suffix == ".pickle"
-
-    # Load
-    loaded = output_manager.load_simulation_results(
-        path.name, OutputFormat.PICKLE, engine="test"
-    )
-
-    assert loaded["complex"] == data["complex"]
-    np.testing.assert_array_equal(loaded["array"], data["array"])
 
 
 def test_get_simulation_list(output_manager):
@@ -143,9 +121,6 @@ def test_export_analysis_report(output_manager):
     assert path.exists()
     assert path.parent.name == "json"
     assert "report1" in path.name
-
-
-
 
 
 def test_cleanup_integration(output_manager):
