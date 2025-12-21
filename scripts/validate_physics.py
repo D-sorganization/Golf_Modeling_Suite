@@ -80,7 +80,7 @@ def run_tests(engine_filter: str, test_type: str) -> bool:
             env=env,
             cwd=REPO_ROOT,
             capture_output=False,  # Stream directly to stdout/stderr
-            check=False
+            check=False,
         )
 
         if result.returncode == 0:
