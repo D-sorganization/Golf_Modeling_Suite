@@ -246,18 +246,19 @@ class PhysicsEnvWrapper:
 
         return Spec((self._physics.model.nu,))
 
-    def step(self, action) -> 'TimeStep':
+    def step(self, action) -> "TimeStep":
         """Advance the environment by one step."""
         self._physics.set_control(action)
         self._physics.step()
         return TimeStep(step_type=1)  # MID
 
-    def reset(self) -> 'TimeStep':
+    def reset(self) -> "TimeStep":
         """Reset the environment."""
         self._physics.reset()
         if self._initializer:
             self._initializer(self._physics)
         return TimeStep(step_type=0)  # FIRST
+
 
 def save_state(physics, filename) -> None:
     """Save simulation state to file."""
@@ -280,6 +281,7 @@ def load_state(physics, filename) -> None:
             print(f"State loaded from {filename}")
         except Exception as e:
             print(f"Error loading state: {e}")
+
 
 def run_simulation(
     output_video="humanoid_golf.mp4", output_data="golf_data.csv", duration=3.0
