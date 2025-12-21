@@ -45,6 +45,11 @@ class TestLauncherIntegration:
         # Should contain status information
         assert "Golf Modeling Suite" in result.stdout or "Engine" in result.stdout
 
+    @pytest.mark.skipif(
+        not sys.platform.startswith("win")
+        and not __import__("os").environ.get("DISPLAY"),
+        reason="Requires display for PyQt6 (not available in CI)",
+    )
     def test_unified_launcher_show_status(self):
         """Test UnifiedLauncher.show_status() method."""
         suite_root = Path(__file__).parent.parent.parent
