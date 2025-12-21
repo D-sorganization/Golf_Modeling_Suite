@@ -432,7 +432,9 @@ class MatlabProbe(EngineProbe):
 
         # Check for model directory
         model_type = "3D_Golf_Model" if self.is_3d else "2D_Golf_Model"
-        engine_dir = self.suite_root / "engines" / "Simscape_Multibody_Models" / model_type
+        engine_dir = (
+            self.suite_root / "engines" / "Simscape_Multibody_Models" / model_type
+        )
 
         if not engine_dir.exists():
             return EngineProbeResult(
