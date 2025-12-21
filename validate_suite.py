@@ -275,7 +275,7 @@ def run_comprehensive_validation():
 
     if passed == total:
         logger.info("🎉 Golf Modeling Suite validation: ALL TESTS PASSED!")
-        logger.info("The suite is ready for use!")
+        logger.info("The suite is ready for development use (Beta)!")
         return True
     else:
         logger.error(f"❌ {total - passed} validation(s) failed")
