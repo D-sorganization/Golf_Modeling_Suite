@@ -199,7 +199,7 @@ class TimeStep:
         step_type,
         reward=0.0,
         discount=1.0,
-        observation: typing.Optional[dict[str, typing.Any]] = None,
+        observation: dict[str, typing.Any] | None = None,
     ) -> None:
         self.step_type = step_type
         self.reward = reward
@@ -216,7 +216,7 @@ class TimeStep:
         return self.step_type == 2
 
     def __getitem__(self, key):
-         return getattr(self, key)
+        return getattr(self, key)
 
 
 class PhysicsEnvWrapper:
@@ -361,7 +361,7 @@ def run_simulation(
                         phys.named.data.qpos[joint] = angle
                     except KeyError:
                         pass
-    
+
     # Initialize for checking or headless run
     initialize_episode(physics)
 
