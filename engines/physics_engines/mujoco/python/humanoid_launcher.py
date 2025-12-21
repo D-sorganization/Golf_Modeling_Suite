@@ -251,6 +251,14 @@ class HumanoidLauncher(QMainWindow):
         settings_layout = QGridLayout()
         settings_layout.setSpacing(10)
 
+        # Polynomial Generator Button (only shown for poly mode)
+        self.btn_poly_generator = QPushButton("📊 Configure Polynomial")
+        self.btn_poly_generator.setStyleSheet(
+            "background-color: #0078d4; color: white; padding: 8px; font-weight: bold;"
+        )
+        self.btn_poly_generator.clicked.connect(self.open_polynomial_generator)
+        # Check initial state later
+
         # Control Mode
         settings_layout.addWidget(QLabel("Control Mode:"), 0, 0)
         self.combo_control = QComboBox()
@@ -274,21 +282,13 @@ class HumanoidLauncher(QMainWindow):
 
         self.combo_control.currentTextChanged.connect(_update_mode_help)
         self.combo_control.setCurrentText(self.config.get("control_mode", "pd"))
-        # Trigger initial update
-        _update_mode_help(self.combo_control.currentText())
-
+        
         settings_layout.addWidget(self.combo_control, 0, 1)
+        settings_layout.addWidget(self.btn_poly_generator, 0, 2)
         settings_layout.addWidget(self.mode_help_label, 1, 1, 1, 2)
 
-        # Polynomial Generator Button (only shown for poly mode)
-        self.btn_poly_generator = QPushButton("📊 Configure Polynomial")
-        self.btn_poly_generator.setStyleSheet(
-            "background-color: #0078d4; color: white; padding: 8px; font-weight: bold;"
-        )
-        self.btn_poly_generator.clicked.connect(self.open_polynomial_generator)
-        # Enable button for poly mode - availability checked when clicked
-        self.btn_poly_generator.setEnabled(self.config.get("control_mode") == "poly")
-        settings_layout.addWidget(self.btn_poly_generator, 0, 2)
+        # Trigger initial update after button exists
+        _update_mode_help(self.combo_control.currentText())
 
         # Live View
         self.chk_live = QCheckBox("Live Interactive View (requires X11/VcXsrv)")
