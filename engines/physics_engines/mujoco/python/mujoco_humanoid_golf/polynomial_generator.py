@@ -129,6 +129,16 @@ class PolynomialGeneratorWidget(QtWidgets.QWidget):
             QLabel {
                 color: #cccccc;
             }
+            QPushButton#fitBtn {
+                background-color: #2e7d32;
+                color: white;
+                font-weight: bold;
+                border: none;
+                padding: 10px;
+            }
+            QPushButton#fitBtn:hover {
+                background-color: #388e3c;
+            }
         """)
 
         # UI Setup
@@ -222,10 +232,7 @@ class PolynomialGeneratorWidget(QtWidgets.QWidget):
 
         self.clear_btn = QtWidgets.QPushButton("Clear Points")
         self.fit_btn = QtWidgets.QPushButton("Fit Polynomial (6th Order)")
-        self.fit_btn.setStyleSheet(
-            "QPushButton { background-color: #2e7d32; color: white; font-weight: bold; border: none; padding: 10px; }"
-            "QPushButton:hover { background-color: #388e3c; }"
-        )
+        self.fit_btn.setObjectName("fitBtn")
 
         action_layout.addWidget(self.clear_btn)
         action_layout.addWidget(self.fit_btn)
@@ -286,17 +293,17 @@ class PolynomialGeneratorWidget(QtWidgets.QWidget):
     def _update_plot(self) -> None:
         """Redraw the plot with current data."""
         self.canvas.axes.clear()
-        self.canvas.axes.set_facecolor('#1e1e1e')
-        self.canvas.figure.patch.set_facecolor('#2b2b2b')
-        self.canvas.axes.grid(True, color='#444444', linestyle='--', linewidth=0.5)
+        self.canvas.axes.set_facecolor("#1e1e1e")
+        self.canvas.figure.patch.set_facecolor("#2b2b2b")
+        self.canvas.axes.grid(True, color="#444444", linestyle="--", linewidth=0.5)
 
-        self.canvas.axes.set_title("Joint Function Generator", color='white')
-        self.canvas.axes.set_xlabel("Time / Input", color='#aaaaaa')
-        self.canvas.axes.set_ylabel("Value", color='#aaaaaa')
+        self.canvas.axes.set_title("Joint Function Generator", color="white")
+        self.canvas.axes.set_xlabel("Time / Input", color="#aaaaaa")
+        self.canvas.axes.set_ylabel("Value", color="#aaaaaa")
 
-        self.canvas.axes.tick_params(colors='#aaaaaa', which='both')
+        self.canvas.axes.tick_params(colors="#aaaaaa", which="both")
         for spine in self.canvas.axes.spines.values():
-            spine.set_edgecolor('#555555')
+            spine.set_edgecolor("#555555")
 
         # Set limits
         self.canvas.axes.set_xlim(self.x_min_spin.value(), self.x_max_spin.value())

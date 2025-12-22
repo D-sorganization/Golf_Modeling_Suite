@@ -58,7 +58,7 @@ class GripModellingTab(QtWidgets.QWidget):
         self.control_layout.addWidget(self.combo_hand)
 
         self.control_layout.addSpacing(10)
-        
+
         # Physics Controls
         self.control_layout.addWidget(QtWidgets.QLabel("<b>Physics Controls</b>"))
         self.chk_kinematic = QtWidgets.QCheckBox("Kinematic Mode (Pose Only)")
@@ -150,7 +150,7 @@ class GripModellingTab(QtWidgets.QWidget):
 
         # Rebuild controls
         self.rebuild_joint_controls()
-        
+
         # Apply initial kinematic state
         self._on_kinematic_toggled(self.chk_kinematic.isChecked())
 
@@ -191,11 +191,16 @@ class GripModellingTab(QtWidgets.QWidget):
                 # Strip <mujoco> tags to allow embedding
                 content = re.sub(r"<mujoco[^>]*>", "", content)
                 content = content.replace("</mujoco>", "")
-                
+
                 # Strip duplicates of default classes if merging multiple files
                 # This treats the symptom of "repeated default class name"
                 if is_both:
-                    content = re.sub(r'<default class="[^"]+">.*?</default>', "", content, flags=re.DOTALL)
+                    content = re.sub(
+                        r'<default class="[^"]+">.*?</default>',
+                        "",
+                        content,
+                        flags=re.DOTALL,
+                    )
 
                 return content
             except Exception:
@@ -214,11 +219,12 @@ class GripModellingTab(QtWidgets.QWidget):
         else:
             if 'file="right_hand.xml"' in xml_content:
                 # Determine body name pattern based on file type
-                # For Allegro (wonik_allegro), root link might be 'right_hand' or similar
+                # For Allegro (wonik_allegro), root link might be 'right_hand'
+                # or similar
                 # For Shadow, it is 'rh_forearm'
                 target_body = "rh_forearm"
                 if "allegro" in str(folder_path):
-                     target_body = "right_hand" # Guessing root name for Allegro
+                    target_body = "right_hand"  # Guessing root name for Allegro
 
                 hand_content = get_hand_content("right_hand.xml", target_body)
                 xml_content = re.sub(
@@ -229,7 +235,7 @@ class GripModellingTab(QtWidgets.QWidget):
             elif 'file="left_hand.xml"' in xml_content:
                 target_body = "lh_forearm"
                 if "allegro" in str(folder_path):
-                     target_body = "left_hand"
+                    target_body = "left_hand"
 
                 hand_content = get_hand_content("left_hand.xml", target_body)
                 xml_content = re.sub(
@@ -237,23 +243,29 @@ class GripModellingTab(QtWidgets.QWidget):
                     hand_content,
                     xml_content,
                 )
-        
+
         # Ensure offscreen framebuffer is large enough for renderer
         # Check if <visual> exists
         if "<visual>" in xml_content:
             if "<global" in xml_content:
                 # Update existing global
-                 xml_content = re.sub(
-                    r'<global([^>]*)>',
+                xml_content = re.sub(
+                    r"<global([^>]*)>",
                     r'<global\1 offwidth="1920" offheight="1080">',
-                    xml_content
+                    xml_content,
                 )
             else:
                 # Insert global into visual
-                xml_content = xml_content.replace("<visual>", '<visual>\n    <global offwidth="1920" offheight="1080"/>')
-        else:
+                xml_content = xml_content.replace(
+                    "<visual>",
+                    '<visual>\n    <global offwidth="1920" offheight="1080"/>',
+                )
             # Add visual section
-            xml_content = xml_content.replace("</mujoco>", '<visual>\n  <global offwidth="1920" offheight="1080"/>\n</visual>\n</mujoco>')
+            xml_content = xml_content.replace(
+                "</mujoco>",
+                '<visual>\n  <global offwidth="1920" offheight="1080"/>\n'
+                "</visual>\n</mujoco>",
+            )
 
         # 2. Inject Cylinder Object (only if not present)
         # Check for both the object name and unique geometry characteristics
@@ -369,9 +381,7 @@ class GripModellingTab(QtWidgets.QWidget):
         for i in range(model.njnt):
             self._add_joint_control_row(i, model)
 
-    def _add_joint_control_row(
-        self, i: int, model: mujoco.MjModel
-    ) -> None:  # noqa: PLR0915
+    def _add_joint_control_row(self, i: int, model: mujoco.MjModel) -> None:  # noqa: PLR0915
         """Create a control row for a single joint."""
         if self.sim_widget.data is None:
             return

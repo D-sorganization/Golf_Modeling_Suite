@@ -118,25 +118,33 @@ class GolfLauncher(QtWidgets.QMainWindow):
         # 1. 'robotics_env:latest' image is built
         # 2. X Server (VcXsrv) is running on host at :0
         # 3. Host Repositories are mounted to /workspace
-        
+
         # We need to map the repository root from host to /workspace in container
         repo_root_host = self.repos_dir.resolve()
-        
+
         docker_cmd = [
-            "docker", "run", "--rm",
+            "docker",
+            "run",
+            "--rm",
             "-it",
             # Port mapping for Meshcat (Standard Port 7000)
-            "-p", "7000:7000",
+            "-p",
+            "7000:7000",
             # Environment variables
-            "-e", "DISPLAY=host.docker.internal:0",
-            "-e", "QT_X11_NO_MITSHM=1",
-            "-e", "MESHCAT_HOST=0.0.0.0",  # Bind to all interfaces in container
+            "-e",
+            "DISPLAY=host.docker.internal:0",
+            "-e",
+            "QT_X11_NO_MITSHM=1",
+            "-e",
+            "MESHCAT_HOST=0.0.0.0",  # Bind to all interfaces in container
             # Mount workspace
-            "-v", f"{repo_root_host}:/workspace",
+            "-v",
+            f"{repo_root_host}:/workspace",
             # Image
             "robotics_env:latest",
             # Command inside container
-            "python", "Golf_Modeling_Suite/engines/physics_engines/drake/python/src/golf_gui.py"
+            "python",
+            "Golf_Modeling_Suite/engines/physics_engines/drake/python/src/golf_gui.py",
         ]
 
         logger.info(f"Docker command: {' '.join(str(c) for c in docker_cmd)}")

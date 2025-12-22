@@ -257,13 +257,14 @@ class HumanoidLauncher(QMainWindow):
             "background-color: #0078d4; color: white; padding: 8px; font-weight: bold;"
         )
         self.btn_poly_generator.clicked.connect(self.open_polynomial_generator)
+        # Helper for control mode help updates
         # Check initial state later
 
         # Control Mode
         settings_layout.addWidget(QLabel("Control Mode:"), 0, 0)
         self.combo_control = QComboBox()
         self.combo_control.addItems(["pd", "lqr", "poly"])
-        
+
         # Help text for control mode
         self.mode_help_label = QLabel()
         self.mode_help_label.setStyleSheet(
@@ -271,24 +272,16 @@ class HumanoidLauncher(QMainWindow):
         )
         self.mode_help_label.setWordWrap(True)
 
-        def _update_mode_help(text):
-            descriptions = {
-                "pd": "Proportional-Derivative control (Target Pose tracking).",
-                "lqr": "Linear Quadratic Regulator (Optimal control).",
-                "poly": "Polynomial trajectory tracking (Time-varying torque).",
-            }
-            self.mode_help_label.setText(descriptions.get(text, ""))
-            self.on_control_mode_changed(text)
-
-        self.combo_control.currentTextChanged.connect(_update_mode_help)
+        # Connect to updated help text method
+        self.combo_control.currentTextChanged.connect(self.on_control_mode_changed)
         self.combo_control.setCurrentText(self.config.get("control_mode", "pd"))
-        
+
         settings_layout.addWidget(self.combo_control, 0, 1)
         settings_layout.addWidget(self.btn_poly_generator, 0, 2)
         settings_layout.addWidget(self.mode_help_label, 1, 1, 1, 2)
 
         # Trigger initial update after button exists
-        _update_mode_help(self.combo_control.currentText())
+        self.on_control_mode_changed(self.combo_control.currentText())
 
         # Live View
         self.chk_live = QCheckBox("Live Interactive View (requires X11/VcXsrv)")
@@ -572,10 +565,16 @@ class HumanoidLauncher(QMainWindow):
             self.set_btn_color(btn, new_rgba)
             self.save_config()
 
-    def on_control_mode_changed(self, mode):
-        """Handle control mode change to enable/disable polynomial generator button."""
-        is_poly_mode = mode == "poly"
-        self.btn_poly_generator.setEnabled(is_poly_mode)
+    def on_control_mode_changed(self, mode: str) -> None:
+        """Update the help text and enable/disable polynomial generator button
+        based on the selected control mode."""
+        descriptions = {
+            "pd": "Proportional-Derivative control (Target Pose tracking).",
+            "lqr": "Linear Quadratic Regulator (Optimal control).",
+            "poly": "Polynomial trajectory tracking (Time-varying torque).",
+        }
+        self.mode_help_label.setText(descriptions.get(mode, ""))
+        self.btn_poly_generator.setEnabled(mode == "poly")
 
     def open_polynomial_generator(self):
         """Open polynomial generator dialog."""
@@ -586,6 +585,7 @@ class HumanoidLauncher(QMainWindow):
             # This allows the polynomial generator (which uses only matplotlib/numpy)
             # to work even if MuJoCo DLLs are missing or incompatible locally.
             import importlib.util
+            import uuid
 
             target_file = (
                 self.current_dir / "mujoco_humanoid_golf" / "polynomial_generator.py"
@@ -593,14 +593,16 @@ class HumanoidLauncher(QMainWindow):
             if not target_file.exists():
                 raise FileNotFoundError(f"File not found: {target_file}")
 
-            spec = importlib.util.spec_from_file_location(
-                "polynomial_generator_widget", target_file
-            )
+            # Use a unique module name to avoid conflicts if re-imported
+            # or if colliding with existing modules
+            unique_name = f"polynomial_generator_widget_{uuid.uuid4().hex}"
+
+            spec = importlib.util.spec_from_file_location(unique_name, target_file)
             if spec is None or spec.loader is None:
                 raise ImportError(f"Could not load spec from {target_file}")
 
             module = importlib.util.module_from_spec(spec)
-            sys.modules["polynomial_generator_widget"] = module
+            sys.modules[unique_name] = module
             spec.loader.exec_module(module)
 
             PolynomialGeneratorWidget = module.PolynomialGeneratorWidget
