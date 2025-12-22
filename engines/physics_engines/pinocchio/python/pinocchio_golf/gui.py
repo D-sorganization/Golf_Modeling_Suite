@@ -595,7 +595,7 @@ class PinocchioGUI(QtWidgets.QMainWindow):
                         continue
                     # Triad
                     self.viewer[f"overlays/frames/{frame.name}"].set_object(
-                        g.Triad(scale=0.1)
+                        g.triad(scale=0.1)
                     )
             self._update_viewer()
 
