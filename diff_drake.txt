@@ -1,0 +1,31 @@
+diff --git a/engines/physics_engines/drake/python/src/drake_gui_app.py b/engines/physics_engines/drake/python/src/drake_gui_app.py
+index 7a23024..69a11c3 100644
+--- a/engines/physics_engines/drake/python/src/drake_gui_app.py
++++ b/engines/physics_engines/drake/python/src/drake_gui_app.py
+@@ -189,7 +189,7 @@ class DrakeSimApp(QtWidgets.QMainWindow):  # type: ignore[misc, no-any-unimporte
+         if self.simulator:
+             self.simulator.Initialize()
+ 
+-        diagram.ForcedPublish(context)
++        diagram.Publish(context)
+ 
+         # Sync generic UI controls if needed
+         self._sync_kinematic_sliders()
+@@ -413,7 +413,7 @@ class DrakeSimApp(QtWidgets.QMainWindow):  # type: ignore[misc, no-any-unimporte
+             elif isinstance(joint, PrismaticJoint):
+                 joint.set_translation(plant_context, angle)
+ 
+-        diagram.ForcedPublish(context)
++        diagram.Publish(context)
+ 
+         # Update overlays
+         if self.visualizer:
+@@ -556,7 +556,7 @@ class DrakeSimApp(QtWidgets.QMainWindow):  # type: ignore[misc, no-any-unimporte
+ 
+         # Refresh kinematics to update frame positions immediately
+         if self.operating_mode == "kinematic":
+-            diagram.ForcedPublish(context)
++            diagram.Publish(context)
+             if self.visualizer:
+                 self.visualizer.update_frame_transforms(context)
+                 self.visualizer.update_com_transforms(context)

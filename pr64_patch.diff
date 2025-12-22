@@ -1,0 +1,223 @@
+From 987771daa6283bb3f45ede673268b7d4eb746b1e Mon Sep 17 00:00:00 2001
+From: "google-labs-jules[bot]"
+ <161369871+google-labs-jules[bot]@users.noreply.github.com>
+Date: Mon, 22 Dec 2025 01:56:14 +0000
+Subject: [PATCH] fix(launcher): resolve Drake connection and Pinocchio URDF
+ issues
+
+- Updated Drake entry point to run as a module, fixing relative import errors.
+- Fixed Pinocchio URDF loader by switching to `pinocchio.visualize.MeshcatVisualizer`.
+- Added diagnostic logging to Drake and Pinocchio GUIs.
+---
+ .../drake/python/src/golf_gui.py              | 39 ++++++++++
+ .../pinocchio/python/pinocchio_golf/gui.py    | 73 ++++++++++++++-----
+ launch_golf_suite.py                          |  3 +-
+ 3 files changed, 95 insertions(+), 20 deletions(-)
+
+diff --git a/engines/physics_engines/drake/python/src/golf_gui.py b/engines/physics_engines/drake/python/src/golf_gui.py
+index e69de29..bc6a346 100644
+--- a/engines/physics_engines/drake/python/src/golf_gui.py
++++ b/engines/physics_engines/drake/python/src/golf_gui.py
+@@ -0,0 +1,39 @@
++"""Entry point for Drake Golf GUI."""
++import sys
++import logging
++from pathlib import Path
++
++# Configure logging
++logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
++logger = logging.getLogger("golf_gui")
++
++if __name__ == "__main__":
++    logger.info("Starting Drake Golf GUI entry point...")
++    logger.info(f"Python executable: {sys.executable}")
++    logger.info(f"Python version: {sys.version}")
++    logger.info(f"Working directory: {Path.cwd()}")
++
++    try:
++        if __package__:
++            logger.info(f"Running as package: {__package__}")
++            from . import drake_gui_app
++        else:
++            # Fallback for script execution, though likely to fail due to relative imports in drake_gui_app
++            logger.warning("Running as script. Relative imports in drake_gui_app may fail.")
++            logger.info("Suggest running with: python -m src.golf_gui")
++
++            current_dir = Path(__file__).parent
++            if str(current_dir) not in sys.path:
++                sys.path.insert(0, str(current_dir))
++
++            import drake_gui_app
++
++        drake_gui_app.main()
++
++    except ImportError as e:
++        logger.error(f"Import Error: {e}")
++        logger.error("Failed to load application modules.")
++        sys.exit(1)
++    except Exception as e:
++        logger.error(f"Unexpected error: {e}")
++        sys.exit(1)
+diff --git a/engines/physics_engines/pinocchio/python/pinocchio_golf/gui.py b/engines/physics_engines/pinocchio/python/pinocchio_golf/gui.py
+index 7befd7d..78b786b 100644
+--- a/engines/physics_engines/pinocchio/python/pinocchio_golf/gui.py
++++ b/engines/physics_engines/pinocchio/python/pinocchio_golf/gui.py
+@@ -9,6 +9,7 @@
+ import meshcat.visualizer as viz
+ import numpy as np  # noqa: TID253
+ import pinocchio as pin
++from pinocchio.visualize import MeshcatVisualizer
+ from PyQt6 import QtCore, QtWidgets
+ 
+ # Set up logging
+@@ -86,11 +87,16 @@ def __init__(self) -> None:
+         self.is_running = False
+         self.dt = DT_DEFAULT
+ 
++        # Diagnostics
++        try:
++            logger.info(f"Pinocchio Version: {pin.__version__}")
++        except AttributeError:
++            logger.info("Pinocchio version unknown")
++        logger.info(f"Python Executable: {sys.executable}")
++
+         # Meshcat viewer
+-        # Do not open browser automatically; user can open Meshcat URL manually if
+-        # desired.
+-        self.viewer = viz.Visualizer()  # Let it find port
+-        logger.info("Meshcat URL: %s", self.viewer.url)
++        self.viz: MeshcatVisualizer | None = None
++        self.viewer = None  # Will be accessed via self.viz.viewer
+ 
+         # Setup UI
+         self._setup_ui()
+@@ -197,7 +203,19 @@ def load_urdf(self, fname: str | None = None) -> None:
+             return
+ 
+         try:
++            self.log_write(f"Attempting to load URDF: {fname}")
++
++            # Load Model and Geometries
+             self.model = pin.buildModelFromUrdf(fname)
++
++            try:
++                self.collision_model = pin.buildGeomFromUrdf(self.model, fname, pin.GeometryType.COLLISION)
++                self.visual_model = pin.buildGeomFromUrdf(self.model, fname, pin.GeometryType.VISUAL)
++            except Exception as e:
++                self.log_write(f"Warning: Failed to load geometries: {e}")
++                self.collision_model = None
++                self.visual_model = None
++
+             if self.model is None:
+                 self.log_write("Error loading URDF: Failed to build model")
+                 return
+@@ -206,11 +224,27 @@ def load_urdf(self, fname: str | None = None) -> None:
+             self.q = pin.neutral(self.model)
+             self.v = np.zeros(self.model.nv)
+ 
+-            # Load visual into Meshcat
+-            # Careful: meshcat URDF loader is separate from Pinocchio
+-            self.viewer["robot"].delete()
+-            self.viewer["overlays"].delete()
+-            self.viewer["robot"].set_object(g.URDFLoader().load(fname))
++            # Initialize MeshcatVisualizer
++            try:
++                if self.collision_model and self.visual_model:
++                    self.viz = MeshcatVisualizer(self.model, self.collision_model, self.visual_model)
++                    self.viz.initViewer(open=False)
++                    self.viz.loadViewerModel()
++                    self.viewer = self.viz.viewer
++
++                    url = self.viewer.url
++                    self.log_write(f"Meshcat URL: {url}")
++                    logger.info(f"Meshcat URL: {url}")
++                else:
++                    self.log_write("Skipping visualizer init due to missing geometries")
++                    self.viewer = None
++                    self.viz = None
++
++            except Exception as e:
++                self.log_write(f"Visualizer Error: {e}")
++                logger.error(f"Failed to initialize MeshcatVisualizer: {e}")
++                self.viewer = None
++                self.viz = None
+ 
+             self.log_write(f"Loaded URDF: {fname}")
+             self.log_write(f"NQ: {self.model.nq}, NV: {self.model.nv}")
+@@ -233,6 +267,7 @@ def load_urdf(self, fname: str | None = None) -> None:
+ 
+         except (ValueError, RuntimeError) as e:
+             self.log_write(f"Error loading URDF: {e}")
++            logger.exception("Pinocchio Error")
+         except Exception as e:
+             # Catch-all for unexpected errors
+             self.log_write(f"Unexpected error loading URDF: {e}")
+@@ -415,14 +450,8 @@ def _update_viewer(self) -> None:
+             return
+ 
+         # Update Visuals
+-        q_dict = {}
+-        for i in range(1, self.model.njoints):
+-            j = self.model.joints[i]
+-            if j.nq == 1:
+-                # Map to joint name, not q index
+-                q_dict[self.model.names[i]] = self.q[j.idx_q]
+-
+-        self.viewer["robot"].set_joint_positions(q_dict)
++        if self.viz:
++            self.viz.display(self.q)
+ 
+         # Kinematics Logic for frames
+         pin.forwardKinematics(self.model, self.data, self.q)
+@@ -438,7 +467,7 @@ def _update_viewer(self) -> None:
+             self._draw_coms()
+ 
+     def _draw_frames(self) -> None:
+-        if self.model is None or self.data is None:
++        if self.model is None or self.data is None or self.viewer is None:
+             return
+ 
+         # Visualize joint frames (oMf)
+@@ -462,7 +491,7 @@ def _draw_frames(self) -> None:
+             )
+ 
+     def _draw_coms(self) -> None:
+-        if self.model is None or self.data is None:
++        if self.model is None or self.data is None or self.viewer is None:
+             return
+ 
+         # Draw Center of Mass for each link
+@@ -481,6 +510,9 @@ def _draw_coms(self) -> None:
+ 
+     # --- Vis Helpers ---
+     def _toggle_frames(self, checked: bool) -> None:  # noqa: FBT001
++        if self.viewer is None:
++            return
++
+         if not checked:
+             self.viewer["overlays/frames"].delete()
+         else:
+@@ -496,6 +528,9 @@ def _toggle_frames(self, checked: bool) -> None:  # noqa: FBT001
+             self._update_viewer()
+ 
+     def _toggle_coms(self, checked: bool) -> None:  # noqa: FBT001
++        if self.viewer is None:
++            return
++
+         if not checked:
+             self.viewer["overlays/coms"].delete()
+         else:
+diff --git a/launch_golf_suite.py b/launch_golf_suite.py
+index 51396ce..9f07504 100644
+--- a/launch_golf_suite.py
++++ b/launch_golf_suite.py
+@@ -140,7 +140,8 @@ def launch_drake():
+         work_dir = _validate_and_get_workdir(drake_script)
+ 
+         logger.info("Launching Drake engine...")
+-        subprocess.run([sys.executable, str(drake_script)], cwd=str(work_dir))
++        # Run as module to support relative imports within the src package
++        subprocess.run([sys.executable, "-m", "src.golf_gui"], cwd=str(work_dir))
+     except Exception as e:
+         logger.error(f"Error launching Drake: {e}")
+         return False
