@@ -3545,6 +3545,18 @@ class AdvancedGolfAnalysisWindow(QtWidgets.QMainWindow, AdvancedGuiMethodsMixin)
                 spin.setValue(val)
                 spin.blockSignals(False)
 
+    def on_open_meshcat(self) -> None:
+        """Open the Meshcat visualizer in the default browser."""
+        if (
+            hasattr(self.sim_widget, "meshcat_adapter")
+            and self.sim_widget.meshcat_adapter
+        ):
+            self.sim_widget.meshcat_adapter.open_browser()
+        else:
+            QtWidgets.QMessageBox.warning(
+                self, "Meshcat", "Meshcat adapter not initialized or not available."
+            )
+
     def _on_joint_spin_changed(
         self,
         name: str,
