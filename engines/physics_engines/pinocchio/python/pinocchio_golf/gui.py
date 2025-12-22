@@ -532,9 +532,6 @@ class PinocchioGUI(QtWidgets.QMainWindow):
         # self.data.f will contain spatial forces at each joint
         pin.rnea(self.model, self.data, self.q, v, a)
 
-        # self.data.f will contain spatial forces at each joint
-        pin.rnea(self.model, self.data, self.q, v, a)
-
         force_scale = self.spin_force_scale.value()
         torque_scale = self.spin_torque_scale.value()
 

@@ -20,10 +20,9 @@ class MuJoCoMeshcatAdapter:
     Adapts MuJoCo model/data to Meshcat for web-based visualization.
     """
 
-    def __init__(
-        self, model: mujoco.MjModel, host: str = "0.0.0.0", port: int | None = None
-    ):
+    def __init__(self, model: mujoco.MjModel | None = None):
         if meshcat is None:
+
             logger.warning("Meshcat not installed. Visualization disabled.")
             self.vis = None
             return
@@ -92,7 +91,7 @@ class MuJoCoMeshcatAdapter:
                 shape = g.Cylinder(height=size[1] * 2, radius=size[0])
             elif gtype == mujoco.mjtGeom.mjGEOM_BOX:
                 # size is half-extents
-                shape = g.Box(item_size=size * 2)
+                shape = g.Box(lengths=size * 2)
             elif gtype == mujoco.mjtGeom.mjGEOM_PLANE:
                 # Infinite plane - approximate with large box/plane
                 shape = g.Box([20, 20, 0.01])

@@ -217,7 +217,7 @@ class GripModellingTab(QtWidgets.QWidget):
 
         extracted_bodies = []
 
-        def process_and_split(filename, body_pattern):
+        def extract_worldbody_content(filename, body_pattern):
             content = get_hand_content(filename, body_pattern)
             # Extract worldbody content
             bodies_match = re.search(
@@ -232,8 +232,8 @@ class GripModellingTab(QtWidgets.QWidget):
             return content
 
         if is_both:
-            right_defs = process_and_split("right_hand.xml", "rh_forearm")
-            left_defs = process_and_split("left_hand.xml", "lh_forearm")
+            right_defs = extract_worldbody_content("right_hand.xml", "rh_forearm")
+            left_defs = extract_worldbody_content("left_hand.xml", "lh_forearm")
 
             xml_content = re.sub(
                 r'<include[^>]*file="right_hand.xml"[^>]*/>', right_defs, xml_content
@@ -247,7 +247,7 @@ class GripModellingTab(QtWidgets.QWidget):
                 if "allegro" in str(folder_path).lower():
                     target_body = "right_hand"
 
-                defs = process_and_split("right_hand.xml", target_body)
+                defs = extract_worldbody_content("right_hand.xml", target_body)
                 xml_content = re.sub(
                     r'<include[^>]*file="right_hand.xml"[^>]*/>',
                     defs,
@@ -258,7 +258,7 @@ class GripModellingTab(QtWidgets.QWidget):
                 if "allegro" in str(folder_path):
                     target_body = "left_hand"
 
-                defs = process_and_split("left_hand.xml", target_body)
+                defs = extract_worldbody_content("left_hand.xml", target_body)
                 xml_content = re.sub(
                     r'<include[^>]*file="left_hand.xml"[^>]*/>',
                     defs,
