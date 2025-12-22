@@ -23,7 +23,6 @@ class MuJoCoMeshcatAdapter:
 
     def __init__(self, model: mujoco.MjModel | None = None):
         if meshcat is None:
-
             logger.warning("Meshcat not installed. Visualization disabled.")
             self.vis = None
             return
@@ -65,14 +64,15 @@ class MuJoCoMeshcatAdapter:
         if self.vis is None or self.model is None:
             return
 
+        model = self.model
         self.vis["visuals"].delete()
 
         # Iterate over all geometries
-        for i in range(self.model.ngeom):
+        for i in range(model.ngeom):
             # geom properties
-            gtype = self.model.geom_type[i]
-            size = self.model.geom_size[i]
-            rgba = self.model.geom_rgba[i]
+            gtype = model.geom_type[i]
+            size = model.geom_size[i]
+            rgba = model.geom_rgba[i]
 
             # Material/Color
             material = g.MeshPhongMaterial(
@@ -99,13 +99,13 @@ class MuJoCoMeshcatAdapter:
             elif gtype == mujoco.mjtGeom.mjGEOM_MESH:
                 # Loading meshes is complex (need to get vertices from model.mesh_*)
                 # For now, approximate with Box or Sphere based on rbound
-                shape = g.Sphere(radius=self.model.geom_rbound[i])
+                shape = g.Sphere(radius=model.geom_rbound[i])
             else:
                 # Fallback
                 shape = g.Sphere(radius=0.1)
 
             if shape:
-                name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, i)
+                name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_GEOM, i)
                 if not name:
                     name = f"geom_{i}"
 
@@ -140,9 +140,11 @@ class MuJoCoMeshcatAdapter:
         if self.vis is None or data is None or self.model is None:
             return
 
+        model = self.model
+
         # Update Geoms
-        for i in range(self.model.ngeom):
-            name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, i)
+        for i in range(model.ngeom):
+            name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_GEOM, i)
             if not name:
                 name = f"geom_{i}"
 
@@ -170,6 +172,8 @@ class MuJoCoMeshcatAdapter:
         if self.vis is None or self.model is None:
             return
 
+        model = self.model
+
         # Clear previous vectors if not showing?
         # Meshcat efficiently updates if we overwrite the path.
         # But if we turn them off, we explicitly delete.
@@ -193,14 +197,16 @@ class MuJoCoMeshcatAdapter:
         # However, `data.cfrc_int` contains interaction forces at bodies.
 
         # Iterate over bodies (skipping world 0)
-        for i in range(1, self.model.nbody):
-            body_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_BODY, i)
+        for i in range(1, model.nbody):
+            body_name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_BODY, i)
             if not body_name:
                 body_name = f"body_{i}"
 
             # cfrc_int is (6,) vector: [torque(3), force(3)] at body frame/COM?
             # documentation: "interaction force/torque exerted by parent on this body"
-            wrench = data.cfrc_int[i]
+            if data.cfrc_int is None:
+                continue
+            wrench = data.cfrc_int[i]  # type: ignore[index]
             f = wrench[3:]
             t = wrench[:3]
 

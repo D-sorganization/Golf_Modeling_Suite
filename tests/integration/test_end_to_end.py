@@ -34,6 +34,7 @@ class TestLauncherIntegration:
 
         # Prepare environment with offscreen platform for headless testing
         import os
+
         env = os.environ.copy()
         env["QT_QPA_PLATFORM"] = "offscreen"
 
