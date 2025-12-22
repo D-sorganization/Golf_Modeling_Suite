@@ -203,7 +203,7 @@ class PolynomialGeneratorWidget(QtWidgets.QWidget):
         self.generate_eq_btn = QtWidgets.QPushButton("Generate from Equation")
         self.generate_eq_btn.setEnabled(False)
         input_layout.addWidget(self.generate_eq_btn)
-        
+
         input_layout.addSpacing(5)
         input_layout.addWidget(QtWidgets.QLabel("Interactive Mode:"))
 
