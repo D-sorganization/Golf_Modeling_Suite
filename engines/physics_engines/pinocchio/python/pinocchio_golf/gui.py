@@ -1,7 +1,6 @@
 """Pinocchio GUI Wrapper (PyQt6 + meshcat)."""
 
 import logging
-import os
 import sys
 import types
 from pathlib import Path
@@ -101,8 +100,9 @@ class PinocchioGUI(QtWidgets.QMainWindow):
         self.viewer: viz.Visualizer | None = None
         try:
             # Check standard env var or default to all interfaces for Docker
-            host = os.environ.get("MESHCAT_HOST", "0.0.0.0")
-            self.viewer = viz.Visualizer(host=host)  # Listen on all interfaces
+            # Note: meshcat-python (depending on version) might bind 127.0.0.1 or 0.0.0.0.
+            # We remove the invalid 'host' arg to fix the crash.
+            self.viewer = viz.Visualizer()
 
             # Get the actual port (in case it picked a random one, though usually 7000)
             url = self.viewer.url() if callable(self.viewer.url) else self.viewer.url
