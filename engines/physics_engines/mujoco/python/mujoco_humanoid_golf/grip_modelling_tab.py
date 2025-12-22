@@ -192,15 +192,23 @@ class GripModellingTab(QtWidgets.QWidget):
                 content = re.sub(r"<mujoco[^>]*>", "", content)
                 content = content.replace("</mujoco>", "")
 
-                # Strip duplicates of default classes if merging multiple files
-                # This treats the symptom of "repeated default class name"
+                # When merging both hands, prefix default class names to avoid
+                # collisions
                 if is_both:
-                    content = re.sub(
-                        r'<default class="[^"]+">.*?</default>',
-                        "",
-                        content,
-                        flags=re.DOTALL,
-                    )
+                    hand_prefix = "right" if "right" in filename.lower() else "left"
+                    # Find all default class names
+                    class_names = re.findall(r'<default class="([^"]+)">', content)
+                    for class_name in set(class_names):
+                        new_name = f"{hand_prefix}_{class_name}"
+                        # Update definition
+                        content = content.replace(
+                            f'class="{class_name}"', f'class="{new_name}"'
+                        )
+                        # We don't need to update references inside the hand file
+                        # because they are typically local to the <default> block
+                        # or used in geoms/joints within the same subtree.
+                        # However, to be safe, we replace all class="..." strings
+                        # (this is simple but effective for these hand models).
 
                 return content
             except Exception:
@@ -223,8 +231,8 @@ class GripModellingTab(QtWidgets.QWidget):
                 # or similar
                 # For Shadow, it is 'rh_forearm'
                 target_body = "rh_forearm"
-                if "allegro" in str(folder_path):
-                    target_body = "right_hand"  # Guessing root name for Allegro
+                if "allegro" in str(folder_path).lower():
+                    target_body = "right_hand"
 
                 hand_content = get_hand_content("right_hand.xml", target_body)
                 xml_content = re.sub(
@@ -245,7 +253,7 @@ class GripModellingTab(QtWidgets.QWidget):
                 )
 
         # Ensure offscreen framebuffer is large enough for renderer
-        # Check if <visual> exists
+        offscreen_global = '<global offwidth="1920" offheight="1080"/>'
         if "<visual>" in xml_content:
             if "<global" in xml_content:
                 # Update existing global
@@ -258,13 +266,13 @@ class GripModellingTab(QtWidgets.QWidget):
                 # Insert global into visual
                 xml_content = xml_content.replace(
                     "<visual>",
-                    '<visual>\n    <global offwidth="1920" offheight="1080"/>',
+                    f"<visual>\n    {offscreen_global}",
                 )
-            # Add visual section
+        else:
+            # Add new visual section
             xml_content = xml_content.replace(
                 "</mujoco>",
-                '<visual>\n  <global offwidth="1920" offheight="1080"/>\n'
-                "</visual>\n</mujoco>",
+                f"<visual>\n  {offscreen_global}\n</visual>\n</mujoco>",
             )
 
         # 2. Inject Cylinder Object (only if not present)

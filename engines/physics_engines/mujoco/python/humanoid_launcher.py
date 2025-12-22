@@ -585,7 +585,6 @@ class HumanoidLauncher(QMainWindow):
             # This allows the polynomial generator (which uses only matplotlib/numpy)
             # to work even if MuJoCo DLLs are missing or incompatible locally.
             import importlib.util
-            import uuid
 
             target_file = (
                 self.current_dir / "mujoco_humanoid_golf" / "polynomial_generator.py"
@@ -593,17 +592,19 @@ class HumanoidLauncher(QMainWindow):
             if not target_file.exists():
                 raise FileNotFoundError(f"File not found: {target_file}")
 
-            # Use a unique module name to avoid conflicts if re-imported
-            # or if colliding with existing modules
-            unique_name = f"polynomial_generator_widget_{uuid.uuid4().hex}"
+            # Use a stable module name to allow caching and avoid memory leaks
+            module_name = "polynomial_generator_widget"
 
-            spec = importlib.util.spec_from_file_location(unique_name, target_file)
-            if spec is None or spec.loader is None:
-                raise ImportError(f"Could not load spec from {target_file}")
+            if module_name in sys.modules:
+                module = sys.modules[module_name]
+            else:
+                spec = importlib.util.spec_from_file_location(module_name, target_file)
+                if spec is None or spec.loader is None:
+                    raise ImportError(f"Could not load spec from {target_file}")
 
-            module = importlib.util.module_from_spec(spec)
-            sys.modules[unique_name] = module
-            spec.loader.exec_module(module)
+                module = importlib.util.module_from_spec(spec)
+                sys.modules[module_name] = module
+                spec.loader.exec_module(module)
 
             PolynomialGeneratorWidget = module.PolynomialGeneratorWidget
 
