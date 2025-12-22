@@ -109,9 +109,46 @@ class GolfLauncher(QtWidgets.QMainWindow):
         self._launch_script("MuJoCo", self.mujoco_path, cwd)
 
     def _launch_drake(self) -> None:
-        """Launch the Drake model GUI."""
-        cwd = self.drake_path.parent.parent  # python/
-        self._launch_script("Drake", self.drake_path, cwd)
+        """Launch the Drake model GUI inside Docker container."""
+        logger.info("Launching Drake GUI in Docker...")
+        self.status.setText("Launching Drake (Docker)...")
+
+        # Docker command to run the GUI
+        # Assumes:
+        # 1. 'robotics_env:latest' image is built
+        # 2. X Server (VcXsrv) is running on host at :0
+        # 3. Host Repositories are mounted to /workspace
+        
+        # We need to map the repository root from host to /workspace in container
+        repo_root_host = self.repos_dir.resolve()
+        
+        docker_cmd = [
+            "docker", "run", "--rm",
+            "-it",
+            # Network for X11 communication
+            "--net=host",  
+            # Environment variables
+            "-e", "DISPLAY=host.docker.internal:0",
+            "-e", "QT_X11_NO_MITSHM=1",
+            # Mount workspace
+            "-v", f"{repo_root_host}:/workspace",
+            # Image
+            "robotics_env:latest",
+            # Command inside container
+            "python", "Golf_Modeling_Suite/engines/physics_engines/drake/python/src/golf_gui.py"
+        ]
+
+        logger.info(f"Docker command: {' '.join(str(c) for c in docker_cmd)}")
+
+        try:
+            # We use Popen to run it detached
+            subprocess.Popen(docker_cmd, cwd=str(self.repo_root))
+            self.status.setText("Drake Launched (Docker)")
+        except (OSError, subprocess.SubprocessError) as e:
+            QtWidgets.QMessageBox.critical(
+                self, "Error", f"Failed to launch Drake Docker container:\n{e}"
+            )
+            self.status.setText("Error")
 
     def _launch_pinocchio(self) -> None:
         """Launch the Pinocchio model GUI."""
