@@ -6,6 +6,7 @@ to ensure imports work correctly in both local and CI environments.
 
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock
 
 # Add python/src to PYTHONPATH for test imports
 src_path = Path(__file__).parent.parent / "src"
@@ -16,3 +17,11 @@ if str(src_path) not in sys.path:
 python_root = Path(__file__).parent.parent
 if str(python_root) not in sys.path:
     sys.path.insert(0, str(python_root))
+
+# Mock mujoco to allow importing modules that depend on it, only if it's missing
+try:
+    import mujoco
+except ImportError:
+    sys.modules["mujoco"] = MagicMock()
+    # Also mock viewer if needed
+    sys.modules["mujoco.viewer"] = MagicMock()

@@ -51,11 +51,13 @@ def crba(model: dict, q: np.ndarray) -> np.ndarray:
         msg = f"q must have length {nb}, got {len(q)}"
         raise ValueError(msg)
 
-    # Initialize arrays
-    xup = [np.zeros((6, 6)) for _ in range(nb)]  # Transforms from body to parent
-    s_subspace = [np.zeros(6) for _ in range(nb)]  # Motion subspaces
-    ic_composite = [np.zeros((6, 6)) for _ in range(nb)]  # Composite inertias
-    h_matrix = np.zeros((nb, nb))  # Mass matrix
+    # Initialize lists (no need to pre-allocate numpy arrays since we replace them)
+    # OPTIMIZATION: Avoid allocating initial zero arrays that are immediately discarded
+    xup = [None] * nb
+    s_subspace = [None] * nb
+    ic_composite = [None] * nb
+
+    h_matrix = np.zeros((nb, nb))
 
     # --- Forward pass: compute transforms and motion subspaces ---
     for i in range(nb):
@@ -91,5 +93,6 @@ def crba(model: dict, q: np.ndarray) -> np.ndarray:
             h_matrix[p, i] = h_matrix[i, p]  # Symmetric
             j = p
 
-    # Ensure exact symmetry (numerical precision)
+    # Ensure exact symmetry (numerical precision) - optional but safe
+    # Also cleans up any tiny asymmetries
     return (h_matrix + h_matrix.T) / 2
