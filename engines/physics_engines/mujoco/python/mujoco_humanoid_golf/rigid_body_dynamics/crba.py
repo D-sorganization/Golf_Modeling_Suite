@@ -53,9 +53,9 @@ def crba(model: dict, q: np.ndarray) -> np.ndarray:
 
     # Initialize lists (no need to pre-allocate numpy arrays since we replace them)
     # OPTIMIZATION: Avoid allocating initial zero arrays that are immediately discarded
-    xup = [None] * nb
-    s_subspace = [None] * nb
-    ic_composite = [None] * nb
+    xup: list[np.ndarray | None] = [None] * nb
+    s_subspace: list[np.ndarray | None] = [None] * nb
+    ic_composite: list[np.ndarray | None] = [None] * nb
 
     h_matrix = np.zeros((nb, nb))
 
@@ -85,13 +85,23 @@ def crba(model: dict, q: np.ndarray) -> np.ndarray:
 
             # OPTIMIZATION: Break down to minimize allocation using dot
             # 1. tmp_6x6 = ic_composite[i] @ xup[i]
-            np.dot(ic_composite[i], xup[i], out=tmp_6x6)
+
+            # Mypy checks
+            ic_comp_i = ic_composite[i]
+            xup_i = xup[i]
+            ic_comp_p = ic_composite[p]
+
+            assert ic_comp_i is not None
+            assert xup_i is not None
+            assert ic_comp_p is not None
+
+            np.dot(ic_comp_i, xup_i, out=tmp_6x6)
 
             # 2. Add xup[i].T @ tmp_6x6 to ic_composite[p]
             # Reuse xj_buf as scratch space
-            np.dot(xup[i].T, tmp_6x6, out=xj_buf)
+            np.dot(xup_i.T, tmp_6x6, out=xj_buf)
 
-            ic_composite[p] += xj_buf
+            ic_comp_p += xj_buf
 
     # --- Compute mass matrix ---
     # H(i,j) represents the coupling between joints i and j
@@ -100,10 +110,15 @@ def crba(model: dict, q: np.ndarray) -> np.ndarray:
         # at joint i, affecting the composite body rooted at i
 
         # f_force = ic_composite[i] @ s_subspace[i]
-        np.dot(ic_composite[i], s_subspace[i], out=f_force)
+        ic_comp_i = ic_composite[i]
+        s_sub_i = s_subspace[i]
+        assert ic_comp_i is not None
+        assert s_sub_i is not None
+
+        np.dot(ic_comp_i, s_sub_i, out=f_force)
 
         # h_matrix[i, i] = s_subspace[i] @ f_force  # Diagonal element
-        h_matrix[i, i] = np.dot(s_subspace[i], f_force)
+        h_matrix[i, i] = np.dot(s_sub_i, f_force)
 
         # Propagate force up the tree to compute off-diagonal elements
         j = i
@@ -112,11 +127,15 @@ def crba(model: dict, q: np.ndarray) -> np.ndarray:
 
             # f_force = xup[j].T @ f_force  # Transform force to parent frame
             # OPTIMIZATION: Use scratch buffer
-            np.dot(xup[j].T, f_force, out=scratch_vec)
+            xup_j = xup[j]
+            assert xup_j is not None
+            np.dot(xup_j.T, f_force, out=scratch_vec)
             f_force[:] = scratch_vec
 
             # h_matrix[i, p] = s_subspace[p] @ f_force  # Off-diagonal element
-            val = np.dot(s_subspace[p], f_force)
+            s_sub_p = s_subspace[p]
+            assert s_sub_p is not None
+            val = np.dot(s_sub_p, f_force)
             h_matrix[i, p] = val
             h_matrix[p, i] = val  # Symmetric
             j = p
