@@ -77,7 +77,7 @@ def crba(model: dict, q: np.ndarray) -> np.ndarray:
         s_subspace[i] = s_vec
 
         # xup[i] = xj_transform @ model["Xtree"][i]
-        # OPTIMIZATION: Use dot with out (dot is often faster than matmul for small 2D arrays)
+        # OPTIMIZATION: Use dot with out (faster than matmul for small 2D arrays)
         np.dot(xj_transform, model["Xtree"][i], out=xup[i])
 
     # --- Backward pass: compute composite inertias ---
