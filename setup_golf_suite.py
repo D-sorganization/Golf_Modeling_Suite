@@ -27,6 +27,7 @@ def check_dependencies():
     """Ensure required dependencies are installed."""
     try:
         import PIL  # noqa: F401
+
         return True
     except ImportError:
         logger.error("Pillow is not installed.")
@@ -128,7 +129,7 @@ def create_optimized_icon(source_path: Path, output_path: Path) -> bool:
             output_path,
             format="ICO",
             sizes=[(i.width, i.height) for i in icon_images],
-            append_images=icon_images[1:]
+            append_images=icon_images[1:],
         )
 
         logger.info(f"Generated optimized icon: {output_path}")
@@ -139,7 +140,9 @@ def create_optimized_icon(source_path: Path, output_path: Path) -> bool:
         return False
 
 
-def create_shortcut_windows(target_script: str, working_dir: Path, icon_path: Path, description: str):
+def create_shortcut_windows(
+    target_script: str, working_dir: Path, icon_path: Path, description: str
+):
     """Create a desktop shortcut using PowerShell interaction."""
     desktop_path = Path(os.environ["USERPROFILE"]) / "Desktop"
     shortcut_path = desktop_path / "Golf Modeling Suite.lnk"
@@ -171,7 +174,11 @@ def create_shortcut_windows(target_script: str, working_dir: Path, icon_path: Pa
         logger.info(f"Shortcut created successfully at: {shortcut_path}")
         return True
     except subprocess.CalledProcessError as e:
-        error_msg = e.stderr.decode('utf-8', errors='replace') if e.stderr else "No error output"
+        error_msg = (
+            e.stderr.decode("utf-8", errors="replace")
+            if e.stderr
+            else "No error output"
+        )
         logger.error(f"Failed to create shortcut: {e}")
         logger.error(f"PowerShell Error Output: {error_msg}")
         return False
@@ -195,7 +202,7 @@ def main():
         repo_root / "GolfingRobot.png",
         repo_root / "launchers" / "assets" / "golf_robot_cropped.png",
         repo_root / "launchers" / "assets" / "golf_icon.png",
-        repo_root / "launchers" / "assets" / "golf_robot_icon.png"
+        repo_root / "launchers" / "assets" / "golf_robot_icon.png",
     ]
 
     source_icon = None
@@ -211,38 +218,42 @@ def main():
     # 4. Generate Icon
     if source_icon:
         if not create_optimized_icon(source_icon, output_icon):
-            logger.warning("Icon generation failed. Shortcut will use default python icon or fail.")
+            logger.warning(
+                "Icon generation failed. Shortcut will use default python icon or fail."
+            )
     else:
         logger.error("No suitable source image found for icon generation.")
         # Try to use an existing ICO if generation fails but one exists
         if output_icon.exists():
-             logger.info("Using existing unified icon.")
+            logger.info("Using existing unified icon.")
         else:
-             fallback = repo_root / "launchers" / "assets" / "golf_robot_icon.ico"
-             if fallback.exists():
-                 output_icon = fallback
-                 logger.info("Using fallback existing icon.")
+            fallback = repo_root / "launchers" / "assets" / "golf_robot_icon.ico"
+            if fallback.exists():
+                output_icon = fallback
+                logger.info("Using fallback existing icon.")
 
     # 5. Create Shortcut
     if platform.system() == "Windows":
         # Check if target_script is in repo_root to use relative path
         try:
-             rel_script = target_script.relative_to(repo_root)
-             # Use simple quoted string for filename
-             script_arg = f'{rel_script}'
+            rel_script = target_script.relative_to(repo_root)
+            # Use simple quoted string for filename
+            script_arg = f"{rel_script}"
         except ValueError:
-             # Fallback to absolute if not relative
-             script_arg = str(target_script)
+            # Fallback to absolute if not relative
+            script_arg = str(target_script)
 
         # Simplify - use raw strings for python to avoid escaping issues in f-string
         create_shortcut_windows(
             target_script=script_arg,
             working_dir=repo_root,
             icon_path=output_icon if output_icon.exists() else Path(""),
-            description="Launch the Unified Golf Modeling Suite"
+            description="Launch the Unified Golf Modeling Suite",
         )
     else:
-        logger.warning(f"Shortcut creation for {platform.system()} is not fully implemented in this unified script yet.")
+        logger.warning(
+            f"Shortcut creation for {platform.system()} is not fully implemented in this unified script yet."
+        )
         logger.info("Please verify the existing 'launch_golf_suite.py' works manually.")
 
     logger.info("Setup complete!")
