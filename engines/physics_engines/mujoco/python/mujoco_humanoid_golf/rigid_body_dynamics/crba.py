@@ -61,7 +61,8 @@ def crba(model: dict, q: np.ndarray) -> np.ndarray:
 
     # --- Forward pass: compute transforms and motion subspaces ---
     for i in range(nb):
-        xj_transform, s_subspace[i] = jcalc(model["jtype"][i], q[i])
+        xj_transform, s_vec = jcalc(model["jtype"][i], q[i])
+        s_subspace[i] = s_vec
         xup[i] = xj_transform @ model["Xtree"][i]
 
     # --- Backward pass: compute composite inertias ---
