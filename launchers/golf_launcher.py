@@ -319,13 +319,18 @@ class GolfLauncher(QMainWindow):
     def __init__(self):
         """Initialize the main window."""
         super().__init__()
-        self.setWindowTitle("Golf Modeling Suite")
+        self.setWindowTitle("Golf Modeling Suite - GolfingRobot")
         self.resize(1400, 900)
 
-        # Set Icon
-        icon_path = ASSETS_DIR / "golf_icon.png"
+        # Set Icon - Use the new GolfingRobot icon
+        icon_path = ASSETS_DIR / "golf_robot_icon.png"
         if icon_path.exists():
             self.setWindowIcon(QIcon(str(icon_path)))
+        else:
+            # Fallback to original icon
+            fallback_icon = ASSETS_DIR / "golf_icon.png"
+            if fallback_icon.exists():
+                self.setWindowIcon(QIcon(str(fallback_icon)))
 
         # State
         self.docker_available = False
