@@ -4,6 +4,7 @@ This file sets up the test environment, including PYTHONPATH configuration
 to ensure imports work correctly in both local and CI environments.
 """
 
+import importlib.util
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock
@@ -19,9 +20,7 @@ if str(python_root) not in sys.path:
     sys.path.insert(0, str(python_root))
 
 # Mock mujoco to allow importing modules that depend on it, only if it's missing
-try:
-    import mujoco
-except ImportError:
+if importlib.util.find_spec("mujoco") is None:
     sys.modules["mujoco"] = MagicMock()
     # Also mock viewer if needed
     sys.modules["mujoco.viewer"] = MagicMock()
