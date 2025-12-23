@@ -12,8 +12,10 @@ $pythonBasePath = Join-Path (Join-Path $env:USERPROFILE "AppData\Local\Programs\
 $pythonExePath = Join-Path $pythonBasePath "python.exe"
 $launcherPath = Join-Path (Join-Path $repoRoot "launchers") "golf_launcher.py"
 
-# Use the highest quality GolfingRobot icon (try cropped first, then regular)
+# Use the Windows-optimized GolfingRobot icon for maximum clarity on Windows
 $iconCandidates = @(
+    (Join-Path (Join-Path $repoRoot "launchers\assets") "golf_robot_windows_optimized.ico"),
+    (Join-Path (Join-Path $repoRoot "launchers\assets") "golf_robot_ultra_sharp.ico"),
     (Join-Path (Join-Path $repoRoot "launchers\assets") "golf_robot_cropped_icon.ico"),
     (Join-Path (Join-Path $repoRoot "launchers\assets") "golf_robot_icon.ico"),
     (Join-Path (Join-Path $repoRoot "launchers\assets") "golf_icon.ico")

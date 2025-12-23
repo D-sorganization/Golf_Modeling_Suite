@@ -322,11 +322,13 @@ class GolfLauncher(QMainWindow):
         self.setWindowTitle("Golf Modeling Suite - GolfingRobot")
         self.resize(1400, 900)
 
-        # Set Icon - Use the highest quality GolfingRobot icon
-        # Try cropped version first (best for icons), then high-quality, then original
+        # Set Icon - Use Windows-optimized icon for maximum clarity on Windows
         icon_candidates = [
-            ASSETS_DIR / "golf_robot_cropped_icon.png",
-            ASSETS_DIR / "golf_robot_icon.png",
+            ASSETS_DIR
+            / "golf_robot_windows_optimized.png",  # Windows-optimized (best for Windows)
+            ASSETS_DIR / "golf_robot_ultra_sharp.png",  # Ultra-sharp version
+            ASSETS_DIR / "golf_robot_cropped_icon.png",  # Cropped version
+            ASSETS_DIR / "golf_robot_icon.png",  # High-quality standard
             ASSETS_DIR / "golf_icon.png",  # Original fallback
         ]
 
