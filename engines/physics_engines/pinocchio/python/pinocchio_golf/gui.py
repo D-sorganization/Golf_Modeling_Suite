@@ -132,6 +132,10 @@ class PinocchioGUI(QtWidgets.QMainWindow):
         # Setup UI
         self._setup_ui()
 
+        # Model Management
+        self.available_models: list[dict] = []
+        self._scan_urdf_models()
+
         # Timer
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self._game_loop)
@@ -143,7 +147,37 @@ class PinocchioGUI(QtWidgets.QMainWindow):
         ).resolve()
 
         if default_urdf.exists():
+            # Add default to front of list
+            self.available_models.insert(0, {
+                "name": "Default: Golfer",
+                "path": str(default_urdf)
+            })
             self.load_urdf(str(default_urdf))
+        else:
+            self.available_models.insert(0, {
+                "name": "Select Model...",
+                "path": None
+            })
+
+    def _scan_urdf_models(self) -> None:
+        """Scan shared/urdf for models."""
+        try:
+            # Calculate path to shared directory relative to this file
+            # engines/physics_engines/pinocchio/python/pinocchio_golf/gui.py
+            current_file = Path(__file__)
+            # Up 5 levels: pinocchio_golf -> python -> pinocchio -> physics_engines -> engines -> root
+            project_root = current_file.parents[5]
+            urdf_dir = project_root / "shared" / "urdf"
+
+            if urdf_dir.exists():
+                for urdf_file in urdf_dir.glob("*.urdf"):
+                    name = urdf_file.stem.replace("_", " ").title()
+                    self.available_models.append({
+                        "name": f"URDF: {name}",
+                        "path": str(urdf_file)
+                    })
+        except Exception as e:
+            logger.error(f"Failed to scan URDF models: {e}")
 
     def _setup_ui(self) -> None:
         central = QtWidgets.QWidget()
@@ -153,7 +187,14 @@ class PinocchioGUI(QtWidgets.QMainWindow):
         # 1. Top Bar: Load & Mode
         top_layout = QtWidgets.QHBoxLayout()
 
-        self.load_btn = QtWidgets.QPushButton("Load URDF")
+        # Model Selector
+        self.model_combo = QtWidgets.QComboBox()
+        self.model_combo.setMinimumWidth(200)
+        self._populate_model_combo()
+        self.model_combo.currentIndexChanged.connect(self._on_model_combo_changed)
+        top_layout.addWidget(self.model_combo)
+
+        self.load_btn = QtWidgets.QPushButton("Load File...")
         self.load_btn.clicked.connect(lambda: self.load_urdf())
         top_layout.addWidget(self.load_btn)
 
@@ -245,6 +286,21 @@ class PinocchioGUI(QtWidgets.QMainWindow):
 
         self.log = LogPanel()
         layout.addWidget(self.log)
+
+    def _populate_model_combo(self) -> None:
+        """Populate the model dropdown."""
+        self.model_combo.clear()
+        for model in self.available_models:
+            self.model_combo.addItem(model["name"])
+
+    def _on_model_combo_changed(self, index: int) -> None:
+        """Handle model selection."""
+        if index < 0 or index >= len(self.available_models):
+            return
+
+        path = self.available_models[index]["path"]
+        if path:
+            self.load_urdf(path)
 
     def log_write(self, text: str) -> None:
         self.log.append(text)

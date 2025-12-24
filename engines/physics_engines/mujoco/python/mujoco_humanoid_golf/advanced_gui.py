@@ -14,6 +14,7 @@ import csv
 import json
 import logging
 import typing
+from pathlib import Path
 
 import mujoco
 import numpy as np
@@ -245,6 +246,9 @@ class AdvancedGolfAnalysisWindow(QtWidgets.QMainWindow, AdvancedGuiMethodsMixin)
                 },
             )
 
+        # Add shared URDF models
+        self._load_shared_urdfs()
+
         # Create central tab widget
         self.main_tab_widget = QtWidgets.QTabWidget()
         self.setCentralWidget(self.main_tab_widget)
@@ -326,6 +330,40 @@ class AdvancedGolfAnalysisWindow(QtWidgets.QMainWindow, AdvancedGuiMethodsMixin)
 
         # Apply professional styling
         self._apply_styling()
+
+    def _load_shared_urdfs(self) -> None:
+        """Scan shared/urdf directory and add models to config."""
+        # Find shared/urdf relative to this file
+        # This file is in engines/physics_engines/mujoco/python/mujoco_humanoid_golf/
+        # shared is in shared/urdf (from root)
+
+        # Calculate path to shared directory from this file
+        current_file = Path(__file__)
+        # Go up 6 levels to reach root:
+        # mujoco_humanoid_golf -> python -> mujoco -> physics_engines -> engines -> root
+        project_root = current_file.parents[5]
+
+        urdf_dir = project_root / "shared" / "urdf"
+
+        if not urdf_dir.exists():
+            logger.warning(f"Shared URDF directory not found: {urdf_dir}")
+            return
+
+        for urdf_file in urdf_dir.glob("*.urdf"):
+            name = urdf_file.stem.replace("_", " ").title()
+
+            # For URDFs, we might not know actuators in advance.
+            # We'll use a placeholder that will be dynamically updated
+            # or simply "All Joints" if we can't determine them easily before loading.
+            # MuJoCoSimWidget.load_current_model logic handles mismatching actuator counts
+            # by padding/truncating, so we can start with an empty list or generic names.
+
+            self.model_configs.append({
+                "name": f"URDF: {name}",
+                "xml_path": str(urdf_file),
+                "actuators": [], # Will be auto-populated if empty/mismatched
+                "description": f"Loaded from {urdf_file.name}",
+            })
 
         # Auto-load configuration if present (overrides defaults if config found)
         self._load_launch_config()
@@ -426,6 +464,21 @@ class AdvancedGolfAnalysisWindow(QtWidgets.QMainWindow, AdvancedGuiMethodsMixin)
                     "Mechanical linkage system",
                 )
             )
+            idx += 1
+
+        # Add loaded URDF models
+        # Start looking from where we left off (idx)
+        # We need to iterate through model_configs starting from the ones we appended
+        # The base ones are 0-8 (9 items). Linkage mechanisms follow.
+        # Let's count how many base + linkage items we have.
+        base_count = 9
+        linkage_count = len(LINKAGE_CATALOG)
+        start_urdf_idx = base_count + linkage_count
+
+        for i in range(start_urdf_idx, len(self.model_configs)):
+            config = self.model_configs[i]
+            self.model_combo.addItem(config["name"])
+            self.model_descriptions[idx] = config.get("description", "Imported URDF model")
             idx += 1
 
         self.model_combo.currentIndexChanged.connect(self.on_model_changed)
