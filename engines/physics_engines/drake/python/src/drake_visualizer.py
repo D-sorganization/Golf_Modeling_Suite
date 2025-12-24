@@ -2,6 +2,7 @@
 
 import typing
 
+import numpy as np
 from pydrake.all import (
     Context,
     Cylinder,
@@ -12,7 +13,6 @@ from pydrake.all import (
     RotationMatrix,
     Sphere,
 )
-import numpy as np
 
 FRAME_AXIS_LENGTH_M: typing.Final[float] = (
     0.2  # [m] Axle length for frame visualization
@@ -144,9 +144,10 @@ class DrakeVisualizer:
 
         # However, RigidTransform does not support non-uniform scaling (shear).
         # Meshcat's SetTransform usually takes a 4x4 matrix or RigidTransform.
-        # If Drake's python binding for SetTransform supports numpy array, we can use that.
+        # If Drake python binding for SetTransform supports numpy array, use that.
         # Otherwise, we might be limited to uniform scaling if using RigidTransform.
-        # Check PyDrake Meshcat SetTransform signature: (path, X_ParentChild) or (path, matrix)
+        # Check PyDrake Meshcat SetTransform signature:
+        # (path, X_ParentChild) or (path, matrix)
 
         T = np.eye(4)
         T[:3, :3] = rotation_matrix @ np.diag(radii)

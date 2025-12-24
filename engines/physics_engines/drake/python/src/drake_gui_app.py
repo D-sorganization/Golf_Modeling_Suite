@@ -6,11 +6,12 @@ import sys
 import typing
 import webbrowser
 
+import numpy as np
 from pydrake.all import (
-    JacobianWrtVariable,
     BodyIndex,
     Context,
     Diagram,
+    JacobianWrtVariable,
     JointIndex,
     Meshcat,
     MeshcatParams,
@@ -21,7 +22,6 @@ from pydrake.all import (
     Simulator,
 )
 from PyQt6 import QtCore, QtGui, QtWidgets
-import numpy as np
 
 from .drake_golf_model import GolfModelParams, build_golf_swing_diagram
 from .drake_visualizer import DrakeVisualizer
@@ -526,7 +526,7 @@ class DrakeSimApp(QtWidgets.QMainWindow):  # type: ignore[misc, no-any-unimporte
     def _on_visualization_changed(self) -> None:
         """Handle toggling of visualization options."""
         if self.visualizer:
-            if not self.chk_mobility.isChecked() and not self.chk_force_ellip.isChecked():
+            if not (self.chk_mobility.isChecked() or self.chk_force_ellip.isChecked()):
                 self.visualizer.clear_ellipsoids()
             else:
                 self._update_ellipsoids()
@@ -542,9 +542,9 @@ class DrakeSimApp(QtWidgets.QMainWindow):  # type: ignore[misc, no-any-unimporte
         plant_context = self.plant.GetMyContextFromRoot(self.context)
 
         # Use end effector (last body?)
-        # For golf, let's look for a body named "clubhead" or "club_body" or just last body.
+        # For golf, look for a body named "clubhead", "club_body", or just last body.
         # Fallback to last body if specific ones not found.
-        body_names = ["clubhead", "club_body", "wrist", "hand"]
+        body_names = ["clubhead", "club_body", "wrist", "hand", "link_7"]
         target_body = None
         for name in body_names:
             if self.plant.HasBodyNamed(name):
@@ -685,5 +685,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    from pydrake.all import JacobianWrtVariable # Import here for use in method
+    from pydrake.all import JacobianWrtVariable  # Import here for use in method
     main()

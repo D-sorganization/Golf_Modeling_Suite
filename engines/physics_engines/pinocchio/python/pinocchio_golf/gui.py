@@ -8,7 +8,6 @@ from pathlib import Path
 try:
     import meshcat.geometry as g
     import meshcat.visualizer as viz
-    import meshcat.transformations as tf
 except ImportError:
     pass
 
@@ -177,7 +176,8 @@ class PinocchioGUI(QtWidgets.QMainWindow):
 
         # 3. Visuals & Logs
         vis_group = QtWidgets.QGroupBox("Visualization")
-        vis_layout = QtWidgets.QVBoxLayout() # Changed to VBox to accommodate more controls
+        # Changed to VBox to accommodate more controls
+        vis_layout = QtWidgets.QVBoxLayout()
 
         # Checkboxes row
         chk_layout = QtWidgets.QHBoxLayout()
@@ -239,7 +239,8 @@ class PinocchioGUI(QtWidgets.QMainWindow):
         self.lbl_cond = QtWidgets.QLabel("--")
         self.lbl_rank = QtWidgets.QLabel("--")
         matrix_layout.addRow("Jacobian Cond:", self.lbl_cond)
-        matrix_layout.addRow("Mass Matrix Rank:", self.lbl_rank) # Jc rank depends on constraints which might not exist
+        # Jc rank depends on constraints which might not exist
+        matrix_layout.addRow("Mass Matrix Rank:", self.lbl_rank)
         layout.addWidget(matrix_group)
 
         self.log = LogPanel()
@@ -552,9 +553,12 @@ class PinocchioGUI(QtWidgets.QMainWindow):
         joint_id = self.model.njoints - 1
 
         # We need to ensure Jacobians are computed.
-        # pin.computeJointJacobians(self.model, self.data, self.q) # Done in update loop via FK? No.
+        # pin.computeJointJacobians(self.model, self.data, self.q)
+        # Done in update loop via FK? No.
         pin.computeJointJacobians(self.model, self.data, self.q)
-        J = pin.getJointJacobian(self.model, self.data, joint_id, pin.ReferenceFrame.LOCAL)
+        J = pin.getJointJacobian(
+            self.model, self.data, joint_id, pin.ReferenceFrame.LOCAL
+        )
 
         # Condition number
         try:
@@ -582,12 +586,18 @@ class PinocchioGUI(QtWidgets.QMainWindow):
         joint_pos = self.data.oMi[joint_id].translation
 
         # Get Jacobian (Translational only for 3D visualization)
-        J_full = pin.getJointJacobian(self.model, self.data, joint_id, pin.ReferenceFrame.LOCAL_WORLD_ALIGNED)
-        J = J_full[:3, :] # Linear part
+        J_full = pin.getJointJacobian(
+            self.model,
+            self.data,
+            joint_id,
+            pin.ReferenceFrame.LOCAL_WORLD_ALIGNED,
+        )
+        J = J_full[:3, :]  # Linear part
 
         # Mass Matrix
         M = pin.crba(self.model, self.data, self.q)
-        M_sym = np.triu(M) + np.triu(M, 1).T # Ensure symmetric if using older pin version
+        # Ensure symmetric if using older pin version
+        M_sym = np.triu(M) + np.triu(M, 1).T
 
         try:
             Minv = np.linalg.inv(M_sym)
@@ -599,26 +609,37 @@ class PinocchioGUI(QtWidgets.QMainWindow):
             if self.chk_mobility.isChecked():
                 # Radii = sqrt(eigenvalues)
                 radii = np.sqrt(np.maximum(eigvals, 1e-6))
-                self._draw_ellipsoid_meshcat("mobility", joint_pos, eigvecs, radii, 0x00FF00)
+                self._draw_ellipsoid_meshcat(
+                    "mobility", joint_pos, eigvecs, radii, 0x00FF00
+                )
 
             if self.chk_force_ellip.isChecked():
                 # Radii = 1/sqrt(eigenvalues)
                 radii_force = 1.0 / np.sqrt(np.maximum(eigvals, 1e-6))
                 # Clip to reasonable visual size
                 radii_force = np.clip(radii_force, 0.01, 5.0)
-                self._draw_ellipsoid_meshcat("force", joint_pos, eigvecs, radii_force, 0xFF0000)
+                self._draw_ellipsoid_meshcat(
+                    "force", joint_pos, eigvecs, radii_force, 0xFF0000
+                )
 
         except Exception as e:
             logger.error(f"Ellipsoid computation failed: {e}")
 
-    def _draw_ellipsoid_meshcat(self, name: str, pos: np.ndarray, rot: np.ndarray, radii: np.ndarray, color: int) -> None:
+    def _draw_ellipsoid_meshcat(
+        self,
+        name: str,
+        pos: np.ndarray,
+        rot: np.ndarray,
+        radii: np.ndarray,
+        color: int,
+    ) -> None:
         """Draw ellipsoid using Meshcat."""
         path = f"overlays/ellipsoids/{name}"
 
         # Meshcat Sphere scaled
         self.viewer[path].set_object(
             g.Sphere(1.0),
-            g.MeshLambertMaterial(color=color, opacity=0.5, transparent=True)
+            g.MeshLambertMaterial(color=color, opacity=0.5, transparent=True),
         )
 
         # Transform: [Rot * Diag(radii) | Pos]
