@@ -1,6 +1,9 @@
 import numpy as np
-import pytest
-from engines.physics_engines.pinocchio.python.pinocchio_golf.gui import PinocchioRecorder
+
+from engines.physics_engines.pinocchio.python.pinocchio_golf.gui import (
+    PinocchioRecorder,
+)
+
 
 def test_pinocchio_recorder_basic():
     recorder = PinocchioRecorder()
@@ -14,12 +17,7 @@ def test_pinocchio_recorder_basic():
     tau = np.zeros(6)
 
     recorder.record_frame(
-        time=0.1,
-        q=q,
-        v=v,
-        tau=tau,
-        kinetic_energy=10.0,
-        potential_energy=5.0
+        time=0.1, q=q, v=v, tau=tau, kinetic_energy=10.0, potential_energy=5.0
     )
 
     assert recorder.get_num_frames() == 1
@@ -38,6 +36,7 @@ def test_pinocchio_recorder_basic():
     assert len(speeds) == 1
     assert speeds[0] == 0.0
 
+
 def test_pinocchio_recorder_with_club_data():
     recorder = PinocchioRecorder()
     recorder.start_recording()
@@ -48,11 +47,7 @@ def test_pinocchio_recorder_with_club_data():
     club_vel = np.array([0.1, 0.0, 0.0])
 
     recorder.record_frame(
-        time=0.1,
-        q=q,
-        v=v,
-        club_head_position=club_pos,
-        club_head_velocity=club_vel
+        time=0.1, q=q, v=v, club_head_position=club_pos, club_head_velocity=club_vel
     )
 
     times, pos = recorder.get_time_series("club_head_position")
@@ -60,6 +55,7 @@ def test_pinocchio_recorder_with_club_data():
 
     times, speed = recorder.get_time_series("club_head_speed")
     assert speed[0] == 0.1
+
 
 def test_recorder_empty():
     recorder = PinocchioRecorder()

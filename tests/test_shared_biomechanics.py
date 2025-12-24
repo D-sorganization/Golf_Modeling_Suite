@@ -2,9 +2,14 @@
 
 import numpy as np
 import pytest
+
 from shared.python.biomechanics_data import BiomechanicalData
 from shared.python.plotting import GolfSwingPlotter, RecorderInterface
-from shared.python.statistical_analysis import StatisticalAnalyzer, SummaryStatistics, SwingPhase
+from shared.python.statistical_analysis import (
+    StatisticalAnalyzer,
+    SummaryStatistics,
+    SwingPhase,
+)
 
 
 class MockRecorder(RecorderInterface):
@@ -46,7 +51,7 @@ def test_statistical_analyzer() -> None:
         joint_positions=np.zeros((100, 1)),
         joint_velocities=np.zeros((100, 1)),
         joint_torques=np.zeros((100, 1)),
-        club_head_speed=np.abs(data) * 10
+        club_head_speed=np.abs(data) * 10,
     )
 
     # Basic stats
@@ -119,6 +124,7 @@ def test_plotter_methods() -> None:
 
     # We rely on matplotlib Figure, not checking render output, just execution
     from matplotlib.figure import Figure
+
     fig = Figure()
 
     plotter.plot_joint_angles(fig)

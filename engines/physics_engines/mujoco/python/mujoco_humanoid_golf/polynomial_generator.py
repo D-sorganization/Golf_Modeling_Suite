@@ -247,9 +247,11 @@ class PolynomialGeneratorWidget(QtWidgets.QWidget):
         self.clear_btn = QtWidgets.QPushButton("Clear Points")
         self.clear_btn.setToolTip("Remove all points and reset the plot")
         self.clear_btn.setAccessibleName("Clear all points")
-        self.clear_btn.setIcon(
-            self.style().standardIcon(QtWidgets.QStyle.StandardPixmap.SP_TrashIcon)
-        )
+        style = self.style()
+        if style:
+            self.clear_btn.setIcon(
+                style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_TrashIcon)
+            )
 
         self.fit_btn = QtWidgets.QPushButton("Fit Polynomial (6th Order)")
         self.fit_btn.setObjectName("fitBtn")
@@ -257,9 +259,10 @@ class PolynomialGeneratorWidget(QtWidgets.QWidget):
             "Calculate and plot a 6th-order polynomial fit for the current points"
         )
         self.fit_btn.setAccessibleName("Fit polynomial to points")
-        self.fit_btn.setIcon(
-            self.style().standardIcon(QtWidgets.QStyle.StandardPixmap.SP_DialogApplyButton)
-        )
+        if style:
+            self.fit_btn.setIcon(
+                style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_DialogApplyButton)
+            )
 
         action_layout.addWidget(self.clear_btn)
         action_layout.addWidget(self.fit_btn)

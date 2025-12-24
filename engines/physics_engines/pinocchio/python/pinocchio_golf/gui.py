@@ -4,7 +4,6 @@ import logging
 import sys
 import types
 from pathlib import Path
-from typing import Any
 
 try:
     import meshcat.geometry as g
@@ -144,7 +143,7 @@ class PinocchioRecorder:
                 total_energy=total_energy,
                 club_head_position=club_head_position,
                 club_head_velocity=club_head_velocity,
-                club_head_speed=club_head_speed
+                club_head_speed=club_head_speed,
             )
             self.frames.append(frame)
 
@@ -398,17 +397,19 @@ class PinocchioGUI(QtWidgets.QMainWindow):
         controls = QtWidgets.QHBoxLayout()
 
         self.plot_combo = QtWidgets.QComboBox()
-        self.plot_combo.addItems([
-            "Dashboard",
-            "Joint Angles",
-            "Joint Velocities",
-            "Joint Torques",
-            "Energy Analysis",
-            "Kinematic Sequence",
-            "Phase Diagram",
-            "Frequency Analysis (PSD)",
-            "Correlation Matrix"
-        ])
+        self.plot_combo.addItems(
+            [
+                "Dashboard",
+                "Joint Angles",
+                "Joint Velocities",
+                "Joint Torques",
+                "Energy Analysis",
+                "Kinematic Sequence",
+                "Phase Diagram",
+                "Frequency Analysis (PSD)",
+                "Correlation Matrix",
+            ]
+        )
         controls.addWidget(QtWidgets.QLabel("Plot Type:"))
         controls.addWidget(self.plot_combo)
 
@@ -439,7 +440,9 @@ class PinocchioGUI(QtWidgets.QMainWindow):
             return
 
         if self.recorder.get_num_frames() == 0:
-            QtWidgets.QMessageBox.warning(self, "No Data", "No simulation data recorded yet.")
+            QtWidgets.QMessageBox.warning(
+                self, "No Data", "No simulation data recorded yet."
+            )
             return
 
         self.canvas.fig.clear()
@@ -464,7 +467,9 @@ class PinocchioGUI(QtWidgets.QMainWindow):
             segments = {name: i for i, name in enumerate(self.joint_names)}
             plotter.plot_kinematic_sequence(self.canvas.fig, segments)
         elif plot_type == "Phase Diagram":
-            plotter.plot_phase_diagram(self.canvas.fig, joint_idx=0) # First joint by default
+            plotter.plot_phase_diagram(
+                self.canvas.fig, joint_idx=0
+            )  # First joint by default
         elif plot_type == "Frequency Analysis (PSD)":
             plotter.plot_frequency_analysis(self.canvas.fig, joint_idx=0)
         elif plot_type == "Correlation Matrix":
@@ -541,7 +546,9 @@ class PinocchioGUI(QtWidgets.QMainWindow):
         rec_layout = QtWidgets.QHBoxLayout()
         self.btn_record = QtWidgets.QPushButton("Record")
         self.btn_record.setCheckable(True)
-        self.btn_record.setStyleSheet("QPushButton:checked { background-color: #ffcccc; }")
+        self.btn_record.setStyleSheet(
+            "QPushButton:checked { background-color: #ffcccc; }"
+        )
         self.btn_record.clicked.connect(self._toggle_recording)
         rec_layout.addWidget(self.btn_record)
 
@@ -560,7 +567,9 @@ class PinocchioGUI(QtWidgets.QMainWindow):
             self.btn_record.setText("Stop Recording")
         else:
             self.recorder.stop_recording()
-            self.log_write(f"Recording stopped. Frames: {self.recorder.get_num_frames()}")
+            self.log_write(
+                f"Recording stopped. Frames: {self.recorder.get_num_frames()}"
+            )
             self.btn_record.setText("Record")
 
     def _setup_kinematic_tab(self) -> None:
@@ -705,7 +714,8 @@ class PinocchioGUI(QtWidgets.QMainWindow):
         # Plotter receives full state arrays.
         # Pinocchio state arrays (v) correspond to 1..NV.
         # If we have freeflyer, NV starts with 6 DOFs for base.
-        # Joint names list from Pinocchio includes "universe" at 0, "root_joint" at 1, etc.
+        # Joint names list from Pinocchio includes "universe" at 0, "root_joint" at 1,
+        # etc.
         # If we use list(self.model.names)[1:], we get names for joints 1..N.
 
         # If joint i is supported (1 DOF), we create widget.
@@ -862,7 +872,8 @@ class PinocchioGUI(QtWidgets.QMainWindow):
 
                 if club_id >= 0:
                     # Get position and velocity
-                    # Need to update frame placement first (done in update_viewer usually, but needed here)
+                    # Need to update frame placement first
+                    # (done in update_viewer usually, but needed here)
                     pin.forwardKinematics(self.model, self.data, self.q, self.v)
                     pin.updateFramePlacements(self.model, self.data)
 
@@ -871,7 +882,10 @@ class PinocchioGUI(QtWidgets.QMainWindow):
 
                     # Velocity
                     v_frame = pin.getFrameVelocity(
-                        self.model, self.data, club_id, pin.ReferenceFrame.LOCAL_WORLD_ALIGNED
+                        self.model,
+                        self.data,
+                        club_id,
+                        pin.ReferenceFrame.LOCAL_WORLD_ALIGNED,
                     )
                     club_head_vel = v_frame.linear.copy()
 
@@ -883,7 +897,7 @@ class PinocchioGUI(QtWidgets.QMainWindow):
                     kinetic_energy=self.data.kinetic_energy,
                     potential_energy=self.data.potential_energy,
                     club_head_position=club_head_pos,
-                    club_head_velocity=club_head_vel
+                    club_head_velocity=club_head_vel,
                 )
                 self.lbl_rec_status.setText(f"Frames: {self.recorder.get_num_frames()}")
 

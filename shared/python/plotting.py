@@ -10,7 +10,7 @@ This module provides comprehensive plotting capabilities including:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Protocol
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -114,11 +114,13 @@ class GolfSwingPlotter:
         # Pinocchio joint_names usually matches NV structure (if we skipped universe).
 
         if len(self.joint_names) == 0:
-             return f"DoF {idx}"
+            return f"DoF {idx}"
 
         # If perfect match
         if data_dim == len(self.joint_names):
-            return self.joint_names[idx] if idx < len(self.joint_names) else f"DoF {idx}"
+            return (
+                self.joint_names[idx] if idx < len(self.joint_names) else f"DoF {idx}"
+            )
 
         # If mismatch, align from the end (assuming base is at the start)
         offset = max(0, data_dim - len(self.joint_names))
@@ -448,7 +450,13 @@ class GolfSwingPlotter:
             or joint_idx >= velocities.shape[1]
         ):
             ax = fig.add_subplot(111)
-            ax.text(0.5, 0.5, "No data available or index out of bounds", ha="center", va="center")
+            ax.text(
+                0.5,
+                0.5,
+                "No data available or index out of bounds",
+                ha="center",
+                va="center",
+            )
             return
 
         ax = fig.add_subplot(111)
