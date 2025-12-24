@@ -564,12 +564,7 @@ class DrakeSimApp(QtWidgets.QMainWindow):  # type: ignore[misc, no-any-unimporte
         frame_B = target_body.body_frame()
 
         J_spatial = self.plant.CalcJacobianSpatialVelocity(
-            plant_context,
-            JacobianWrtVariable.kV,
-            frame_B,
-            [0,0,0],
-            frame_W,
-            frame_W
+            plant_context, JacobianWrtVariable.kV, frame_B, [0, 0, 0], frame_W, frame_W
         )
         # 6 x nv matrix. Top 3 rotational, bottom 3 translational.
         # Use Translational part for visualization
@@ -686,4 +681,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     from pydrake.all import JacobianWrtVariable  # Import here for use in method
+
     main()

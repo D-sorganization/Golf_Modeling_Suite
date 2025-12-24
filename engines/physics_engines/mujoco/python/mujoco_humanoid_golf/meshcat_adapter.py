@@ -250,9 +250,7 @@ class MuJoCoMeshcatAdapter:
 
         # Create unit sphere and scale it to radii
         # Meshcat doesn't have explicit Ellipsoid, so we use Scaled Sphere
-        material = g.MeshPhongMaterial(
-            color=color, opacity=opacity, transparent=True
-        )
+        material = g.MeshPhongMaterial(color=color, opacity=opacity, transparent=True)
         shape = g.Sphere(radius=1.0)
 
         # Transformation: T = [Rot | Pos] * Scale

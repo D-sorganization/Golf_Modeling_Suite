@@ -1119,9 +1119,7 @@ class AdvancedGolfAnalysisWindow(QtWidgets.QMainWindow, AdvancedGuiMethodsMixin)
         )
         ellipsoid_layout.addWidget(self.show_mobility_ellipsoid_cb)
 
-        self.show_force_ellipsoid_cb = QtWidgets.QCheckBox(
-            "Show Force Ellipsoid (Red)"
-        )
+        self.show_force_ellipsoid_cb = QtWidgets.QCheckBox("Show Force Ellipsoid (Red)")
         self.show_force_ellipsoid_cb.stateChanged.connect(
             self.on_ellipsoid_visualization_changed
         )

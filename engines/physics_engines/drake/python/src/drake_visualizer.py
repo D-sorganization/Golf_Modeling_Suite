@@ -122,7 +122,7 @@ class DrakeVisualizer:
         rotation_matrix: np.ndarray,
         radii: np.ndarray,
         position: np.ndarray,
-        color: tuple[float, float, float, float]
+        color: tuple[float, float, float, float],
     ) -> None:
         """Draw ellipsoid in Meshcat.
 
