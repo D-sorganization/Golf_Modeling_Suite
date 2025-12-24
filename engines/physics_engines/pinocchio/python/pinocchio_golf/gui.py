@@ -711,20 +711,7 @@ class PinocchioGUI(QtWidgets.QMainWindow):
             self.log_write(msg)
             return
 
-        # Note: self.joint_names is already populated in _build_kinematic_controls
-        # so we don't append here anymore, or we should verify logic.
-        # Wait, if we populated it all at once, we don't need to append here.
-        # But we need to ensure the order matches the indices used by Plotter.
-        # Plotter receives full state arrays.
-        # Pinocchio state arrays (v) correspond to 1..NV.
-        # If we have freeflyer, NV starts with 6 DOFs for base.
-        # Joint names list from Pinocchio includes "universe" at 0, "root_joint" at 1,
-        # etc.
-        # If we use list(self.model.names)[1:], we get names for joints 1..N.
-
-        # If joint i is supported (1 DOF), we create widget.
-        # If not (e.g. FreeFlyer), we skipped creating widget but name is in list.
-
+        # joint_names is pre-populated above; widgets are only created for supported 1-DOF joints.
         row = QtWidgets.QWidget()
         r_layout = QtWidgets.QHBoxLayout(row)
         r_layout.setContentsMargins(0, 0, 0, 0)
