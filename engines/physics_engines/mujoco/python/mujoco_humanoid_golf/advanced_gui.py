@@ -345,8 +345,9 @@ class AdvancedGolfAnalysisWindow(QtWidgets.QMainWindow, AdvancedGuiMethodsMixin)
             # For URDFs, we might not know actuators in advance.
             # We'll use a placeholder that will be dynamically updated
             # or simply "All Joints" if we can't determine them easily before loading.
-            # MuJoCoSimWidget.load_current_model logic handles mismatching actuator counts
-            # by padding/truncating, so we can start with an empty list or generic names.
+            # MuJoCoSimWidget.load_current_model logic handles mismatching
+            # actuator counts by padding/truncating, so we can start with an
+            # empty list or generic names.
 
             self.model_configs.append(
                 {
