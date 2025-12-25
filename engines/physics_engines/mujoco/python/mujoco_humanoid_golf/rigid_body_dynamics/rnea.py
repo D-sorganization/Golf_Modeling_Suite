@@ -93,13 +93,13 @@ def rnea(  # noqa: PLR0915
     # OPTIMIZATION: Pre-allocate buffers
     # Stores transform from parent to i for each body
     # Using a single 3D array is more cache-friendly than list of arrays
-    xup = np.zeros((nb, 6, 6))
+    xup = np.empty((nb, 6, 6))
 
     # Pre-allocate temporary buffers to avoid allocation in loop
-    xj_buf = np.zeros((6, 6))
-    scratch_vec = np.zeros(6)
-    i_v_buf = np.zeros(6)
-    cross_buf = np.zeros(6)
+    xj_buf = np.empty((6, 6))
+    scratch_vec = np.empty(6)
+    i_v_buf = np.empty(6)
+    cross_buf = np.empty(6)
 
     s_subspace_list: list[np.ndarray] = [None] * nb  # type: ignore[assignment, list-item] # Cache motion subspaces
 

@@ -88,7 +88,7 @@ def aba(  # noqa: C901, PLR0912, PLR0915
     # Initialize arrays
     # OPTIMIZATION: Pre-allocate 3D arrays instead of lists of arrays
     # Stores transform from body to parent for each body (NB, 6, 6)
-    xup = np.zeros((nb, 6, 6))
+    xup = np.empty((nb, 6, 6))
 
     # Motion subspaces (NB, 6)
     # Using list for subspaces is fine (refs to global constants mostly).
@@ -96,12 +96,12 @@ def aba(  # noqa: C901, PLR0912, PLR0915
     # Stored in list to be consistent with RNEA optimization.
     s_subspace: list[np.ndarray] = [None] * nb  # type: ignore[assignment, list-item]
 
-    v = np.zeros((6, nb))  # Spatial velocities
-    c = np.zeros((6, nb))  # Velocity-product accelerations (bias)
+    v = np.empty((6, nb))  # Spatial velocities
+    c = np.empty((6, nb))  # Velocity-product accelerations (bias)
 
     # Articulated-body inertias (NB, 6, 6)
     # OPTIMIZATION: Pre-allocate to avoid new array creation in loop
-    ia_articulated = np.zeros((nb, 6, 6))
+    ia_articulated = np.empty((nb, 6, 6))
 
     pa_bias = np.zeros((6, nb))  # Articulated-body bias forces
     u_force = np.zeros((6, nb))  # IA * S
@@ -111,11 +111,11 @@ def aba(  # noqa: C901, PLR0912, PLR0915
     qdd = np.zeros(nb)  # Joint accelerations
 
     # Optimization: temporary buffers
-    xj_buf = np.zeros((6, 6))
-    cross_buf = np.zeros(6)
-    scratch_vec = np.zeros(6)
-    scratch_mat = np.zeros((6, 6))
-    i_v_buf = np.zeros(6)
+    xj_buf = np.empty((6, 6))
+    cross_buf = np.empty(6)
+    scratch_vec = np.empty(6)
+    scratch_mat = np.empty((6, 6))
+    i_v_buf = np.empty(6)
 
     # --- Pass 1: Forward kinematics ---
     for i in range(nb):
