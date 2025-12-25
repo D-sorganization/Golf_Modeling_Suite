@@ -83,22 +83,23 @@ def rnea(  # noqa: PLR0915
     a_grav = model.get("gravity", DEFAULT_GRAVITY)
 
     # Initialize arrays
-    # OPTIMIZATION: Use empty for arrays that are fully overwritten
+    # OPTIMIZATION: use np.empty instead of np.zeros for arrays that are fully
+    # overwritten
     v = np.empty((6, nb))  # Spatial velocities
     a = np.empty((6, nb))  # Spatial accelerations
-    f = np.zeros((6, nb))  # Spatial forces (accumulated, so must be zero)
+    f = np.zeros((6, nb))  # Spatial forces (must be zero for accumulation)
     tau = np.empty(nb)  # Joint torques
 
     # OPTIMIZATION: Pre-allocate buffers
     # Stores transform from parent to i for each body
     # Using a single 3D array is more cache-friendly than list of arrays
-    xup = np.empty((nb, 6, 6))
+    xup = np.zeros((nb, 6, 6))
 
     # Pre-allocate temporary buffers to avoid allocation in loop
-    xj_buf = np.empty((6, 6))
-    scratch_vec = np.empty(6)
-    i_v_buf = np.empty(6)
-    cross_buf = np.empty(6)
+    xj_buf = np.zeros((6, 6))
+    scratch_vec = np.zeros(6)
+    i_v_buf = np.zeros(6)
+    cross_buf = np.zeros(6)
 
     s_subspace_list: list[np.ndarray] = [None] * nb  # type: ignore[assignment, list-item] # Cache motion subspaces
 
