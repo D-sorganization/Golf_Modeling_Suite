@@ -91,9 +91,9 @@ def aba(  # noqa: C901, PLR0912, PLR0915
     xup = np.zeros((nb, 6, 6))
 
     # Motion subspaces (NB, 6)
-    # Using list for subspaces is fine since they are references to global constants mostly,
-    # but we need to be careful if we modify them. jcalc returns a new array or reference.
-    # However, to be consistent with RNEA optimization, we can just store them in a list.
+    # Using list for subspaces is fine (refs to global constants mostly).
+    # Be careful if modifying them (jcalc returns new array/ref).
+    # Stored in list to be consistent with RNEA optimization.
     s_subspace: list[np.ndarray] = [None] * nb  # type: ignore[assignment, list-item]
 
     v = np.zeros((6, nb))  # Spatial velocities
@@ -183,7 +183,7 @@ def aba(  # noqa: C901, PLR0912, PLR0915
             # Update articulated inertia
             # ia_update = np.outer(u_force[:, i], u_force[:, i]) * dinv
             # ia_articulated[p] = (
-            #     ia_articulated[p] + xup[i].T @ (ia_articulated[i] - ia_update) @ xup[i]
+            #     ia_articulated[p] + xup[i].T @ (ia_articulated[i]-ia_update) @ xup[i]
             # )
 
             # OPTIMIZATION: Minimize allocations in the update
@@ -202,17 +202,8 @@ def aba(  # noqa: C901, PLR0912, PLR0915
             np.matmul(xup[i].T, u_force[:, i], out=scratch_vec)
 
             # Subtract rank-1 update from scratch_mat
-            # scratch_mat -= (u_force[:, i] * dinv).reshape(-1, 1) @ scratch_vec.reshape(1, -1)
-            # Efficiently: scratch_mat -= outer(u_force * dinv, scratch_vec)
             # scratch_mat -= np.outer(u_force[:, i] * dinv, scratch_vec)
-            # Optimization: Avoid allocating for outer product result
-            # scratch_mat -= (u_force[:, i] * dinv)[:, None] * scratch_vec[None, :]
-            # Even better: iterate? No, NumPy broadcasting is fast enough but allocates.
-            # Let's trust np.outer is efficient enough for now, or use loops if really needed.
-            # But wait, we can do in-place subtraction with broadcasting to avoid the large intermediate?
-            # scratch_mat -= (u_force[:, i] * dinv)[:, None] * scratch_vec
-            # This still creates the product array.
-            # Given 6x6, the overhead is small. Sticking to np.outer is fine for readability/speed balance.
+            # Sticking to np.outer is fine for readability/speed balance.
             scratch_mat -= np.outer(u_force[:, i] * dinv, scratch_vec)
 
             # Now add xup[i].T @ scratch_mat to ia_articulated[p]
