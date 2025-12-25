@@ -31,6 +31,8 @@ PENDULUM_ROOT = ENGINES_ROOT / "pendulum_models"
 
 # Import key classes for easier access
 from .common_utils import GolfModelingError, setup_logging  # noqa: E402
+from .comparative_analysis import ComparativeSwingAnalyzer  # noqa: E402
+from .comparative_plotting import ComparativePlotter  # noqa: E402
 from .engine_manager import EngineManager, EngineStatus, EngineType  # noqa: E402
 
 __all__ = [
@@ -49,4 +51,6 @@ __all__ = [
     "EngineStatus",
     "GolfModelingError",
     "setup_logging",
+    "ComparativeSwingAnalyzer",
+    "ComparativePlotter",
 ]
