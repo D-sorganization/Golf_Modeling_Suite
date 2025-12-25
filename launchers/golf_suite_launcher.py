@@ -25,7 +25,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("GolfSuiteLauncher")
 
 
-class GolfLauncher(QtWidgets.QMainWindow if PYQT_AVAILABLE else object):
+class GolfLauncher(QtWidgets.QMainWindow if PYQT_AVAILABLE else object):  # type: ignore[misc]
     def __init__(self) -> None:
         if not PYQT_AVAILABLE:
             raise ImportError("PyQt6 is required to run this launcher.")
@@ -184,7 +184,9 @@ class GolfLauncher(QtWidgets.QMainWindow if PYQT_AVAILABLE else object):
 
 def main() -> None:
     if not PYQT_AVAILABLE:
-        print("Error: PyQt6 is not installed. Please install it to use the GUI launcher.")
+        print(
+            "Error: PyQt6 is not installed. Please install it to use the GUI launcher."
+        )
         print("Try: pip install PyQt6")
         sys.exit(1)
 

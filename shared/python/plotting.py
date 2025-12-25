@@ -12,7 +12,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol
 
-import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
 

@@ -148,7 +148,9 @@ class ComparativeSwingAnalyzer:
             correlation=correlation,
         )
 
-    def compare_scalars(self, metric_name: str, val_a: float, val_b: float) -> ComparisonMetric:
+    def compare_scalars(
+        self, metric_name: str, val_a: float, val_b: float
+    ) -> ComparisonMetric:
         """Create comparison metric for two scalar values.
 
         Args:
@@ -168,7 +170,7 @@ class ComparativeSwingAnalyzer:
             value_a=val_a,
             value_b=val_b,
             difference=diff,
-            percent_diff=percent
+            percent_diff=percent,
         )
 
     def compare_peak_speeds(self) -> ComparisonMetric | None:
@@ -186,7 +188,7 @@ class ComparativeSwingAnalyzer:
 
     def compare_durations(self) -> ComparisonMetric | None:
         """Compare swing durations."""
-        t_a, _ = self.recorder_a.get_time_series("club_head_speed") # use any field
+        t_a, _ = self.recorder_a.get_time_series("club_head_speed")  # use any field
         t_b, _ = self.recorder_b.get_time_series("club_head_speed")
 
         if len(t_a) < 2 or len(t_b) < 2:
@@ -213,11 +215,11 @@ class ComparativeSwingAnalyzer:
         _, ke_a = self.recorder_a.get_time_series("kinetic_energy")
         _, ke_b = self.recorder_b.get_time_series("kinetic_energy")
         if len(ke_a) > 0 and len(ke_b) > 0:
-            metrics.append(self.compare_scalars("Max Kinetic Energy", float(np.max(ke_a)), float(np.max(ke_b))))
+            metrics.append(
+                self.compare_scalars(
+                    "Max Kinetic Energy", float(np.max(ke_a)), float(np.max(ke_b))
+                )
+            )
 
-        report = {
-            "swing_a": self.name_a,
-            "swing_b": self.name_b,
-            "metrics": metrics
-        }
+        report = {"swing_a": self.name_a, "swing_b": self.name_b, "metrics": metrics}
         return report

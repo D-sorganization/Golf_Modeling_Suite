@@ -4,7 +4,10 @@ import numpy as np
 import pytest
 from matplotlib.figure import Figure
 
-from shared.python.comparative_analysis import ComparativeSwingAnalyzer, RecorderInterface
+from shared.python.comparative_analysis import (
+    ComparativeSwingAnalyzer,
+    RecorderInterface,
+)
 from shared.python.comparative_plotting import ComparativePlotter
 
 
@@ -20,13 +23,15 @@ class MockRecorder(RecorderInterface):
 
         # Multidimensional data
         self.joint_positions = np.column_stack([self.signal, self.signal * 0.5])
-        self.joint_velocities = np.column_stack([np.cos(2 * np.pi * norm_time), np.cos(2 * np.pi * norm_time) * 0.5])
+        self.joint_velocities = np.column_stack(
+            [np.cos(2 * np.pi * norm_time), np.cos(2 * np.pi * norm_time) * 0.5]
+        )
 
         # Club head speed (bell curve centered at 50% of swing)
-        self.club_head_speed = amplitude * np.exp(-((norm_time - 0.5)**2) / 0.05)
+        self.club_head_speed = amplitude * np.exp(-((norm_time - 0.5) ** 2) / 0.05)
 
         # Energy
-        self.kinetic_energy = self.club_head_speed ** 2
+        self.kinetic_energy = self.club_head_speed**2
 
     def get_time_series(self, field_name: str) -> tuple[np.ndarray, np.ndarray]:
         if hasattr(self, field_name):
@@ -58,6 +63,7 @@ def test_alignment() -> None:
     assert aligned_joint is not None
     assert aligned_joint.correlation > 0.95  # Should be highly correlated
 
+
 def test_metrics() -> None:
     """Test metric computation."""
     rec_a = MockRecorder(amplitude=10.0)
@@ -80,6 +86,7 @@ def test_metrics() -> None:
     report = analyzer.generate_comparison_report()
     assert "metrics" in report
     assert len(report["metrics"]) >= 2
+
 
 def test_plotter() -> None:
     """Test plotting functions."""

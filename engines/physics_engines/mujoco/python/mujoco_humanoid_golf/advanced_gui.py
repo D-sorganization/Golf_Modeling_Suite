@@ -2521,9 +2521,8 @@ class AdvancedGolfAnalysisWindow(QtWidgets.QMainWindow, AdvancedGuiMethodsMixin)
         """Capture and save the current simulation view."""
         pixmap = self.sim_widget.label.pixmap()
         if pixmap is None or pixmap.isNull():
-            self.statusBar().showMessage(
-                "Screenshot failed: No image to capture", 3000
-            )
+            if status_bar := self.statusBar():
+                status_bar.showMessage("Screenshot failed: No image to capture", 3000)
             return
 
         # Ensure directory exists
@@ -2533,11 +2532,12 @@ class AdvancedGolfAnalysisWindow(QtWidgets.QMainWindow, AdvancedGuiMethodsMixin)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = output_dir / f"screenshot_{timestamp}.png"
 
-        if pixmap.save(str(filename)):
-            self.statusBar().showMessage(f"Screenshot saved: {filename}", 5000)
-            logger.info("Screenshot saved to %s", filename)
-        else:
-            self.statusBar().showMessage("Screenshot failed to save", 5000)
+        if status_bar := self.statusBar():
+            if pixmap.save(str(filename)):
+                status_bar.showMessage(f"Screenshot saved: {filename}", 5000)
+                logger.info("Screenshot saved to %s", filename)
+            else:
+                status_bar.showMessage("Screenshot failed to save", 5000)
 
     def on_actuator_changed(self) -> None:
         """Update actuator torques when any slider changes."""
