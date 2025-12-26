@@ -12,6 +12,7 @@ from shared.python.common_utils import get_shared_urdf_path
 # Try to import PyQt6 and URDFGenerator, skip tests if not available
 try:
     from tools.urdf_generator.main import URDFGenerator
+
     PYQT6_AVAILABLE = True
 except ImportError:
     PYQT6_AVAILABLE = False
