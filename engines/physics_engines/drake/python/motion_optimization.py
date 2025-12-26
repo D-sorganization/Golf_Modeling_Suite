@@ -209,13 +209,17 @@ class DrakeMotionOptimizer:
         # 3. Solve using Drake's optimization solvers
         # 4. Return the optimized trajectory
 
-        # For now, return the initial trajectory as "optimized"
+        # For now, return the initial trajectory, clearly marked as a non-functional
+        # placeholder result so callers do not treat it as a successful optimization.
         result = OptimizationResult(
-            success=True,
+            success=False,
             optimal_trajectory=initial_trajectory.copy(),
             optimal_cost=0.0,
             iterations=1,
-            convergence_message="Placeholder optimization completed",
+            convergence_message=(
+                "NON-FUNCTIONAL PLACEHOLDER: Drake trajectory optimization is not "
+                "implemented; returned initial trajectory without optimization."
+            ),
             objective_values={obj.name: 0.0 for obj in self.objectives},
             constraint_violations={con.name: 0.0 for con in self.constraints},
         )
