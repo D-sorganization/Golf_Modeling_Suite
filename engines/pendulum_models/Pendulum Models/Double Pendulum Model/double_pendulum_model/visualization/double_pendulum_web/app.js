@@ -337,6 +337,15 @@ function reset() {
   });
 });
 
+// Enable live parameter tuning
+document.querySelectorAll('input[type="number"]').forEach(input => {
+  input.addEventListener('input', () => {
+    updateParams();
+    // If simulation is paused, redraw to show physical changes (lengths, masses) immediately
+    if (!animationId) draw();
+  });
+});
+
 document.addEventListener('keydown', (e) => {
   if (e.target.matches('input, textarea')) return;
 
