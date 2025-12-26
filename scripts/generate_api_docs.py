@@ -11,11 +11,11 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from shared.python.core import setup_logging
+
 # Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
-
-from shared.python.core import setup_logging
 
 logger = setup_logging(__name__)
 
@@ -27,11 +27,11 @@ class APIDocGenerator:
         """Initialize the API documentation generator."""
         self.output_dir = output_dir
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        self.modules_info = {}
+        self.modules_info: dict[str, Any] = {}
 
     def analyze_module(self, module_path: Path) -> dict[str, Any]:
         """Analyze a Python module and extract API information."""
-        module_info = {
+        module_info: dict[str, Any] = {
             "path": str(module_path),
             "classes": [],
             "functions": [],
@@ -48,8 +48,9 @@ class APIDocGenerator:
             tree = ast.parse(source)
 
             # Extract module docstring
-            if ast.get_docstring(tree):
-                module_info["docstring"] = ast.get_docstring(tree)
+            docstring = ast.get_docstring(tree)
+            if docstring:
+                module_info["docstring"] = docstring
 
             # Analyze AST nodes
             for node in ast.walk(tree):
@@ -103,7 +104,7 @@ class APIDocGenerator:
 
     def _analyze_class(self, node: ast.ClassDef) -> dict[str, Any]:
         """Analyze a class definition."""
-        class_info = {
+        class_info: dict[str, Any] = {
             "name": node.name,
             "line": node.lineno,
             "docstring": ast.get_docstring(node) or "",
@@ -116,7 +117,7 @@ class APIDocGenerator:
         for base in node.bases:
             if isinstance(base, ast.Name):
                 class_info["bases"].append(base.id)
-            elif isinstance(base, ast.Attribute):
+            elif isinstance(base, ast.Attribute) and isinstance(base.value, ast.Name):
                 class_info["bases"].append(f"{base.value.id}.{base.attr}")
 
         # Analyze class members
@@ -175,7 +176,9 @@ class APIDocGenerator:
         try:
             if isinstance(annotation, ast.Name):
                 return annotation.id
-            elif isinstance(annotation, ast.Attribute):
+            elif isinstance(annotation, ast.Attribute) and isinstance(
+                annotation.value, ast.Name
+            ):
                 return f"{annotation.value.id}.{annotation.attr}"
             elif isinstance(annotation, ast.Subscript):
                 # Handle generic types like List[str]
@@ -191,7 +194,7 @@ class APIDocGenerator:
 
     def scan_project(self, project_root: Path) -> dict[str, Any]:
         """Scan the entire project for Python modules."""
-        project_info = {
+        project_info: dict[str, Any] = {
             "modules": {},
             "packages": [],
         }
@@ -351,7 +354,7 @@ class APIDocGenerator:
         doc.append("")
 
         # Group modules by package
-        packages = {}
+        packages: dict[str, list[str]] = {}
         for module_name in project_info["modules"]:
             parts = module_name.split(".")
             package = parts[0] if len(parts) > 1 else "root"

@@ -12,14 +12,14 @@ This script fixes common MuJoCo display issues by:
 import sys
 from pathlib import Path
 
-# Add project root to path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
-
 import mujoco
 import numpy as np
 
 from shared.python.core import setup_logging
+
+# Add project root to path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 logger = setup_logging(__name__)
 

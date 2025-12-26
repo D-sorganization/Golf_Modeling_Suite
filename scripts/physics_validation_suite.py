@@ -10,14 +10,15 @@ verification for biomechanical analysis.
 import json
 import sys
 from pathlib import Path
-
-# Add project root to path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
+from typing import Any
 
 import numpy as np
 
 from shared.python.core import setup_logging
+
+# Add project root to path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 logger = setup_logging(__name__)
 
@@ -69,7 +70,7 @@ class PhysicsValidator:
                 momentum_drift = np.linalg.norm(final_momentum - initial_momentum)
                 momentum_drift /= np.linalg.norm(initial_momentum) + 1e-12
 
-                results["momentum_drift"] = momentum_drift
+                results["momentum_drift"] = float(momentum_drift)
                 results["momentum_conservation"] = (
                     momentum_drift < self.relative_tolerance
                 )
@@ -184,7 +185,7 @@ class PhysicsValidator:
 
     def compare_engines(self, engine_data: dict[str, dict]) -> dict:
         """Compare results between different physics engines."""
-        comparison_results = {
+        comparison_results: dict[str, Any] = {
             "engines_compared": list(engine_data.keys()),
             "position_agreement": {},
             "velocity_agreement": {},
@@ -235,9 +236,16 @@ class PhysicsValidator:
 
             # Overall agreement if all comparisons are good
             all_agreements = []
-            all_agreements.extend(comparison_results["position_agreement"].values())
-            all_agreements.extend(comparison_results["velocity_agreement"].values())
-            all_agreements.extend(comparison_results["energy_agreement"].values())
+            pos_agreements = comparison_results["position_agreement"]
+            vel_agreements = comparison_results["velocity_agreement"]
+            energy_agreements = comparison_results["energy_agreement"]
+
+            if isinstance(pos_agreements, dict):
+                all_agreements.extend(list(pos_agreements.values()))
+            if isinstance(vel_agreements, dict):
+                all_agreements.extend(list(vel_agreements.values()))
+            if isinstance(energy_agreements, dict):
+                all_agreements.extend(list(energy_agreements.values()))
 
             if all_agreements:
                 comparison_results["overall_agreement"] = all(
