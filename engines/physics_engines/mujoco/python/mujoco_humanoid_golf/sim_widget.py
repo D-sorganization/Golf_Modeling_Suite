@@ -114,6 +114,17 @@ class MuJoCoSimWidget(QtWidgets.QWidget):
         # MuJoCo scene options for vector rendering
         self.scene_option = mujoco.MjvOption()
         mujoco.mjv_defaultOption(self.scene_option)
+
+        # Configure proper lighting and visualization
+        self.scene_option.flags[mujoco.mjtVisFlag.mjVIS_LIGHT] = True
+
+        # Try to enable shadows if available (newer MuJoCo versions)
+        try:
+            self.scene_option.flags[mujoco.mjtVisFlag.mjVIS_SHADOW] = True
+        except AttributeError:
+            # Shadow flag not available in this MuJoCo version
+            pass
+
         self.scene_option.flags[mujoco.mjtVisFlag.mjVIS_CONTACTPOINT] = False
         self.scene_option.flags[mujoco.mjtVisFlag.mjVIS_CONTACTFORCE] = False
 
@@ -378,6 +389,9 @@ class MuJoCoSimWidget(QtWidgets.QWidget):
         if self.model is None or self.data is None:
             return
 
+        # Ensure data is up to date
+        mujoco.mj_forward(self.model, self.data)
+
         # Compute model bounds
         bounds = self._compute_model_bounds()
         if bounds is None:
@@ -391,9 +405,9 @@ class MuJoCoSimWidget(QtWidgets.QWidget):
         self.camera.lookat[:] = center
 
         # Set camera distance based on model size
-        # Distance should be about 2-3 times the model size
+        # Distance should be about 3-4 times the model size for better visibility
         if max_size > 0:
-            self.camera.distance = max(2.0, max_size * 2.5)
+            self.camera.distance = max(1.5, max_size * 3.5)
         else:
             self.camera.distance = 3.0
 
@@ -403,6 +417,11 @@ class MuJoCoSimWidget(QtWidgets.QWidget):
 
         # Clamp distance to reasonable range
         self.camera.distance = np.clip(self.camera.distance, 0.5, 50.0)
+
+        LOGGER.debug(
+            f"Camera positioned: center={center}, distance={self.camera.distance:.2f}, "
+            f"model_size={max_size:.2f}"
+        )
 
     def _compute_model_bounds(self) -> dict | None:
         """Compute bounding box of all geoms in the model.
@@ -436,15 +455,23 @@ class MuJoCoSimWidget(QtWidgets.QWidget):
                     geom_pos = self.data.xpos[body_id].copy()
                     geom_size = self.model.geom_size[geom_id]
 
-                    # Approximate geom extent (conservative estimate)
+                    # Improved geom extent calculation
                     if self.model.geom_type[geom_id] == mujoco.mjtGeom.mjGEOM_SPHERE:
                         extent = geom_size[0]
                     elif self.model.geom_type[geom_id] == mujoco.mjtGeom.mjGEOM_BOX:
-                        extent = np.linalg.norm(geom_size)
+                        extent = np.max(geom_size)  # Use max dimension, not norm
                     elif self.model.geom_type[geom_id] == mujoco.mjtGeom.mjGEOM_CAPSULE:
                         extent = geom_size[0] + geom_size[1]
+                    elif (
+                        self.model.geom_type[geom_id] == mujoco.mjtGeom.mjGEOM_CYLINDER
+                    ):
+                        extent = max(geom_size[0], geom_size[1])
+                    elif (
+                        self.model.geom_type[geom_id] == mujoco.mjtGeom.mjGEOM_ELLIPSOID
+                    ):
+                        extent = np.max(geom_size)
                     else:
-                        extent = np.max(geom_size) if len(geom_size) > 0 else 0.5
+                        extent = np.max(geom_size) if len(geom_size) > 0 else 0.1
 
                     min_pos = np.minimum(min_pos, geom_pos - extent)
                     max_pos = np.maximum(max_pos, geom_pos + extent)
@@ -896,6 +923,9 @@ class MuJoCoSimWidget(QtWidgets.QWidget):
         """Render one frame of the simulation."""
         if self.renderer is None or self.model is None or self.data is None:
             return
+
+        # Ensure data is up to date
+        mujoco.mj_forward(self.model, self.data)
 
         # Update scene with current state (this updates the scene geometry)
         if self.scene is not None:

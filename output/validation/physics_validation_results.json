@@ -1,0 +1,82 @@
+{
+  "mujoco": {
+    "conservation": {
+      "energy_conservation": "False",
+      "momentum_conservation": "True",
+      "energy_drift": 0.17559202259948087,
+      "momentum_drift": 0.0
+    },
+    "constraints": {
+      "constraint_violations": [],
+      "max_violation": 0.0,
+      "constraint_satisfaction": true
+    },
+    "stability": {
+      "stable": "True",
+      "max_velocity": 5.0259088697979655,
+      "max_acceleration": 0.0,
+      "integration_error": 0.0
+    }
+  },
+  "drake": {
+    "conservation": {
+      "energy_conservation": "False",
+      "momentum_conservation": "True",
+      "energy_drift": 0.17559202259948087,
+      "momentum_drift": 0.0
+    },
+    "constraints": {
+      "constraint_violations": [],
+      "max_violation": 0.0,
+      "constraint_satisfaction": true
+    },
+    "stability": {
+      "stable": "True",
+      "max_velocity": 5.0259088697979655,
+      "max_acceleration": 0.0,
+      "integration_error": 0.0
+    }
+  },
+  "pinocchio": {
+    "conservation": {
+      "energy_conservation": "False",
+      "momentum_conservation": "True",
+      "energy_drift": 0.17559202259948087,
+      "momentum_drift": 0.0
+    },
+    "constraints": {
+      "constraint_violations": [],
+      "max_violation": 0.0,
+      "constraint_satisfaction": true
+    },
+    "stability": {
+      "stable": "True",
+      "max_velocity": 5.0259088697979655,
+      "max_acceleration": 0.0,
+      "integration_error": 0.0
+    }
+  },
+  "comparison": {
+    "engines_compared": [
+      "mujoco",
+      "drake",
+      "pinocchio"
+    ],
+    "position_agreement": {
+      "mujoco_vs_drake": 0.9992171851872272,
+      "mujoco_vs_pinocchio": 1.0,
+      "drake_vs_pinocchio": 0.9992171294717243
+    },
+    "velocity_agreement": {
+      "mujoco_vs_drake": 1.0,
+      "mujoco_vs_pinocchio": 1.0,
+      "drake_vs_pinocchio": 1.0
+    },
+    "energy_agreement": {
+      "mujoco_vs_drake": 1.0,
+      "mujoco_vs_pinocchio": 1.0,
+      "drake_vs_pinocchio": 1.0
+    },
+    "overall_agreement": true
+  }
+}
