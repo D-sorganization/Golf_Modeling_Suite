@@ -12,8 +12,9 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from src import logger_utils
 from shared.python import constants
+
+from src import logger_utils
 
 
 class TestConstants:
