@@ -11,6 +11,7 @@ import yaml
 @dataclass
 class ModelConfig:
     """Configuration for a physics model."""
+
     id: str
     name: str
     description: str

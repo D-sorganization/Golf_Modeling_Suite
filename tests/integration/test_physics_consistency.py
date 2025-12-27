@@ -52,7 +52,7 @@ def run_mujoco_pendulum(params: SimplePendulumParams) -> dict[str, Any]:
         model = mujoco.MjModel.from_xml_string(xml)
         data = mujoco.MjData(model)
     except Exception as e:
-         return {"error": f"MuJoCo init failed: {e}"}
+        return {"error": f"MuJoCo init failed: {e}"}
 
     # Set initial state
     data.qpos[0] = params.initial_angle
@@ -77,17 +77,14 @@ def run_pinocchio_pendulum(params: SimplePendulumParams) -> dict[str, Any]:
     try:
         import pinocchio as pin
     except ImportError:
-         return {"error": "Pinocchio not installed"}
+        return {"error": "Pinocchio not installed"}
 
     # Create model
     model = pin.Model()
 
     # Joint
     joint_id = model.addJoint(
-        0,
-        pin.JointModelRY(),
-        pin.SE3(np.eye(3), np.array([0, 0, 0])),
-        "joint"
+        0, pin.JointModelRY(), pin.SE3(np.eye(3), np.array([0, 0, 0])), "joint"
     )
 
     # Inertia (Point mass at length L)
@@ -98,7 +95,7 @@ def run_pinocchio_pendulum(params: SimplePendulumParams) -> dict[str, Any]:
     # Rotation Y.
 
     mass = params.mass
-    inertia = pin.Inertia.FromSphere(mass, 0.0) # Point mass approximation
+    inertia = pin.Inertia.FromSphere(mass, 0.0)  # Point mass approximation
     # Offset inertia center
     inertia.lever = np.array([0, 0, -params.length])
 
@@ -151,7 +148,7 @@ def test_physics_engine_consistency():
         if "error" not in res:
             valid_engines.append(name)
         else:
-             print(f"Skipping {name}: {res['error']}")
+            print(f"Skipping {name}: {res['error']}")
 
     if not valid_engines:
         pytest.skip("No physics engines installed locally.")
@@ -175,8 +172,8 @@ def test_physics_engine_consistency():
         # Zero crossings (falling edge) to find full period roughly
         # Or peak to peak
         peaks = []
-        for i in range(1, len(angles)-1):
-            if angles[i] > angles[i-1] and angles[i] > angles[i+1]:
+        for i in range(1, len(angles) - 1):
+            if angles[i] > angles[i - 1] and angles[i] > angles[i + 1]:
                 peaks.append(times[i])
 
         if len(peaks) > 1:
@@ -185,8 +182,9 @@ def test_physics_engine_consistency():
 
             # Assert period is reasonable
             # We allow loose tolerance because integration schemes differ
-            assert abs(avg_period - adjusted_period) < 0.1, \
-                f"{engine} period {avg_period} deviates from expected {adjusted_period}"
+            assert (
+                abs(avg_period - adjusted_period) < 0.1
+            ), f"{engine} period {avg_period} deviates from expected {adjusted_period}"
 
     # 2. Cross-Engine Consistency
     if "mujoco" in valid_engines and "pinocchio" in valid_engines:

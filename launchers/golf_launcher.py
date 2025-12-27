@@ -351,6 +351,7 @@ class GolfLauncher(QMainWindow):
         # Load Registry
         try:
             from shared.python.model_registry import ModelRegistry
+
             self.registry = ModelRegistry(REPOS_ROOT / "config/models.yaml")
         except ImportError:
             logger.error("Failed to import ModelRegistry. Using empty registry.")
@@ -468,13 +469,13 @@ class GolfLauncher(QMainWindow):
         # Temporary fallback mapping until images are in registry
         img_name = MODEL_IMAGES.get(name)
         if not img_name:
-             # Try to guess based on ID
-             if "mujoco" in model.id:
-                 img_name = "mujoco_humanoid.png"
-             elif "drake" in model.id:
-                 img_name = "drake.png"
-             elif "pinocchio" in model.id:
-                 img_name = "pinocchio.png"
+            # Try to guess based on ID
+            if "mujoco" in model.id:
+                img_name = "mujoco_humanoid.png"
+            elif "drake" in model.id:
+                img_name = "drake.png"
+            elif "pinocchio" in model.id:
+                img_name = "pinocchio.png"
 
         img_path = ASSETS_DIR / img_name if img_name else None
 
@@ -690,20 +691,20 @@ class GolfLauncher(QMainWindow):
         # Look up in registry first
         path: Path | None = None
         if self.registry:
-             # Find model by name
-             # This is inefficient, but we indexed matching cards by name in init
-             # ideally we should track ID.
-             for m in self.registry.get_all_models():
-                 if m.name == model_name:
-                     path = REPOS_ROOT / m.path
-                     break
+            # Find model by name
+            # This is inefficient, but we indexed matching cards by name in init
+            # ideally we should track ID.
+            for m in self.registry.get_all_models():
+                if m.name == model_name:
+                    path = REPOS_ROOT / m.path
+                    break
 
         # Fallback for old behaviour if not in registry
         if not path:
-             # This fallback might be deprecated if we are fully migrated
-             if model_name in MODELS_DICT:
-                 repo_rel_path = MODELS_DICT[model_name]
-                 path = REPOS_ROOT / repo_rel_path
+            # This fallback might be deprecated if we are fully migrated
+            if model_name in MODELS_DICT:
+                repo_rel_path = MODELS_DICT[model_name]
+                path = REPOS_ROOT / repo_rel_path
 
         if not path or not path.exists():
             QMessageBox.critical(self, "Error", f"Path not found: {path}")
@@ -741,14 +742,14 @@ class GolfLauncher(QMainWindow):
         # We can use python -m mujoco.viewer or similar
         logger.info(f"Launching generic MJCF: {path}")
         try:
-             # Use the python executable to run a simple viewer script or module
-             # Creating a temporary script or using -c
-             cmd = [
-                 sys.executable,
-                 "-c",
-                 f"import mujoco; import mujoco.viewer; m=mujoco.MjModel.from_xml_path(r'{str(path)}'); mujoco.viewer.launch(m)"
-             ]
-             subprocess.Popen(cmd)
+            # Use the python executable to run a simple viewer script or module
+            # Creating a temporary script or using -c
+            cmd = [
+                sys.executable,
+                "-c",
+                f"import mujoco; import mujoco.viewer; m=mujoco.MjModel.from_xml_path(r'{str(path)}'); mujoco.viewer.launch(m)",
+            ]
+            subprocess.Popen(cmd)
         except Exception as e:
             QMessageBox.critical(self, "Viewer Error", str(e))
 
