@@ -519,9 +519,9 @@ class GolfLauncher(QMainWindow):
         # Get model name for display
         model_name = model_id
         if self.registry:
-             model = self.registry.get_model(model_id)
-             if model:
-                 model_name = model.name
+            model = self.registry.get_model(model_id)
+            if model:
+                model_name = model.name
 
         # Update Styles
         for m_id, card in self.model_cards.items():
@@ -555,10 +555,10 @@ class GolfLauncher(QMainWindow):
     def update_launch_button(self, model_name=None):
         """Update the launch button state."""
         if not model_name and self.selected_model:
-             if self.registry:
-                 model = self.registry.get_model(self.selected_model)
-                 if model:
-                     model_name = model.name
+            if self.registry:
+                model = self.registry.get_model(self.selected_model)
+                if model:
+                    model_name = model.name
 
         if self.docker_available and self.selected_model:
             self.btn_launch.setEnabled(True)
@@ -690,12 +690,14 @@ class GolfLauncher(QMainWindow):
         model_id = self.selected_model
 
         if not self.registry:
-             QMessageBox.critical(self, "Error", "Model registry is unavailable.")
-             return
+            QMessageBox.critical(self, "Error", "Model registry is unavailable.")
+            return
 
         model = self.registry.get_model(model_id)
         if not model:
-            QMessageBox.critical(self, "Error", f"Model not found in registry: {model_id}")
+            QMessageBox.critical(
+                self, "Error", f"Model not found in registry: {model_id}"
+            )
             return
 
         path = REPOS_ROOT / model.path
@@ -707,14 +709,14 @@ class GolfLauncher(QMainWindow):
         # Engine-specific launch logic
         try:
             if model.type == "custom_humanoid":
-                 self._custom_launch_humanoid(path)
+                self._custom_launch_humanoid(path)
             elif model.type == "custom_dashboard":
-                 self._custom_launch_comprehensive(path)
+                self._custom_launch_comprehensive(path)
             elif model.type == "mjcf" or str(path).endswith(".xml"):
-                 self._launch_generic_mjcf(path)
+                self._launch_generic_mjcf(path)
             else:
-                 # Default to docker launch
-                 self._launch_docker_container(model, path)
+                # Default to docker launch
+                self._launch_docker_container(model, path)
         except Exception as e:
             QMessageBox.critical(self, "Launch Error", str(e))
 
