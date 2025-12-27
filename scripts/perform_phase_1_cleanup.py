@@ -7,10 +7,8 @@ def cleanup():
     # 1. Delete redundant requirements.txt
     print("--- Scanning for redundant requirements.txt files ---")
     req_files = list(root.rglob("requirements.txt"))
-    for f in req_files:
-        # Keep root and shared? Review said "Consolidate to single root".
-        # Shared might be useful? No, review said "Delete 19 redundant... Keep only root".
         if f.resolve() == (root / "requirements.txt").resolve():
+            continue
             continue
 
         print(f"Deleting: {f}")
