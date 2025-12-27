@@ -688,23 +688,23 @@ class GolfLauncher(QMainWindow):
 
         model_name = self.selected_model
 
+        # Lazily build a name-to-path cache to avoid linear search on every launch.
+        # This preserves existing behavior while improving lookup performance.
+        if self.registry and not hasattr(self, "_model_name_to_path"):
+            self._model_name_to_path = {
+                m.name: REPOS_ROOT / m.path for m in self.registry.get_all_models()
+            }
+
         # Look up in registry first
         path: Path | None = None
         if self.registry:
-            # Find model by name
-            # This is inefficient, but we indexed matching cards by name in init
-            # ideally we should track ID.
-            for m in self.registry.get_all_models():
-                if m.name == model_name:
-                    path = REPOS_ROOT / m.path
-                    break
+            path = getattr(self, "_model_name_to_path", {}).get(model_name)
 
-        # Fallback for old behaviour if not in registry
+        # Legacy fallback for MODELS_DICT-based models kept for backward compatibility.
         if not path:
-            # This fallback might be deprecated if we are fully migrated
-            if model_name in MODELS_DICT:
-                repo_rel_path = MODELS_DICT[model_name]
-                path = REPOS_ROOT / repo_rel_path
+             if model_name in MODELS_DICT:
+                 repo_rel_path = MODELS_DICT[model_name]
+                 path = REPOS_ROOT / repo_rel_path
 
         if not path or not path.exists():
             QMessageBox.critical(self, "Error", f"Path not found: {path}")
@@ -714,17 +714,11 @@ class GolfLauncher(QMainWindow):
         try:
             custom_launchers = {
                 "MuJoCo Humanoid": self._custom_launch_humanoid,
-                # Fix: Basic models should use standard mjcf launcher if available?
-                # For now, let's keep custom overrides.
                 "MuJoCo Dashboard": self._custom_launch_comprehensive,
             }
 
-            # If it's a generic MJCF model, we might want a generic launcher?
-            # Current architecture assumes specific custom launchers for "Humanoid" and "Dashboard".
+            # If it's a generic MJCF model, use the generic launcher.
             # The new models in registry are mostly MJCF.
-            # We probably need a generic MJCF viewer/launcher.
-            # For now, let's assume if it is a .xml file, we launch basic viewer?
-
             if str(path).endswith(".xml"):
                 self._launch_generic_mjcf(path)
                 return
@@ -739,17 +733,21 @@ class GolfLauncher(QMainWindow):
 
     def _launch_generic_mjcf(self, path: Path):
         """Launch generic MJCF file in passive viewer."""
-        # We can use python -m mujoco.viewer or similar
         logger.info(f"Launching generic MJCF: {path}")
         try:
-            # Use the python executable to run a simple viewer script or module
-            # Creating a temporary script or using -c
-            cmd = [
-                sys.executable,
-                "-c",
-                f"import mujoco; import mujoco.viewer; m=mujoco.MjModel.from_xml_path(r'{str(path)}'); mujoco.viewer.launch(m)",
-            ]
-            subprocess.Popen(cmd)
+             # Use -c with the current interpreter to launch the viewer (no temporary script needed)
+             # Use sys.argv passing to avoid code injection risks
+             cmd = [
+                 sys.executable,
+                 "-c",
+                 (
+                     "import sys, mujoco, mujoco.viewer; "
+                     "m = mujoco.MjModel.from_xml_path(sys.argv[1]); "
+                     "mujoco.viewer.launch(m)"
+                 ),
+                 str(path),
+             ]
+             subprocess.Popen(cmd)
         except Exception as e:
             QMessageBox.critical(self, "Viewer Error", str(e))
 

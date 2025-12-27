@@ -19,7 +19,7 @@ class SimplePendulumParams:
 
     mass: float = 1.0  # kg
     length: float = 1.0  # m
-    gravity: float = 9.81  # m/s^2 (Approx, usage differs slightly engines)
+    gravity: float = 9.81  # m/s^2 (Approximate; usage differs slightly between engines)
     initial_angle: float = np.pi / 4  # rad (45 degrees)
     duration: float = 5.0  # s
     timestep: float = 0.001  # s
@@ -84,18 +84,26 @@ def run_pinocchio_pendulum(params: SimplePendulumParams) -> dict[str, Any]:
 
     # Joint
     joint_id = model.addJoint(
-        0, pin.JointModelRY(), pin.SE3(np.eye(3), np.array([0, 0, 0])), "joint"
+        0,
+        pin.JointModelRY(),
+        pin.SE3(np.eye(3), np.array([0, 0, 0])),
+        "joint"
     )
 
-    # Inertia (Point mass at length L)
-    # Pinocchio inertia is at the joint origin usually, we need to offset it?
-    # Actually, simpler to place a body at COM.
-    # COM is at (0, 0, -length) relative to joint if hanging down?
-    # Let's say z is up. Joint at origin. Mass at (0, 0, -L).
-    # Rotation Y.
+    # Inertia: model the pendulum bob as a point mass located at distance L.
+    # We use `FromSphere(mass, 0.0)` to construct an inertia with non-zero mass
+    # but zero rotational inertia, which corresponds to an ideal point mass.
+    # The actual spatial location of this point mass is then specified via
+    # `inertia.lever` below. By setting the lever arm to (0, 0, -L), the mass
+    # is placed at the end of a massless rod of length L, giving the standard
+    # simple-pendulum dynamics without additional rotational inertia from a
+    # finite-size bob. This matches the analytical model and keeps the focus
+    # of this integration test on cross-engine consistency rather than on
+    # detailed rigid-body shape modeling. For extended bodies, a non-zero
+    # radius and full inertia tensor should be used instead.
 
     mass = params.mass
-    inertia = pin.Inertia.FromSphere(mass, 0.0)  # Point mass approximation
+    inertia = pin.Inertia.FromSphere(mass, 0.0)
     # Offset inertia center
     inertia.lever = np.array([0, 0, -params.length])
 
