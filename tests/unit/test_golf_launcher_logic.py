@@ -98,15 +98,15 @@ class MockQMainWindow(MockQWidget):
 class MockQPushButton(MockQWidget):
     def __init__(self, text="", parent=None):
         super().__init__(parent)
-        self.text = text
+        self._text = text
         self.clicked = MagicMock()
         self.enabled = True
 
     def setText(self, t):
-        self.text = t
+        self._text = t
 
     def text(self):
-        return self.text
+        return self._text
 
     def setEnabled(self, b):
         self.enabled = b
@@ -158,10 +158,10 @@ class MockQScrollArea(MockQWidget):
 
 class MockQLabel(MockQWidget):
     def __init__(self, text="", parent=None):
-        self.text = text
+        self._text = text
 
     def setText(self, t):
-        self.text = t
+        self._text = t
 
     def setPixmap(self, p):
         pass
@@ -241,29 +241,30 @@ class TestGolfLauncherLogic:
 
         registry_instance = mock_registry.return_value
         registry_instance.get_all_models.return_value = [mock_model]
+        registry_instance.get_model.return_value = mock_model
 
         launcher = GolfLauncher()
 
         # Initial state: No Docker, No Model
         assert launcher.btn_launch.isEnabled() is False
-        # assert launcher.btn_launch.text == "SELECT A MODEL" # Flaky in test env
-        # Code actually selects first model by default if registry has models
-        # "self.select_model('MuJoCo Humanoid')" is hardcoded at end of init
 
         # Simulate Docker becoming available
         launcher.on_docker_check_complete(True)
         assert launcher.docker_available is True
 
-        # If "MuJoCo Humanoid" is selected by default but our registry doesn't have it...
-        # The select_model("MuJoCo Humanoid") call probably happened.
-        # But we only have "Test Model".
+        # Initial selection logic might have selected test_model since it's the only one
+        # Let's verify or reset
+        launcher.selected_model = None
+        launcher.btn_launch.setEnabled(False)
+        launcher.btn_launch.setText("SELECT A MODEL")
 
-        # Let's manually select "Test Model"
-        launcher.select_model("Test Model")
+        # Select by ID
+        launcher.select_model("test_model")
 
-        assert launcher.selected_model == "Test Model"
+        assert launcher.selected_model == "test_model"
         assert launcher.btn_launch.isEnabled() is True
-        assert "TEST MODEL" in launcher.btn_launch.text
+        # The button text should contain the NAME, upper case
+        assert "TEST MODEL" in launcher.btn_launch.text()
 
     @patch("shared.python.model_registry.ModelRegistry")
     @patch("launchers.golf_launcher.DockerCheckThread")
@@ -273,14 +274,15 @@ class TestGolfLauncherLogic:
         mock_model.name = "Test Model"
         mock_model.path = "engines/test"
         mock_model.id = "test_model"
+        mock_model.type = "docker"
 
         registry_instance = mock_registry.return_value
         registry_instance.get_all_models.return_value = [mock_model]
-        registry_instance.get_model_by_name.return_value = mock_model
+        registry_instance.get_model.return_value = mock_model
 
         launcher = GolfLauncher()
         launcher.docker_available = True
-        launcher.select_model("Test Model")
+        launcher.select_model("test_model")
 
         # Mock subprocess
         with patch("launchers.golf_launcher.subprocess.Popen") as mock_popen:
@@ -288,7 +290,7 @@ class TestGolfLauncherLogic:
                 with patch("os.name", "posix"):
 
                     # We need to verify _launch_docker_container is called essentially
-                    # because "Test Model" is not in custom_launchers dict
+                    # because type is "docker" (not custom)
 
                     launcher.launch_simulation()
 
@@ -309,14 +311,15 @@ class TestGolfLauncherLogic:
         mock_model.name = "Generic MJCF"
         mock_model.path = "engines/test/model.xml"
         mock_model.id = "generic_mjcf"
+        mock_model.type = "mjcf"
 
         registry_instance = mock_registry.return_value
         registry_instance.get_all_models.return_value = [mock_model]
-        registry_instance.get_model_by_name.return_value = mock_model
+        registry_instance.get_model.return_value = mock_model
 
         launcher = GolfLauncher()
         launcher.docker_available = True
-        launcher.select_model("Generic MJCF")
+        launcher.select_model("generic_mjcf")
 
         with patch("launchers.golf_launcher.subprocess.Popen") as mock_popen:
             with patch.object(Path, "exists", return_value=True):
