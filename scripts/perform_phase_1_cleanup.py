@@ -6,9 +6,8 @@ def cleanup():
 
     # 1. Delete redundant requirements.txt
     print("--- Scanning for redundant requirements.txt files ---")
-    req_files = list(root.rglob("requirements.txt"))
+    for f in req_files:
         if f.resolve() == (root / "requirements.txt").resolve():
-            continue
             continue
 
         print(f"Deleting: {f}")
