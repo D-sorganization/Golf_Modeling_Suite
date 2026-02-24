@@ -136,7 +136,9 @@ class DockerLauncher:
     and model-specific launch commands.
     """
 
-    def __init__(self, repo_root: Path, image_name: str = DOCKER_IMAGE_ENGINE) -> None:
+    def __init__(
+        self, repo_root: Path, image_name: str = DOCKER_IMAGE_ENGINE
+    ) -> None:
         """Initialize the Docker launcher.
 
         Args:
