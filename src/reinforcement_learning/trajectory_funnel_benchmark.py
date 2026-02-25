@@ -14,9 +14,10 @@ class TrajectoryFunnelBenchmark:
     """
 
     def __init__(self, mode="transverse"):
-        assert mode in ["transverse", "setpoint"], (
-            "Mode must be 'transverse' or 'setpoint'"
-        )
+        assert mode in [
+            "transverse",
+            "setpoint",
+        ], "Mode must be 'transverse' or 'setpoint'"
         self.mode = mode
 
     def setpoint_reward(self, current_state, target_state):

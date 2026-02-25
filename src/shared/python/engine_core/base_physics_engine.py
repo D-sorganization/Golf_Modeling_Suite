@@ -205,9 +205,9 @@ class BasePhysicsEngine(ContractChecker, PhysicsEngine):
             self._is_initialized = True
 
         # Verify postconditions
-        assert self._is_initialized, (
-            "Postcondition: engine must be initialized after load"
-        )
+        assert (
+            self._is_initialized
+        ), "Postcondition: engine must be initialized after load"
         assert self.model is not None, "Postcondition: model must be loaded"
 
         logger.info(f"Successfully loaded model: {self.model_name}")
@@ -245,9 +245,9 @@ class BasePhysicsEngine(ContractChecker, PhysicsEngine):
             self._is_initialized = True
 
         # Verify postconditions
-        assert self._is_initialized, (
-            "Postcondition: engine must be initialized after load"
-        )
+        assert (
+            self._is_initialized
+        ), "Postcondition: engine must be initialized after load"
         assert self.model is not None, "Postcondition: model must be loaded"
 
         logger.info("Successfully loaded model from string")
@@ -320,9 +320,7 @@ class BasePhysicsEngine(ContractChecker, PhysicsEngine):
 
     @require_state(lambda self: self._is_initialized, "initialized")
     @invariant_checked
-    def set_state(  # type: ignore[override]
-        self, *args: Any, **kwargs: Any
-    ) -> None:
+    def set_state(self, *args: Any, **kwargs: Any) -> None:  # type: ignore[override]
         """Set engine state.
 
         Preconditions:
