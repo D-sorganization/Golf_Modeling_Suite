@@ -240,7 +240,7 @@ class PendulumRendererMixin:
             g_label_pos[0] + max_range * 0.1,
             g_label_pos[1],
             g_label_pos[2],
-            "g",
+            "g",  # type: ignore[arg-type]
             fontsize=16,
             color="#00AA00",
             weight="bold",
@@ -309,7 +309,7 @@ class PendulumRendererMixin:
     ) -> None:
         """Draw the joint markers at pivot, elbow, and wrist."""
         host = typing.cast("RendererProtocol", self)
-        host.ax.scatter(
+        host.ax.scatter(  # type: ignore[misc]
             *pivot,
             color="black",
             s=250,
@@ -319,7 +319,7 @@ class PendulumRendererMixin:
             linewidths=3,
             zorder=10,
         )
-        host.ax.scatter(
+        host.ax.scatter(  # type: ignore[misc]
             *elbow,
             color="#2E86AB",
             s=100,
@@ -328,7 +328,7 @@ class PendulumRendererMixin:
             linewidths=2,
             zorder=9,
         )
-        host.ax.scatter(
+        host.ax.scatter(  # type: ignore[misc]
             *wrist,
             color="#A23B72",
             s=180,
@@ -352,7 +352,7 @@ class PendulumRendererMixin:
             upper_mid[0],
             upper_mid[1],
             upper_mid[2],
-            "UPPER",
+            "UPPER",  # type: ignore[arg-type]
             fontsize=9,
             color="#2E86AB",
             weight="bold",
@@ -370,7 +370,7 @@ class PendulumRendererMixin:
             lower_mid[0],
             lower_mid[1],
             lower_mid[2],
-            "LOWER",
+            "LOWER",  # type: ignore[arg-type]
             fontsize=9,
             color="#A23B72",
             weight="bold",
