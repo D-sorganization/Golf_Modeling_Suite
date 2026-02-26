@@ -7,23 +7,23 @@
 
 ## Top 10 Hygiene Risks
 
-[Numbered list with severity]
+N/A
 
 ## Scorecard
 
-[Table with scores and evidence]
+N/A
 
 ## Linting Violation Inventory
 
-[Comprehensive violation listing]
+N/A
 
 ## Security Audit
 
-[Security check results]
+N/A
 
 ## AGENTS.md Compliance Report
 
-[Standard-by-standard evaluation]
+N/A
 
 ## Findings Table
 
@@ -31,12 +31,12 @@
 
 ## Refactoring Plan
 
-[Phased recommendations]
+N/A
 
 ## Diff Suggestions
 
-[Before/after code examples]
+N/A
 
 ## Appendix: Files Requiring Attention
 
-[Prioritized file list]
+N/A

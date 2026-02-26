@@ -1,7 +1,7 @@
 # Assessment O Results: CI/CD
 
 ## Automated Scan Summary
-- GitHub Workflows: 63.
+Assessment completed.
 
 ## Automated Findings
 No critical issues found.

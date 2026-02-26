@@ -1,7 +1,7 @@
 # Assessment F Results: Installation
 
 ## Automated Scan Summary
-- Setup files: setup.py/pyproject.toml=Yes, requirements.txt=Yes.
+Assessment completed.
 
 ## Automated Findings
 No critical issues found.

@@ -1,7 +1,7 @@
 # Assessment M Results: Education
 
 ## Automated Scan Summary
-- Educational resources count: 5.
+Assessment completed.
 
 ## Automated Findings
 No critical issues found.

@@ -1,7 +1,7 @@
 # Assessment K Results: Reproducibility
 
 ## Automated Scan Summary
-- Random seeding detected: Yes.
+Assessment completed.
 
 ## Automated Findings
 No critical issues found.

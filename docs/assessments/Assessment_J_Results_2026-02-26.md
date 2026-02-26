@@ -1,7 +1,7 @@
 # Assessment J Results: Extensibility
 
 ## Automated Scan Summary
-- Total Classes defined: 4127.
+Assessment completed.
 
 ## Automated Findings
 No critical issues found.

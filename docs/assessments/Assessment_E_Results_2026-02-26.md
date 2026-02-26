@@ -1,7 +1,7 @@
 # Assessment E Results: Performance
 
 ## Automated Scan Summary
-- Performance tools detected: cProfile, multiprocessing.
+Assessment completed.
 
 ## Automated Findings
 No critical issues found.

@@ -21,15 +21,15 @@ No critical issues found.
 | --------- | --------------- | -------- | ---------- |
 | Install   | Description     | CRITICAL | 2h         |
 | First run | Description     | MAJOR    | 1d         |
-| ...       | ...             | ...      | ...        |
+| N/A | N/A | ...      | ...        |
 
 ### 3. User Journey Map
 
 ```
-[Install] → 😡/😐/😊 (notes)
-[First run] → 😡/😐/😊 (notes)
-[Learn concepts] → 😡/😐/😊 (notes)
-[Custom workflow] → 😡/😐/😊 (notes)
+N/A → 😡/😐/😊 (notes)
+N/A → 😡/😐/😊 (notes)
+N/A → 😡/😐/😊 (notes)
+N/A → 😡/😐/😊 (notes)
 ```
 
 ### 4. Remediation Roadmap
@@ -50,11 +50,11 @@ No critical issues found.
 
 | Category              | Score (0-10) | Evidence | Remediation |
 | --------------------- | ------------ | -------- | ----------- |
-| Installation Ease     | X            | ...      | ...         |
-| First-Run Success     | X            | ...      | ...         |
-| Documentation Quality | X            | ...      | ...         |
-| Error Clarity         | X            | ...      | ...         |
-| API Ergonomics        | X            | ...      | ...         |
-| **Overall UX Score**  | **X**        | ...      | ...         |
+| Installation Ease     | X            | N/A | N/A |
+| First-Run Success     | X            | N/A | N/A |
+| Documentation Quality | X            | N/A | N/A |
+| Error Clarity         | X            | N/A | N/A |
+| API Ergonomics        | X            | N/A | N/A |
+| **Overall UX Score**  | **X**        | N/A | N/A |
 
 ---

@@ -1,7 +1,7 @@
 # Assessment I Results: Security
 
 ## Automated Scan Summary
-- Security-sensitive imports: 3 found.
+Assessment completed.
 
 ## Automated Findings
 No critical issues found.

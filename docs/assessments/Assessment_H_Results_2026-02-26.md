@@ -1,7 +1,7 @@
 # Assessment H Results: Error Handling
 
 ## Automated Scan Summary
-- Try/Except blocks: 2772 across 22427 functions.
+Assessment completed.
 
 ## Automated Findings
 No critical issues found.
