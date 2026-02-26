@@ -1,7 +1,7 @@
 # Assessment L Results: Maintainability
 
 ## Automated Scan Summary
-- Average File Size: 260.7 LOC.
+- Average File Size: 260.9 LOC.
 
 ## Automated Findings
 - Average file size is high, suggesting potential refactoring needs.

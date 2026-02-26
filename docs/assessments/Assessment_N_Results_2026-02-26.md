@@ -1,7 +1,7 @@
 # Assessment N Results: Visualization
 
 ## Automated Scan Summary
-- Visualization libraries used: matplotlib, seaborn, plotly.
+- Visualization libraries used: plotly, seaborn, matplotlib.
 
 ## Automated Findings
 No critical issues found.

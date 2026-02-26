@@ -7,36 +7,36 @@
 
 ## Top 10 Hygiene Risks
 
-See summary details.
+[Numbered list with severity]
 
 ## Scorecard
 
-See summary details.
+[Table with scores and evidence]
 
 ## Linting Violation Inventory
 
-See summary details.
+[Comprehensive violation listing]
 
 ## Security Audit
 
-See summary details.
+[Security check results]
 
 ## AGENTS.md Compliance Report
 
-See summary details.
+[Standard-by-standard evaluation]
 
 ## Findings Table
 
-- High TODO density indicates technical debt.
+- TODO density is within acceptable limits.
 
 ## Refactoring Plan
 
-See summary details.
+[Phased recommendations]
 
 ## Diff Suggestions
 
-See summary details.
+[Before/after code examples]
 
 ## Appendix: Files Requiring Attention
 
-See summary details.
+[Prioritized file list]

@@ -2,20 +2,20 @@
 
 ## Executive Summary
 
-- Analyzed 2076 Python files.
-- Total Lines of Code: 541299.
+- Analyzed 2075 Python files.
+- Total Lines of Code: 541305.
 
 ## Top 10 Risks
 
-See summary details.
+[Numbered list with severity]
 
 ## Scorecard
 
-See summary details.
+[Table with scores and evidence]
 
 ## Implementation Completeness Audit
 
-See summary details.
+[Category-by-category evaluation]
 
 ## Findings Table
 
@@ -28,12 +28,12 @@ See summary details.
 
 ## Refactoring Plan
 
-See summary details.
+[Phased recommendations]
 
 ## Diff Suggestions
 
-See summary details.
+[Code examples]
 
 ## Appendix: Tool Inventory
 
-See summary details.
+[Complete list of tools with status]
