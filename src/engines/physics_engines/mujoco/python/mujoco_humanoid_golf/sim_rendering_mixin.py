@@ -189,9 +189,13 @@ class SimRenderingMixin:
                 x_e = np.arctan2(-mat[1, 2], mat[1, 1])
                 y_e = np.arctan2(-mat[2, 0], sy)
                 z_e = 0
+            msg = (
+                f"Euler (xyz): [{np.rad2deg(x_e):.1f}, "
+                f"{np.rad2deg(y_e):.1f}, {np.rad2deg(z_e):.1f}] deg"
+            )
             cv2.putText(
                 img,
-                f"Euler (xyz): [{np.rad2deg(x_e):.1f}, {np.rad2deg(y_e):.1f}, {np.rad2deg(z_e):.1f}] deg",
+                msg,
                 (x + 10, y + y_offset),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.4,
@@ -201,9 +205,13 @@ class SimRenderingMixin:
             y_offset += 15
 
         if getattr(self, "show_live_quat", False):
+            msg = (
+                f"Quat (w,x,y,z): [{quat[0]:.2f}, "
+                f"{quat[1]:.2f}, {quat[2]:.2f}, {quat[3]:.2f}]"
+            )
             cv2.putText(
                 img,
-                f"Quat (w,x,y,z): [{quat[0]:.2f}, {quat[1]:.2f}, {quat[2]:.2f}, {quat[3]:.2f}]",
+                msg,
                 (x + 10, y + y_offset),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.4,
@@ -221,7 +229,6 @@ class SimRenderingMixin:
 
             if prev_T is not None:
                 R_rel = prev_T[:3, :3].T @ T2[:3, :3]
-                p_rel = prev_T[:3, :3].T @ (T2[:3, 3] - prev_T[:3, 3])
                 tr = np.trace(R_rel)
                 theta = np.arccos(np.clip((tr - 1) / 2.0, -1.0, 1.0))
                 if abs(theta) > 1e-6:
