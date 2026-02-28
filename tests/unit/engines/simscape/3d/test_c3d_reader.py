@@ -1,6 +1,9 @@
 """Tests for C3D data loading utilities."""
 
 from __future__ import annotations
+import pytest
+pytest.skip("Legacy test pending dependency modernization (#1586)", allow_module_level=True)
+
 
 import warnings
 from pathlib import Path

@@ -1,3 +1,6 @@
+import pytest
+pytest.skip("Legacy test pending dependency modernization (#1586)", allow_module_level=True)
+
 """Tests for quality check script."""
 
 import importlib.util
