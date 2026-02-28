@@ -4,8 +4,12 @@ Test script to verify data loading and GUI functionality
 """
 
 from __future__ import annotations
+
 import pytest
-pytest.skip("Legacy test pending dependency modernization (#1586)", allow_module_level=True)
+
+pytest.skip(
+    "Legacy test pending dependency modernization (#1586)", allow_module_level=True
+)
 
 
 import logging

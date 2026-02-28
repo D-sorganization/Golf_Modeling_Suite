@@ -1,8 +1,12 @@
 """Integration tests for backend consistency."""
 
 from __future__ import annotations
+
 import pytest
-pytest.skip("Legacy test pending dependency modernization (#1586)", allow_module_level=True)
+
+pytest.skip(
+    "Legacy test pending dependency modernization (#1586)", allow_module_level=True
+)
 
 
 from dtack.backends.backend_factory import BackendFactory, BackendType
