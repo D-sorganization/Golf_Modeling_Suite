@@ -59,7 +59,10 @@ def resolve_and_verify_link(link: str, base_dir: Path) -> str | None:
 def check_links(root_dir: Path) -> list[str]:
     """Validate internal links in all Markdown files under root_dir."""
     require(isinstance(root_dir, Path), "root_dir must be a Path")
-    require(root_dir.exists(), f"Configuration error: root directory '{root_dir}' does not exist.")
+    require(
+        root_dir.exists(),
+        f"Configuration error: root directory '{root_dir}' does not exist.",
+    )
 
     errors = []
 
