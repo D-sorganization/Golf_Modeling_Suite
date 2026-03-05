@@ -1,20 +1,20 @@
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402
 
-import pytest
+import pytest  # noqa: E402
 
 pytest.skip(
     "Legacy test pending dependency modernization (#1586)", allow_module_level=True
 )
 
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock  # noqa: E402
 
-import numpy as np
-import pytest
-from matplotlib.figure import Figure
-from src.shared.python.tests.test_plotting import MockRecorder
+import numpy as np  # noqa: E402
+import pytest  # noqa: E402
+from matplotlib.figure import Figure  # noqa: E402
+from src.shared.python.tests.test_plotting import MockRecorder  # noqa: E402
 
-from src.shared.python.plotting import GolfSwingPlotter
+from src.shared.python.plotting import GolfSwingPlotter  # noqa: E402
 
 
 @pytest.fixture

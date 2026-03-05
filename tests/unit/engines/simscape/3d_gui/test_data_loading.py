@@ -3,21 +3,21 @@
 Test script to verify data loading and GUI functionality
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402
 
-import pytest
+import pytest  # noqa: E402
 
 pytest.skip(
     "Legacy test pending dependency modernization (#1586)", allow_module_level=True
 )
 
 
-import logging
-import sys
+import logging  # noqa: E402
+import sys  # noqa: E402
 
-from golf_gui_application import GolfVisualizerMainWindow
-from PyQt6.QtWidgets import QApplication
-from wiffle_data_loader import WiffleDataLoader
+from golf_gui_application import GolfVisualizerMainWindow  # noqa: E402
+from PyQt6.QtWidgets import QApplication  # noqa: E402
+from wiffle_data_loader import WiffleDataLoader  # noqa: E402
 
 logger = logging.getLogger(__name__)
 

@@ -1,17 +1,17 @@
 """Validation tests for model correctness."""
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402
 
-import pytest
+import pytest  # noqa: E402
 
 pytest.skip(
     "Legacy test pending dependency modernization (#1586)", allow_module_level=True
 )
 
 
-from pathlib import Path
+from pathlib import Path  # noqa: E402
 
-import yaml  # type: ignore[import-untyped]
+import yaml  # type: ignore[import-untyped]  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 

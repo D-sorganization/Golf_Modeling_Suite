@@ -1,27 +1,27 @@
 """Tests for motion training module."""
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402
 
-import pytest
+import pytest  # noqa: E402
 
 pytest.skip(
     "Legacy test pending dependency modernization (#1586)", allow_module_level=True
 )
 
 
-import typing
+import typing  # noqa: E402
 
-import numpy as np
-import pytest
+import numpy as np  # noqa: E402
+import pytest  # noqa: E402
 
 # Import test subjects
-from motion_training.club_trajectory_parser import (
+from motion_training.club_trajectory_parser import (  # noqa: E402
     ClubFrame,
     ClubTrajectory,
     ClubTrajectoryParser,
     SwingEventMarkers,
     compute_hand_positions,
-)
+)  # noqa: E402
 
 
 class TestClubFrame:

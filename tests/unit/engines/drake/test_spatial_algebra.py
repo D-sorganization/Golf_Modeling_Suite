@@ -1,4 +1,4 @@
-import pytest
+import pytest  # noqa: E402
 
 pytest.skip(
     "Legacy test pending dependency modernization (#1586)", allow_module_level=True
@@ -10,9 +10,9 @@ Unit tests for spatial algebra module.
 Tests spatial vectors, transformations, and inertia operations.
 """
 
-import numpy as np
-import pytest
-from src.spatial_algebra import (
+import numpy as np  # noqa: E402
+import pytest  # noqa: E402
+from src.spatial_algebra import (  # noqa: E402
     crf,
     crm,
     inv_xtrans,
@@ -22,7 +22,7 @@ from src.spatial_algebra import (
     xlt,
     xrot,
     xtrans,
-)
+)  # noqa: E402
 
 
 class TestSpatialCrossProducts:

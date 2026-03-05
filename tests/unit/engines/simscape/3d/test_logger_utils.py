@@ -1,4 +1,4 @@
-import pytest
+import pytest  # noqa: E402
 
 pytest.skip(
     "Legacy test pending dependency modernization (#1586)", allow_module_level=True
@@ -6,13 +6,13 @@ pytest.skip(
 
 """Tests for logger utilities module."""
 
-import logging
-import random
+import logging  # noqa: E402
+import random  # noqa: E402
 
 # Import handled by conftest.py
-import logger_utils
-import numpy as np
-from logger_utils import get_logger, set_seeds
+import logger_utils  # noqa: E402
+import numpy as np  # noqa: E402
+from logger_utils import get_logger, set_seeds  # noqa: E402
 
 
 def test_get_logger_returns_logger() -> None:

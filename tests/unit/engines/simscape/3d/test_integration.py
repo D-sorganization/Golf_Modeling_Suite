@@ -1,4 +1,4 @@
-import pytest
+import pytest  # noqa: E402
 
 pytest.skip(
     "Legacy test pending dependency modernization (#1586)", allow_module_level=True
@@ -6,26 +6,28 @@ pytest.skip(
 
 """Integration tests for the main package."""
 
-import logging
-import random
+import logging  # noqa: E402
+import random  # noqa: E402
 
-import numpy as np
-import pytest
+import numpy as np  # noqa: E402
+import pytest  # noqa: E402
 
 # Import handled by conftest.py
-from logger_utils import get_logger, set_seeds
+from logger_utils import get_logger, set_seeds  # noqa: E402
 
 # Import c3d_reader using package import (same as test_c3d_reader.py)
 # This will work even if ezc3d is not available due to our optional import handling
-from src.c3d_reader import (
+from src.c3d_reader import (  # noqa: E402
     C3DDataReader,
     C3DEvent,
     C3DMetadata,
     load_tour_average_reader,
-)
+)  # noqa: E402
 
 # Use centralized availability check
-from src.shared.python.engine_core.engine_availability import EZC3D_AVAILABLE
+from src.shared.python.engine_core.engine_availability import (  # noqa: E402
+    EZC3D_AVAILABLE,  # noqa: E402
+)
 
 
 class TestPackageIntegration:

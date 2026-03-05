@@ -1,4 +1,4 @@
-import pytest
+import pytest  # noqa: E402
 
 pytest.skip(
     "Legacy test pending dependency modernization (#1586)", allow_module_level=True
@@ -6,7 +6,7 @@ pytest.skip(
 
 """Quick test script to verify new models load correctly."""
 
-import sys
+import sys  # noqa: E402
 
 import mujoco as mj  # noqa: E402
 from mujoco_golf_pendulum.models import (  # noqa: E402
@@ -16,9 +16,12 @@ from mujoco_golf_pendulum.models import (  # noqa: E402
     TWO_LINK_INCLINED_PLANE_UNIVERSAL_XML,
     generate_flexible_club_xml,
     generate_rigid_club_xml,
-)
+)  # noqa: E402
 
-from src.shared.python.logging_pkg.logging_config import get_logger, setup_logging
+from src.shared.python.logging_pkg.logging_config import (  # noqa: E402
+    get_logger,
+    setup_logging,
+)
 
 setup_logging(use_simple_format=True)
 logger = get_logger(__name__)

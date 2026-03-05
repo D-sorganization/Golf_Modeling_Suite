@@ -1,15 +1,15 @@
 """Integration tests for backend consistency."""
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402
 
-import pytest
+import pytest  # noqa: E402
 
 pytest.skip(
     "Legacy test pending dependency modernization (#1586)", allow_module_level=True
 )
 
 
-from dtack.backends.backend_factory import BackendFactory, BackendType
+from dtack.backends.backend_factory import BackendFactory, BackendType  # noqa: E402
 
 
 class TestBackendConsistency:
