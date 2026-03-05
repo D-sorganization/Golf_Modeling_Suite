@@ -145,6 +145,9 @@ In addition to the standard framework, specialized audits monitor specific quali
 | 2026-03-03 | Completist Audit Report                  | `docs/assessments/completist/Completist_Report_2026-03-03.md`                 |
 | 2026-03-04 | Completist Audit Report                  | `docs/assessments/completist/Completist_Report_2026-03-04.md`                 |
 | 2026-03-04 | Consolidated Implementation Gaps         | `docs/assessments/completist/issues/ISSUE_GAPS_AND_INACCURACIES.md`           |
+| 2026-03-05 | Comprehensive Assessment Report          | `docs/assessments/Comprehensive_Assessment.md`                                |
+| 2026-03-05 | Assessment Generation (A-O)              | `docs/assessments/Assessment_*_Category.md`                                   |
+| 2026-03-05 | Completist Audit Report                  | `docs/assessments/completist/Completist_Report_2026-03-05.md`                 |
 
 ---
 
