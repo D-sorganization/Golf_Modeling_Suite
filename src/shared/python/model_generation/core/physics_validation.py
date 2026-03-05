@@ -166,7 +166,10 @@ class PhysicsValidator:
             # Compute condition number
             if eigenvalues.min() > 0:
                 result.condition_number = eigenvalues.max() / eigenvalues.min()
-                if result.condition_number is not None and result.condition_number > 1e5:
+                if (
+                    result.condition_number is not None
+                    and result.condition_number > 1e5
+                ):
                     result.warnings.append(
                         f"High condition number ({result.condition_number:.2e}) "
                         "may cause numerical instability"
