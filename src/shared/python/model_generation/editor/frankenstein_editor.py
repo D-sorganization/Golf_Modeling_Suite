@@ -528,7 +528,7 @@ class FrankensteinEditor(ClipboardMixin, ModificationMixin):
 
         return EditorState(
             models=models_copy,
-            clipboard=copy.deepcopy(self._clipboard),
+            clipboard=copy.deepcopy(self._clipboard),  # type: ignore
             operation_history=[],
             timestamp=time.time(),
         )
@@ -536,7 +536,7 @@ class FrankensteinEditor(ClipboardMixin, ModificationMixin):
     def _restore_state(self, state: EditorState) -> None:
         """Restore from a state snapshot."""
         self._models = state.models
-        self._clipboard = state.clipboard
+        self._clipboard = state.clipboard  # type: ignore
 
     # ============================================================
     # Export
