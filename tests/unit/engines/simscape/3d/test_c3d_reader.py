@@ -16,9 +16,15 @@ from typing import Any  # noqa: E402
 import numpy as np  # noqa: E402
 import numpy.typing as npt  # noqa: E402
 import pytest  # noqa: E402
-from src.c3d_reader import C3DDataReader, C3DEvent, load_tour_average_reader  # noqa: E402
+from src.c3d_reader import (  # noqa: E402
+    C3DDataReader,
+    C3DEvent,
+    load_tour_average_reader,
+)
 
-from src.shared.python.engine_core.engine_availability import skip_if_unavailable  # noqa: E402
+from src.shared.python.engine_core.engine_availability import (
+    skip_if_unavailable,  # noqa: E402
+)
 
 # Skip tests if ezc3d is not available (e.g., Python 3.9)
 pytestmark = skip_if_unavailable("ezc3d")

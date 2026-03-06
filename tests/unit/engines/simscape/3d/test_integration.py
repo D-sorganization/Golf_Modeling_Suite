@@ -25,7 +25,9 @@ from src.c3d_reader import (  # noqa: E402
 )
 
 # Use centralized availability check
-from src.shared.python.engine_core.engine_availability import EZC3D_AVAILABLE  # noqa: E402
+from src.shared.python.engine_core.engine_availability import (
+    EZC3D_AVAILABLE,  # noqa: E402
+)
 
 
 class TestPackageIntegration:

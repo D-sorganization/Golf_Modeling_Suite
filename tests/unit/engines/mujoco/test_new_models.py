@@ -18,7 +18,10 @@ from mujoco_golf_pendulum.models import (  # noqa: E402
     generate_rigid_club_xml,
 )
 
-from src.shared.python.logging_pkg.logging_config import get_logger, setup_logging  # noqa: E402
+from src.shared.python.logging_pkg.logging_config import (  # noqa: E402
+    get_logger,
+    setup_logging,
+)
 
 setup_logging(use_simple_format=True)
 logger = get_logger(__name__)
