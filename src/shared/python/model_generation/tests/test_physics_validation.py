@@ -260,9 +260,9 @@ class TestCompletePhysicsValidation:
         link = MockLink(name="base")
 
         result = validator.validate_physics(
-            [link],
+            [link],  # type: ignore[list-item]
             check_stability=False,
-        )  # type: ignore[list-item]
+        )
 
         assert result.stability is None
 
@@ -271,8 +271,8 @@ class TestCompletePhysicsValidation:
         link = MockLink(name="base")
 
         result = validator.validate_physics(
-            [link],
+            [link],  # type: ignore[list-item]
             check_collisions=False,
-        )  # type: ignore[list-item]
+        )
 
         assert result.collision is None

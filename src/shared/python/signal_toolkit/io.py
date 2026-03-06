@@ -346,9 +346,9 @@ class SignalExporter:
             data[sig.name] = sig.values
 
         if compressed:
-            np.savez_compressed(file_path, **data)
+            np.savez_compressed(file_path, **data)  # type: ignore[arg-type]
         else:
-            np.savez(file_path, **data)
+            np.savez(file_path, **data)  # type: ignore[arg-type]
 
     @staticmethod
     def to_json(
