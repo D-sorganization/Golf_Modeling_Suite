@@ -167,7 +167,7 @@ class SeriesExpansion:
         # Create sample points centered at 'center'
         dx_values = np.linspace(-dx_range, dx_range, num_samples)
         x_samples = center + dx_values
-        y_samples = np.array([float(f(x)) for x in x_samples])
+        y_samples = np.array([float(f(float(x))) for x in x_samples])
 
         # Fit polynomial of degree n_terms-1 in terms of (x - center)
         # This gives us Taylor coefficients directly
