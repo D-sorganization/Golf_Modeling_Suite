@@ -553,14 +553,14 @@ class ModificationMixin:
                 xyz = list(new_link.visual_origin.xyz)
                 xyz[axis_idx] = -xyz[axis_idx]
                 new_link.visual_origin = Origin(
-                    xyz=tuple(xyz), rpy=new_link.visual_origin.rpy
+                    xyz=tuple(xyz), rpy=new_link.visual_origin.rpy  # type: ignore[arg-type]
                 )
 
             if new_link.collision_origin:
                 xyz = list(new_link.collision_origin.xyz)
                 xyz[axis_idx] = -xyz[axis_idx]
                 new_link.collision_origin = Origin(
-                    xyz=tuple(xyz), rpy=new_link.collision_origin.rpy
+                    xyz=tuple(xyz), rpy=new_link.collision_origin.rpy  # type: ignore[arg-type]
                 )
 
             model.links.append(new_link)
@@ -593,7 +593,7 @@ class ModificationMixin:
 
             xyz = list(new_joint.origin.xyz)
             xyz[axis_idx] = -xyz[axis_idx]
-            new_joint.origin = Origin(xyz=tuple(xyz), rpy=new_joint.origin.rpy)
+            new_joint.origin = Origin(xyz=tuple(xyz), rpy=new_joint.origin.rpy)  # type: ignore[arg-type]
 
             if new_joint.joint_type in (JointType.REVOLUTE, JointType.CONTINUOUS):
                 axis = list(new_joint.axis)

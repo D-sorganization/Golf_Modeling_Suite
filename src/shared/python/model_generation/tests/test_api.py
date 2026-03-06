@@ -244,6 +244,7 @@ class TestModelGenerationAPI:
         response = api.handle_request(request)
 
         assert response.status_code == 200
+        assert isinstance(response.body, dict)
         # Sphere should have equal ixx, iyy, izz
         inertia = response.body["inertia"]
         assert abs(inertia["ixx"] - inertia["iyy"]) < 1e-10

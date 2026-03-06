@@ -141,14 +141,14 @@ class TestStaticStability:
 
     def test_empty_links(self, validator: PhysicsValidator) -> None:
         """Test stability with no links."""
-        result = validator.check_static_stability([])
+        result = validator.check_static_stability([])  # type: ignore[list-item]
 
         assert not result.is_stable
 
     def test_single_link_stability(self, validator: PhysicsValidator) -> None:
         """Test stability with single link."""
         link = MockLink(name="base", inertial=MockInertial(mass=1.0))
-        result = validator.check_static_stability([link])  # type: ignore[list-item]
+        result = validator.check_static_stability([link])  # type: ignore[list-item]  # type: ignore[list-item]
 
         assert result.center_of_mass == (0.0, 0.0, 0.0)
 
@@ -169,7 +169,7 @@ class TestStaticStability:
             ),
         )
 
-        result = validator.check_static_stability([link1, link2])  # type: ignore[list-item]
+        result = validator.check_static_stability([link1, link2])  # type: ignore[list-item]  # type: ignore[list-item]
 
         # COM should be at origin (average of +1 and -1)
         assert result.center_of_mass == pytest.approx((0.0, 0.0, 0.0), abs=0.01)
@@ -186,7 +186,7 @@ class TestCollisionCheck:
         """Test links without collision geometry."""
         link = MockLink(name="link1")
         link.collision = None  # type: ignore
-        result = validator.check_collision_geometry([link])
+        result = validator.check_collision_geometry([link])  # type: ignore[list-item]
 
         assert not result.has_self_intersection
 
@@ -207,7 +207,7 @@ class TestCollisionCheck:
             ),
         )
 
-        result = validator.check_collision_geometry([link1, link2])
+        result = validator.check_collision_geometry([link1, link2])  # type: ignore[list-item]
 
         assert not result.has_self_intersection
         assert result.min_separation > 0
@@ -229,7 +229,7 @@ class TestCollisionCheck:
             ),
         )
 
-        result = validator.check_collision_geometry([link1, link2])
+        result = validator.check_collision_geometry([link1, link2])  # type: ignore[list-item]
 
         assert result.has_self_intersection
         assert ("link1", "link2") in result.penetration_pairs
@@ -250,7 +250,7 @@ class TestCompletePhysicsValidation:
             collision=MockCollision(),
         )
 
-        result = validator.validate_physics([link])
+        result = validator.validate_physics([link])  # type: ignore[list-item]
 
         assert result.is_valid
         assert result.total_mass == 1.0
@@ -262,7 +262,7 @@ class TestCompletePhysicsValidation:
         result = validator.validate_physics(
             [link],
             check_stability=False,
-        )
+        )  # type: ignore[list-item]
 
         assert result.stability is None
 
@@ -273,6 +273,6 @@ class TestCompletePhysicsValidation:
         result = validator.validate_physics(
             [link],
             check_collisions=False,
-        )
+        )  # type: ignore[list-item]
 
         assert result.collision is None

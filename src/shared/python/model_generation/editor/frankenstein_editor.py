@@ -72,7 +72,7 @@ class FrankensteinEditor(ClipboardMixin, ModificationMixin):
         """Initialize the Frankenstein editor."""
         self._models: dict[str, ParsedModel] = {}
         self._parser = URDFParser()
-        self._clipboard: list[
+        self._clipboard: list[  # type: ignore[assignment]
             tuple[ComponentType, list[Link], list[Joint], dict[str, Material]]
         ] = []
         self._undo_stack: list[EditorState] = []
