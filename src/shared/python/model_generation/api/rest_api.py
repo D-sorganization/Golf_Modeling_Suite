@@ -506,7 +506,10 @@ class ModelGenerationAPI:
             "urdf": result.urdf_string,
         }
 
-        if request.query_params.get("download") == "true" and result.urdf_string is not None:
+        if (
+            request.query_params.get("download") == "true"
+            and result.urdf_string is not None
+        ):
             return APIResponse.file(result.urdf_string, f"{result.robot_name}.urdf")
 
         return APIResponse.ok(response_data)
