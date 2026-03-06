@@ -22,7 +22,7 @@ from src.c3d_reader import (  # noqa: E402
     load_tour_average_reader,
 )
 
-from src.shared.python.engine_core.engine_availability import (
+from src.shared.python.engine_core.engine_availability import (  # noqa: E402
     skip_if_unavailable,  # noqa: E402
 )
 

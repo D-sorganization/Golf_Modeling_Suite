@@ -25,7 +25,7 @@ from src.c3d_reader import (  # noqa: E402
 )
 
 # Use centralized availability check
-from src.shared.python.engine_core.engine_availability import (
+from src.shared.python.engine_core.engine_availability import (  # noqa: E402
     EZC3D_AVAILABLE,  # noqa: E402
 )
 
