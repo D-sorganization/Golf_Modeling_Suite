@@ -598,7 +598,7 @@ class ModificationMixin:
             if new_joint.joint_type in (JointType.REVOLUTE, JointType.CONTINUOUS):
                 axis = list(new_joint.axis)
                 axis[axis_idx] = -axis[axis_idx]
-                new_joint.axis = tuple(axis)
+                new_joint.axis = (axis[0], axis[1], axis[2])  # type: ignore[misc]
 
             model.joints.append(new_joint)
 

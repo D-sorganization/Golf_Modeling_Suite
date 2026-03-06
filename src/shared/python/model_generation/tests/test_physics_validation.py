@@ -86,7 +86,7 @@ class TestInertiaValidation:
     def test_valid_inertia(self, validator: PhysicsValidator) -> None:
         """Test validation of valid inertia tensor."""
         inertia = MockInertia(mass=1.0, ixx=1.0, iyy=1.0, izz=1.0)
-        result = validator.validate_inertia_tensor(inertia)
+        result = validator.validate_inertia_tensor(inertia)  # type: ignore[arg-type]
 
         assert result.is_valid
         assert result.is_symmetric
@@ -96,7 +96,7 @@ class TestInertiaValidation:
     def test_negative_diagonal(self, validator: PhysicsValidator) -> None:
         """Test detection of negative diagonal elements."""
         inertia = MockInertia(mass=1.0, ixx=-1.0, iyy=1.0, izz=1.0)
-        result = validator.validate_inertia_tensor(inertia)
+        result = validator.validate_inertia_tensor(inertia)  # type: ignore[arg-type]
 
         assert not result.is_valid
         assert not result.is_positive_definite
@@ -105,7 +105,7 @@ class TestInertiaValidation:
         """Test detection of triangle inequality violation."""
         # Izz > Ixx + Iyy violates triangle inequality
         inertia = MockInertia(mass=1.0, ixx=0.1, iyy=0.1, izz=1.0)
-        result = validator.validate_inertia_tensor(inertia)
+        result = validator.validate_inertia_tensor(inertia)  # type: ignore[arg-type]
 
         assert not result.satisfies_triangle_inequality
         assert len(result.warnings) > 0
@@ -113,7 +113,7 @@ class TestInertiaValidation:
     def test_eigenvalue_computation(self, validator: PhysicsValidator) -> None:
         """Test eigenvalue computation."""
         inertia = MockInertia(mass=1.0, ixx=1.0, iyy=2.0, izz=3.0)
-        result = validator.validate_inertia_tensor(inertia)
+        result = validator.validate_inertia_tensor(inertia)  # type: ignore[arg-type]
 
         assert result.eigenvalues is not None
         assert len(result.eigenvalues) == 3
@@ -124,7 +124,7 @@ class TestInertiaValidation:
         """Test warning for high condition number."""
         # Very different diagonal elements
         inertia = MockInertia(mass=1.0, ixx=1e-6, iyy=1.0, izz=1.0)
-        result = validator.validate_inertia_tensor(inertia)
+        result = validator.validate_inertia_tensor(inertia)  # type: ignore[arg-type]
 
         assert result.condition_number is not None
         assert result.condition_number > 1e5
@@ -148,7 +148,7 @@ class TestStaticStability:
     def test_single_link_stability(self, validator: PhysicsValidator) -> None:
         """Test stability with single link."""
         link = MockLink(name="base", inertial=MockInertial(mass=1.0))
-        result = validator.check_static_stability([link])
+        result = validator.check_static_stability([link])  # type: ignore[list-item]
 
         assert result.center_of_mass == (0.0, 0.0, 0.0)
 
@@ -169,7 +169,7 @@ class TestStaticStability:
             ),
         )
 
-        result = validator.check_static_stability([link1, link2])
+        result = validator.check_static_stability([link1, link2])  # type: ignore[list-item]
 
         # COM should be at origin (average of +1 and -1)
         assert result.center_of_mass == pytest.approx((0.0, 0.0, 0.0), abs=0.01)

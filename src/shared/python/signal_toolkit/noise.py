@@ -262,7 +262,7 @@ def add_noise_to_signal(
     noise = generator.generate(
         signal.time,
         noise_type=noise_type,
-        amplitude=amplitude,
+        amplitude=float(amplitude),
         **kwargs,
     )
 

@@ -438,7 +438,7 @@ class URDFParser:
         xyz = tuple(float(v) for v in xyz_str.split())
         rpy = tuple(float(v) for v in rpy_str.split())
 
-        return Origin(xyz=xyz, rpy=rpy)
+        return Origin(xyz=xyz, rpy=rpy)  # type: ignore[arg-type]
 
     def _parse_geometry(self, elem: ET.Element, base_path: Path | None) -> Geometry:
         """Parse geometry element."""
