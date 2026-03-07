@@ -27,7 +27,19 @@ import math
 from typing import Any
 
 import numpy as np
-from contracts import require
+try:
+    from src.shared.python.contracts import require
+except ImportError:
+    try:
+        from contracts import require  # type: ignore[no-redef]
+    except ImportError:
+
+        def require(condition: bool, *args: object) -> None:  # type: ignore[misc]
+            """Fallback require() when contracts module is unavailable."""
+            if not condition:
+                msg = args[0] if args else "Precondition violated"
+                raise AssertionError(msg)
+
 
 __all__ = [
     "safe_eval",
