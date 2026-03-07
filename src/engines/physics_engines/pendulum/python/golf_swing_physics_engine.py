@@ -276,9 +276,7 @@ class GolfSwingPendulumEngine(BasePhysicsEngine):
     def set_state(self, q: np.ndarray, v: np.ndarray) -> None:
         """Set joint positions and velocities."""
         if len(q) >= 2 and len(v) >= 2:
-            self._state = np.array(
-                [float(q[0]), float(q[1]), float(v[0]), float(v[1])]
-            )
+            self._state = np.array([float(q[0]), float(q[1]), float(v[0]), float(v[1])])
 
     def set_control(self, u: np.ndarray) -> None:
         """Set applied torques [tau_shoulder, tau_wrist] (N·m)."""
@@ -421,9 +419,7 @@ class GolfSwingPendulumEngine(BasePhysicsEngine):
 
         orig = self._state.copy()
         try:
-            self._state = np.array(
-                [float(q[0]), float(q[1]), float(v[0]), float(v[1])]
-            )
+            self._state = np.array([float(q[0]), float(q[1]), float(v[0]), float(v[1])])
             return self.compute_drift_acceleration()
         finally:
             self._state = orig
@@ -435,9 +431,7 @@ class GolfSwingPendulumEngine(BasePhysicsEngine):
 
         orig = self._state.copy()
         try:
-            self._state = np.array(
-                [float(q[0]), float(q[1]), 0.0, 0.0]
-            )
+            self._state = np.array([float(q[0]), float(q[1]), 0.0, 0.0])
             g = self.compute_gravity_forces()
             M = self.compute_mass_matrix()
             return np.linalg.solve(M, -g + self._tau)

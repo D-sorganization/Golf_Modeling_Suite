@@ -147,7 +147,9 @@ def get_github_sha(api_url: str) -> str:
     try:
         import urllib.request  # noqa: PLC0415
 
-        req = urllib.request.Request(api_url, headers={"Accept": "application/vnd.github.v3+json"})
+        req = urllib.request.Request(
+            api_url, headers={"Accept": "application/vnd.github.v3+json"}
+        )
         with urllib.request.urlopen(req, timeout=10) as resp:  # noqa: S310
             data = json.loads(resp.read())
             return str(data.get("sha", "<no-sha>"))
@@ -188,11 +190,17 @@ def check_submodule(
     else:
         upstream = get_local_remote_sha(path)
 
-    is_current = pinned != "<unknown>" and upstream not in (
-        "<unavailable>",
-        "<api-error>",
-        "<unknown>",
-    ) and pinned.startswith(upstream[:10]) or pinned == upstream
+    is_current = (
+        pinned != "<unknown>"
+        and upstream
+        not in (
+            "<unavailable>",
+            "<api-error>",
+            "<unknown>",
+        )
+        and pinned.startswith(upstream[:10])
+        or pinned == upstream
+    )
 
     if is_current:
         msg = f"✅  {path} is current ({pinned[:12]})"
