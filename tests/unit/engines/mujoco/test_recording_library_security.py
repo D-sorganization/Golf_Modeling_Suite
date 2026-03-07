@@ -83,8 +83,15 @@ def isolated_library() -> Iterator[tuple]:
 
 @pytest.fixture()
 def temp_library() -> Iterator[str]:
-    """Create a temporary recording library."""
-    with tempfile.TemporaryDirectory() as temp_dir:
+    """Create a temporary recording library.
+
+    Uses ``ignore_cleanup_errors=True`` (Python ≥ 3.10) so that Windows
+    SQLite file-lock issues during TemporaryDirectory teardown don't cause
+    spurious test errors. The SQLite connection pool holds the file open
+    until the thread terminates, and ``TemporaryDirectory.__exit__`` fires
+    before the thread-local connection is released.
+    """
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
         yield temp_dir
 
 
@@ -108,9 +115,9 @@ def test_add_recording_path_traversal(isolated_library, temp_library) -> None:
 
     # Check if file exists outside library (vulnerability check)
     pwned_path = Path(temp_library).parent / "pwned.txt"
-    assert not pwned_path.exists(), (
-        "Path traversal succeeded! File created outside library."
-    )
+    assert (
+        not pwned_path.exists()
+    ), "Path traversal succeeded! File created outside library."
 
     # Check if file exists inside library (sanitized)
     sanitized_path = Path(temp_library) / "pwned.txt"

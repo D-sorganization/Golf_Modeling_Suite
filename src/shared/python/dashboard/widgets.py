@@ -675,9 +675,7 @@ class LivePlotWidget(QtWidgets.QWidget):
                 label = (
                     dim_label
                     if n_dims == 1
-                    else f"{dim_label} {i}"
-                    if plot_mode != "Norm"
-                    else "Norm"
+                    else f"{dim_label} {i}" if plot_mode != "Norm" else "Norm"
                 )
                 if plot_mode == "All Dimensions":
                     label = f"Dim {i}"
@@ -772,14 +770,27 @@ class LivePlotWidget(QtWidgets.QWidget):
         dlg.exec()
 
     def copy_snapshot(self) -> None:
-        """Capture the current plot and copy to clipboard."""
+        """Capture the current plot, copy to clipboard, and optionally save to file."""
         # Grab the canvas content
         pixmap = self.canvas.grab()
 
-        # Copy to clipboard
+        # Copy to clipboard (always)
         clipboard = QtWidgets.QApplication.clipboard()
         if clipboard:
             clipboard.setPixmap(pixmap)
+
+        # Optionally save to file
+        file_path, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            "Save Snapshot",
+            "snapshot",
+            "PNG Images (*.png);;All Files (*)",
+        )
+        if file_path:
+            # Ensure .png extension
+            if not file_path.lower().endswith(".png"):
+                file_path = file_path + ".png"
+            pixmap.save(file_path, "PNG")
 
         # Visual feedback
         self.btn_snapshot.setText("Copied!")
