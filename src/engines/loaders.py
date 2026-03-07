@@ -311,7 +311,7 @@ def load_putting_green_engine(suite_root: Path) -> PhysicsEngine:  # noqa: ARG00
         logger.info("Putting Green engine loaded successfully")
 
         # DbC postcondition
-        _ensure_engine_loaded(simulator, "PuttingGreen")
+        _ensure_engine_loaded(simulator, "PuttingGreen")  # type: ignore[arg-type]
         return simulator  # type: ignore[return-value]
 
     except ImportError as e:
