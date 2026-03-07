@@ -27,11 +27,14 @@ import math
 from typing import Any
 
 import numpy as np
+
+# Conditional import: contracts module may or may not be importable depending on PYTHONPATH.
+# The try/except pattern is intentional — noqa suppresses isort on this block.
 try:
-    from src.shared.python.contracts import require
+    from src.shared.python.contracts import require  # noqa: I001
 except ImportError:
     try:
-        from contracts import require  # type: ignore[no-redef]
+        from contracts import require  # type: ignore[no-redef]  # noqa: I001
     except ImportError:
 
         def require(condition: bool, *args: object) -> None:  # type: ignore[misc]
