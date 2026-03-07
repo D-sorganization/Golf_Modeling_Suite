@@ -488,13 +488,11 @@ def _render_o2_safety_tab(
 ) -> None:
     """Render Tab 3 — O2 flammability / safety analysis."""
     st.subheader("O2 Safety Analysis")
-    st.markdown(
-        """
+    st.markdown("""
     **Critical Thresholds:**
     - H2 LFL: 4%, UFL: 75%
     - O2 Danger Level: >2% with H2 >4%
-    """
-    )
+    """)
 
     # Plot options for O2 safety
     o2_col1, o2_col2, o2_col3 = st.columns(3)
