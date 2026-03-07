@@ -374,7 +374,7 @@ class GolfSwingPendulumEngine(BasePhysicsEngine):
         M = self.compute_mass_matrix()
         return np.linalg.solve(M, tau[:2])
 
-    def compute_jacobian(self, body_name: str) -> dict[str, np.ndarray] | None:
+    def compute_jacobian(self, body_name: str) -> dict[str, Any] | None:
         """Compute Jacobian for a named body ('wrist' or 'tip').
 
         Returns the 2×2 geometric Jacobian mapping joint velocities to
