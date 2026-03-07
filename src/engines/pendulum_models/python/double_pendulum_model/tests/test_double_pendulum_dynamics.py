@@ -221,7 +221,14 @@ class TestDerivatives:
     def test_returns_finite(self, default_dynamics: DoublePendulumDynamics) -> None:
         for _ in range(20):
             vals = np.random.uniform(-2.0, 2.0, 6)
-            state = DoublePendulumState(*vals[:4], phi=vals[4], omega_phi=vals[5])
+            state = DoublePendulumState(
+                theta1=float(vals[0]),
+                theta2=float(vals[1]),
+                omega1=float(vals[2]),
+                omega2=float(vals[3]),
+                phi=float(vals[4]),
+                omega_phi=float(vals[5]),
+            )
             derivs = default_dynamics.derivatives(0.0, state)
             assert all(math.isfinite(x) for x in derivs)
 
