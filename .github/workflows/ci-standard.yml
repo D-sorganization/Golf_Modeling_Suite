@@ -309,6 +309,18 @@ jobs:
           components: rustfmt, clippy
           targets: wasm32-unknown-unknown
 
+      # Clone Tools repo as sibling for tools-core dependency
+      - name: Checkout Tools (tools-core dependency)
+        if: steps.rust-changes.outputs.has_changes == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: D-sorganization/Tools
+          path: ../Tools
+          sparse-checkout: |
+            rust_core
+            Cargo.toml
+            rust-toolchain.toml
+
       - name: Cache Cargo registry and build
         if: steps.rust-changes.outputs.has_changes == 'true'
         uses: actions/cache@v4
