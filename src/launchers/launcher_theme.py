@@ -29,7 +29,7 @@ class LauncherThemeMixin:
             from src.shared.python.theme import ThemeManager
 
             manager = ThemeManager.instance()
-            c = manager.colors
+            c = manager.get_current_colors()
             self.setStyleSheet(
                 manager.get_stylesheet()
                 + f"""
