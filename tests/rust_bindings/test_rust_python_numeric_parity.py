@@ -92,8 +92,7 @@ class TestLerpParity:
         rust_result = float(upstream_physics.lerp(a, b, t))
         py_result = self._python_lerp(a, b, t)
         assert abs(rust_result - py_result) < 1e-15, (
-            f"Mismatch: lerp({a}, {b}, {t}) → "
-            f"Rust={rust_result}, Python={py_result}"
+            f"Mismatch: lerp({a}, {b}, {t}) → Rust={rust_result}, Python={py_result}"
         )
 
 
