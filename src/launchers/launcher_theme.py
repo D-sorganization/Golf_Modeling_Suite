@@ -26,10 +26,12 @@ class LauncherThemeMixin:
     def apply_styles(self) -> None:
         """Apply themed stylesheet from the shared ThemeManager."""
         try:
+            from types import SimpleNamespace
+
             from src.shared.python.theme import ThemeManager
 
             manager = ThemeManager.instance()
-            c = manager.get_current_colors()
+            c = SimpleNamespace(**manager.get_current_colors())
             self.setStyleSheet(
                 manager.get_current_stylesheet()
                 + f"""
