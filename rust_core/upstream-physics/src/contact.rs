@@ -23,6 +23,7 @@ const MIN_NORMAL_MAGNITUDE: f64 = 1e-10;
 /// Parameters for a contact surface.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass)]
+#[cfg_attr(feature = "wasm", wasm_bindgen::prelude::wasm_bindgen)]
 pub struct ContactParameters {
     /// Coefficient of restitution (0 = perfectly inelastic, 1 = perfectly elastic).
     pub cor: f64,
@@ -69,6 +70,7 @@ impl ContactParameters {
 /// Result of a contact calculation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass)]
+#[cfg_attr(feature = "wasm", wasm_bindgen::prelude::wasm_bindgen)]
 pub struct ContactResult {
     /// Post-impact velocity.
     pub velocity: Vector3,
@@ -183,6 +185,67 @@ pub fn calculate_impact(
         energy_lost: energy_lost.max(0.0),
         is_rolling: speed_out < ROLLING_SPEED_THRESHOLD,
     }
+}
+
+// ── WASM bindings ────────────────────────────────────────────────────────────
+
+#[cfg(feature = "wasm")]
+#[wasm_bindgen::prelude::wasm_bindgen]
+impl ContactParameters {
+    /// Create contact parameters for a surface.
+    #[wasm_bindgen(constructor)]
+    pub fn wasm_new(cor: f64, friction: f64) -> Self {
+        Self {
+            cor: cor.clamp(0.0, 1.0),
+            friction: friction.max(0.0),
+            normal: Vector3::new(0.0, 1.0, 0.0),
+        }
+    }
+}
+
+#[cfg(feature = "wasm")]
+#[wasm_bindgen::prelude::wasm_bindgen]
+impl ContactResult {
+    /// Post-impact speed [m/s].
+    #[wasm_bindgen(js_name = "speed", getter)]
+    pub fn wasm_speed(&self) -> f64 {
+        self.velocity.magnitude()
+    }
+
+    /// Post-impact velocity as Vector3.
+    #[wasm_bindgen(js_name = "velocity", getter)]
+    pub fn wasm_velocity(&self) -> Vector3 {
+        self.velocity
+    }
+
+    /// Post-impact spin rate [rad/s].
+    #[wasm_bindgen(js_name = "spinRate", getter)]
+    pub fn wasm_spin_rate(&self) -> f64 {
+        self.spin_rate
+    }
+
+    /// Energy lost during impact [J].
+    #[wasm_bindgen(js_name = "energyLost", getter)]
+    pub fn wasm_energy_lost(&self) -> f64 {
+        self.energy_lost
+    }
+
+    /// Whether the ball is rolling.
+    #[wasm_bindgen(js_name = "isRolling", getter)]
+    pub fn wasm_is_rolling(&self) -> bool {
+        self.is_rolling
+    }
+}
+
+/// WASM-exposed contact impact calculation.
+#[cfg(feature = "wasm")]
+#[wasm_bindgen::prelude::wasm_bindgen(js_name = "calculateImpact")]
+pub fn wasm_calculate_impact(
+    velocity: &Vector3,
+    spin_rate: f64,
+    params: &ContactParameters,
+) -> ContactResult {
+    calculate_impact(velocity, spin_rate, params)
 }
 
 // ── Tests (TDD) ─────────────────────────────────────────────────────────────
