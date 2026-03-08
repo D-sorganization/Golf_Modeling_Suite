@@ -273,10 +273,7 @@ pub fn compute_spin_decay(spin: &Vector3, dt: f64, spin_decay_rate: f64) -> Vect
 /// - `altitude_m` should be in [0, 11000] for accuracy (troposphere)
 #[must_use]
 pub fn air_from_altitude(altitude_m: f64) -> AirProperties {
-    debug_assert!(
-        altitude_m.is_finite(),
-        "DbC: altitude must be finite"
-    );
+    debug_assert!(altitude_m.is_finite(), "DbC: altitude must be finite");
 
     let t0: f64 = 288.15;
     let p0: f64 = 101_325.0;
@@ -396,14 +393,8 @@ mod tests {
 
         // Drag must oppose velocity (negative x)
         assert!(drag.x < 0.0, "Drag must oppose velocity: got {}", drag.x);
-        assert!(
-            drag.y.abs() < 1e-10,
-            "No lateral drag for x-only velocity"
-        );
-        assert!(
-            drag.z.abs() < 1e-10,
-            "No vertical drag for x-only velocity"
-        );
+        assert!(drag.y.abs() < 1e-10, "No lateral drag for x-only velocity");
+        assert!(drag.z.abs() < 1e-10, "No vertical drag for x-only velocity");
     }
 
     #[test]
@@ -458,7 +449,10 @@ mod tests {
         // spin_axis × velocity = (0,1,0) × (50,0,0) = (0,0,-50) — negative z
         // Actually: (0,1,0) × (50,0,0) = (1*0 - 0*0, 0*50 - 0*0, 0*0 - 1*50) = (0, 0, -50)
         // The magnitude matters, sign depends on cross product direction
-        assert!(lift.magnitude() > 0.01, "Backspin should produce non-zero lift");
+        assert!(
+            lift.magnitude() > 0.01,
+            "Backspin should produce non-zero lift"
+        );
     }
 
     #[test]
@@ -628,14 +622,8 @@ mod tests {
         let ratio_y = decayed.y / spin.y;
         let ratio_z = decayed.z / spin.z;
 
-        assert!(
-            (ratio_x - ratio_y).abs() < 1e-10,
-            "Decay should be uniform"
-        );
-        assert!(
-            (ratio_y - ratio_z).abs() < 1e-10,
-            "Decay should be uniform"
-        );
+        assert!((ratio_x - ratio_y).abs() < 1e-10, "Decay should be uniform");
+        assert!((ratio_y - ratio_z).abs() < 1e-10, "Decay should be uniform");
     }
 
     // ── Air from Altitude ────────────────────────────────────────────────

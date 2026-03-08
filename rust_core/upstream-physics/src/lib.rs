@@ -82,8 +82,12 @@ pub fn create_contact_parameters(cor: f64, friction: f64) -> JsValue {
 #[cfg(feature = "wasm")]
 #[wasm_bindgen(js_name = "computeAeroForces")]
 pub fn wasm_compute_aero_forces(
-    vx: f64, vy: f64, vz: f64,
-    sx: f64, sy: f64, sz: f64,
+    vx: f64,
+    vy: f64,
+    vz: f64,
+    sx: f64,
+    sy: f64,
+    sz: f64,
     air_density: f64,
 ) -> JsValue {
     let velocity = Vector3::new(vx, vy, vz);
