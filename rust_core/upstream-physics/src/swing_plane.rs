@@ -61,8 +61,7 @@ impl SwingPlaneResult {
 pub fn fit_plane(points: &[Vector3]) -> Result<SwingPlaneResult, &'static str> {
     let n = points.len();
 
-    // DbC: Need at least 3 points
-    debug_assert!(n >= 3, "fit_plane requires at least 3 points, got {}", n);
+    // DbC: All coordinates must be finite (finiteness is an invariant)
     debug_assert!(
         points
             .iter()
@@ -70,6 +69,7 @@ pub fn fit_plane(points: &[Vector3]) -> Result<SwingPlaneResult, &'static str> {
         "All input coordinates must be finite"
     );
 
+    // Graceful error when too few points (not a panic — callers may pass validated input)
     if n < 3 {
         return Err("Need at least 3 points for plane fit");
     }
