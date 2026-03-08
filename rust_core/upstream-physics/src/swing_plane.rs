@@ -64,7 +64,9 @@ pub fn fit_plane(points: &[Vector3]) -> Result<SwingPlaneResult, &'static str> {
     // DbC: Need at least 3 points
     debug_assert!(n >= 3, "fit_plane requires at least 3 points, got {}", n);
     debug_assert!(
-        points.iter().all(|p| p.x.is_finite() && p.y.is_finite() && p.z.is_finite()),
+        points
+            .iter()
+            .all(|p| p.x.is_finite() && p.y.is_finite() && p.z.is_finite()),
         "All input coordinates must be finite"
     );
 

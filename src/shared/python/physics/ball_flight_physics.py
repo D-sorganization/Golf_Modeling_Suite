@@ -434,7 +434,7 @@ class BallFlightSimulator:
                 # This call-site is wired; the actual Rust integration
                 # will activate once the Rust crate exposes simulate_trajectory.
                 _ = config  # Mark as used; full delegation TBD
-            except Exception:
+            except (ImportError, AttributeError, TypeError):
                 pass  # Fall through to Python implementation
 
         # Python fallback (current default until Rust API is fully wired)
