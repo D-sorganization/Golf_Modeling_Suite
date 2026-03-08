@@ -23,7 +23,6 @@ const MIN_NORMAL_MAGNITUDE: f64 = 1e-10;
 /// Parameters for a contact surface.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass)]
-#[cfg_attr(feature = "wasm", wasm_bindgen::prelude::wasm_bindgen)]
 pub struct ContactParameters {
     /// Coefficient of restitution (0 = perfectly inelastic, 1 = perfectly elastic).
     pub cor: f64,
@@ -70,7 +69,6 @@ impl ContactParameters {
 /// Result of a contact calculation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass)]
-#[cfg_attr(feature = "wasm", wasm_bindgen::prelude::wasm_bindgen)]
 pub struct ContactResult {
     /// Post-impact velocity.
     pub velocity: Vector3,
@@ -188,64 +186,36 @@ pub fn calculate_impact(
 }
 
 // ── WASM bindings ────────────────────────────────────────────────────────────
-
-#[cfg(feature = "wasm")]
-#[wasm_bindgen::prelude::wasm_bindgen]
-impl ContactParameters {
-    /// Create contact parameters for a surface.
-    #[wasm_bindgen(constructor)]
-    pub fn wasm_new(cor: f64, friction: f64) -> Self {
-        Self {
-            cor: cor.clamp(0.0, 1.0),
-            friction: friction.max(0.0),
-            normal: Vector3::new(0.0, 1.0, 0.0),
-        }
-    }
-}
-
-#[cfg(feature = "wasm")]
-#[wasm_bindgen::prelude::wasm_bindgen]
-impl ContactResult {
-    /// Post-impact speed [m/s].
-    #[wasm_bindgen(js_name = "speed", getter)]
-    pub fn wasm_speed(&self) -> f64 {
-        self.velocity.magnitude()
-    }
-
-    /// Post-impact velocity as Vector3.
-    #[wasm_bindgen(js_name = "velocity", getter)]
-    pub fn wasm_velocity(&self) -> Vector3 {
-        self.velocity
-    }
-
-    /// Post-impact spin rate [rad/s].
-    #[wasm_bindgen(js_name = "spinRate", getter)]
-    pub fn wasm_spin_rate(&self) -> f64 {
-        self.spin_rate
-    }
-
-    /// Energy lost during impact [J].
-    #[wasm_bindgen(js_name = "energyLost", getter)]
-    pub fn wasm_energy_lost(&self) -> f64 {
-        self.energy_lost
-    }
-
-    /// Whether the ball is rolling.
-    #[wasm_bindgen(js_name = "isRolling", getter)]
-    pub fn wasm_is_rolling(&self) -> bool {
-        self.is_rolling
-    }
-}
+// ContactParameters and ContactResult contain Vector3 (cross-crate),
+// so we use serde-wasm-bindgen for JS ↔ Rust conversion instead of
+// struct-level #[wasm_bindgen] derives.
 
 /// WASM-exposed contact impact calculation.
+///
+/// # JS API
+/// ```js
+/// const result = calculateImpact(
+///   { x: 0, y: -10, z: 0 },  // velocity
+///   3000.0,                    // spin_rate
+///   { cor: 0.78, friction: 0.4, normal: { x: 0, y: 1, z: 0 } }
+/// );
+/// // result = { velocity: { x, y, z }, spin_rate, energy_lost, is_rolling }
+/// ```
 #[cfg(feature = "wasm")]
 #[wasm_bindgen::prelude::wasm_bindgen(js_name = "calculateImpact")]
 pub fn wasm_calculate_impact(
-    velocity: &Vector3,
+    velocity_js: wasm_bindgen::JsValue,
     spin_rate: f64,
-    params: &ContactParameters,
-) -> ContactResult {
-    calculate_impact(velocity, spin_rate, params)
+    params_js: wasm_bindgen::JsValue,
+) -> Result<wasm_bindgen::JsValue, wasm_bindgen::JsValue> {
+    let velocity: Vector3 = serde_wasm_bindgen::from_value(velocity_js)
+        .map_err(|e| wasm_bindgen::JsValue::from_str(&format!("Invalid velocity: {e}")))?;
+    let params: ContactParameters = serde_wasm_bindgen::from_value(params_js)
+        .map_err(|e| wasm_bindgen::JsValue::from_str(&format!("Invalid params: {e}")))?;
+
+    let result = calculate_impact(&velocity, spin_rate, &params);
+    serde_wasm_bindgen::to_value(&result)
+        .map_err(|e| wasm_bindgen::JsValue::from_str(&format!("Serialization error: {e}")))
 }
 
 // ── Tests (TDD) ─────────────────────────────────────────────────────────────
