@@ -143,8 +143,7 @@ class SecurityManager:
             return False
 
     @precondition(
-        lambda self, data, expires_delta=None: isinstance(data, dict)
-        and "sub" in data,
+        lambda self, data, expires_delta=None: isinstance(data, dict) and "sub" in data,
         "data must be a dict containing a 'sub' (subject) claim",
     )
     def create_access_token(
