@@ -25,6 +25,7 @@ class TestProcessIsolationStrict:
         cmd = [sys.executable, "-m", "pytest", str(test_file), "-v", "--no-cov"]
 
         import os
+
         env = os.environ.copy()
         env.pop("MUJOCO_GL", None)
 

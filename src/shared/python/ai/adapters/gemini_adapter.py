@@ -16,8 +16,8 @@ from src.shared.python.ai.types import (
     ConversationContext,
     ProviderCapabilities,
 )
-from src.shared.python.logging_pkg.logging_config import get_logger
 from src.shared.python.contracts import precondition
+from src.shared.python.logging_pkg.logging_config import get_logger
 
 logger = get_logger(__name__)
 
@@ -57,7 +57,9 @@ class GeminiAdapter(BaseAgentAdapter):
         genai.configure(api_key=self._api_key)
         self._model = GenerativeModel(self._model_name)
 
-    @precondition(lambda message: bool(message.strip()), "message must not be empty or blank")
+    @precondition(
+        lambda message: bool(message.strip()), "message must not be empty or blank"
+    )
     def send_message(
         self,
         message: str,

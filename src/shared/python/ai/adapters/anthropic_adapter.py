@@ -23,7 +23,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from src.shared.python.ai.adapters.base import BaseAgentAdapter, ToolDeclaration
-from src.shared.python.contracts import precondition
 from src.shared.python.ai.config import (
     DEFAULT_ANTHROPIC_MAX_TOKENS,
     DEFAULT_ANTHROPIC_MODEL,
@@ -45,6 +44,7 @@ from src.shared.python.ai.types import (
     ProviderCapability,
     ToolCall,
 )
+from src.shared.python.contracts import precondition
 from src.shared.python.logging_pkg.logging_config import get_logger
 
 if TYPE_CHECKING:
@@ -131,7 +131,9 @@ class AnthropicAdapter(BaseAgentAdapter):
                 ) from e
         return self._client
 
-    @precondition(lambda message: bool(message.strip()), "message must not be empty or blank")
+    @precondition(
+        lambda message: bool(message.strip()), "message must not be empty or blank"
+    )
     def send_message(
         self,
         message: str,
