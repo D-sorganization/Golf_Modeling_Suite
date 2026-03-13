@@ -28,12 +28,13 @@ class TestSecretKeyFallback:
         from src.api.auth import security
 
         # The old known-public fallback must be gone
-        assert security.SECRET_KEY != "your-secret-key-change-in-production", (
-            "SECRET_KEY is still the known-public fallback string – tokens can be forged"
-        )
+        forbidden = "your-secret-key-change-in-production"
+        assert forbidden != security.SECRET_KEY
 
     def test_secret_key_unsafe_placeholder_causes_auth_failure(self) -> None:
         """Unsafe placeholder key must cause JWT verification to fail gracefully."""
+        from fastapi import HTTPException
+
         from src.api.auth.security import SecurityManager
 
         unsafe_manager = SecurityManager(
@@ -43,7 +44,6 @@ class TestSecretKeyFallback:
 
         # A manager with a real key must not accept tokens signed by the unsafe key
         real_manager = SecurityManager(secret_key="a-proper-key-at-least-32-chars-x")
-        from fastapi import HTTPException
 
         with pytest.raises(HTTPException) as exc_info:
             real_manager.verify_token(token)
@@ -57,33 +57,16 @@ class TestSecretKeyFallback:
             from src.api.auth import security as sec_mod
 
             importlib.reload(sec_mod)
-            assert test_key == sec_mod.SECRET_KEY, (
-                "security module did not pick up GOLF_API_SECRET_KEY env var"
-            )
+            assert test_key == sec_mod.SECRET_KEY
         # Restore
         importlib.reload(sec_mod)
 
     def test_production_env_without_secret_key_raises_runtime_error(self) -> None:
         """In production env, missing SECRET_KEY must raise RuntimeError."""
-        env_override = {"ENVIRONMENT": "production"}
-        # Remove both possible secret-key env vars
-        with (
-            patch.dict(
-                "os.environ",
-                {**env_override, "SECRET_KEY": "", "GOLF_API_SECRET_KEY": ""},
-                clear=False,
-            ),
-            patch.dict(
-                "os.environ",
-                {},
-                clear=False,
-            ),
-        ):
-            # We cannot reload the module in the same process easily without risk,
-            # so we test the logic directly: the module raises RuntimeError on import
-            # when ENVIRONMENT=production and no key is set.
-            # This test documents the expected behaviour.
-            pass  # Covered by next test
+        # We cannot reload the module in the same process without risk,
+        # so we test the logic directly: the module raises RuntimeError on import
+        # when ENVIRONMENT=production and no key is set.
+        # Covered by test_production_missing_key_logic below.
 
     def test_production_missing_key_logic(self) -> None:
         """Validate production-safety logic directly without reloading the module."""
@@ -95,9 +78,7 @@ class TestSecretKeyFallback:
 
         raised = not secret_key_env and environment == "production"
 
-        assert raised, (
-            "Production environment without SECRET_KEY should raise RuntimeError"
-        )
+        assert raised
 
     def test_development_missing_key_uses_unsafe_placeholder(self) -> None:
         """Development env without SECRET_KEY should use the unsafe placeholder."""
@@ -145,9 +126,7 @@ class TestAuthCacheCryptoHash:
 
         # The token must not be derived solely from Python's hash()
         python_hash_str = str(hash(api_key))
-        assert not token.startswith(python_hash_str), (
-            "Cache key is still derived from Python's non-cryptographic hash()"
-        )
+        assert not token.startswith(python_hash_str)
 
     def test_cache_key_is_sha256_based(self) -> None:
         """Cache lookup token should be based on SHA-256."""
@@ -160,9 +139,7 @@ class TestAuthCacheCryptoHash:
         token = cache._cache_lookup_token(api_key)
 
         expected = hashlib.sha256(api_key.encode()).hexdigest()
-        assert token == expected, (
-            f"Cache key {token!r} does not match expected SHA-256 {expected!r}"
-        )
+        assert token == expected
 
     def test_cache_round_trip(self) -> None:
         """AuthCache set/get round-trip works correctly with the new hash."""
@@ -284,10 +261,7 @@ class TestMotionTrainingGetattr:
         for name in mt.__all__:
             try:
                 obj = getattr(mt, name)
-                assert obj is not None, (
-                    f"motion_training.{name} resolved to None – "
-                    "the __getattr__ fix did not work"
-                )
+                assert obj is not None
             except (ImportError, ModuleNotFoundError):
                 # An ImportError (not None!) is acceptable for modules that have
                 # optional dependencies like pinocchio, pink, or meshcat.
@@ -307,12 +281,6 @@ class TestMotionTrainingGetattr:
         )
         original = sys.modules.pop(submod_key, None)
         try:
-            # Remove the __init__ cache too so __getattr__ is triggered
-            mt_key = "src.engines.physics_engines.pinocchio.python.motion_training"
-            if mt_key in sys.modules:
-                # Remove cached attribute to force __getattr__ call
-                pass  # Python caches at module level, hard to clear without reload
-
             # If we can get the object, it must be non-None
             try:
                 obj = mt.ClubTrajectoryParser
@@ -355,7 +323,7 @@ class TestBarePassExceptionHandlers:
         assert bare == [], f"Bare-pass except handlers still present in {path}: {bare}"
 
     def test_physics_routes_no_critical_bare_pass_excepts(self) -> None:
-        """physics.py must have no bare-pass exception handlers for ValueError/RuntimeError."""
+        """physics.py must have no bare-pass exception handlers for critical types."""
         path = "src/api/routes/physics.py"
         bare = self._find_bare_pass_excepts(path)
         critical = [
@@ -363,9 +331,7 @@ class TestBarePassExceptionHandlers:
             for ln, t in bare
             if "ValueError" in t or "RuntimeError" in t or "AttributeError" in t
         ]
-        assert critical == [], (
-            f"Critical bare-pass except handlers in {path}: {critical}"
-        )
+        assert critical == []
 
     def test_aip_methods_no_bare_pass_excepts(self) -> None:
         """aip/methods.py must have no bare-pass exception handlers."""
@@ -438,28 +404,24 @@ class TestPhysicsModuleDocstrings:
     @pytest.mark.parametrize("module_path", PHYSICS_MODULES)
     def test_shared_physics_module_has_docstring(self, module_path: str) -> None:
         """Shared physics module must have a module-level docstring."""
-        with open(module_path) as fh:
-            content = fh.read()
         import ast
 
+        with open(module_path) as fh:
+            content = fh.read()
         tree = ast.parse(content)
         docstring = ast.get_docstring(tree)
-        assert docstring is not None and docstring.strip(), (
-            f"Module {module_path} is missing a module-level docstring"
-        )
+        assert docstring is not None and docstring.strip()
 
     @pytest.mark.parametrize("module_path", ENGINE_PHYSICS_MODULES)
     def test_engine_physics_module_has_docstring(self, module_path: str) -> None:
         """Engine physics module must have a module-level docstring."""
-        with open(module_path) as fh:
-            content = fh.read()
         import ast
 
+        with open(module_path) as fh:
+            content = fh.read()
         tree = ast.parse(content)
         docstring = ast.get_docstring(tree)
-        assert docstring is not None and docstring.strip(), (
-            f"Module {module_path} is missing a module-level docstring"
-        )
+        assert docstring is not None and docstring.strip()
 
     def test_at_least_ten_engine_physics_modules_have_docstrings(self) -> None:
         """At least 10 of the targeted physics modules must have docstrings."""
@@ -478,6 +440,4 @@ class TestPhysicsModuleDocstrings:
             except (FileNotFoundError, SyntaxError):
                 pass
 
-        assert passing >= 10, (
-            f"Only {passing}/10+ physics modules have docstrings; need at least 10"
-        )
+        assert passing >= 10
