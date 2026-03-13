@@ -196,9 +196,7 @@ class LQRController(BaseController):
                 # D gain (on velocity error)
                 K[i, nq + dof_adr] = kd
             except (RuntimeError, ValueError, AttributeError) as exc:
-                logger.debug(
-                    "Could not set LQR gain for joint index %d: %s", i, exc
-                )
+                logger.debug("Could not set LQR gain for joint index %d: %s", i, exc)
         return K
 
     def get_action(self, physics) -> np.ndarray:

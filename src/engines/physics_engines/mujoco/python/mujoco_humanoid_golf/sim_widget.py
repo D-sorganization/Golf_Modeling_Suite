@@ -685,9 +685,7 @@ class MuJoCoSimWidget(  # type: ignore[misc]
                     ValueError,
                     AttributeError,
                 ) as exc:
-                    logger.debug(
-                        "Plane visualisation rendering failed: %s", exc
-                    )
+                    logger.debug("Plane visualisation rendering failed: %s", exc)
 
         if self.show_reference_trajectory and self.reference_trajectory is not None:
             self.meshcat_adapter.draw_trajectory(
