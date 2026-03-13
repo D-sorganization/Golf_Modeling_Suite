@@ -391,8 +391,14 @@ mod tests {
         let range_fast = result_fast.points.last().map(|p| p.x).unwrap_or(0.0);
         let range_slow = result_slow.points.last().map(|p| p.x).unwrap_or(0.0);
         // Both should be positive distances
-        assert!(range_fast > 0.0, "Fast decay range should be positive: {range_fast}");
-        assert!(range_slow > 0.0, "Slow decay range should be positive: {range_slow}");
+        assert!(
+            range_fast > 0.0,
+            "Fast decay range should be positive: {range_fast}"
+        );
+        assert!(
+            range_slow > 0.0,
+            "Slow decay range should be positive: {range_slow}"
+        );
     }
 
     /// Test 5: Wind effect — headwind reduces range.
