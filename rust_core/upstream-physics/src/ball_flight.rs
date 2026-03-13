@@ -130,7 +130,7 @@ impl BallTrajectoryResult {
 /// # DbC Preconditions
 /// - All position/velocity/gravity/wind components must be finite
 /// - `omega0 >= 0`
-/// - `config.dt > 0`, `ball.mass > 0`, `air.density > 0`
+/// - `config.dt > 0`, `ball.mass > 0`, `air.density >= 0`
 #[must_use]
 #[allow(clippy::too_many_arguments)]
 pub fn simulate_ball_trajectory(
@@ -154,7 +154,7 @@ pub fn simulate_ball_trajectory(
     );
     debug_assert!(omega0 >= 0.0, "DbC: omega0 must be non-negative");
     debug_assert!(ball.mass > 0.0, "DbC: ball mass must be positive");
-    debug_assert!(air.density > 0.0, "DbC: air density must be positive");
+    debug_assert!(air.density >= 0.0, "DbC: air density must be non-negative");
 
     // State: [x, y, z, vx, vy, vz, omega]
     let y0 = [pos0[0], pos0[1], pos0[2], vel0[0], vel0[1], vel0[2], omega0];
