@@ -25,7 +25,7 @@ Planned enhancement: implement Mud Ball Physics.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
 
@@ -492,7 +492,7 @@ class BallFlightSimulator:
         return self._post_process(raw_data, launch)
 
     def _post_process_rust(
-        self, rust_result: object, launch: LaunchConditions
+        self, rust_result: Any, launch: LaunchConditions
     ) -> list[TrajectoryPoint]:
         """Convert a Rust BallTrajectoryResult to a list of TrajectoryPoint objects."""
         points = []

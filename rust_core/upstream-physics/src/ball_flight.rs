@@ -156,9 +156,7 @@ pub fn simulate_ball_trajectory(
     debug_assert!(air.density > 0.0, "DbC: air density must be positive");
 
     // State: [x, y, z, vx, vy, vz, omega]
-    let y0 = [
-        pos0[0], pos0[1], pos0[2], vel0[0], vel0[1], vel0[2], omega0,
-    ];
+    let y0 = [pos0[0], pos0[1], pos0[2], vel0[0], vel0[1], vel0[2], omega0];
 
     // Capture by reference using owned copies for the closure
     let ball = ball.clone();
@@ -262,7 +260,11 @@ mod tests {
 
         let last = result.points.last().unwrap();
         // Ball should have traveled some horizontal distance
-        assert!(last.x > 5.0, "Should travel at least 5m horizontally, got {}", last.x);
+        assert!(
+            last.x > 5.0,
+            "Should travel at least 5m horizontally, got {}",
+            last.x
+        );
         // Ball should land near ground
         assert!(last.z.abs() < 2.0, "Should end near z=0, got {}", last.z);
     }
@@ -284,12 +286,12 @@ mod tests {
 
         // Launch purely horizontal, no decay, no air, no gravity
         let result = simulate_ball_trajectory(
-            [0.0, 0.0, 10.0],  // start high to avoid immediate ground hit
-            [10.0, 0.0, 0.0],  // horizontal
+            [0.0, 0.0, 10.0], // start high to avoid immediate ground hit
+            [10.0, 0.0, 0.0], // horizontal
             [0.0, 1.0, 0.0],
             0.0,
-            [0.0, 0.0, 0.0],   // no gravity
-            [0.0, 0.0, 0.0],   // no wind
+            [0.0, 0.0, 0.0], // no gravity
+            [0.0, 0.0, 0.0], // no wind
             &ball,
             &air,
             &config,
@@ -300,7 +302,11 @@ mod tests {
         // Should travel ~10 m/s * 100 steps * 0.01s = ~10m
         assert!(last.x > 5.0, "Should travel horizontally: {}", last.x);
         // Height should be approximately constant (no gravity)
-        assert!((last.z - 10.0).abs() < 0.1, "Height should be ~10m: {}", last.z);
+        assert!(
+            (last.z - 10.0).abs() < 0.1,
+            "Height should be ~10m: {}",
+            last.z
+        );
     }
 
     /// Test 3: Result is consistent — same inputs produce same output.
@@ -316,12 +322,26 @@ mod tests {
         );
 
         let result1 = simulate_ball_trajectory(
-            params.0, params.1, params.2, params.3, params.4, params.5,
-            &AeroBallProperties::default(), &AirProperties::default(), &default_config(),
+            params.0,
+            params.1,
+            params.2,
+            params.3,
+            params.4,
+            params.5,
+            &AeroBallProperties::default(),
+            &AirProperties::default(),
+            &default_config(),
         );
         let result2 = simulate_ball_trajectory(
-            params.0, params.1, params.2, params.3, params.4, params.5,
-            &AeroBallProperties::default(), &AirProperties::default(), &default_config(),
+            params.0,
+            params.1,
+            params.2,
+            params.3,
+            params.4,
+            params.5,
+            &AeroBallProperties::default(),
+            &AirProperties::default(),
+            &default_config(),
         );
 
         assert_eq!(result1.steps, result2.steps);
