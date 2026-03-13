@@ -132,6 +132,7 @@ impl BallTrajectoryResult {
 /// - `omega0 >= 0`
 /// - `config.dt > 0`, `ball.mass > 0`, `air.density > 0`
 #[must_use]
+#[allow(clippy::too_many_arguments)]
 pub fn simulate_ball_trajectory(
     pos0: [f64; 3],
     vel0: [f64; 3],
@@ -272,12 +273,16 @@ mod tests {
     /// Test 2: No gravity, no drag — projectile in vacuum should follow linear path.
     #[test]
     fn test_zero_gravity_linear_path() {
-        let mut ball = AeroBallProperties::default();
-        ball.drag_coefficient = 0.0;
-        ball.spin_decay_rate = 0.0;
+        let ball = AeroBallProperties {
+            drag_coefficient: 0.0,
+            spin_decay_rate: 0.0,
+            ..AeroBallProperties::default()
+        };
 
-        let mut air = AirProperties::default();
-        air.density = 0.0; // No aerodynamic forces
+        let air = AirProperties {
+            density: 0.0, // No aerodynamic forces
+            ..AirProperties::default()
+        };
 
         let config = IntegratorConfig {
             dt: 0.01,
@@ -357,10 +362,9 @@ mod tests {
         // The ball_flight sim includes omega as state[6]; we can verify by
         // checking that with high spin_decay_rate the range is shorter
         // (less lift → shorter carry).
-        let fast_decay = {
-            let mut b = AeroBallProperties::default();
-            b.spin_decay_rate = 5.0; // aggressive decay
-            b
+        let fast_decay = AeroBallProperties {
+            spin_decay_rate: 5.0, // aggressive decay
+            ..AeroBallProperties::default()
         };
         let slow_decay = AeroBallProperties::default(); // default 0.1
 
