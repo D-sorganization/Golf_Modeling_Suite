@@ -72,9 +72,9 @@ def __getattr__(name: str):
         "SwingEventMarkers",
         "compute_hand_positions",
     ):
-        from . import club_trajectory_parser as _mod
+        from . import club_trajectory_parser as _parser_mod  # noqa: PLC0415
 
-        return getattr(_mod, name)
+        return getattr(_parser_mod, name)
 
     if name in (
         "DualHandIKSolver",
@@ -84,14 +84,14 @@ def __getattr__(name: str):
         "TrajectoryIKResult",
         "create_ik_solver",
     ):
-        from . import dual_hand_ik_solver as _mod
+        from . import dual_hand_ik_solver as _ik_mod  # noqa: PLC0415
 
-        return getattr(_mod, name)
+        return getattr(_ik_mod, name)
 
     if name in ("MotionVisualizer", "MatplotlibVisualizer", "VisualizerSettings"):
-        from . import motion_visualizer as _mod
+        from . import motion_visualizer as _viz_mod  # noqa: PLC0415
 
-        return getattr(_mod, name)
+        return getattr(_viz_mod, name)
 
     if name in (
         "MotionTrainingPipeline",
@@ -99,13 +99,13 @@ def __getattr__(name: str):
         "PipelineResult",
         "run_motion_training",
     ):
-        from . import training_pipeline as _mod
+        from . import training_pipeline as _pipeline_mod  # noqa: PLC0415
 
-        return getattr(_mod, name)
+        return getattr(_pipeline_mod, name)
 
     if name in ("TrajectoryExporter", "export_for_mujoco", "export_for_drake"):
-        from . import trajectory_exporter as _mod
+        from . import trajectory_exporter as _exporter_mod  # noqa: PLC0415
 
-        return getattr(_mod, name)
+        return getattr(_exporter_mod, name)
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
