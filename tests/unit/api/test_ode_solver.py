@@ -22,7 +22,7 @@ class TestODESolverPhysics:
 
     def test_exponential_decay(self) -> None:
         """dx/dt = -k*x has analytical solution x(t) = x0 * exp(-k*t).
-        
+
         With k=1, x0=1, at t=1 expected x ≈ 0.368.
         """
         payload = {
@@ -57,7 +57,7 @@ class TestODESolverPhysics:
 
     def test_harmonic_oscillator(self) -> None:
         """d²x/dt² = -omega²*x with x(0)=1, v(0)=0 → x(t)=cos(omega*t).
-        
+
         Split as system: dx/dt = v, dv/dt = -omega^2 * x.
         At t = pi/2 with omega=1, x ≈ 0 (±small RK4 error).
         """
