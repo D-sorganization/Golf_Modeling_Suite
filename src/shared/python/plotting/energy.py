@@ -65,6 +65,8 @@ def plot_energy_overview(
     Returns:
         Tuple of (figure, axes)
     """
+    assert recorder is not None, "recorder must be provided"
+    assert recorder is not None, "recorder must be provided"
     fig, ax, config = resolve_figure(ax, config)
 
     # Get energy data
@@ -143,6 +145,8 @@ def plot_energy_breakdown(
     Returns:
         Tuple of (figure, axes)
     """
+    assert recorder is not None, "recorder must be provided"
+    assert recorder is not None, "recorder must be provided"
     fig, ax, config = resolve_figure(ax, config)
 
     try:
@@ -207,6 +211,8 @@ def plot_power_analysis(
     Returns:
         Tuple of (figure, axes)
     """
+    assert recorder is not None, "recorder must be provided"
+    assert recorder is not None, "recorder must be provided"
     fig, ax, config = resolve_figure(ax, config)
 
     result = _retrieve_power_data(recorder)
@@ -264,6 +270,8 @@ def plot_cumulative_work(
     Returns:
         Tuple of (figure, axes)
     """
+    assert recorder is not None, "recorder must be provided"
+    assert recorder is not None, "recorder must be provided"
     fig, ax, config = resolve_figure(ax, config)
 
     result = _retrieve_power_data(recorder)
@@ -325,6 +333,8 @@ def plot_energy_flow(
     Returns:
         Tuple of (figure, axes)
     """
+    assert recorder is not None, "recorder must be provided"
+    assert recorder is not None, "recorder must be provided"
     fig, ax, config = resolve_figure(ax, config)
 
     try:

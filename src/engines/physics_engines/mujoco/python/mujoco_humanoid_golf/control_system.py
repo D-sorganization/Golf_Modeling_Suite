@@ -56,6 +56,8 @@ class ActuatorControl:
             step_time: Time at which step occurs (for STEP type)
             step_value: Value after step (for STEP type)
         """
+        assert control_type is not None, "control_type must be provided"
+        assert control_type is not None, "control_type must be provided"
         self.control_type = control_type
         self.constant_value = constant_value
         self.damping = damping
@@ -98,6 +100,8 @@ class ActuatorControl:
             Control torque value
         """
         # Base torque from control type
+        assert time is not None, "time must be provided"
+        assert time is not None, "time must be provided"
         if self.control_type == ControlType.CONSTANT:
             base_torque = self.constant_value
         elif self.control_type == ControlType.POLYNOMIAL:
@@ -145,6 +149,8 @@ class ControlSystem:
         Args:
             num_actuators: Number of actuators in the system
         """
+        assert num_actuators is not None, "num_actuators must be provided"
+        assert num_actuators is not None, "num_actuators must be provided"
         self.num_actuators = num_actuators
         self.actuator_controls: list[ActuatorControl] = [
             ActuatorControl() for _ in range(num_actuators)

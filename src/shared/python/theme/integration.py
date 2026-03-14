@@ -50,6 +50,8 @@ def get_theme_manager(
     Returns:
         ThemeManager instance
     """
+    assert settings_org is not None, "settings_org must be provided"
+    assert settings_org is not None, "settings_org must be provided"
     from .theme_manager import ThemeManager
 
     return ThemeManager.instance(
@@ -68,6 +70,8 @@ def apply_theme_to_window(window: QMainWindow, theme_name: str | None = None) ->
         window: Window to apply theme to
         theme_name: Optional specific theme name, or None for current theme
     """
+    assert window is not None, "window must be provided"
+    assert window is not None, "window must be provided"
     manager = get_theme_manager(window)
 
     if theme_name:
@@ -92,6 +96,8 @@ def create_theme_menu(
     Returns:
         The created QMenu
     """
+    assert window is not None, "window must be provided"
+    assert window is not None, "window must be provided"
     from PyQt6.QtGui import QAction, QActionGroup
 
     manager = get_theme_manager(window)
@@ -154,6 +160,8 @@ def create_theme_menu(
 
 def _open_custom_theme_editor(manager: Any, window: QMainWindow) -> None:
     """Open the custom theme editor dialog."""
+    assert window is not None, "window must be provided"
+    assert window is not None, "window must be provided"
     from .dialogs import CustomThemeEditor
 
     editor = CustomThemeEditor(manager, window)
@@ -162,6 +170,8 @@ def _open_custom_theme_editor(manager: Any, window: QMainWindow) -> None:
 
 def _open_theme_manager_dialog(manager: Any, window: QMainWindow) -> None:
     """Open the theme manager dialog."""
+    assert window is not None, "window must be provided"
+    assert window is not None, "window must be provided"
     from .dialogs import ThemeManagerDialog
 
     dialog = ThemeManagerDialog(manager, window)
@@ -192,6 +202,8 @@ def setup_themed_app(
         settings_app: QSettings application name (defaults to window class name)
     """
     # Use window class name as default app name
+    assert app is not None, "app must be provided"
+    assert app is not None, "app must be provided"
     if settings_app is None:
         settings_app = window.__class__.__name__
 
@@ -249,6 +261,8 @@ class ThemedWindowMixin:
             settings_org: Override default settings organization
             settings_app: Override default settings application name
         """
+        assert add_menu is not None, "add_menu must be provided"
+        assert add_menu is not None, "add_menu must be provided"
         if settings_org:
             self._settings_org = settings_org
         if settings_app:

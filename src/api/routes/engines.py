@@ -43,6 +43,7 @@ async def get_engines(
     _user: Any = Depends(OptionalAuth(auto_error=False)),
 ) -> EngineListResponse:
     """Get status of all available physics engines."""
+    assert engine_manager is not None, "engine_manager must be provided"
     engines = []
     available_engines = engine_manager.get_available_engines()
     current_engine = engine_manager.get_current_engine()
@@ -124,9 +125,9 @@ async def load_engine_lazy(
 
 @router.post("/engines/{engine_type}/load")
 @precondition(
-    lambda engine_type, model_path=None, engine_manager=None, _user=None: engine_type
-    is not None
-    and len(engine_type.strip()) > 0,
+    lambda engine_type, model_path=None, engine_manager=None, _user=None: (
+        engine_type is not None and len(engine_type.strip()) > 0
+    ),
     "Engine type must be a non-empty string",
 )
 async def load_engine(
@@ -177,8 +178,9 @@ async def load_engine(
 
 @router.post("/engines/{engine_type}/unload")
 @precondition(
-    lambda engine_type, engine_manager=None, _user=None: engine_type is not None
-    and len(engine_type.strip()) > 0,
+    lambda engine_type, engine_manager=None, _user=None: (
+        engine_type is not None and len(engine_type.strip()) > 0
+    ),
     "Engine type must be a non-empty string",
 )
 async def unload_engine(
@@ -225,6 +227,7 @@ async def get_engine_capabilities(
     Raises:
         HTTPException: If engine type is invalid or engine cannot be queried.
     """
+    assert engine_type is not None, "engine_type must be provided"
     try:
         engine_enum = EngineType(engine_type.lower())
     except ValueError as exc:

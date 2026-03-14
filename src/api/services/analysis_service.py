@@ -47,8 +47,9 @@ class AnalysisService:
         "Analysis request must not be None",
     )
     @precondition(
-        lambda self, request: request.analysis_type is not None
-        and len(request.analysis_type) > 0,
+        lambda self, request: (
+            request.analysis_type is not None and len(request.analysis_type) > 0
+        ),
         "Analysis type must be specified",
     )
     @postcondition(
@@ -125,6 +126,7 @@ class AnalysisService:
 
         Extracts joint kinematics from the physics engine or provided data.
         """
+        assert request is not None, "request must be provided"
         result: dict[str, Any] = {
             "analysis_type": "kinematics",
             "joint_angles": [],
@@ -194,6 +196,7 @@ class AnalysisService:
 
         Extracts joint kinetics from the physics engine or provided data.
         """
+        assert request is not None, "request must be provided"
         result: dict[str, Any] = {
             "analysis_type": "kinetics",
             "joint_torques": [],
@@ -252,6 +255,7 @@ class AnalysisService:
 
         Computes energy metrics from the physics engine state.
         """
+        assert request is not None, "request must be provided"
         result: dict[str, Any] = {
             "analysis_type": "energetics",
             "kinetic_energy": 0.0,
@@ -315,6 +319,7 @@ class AnalysisService:
         Analyzes the golf swing phases and transitions.
         """
         # Standard golf swing phases
+        assert request is not None, "request must be provided"
         SWING_PHASES = [
             "address",
             "takeaway",
@@ -387,6 +392,7 @@ class AnalysisService:
         Simple heuristic-based phase detection. For production use,
         this should be replaced with ML-based detection.
         """
+        assert state is not None, "state must be provided"
         if not state:
             return None
 

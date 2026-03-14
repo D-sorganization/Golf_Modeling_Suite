@@ -35,6 +35,7 @@ async def _load_simulation_engine(
     Returns:
         The active physics engine, or None if loading failed.
     """
+    assert engine_manager is not None, "engine_manager must be provided"
     require(
         engine_type is not None and len(engine_type.strip()) > 0,
         "Engine type must be a non-empty string",
@@ -108,6 +109,7 @@ async def _run_simulation_loop(
     Returns:
         Tuple of (frame_count, time_elapsed).
     """
+    assert websocket is not None, "websocket must be provided"
     duration = config.get("duration", 3.0)
     timestep = config.get("timestep", 0.002)
 
@@ -185,6 +187,7 @@ async def simulation_stream(
 
     No authentication required in local mode.
     """
+    assert websocket is not None, "websocket must be provided"
     await websocket.accept()
 
     # Access engine manager from app state

@@ -56,6 +56,8 @@ class SimpleRAGStore:
             content: Text content.
             metadata: Optional metadata (path, type, etc).
         """
+        assert doc_id is not None, "doc_id must be provided"
+        assert doc_id is not None, "doc_id must be provided"
         self.documents[doc_id] = Document(
             id=doc_id,
             content=content,
@@ -104,6 +106,8 @@ class SimpleRAGStore:
         Returns:
             List of (Document, score) tuples.
         """
+        assert query_text is not None, "query_text must be provided"
+        assert query_text is not None, "query_text must be provided"
         if not SKLEARN_AVAILABLE or not self.documents:
             return []
 
@@ -138,6 +142,8 @@ class SimpleRAGStore:
 
     def save(self, path: Path) -> None:
         """Save the store to disk."""
+        assert path is not None, "path must be provided"
+        assert path is not None, "path must be provided"
         data = {"documents": [asdict(doc) for doc in self.documents.values()]}
 
         # Save JSON
@@ -146,6 +152,8 @@ class SimpleRAGStore:
 
     def load(self, path: Path) -> None:
         """Load store from disk."""
+        assert path is not None, "path must be provided"
+        assert path is not None, "path must be provided"
         if not path.exists():
             return
 

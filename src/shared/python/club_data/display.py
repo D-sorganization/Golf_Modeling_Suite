@@ -72,6 +72,8 @@ class ClubDataDisplayWidget(QtWidgets.QWidget):  # type: ignore[misc]
         layout.addStretch(1)
 
     def _create_load_buttons(self, layout: QtWidgets.QVBoxLayout) -> None:
+        assert layout is not None, "layout must be provided"
+        assert layout is not None, "layout must be provided"
         load_layout = QtWidgets.QHBoxLayout()
         self.btn_load_clubs = QtWidgets.QPushButton("Load Club Data")
         self.btn_load_clubs.setToolTip("Load club specifications from Excel file")
@@ -85,6 +87,8 @@ class ClubDataDisplayWidget(QtWidgets.QWidget):  # type: ignore[misc]
         layout.addLayout(load_layout)
 
     def _create_club_selection_group(self, layout: QtWidgets.QVBoxLayout) -> None:
+        assert layout is not None, "layout must be provided"
+        assert layout is not None, "layout must be provided"
         club_group = QtWidgets.QGroupBox("Club Selection")
         club_layout = QtWidgets.QVBoxLayout(club_group)
 
@@ -106,6 +110,8 @@ class ClubDataDisplayWidget(QtWidgets.QWidget):  # type: ignore[misc]
         layout.addWidget(club_group)
 
     def _create_player_selection_group(self, layout: QtWidgets.QVBoxLayout) -> None:
+        assert layout is not None, "layout must be provided"
+        assert layout is not None, "layout must be provided"
         player_group = QtWidgets.QGroupBox("Target Player Data")
         player_layout = QtWidgets.QVBoxLayout(player_group)
 
@@ -117,6 +123,8 @@ class ClubDataDisplayWidget(QtWidgets.QWidget):  # type: ignore[misc]
         layout.addWidget(player_group)
 
     def _create_club_specs_group(self, layout: QtWidgets.QVBoxLayout) -> None:
+        assert layout is not None, "layout must be provided"
+        assert layout is not None, "layout must be provided"
         spec_group = QtWidgets.QGroupBox("Club Specifications")
         spec_layout = QtWidgets.QFormLayout(spec_group)
 
@@ -137,6 +145,8 @@ class ClubDataDisplayWidget(QtWidgets.QWidget):  # type: ignore[misc]
         layout.addWidget(spec_group)
 
     def _create_target_metrics_group(self, layout: QtWidgets.QVBoxLayout) -> None:
+        assert layout is not None, "layout must be provided"
+        assert layout is not None, "layout must be provided"
         metrics_group = QtWidgets.QGroupBox("Target Metrics")
         metrics_layout = QtWidgets.QFormLayout(metrics_group)
 
@@ -155,6 +165,8 @@ class ClubDataDisplayWidget(QtWidgets.QWidget):  # type: ignore[misc]
         layout.addWidget(metrics_group)
 
     def _create_target_overlay_group(self, layout: QtWidgets.QVBoxLayout) -> None:
+        assert layout is not None, "layout must be provided"
+        assert layout is not None, "layout must be provided"
         overlay_group = QtWidgets.QGroupBox("Target Overlay")
         overlay_layout = QtWidgets.QVBoxLayout(overlay_group)
 
@@ -198,12 +210,16 @@ class ClubDataDisplayWidget(QtWidgets.QWidget):  # type: ignore[misc]
 
     def load_clubs(self, clubs: list[ClubSpecification]) -> None:
         """Load club specifications into the widget."""
+        assert clubs is not None, "clubs must be provided"
+        assert clubs is not None, "clubs must be provided"
         self._clubs = clubs
         self._filter_clubs()
         logger.info("Loaded %d clubs into display widget", len(clubs))
 
     def load_players(self, players: list[ProPlayerData]) -> None:
         """Load player data into the widget."""
+        assert players is not None, "players must be provided"
+        assert players is not None, "players must be provided"
         self._players = players
         self.list_players.clear()
         for player in players:
@@ -419,6 +435,8 @@ class ClubTargetOverlay(ABC):
         Returns:
             (N, 3) array of positions or None if no trajectory data
         """
+        assert num_points is not None, "num_points must be provided"
+        assert num_points is not None, "num_points must be provided"
         if self._player is None or not self._player.has_trajectory_data():
             return None
 

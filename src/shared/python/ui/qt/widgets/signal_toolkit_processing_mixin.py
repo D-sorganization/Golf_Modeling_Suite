@@ -106,6 +106,8 @@ class SignalToolkitProcessingMixin:
 
     def _generate_polynomial(self: Any, t: np.ndarray) -> Signal:
         """Generate a polynomial signal from current UI parameters."""
+        assert t is not None, "t must be provided"
+        assert t is not None, "t must be provided"
         coeffs_str = self.poly_coeffs_input.text()
         coeffs = [float(c.strip()) for c in coeffs_str.split(",")]
         return SignalGenerator.polynomial(t, coeffs)
@@ -164,6 +166,8 @@ class SignalToolkitProcessingMixin:
 
     def _generate_custom(self: Any, t: np.ndarray) -> Signal | None:
         """Generate a custom expression signal from current UI parameters."""
+        assert t is not None, "t must be provided"
+        assert t is not None, "t must be provided"
         expr = self.custom_expr.text()
         if not expr:
             return None
@@ -394,6 +398,8 @@ class SignalToolkitProcessingMixin:
 
     def _update_tangent_position(self: Any, value: int) -> None:
         """Update tangent line position from slider."""
+        assert value is not None, "value must be provided"
+        assert value is not None, "value must be provided"
         if self.current_signal is None:
             return
 
@@ -759,6 +765,8 @@ class SignalToolkitProcessingMixin:
         title: str,
     ) -> None:
         """Update the secondary plot."""
+        assert signal is not None, "signal must be provided"
+        assert signal is not None, "signal must be provided"
         self.canvas2.axes.clear()
         self.canvas2.setup_dark_theme()
 
@@ -780,6 +788,8 @@ class SignalToolkitProcessingMixin:
 
     def set_joints(self: Any, joints: list[str]) -> None:
         """Set the list of available joints."""
+        assert joints is not None, "joints must be provided"
+        assert joints is not None, "joints must be provided"
         self.joint_names = joints
         self.joint_combo.clear()
         self.joint_combo.addItems(joints)

@@ -14,6 +14,8 @@ def save_results(
     results, filename: str, format_type: str = "csv", engine: str = "mujoco"
 ) -> str:
     """Backward-compatible convenience save helper."""
+    assert results is not None, "results must be provided"
+    assert results is not None, "results must be provided"
     manager = OutputManager()
     return str(
         manager.save_simulation_results(
@@ -27,6 +29,8 @@ def save_results(
 
 def load_results(filename: str, format_type: str = "csv", engine: str = "mujoco"):
     """Backward-compatible convenience load helper."""
+    assert filename is not None, "filename must be provided"
+    assert filename is not None, "filename must be provided"
     manager = OutputManager()
     return manager.load_simulation_results(filename, OutputFormat(format_type), engine)
 

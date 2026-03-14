@@ -216,6 +216,8 @@ class SimulationGUIBase(QtWidgets.QMainWindow):
 
     def _build_visualization_group(self, parent_layout: QtWidgets.QVBoxLayout) -> None:
         """Build the common visualization toggles group."""
+        assert parent_layout is not None, "parent_layout must be provided"
+        assert parent_layout is not None, "parent_layout must be provided"
         vis_group = QtWidgets.QGroupBox("Visualization")
         vis_layout = QtWidgets.QVBoxLayout()
 
@@ -257,6 +259,8 @@ class SimulationGUIBase(QtWidgets.QMainWindow):
         self, parent_layout: QtWidgets.QVBoxLayout
     ) -> None:
         """Build the matrix analysis info panel."""
+        assert parent_layout is not None, "parent_layout must be provided"
+        assert parent_layout is not None, "parent_layout must be provided"
         matrix_group = QtWidgets.QGroupBox("Matrix Analysis")
         matrix_layout = QtWidgets.QFormLayout(matrix_group)
         self.lbl_cond = QtWidgets.QLabel("--")
@@ -313,6 +317,8 @@ class SimulationGUIBase(QtWidgets.QMainWindow):
 
     def _toggle_run(self, checked: bool) -> None:
         """Toggle simulation running state."""
+        assert checked is not None, "checked must be provided"
+        assert checked is not None, "checked must be provided"
         self.is_running = checked
         if checked:
             self.btn_run.setText("Pause Simulation")
@@ -431,6 +437,8 @@ class SimulationGUIBase(QtWidgets.QMainWindow):
 
     def _update_status(self, message: str) -> None:
         """Update the status bar with a message."""
+        assert message is not None, "message must be provided"
+        assert message is not None, "message must be provided"
         status_bar = self.statusBar()
         if status_bar:
             status_bar.showMessage(message)

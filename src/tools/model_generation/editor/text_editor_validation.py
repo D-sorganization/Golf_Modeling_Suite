@@ -131,6 +131,8 @@ class ValidationMixin:
         messages: list[ValidationMessage],
     ) -> dict[str, ET.Element]:
         """Validate all link elements and return a map of name to element."""
+        assert root is not None, "root must be provided"
+        assert root is not None, "root must be provided"
         links: dict[str, ET.Element] = {}
 
         for _idx, link_elem in enumerate(root.findall("link")):
@@ -172,6 +174,8 @@ class ValidationMixin:
         messages: list[ValidationMessage],
     ) -> None:
         """Validate the inertial/mass properties of a single link element."""
+        assert link_elem is not None, "link_elem must be provided"
+        assert link_elem is not None, "link_elem must be provided"
         inertial = link_elem.find("inertial")
         if inertial is None:
             return
@@ -227,6 +231,8 @@ class ValidationMixin:
         messages: list[ValidationMessage],
     ) -> dict[str, ET.Element]:
         """Validate all joint elements and return a map of name to element."""
+        assert root is not None, "root must be provided"
+        assert root is not None, "root must be provided"
         joints: dict[str, ET.Element] = {}
 
         for _idx, joint_elem in enumerate(root.findall("joint")):
@@ -294,6 +300,8 @@ class ValidationMixin:
         messages: list[ValidationMessage],
     ) -> None:
         """Validate parent/child references and limits for a single joint."""
+        assert joint_elem is not None, "joint_elem must be provided"
+        assert joint_elem is not None, "joint_elem must be provided"
         parent_elem = joint_elem.find("parent")
         child_elem = joint_elem.find("child")
 
@@ -370,6 +378,8 @@ class ValidationMixin:
         messages: list[ValidationMessage],
     ) -> None:
         """Check for orphan links that have no joint connection."""
+        assert root is not None, "root must be provided"
+        assert root is not None, "root must be provided"
         child_links: set[str | None] = set()
         for joint_elem in root.findall("joint"):
             child_elem = joint_elem.find("child")
@@ -397,6 +407,8 @@ class ValidationMixin:
 
     def _find_element_line(self, elem: ET.Element) -> int:
         """Find the line number of an element (approximate)."""
+        assert elem is not None, "elem must be provided"
+        assert elem is not None, "elem must be provided"
         host = cast("ValidationProtocol", self)
         ET.tostring(elem, encoding="unicode")
         tag_start = f"<{elem.tag}"

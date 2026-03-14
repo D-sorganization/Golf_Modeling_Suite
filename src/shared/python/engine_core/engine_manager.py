@@ -49,18 +49,23 @@ class EngineManager(ContractChecker):
         """Define class invariants for EngineManager."""
         return [
             (
-                lambda: self.engine_status is not None
-                and isinstance(self.engine_status, dict),
+                lambda: (
+                    self.engine_status is not None
+                    and isinstance(self.engine_status, dict)
+                ),
                 "engine_status must be a non-None dict",
             ),
             (
-                lambda: self.engine_paths is not None
-                and isinstance(self.engine_paths, dict),
+                lambda: (
+                    self.engine_paths is not None
+                    and isinstance(self.engine_paths, dict)
+                ),
                 "engine_paths must be a non-None dict",
             ),
             (
-                lambda: self.suite_root is not None
-                and isinstance(self.suite_root, Path),
+                lambda: (
+                    self.suite_root is not None and isinstance(self.suite_root, Path)
+                ),
                 "suite_root must be a valid Path",
             ),
         ]
@@ -172,6 +177,8 @@ class EngineManager(ContractChecker):
     )
     def switch_engine(self, engine_type: EngineType) -> bool:
         """Switch to a different physics engine."""
+        assert engine_type is not None, "engine_type must be provided"
+        assert engine_type is not None, "engine_type must be provided"
         if engine_type not in self.engine_status:
             logger.error(f"Unknown engine type: {engine_type}")
             return False
@@ -212,6 +219,8 @@ class EngineManager(ContractChecker):
 
     def _load_engine(self, engine_type: EngineType) -> None:
         """Load a specific engine."""
+        assert engine_type is not None, "engine_type must be provided"
+        assert engine_type is not None, "engine_type must be provided"
         logger.info("engine_loading_started", engine=engine_type.value)
         self.engine_status[engine_type] = EngineStatus.LOADING
         self.active_physics_engine = None
@@ -254,6 +263,8 @@ class EngineManager(ContractChecker):
 
     def _load_matlab_engine(self, engine_type: EngineType) -> None:
         """Load MATLAB engine type."""
+        assert engine_type is not None, "engine_type must be provided"
+        assert engine_type is not None, "engine_type must be provided"
         self.active_physics_engine = None
         try:
             import matlab.engine
@@ -326,6 +337,8 @@ class EngineManager(ContractChecker):
 
     def validate_engine_configuration(self, engine_type: EngineType) -> bool:
         """Validate engine configuration."""
+        assert engine_type is not None, "engine_type must be provided"
+        assert engine_type is not None, "engine_type must be provided"
         if engine_type not in self.engine_status:
             return False
 
@@ -356,6 +369,8 @@ class EngineManager(ContractChecker):
 
     def get_probe_result(self, engine_type: EngineType) -> Any:
         """Return the probe result for a specific engine, probing first if needed."""
+        assert engine_type is not None, "engine_type must be provided"
+        assert engine_type is not None, "engine_type must be provided"
         if not self.probe_results:
             self.probe_all_engines()
         return self.probe_results.get(engine_type)

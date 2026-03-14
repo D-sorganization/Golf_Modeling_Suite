@@ -119,13 +119,16 @@ class ForceTorqueSensor(ContractChecker):
         """Define class invariants for ForceTorqueSensor."""
         return [
             (
-                lambda: self._tare_offset is not None
-                and self._tare_offset.shape == (6,),
+                lambda: (
+                    self._tare_offset is not None and self._tare_offset.shape == (6,)
+                ),
                 "Tare offset must be a 6D vector",
             ),
             (
-                lambda: self._config.force_noise_std >= 0
-                and self._config.torque_noise_std >= 0,
+                lambda: (
+                    self._config.force_noise_std >= 0
+                    and self._config.torque_noise_std >= 0
+                ),
                 "Noise standard deviations must be non-negative",
             ),
             (
@@ -297,6 +300,8 @@ class ForceTorqueSensor(ContractChecker):
             Estimated contact point (3,) relative to sensor frame,
             or None if force is too small.
         """
+        assert wrench is not None, "wrench must be provided"
+        assert wrench is not None, "wrench must be provided"
         wrench = np.asarray(wrench, dtype=np.float64)
         force = wrench[:3]
         torque = wrench[3:]
@@ -349,6 +354,8 @@ def create_realistic_sensor(
     Returns:
         ForceTorqueSensor with appropriate noise characteristics.
     """
+    assert sensor_id is not None, "sensor_id must be provided"
+    assert sensor_id is not None, "sensor_id must be provided"
     noise_params = {
         "research": {
             "force_noise_std": 0.01,

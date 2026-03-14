@@ -18,6 +18,8 @@ class MockPhysicsEngine:
         Args:
             n_dof: Number of degrees of freedom
         """
+        assert n_dof is not None, "n_dof must be provided"
+        assert n_dof is not None, "n_dof must be provided"
         self.n_dof = n_dof
         self.time = 0.0
         self.q = np.zeros(n_dof)
@@ -35,6 +37,8 @@ class MockPhysicsEngine:
 
     def set_state(self, q: np.ndarray, v: np.ndarray) -> None:
         """Set state (q, v)."""
+        assert q is not None, "q must be provided"
+        assert q is not None, "q must be provided"
         self.q = q.copy()
         self.v = v.copy()
 

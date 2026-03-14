@@ -386,6 +386,8 @@ def compare_friction_methods(
     Example:
         >>> compare_friction_methods(100000, 0.001)
     """
+    assert reynolds_number is not None, "reynolds_number must be provided"
+    assert reynolds_number is not None, "reynolds_number must be provided"
     logger.info(
         "\n╔═══════════════════════════════════════════════════════════════════╗"
     )
@@ -490,6 +492,8 @@ def _validate_flow_params(
     errors: list[str],
 ) -> None:
     """Validate flow rate value and unit."""
+    assert errors is not None, "errors must be provided"
+    assert errors is not None, "errors must be provided"
     if flow_rate is not None:
         if flow_rate <= 0:
             errors.append(f"flow_rate must be positive, got {flow_rate}")
@@ -518,6 +522,8 @@ def _validate_conditions(
     warnings: list[str],
 ) -> None:
     """Validate pressure and temperature values."""
+    assert errors is not None, "errors must be provided"
+    assert errors is not None, "errors must be provided"
     if pressure is not None:
         if pressure <= 0:
             errors.append(f"pressure must be positive, got {pressure}")
@@ -546,6 +552,8 @@ def _validate_composition_and_fittings(
     warnings: list[str],
 ) -> None:
     """Validate gas composition and fitting specifications."""
+    assert errors is not None, "errors must be provided"
+    assert errors is not None, "errors must be provided"
     if gas_composition:
         total = sum(gas_composition.values())
         if not (0.99 <= total <= 1.01):
@@ -575,6 +583,8 @@ def _log_validation_report(
     is_valid: bool, errors: list[str], warnings: list[str]
 ) -> None:
     """Log a formatted validation report."""
+    assert is_valid is not None, "is_valid must be provided"
+    assert is_valid is not None, "is_valid must be provided"
     logger.info(
         "\n╔═══════════════════════════════════════════════════════════════════╗"
     )
@@ -650,6 +660,8 @@ def validate_inputs(
 
 def _wrap_text(text: str, width: int) -> list[str]:
     """Wrap text to specified width."""
+    assert text is not None, "text must be provided"
+    assert text is not None, "text must be provided"
     words = text.split()
     lines = []
     current_line = ""
@@ -665,7 +677,7 @@ def _wrap_text(text: str, width: int) -> list[str]:
     if current_line:
         lines.append(current_line)
 
-    return lines if lines else [""]
+    return lines or [""]
 
 
 # ============================================================================
@@ -685,6 +697,8 @@ def _resolve_pipe_geometry(
     Returns:
         Tuple of (diameter_m, roughness_m).
     """
+    assert pipe_material is not None, "pipe_material must be provided"
+    assert pipe_material is not None, "pipe_material must be provided"
     if pipe_diameter is None:
         if pipe_size is None or pipe_schedule is None:
             raise ValueError(
@@ -718,6 +732,8 @@ def _resolve_gas_and_flow(
     Returns:
         Tuple of (composition, mass_flow_kg_s).
     """
+    assert flow_rate is not None, "flow_rate must be provided"
+    assert flow_rate is not None, "flow_rate must be provided"
     if gas_composition is None:
         gas_composition = {"Air": 1.0}
         logger.info("Using default gas composition: Air")
@@ -837,6 +853,8 @@ def calculate_pressure_drop(
         ... )
         >>> print(f"ΔP = {result['pressure_drop_bar']:.4f} bar")
     """
+    assert pipe_length is not None, "pipe_length must be provided"
+    assert pipe_length is not None, "pipe_length must be provided"
     temp_k = _convert_temperature(temperature, temperature_unit, "K")
     pressure_pa = _convert_pressure(pressure, pressure_unit, "Pa")
 
@@ -980,6 +998,8 @@ def calculate_pressure_drop_syngas(
         ... )
     """
     # Create syngas composition
+    assert pipe_size is not None, "pipe_size must be provided"
+    assert pipe_size is not None, "pipe_size must be provided"
     syngas = {
         "H2": H2_fraction,
         "CO": CO_fraction,
@@ -1204,6 +1224,8 @@ def _print_warnings_and_recommendations(
     results: dict[str, Any], show_recommendations: bool
 ) -> None:
     """Log warnings and engineering recommendations."""
+    assert results is not None, "results must be provided"
+    assert results is not None, "results must be provided"
     if results.get("warnings"):
         warnings = results["warnings"]
         if isinstance(warnings, list) and len(warnings) > 0:
@@ -1241,6 +1263,8 @@ def print_results(
         title: Title for the output
         show_recommendations: Whether to show engineering recommendations
     """
+    assert results is not None, "results must be provided"
+    assert results is not None, "results must be provided"
     logger.info("\n" + "═" * 80)
     logger.info(f"  {title}  ".center(80, "═"))
     logger.info("═" * 80)

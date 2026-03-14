@@ -61,6 +61,8 @@ def optimize_png(path: Path, quality: int = 85, aggressive: bool = False) -> int
     Returns:
         Bytes saved
     """
+    assert path is not None, "path must be provided"
+    assert path is not None, "path must be provided"
     from PIL import Image
 
     original_size = path.stat().st_size

@@ -56,6 +56,8 @@ class PowerWorkMetricsMixin:
             Dictionary with 'positive_work', 'negative_work', 'net_work' (Joules)
             or None if data unavailable.
         """
+        assert joint_idx is not None, "joint_idx must be provided"
+        assert joint_idx is not None, "joint_idx must be provided"
         if joint_idx in self._work_metrics_cache:
             return self._work_metrics_cache[joint_idx]
 
@@ -133,6 +135,8 @@ class PowerWorkMetricsMixin:
         Returns:
             JointPowerMetrics object or None
         """
+        assert joint_idx is not None, "joint_idx must be provided"
+        assert joint_idx is not None, "joint_idx must be provided"
         if (
             joint_idx >= self.joint_torques.shape[1]
             or joint_idx >= self.joint_velocities.shape[1]
@@ -221,6 +225,8 @@ class PowerWorkMetricsMixin:
         Returns:
             ImpulseMetrics or None
         """
+        assert data_type is not None, "data_type must be provided"
+        assert data_type is not None, "data_type must be provided"
         if data_type == "torque":
             if joint_idx >= self.joint_torques.shape[1]:
                 return None
@@ -271,6 +277,8 @@ class PowerWorkMetricsMixin:
         Returns:
             Total path length in phase space.
         """
+        assert joint_idx is not None, "joint_idx must be provided"
+        assert joint_idx is not None, "joint_idx must be provided"
         if (
             joint_idx >= self.joint_positions.shape[1]
             or joint_idx >= self.joint_velocities.shape[1]
@@ -302,6 +310,8 @@ class PowerWorkMetricsMixin:
         Returns:
             JointStiffnessMetrics object or None
         """
+        assert joint_idx is not None, "joint_idx must be provided"
+        assert joint_idx is not None, "joint_idx must be provided"
         if (
             joint_idx >= self.joint_positions.shape[1]
             or joint_idx >= self.joint_torques.shape[1]
@@ -353,6 +363,8 @@ class PowerWorkMetricsMixin:
         Returns:
             Tuple of (times, stiffness_values, r_squared_values)
         """
+        assert joint_idx is not None, "joint_idx must be provided"
+        assert joint_idx is not None, "joint_idx must be provided"
         if (
             joint_idx >= self.joint_positions.shape[1]
             or joint_idx >= self.joint_torques.shape[1]
