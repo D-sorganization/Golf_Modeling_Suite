@@ -12,7 +12,13 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
-from src.shared.python.calc_backend.routers.rotation_converter import router
+# Skip this module if the rotation_converter package is not installed
+pytest.importorskip(
+    "rotation_converter",
+    reason="rotation_converter package not installed",
+)
+
+from src.shared.python.calc_backend.routers.rotation_converter import router  # noqa: E402,I001
 
 client = TestClient(router)
 
