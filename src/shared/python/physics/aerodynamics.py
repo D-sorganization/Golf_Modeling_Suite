@@ -994,8 +994,9 @@ class AerodynamicsEngine:
         }
 
     @precondition(
-        lambda self, velocity, spin, mass, t=0.0, position=None, resample=False: mass
-        > 0,
+        lambda self, velocity, spin, mass, t=0.0, position=None, resample=False: (
+            mass > 0
+        ),
         "mass must be positive (non-zero, non-negative) to avoid ZeroDivisionError",
     )
     def compute_acceleration(

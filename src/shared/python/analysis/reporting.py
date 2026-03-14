@@ -479,8 +479,9 @@ class ReportingMixin:
             )
 
     @precondition(
-        lambda self, filename, report=None: isinstance(filename, str)
-        and len(filename) > 0,
+        lambda self, filename, report=None: (
+            isinstance(filename, str) and len(filename) > 0
+        ),
         "Filename must be a non-empty string",
     )
     def export_statistics_csv(

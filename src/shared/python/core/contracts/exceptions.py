@@ -60,7 +60,7 @@ class PreconditionError(ContractViolationError):
             contract_type="Precondition",
             message=message,
             function_name=function_name,
-            details=details if details else None,
+            details=details or None,
         )
         self.parameter = parameter
         self.value = value
@@ -88,7 +88,7 @@ class PostconditionError(ContractViolationError):
             contract_type="Postcondition",
             message=message,
             function_name=function_name,
-            details=details if details else None,
+            details=details or None,
         )
         self.result = result
 
@@ -112,7 +112,7 @@ class InvariantError(ContractViolationError):
             contract_type="Invariant",
             message=message,
             function_name=method_name,
-            details=details if details else None,
+            details=details or None,
         )
         self.class_name = class_name
         self.method_name = method_name
@@ -138,7 +138,7 @@ class StateError(ContractViolationError):
             contract_type="State",
             message=message,
             function_name=operation,
-            details=details if details else None,
+            details=details or None,
         )
         self.current_state = current_state
         self.required_state = required_state

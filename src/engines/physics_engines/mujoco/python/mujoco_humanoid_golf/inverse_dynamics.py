@@ -344,10 +344,9 @@ class InverseDynamicsSolver:
         "Time array must be non-empty",
     )
     @precondition(
-        lambda self, times, positions, velocities, accelerations: len(times)
-        == len(positions)
-        == len(velocities)
-        == len(accelerations),
+        lambda self, times, positions, velocities, accelerations: (
+            len(times) == len(positions) == len(velocities) == len(accelerations)
+        ),
         "All trajectory arrays must have the same length",
     )
     def solve_inverse_dynamics_trajectory(

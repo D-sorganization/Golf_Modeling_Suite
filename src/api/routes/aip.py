@@ -131,9 +131,7 @@ async def handle_rpc(
                 responses.append(result)
 
         return (
-            responses
-            if responses
-            else make_response(
+            responses or make_response(
                 error=make_error(INVALID_REQUEST, "All requests were notifications"),
                 request_id=None,
             )
