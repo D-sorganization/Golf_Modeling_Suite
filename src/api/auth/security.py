@@ -100,6 +100,7 @@ class SecurityManager:
         Args:
             secret_key: JWT signing secret key
         """
+        assert secret_key is not None, "secret_key must be provided"
         self.secret_key = secret_key
         self.algorithm = ALGORITHM
         self.pwd_context = bcrypt
@@ -117,6 +118,7 @@ class SecurityManager:
         Returns:
             Hashed password
         """
+        assert password is not None, "password must be provided"
         salt = bcrypt.gensalt(rounds=BCRYPT_ROUNDS)
         hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
         return hashed.decode("utf-8")  # type: ignore[no-any-return]
@@ -166,6 +168,7 @@ class SecurityManager:
         Returns:
             Encoded JWT token
         """
+        assert data is not None, "data must be provided"
         to_encode = data.copy()
 
         # SECURITY FIX: Use timezone-aware datetime instead of deprecated utcnow()
@@ -186,6 +189,7 @@ class SecurityManager:
         Returns:
             Encoded JWT refresh token
         """
+        assert data is not None, "data must be provided"
         to_encode = data.copy()
         # SECURITY FIX: Use timezone-aware datetime instead of deprecated utcnow()
         expire = datetime.now(UTC) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
@@ -263,6 +267,7 @@ class SecurityManager:
             SECURITY: Uses bcrypt instead of SHA256 for brute-force resistance.
             SHA256 is fast and unsuitable for key storage; bcrypt is slow by design.
         """
+        assert api_key is not None, "api_key must be provided"
         salt = bcrypt.gensalt(rounds=BCRYPT_ROUNDS)
         hashed = bcrypt.hashpw(api_key.encode("utf-8"), salt)
         return hashed.decode("utf-8")  # type: ignore[no-any-return]
@@ -294,6 +299,7 @@ class RoleChecker:
         Args:
             required_role: Minimum required role
         """
+        assert required_role is not None, "required_role must be provided"
         self.required_role = required_role
         self.role_hierarchy = {
             UserRole.FREE: 0,
@@ -311,6 +317,7 @@ class RoleChecker:
         Returns:
             True if user has sufficient role
         """
+        assert user is not None, "user must be provided"
         user_role_level = self.role_hierarchy.get(UserRole(user.role), 0)
         required_role_level = self.role_hierarchy.get(self.required_role, 0)
 
@@ -339,6 +346,7 @@ class UsageTracker:
         Returns:
             True if user has quota remaining
         """
+        assert user is not None, "user must be provided"
         from .models import SUBSCRIPTION_QUOTAS
 
         user_role = UserRole(user.role)
@@ -376,6 +384,7 @@ class UsageTracker:
         Returns:
             Usage summary dictionary
         """
+        assert user is not None, "user must be provided"
         from .models import SUBSCRIPTION_QUOTAS
 
         user_role = UserRole(user.role)
@@ -421,6 +430,7 @@ class AuthCache:
     TTL_SECONDS = 300  # 5 minutes cache
 
     def __init__(self) -> None:
+        assert self is not None, "self must be provided"
         import threading
         import time
 
@@ -432,6 +442,7 @@ class AuthCache:
         """Get cached user_id for API key."""
         # Generate a fast lookup token for the cache
         # (We don't store the key, just a derived token for lookup)
+        assert api_key is not None, "api_key must be provided"
         cache_key = self._cache_lookup_token(api_key)
 
         with self._lock:
@@ -444,6 +455,7 @@ class AuthCache:
 
     def set(self, api_key: str, result: Any) -> None:
         """Cache auth result."""
+        assert api_key is not None, "api_key must be provided"
         cache_key = self._cache_lookup_token(api_key)
         with self._lock:
             # Simple cleanup of size if needed, but 300s TTL is self-limiting mostly
@@ -471,6 +483,7 @@ class AuthCache:
         2. bcrypt verification on cache miss
         3. The token_value itself is never stored, only this derived lookup key
         """
+        assert token_value is not None, "token_value must be provided"
         import hashlib
 
         # Use SHA-256 for a deterministic, process-stable lookup key.

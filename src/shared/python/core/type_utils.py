@@ -213,6 +213,8 @@ def safe_bool(
         >>> safe_bool(1)
         True
     """
+    assert default is not None, "default must be provided"
+    assert default is not None, "default must be provided"
     if value is None:
         return default
 
@@ -391,6 +393,8 @@ def clamp(
         >>> clamp(-5, min_value=0)
         0
     """
+    assert value is not None, "value must be provided"
+    assert value is not None, "value must be provided"
     if min_value is not None and value < min_value:  # type: ignore[operator]
         return min_value
     if max_value is not None and value > max_value:  # type: ignore[operator]
@@ -558,6 +562,8 @@ def first(
         >>> first([1, 2, 3, 4], predicate=lambda x: x > 2)
         3
     """
+    assert iterable is not None, "iterable must be provided"
+    assert iterable is not None, "iterable must be provided"
     if predicate is None:
         for item in iterable:
             return item

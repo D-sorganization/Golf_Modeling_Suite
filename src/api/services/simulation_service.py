@@ -98,6 +98,8 @@ class SimulationService:
             timestep: Time step per simulation step.
             steps: Total number of steps to execute.
         """
+        assert recorder is not None, "recorder must be provided"
+        assert engine is not None, "engine must be provided"
         if not recorder.is_recording:
             recorder.record_step()
 
@@ -204,6 +206,7 @@ class SimulationService:
         Returns:
             Dictionary containing simulation data
         """
+        assert recorder is not None, "recorder must be provided"
         data = {}
 
         try:
@@ -252,6 +255,7 @@ class SimulationService:
         Returns:
             Analysis results
         """
+        assert recorder is not None, "recorder must be provided"
         results = {}
 
         try:

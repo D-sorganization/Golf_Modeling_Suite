@@ -51,6 +51,8 @@ class GlossaryEntry:
             Definition string.
         """
         # Try exact level
+        assert level is not None, "level must be provided"
+        assert level is not None, "level must be provided"
         if level in self.definitions:
             return self.definitions[level]
 
@@ -535,6 +537,8 @@ class EducationSystem:
             Explanation string.
         """
         # Normalize term
+        assert term is not None, "term must be provided"
+        assert term is not None, "term must be provided"
         normalized = term.lower().replace(" ", "_").replace("-", "_")
 
         entry = self._glossary.get(normalized)
@@ -562,6 +566,8 @@ class EducationSystem:
         Returns:
             GlossaryEntry if found, None otherwise.
         """
+        assert term is not None, "term must be provided"
+        assert term is not None, "term must be provided"
         normalized = term.lower().replace(" ", "_").replace("-", "_")
         return self._glossary.get(normalized)
 
@@ -574,6 +580,8 @@ class EducationSystem:
         Returns:
             List of related term names.
         """
+        assert term is not None, "term must be provided"
+        assert term is not None, "term must be provided"
         entry = self.get_entry(term)
         if entry is None:
             return []
@@ -588,6 +596,8 @@ class EducationSystem:
         Returns:
             List of matching GlossaryEntry objects.
         """
+        assert query is not None, "query must be provided"
+        assert query is not None, "query must be provided"
         query_lower = query.lower()
         results: list[GlossaryEntry] = []
 
@@ -641,6 +651,8 @@ class EducationSystem:
         Args:
             entry: Entry to add.
         """
+        assert entry is not None, "entry must be provided"
+        assert entry is not None, "entry must be provided"
         key = entry.term.lower().replace(" ", "_").replace("-", "_")
         self._glossary[key] = entry
         logger.debug("Added glossary entry: %s", entry.term)
@@ -651,5 +663,7 @@ class EducationSystem:
 
     def __contains__(self, term: str) -> bool:
         """Check if term is in glossary."""
+        assert term is not None, "term must be provided"
+        assert term is not None, "term must be provided"
         normalized = term.lower().replace(" ", "_").replace("-", "_")
         return normalized in self._glossary

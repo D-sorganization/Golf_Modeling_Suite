@@ -155,6 +155,12 @@ class DrakeSwingPlaneAnalyzer:
             trajectory_optimizer: DrakeMotionOptimizer instance
             swing_plane_constraint_weight: Weight for swing plane deviation cost
         """
+        assert swing_plane_constraint_weight is not None, (
+            "swing_plane_constraint_weight must be provided"
+        )
+        assert swing_plane_constraint_weight is not None, (
+            "swing_plane_constraint_weight must be provided"
+        )
         self.logger.info(
             f"Integrating swing plane constraints with weight "
             f"{swing_plane_constraint_weight}"
@@ -202,6 +208,8 @@ class DrakeSwingPlaneAnalyzer:
             metrics: Swing plane analysis results
             trajectory_positions: Club head trajectory positions (N, 3)
         """
+        assert metrics is not None, "metrics must be provided"
+        assert metrics is not None, "metrics must be provided"
         self.logger.info("Visualizing swing plane analysis with Meshcat")
 
         meshcat = meshcat_visualizer
@@ -277,6 +285,8 @@ class DrakeSwingPlaneAnalyzer:
             trajectory_positions: Club head trajectory positions
             output_path: Path to save analysis results
         """
+        assert metrics is not None, "metrics must be provided"
+        assert metrics is not None, "metrics must be provided"
         import json
         from pathlib import Path
 

@@ -23,6 +23,8 @@ class MJCFExporter:
         Args:
             yaml_path: Path to canonical YAML specification
         """
+        assert yaml_path is not None, "yaml_path must be provided"
+        assert yaml_path is not None, "yaml_path must be provided"
         self.yaml_path = Path(yaml_path)
         with self.yaml_path.open() as f:
             self.spec = yaml.safe_load(f)
@@ -42,6 +44,8 @@ class MJCFExporter:
         Args:
             output_path: Path to output MJCF file
         """
+        assert output_path is not None, "output_path must be provided"
+        assert output_path is not None, "output_path must be provided"
         output = Path(output_path)
         mjcf_content = self._generate_mjcf()
         output.write_text(mjcf_content, encoding="utf-8")
@@ -100,6 +104,8 @@ class MJCFExporter:
         Returns:
             List of MJCF lines
         """
+        assert parent_name is not None, "parent_name must be provided"
+        assert parent_name is not None, "parent_name must be provided"
         lines = []
         indent = "  " * (depth + 1)
 
@@ -150,6 +156,8 @@ class MJCFExporter:
         Returns:
             List of MJCF lines
         """
+        assert body is not None, "body must be provided"
+        assert body is not None, "body must be provided"
         lines = []
         geom = body.get("geometry", {})
         geom_type = geom.get("type", "box")

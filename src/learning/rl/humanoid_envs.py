@@ -58,6 +58,8 @@ class HumanoidWalkEnv(RoboticsGymEnv):
             render_mode: Render mode.
         """
         # Create task config for walking
+        assert engine is not None, 'engine must be provided'
+        assert engine is not None, "engine must be provided"
         task_config = TaskConfig(
             task_type=TaskType.LOCOMOTION,
             target_velocity=np.array([target_velocity, 0.0, 0.0]),
@@ -150,6 +152,8 @@ class HumanoidWalkEnv(RoboticsGymEnv):
 
     def _compute_reward(self, action: NDArray[np.floating]) -> float:
         """Compute reward for walking task."""
+        assert action is not None, 'action must be provided'
+        assert action is not None, "action must be provided"
         reward = 0.0
 
         # Forward velocity reward
@@ -277,6 +281,8 @@ class HumanoidStandEnv(RoboticsGymEnv):
             reward_config: Reward configuration.
             render_mode: Render mode.
         """
+        assert engine is not None, 'engine must be provided'
+        assert engine is not None, "engine must be provided"
         task_config = TaskConfig(
             task_type=TaskType.BALANCE,
             target_velocity=np.array([0.0, 0.0, 0.0]),
@@ -348,6 +354,8 @@ class HumanoidStandEnv(RoboticsGymEnv):
 
     def _compute_reward(self, action: NDArray[np.floating]) -> float:
         """Compute reward for standing task."""
+        assert action is not None, 'action must be provided'
+        assert action is not None, "action must be provided"
         reward = 0.0
 
         # Height maintenance reward

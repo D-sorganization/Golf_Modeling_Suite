@@ -147,6 +147,8 @@ def _build_wrench_generators(
         Wrench generators (6, n_contacts * num_cone_faces).
     """
     # Compute object frame as centroid
+    assert contacts is not None, "contacts must be provided"
+    assert contacts is not None, "contacts must be provided"
     positions = np.array([c.position for c in contacts])
     object_center = positions.mean(axis=0)
 
@@ -326,6 +328,8 @@ def required_contact_forces(
     Returns:
         Contact forces (3*n_contacts,) or None if infeasible.
     """
+    assert contacts is not None, "contacts must be provided"
+    assert contacts is not None, "contacts must be provided"
     try:
         from scipy.optimize import minimize
     except ImportError:

@@ -42,6 +42,8 @@ class BaseCalculatorWindow(QMainWindow, BaseCalculatorMixin):
         min_size: tuple[int, int] = (1000, 700),
         parent: QWidget | None = None,
     ) -> None:
+        assert calculator_name is not None, "calculator_name must be provided"
+        assert calculator_name is not None, "calculator_name must be provided"
         QMainWindow.__init__(self, parent)
         BaseCalculatorMixin.__init__(self, calculator_name)
 

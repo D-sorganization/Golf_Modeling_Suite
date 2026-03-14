@@ -143,6 +143,8 @@ class UnifiedEngineInterface(ContractChecker):
         Returns:
             True if club loaded successfully
         """
+        assert club_type is not None, "club_type must be provided"
+        assert club_type is not None, "club_type must be provided"
         if not self.current_engine:
             logger.error("No active engine to load club into")
             return False
@@ -294,6 +296,8 @@ class UnifiedEngineInterface(ContractChecker):
         Returns:
             True if state set successfully
         """
+        assert positions is not None, "positions must be provided"
+        assert positions is not None, "positions must be provided"
         if not self.current_engine:
             return False
 
@@ -313,6 +317,8 @@ class UnifiedEngineInterface(ContractChecker):
         Returns:
             True if control applied successfully
         """
+        assert control_inputs is not None, "control_inputs must be provided"
+        assert control_inputs is not None, "control_inputs must be provided"
         if not self.current_engine:
             return False
 
@@ -374,6 +380,8 @@ def quick_setup(
     Returns:
         Configured interface with engine and standard model loaded
     """
+    assert engine_type is not None, "engine_type must be provided"
+    assert engine_type is not None, "engine_type must be provided"
     interface = UnifiedEngineInterface(suite_root)
 
     # Load engine with standard model
