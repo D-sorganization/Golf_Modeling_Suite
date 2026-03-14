@@ -67,6 +67,8 @@ class VideoProcessor:
         Returns:
             True if video loaded successfully, False otherwise.
         """
+        assert video_path is not None, "video_path must be provided"
+        assert video_path is not None, "video_path must be provided"
         path = Path(video_path)
 
         if not path.exists():
@@ -143,6 +145,8 @@ class VideoProcessor:
         Returns:
             BGR image frame, or None if frame not available.
         """
+        assert frame_number is not None, "frame_number must be provided"
+        assert frame_number is not None, "frame_number must be provided"
         if not self.is_loaded:
             return None
 
@@ -164,6 +168,8 @@ class VideoProcessor:
         Returns:
             BGR image frame, or None if not available.
         """
+        assert time_ms is not None, "time_ms must be provided"
+        assert time_ms is not None, "time_ms must be provided"
         frame_number = int((time_ms / 1000) * self._fps)
         return self.get_frame(frame_number)
 
@@ -184,6 +190,8 @@ class VideoProcessor:
         Yields:
             Tuple of (frame, frame_number, timestamp_ms)
         """
+        assert start_frame is not None, "start_frame must be provided"
+        assert start_frame is not None, "start_frame must be provided"
         if not self.is_loaded:
             return
 
@@ -225,6 +233,8 @@ class VideoProcessor:
         Returns:
             List of PoseFrame objects with valid poses.
         """
+        assert start_frame is not None, "start_frame must be provided"
+        assert start_frame is not None, "start_frame must be provided"
         if not self.is_loaded:
             return []
 
@@ -272,6 +282,8 @@ class VideoProcessor:
         Returns:
             True if export successful.
         """
+        assert frame_number is not None, "frame_number must be provided"
+        assert frame_number is not None, "frame_number must be provided"
         frame = self.get_frame(frame_number)
         if frame is None:
             return False
@@ -305,6 +317,8 @@ class VideoProcessor:
         Returns:
             True if export successful.
         """
+        assert output_path is not None, "output_path must be provided"
+        assert output_path is not None, "output_path must be provided"
         if not self.is_loaded:
             return False
 
@@ -341,6 +355,8 @@ class VideoProcessor:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Context manager exit."""
+        assert exc_type is not None, "exc_type must be provided"
+        assert exc_type is not None, "exc_type must be provided"
         self.close()
         return False
 

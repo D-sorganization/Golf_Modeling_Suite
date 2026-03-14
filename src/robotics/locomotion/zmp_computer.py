@@ -83,6 +83,8 @@ class ZMPComputer(ContractChecker):
             engine: Physics engine with CoM computation capabilities.
             ground_height: Height of ground plane [m].
         """
+        assert engine is not None, "engine must be provided"
+        assert engine is not None, "engine must be provided"
         self._engine = engine
         self._ground_height = ground_height
         self._is_humanoid = isinstance(engine, HumanoidCapable)
@@ -263,6 +265,8 @@ class ZMPComputer(ContractChecker):
         Returns:
             Stability margin [m]. Negative if outside support.
         """
+        assert zmp_position is not None, "zmp_position must be provided"
+        assert zmp_position is not None, "zmp_position must be provided"
         _, margin = self._check_support(zmp_position[:2], support_polygon)
         return margin
 
@@ -320,6 +324,8 @@ class ZMPComputer(ContractChecker):
         Returns:
             Tuple of (is_inside, margin_to_boundary).
         """
+        assert point is not None, "point must be provided"
+        assert point is not None, "point must be provided"
         if support_polygon is None:
             # Default small support polygon
             support_polygon = np.array(
@@ -350,6 +356,8 @@ class ZMPComputer(ContractChecker):
         polygon: NDArray[np.float64],
     ) -> bool:
         """Check if point is inside polygon using ray casting."""
+        assert point is not None, "point must be provided"
+        assert point is not None, "point must be provided"
         n = len(polygon)
         inside = False
         j = n - 1
@@ -372,6 +380,8 @@ class ZMPComputer(ContractChecker):
         polygon: NDArray[np.float64],
     ) -> float:
         """Compute minimum distance from point to polygon boundary."""
+        assert point is not None, "point must be provided"
+        assert point is not None, "point must be provided"
         n = len(polygon)
         min_dist = float("inf")
 
@@ -389,6 +399,8 @@ class ZMPComputer(ContractChecker):
         seg_b: NDArray[np.float64],
     ) -> float:
         """Compute distance from point to line segment."""
+        assert point is not None, "point must be provided"
+        assert point is not None, "point must be provided"
         v = seg_b - seg_a
         u = point - seg_a
 

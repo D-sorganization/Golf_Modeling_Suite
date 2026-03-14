@@ -60,6 +60,8 @@ class UnitConversionService:
 
     def __init__(self, enable_validation: bool = True) -> None:
         """Initialize the unit conversion service."""
+        assert enable_validation is not None, "enable_validation must be provided"
+        assert enable_validation is not None, "enable_validation must be provided"
         self.enable_validation = enable_validation
         self.user_defined_units: dict[str, set[str]] = {}
         self.user_defined_aliases: dict[str, list[str]] = {}
@@ -144,6 +146,8 @@ class UnitConversionService:
     def convert(
         self, value: float, from_unit: str, to_unit: str, **kwargs: Any
     ) -> ConversionResult:
+        assert value is not None, "value must be provided"
+        assert value is not None, "value must be provided"
         self._validate_convert_value(value)
         from_unit_norm = self._normalize_unit(from_unit)
         to_unit_norm = self._normalize_unit(to_unit)
@@ -204,6 +208,8 @@ class UnitConversionService:
         self, value: float, from_category: str, from_unit_norm: str
     ) -> list[str]:
         """Collect validation warnings for the conversion."""
+        assert value is not None, "value must be provided"
+        assert value is not None, "value must be provided"
         warnings: list[str] = []
         if self.enable_validation:
             warnings.extend(self._validate_value(value, from_category, from_unit_norm))
@@ -241,6 +247,8 @@ class UnitConversionService:
     def _normalize_unit(self, unit: str) -> str:
         """Normalize unit string to canonical form."""
         # Fast path 1: Check exact cache
+        assert unit is not None, "unit must be provided"
+        assert unit is not None, "unit must be provided"
         if unit in self._normalized_cache:
             return self._normalized_cache[unit]
 
@@ -286,6 +294,8 @@ class UnitConversionService:
 
     def _get_category(self, unit: str) -> str | None:
         """Get the category for a given unit."""
+        assert unit is not None, "unit must be provided"
+        assert unit is not None, "unit must be provided"
         for category, factors in self.category_map.items():
             if unit in factors:
                 return category
@@ -299,6 +309,8 @@ class UnitConversionService:
         self, value: float, category: str, unit: str | None = None
     ) -> list[str]:
         """Validate input value against physical constraints."""
+        assert value is not None, "value must be provided"
+        assert value is not None, "value must be provided"
         if category == "temperature" and unit:
             # Convert to Kelvin to check if below absolute zero
             # Negative values in C/F are valid, so we need to convert first
@@ -379,6 +391,8 @@ class UnitConversionService:
         standard_condition: StandardCondition = StandardCondition.SCFM_60F,
     ) -> float:
         """Convert gas flow rate."""
+        assert value is not None, "value must be provided"
+        assert value is not None, "value must be provided"
         gas_props = GAS_DATABASE.get(gas_type.lower(), GAS_DATABASE["air"])
         self._ensure_acfm_inputs(from_unit, to_unit, temperature, pressure)
         m3_hr_std = self._gas_flow_to_standard_m3h(
@@ -483,6 +497,8 @@ class UnitConversionService:
     ) -> list[str]:
         """Return warnings when user-defined units participate in conversions."""
 
+        assert from_unit is not None, "from_unit must be provided"
+        assert from_unit is not None, "from_unit must be provided"
         warnings: list[str] = []
         seen: set[str] = set()
 
@@ -514,6 +530,8 @@ class UnitConversionService:
         compressibility_factor: float = 1.0,
     ) -> float:
         """Convert gas flow between SCFM and ACFM."""
+        assert value is not None, "value must be provided"
+        assert value is not None, "value must be provided"
         std_temp, std_pressure_pa, _ = standard_condition.value
         temperature = actual_temp_K or std_temp
         pressure_pa = (
@@ -548,6 +566,8 @@ class UnitConversionService:
         gas_density_stp: float | None = None,
     ) -> float:
         """Convert heating value."""
+        assert value is not None, "value must be provided"
+        assert value is not None, "value must be provided"
         if gas_density_stp is not None:
             self._require_positive_finite(gas_density_stp, "Gas density")
         from_key = from_unit.lower()
@@ -628,6 +648,8 @@ class UnitConversionService:
         molecular_weight: float | None = None,
     ) -> float:
         """Convert tar concentration."""
+        assert value is not None, "value must be provided"
+        assert value is not None, "value must be provided"
         self._validate_tar_inputs(temperature, pressure)
         from_key = from_unit.lower()
         to_key = to_unit.lower()
@@ -792,6 +814,8 @@ class UnitConversionService:
         pressure: float,
     ) -> float:
         """Calculate compressibility factor."""
+        assert gas_type is not None, "gas_type must be provided"
+        assert gas_type is not None, "gas_type must be provided"
         self._require_positive_finite(temperature, "temperature")
         self._require_positive_finite(pressure, "pressure")
         gas_props = GAS_DATABASE.get(gas_type.lower(), GAS_DATABASE["air"])
@@ -854,4 +878,6 @@ def get_service() -> UnitConversionService:
 
 def convert(value: float, from_unit: str, to_unit: str, **kwargs: Any) -> float:
     """Convert a value between units using the global service."""
+    assert value is not None, "value must be provided"
+    assert value is not None, "value must be provided"
     return get_service().convert(value, from_unit, to_unit, **kwargs).value

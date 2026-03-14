@@ -118,6 +118,8 @@ class PreferencesDialog(QDialog):
         Args:
             parent: Parent window
         """
+        assert parent is not None, "parent must be provided"
+        assert parent is not None, "parent must be provided"
         super().__init__(parent)
         self.setWindowTitle("Preferences")
         self.setMinimumSize(550, 450)

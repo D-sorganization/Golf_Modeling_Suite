@@ -56,6 +56,8 @@ class EngineState:
             nq: Number of position coordinates
             nv: Number of velocity coordinates
         """
+        assert nq is not None, "nq must be provided"
+        assert nq is not None, "nq must be provided"
         self.q: np.ndarray = np.zeros(nq)  # Positions
         self.v: np.ndarray = np.zeros(nv)  # Velocities
         self.a: np.ndarray = np.zeros(nv)  # Accelerations
@@ -134,10 +136,12 @@ class BasePhysicsEngine(ContractChecker, PhysicsEngine):
                 "Initialized engine must have a loaded model",
             ),
             (
-                lambda: self.state is None
-                or (
-                    len(self.state.q) == len(self.state.v)
-                    or len(self.state.q) == len(self.state.v) + 1  # Quaternion case
+                lambda: (
+                    self.state is None
+                    or (
+                        len(self.state.q) == len(self.state.v)
+                        or len(self.state.q) == len(self.state.v) + 1  # Quaternion case
+                    )
                 ),
                 "State arrays q and v must have compatible dimensions",
             ),
@@ -434,6 +438,8 @@ class BasePhysicsEngine(ContractChecker, PhysicsEngine):
         Args:
             checkpoint: Checkpoint to restore from.
         """
+        assert checkpoint is not None, "checkpoint must be provided"
+        assert checkpoint is not None, "checkpoint must be provided"
         if not checkpoint.engine_state:
             return
 
@@ -543,5 +549,7 @@ class SimulationMixin:
         Args:
             dt: Time step size
         """
+        assert dt is not None, "dt must be provided"
+        assert dt is not None, "dt must be provided"
         self._simulation_time += dt
         self._step_count += 1

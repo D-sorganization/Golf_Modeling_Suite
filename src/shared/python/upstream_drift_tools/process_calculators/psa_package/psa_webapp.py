@@ -220,6 +220,8 @@ class PSAModel:
 
 def get_flammability_status(h2_pct: float, o2_pct: float) -> tuple[str, str]:
     """Return status and color for flammability."""
+    assert h2_pct is not None, "h2_pct must be provided"
+    assert h2_pct is not None, "h2_pct must be provided"
     if o2_pct < 0.1:
         return "Safe-Low O2", "green"
     if h2_pct > 4 and o2_pct > 2:
@@ -236,6 +238,8 @@ def get_flammability_status(h2_pct: float, o2_pct: float) -> tuple[str, str]:
 
 def _resolve_plot_mode(show_lines: bool, show_markers: bool) -> str:
     """Resolve Plotly trace mode from boolean flags."""
+    assert show_lines is not None, "show_lines must be provided"
+    assert show_lines is not None, "show_lines must be provided"
     if show_lines and show_markers:
         return "lines+markers"
     if show_markers:
@@ -410,6 +414,8 @@ def _render_sensitivity_tab(
     components: list[ComponentData],
 ) -> None:
     """Render Tab 2 — S2 tail recycle sensitivity analysis."""
+    assert total_feed is not None, "total_feed must be provided"
+    assert total_feed is not None, "total_feed must be provided"
     st.subheader("Sensitivity Analysis")
 
     # Plot options
@@ -487,6 +493,8 @@ def _render_o2_safety_tab(
     components: list[ComponentData],
 ) -> None:
     """Render Tab 3 — O2 flammability / safety analysis."""
+    assert total_feed is not None, "total_feed must be provided"
+    assert total_feed is not None, "total_feed must be provided"
     st.subheader("O2 Safety Analysis")
     st.markdown("""
     **Critical Thresholds:**

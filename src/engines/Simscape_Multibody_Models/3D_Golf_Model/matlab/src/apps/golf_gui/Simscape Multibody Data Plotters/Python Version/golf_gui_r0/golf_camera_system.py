@@ -137,6 +137,8 @@ class SmoothAnimator:
         easing_func: Callable | None = None,
     ) -> np.ndarray:
         """Interpolate between two vectors with optional easing"""
+        assert start is not None, "start must be provided"
+        assert start is not None, "start must be provided"
         t = easing_func(np.clip(t, 0.0, 1.0)) if easing_func else np.clip(t, 0.0, 1.0)
 
         return start + (end - start) * t
@@ -149,6 +151,8 @@ class SmoothAnimator:
         easing_func: Callable | None = None,
     ) -> tuple[float, float, float]:
         """Spherical interpolation for smooth orbit camera movement"""
+        assert start_spherical is not None, "start_spherical must be provided"
+        assert start_spherical is not None, "start_spherical must be provided"
         t = easing_func(np.clip(t, 0.0, 1.0)) if easing_func else np.clip(t, 0.0, 1.0)
 
         start_dist, start_azim, start_elev = start_spherical
@@ -291,6 +295,8 @@ class CameraController(QObject):
         self, position: np.ndarray
     ) -> tuple[float, float, float]:
         """Convert Cartesian position to spherical coordinates"""
+        assert position is not None, "position must be provided"
+        assert position is not None, "position must be provided"
         offset = position - self.current_state.target
         distance = np.linalg.norm(offset)
 
@@ -311,6 +317,8 @@ class CameraController(QObject):
         eye: np.ndarray, target: np.ndarray, up: np.ndarray
     ) -> np.ndarray:
         """Create look-at view matrix"""
+        assert eye is not None, "eye must be provided"
+        assert eye is not None, "eye must be provided"
         f = target - eye
         f_norm = np.linalg.norm(f)
         f = f / f_norm if f_norm > 1e-06 else np.array([0, 0, -1], dtype=np.float32)
@@ -336,6 +344,8 @@ class CameraController(QObject):
         fov: float, aspect: float, near: float, far: float
     ) -> np.ndarray:
         """Create perspective projection matrix"""
+        assert fov is not None, "fov must be provided"
+        assert fov is not None, "fov must be provided"
         f = 1.0 / np.tan(fov / 2.0)
 
         result = np.zeros((4, 4), dtype=np.float32)
@@ -353,6 +363,8 @@ class CameraController(QObject):
 
     def handle_mouse_orbit(self, dx: float, dy: float) -> None:
         """Handle mouse orbital movement"""
+        assert dx is not None, "dx must be provided"
+        assert dx is not None, "dx must be provided"
         if self.mode != CameraMode.ORBIT:
             return
 
@@ -377,6 +389,8 @@ class CameraController(QObject):
 
     def handle_mouse_pan(self, dx: float, dy: float) -> None:
         """Handle mouse panning movement"""
+        assert dx is not None, "dx must be provided"
+        assert dx is not None, "dx must be provided"
         if self.mode not in [CameraMode.ORBIT, CameraMode.FLY]:
             return
 
@@ -404,6 +418,8 @@ class CameraController(QObject):
 
     def handle_mouse_zoom(self, delta: float) -> None:
         """Handle mouse wheel zoom"""
+        assert delta is not None, "delta must be provided"
+        assert delta is not None, "delta must be provided"
         zoom_factor = 1.0 + (delta * self.zoom_sensitivity)
         new_distance = self.current_state.distance / zoom_factor
 
@@ -479,6 +495,8 @@ class CameraController(QObject):
         self, preset: CameraPreset, animate: bool = True, duration: float = 1.0
     ) -> None:
         """Set camera to predefined preset"""
+        assert preset is not None, "preset must be provided"
+        assert preset is not None, "preset must be provided"
         if preset not in self.presets:
             logger.warning("Warning: Preset %s not found", preset)
             return
@@ -502,6 +520,8 @@ class CameraController(QObject):
     ) -> None:
         """Animate camera to target state"""
         # Stop any current animation
+        assert target_state is not None, "target_state must be provided"
+        assert target_state is not None, "target_state must be provided"
         self.stop_animation()
 
         # Setup animation
@@ -581,6 +601,8 @@ class CameraController(QObject):
 
     def _copy_state(self, source: CameraState, destination: CameraState) -> None:
         """Copy camera state"""
+        assert source is not None, "source must be provided"
+        assert source is not None, "source must be provided"
         destination.position = source.position.copy()
         destination.target = source.target.copy()
         destination.up = source.up.copy()
@@ -600,6 +622,8 @@ class CameraController(QObject):
         easing: QEasingCurve.Type = QEasingCurve.Type.InOutCubic,
     ) -> None:
         """Add a keyframe for cinematic animation"""
+        assert time is not None, "time must be provided"
+        assert time is not None, "time must be provided"
         if state is None:
             state = CameraState()
             self._copy_state(self.current_state, state)
@@ -628,6 +652,8 @@ class CameraController(QObject):
         self, duration: float | None = None, loop: bool = False
     ) -> None:
         """Start cinematic camera playback"""
+        assert loop is not None, "loop must be provided"
+        assert loop is not None, "loop must be provided"
         if not self.keyframes:
             logger.warning("Warning: No keyframes defined for cinematic playback")
             return
@@ -648,6 +674,8 @@ class CameraController(QObject):
 
     def update_cinematic_camera(self, time_delta: float) -> None:
         """Update camera position during cinematic playback"""
+        assert time_delta is not None, "time_delta must be provided"
+        assert time_delta is not None, "time_delta must be provided"
         if self.mode != CameraMode.CINEMATIC:
             return
 
@@ -710,6 +738,8 @@ class CameraController(QObject):
     ) -> None:
         """Interpolate between two camera states"""
         # Spherical interpolation
+        assert state1 is not None, "state1 must be provided"
+        assert state1 is not None, "state1 must be provided"
         spherical1 = (state1.distance, state1.azimuth, state1.elevation)
         spherical2 = (state2.distance, state2.azimuth, state2.elevation)
 
@@ -736,6 +766,8 @@ class CameraController(QObject):
 
     def frame_data(self, data_points: list[np.ndarray], margin: float = 1.5) -> None:
         """Automatically frame camera to view all data points"""
+        assert data_points is not None, "data_points must be provided"
+        assert data_points is not None, "data_points must be provided"
         if not data_points:
             return
 
@@ -771,6 +803,8 @@ class CameraController(QObject):
 
     def follow_point(self, point: np.ndarray, smooth_factor: float = 0.1) -> None:
         """Smoothly follow a moving point"""
+        assert point is not None, "point must be provided"
+        assert point is not None, "point must be provided"
         if self.mode != CameraMode.FOLLOW:
             return
 
@@ -788,6 +822,8 @@ class CameraController(QObject):
         self, point: np.ndarray, animate: bool = True, duration: float = 0.5
     ) -> None:
         """Look at a specific point"""
+        assert point is not None, "point must be provided"
+        assert point is not None, "point must be provided"
         if not np.isfinite(point).all():
             return
 
@@ -859,6 +895,8 @@ class CameraController(QObject):
 
     def load_state_dict(self, state_dict: dict, animate: bool = True) -> None:
         """Load camera state from dictionary"""
+        assert state_dict is not None, "state_dict must be provided"
+        assert state_dict is not None, "state_dict must be provided"
         target_state = CameraState()
         target_state.position = np.array(
             state_dict.get("position", [0, 0, 0]), dtype=np.float32

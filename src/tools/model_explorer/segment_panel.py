@@ -59,6 +59,8 @@ class SegmentPanel(QWidget):
         Args:
             parent_layout: Parent layout to add to.
         """
+        assert parent_layout is not None, "parent_layout must be provided"
+        assert parent_layout is not None, "parent_layout must be provided"
         group = QGroupBox("Segments")
         layout = QVBoxLayout(group)
 
@@ -74,6 +76,8 @@ class SegmentPanel(QWidget):
         Args:
             parent_layout: Parent layout to add to.
         """
+        assert parent_layout is not None, "parent_layout must be provided"
+        assert parent_layout is not None, "parent_layout must be provided"
         self.editor_tabs = QTabWidget()
 
         # Basic properties tab
@@ -350,6 +354,8 @@ class SegmentPanel(QWidget):
         Args:
             parent_layout: Parent layout to add to.
         """
+        assert parent_layout is not None, "parent_layout must be provided"
+        assert parent_layout is not None, "parent_layout must be provided"
         button_layout = QHBoxLayout()
 
         self.add_button = QPushButton("Add Segment")
@@ -560,6 +566,8 @@ class SegmentPanel(QWidget):
         Args:
             segment_name: Name of the segment to load.
         """
+        assert segment_name is not None, "segment_name must be provided"
+        assert segment_name is not None, "segment_name must be provided"
         segment = next(
             (seg for seg in self.segments if seg["name"] == segment_name), None
         )
@@ -569,7 +577,7 @@ class SegmentPanel(QWidget):
         # Load basic properties
         self.name_edit.setText(segment["name"])
         self.type_combo.setCurrentText(segment["type"])
-        parent_text = segment["parent"] if segment["parent"] else "None (Root)"
+        parent_text = segment["parent"] or "None (Root)"
         self.parent_combo.setCurrentText(parent_text)
 
         # Load geometry

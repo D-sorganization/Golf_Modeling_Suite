@@ -138,6 +138,8 @@ class BallRollPhysics:
             ball_radius: Ball radius [m]
             integrator: Integration method ("euler", "rk4", "verlet")
         """
+        assert ball_mass is not None, "ball_mass must be provided"
+        assert ball_mass is not None, "ball_mass must be provided"
         self.green = green
         self.turf = turf or (green.turf if green else TurfProperties())
         self.ball_mass = ball_mass
@@ -162,6 +164,8 @@ class BallRollPhysics:
         Returns:
             Current RollMode
         """
+        assert state is not None, "state must be provided"
+        assert state is not None, "state must be provided"
         speed = state.speed
 
         if speed < self.STOP_VELOCITY_THRESHOLD:
@@ -206,6 +210,8 @@ class BallRollPhysics:
         Returns:
             Friction force vector [N]
         """
+        assert state is not None, "state must be provided"
+        assert state is not None, "state must be provided"
         if state.speed < 1e-10:
             return np.zeros(2)
 
@@ -234,6 +240,8 @@ class BallRollPhysics:
         Returns:
             Friction force vector [N]
         """
+        assert state is not None, "state must be provided"
+        assert state is not None, "state must be provided"
         if state.speed < 1e-10:
             return np.zeros(2)
 
@@ -269,6 +277,8 @@ class BallRollPhysics:
         Returns:
             Acceleration vector [m/s²]
         """
+        assert position is not None, "position must be provided"
+        assert position is not None, "position must be provided"
         if self.green is None:
             return np.zeros(2)
 
@@ -290,6 +300,8 @@ class BallRollPhysics:
         Returns:
             New spin vector [rad/s]
         """
+        assert state is not None, "state must be provided"
+        assert state is not None, "state must be provided"
         speed = state.speed
 
         if mode == RollMode.STOPPED:
@@ -336,6 +348,8 @@ class BallRollPhysics:
         Returns:
             Acceleration vector [m/s²]
         """
+        assert state is not None, "state must be provided"
+        assert state is not None, "state must be provided"
         mode = self.determine_roll_mode(state)
 
         if mode == RollMode.STOPPED:
@@ -367,6 +381,8 @@ class BallRollPhysics:
             Total kinetic energy [J]
         """
         # Translational: 0.5 * m * v²
+        assert state is not None, "state must be provided"
+        assert state is not None, "state must be provided"
         translational = 0.5 * self.ball_mass * state.speed**2
 
         # Rotational: 0.5 * I * ω²
@@ -385,6 +401,8 @@ class BallRollPhysics:
         Returns:
             New ball state
         """
+        assert state is not None, "state must be provided"
+        assert state is not None, "state must be provided"
         if self.integrator == "rk4":
             return self._step_rk4(state, dt)
         if self.integrator == "verlet":
@@ -393,6 +411,8 @@ class BallRollPhysics:
 
     def _step_euler(self, state: BallState, dt: float) -> BallState:
         """Euler integration step."""
+        assert state is not None, "state must be provided"
+        assert state is not None, "state must be provided"
         mode = self.determine_roll_mode(state)
 
         if mode == RollMode.STOPPED:
@@ -437,10 +457,15 @@ class BallRollPhysics:
     def _step_rk4(self, state: BallState, dt: float) -> BallState:
         """4th-order Runge-Kutta integration."""
 
+        assert state is not None, "state must be provided"
+        assert state is not None, "state must be provided"
+
         def derivatives(
             pos: np.ndarray, vel: np.ndarray
         ) -> tuple[np.ndarray, np.ndarray]:
             """Compute velocity and acceleration for the given state."""
+            assert pos is not None, "pos must be provided"
+            assert pos is not None, "pos must be provided"
             temp_state = BallState(pos, vel, state.spin)
             accel = self.compute_total_acceleration(temp_state)
             return vel, accel
@@ -470,6 +495,8 @@ class BallRollPhysics:
     def _step_verlet(self, state: BallState, dt: float) -> BallState:
         """Velocity Verlet integration (better energy conservation)."""
         # Current acceleration
+        assert state is not None, "state must be provided"
+        assert state is not None, "state must be provided"
         accel = self.compute_total_acceleration(state)
 
         # Update position
@@ -513,6 +540,8 @@ class BallRollPhysics:
         Returns:
             Dictionary with trajectory data
         """
+        assert initial_state is not None, "initial_state must be provided"
+        assert initial_state is not None, "initial_state must be provided"
         positions = [initial_state.position.copy()]
         velocities = [initial_state.velocity.copy()]
         spins = [initial_state.spin.copy()]

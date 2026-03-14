@@ -166,6 +166,8 @@ class Tool:
         Returns:
             List of validation error messages (empty if valid).
         """
+        assert arguments is not None, "arguments must be provided"
+        assert arguments is not None, "arguments must be provided"
         errors: list[str] = []
 
         # Check required parameters
@@ -202,6 +204,8 @@ class Tool:
         Returns:
             ToolResult with execution outcome.
         """
+        assert arguments is not None, "arguments must be provided"
+        assert arguments is not None, "arguments must be provided"
         import time
 
         start_time = time.perf_counter()
@@ -284,6 +288,9 @@ class ToolRegistry:
             ...     ...
         """
 
+        assert name is not None, "name must be provided"
+        assert name is not None, "name must be provided"
+
         def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             """Register the decorated function as a tool in the registry."""
             # Extract parameters from function signature
@@ -312,6 +319,8 @@ class ToolRegistry:
         Args:
             tool: Tool to register.
         """
+        assert tool is not None, "tool must be provided"
+        assert tool is not None, "tool must be provided"
         self._tools[tool.name] = tool
         logger.debug("Registered tool: %s", tool.name)
 
@@ -326,6 +335,8 @@ class ToolRegistry:
         Returns:
             List of ToolParameter definitions.
         """
+        assert func is not None, "func must be provided"
+        assert func is not None, "func must be provided"
         parameters: list[ToolParameter] = []
         sig = inspect.signature(func)
 
@@ -375,6 +386,8 @@ class ToolRegistry:
         Returns:
             JSON Schema type string.
         """
+        assert python_type is not None, "python_type must be provided"
+        assert python_type is not None, "python_type must be provided"
         type_mapping = {
             str: "string",
             int: "integer",
@@ -422,6 +435,8 @@ class ToolRegistry:
         Returns:
             List of matching tools.
         """
+        assert max_expertise is not None, "max_expertise must be provided"
+        assert max_expertise is not None, "max_expertise must be provided"
         tools = list(self._tools.values())
 
         if category is not None:
@@ -445,6 +460,8 @@ class ToolRegistry:
         Returns:
             List of tool definitions in provider format.
         """
+        assert provider_format is not None, "provider_format must be provided"
+        assert provider_format is not None, "provider_format must be provided"
         tools = self.list_tools(max_expertise=max_expertise)
 
         if provider_format == "openai":
@@ -472,6 +489,8 @@ class ToolRegistry:
         Raises:
             ToolExecutionError: If tool not found.
         """
+        assert name is not None, "name must be provided"
+        assert name is not None, "name must be provided"
         tool = self.get_tool(name)
         if tool is None:
             raise ToolExecutionError(

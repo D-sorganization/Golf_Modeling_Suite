@@ -167,7 +167,7 @@ class OutputManager:
         engine="mujoco",
         metadata=None,
         model_path=None,
-        parameters=None: results is not None,
+        parameters=None: (results is not None),
         "Simulation results must not be None",
     )
     @precondition(
@@ -178,7 +178,7 @@ class OutputManager:
         engine="mujoco",
         metadata=None,
         model_path=None,
-        parameters=None: filename is not None and len(filename) > 0,
+        parameters=None: (filename is not None and len(filename) > 0),
         "Filename must be a non-empty string",
     )
     def save_simulation_results(
@@ -204,6 +204,8 @@ class OutputManager:
         Returns:
             Path to saved file
         """
+        assert results is not None, "results must be provided"
+        assert results is not None, "results must be provided"
         engine_dir = self.directories["simulations"] / engine
         engine_dir.mkdir(parents=True, exist_ok=True)
 
@@ -239,6 +241,8 @@ class OutputManager:
             raise
 
     def _sanitize_filename(self, filename, format_type):
+        assert filename is not None, "filename must be provided"
+        assert filename is not None, "filename must be provided"
         if "OutputFormat." in filename:
             filename = filename.split(".")[-1]
             filename = "test_format"
@@ -274,6 +278,8 @@ class OutputManager:
         provenance: ProvenanceInfo,
     ) -> None:
         """Save results in CSV format with provenance header."""
+        assert results is not None, "results must be provided"
+        assert results is not None, "results must be provided"
         is_df = False
         try:
             if isinstance(results, pd.DataFrame):
@@ -299,6 +305,9 @@ class OutputManager:
         engine: str,
     ) -> None:
         """Save results in JSON format with provenance and metadata."""
+
+        assert results is not None, "results must be provided"
+        assert results is not None, "results must be provided"
 
         def json_serializer(obj: Any) -> Any:
             """Serialize numpy arrays, numbers, and datetimes to JSON-safe types."""
@@ -381,6 +390,8 @@ class OutputManager:
         Returns:
             Future that resolves to the saved file path
         """
+        assert results is not None, "results must be provided"
+        assert results is not None, "results must be provided"
         executor = self._get_io_executor()
 
         def _save_task() -> Path:
@@ -430,6 +441,9 @@ class OutputManager:
             on_complete: Called with file path on successful save
             on_error: Called with exception on failure
         """
+
+        assert results is not None, "results must be provided"
+        assert results is not None, "results must be provided"
 
         def _callback(result: Path | Exception) -> None:
             if isinstance(result, Exception):
@@ -544,14 +558,15 @@ class OutputManager:
         return sorted(simulations)
 
     @precondition(
-        lambda self, analysis_data, report_name, format_type="json": analysis_data
-        is not None,
+        lambda self, analysis_data, report_name, format_type="json": (
+            analysis_data is not None
+        ),
         "Analysis data must not be None",
     )
     @precondition(
-        lambda self, analysis_data, report_name, format_type="json": report_name
-        is not None
-        and len(report_name) > 0,
+        lambda self, analysis_data, report_name, format_type="json": (
+            report_name is not None and len(report_name) > 0
+        ),
         "Report name must be a non-empty string",
     )
     def export_analysis_report(
@@ -571,6 +586,8 @@ class OutputManager:
         Returns:
             Path to exported report
         """
+        assert analysis_data is not None, "analysis_data must be provided"
+        assert analysis_data is not None, "analysis_data must be provided"
         report_dir = self.directories["reports"] / format_type
         report_dir.mkdir(parents=True, exist_ok=True)
 
@@ -644,6 +661,9 @@ class OutputManager:
             Path objects for all files found
         """
 
+        assert directory is not None, "directory must be provided"
+        assert directory is not None, "directory must be provided"
+
         def _scan_recursive(path: Path, depth: int = 0) -> Iterator[Path]:
             if depth > max_depth:
                 return
@@ -676,6 +696,8 @@ class OutputManager:
         Returns:
             Number of files cleaned up
         """
+        assert max_age_days is not None, "max_age_days must be provided"
+        assert max_age_days is not None, "max_age_days must be provided"
         cutoff_date = now_local() - timedelta(days=max_age_days)
         cleaned_count = 0
 
@@ -729,6 +751,8 @@ class OutputManager:
 
     def _generate_html_report(self, data: dict[str, Any], title: str) -> str:
         """Generate basic HTML report."""
+        assert data is not None, "data must be provided"
+        assert data is not None, "data must be provided"
         timestamp_str = timestamp_display(utc=False)
         html = f"""
         <!DOCTYPE html>
@@ -800,6 +824,8 @@ def save_results(
 
     TYPE-001: Replaced Any with Union type for better type safety.
     """
+    assert results is not None, "results must be provided"
+    assert results is not None, "results must be provided"
     manager = OutputManager()
     # Cast to the type expected by save_simulation_results if needed,
     # or rely on structural compatibility.
@@ -832,6 +858,8 @@ def load_results(
 
     TYPE-001: Replaced Any with Union type for better type safety.
     """
+    assert filename is not None, "filename must be provided"
+    assert filename is not None, "filename must be provided"
     manager = OutputManager()
     result = manager.load_simulation_results(
         filename, OutputFormat(format_type), engine

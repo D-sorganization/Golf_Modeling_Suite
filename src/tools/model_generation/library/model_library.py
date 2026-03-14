@@ -300,8 +300,9 @@ class ModelLibrary:
         return self._entries.get(model_id)
 
     @precondition(
-        lambda self, model_id, force_download=False: model_id is not None
-        and len(model_id.strip()) > 0,
+        lambda self, model_id, force_download=False: (
+            model_id is not None and len(model_id.strip()) > 0
+        ),
         "Model ID must be a non-empty string",
     )
     def load_model(
@@ -319,6 +320,8 @@ class ModelLibrary:
         Returns:
             ParsedModel or None if not found
         """
+        assert model_id is not None, "model_id must be provided"
+        assert model_id is not None, "model_id must be provided"
         entry = self._entries.get(model_id)
         if not entry:
             logger.warning(f"Model not found: {model_id}")
@@ -342,8 +345,9 @@ class ModelLibrary:
             return None
 
     @precondition(
-        lambda self, urdf_path, **kw: urdf_path is not None
-        and len(str(urdf_path).strip()) > 0,
+        lambda self, urdf_path, **kw: (
+            urdf_path is not None and len(str(urdf_path).strip()) > 0
+        ),
         "URDF path must be a non-empty string or Path",
     )
     def add_local_model(
@@ -470,6 +474,8 @@ class ModelLibrary:
         Returns:
             List of discovered models
         """
+        assert repo_name is not None, "repo_name must be provided"
+        assert repo_name is not None, "repo_name must be provided"
         if repo_name in self.KNOWN_REPOSITORIES:
             repo_config = self.KNOWN_REPOSITORIES[repo_name]
         elif repo_name in self._repositories:
@@ -493,6 +499,8 @@ class ModelLibrary:
         config: dict[str, Any],
     ) -> list[ModelEntry]:
         """Fetch model list from repository."""
+        assert repo_name is not None, "repo_name must be provided"
+        assert repo_name is not None, "repo_name must be provided"
         models = []
 
         repo_type = config.get("type", "github")
@@ -510,6 +518,8 @@ class ModelLibrary:
         config: dict[str, Any],
     ) -> list[ModelEntry]:
         """Fetch models from GitHub repository."""
+        assert repo_name is not None, "repo_name must be provided"
+        assert repo_name is not None, "repo_name must be provided"
         models: list[ModelEntry] = []
 
         owner = config.get("owner")
@@ -585,6 +595,8 @@ class ModelLibrary:
         config: dict[str, Any],
     ) -> list[ModelEntry]:
         """Fetch models from direct URL."""
+        assert repo_name is not None, "repo_name must be provided"
+        assert repo_name is not None, "repo_name must be provided"
         models = []
         url = config.get("url")
 
@@ -605,6 +617,8 @@ class ModelLibrary:
 
     def _download_model(self, entry: ModelEntry) -> bool:
         """Download a model to local cache."""
+        assert entry is not None, "entry must be provided"
+        assert entry is not None, "entry must be provided"
         if not entry.source_url:
             return False
 
@@ -650,6 +664,8 @@ class ModelLibrary:
         Returns:
             New ModelEntry for the editable copy
         """
+        assert model_id is not None, "model_id must be provided"
+        assert model_id is not None, "model_id must be provided"
         source_entry = self._entries.get(model_id)
         if not source_entry:
             return None
@@ -707,8 +723,9 @@ class ModelLibrary:
         return new_entry
 
     @precondition(
-        lambda self, model_id, delete_files=False: model_id is not None
-        and len(model_id.strip()) > 0,
+        lambda self, model_id, delete_files=False: (
+            model_id is not None and len(model_id.strip()) > 0
+        ),
         "Model ID must be a non-empty string",
     )
     def remove_model(self, model_id: str, delete_files: bool = False) -> bool:
@@ -722,6 +739,8 @@ class ModelLibrary:
         Returns:
             True if removed successfully
         """
+        assert model_id is not None, "model_id must be provided"
+        assert model_id is not None, "model_id must be provided"
         entry = self._entries.get(model_id)
         if not entry:
             return False

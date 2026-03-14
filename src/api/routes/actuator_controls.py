@@ -111,7 +111,7 @@ def _get_actuator_info(engine_manager: EngineManager) -> list[ActuatorInfo]:
             )
         )
 
-    return actuators if actuators else _demo_actuators()
+    return actuators or _demo_actuators()
 
 
 def _demo_actuators() -> list[ActuatorInfo]:
@@ -299,6 +299,7 @@ async def send_actuator_batch(
     Returns:
         List of command acknowledgments.
     """
+    assert batch is not None, "batch must be provided"
     results: list[ActuatorCommandResponse] = []
     actuators = _get_actuator_info(engine_manager)
 

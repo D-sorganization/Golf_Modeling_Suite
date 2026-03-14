@@ -93,6 +93,7 @@ async def handle_rpc(
         JSON-RPC response(s).
     """
     # Parse request body
+    assert request is not None, "request must be provided"
     try:
         body = await request.json()
     except (RuntimeError, ValueError, OSError) as exc:
@@ -130,13 +131,9 @@ async def handle_rpc(
             if result is not None:  # Notifications return None
                 responses.append(result)
 
-        return (
-            responses
-            if responses
-            else make_response(
-                error=make_error(INVALID_REQUEST, "All requests were notifications"),
-                request_id=None,
-            )
+        return responses or make_response(
+            error=make_error(INVALID_REQUEST, "All requests were notifications"),
+            request_id=None,
         )
 
     # Handle single request

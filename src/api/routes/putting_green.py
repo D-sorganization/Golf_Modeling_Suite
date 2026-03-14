@@ -290,10 +290,9 @@ async def scatter_analysis(
 
 @router.get("/contours", response_model=GreenContourResponse)
 @precondition(
-    lambda width=20.0, height=20.0, resolution=20, stimp_rating=10.0: width > 0
-    and height > 0
-    and resolution >= 2
-    and 6.0 <= stimp_rating <= 15.0,
+    lambda width=20.0, height=20.0, resolution=20, stimp_rating=10.0: (
+        width > 0 and height > 0 and resolution >= 2 and 6.0 <= stimp_rating <= 15.0
+    ),
     "Green dimensions must be positive, resolution >= 2, and stimp_rating in [6, 15]",
 )
 @handle_api_errors
@@ -307,6 +306,7 @@ async def get_green_contours(
 
     See issue #1206
     """
+    assert width is not None, "width must be provided"
     from src.engines.physics_engines.putting_green.python.green_surface import (
         GreenSurface,
     )

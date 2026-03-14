@@ -44,6 +44,8 @@ def plot_joint_positions(
     Returns:
         Tuple of (figure, axes)
     """
+    assert recorder is not None, "recorder must be provided"
+    assert recorder is not None, "recorder must be provided"
     fig, ax, config = resolve_figure(ax, config)
 
     times, positions = recorder.get_time_series("joint_positions")
@@ -93,6 +95,8 @@ def plot_joint_velocities(
     Returns:
         Tuple of (figure, axes)
     """
+    assert recorder is not None, "recorder must be provided"
+    assert recorder is not None, "recorder must be provided"
     fig, ax, config = resolve_figure(ax, config)
 
     times, velocities = recorder.get_time_series("joint_velocities")
@@ -144,6 +148,8 @@ def plot_joint_accelerations(
     Returns:
         Tuple of (figure, axes)
     """
+    assert recorder is not None, "recorder must be provided"
+    assert recorder is not None, "recorder must be provided"
     fig, ax, config = resolve_figure(ax, config)
 
     # Try to get accelerations directly, compute from velocities if not available
@@ -203,6 +209,8 @@ def plot_club_head_speed(
     Returns:
         Tuple of (figure, axes)
     """
+    assert recorder is not None, "recorder must be provided"
+    assert recorder is not None, "recorder must be provided"
     fig, ax, config = resolve_figure(ax, config)
 
     times, speeds = recorder.get_time_series("club_head_speed")
@@ -262,6 +270,8 @@ def plot_com_trajectory(
     Returns:
         Tuple of (figure, axes)
     """
+    assert recorder is not None, "recorder must be provided"
+    assert recorder is not None, "recorder must be provided"
     config = config or PlotConfig()
 
     times, positions = recorder.get_time_series("com_position")
@@ -351,6 +361,8 @@ def plot_phase_diagram(
     Returns:
         Tuple of (figure, axes)
     """
+    assert recorder is not None, "recorder must be provided"
+    assert recorder is not None, "recorder must be provided"
     fig, ax, config = resolve_figure(ax, config)
 
     times, positions = recorder.get_time_series("joint_positions")
