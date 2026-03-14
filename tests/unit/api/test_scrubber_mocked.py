@@ -1,14 +1,14 @@
 """Tests for the Scrubber Calculator API router.
 
 This test file adheres to the Fleet-Wide Shared Component Testing Strategy.
-It mocks the physics calculation methods from `upstream_drift_tools` (Tools repo) 
+It mocks the physics calculation methods from `upstream_drift_tools` (Tools repo)
 to verify that the API layer correctly implements the contract without testing the
 internal mathematical logic directly.
 """
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -21,11 +21,23 @@ client = TestClient(router)
 @pytest.fixture
 def mock_tools():
     """Mock the scrubber calculators securely from Tools."""
-    with patch("src.shared.python.calc_backend.routers.scrubber.calculate_gas_density") as mdensity, \
-         patch("src.shared.python.calc_backend.routers.scrubber.calculate_gas_viscosity") as mviscosity, \
-         patch("src.shared.python.calc_backend.routers.scrubber.calculate_flooding_velocity") as mflood, \
-         patch("src.shared.python.calc_backend.routers.scrubber.calculate_column_diameter") as mdiameter, \
-         patch("src.shared.python.calc_backend.routers.scrubber.calculate_caustic_requirement") as mcaustic:
+    with (
+        patch(
+            "src.shared.python.calc_backend.routers.scrubber.calculate_gas_density"
+        ) as mdensity,
+        patch(
+            "src.shared.python.calc_backend.routers.scrubber.calculate_gas_viscosity"
+        ) as mviscosity,
+        patch(
+            "src.shared.python.calc_backend.routers.scrubber.calculate_flooding_velocity"
+        ) as mflood,
+        patch(
+            "src.shared.python.calc_backend.routers.scrubber.calculate_column_diameter"
+        ) as mdiameter,
+        patch(
+            "src.shared.python.calc_backend.routers.scrubber.calculate_caustic_requirement"
+        ) as mcaustic,
+    ):
         yield mdensity, mviscosity, mflood, mdiameter, mcaustic
 
 
@@ -57,14 +69,14 @@ def test_calculate_scrubber_success(mock_tools) -> None:
         "liquid_flow_kg_hr": 500.0,
         "percent_of_flood": 70.0,
         "acid_gas_removed_kg_hr": 10.0,
-        "caustic_concentration_pct": 20.0
+        "caustic_concentration_pct": 20.0,
     }
 
     response = client.post("/", json=payload)
-    
+
     assert response.status_code == 200
     data = response.json()
-    
+
     assert data["gas_density_kg_m3"] == 1.2
     assert data["flooding_velocity_m_s"] == 2.5
     assert data["design_velocity_m_s"] == 1.75
@@ -77,7 +89,7 @@ def test_calculate_scrubber_success(mock_tools) -> None:
         gas_flow_kg_hr=1000.0,
         gas_density=1.2,
         flooding_velocity=2.5,
-        percent_of_flood=70.0
+        percent_of_flood=70.0,
     )
 
 
@@ -95,7 +107,7 @@ def test_calculate_scrubber_error_handling(mock_tools) -> None:
         "liquid_flow_kg_hr": 500.0,
         "percent_of_flood": 70.0,
         "acid_gas_removed_kg_hr": 10.0,
-        "caustic_concentration_pct": 20.0
+        "caustic_concentration_pct": 20.0,
     }
 
     response = client.post("/", json=payload)
@@ -114,7 +126,7 @@ def test_calculate_scrubber_invalid_packing(mock_tools) -> None:
         "liquid_flow_kg_hr": 500.0,
         "percent_of_flood": 70.0,
         "acid_gas_removed_kg_hr": 10.0,
-        "caustic_concentration_pct": 20.0
+        "caustic_concentration_pct": 20.0,
     }
 
     response = client.post("/", json=payload)

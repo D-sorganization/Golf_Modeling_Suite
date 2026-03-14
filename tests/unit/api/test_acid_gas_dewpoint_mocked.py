@@ -31,7 +31,7 @@ def mock_calculator():
 
 def test_calculate_acid_gas_dewpoint_success(mock_calculator) -> None:
     """Test successful dewpoint calculation via API.
-    
+
     Validates that:
     1. The API calls the calculator with the correct parameters from the request payload.
     2. The API correctly transforms the calculator's response into the expected JSON format.
@@ -56,7 +56,7 @@ def test_calculate_acid_gas_dewpoint_success(mock_calculator) -> None:
     mock_result.h2s_partial_pressure_pa = 30.0
     mock_result.warnings = ["Test warning"]
     mock_result.calculation_method = "empirical"
-    
+
     mock_calculator.calculate_dewpoint_mixture.return_value = mock_result
 
     payload = {
@@ -66,19 +66,19 @@ def test_calculate_acid_gas_dewpoint_success(mock_calculator) -> None:
         "hf_fraction": 0.0,
         "hcl_fraction": 0.01,
         "h2s_fraction": 0.05,
-        "method": "empirical"
+        "method": "empirical",
     }
 
     response = client.post("/", json=payload)
-    
+
     assert response.status_code == 200
     data = response.json()
-    
+
     assert data["overall_dewpoint_c"] == 145.2
     assert data["limiting_component"] == "H2SO4"
     assert data["condensation_risk"] == "Low"
     assert data["warnings"] == ["Test warning"]
-    
+
     # Assert isolation boundary: verify we passed the correctly formulated parameters to the mocked shared tool
     mock_calculator.calculate_dewpoint_mixture.assert_called_once()
     _, kwargs = mock_calculator.calculate_dewpoint_mixture.call_args
@@ -91,7 +91,9 @@ def test_calculate_acid_gas_dewpoint_success(mock_calculator) -> None:
 
 def test_calculate_acid_gas_dewpoint_error_handling(mock_calculator) -> None:
     """Test that arithmetic errors from the engine translate to 422 HTTP exceptions."""
-    mock_calculator.calculate_dewpoint_mixture.side_effect = ValueError("Invalid composition")
+    mock_calculator.calculate_dewpoint_mixture.side_effect = ValueError(
+        "Invalid composition"
+    )
 
     payload = {
         "temperature_c": 170.0,
@@ -100,10 +102,10 @@ def test_calculate_acid_gas_dewpoint_error_handling(mock_calculator) -> None:
         "hf_fraction": 0.0,
         "hcl_fraction": 0.01,
         "h2s_fraction": 0.05,
-        "method": "empirical"
+        "method": "empirical",
     }
 
     response = client.post("/", json=payload)
-    
+
     assert response.status_code == 422
     assert response.json() == {"detail": "Invalid composition"}

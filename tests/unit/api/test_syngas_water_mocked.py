@@ -1,8 +1,8 @@
 """Tests for the Syngas Water Calculator API router.
 
 This test file adheres to the Fleet-Wide Shared Component Testing Strategy.
-It mocks the `SyngasWaterCalculator` from `upstream_drift_tools` (Tools repo) to verify 
-that the API layer correctly implements the contract without testing the 
+It mocks the `SyngasWaterCalculator` from `upstream_drift_tools` (Tools repo) to verify
+that the API layer correctly implements the contract without testing the
 internal mathematical logic.
 """
 
@@ -27,6 +27,7 @@ def mock_calculator():
         mock_instance = MagicMock()
         mock_class.return_value = mock_instance
         yield mock_instance
+
 
 @pytest.fixture
 def mock_estimate_risk():
@@ -61,14 +62,14 @@ def test_calculate_syngas_water_success(mock_calculator, mock_estimate_risk) -> 
         "temperature_c": 100.0,
         "pressure_bar": 10.0,
         "composition_key": "typical_syngas",
-        "method": "auto"
+        "method": "auto",
     }
 
     response = client.post("/", json=payload)
-    
+
     assert response.status_code == 200
     data = response.json()
-    
+
     assert data["water_content"]["mole_fraction_water"] == 0.05
     assert data["water_content"]["dew_point_c"] == 80.0
     assert data["risk_assessment"]["temperature_margin_c"] == 20.0
@@ -82,14 +83,17 @@ def test_calculate_syngas_water_success(mock_calculator, mock_estimate_risk) -> 
 
 def test_calculate_syngas_water_fallback() -> None:
     """Test fallback logic when tools are not imported.
-    Simulate ImportError on the tools module. 
+    Simulate ImportError on the tools module.
     """
-    with patch.dict('sys.modules', {'upstream_drift_tools.process_calculators.syngas_water_calculator': None}):
+    with patch.dict(
+        "sys.modules",
+        {"upstream_drift_tools.process_calculators.syngas_water_calculator": None},
+    ):
         payload = {
             "temperature_c": 100.0,
             "pressure_bar": 10.0,
             "composition_key": "typical_syngas",
-            "method": "auto"
+            "method": "auto",
         }
 
         response = client.post("/", json=payload)

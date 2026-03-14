@@ -1,7 +1,7 @@
 """Tests for the Financial Calculator API router.
 
 This test file adheres to the Fleet-Wide Shared Component Testing Strategy.
-It mocks the `FinancialModelCalculator` from `upstream_drift_tools` (Tools repo) 
+It mocks the `FinancialModelCalculator` from `upstream_drift_tools` (Tools repo)
 to verify that the API layer correctly implements the contract without testing the
 internal mathematical logic directly.
 """
@@ -28,9 +28,10 @@ def mock_calculator():
         mock_class.return_value = mock_instance
         yield mock_instance
 
+
 def test_calculate_financial_success(mock_calculator) -> None:
     """Validate that the API perfectly passes through inputs and parses math results correctly."""
-    
+
     mock_results = MagicMock()
     mock_results.annual_feedstock_tons = 10000.0
     mock_results.annual_product_tons = 8000.0
@@ -45,12 +46,12 @@ def test_calculate_financial_success(mock_calculator) -> None:
     mock_results.roe = 15.0
     mock_results.roa = 10.0
     mock_results.payback_period_years = 5.0
-    
+
     # Only return string dict format for the projection
     mock_calculator.calculate_financial_model.return_value = mock_results
     mock_calculator.generate_yearly_projections.return_value = [
         {"year": 1, "revenue": 1000000.0},
-        {"year": 2, "revenue": 1100000.0}
+        {"year": 2, "revenue": 1100000.0},
     ]
 
     payload = {
@@ -77,14 +78,14 @@ def test_calculate_financial_success(mock_calculator) -> None:
         "baghouse_operating_cost_per_ton": 1.0,
         "scrubber_operating_cost_per_ton": 2.0,
         "glass_raw_material_cost_per_ton": 0.0,
-        "projection_years": 2
+        "projection_years": 2,
     }
 
     response = client.post("/", json=payload)
-    
+
     assert response.status_code == 200
     data = response.json()
-    
+
     assert data["results"]["annual_feedstock_tons"] == 10000.0
     assert data["results"]["net_income"] == 250000.0
     assert data["results"]["roe"] == 15.0
@@ -94,9 +95,12 @@ def test_calculate_financial_success(mock_calculator) -> None:
     mock_calculator.calculate_financial_model.assert_called_once()
     mock_calculator.generate_yearly_projections.assert_called_once_with(2)
 
+
 def test_calculate_financial_error_handling(mock_calculator) -> None:
     """Verify that configuration errors gracefully map to 422 errors through the router boundary."""
-    mock_calculator.calculate_financial_model.side_effect = ValueError("Invalid tax rate")
+    mock_calculator.calculate_financial_model.side_effect = ValueError(
+        "Invalid tax rate"
+    )
 
     payload = {
         "plant_capacity_tpd": 100.0,
@@ -118,11 +122,11 @@ def test_calculate_financial_error_handling(mock_calculator) -> None:
         "debt_ratio": 0.6,
         "interest_rate": 0.05,
         "depreciation_years": 10.0,
-        "tax_rate": -0.5, # Invalid param
+        "tax_rate": -0.5,  # Invalid param
         "baghouse_operating_cost_per_ton": 1.0,
         "scrubber_operating_cost_per_ton": 2.0,
         "glass_raw_material_cost_per_ton": 0.0,
-        "projection_years": 0
+        "projection_years": 0,
     }
 
     response = client.post("/", json=payload)

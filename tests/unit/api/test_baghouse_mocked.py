@@ -1,8 +1,8 @@
 """Tests for the Baghouse Calculator API router.
 
 This test file adheres to the Fleet-Wide Shared Component Testing Strategy.
-It mocks the `BaghouseCalculator` from `upstream_drift_tools` (Tools repo) to verify 
-that the API layer correctly implements the contract without testing the 
+It mocks the `BaghouseCalculator` from `upstream_drift_tools` (Tools repo) to verify
+that the API layer correctly implements the contract without testing the
 internal mathematical logic.
 """
 
@@ -61,18 +61,21 @@ def test_calculate_baghouse_success(mock_calculator) -> None:
         "heat_loss_w": 5000.0,
         "drum_volume_m3": 2.5,
         "solid_density_kg_m3": 850.0,
-        "bag_area_ft2": 1000.0
+        "bag_area_ft2": 1000.0,
     }
 
     response = client.post("/", json=payload)
-    
+
     assert response.status_code == 200
     data = response.json()
-    
+
     assert data["carbon_removed_rate_kg_hr"] == 55.0
     assert data["drum_fill_time_hours"] == 12.0
     assert data["air_to_cloth_ratio"] == 2.0
-    assert data["ash_stream_composition"] == {"carbon_fraction": 0.8, "ash_fraction": 0.2}
+    assert data["ash_stream_composition"] == {
+        "carbon_fraction": 0.8,
+        "ash_fraction": 0.2,
+    }
 
     mock_calculator.calculate.assert_called_once()
     _, kwargs = mock_calculator.calculate.call_args
@@ -96,7 +99,7 @@ def test_calculate_baghouse_error_handling(mock_calculator) -> None:
         "heat_loss_w": 5000.0,
         "drum_volume_m3": 2.5,
         "solid_density_kg_m3": 850.0,
-        "bag_area_ft2": 1000.0
+        "bag_area_ft2": 1000.0,
     }
 
     response = client.post("/", json=payload)

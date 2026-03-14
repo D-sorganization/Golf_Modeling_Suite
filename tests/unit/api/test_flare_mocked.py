@@ -37,7 +37,7 @@ def test_calculate_flare_success(mock_calculator) -> None:
     mock_design.exit_velocity = 20.0
     mock_design.heat_release = 50000.0
     mock_design.radiation_intensity = 1.6
-    
+
     # Configure mock method returns
     mock_calculator.calculate_flare_size.return_value = mock_design
     mock_calculator.calculate_radiation_zones.return_value = {
@@ -52,14 +52,14 @@ def test_calculate_flare_success(mock_calculator) -> None:
         "total_flow_kg_hr": 2000.0,
         "gas_composition": {"CH4": 1.0},
         "temperature_k": 300.0,
-        "pressure_bar": 2.0
+        "pressure_bar": 2.0,
     }
 
     response = client.post("/", json=payload)
-    
+
     assert response.status_code == 200
     data = response.json()
-    
+
     assert data["design"]["height_m"] == 10.0
     assert data["design"]["heat_release_kw"] == 50000.0
     assert data["radiation_zones"]["safe_m"] == 60.0
@@ -73,13 +73,15 @@ def test_calculate_flare_success(mock_calculator) -> None:
 
 def test_calculate_flare_error_handling(mock_calculator) -> None:
     """Verify that arithmetic errors gracefully map to 422 errors through the router boundary."""
-    mock_calculator.calculate_flare_size.side_effect = ValueError("Flow must be positive")
+    mock_calculator.calculate_flare_size.side_effect = ValueError(
+        "Flow must be positive"
+    )
 
     payload = {
         "total_flow_kg_hr": -2000.0,
         "gas_composition": {"CH4": 1.0},
         "temperature_k": 300.0,
-        "pressure_bar": 2.0
+        "pressure_bar": 2.0,
     }
 
     response = client.post("/", json=payload)

@@ -1,14 +1,12 @@
 """Tests for the Flow Rate Converter API router.
 
 This test file validates the dictionary table mapping conversion endpoint.
-Because this endpoint relies purely on a constant mapping rather than an object 
-calculator Engine, we validate its proper resolution paths directly without an 
+Because this endpoint relies purely on a constant mapping rather than an object
+calculator Engine, we validate its proper resolution paths directly without an
 engine patch.
 """
 
 from __future__ import annotations
-
-from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
@@ -23,11 +21,11 @@ def test_convert_flow_rate_mass_success() -> None:
         "value": 1.0,
         "from_unit": "kg_s",
         "to_unit": "kg_hr",
-        "category": "mass"
+        "category": "mass",
     }
 
     response = client.post("/", json=payload)
-    
+
     assert response.status_code == 200
     data = response.json()
     assert data["result"] == 3600.0
@@ -39,11 +37,11 @@ def test_convert_flow_rate_invalid_category() -> None:
         "value": 1.0,
         "from_unit": "kg_s",
         "to_unit": "kg_hr",
-        "category": "UNKNOWN_SPEED_METRIC"
+        "category": "UNKNOWN_SPEED_METRIC",
     }
 
     response = client.post("/", json=payload)
-    
+
     assert response.status_code == 422
     assert "Unknown category" in response.json()["detail"]
 
@@ -54,11 +52,11 @@ def test_convert_flow_rate_invalid_source_unit() -> None:
         "value": 1.0,
         "from_unit": "bananas_per_sec",
         "to_unit": "kg_hr",
-        "category": "mass"
+        "category": "mass",
     }
 
     response = client.post("/", json=payload)
-    
+
     assert response.status_code == 422
     assert "Unknown from_unit" in response.json()["detail"]
 
@@ -69,10 +67,10 @@ def test_convert_flow_rate_invalid_target_unit() -> None:
         "value": 1.0,
         "from_unit": "kg_s",
         "to_unit": "stones_per_minute",
-        "category": "mass"
+        "category": "mass",
     }
 
     response = client.post("/", json=payload)
-    
+
     assert response.status_code == 422
     assert "Unknown to_unit" in response.json()["detail"]

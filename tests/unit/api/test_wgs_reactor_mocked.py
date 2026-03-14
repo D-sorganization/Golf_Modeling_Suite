@@ -36,9 +36,9 @@ def test_calculate_wgs_success(mock_engine) -> None:
         "composition": {"CO": 2.0, "H2O": 10.0, "CO2": 30.0, "H2": 58.0},
         "h2_co_ratio": 29.0,
         "equilibrium_constant": 4.5,
-        "heat_released": -41.2
+        "heat_released": -41.2,
     }
-    
+
     mock_engine.size_wgs_reactor.return_value = {
         "reactor_volume": 5.0,
         "catalyst_volume": 4.0,
@@ -54,14 +54,14 @@ def test_calculate_wgs_success(mock_engine) -> None:
         "pressure_bar": 25.0,
         "steam_ratio": 2.0,
         "feed_rate_kmol_hr": 1000.0,
-        "catalyst_type": "high_temp"
+        "catalyst_type": "high_temp",
     }
 
     response = client.post("/", json=payload)
-    
+
     assert response.status_code == 200
     data = response.json()
-    
+
     assert data["equilibrium"]["conversion_pct"] == 85.5
     assert data["equilibrium"]["composition"]["CO"] == 2.0
     assert data["sizing"]["reactor_volume_m3"] == 5.0
@@ -71,19 +71,18 @@ def test_calculate_wgs_success(mock_engine) -> None:
         inlet_composition={"CO": 20.0, "H2O": 40.0, "CO2": 10.0, "H2": 30.0},
         temperature=500.0,
         pressure=25.0,
-        steam_ratio=2.0
+        steam_ratio=2.0,
     )
     mock_engine.size_wgs_reactor.assert_called_once_with(
-        feed_rate=1000.0,
-        conversion=85.5,
-        temperature=500.0,
-        catalyst_type="high_temp"
+        feed_rate=1000.0, conversion=85.5, temperature=500.0, catalyst_type="high_temp"
     )
 
 
 def test_calculate_wgs_error_handling(mock_engine) -> None:
     """Verify that arithmetic errors gracefully map to 422 errors through the router boundary."""
-    mock_engine.calculate_equilibrium_composition.side_effect = ValueError("Invalid input")
+    mock_engine.calculate_equilibrium_composition.side_effect = ValueError(
+        "Invalid input"
+    )
 
     payload = {
         "inlet_composition": {"CO": 20.0},
@@ -91,7 +90,7 @@ def test_calculate_wgs_error_handling(mock_engine) -> None:
         "pressure_bar": 25.0,
         "steam_ratio": 2.0,
         "feed_rate_kmol_hr": 1000.0,
-        "catalyst_type": "high_temp"
+        "catalyst_type": "high_temp",
     }
 
     response = client.post("/", json=payload)
