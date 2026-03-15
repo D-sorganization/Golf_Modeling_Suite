@@ -109,7 +109,7 @@ class TestODESolverPhysics:
         }
         response = client.post("/api/calc/ode-solver", json=payload)
         assert response.status_code == 422
-        assert "y" in response.json()["detail"]
+        assert "y" in str(response.json()["detail"])
 
     def test_correct_number_of_timepoints(self) -> None:
         """Solver must return exactly the requested number of time points."""

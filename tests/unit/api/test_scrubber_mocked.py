@@ -134,4 +134,4 @@ def test_calculate_scrubber_invalid_packing(mock_tools) -> None:
 
     response = client.post("/api/calc/scrubber", json=payload)
     assert response.status_code == 422
-    assert "Unknown packing type" in response.json()["detail"]
+    assert "Unknown packing type" in str(response.json()["detail"])
