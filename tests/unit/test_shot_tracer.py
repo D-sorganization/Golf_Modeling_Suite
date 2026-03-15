@@ -56,6 +56,7 @@ def mock_flight_models():
 def widget(qtbot, mock_flight_models):
     if PYQT6_AVAILABLE:
         from PyQt6.QtWidgets import QWidget
+
         parent = QWidget()
         qtbot.addWidget(parent)
         widget = MultiModelShotTracerWidget(parent=parent)

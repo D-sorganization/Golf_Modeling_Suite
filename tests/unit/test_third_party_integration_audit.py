@@ -543,12 +543,14 @@ class TestOpenPoseIntegrationAudit:
         except ImportError:
             # Ensure fresh import to avoid pollution from other tests' mocks
             import sys
+
             if "src.shared.python.pose_estimation.openpose_estimator" in sys.modules:
                 del sys.modules["src.shared.python.pose_estimation.openpose_estimator"]
-            
+
             from src.shared.python.pose_estimation.openpose_estimator import (
                 OpenPoseEstimator,
             )
+
             estimator = OpenPoseEstimator()
             with pytest.raises(ImportError, match="pyopenpose"):
                 estimator.load_model()
