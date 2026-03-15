@@ -1,0 +1,12 @@
+name: Heavy Integration Tests (Opt-In)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 0'  # Weekly on Sunday at 2am
+
+jobs:
+  run-heavy-tests:
+    uses: D-sorganization/Repository_Management/.github/workflows/reusable-heavy-tests.yml@main
+    with:
+      test_path: 'tests/heavy_integration/'
