@@ -8,11 +8,14 @@ engine patch.
 
 from __future__ import annotations
 
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from src.shared.python.calc_backend.routers.flow_rate import router
 
-client = TestClient(router)
+_app = FastAPI()
+_app.include_router(router)
+client = TestClient(_app)
 
 
 def test_convert_flow_rate_mass_success() -> None:
@@ -24,7 +27,7 @@ def test_convert_flow_rate_mass_success() -> None:
         "category": "mass",
     }
 
-    response = client.post("/", json=payload)
+    response = client.post("/api/calc/flow-rate", json=payload)
 
     assert response.status_code == 200
     data = response.json()
@@ -40,7 +43,7 @@ def test_convert_flow_rate_invalid_category() -> None:
         "category": "UNKNOWN_SPEED_METRIC",
     }
 
-    response = client.post("/", json=payload)
+    response = client.post("/api/calc/flow-rate", json=payload)
 
     assert response.status_code == 422
     assert "Unknown category" in response.json()["detail"]
@@ -55,7 +58,7 @@ def test_convert_flow_rate_invalid_source_unit() -> None:
         "category": "mass",
     }
 
-    response = client.post("/", json=payload)
+    response = client.post("/api/calc/flow-rate", json=payload)
 
     assert response.status_code == 422
     assert "Unknown from_unit" in response.json()["detail"]
@@ -70,7 +73,7 @@ def test_convert_flow_rate_invalid_target_unit() -> None:
         "category": "mass",
     }
 
-    response = client.post("/", json=payload)
+    response = client.post("/api/calc/flow-rate", json=payload)
 
     assert response.status_code == 422
     assert "Unknown to_unit" in response.json()["detail"]

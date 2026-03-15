@@ -18,6 +18,8 @@ pytestmark = pytest.mark.skipif(
 # Mock flight_models using patch.dict (auto-cleans) before importing shot_tracer
 with patch.dict(sys.modules, {"flight_models": MagicMock()}):
     if PYQT6_AVAILABLE:
+        from PyQt6.QtWidgets import QWidget
+
         from src.launchers.shot_tracer import (
             MultiModelShotTracerWidget,
             MultiModelShotTracerWindow,
@@ -54,7 +56,7 @@ def mock_flight_models():
 
 @pytest.fixture
 def widget(qtbot, mock_flight_models):
-    widget = MultiModelShotTracerWidget()
+    widget = MultiModelShotTracerWidget(parent=QWidget())
     qtbot.addWidget(widget)
     return widget
 
@@ -175,7 +177,7 @@ def test_clear_visualization(widget, mock_flight_models):
 
 def test_window_initialization(qtbot):
     """Test the main window initialization."""
-    window = MultiModelShotTracerWindow()
+    window = MultiModelShotTracerWindow(parent=QWidget())
     qtbot.addWidget(window)
     assert window.windowTitle() == "Golf Shot Tracer - Multi-Model Comparison"
     assert isinstance(window.centralWidget(), MultiModelShotTracerWidget)

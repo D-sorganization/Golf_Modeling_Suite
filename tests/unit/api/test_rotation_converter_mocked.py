@@ -10,6 +10,7 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import pytest
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 # Skip this module if the rotation_converter package is not installed
@@ -20,7 +21,9 @@ pytest.importorskip(
 
 from src.shared.python.calc_backend.routers.rotation_converter import router  # noqa: E402,I001
 
-client = TestClient(router)
+_app = FastAPI()
+_app.include_router(router)
+client = TestClient(_app)
 
 
 @pytest.fixture
@@ -58,7 +61,7 @@ def test_compute_rotation_quaternion_success(mock_rotation_class) -> None:
             "value": [0.0, 0.0, 0.0, 1.0],
             "euler_convention": "xyz",
         }
-        response = client.post("/", json=payload)
+        response = client.post("/api/calc/rotation-converter", json=payload)
 
         assert response.status_code == 200
         data = response.json()
@@ -77,7 +80,7 @@ def test_compute_rotation_euler_success(mock_rotation_class) -> None:
             "value": [0.1, 0.2, 0.3],
             "euler_convention": "xyz",
         }
-        response = client.post("/", json=payload)
+        response = client.post("/api/calc/rotation-converter", json=payload)
 
         assert response.status_code == 200
         mock_cls.from_euler.assert_called_once_with(0.1, 0.2, 0.3, "xyz")
@@ -94,7 +97,7 @@ def test_compute_rotation_invalid_euler_length(mock_rotation_class) -> None:
             "value": [0.1, 0.2],  # Only 2, needs 3
             "euler_convention": "xyz",
         }
-        response = client.post("/", json=payload)
+        response = client.post("/api/calc/rotation-converter", json=payload)
         assert response.status_code == 422
 
 
@@ -109,7 +112,7 @@ def test_compute_rotation_unknown_type(mock_rotation_class) -> None:
             "value": [1.0],
             "euler_convention": "xyz",
         }
-        response = client.post("/", json=payload)
+        response = client.post("/api/calc/rotation-converter", json=payload)
         assert response.status_code == 422
 
 
