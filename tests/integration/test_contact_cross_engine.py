@@ -27,7 +27,9 @@ def _skip_if_mujoco_state_unavailable(engine) -> None:
     """Skip when the CI lane loads a degenerate MuJoCo model with no state."""
     q_current, _ = engine.get_state()
     if len(q_current) == 0:
-        pytest.skip("MuJoCo contact model did not expose floating-joint state in this lane")
+        pytest.skip(
+            "MuJoCo contact model did not expose floating-joint state in this lane"
+        )
 
 
 @pytest.fixture(scope="module")
