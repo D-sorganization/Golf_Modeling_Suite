@@ -19,6 +19,7 @@ pytestmark = pytest.mark.skipif(
 with patch.dict(sys.modules, {"flight_models": MagicMock()}):
     if PYQT6_AVAILABLE:
         import src.launchers.shot_tracer as shot_tracer_module
+
         MultiModelShotTracerWidget = shot_tracer_module.MultiModelShotTracerWidget
         MultiModelShotTracerWindow = shot_tracer_module.MultiModelShotTracerWindow
 
