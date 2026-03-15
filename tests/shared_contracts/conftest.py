@@ -19,7 +19,11 @@ def _candidate_tools_roots() -> list[Path]:
         repo_root / "vendor" / "ud-tools",
         repo_root.parent / "Tools",
     ]
-    return [candidate.resolve() for candidate in candidates if candidate and candidate.exists()]
+    return [
+        candidate.resolve()
+        for candidate in candidates
+        if candidate and candidate.exists()
+    ]
 
 
 def _tools_python_paths(tools_root: Path) -> list[Path]:
