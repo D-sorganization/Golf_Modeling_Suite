@@ -282,6 +282,7 @@ markers = [
     "serial: marks tests that must not run in parallel (sys.modules manipulation)",
     "requires_network: marks tests that require network access (skip with '-m not requires_network')",
     "requires_gpu: marks tests that require a GPU (skip with '-m not requires_gpu')",
+    "live_simulation: marks integration tests that require a live physics environment and custom runner",
 ]
 filterwarnings = [
     "ignore::DeprecationWarning",

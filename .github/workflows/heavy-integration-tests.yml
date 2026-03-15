@@ -1,0 +1,29 @@
+name: Heavy Integration Suite
+
+on:
+  schedule:
+    # Run every Sunday at midnight
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Reason for running heavy tests manually"
+        required: false
+
+jobs:
+  heavy-tests:
+    runs-on: d-sorg-fleet-4core
+    steps:
+      - uses: actions/checkout@v4
+      
+      # Dependencies are assumed to be pre-installed on the custom runner.
+      # But we can install any project-specific python requirements if needed.
+      - name: Install local requirements
+        run: |
+          if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
+          if [ -f "pyproject.toml" ]; then pip install -e .; fi
+          
+      - name: Run heavy live simulations
+        run: |
+          # Example of running only tests marked for live simulation
+          pytest -v -m "live_simulation" --cov
