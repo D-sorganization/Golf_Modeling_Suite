@@ -18,6 +18,7 @@ import pytest
 
 # ── Display Fixture ───────────────────────────────────────────────────────────
 
+
 @pytest.fixture(scope="session")
 def headless_display() -> None:
     """
@@ -29,6 +30,7 @@ def headless_display() -> None:
     if not display:
         # Warn but don't fail — some tests don't need display
         import warnings
+
         warnings.warn(
             "DISPLAY not set. GUI tests may fail. "
             "Run via: xvfb-run pytest ... or wsl bash run_local_heavy_tests.sh",
@@ -37,6 +39,7 @@ def headless_display() -> None:
 
 
 # ── Temp Directory ────────────────────────────────────────────────────────────
+
 
 @pytest.fixture()
 def temp_test_dir() -> Path:
@@ -47,6 +50,7 @@ def temp_test_dir() -> Path:
 
 # ── Physics Engine Fixtures ───────────────────────────────────────────────────
 
+
 @pytest.fixture(scope="session")
 def mujoco_model():
     """
@@ -55,6 +59,7 @@ def mujoco_model():
     """
     try:
         import mujoco
+
         xml = """
         <mujoco>
           <worldbody>
@@ -81,11 +86,10 @@ def pinocchio_model():
     try:
         import pinocchio as pin
         import numpy as np
+
         model = pin.Model()
         geom_model = pin.GeometryModel()
-        joint_id = model.addJoint(
-            0, pin.JointModelRY(), pin.SE3.Identity(), "joint1"
-        )
+        joint_id = model.addJoint(0, pin.JointModelRY(), pin.SE3.Identity(), "joint1")
         model.appendBodyToJoint(
             joint_id,
             pin.Inertia(1.0, np.zeros(3), np.eye(3)),

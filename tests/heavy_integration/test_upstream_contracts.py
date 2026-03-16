@@ -184,7 +184,9 @@ class TestMediaPipeIntegration:
         if hasattr(mp, "solutions") and hasattr(mp.solutions, "pose"):
             # Legacy API
             mp_pose = mp.solutions.pose
-            with mp_pose.Pose(static_image_mode=True, min_detection_confidence=0.5) as pose:
+            with mp_pose.Pose(
+                static_image_mode=True, min_detection_confidence=0.5
+            ) as pose:
                 fake_frame = np.ones((100, 100, 3), dtype=np.uint8) * 255
                 results = pose.process(fake_frame)
                 assert results is not None, "MediaPipe returned None results object"
