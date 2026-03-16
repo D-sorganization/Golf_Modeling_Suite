@@ -81,7 +81,6 @@ class TestPinocchioEngine:
 
         # Build a minimal 1-DOF revolute robot in-memory
         model = pin.Model()
-        geom_model = pin.GeometryModel()
 
         inertia = pin.Inertia(1.0, np.zeros(3), np.eye(3))
         joint_id = model.addJoint(0, pin.JointModelRZ(), pin.SE3.Identity(), "joint1")

@@ -86,7 +86,6 @@ def pinocchio_model():
         import pinocchio as pin
 
         model = pin.Model()
-        geom_model = pin.GeometryModel()
         joint_id = model.addJoint(0, pin.JointModelRY(), pin.SE3.Identity(), "joint1")
         model.appendBodyToJoint(
             joint_id,
