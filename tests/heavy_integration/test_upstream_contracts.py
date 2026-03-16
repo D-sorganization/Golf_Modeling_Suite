@@ -65,17 +65,15 @@ class TestPinocchioEngine:
     """Contract: Pinocchio can build a kinematic chain and compute FK."""
 
     def test_pinocchio_kinematic_chain(self) -> None:
-        import pinocchio as pin
         import numpy as np
+        import pinocchio as pin
 
         # Build a minimal 1-DOF revolute robot in-memory
         model = pin.Model()
         geom_model = pin.GeometryModel()
 
         inertia = pin.Inertia(1.0, np.zeros(3), np.eye(3))
-        joint_id = model.addJoint(
-            0, pin.JointModelRZ(), pin.SE3.Identity(), "joint1"
-        )
+        joint_id = model.addJoint(0, pin.JointModelRZ(), pin.SE3.Identity(), "joint1")
         model.appendBodyToJoint(joint_id, inertia, pin.SE3.Identity())
         model.lowerPositionLimit[0] = -3.14
         model.upperPositionLimit[0] = 3.14
@@ -88,7 +86,9 @@ class TestPinocchioEngine:
 
         # Prove FK produced a valid SE3 placement
         placement = data.oMi[joint_id]
-        assert placement.isIdentity(prec=1e-6), "FK at neutral config should be identity"
+        assert placement.isIdentity(prec=1e-6), (
+            "FK at neutral config should be identity"
+        )
 
 
 @pytest.mark.live_simulation
@@ -102,8 +102,15 @@ class TestLauncherSystemCheck:
             pytest.skip("launch_golf_suite.py not present in this checkout")
 
         result = subprocess.run(
-            [sys.executable, "-c", "import importlib.util; spec=importlib.util.spec_from_file_location('launcher', 'launch_golf_suite.py'); mod=importlib.util.module_from_spec(spec)"],
-            capture_output=True, text=True, timeout=30, cwd=str(REPO_ROOT)
+            [
+                sys.executable,
+                "-c",
+                "import importlib.util; spec=importlib.util.spec_from_file_location('launcher', 'launch_golf_suite.py'); mod=importlib.util.module_from_spec(spec)",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            cwd=str(REPO_ROOT),
         )
         assert result.returncode == 0, f"Launcher import failed:\n{result.stderr}"
 
@@ -111,7 +118,10 @@ class TestLauncherSystemCheck:
         """Probe the launcher --system-check-only flag if it exists."""
         result = subprocess.run(
             [sys.executable, "launch_golf_suite.py", "--system-check-only"],
-            capture_output=True, text=True, timeout=30, cwd=str(REPO_ROOT)
+            capture_output=True,
+            text=True,
+            timeout=30,
+            cwd=str(REPO_ROOT),
         )
         # Accept 0 (success) or 2 (unrecognized args — flag not yet implemented)
         assert result.returncode in (0, 2), (
@@ -128,7 +138,9 @@ class TestURDFPipeline:
 
         # Try to locate the URDF generator module
         try:
-            from src.tools.urdf_builder.urdf_generator import generate_simple_urdf  # type: ignore
+            from src.tools.urdf_builder.urdf_generator import (
+                generate_simple_urdf,  # type: ignore
+            )
         except ImportError:
             pytest.skip("URDF generator module not importable in this configuration")
 
