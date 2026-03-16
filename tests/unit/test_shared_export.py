@@ -57,25 +57,23 @@ class TestSharedExport:
         output_path = str(tmp_path / "test.mat")
 
         # Mock scipy.io.savemat
-        with (
-            patch("src.shared.python.data_io.export.savemat") as mock_savemat,
-            patch("src.shared.python.data_io.export.SCIPY_AVAILABLE", True),
-        ):
-            success = export_to_matlab(output_path, sample_data)
-            assert success is True
-            mock_savemat.assert_called_once()
+        with patch("src.shared.python.data_io.export.savemat") as mock_savemat:
+            with patch("src.shared.python.data_io.export.SCIPY_AVAILABLE", True):
+                success = export_to_matlab(output_path, sample_data)
+                assert success is True
+                mock_savemat.assert_called_once()
 
-            # Verify arguments
-            args, kwargs = mock_savemat.call_args
-            assert args[0] == output_path
-            data_dict = args[1]
+                # Verify arguments
+                args, kwargs = mock_savemat.call_args
+                assert args[0] == output_path
+                data_dict = args[1]
 
-            # Check data transformation
-            assert "times" in data_dict
-            assert "scalar_int" in data_dict
-            # Check nested flattening
-            assert "nested_dict_sub_array" in data_dict
-            assert "nested_dict_sub_scalar" in data_dict
+                # Check data transformation
+                assert "times" in data_dict
+                assert "scalar_int" in data_dict
+                # Check nested flattening
+                assert "nested_dict_sub_array" in data_dict
+                assert "nested_dict_sub_scalar" in data_dict
 
     def test_export_to_matlab_missing_dependency(
         self, tmp_path: Path, sample_data: dict[str, Any]
@@ -92,7 +90,7 @@ class TestSharedExport:
         with (
             patch(
                 "src.shared.python.data_io.export.savemat",
-                side_effect=OSError("Disk full"),
+                side_effect=Exception("Disk full"),
             ),
             patch("src.shared.python.data_io.export.SCIPY_AVAILABLE", True),
         ):
@@ -141,7 +139,7 @@ class TestSharedExport:
     ) -> None:
         """Test exception handling during HDF5 export."""
         mock_h5py = MagicMock()
-        mock_h5py.File.side_effect = OSError("File locked")
+        mock_h5py.File.side_effect = Exception("File locked")
 
         # Need to patch in sys.modules first so the attribute exists on the module
         with patch.dict(sys.modules, {"h5py": mock_h5py}):
