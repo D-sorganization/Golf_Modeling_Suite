@@ -9,12 +9,10 @@ display, temp directories, and shared expensive resources.
 from __future__ import annotations
 
 import os
-import subprocess
 import tempfile
 from pathlib import Path
 
 import pytest
-
 
 # ── Display Fixture ───────────────────────────────────────────────────────────
 
@@ -84,8 +82,8 @@ def pinocchio_model():
     Returns a simple 1-DOF pendulum model for FK testing.
     """
     try:
-        import pinocchio as pin
         import numpy as np
+        import pinocchio as pin
 
         model = pin.Model()
         geom_model = pin.GeometryModel()
