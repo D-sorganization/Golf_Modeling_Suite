@@ -96,9 +96,9 @@ class TestPinocchioEngine:
 
         # Prove FK produced a valid SE3 placement
         placement = data.oMi[joint_id]
-        assert placement.isIdentity(prec=1e-6), (
-            "FK at neutral config should be identity"
-        )
+        assert placement.isIdentity(
+            prec=1e-6
+        ), "FK at neutral config should be identity"
 
 
 @pytest.mark.live_simulation
@@ -134,9 +134,10 @@ class TestLauncherSystemCheck:
             cwd=str(REPO_ROOT),
         )
         # Accept 0 (success) or 2 (unrecognized args — flag not yet implemented)
-        assert result.returncode in (0, 2), (
-            f"Unexpected launcher exit code {result.returncode}:\n{result.stderr}"
-        )
+        assert result.returncode in (
+            0,
+            2,
+        ), f"Unexpected launcher exit code {result.returncode}:\n{result.stderr}"
 
 
 @pytest.mark.live_simulation
@@ -193,9 +194,9 @@ class TestMediaPipeIntegration:
             # New Tasks API (mediapipe >= 0.10)
             # Just verify the tasks module loads and has PoseLandmarker
             tasks = mp.tasks
-            assert hasattr(tasks, "vision") or hasattr(tasks, "BaseOptions"), (
-                f"mp.tasks has unexpected structure: {dir(tasks)}"
-            )
+            assert hasattr(tasks, "vision") or hasattr(
+                tasks, "BaseOptions"
+            ), f"mp.tasks has unexpected structure: {dir(tasks)}"
         else:
             pytest.skip(
                 f"MediaPipe installed but has unexpected API. "
