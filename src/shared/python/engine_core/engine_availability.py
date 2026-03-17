@@ -86,8 +86,7 @@ def _probe_engine(
         elif import_name == "tf":
             importlib.import_module("tensorflow")
         elif import_name == "pyopenpose":
-            # import pyopenpose (dynamic)
-            importlib.import_module("pyopenpose")
+            importlib.import_module("pyopenpose")  # import pyopenpose (dynamic)
         elif import_name == "h5py":
             importlib.import_module("h5py")
         elif import_name == "yaml":
