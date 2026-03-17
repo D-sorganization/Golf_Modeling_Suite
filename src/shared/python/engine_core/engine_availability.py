@@ -178,7 +178,10 @@ _MODULE_MAPPING = {
     "seaborn": "seaborn",
 }
 
-_ENGINE_FLAGS = list(_MODULE_MAPPING.keys())
+_ENGINE_FLAGS: dict[str, bool] = dict.fromkeys(
+    _MODULE_MAPPING, False
+)  # availability populated lazily via get_engine_status at call time
+
 
 
 def get_engine_status(engine_name: str) -> EngineStatus:
