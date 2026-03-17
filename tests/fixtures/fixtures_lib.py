@@ -159,6 +159,21 @@ def available_engines() -> dict[str, bool]:
     }
 
 
+def _check_mujoco_available() -> bool:
+    """Return True if MuJoCo is available in this environment."""
+    return get_engine_status("mujoco") == EngineStatus.AVAILABLE
+
+
+def _check_drake_available() -> bool:
+    """Return True if Drake (pydrake) is available in this environment."""
+    return get_engine_status("drake") == EngineStatus.AVAILABLE
+
+
+def _check_pinocchio_available() -> bool:
+    """Return True if Pinocchio is available in this environment."""
+    return get_engine_status("pinocchio") == EngineStatus.AVAILABLE
+
+
 @pytest.fixture
 def simple_pendulum_path() -> Path:
     """Return path to simple pendulum URDF fixture."""
