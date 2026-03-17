@@ -86,6 +86,7 @@ def _probe_engine(
         elif import_name == "tf":
             importlib.import_module("tensorflow")
         elif import_name == "pyopenpose":
+            # import pyopenpose (dynamic)
             importlib.import_module("pyopenpose")
         elif import_name == "h5py":
             importlib.import_module("h5py")
@@ -177,6 +178,7 @@ _MODULE_MAPPING = {
     "seaborn": "seaborn",
 }
 
+_ENGINE_FLAGS = list(_MODULE_MAPPING.keys())
 
 def get_engine_status(engine_name: str) -> EngineStatus:
     name = engine_name.lower()
