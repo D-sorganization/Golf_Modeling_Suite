@@ -182,7 +182,6 @@ _ENGINE_FLAGS: dict[str, bool] = dict.fromkeys(
 )  # availability populated lazily via get_engine_status at call time
 
 
-
 def get_engine_status(engine_name: str) -> EngineStatus:
     name = engine_name.lower()
 
