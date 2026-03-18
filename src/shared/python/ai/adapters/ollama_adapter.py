@@ -180,9 +180,10 @@ class OllamaAdapter(BaseAgentAdapter):
             )
             response.raise_for_status()
 
-        except (RuntimeError, TypeError, ValueError) as e:
+        except Exception as e:
             import httpx
 
+            print(f'e: {type(e)}, httpx.ConnectError: {httpx.ConnectError}')
             if isinstance(e, httpx.ConnectError):
                 raise AIConnectionError(
                     f"Cannot connect to Ollama at {self._host}. "
@@ -329,9 +330,10 @@ class OllamaAdapter(BaseAgentAdapter):
 
         except AIProviderError:
             return False, ("httpx not installed. Install with: pip install httpx")
-        except (ConnectionError, TimeoutError, ValueError) as e:
+        except Exception as e:
             import httpx
 
+            print(f'e: {type(e)}, httpx.ConnectError: {httpx.ConnectError}')
             if isinstance(e, httpx.ConnectError):
                 return False, (
                     f"Cannot connect to Ollama at {self._host}. "
@@ -451,7 +453,7 @@ class OllamaAdapter(BaseAgentAdapter):
             data = response.json()
             return [m.get("name", "") for m in data.get("models", [])]
 
-        except (RuntimeError, TypeError, ValueError) as e:
+        except Exception as e:
             raise AIConnectionError(
                 f"Cannot list Ollama models: {e}",
                 provider="ollama",
