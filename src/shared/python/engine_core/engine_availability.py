@@ -102,7 +102,9 @@ def _probe_engine(
         elif import_name == "pinocchio":
             pin = importlib.import_module("pinocchio")
             if not hasattr(pin, "buildModelFromUrdf"):
-                raise ImportError("Incorrect pinocchio package (likely nose plugin). Please install pinocchio from conda-forge.")
+                raise ImportError(
+                    "Incorrect pinocchio package (likely nose plugin). Please install pinocchio from conda-forge."
+                )
         else:
             importlib.import_module(import_name)
 
