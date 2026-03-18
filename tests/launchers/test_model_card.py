@@ -1,13 +1,13 @@
 """Tests for model_card widget."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch  # noqa: E402
 
-import pytest
-from PyQt6.QtCore import QMimeData, QPoint, Qt
-from PyQt6.QtGui import QDragEnterEvent, QDropEvent, QMouseEvent
-from PyQt6.QtWidgets import QWidget
+import pytest  # noqa: E402
+from PyQt6.QtCore import QMimeData, QPoint, Qt  # noqa: E402
+from PyQt6.QtGui import QDragEnterEvent, QDropEvent, QMouseEvent  # noqa: E402
+from PyQt6.QtWidgets import QWidget  # noqa: E402
 
-from src.launchers.model_card import DraggableModelCard
+from src.launchers.model_card import DraggableModelCard  # noqa: E402
 
 
 @pytest.fixture

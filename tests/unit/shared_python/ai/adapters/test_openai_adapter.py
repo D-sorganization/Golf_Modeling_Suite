@@ -11,19 +11,19 @@ sys.modules["openai"] = openai_mock
 # for gemini
 if "openai" == "google.generativeai":
     sys.modules["google"] = MagicMock()
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch  # noqa: E402
 
-import pytest
+import pytest  # noqa: E402
 
-from src.shared.python.ai.adapters.base import ToolDeclaration
-from src.shared.python.ai.adapters.openai_adapter import OpenAIAdapter
-from src.shared.python.ai.exceptions import (
+from src.shared.python.ai.adapters.base import ToolDeclaration  # noqa: E402
+from src.shared.python.ai.adapters.openai_adapter import OpenAIAdapter  # noqa: E402
+from src.shared.python.ai.exceptions import (  # noqa: E402
     AIConnectionError,
     AIProviderError,
     AIRateLimitError,
     AITimeoutError,
 )
-from src.shared.python.ai.types import (
+from src.shared.python.ai.types import (  # noqa: E402
     ConversationContext,
     ExpertiseLevel,
     Message,
@@ -72,9 +72,11 @@ def test_get_client_import_error():
             raise ImportError("No module named 'openai'")
         return real_import(name, *args, **kwargs)
 
-    with patch("builtins.__import__", side_effect=mock_import):
-        with pytest.raises(AIProviderError, match="openai package required"):
-            adapter._get_client()
+    with (
+        patch("builtins.__import__", side_effect=mock_import),
+        pytest.raises(AIProviderError, match="openai package required"),
+    ):
+        adapter._get_client()
 
 
 def test_capabilities(adapter):

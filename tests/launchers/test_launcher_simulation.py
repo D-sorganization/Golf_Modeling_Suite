@@ -1,13 +1,13 @@
 """Tests for launcher_simulation.py."""
 
-import sys
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+import sys  # noqa: E402
+from pathlib import Path  # noqa: E402
+from unittest.mock import MagicMock, patch  # noqa: E402
 
-import pytest
-from PyQt6.QtWidgets import QMainWindow, QMessageBox
+import pytest  # noqa: E402
+from PyQt6.QtWidgets import QMainWindow, QMessageBox  # noqa: E402
 
-from src.launchers.launcher_simulation import LauncherSimulationMixin
+from src.launchers.launcher_simulation import LauncherSimulationMixin  # noqa: E402
 
 
 class DummyModel:

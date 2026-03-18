@@ -1,11 +1,11 @@
 """Tests for launcher_ui_setup.py."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch  # noqa: E402
 
-import pytest
-from PyQt6.QtWidgets import QHBoxLayout, QMainWindow, QVBoxLayout
+import pytest  # noqa: E402
+from PyQt6.QtWidgets import QHBoxLayout, QMainWindow, QVBoxLayout  # noqa: E402
 
-from src.launchers.launcher_ui_setup import LauncherUISetupMixin
+from src.launchers.launcher_ui_setup import LauncherUISetupMixin  # noqa: E402
 
 
 class DummyLauncher(QMainWindow, LauncherUISetupMixin):
@@ -200,6 +200,13 @@ def test_init_overlay(launcher):
 
 
 def test_init_overlay_error(launcher):
-    with patch("builtins.__import__", side_effect=ImportError("test")):
+    original_import = __import__
+
+    def mock_import(name, *args, **kwargs):
+        if "vendor" in name or "overlay" in name:
+            raise ImportError("test")
+        return original_import(name, *args, **kwargs)
+
+    with patch("builtins.__import__", side_effect=mock_import):
         launcher._init_overlay()
         assert not hasattr(launcher, "overlay")

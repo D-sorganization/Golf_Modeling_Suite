@@ -1,13 +1,13 @@
 """Tests for golf_launcher.py."""
 
-import contextlib
-from unittest.mock import MagicMock, patch
+import contextlib  # noqa: E402
+from unittest.mock import MagicMock, patch  # noqa: E402
 
-import pytest
-from PyQt6.QtWidgets import QMessageBox
+import pytest  # noqa: E402
+from PyQt6.QtWidgets import QMessageBox  # noqa: E402
 
-from src.launchers.golf_launcher import GolfLauncher, main
-from src.launchers.ui_components import StartupResults
+from src.launchers.golf_launcher import GolfLauncher, main  # noqa: E402
+from src.launchers.ui_components import StartupResults  # noqa: E402
 
 
 @pytest.fixture

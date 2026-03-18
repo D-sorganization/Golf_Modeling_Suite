@@ -1,10 +1,10 @@
 """Tests for shot_tracer."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch  # noqa: E402
 
-import pytest
+import pytest  # noqa: E402
 
-from src.launchers.shot_tracer import (
+from src.launchers.shot_tracer import (  # noqa: E402
     MultiModelShotTracerWidget,
     MultiModelShotTracerWindow,
 )

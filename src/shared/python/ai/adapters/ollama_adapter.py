@@ -183,7 +183,6 @@ class OllamaAdapter(BaseAgentAdapter):
         except Exception as e:
             import httpx
 
-            print(f"e: {type(e)}, httpx.ConnectError: {httpx.ConnectError}")
             if isinstance(e, httpx.ConnectError):
                 raise AIConnectionError(
                     f"Cannot connect to Ollama at {self._host}. "
@@ -333,7 +332,6 @@ class OllamaAdapter(BaseAgentAdapter):
         except Exception as e:
             import httpx
 
-            print(f"e: {type(e)}, httpx.ConnectError: {httpx.ConnectError}")
             if isinstance(e, httpx.ConnectError):
                 return False, (
                     f"Cannot connect to Ollama at {self._host}. "

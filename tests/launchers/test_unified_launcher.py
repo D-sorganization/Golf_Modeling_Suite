@@ -1,11 +1,11 @@
 """Tests for unified_launcher.py."""
 
-import sys
-from unittest.mock import MagicMock, patch
+import sys  # noqa: E402
+from unittest.mock import MagicMock, patch  # noqa: E402
 
-import pytest
+import pytest  # noqa: E402
 
-from src.launchers.unified_launcher import (
+from src.launchers.unified_launcher import (  # noqa: E402
     UnifiedLauncher,
     _get_golf_main,
     _is_pyqt6_available,

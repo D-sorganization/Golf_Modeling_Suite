@@ -9,9 +9,9 @@ sys.modules["google"] = MagicMock()
 sys.modules["google.generativeai"] = mock_genai_pkg
 sys.modules["google.generativeai.types"] = MagicMock()
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch  # noqa: E402
 
-import pytest
+import pytest  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
@@ -25,8 +25,8 @@ def patch_has_gemini():
         yield
 
 
-from src.shared.python.ai.adapters.gemini_adapter import GeminiAdapter
-from src.shared.python.ai.types import (
+from src.shared.python.ai.adapters.gemini_adapter import GeminiAdapter  # noqa: E402
+from src.shared.python.ai.types import (  # noqa: E402
     ConversationContext,
     Message,
     ProviderCapability,
@@ -35,11 +35,13 @@ from src.shared.python.ai.types import (
 
 def test_init_missing_package():
     """Test behavior when the gemini package is missing."""
-    with patch("src.shared.python.ai.adapters.gemini_adapter.HAS_GEMINI", False):
-        with pytest.raises(
+    with (
+        patch("src.shared.python.ai.adapters.gemini_adapter.HAS_GEMINI", False),
+        pytest.raises(
             ImportError, match="google-generativeai package is not installed"
-        ):
-            GeminiAdapter("api-key")
+        ),
+    ):
+        GeminiAdapter("api-key")
 
 
 @patch("src.shared.python.ai.adapters.gemini_adapter.genai.configure")

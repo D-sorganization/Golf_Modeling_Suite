@@ -1,10 +1,10 @@
 """Tests for golf_suite_launcher.py."""
 
-import sys
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+import sys  # noqa: E402
+from pathlib import Path  # noqa: E402
+from unittest.mock import MagicMock, patch  # noqa: E402
 
-import pytest
+import pytest  # noqa: E402
 
 
 @pytest.fixture

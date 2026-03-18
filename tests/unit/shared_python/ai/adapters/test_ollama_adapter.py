@@ -25,9 +25,9 @@ httpx_mock.TimeoutException = MockTimeoutException
 # for gemini
 if "httpx" == "google.generativeai":
     sys.modules["google"] = MagicMock()
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch  # noqa: E402
 
-import pytest
+import pytest  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
@@ -35,14 +35,14 @@ def reset_mocks():
     sys.modules["httpx"].reset_mock()
 
 
-from src.shared.python.ai.adapters.base import ToolDeclaration
-from src.shared.python.ai.adapters.ollama_adapter import OllamaAdapter
-from src.shared.python.ai.exceptions import (
+from src.shared.python.ai.adapters.base import ToolDeclaration  # noqa: E402
+from src.shared.python.ai.adapters.ollama_adapter import OllamaAdapter  # noqa: E402
+from src.shared.python.ai.exceptions import (  # noqa: E402
     AIConnectionError,
     AIProviderError,
     AITimeoutError,
 )
-from src.shared.python.ai.types import (
+from src.shared.python.ai.types import (  # noqa: E402
     ConversationContext,
     ExpertiseLevel,
     Message,
@@ -76,9 +76,11 @@ def test_get_client_import_error():
             raise ImportError("No httpx provided")
         return real_import(name, *args, **kwargs)
 
-    with patch("builtins.__import__", side_effect=mock_import):
-        with pytest.raises(AIProviderError, match="httpx package required"):
-            adapter._get_client()
+    with (
+        patch("builtins.__import__", side_effect=mock_import),
+        pytest.raises(AIProviderError, match="httpx package required"),
+    ):
+        adapter._get_client()
 
 
 def test_get_client(adapter):
@@ -140,7 +142,7 @@ def test_validate_connection_missing_model(mock_get_client, adapter):
 def test_validate_connection_errors(mock_get_client, adapter):
     import sys
 
-    mock_httpx = sys.modules["httpx"]
+    sys.modules["httpx"]
     """Test connection validation error handling."""
     mock_client = MagicMock()
     mock_get_client.return_value = mock_client
@@ -232,7 +234,7 @@ def test_send_message_with_tools(mock_get_client, adapter):
 def test_send_message_errors(mock_get_client, adapter):
     import sys
 
-    mock_httpx = sys.modules["httpx"]
+    sys.modules["httpx"]
     """Test exception mapping in send_message."""
     mock_client = MagicMock()
     mock_get_client.return_value = mock_client

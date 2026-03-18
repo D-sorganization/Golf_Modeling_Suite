@@ -1,13 +1,13 @@
 """Tests for startup.py."""
 
-import builtins
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+import builtins  # noqa: E402
+from pathlib import Path  # noqa: E402
+from unittest.mock import MagicMock, patch  # noqa: E402
 
-import pytest
-from PyQt6.QtGui import QFont, QPainter
+import pytest  # noqa: E402
+from PyQt6.QtGui import QFont, QPainter  # noqa: E402
 
-from src.launchers.startup import (
+from src.launchers.startup import (  # noqa: E402
     AsyncStartupWorker,
     GolfSplashScreen,
     StartupResults,

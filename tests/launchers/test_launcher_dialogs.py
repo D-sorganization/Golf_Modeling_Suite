@@ -1,12 +1,12 @@
 """Tests for launcher_dialogs.py."""
 
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+from pathlib import Path  # noqa: E402
+from unittest.mock import MagicMock, patch  # noqa: E402
 
-import pytest
-from PyQt6.QtWidgets import QMainWindow
+import pytest  # noqa: E402
+from PyQt6.QtWidgets import QMainWindow  # noqa: E402
 
-from src.launchers.launcher_dialogs import LauncherDialogsMixin
+from src.launchers.launcher_dialogs import LauncherDialogsMixin  # noqa: E402
 
 
 class DummyLauncher(QMainWindow, LauncherDialogsMixin):

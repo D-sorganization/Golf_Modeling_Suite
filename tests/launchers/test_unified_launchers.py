@@ -1,12 +1,14 @@
 """Tests for unified and mocap launchers."""
 
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+from pathlib import Path  # noqa: E402
+from unittest.mock import MagicMock, patch  # noqa: E402
 
-from src.launchers.motion_capture_launcher import MoCapLauncher
-from src.launchers.motion_capture_launcher import main as mocap_main
-from src.launchers.mujoco_unified_launcher import MujocoUnifiedLauncher
-from src.launchers.mujoco_unified_launcher import main as mujoco_unified_main
+from src.launchers.motion_capture_launcher import MoCapLauncher  # noqa: E402
+from src.launchers.motion_capture_launcher import main as mocap_main  # noqa: E402
+from src.launchers.mujoco_unified_launcher import MujocoUnifiedLauncher  # noqa: E402
+from src.launchers.mujoco_unified_launcher import (
+    main as mujoco_unified_main,  # noqa: E402
+)
 
 
 @patch("src.launchers.base.BaseLauncher.__init__", return_value=None)
