@@ -1,6 +1,5 @@
 """Tests for the base AI adapter module."""
 
-
 from src.shared.python.ai.adapters.base import BaseAgentAdapter, ToolDeclaration
 from src.shared.python.ai.types import (
     AgentChunk,
@@ -14,10 +13,14 @@ from src.shared.python.ai.types import (
 class DummyAdapter(BaseAgentAdapter):
     """A dummy adapter for testing the concrete methods of BaseAgentAdapter."""
 
-    def send_message(self, message: str, context: ConversationContext, tools: list[ToolDeclaration]) -> AgentResponse:
+    def send_message(
+        self, message: str, context: ConversationContext, tools: list[ToolDeclaration]
+    ) -> AgentResponse:
         return AgentResponse(content="test")
 
-    def stream_response(self, message: str, context: ConversationContext, tools: list[ToolDeclaration]):
+    def stream_response(
+        self, message: str, context: ConversationContext, tools: list[ToolDeclaration]
+    ):
         yield AgentChunk(content="test")
 
     @property
@@ -93,32 +96,36 @@ def test_tool_declaration_anthropic_format():
 def test_format_messages_for_provider():
     """Test formatting conversation history."""
     adapter = DummyAdapter()
-    
+
     context = ConversationContext()
     context.messages = [
         Message(role="user", content="hello"),
         Message(role="assistant", content="hi there", tool_call_id="call_123"),
     ]
-    
+
     formatted = adapter.format_messages_for_provider(context, "next message")
-    
+
     assert len(formatted) == 3
     assert formatted[0] == {"role": "user", "content": "hello"}
-    assert formatted[1] == {"role": "assistant", "content": "hi there", "tool_call_id": "call_123"}
+    assert formatted[1] == {
+        "role": "assistant",
+        "content": "hi there",
+        "tool_call_id": "call_123",
+    }
     assert formatted[2] == {"role": "user", "content": "next message"}
 
 
 def test_build_system_prompt():
     """Test building a basic system prompt."""
     adapter = DummyAdapter()
-    
+
     tools = [
         ToolDeclaration(name="tool1", description="desc1"),
         ToolDeclaration(name="tool2", description="desc2"),
     ]
-    
+
     prompt = adapter.build_system_prompt(tools, expertise_level="expert")
-    
+
     assert "You are an AI assistant" in prompt
     assert "expertise level: expert" in prompt
     assert "- tool1: desc1" in prompt
