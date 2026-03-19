@@ -190,11 +190,15 @@ def _real_pinocchio_available() -> bool:
     ``importlib.util.find_spec`` can raise ``ValueError`` when ``pinocchio``
     is in ``sys.modules`` as a ``MagicMock`` (e.g. from another worker's
     patch context) because ``mock.__spec__`` is not a real ``ModuleSpec``.
+
+    We also guard against the case where another xdist worker has patched
+    ``pinocchio`` into ``sys.modules`` as a ``MagicMock``: the import would
+    succeed but the object is not the real C extension.
     """
     try:
         import pinocchio as _pin  # noqa: F401
 
-        return True
+        return not isinstance(_pin, MagicMock)
     except (ImportError, ModuleNotFoundError):
         return False
 
