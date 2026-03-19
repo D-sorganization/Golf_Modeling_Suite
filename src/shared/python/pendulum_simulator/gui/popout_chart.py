@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 
 if TYPE_CHECKING:
-    from PyQt6.QtWidgets import QWidget
+    from PyQt6.QtWidgets import QMainWindow, QWidget
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +107,7 @@ class PopOutChart:
         self._fig: Figure | None = None
         self._ax: object | None = None
         self._canvas: object | None = None
-        self._window: object | None = None
+        self._window: QMainWindow | None = None
         self._regression: tuple[np.ndarray, np.ndarray, int, np.ndarray] | None = None
         self._regression_label: str = ""
 
