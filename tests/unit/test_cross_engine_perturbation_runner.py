@@ -483,16 +483,17 @@ class TestCrossEnginePerturbationRunner:
 # Integration smoke test — real MuJoCo engine (skips if not installed)
 # ---------------------------------------------------------------------------
 
+_MUJOCO_ANALYZER_AVAILABLE: bool = False
 try:
-    import mujoco as _mujoco_check  # noqa: F401
+    import mujoco as _mujoco_check  # noqa: F401  # type: ignore[import-untyped]
 
-    from src.engines.physics_engines.mujoco.python.perturbation import (  # noqa: F401
-        analyzer as _mujoco_analyzer_mod,
+    _mujoco_analyzer_mod = __import__(
+        "src.engines.physics_engines.mujoco.python.perturbation.analyzer",
+        fromlist=[""],
     )
-
     _MUJOCO_ANALYZER_AVAILABLE = True
 except (ImportError, ModuleNotFoundError):
-    _MUJOCO_ANALYZER_AVAILABLE = False
+    pass
 
 _skip_no_mujoco = pytest.mark.skipif(
     not _MUJOCO_ANALYZER_AVAILABLE,
