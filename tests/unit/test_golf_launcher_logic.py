@@ -236,6 +236,13 @@ def mock_pyqt(monkeypatch):
 )
 class TestGolfLauncherLogic:
     @pytest.fixture(autouse=True)
+    def mock_process_manager(self):
+        """Mock ProcessManager to prevent real file I/O side effects in workers."""
+        with patch("src.launchers.golf_launcher.ProcessManager") as mock_pm:
+            mock_pm.return_value.running_processes = {}
+            yield mock_pm
+
+    @pytest.fixture(autouse=True)
     def mock_help_system(self):
         """
         Mock the help system to avoid instantiation of real QWidgets (HelpButton)
