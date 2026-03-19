@@ -91,7 +91,7 @@ class SignalImporter:
 
         # Parse data
         time_data = []
-        value_data = {i: [] for i in value_indices}  # type: ignore[assignment]
+        value_data = {i: [] for i in value_indices}  # type: ignore[var-annotated]
 
         for row in data_rows:
             if len(row) <= time_idx:
@@ -693,7 +693,7 @@ class BatchProcessor:
                 if isinstance(signal, list):
                     processed = [processor(s) for s in signal]
                 else:
-                    processed = processor(signal)  # type: ignore[arg-type]
+                    processed = processor(signal)  # type: ignore[assignment]
 
                 results[file_path.stem] = processed
 
@@ -704,7 +704,7 @@ class BatchProcessor:
                         SignalExporter.to_csv(processed, output_path)
                     elif output_format == "json":
                         if isinstance(processed, list):
-                            processed = processed[0]  # type: ignore[index]
+                            processed = processed[0]  # type: ignore[assignment]
                         SignalExporter.to_json(processed, output_path)  # type: ignore[arg-type]
                     elif output_format == "npz":
                         SignalExporter.to_npz(processed, output_path)

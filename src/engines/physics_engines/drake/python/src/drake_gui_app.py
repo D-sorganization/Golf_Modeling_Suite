@@ -85,7 +85,7 @@ except ImportError:
 try:
     from .manipulability import DrakeManipulabilityAnalyzer
 except ImportError:
-    DrakeManipulabilityAnalyzer = None  # type: ignore[assignment]
+    DrakeManipulabilityAnalyzer = None  # type: ignore[misc]
 
 # Constants
 TIME_STEP_S = 0.001

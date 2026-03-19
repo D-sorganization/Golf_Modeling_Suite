@@ -49,9 +49,9 @@ def ensure_paths(repo_root: Path | str | None = None) -> Path:
         repo_root = Path(repo_root).resolve()
 
     standard_paths = [
-        repo_root / "src" / "shared" / "python",  # type: ignore[arg-type]
-        repo_root / "src",  # type: ignore[arg-type]
-        repo_root / "src" / "python" / "src",  # type: ignore[arg-type]
+        repo_root / "src" / "shared" / "python",  # type: ignore[operator]
+        repo_root / "src",  # type: ignore[operator]
+        repo_root / "src" / "python" / "src",  # type: ignore[operator]
     ]
 
     for path in standard_paths:
