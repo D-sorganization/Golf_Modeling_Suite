@@ -169,8 +169,6 @@ class ComparisonReport:
 # ---------------------------------------------------------------------------
 
 
-
-
 # ---------------------------------------------------------------------------
 # Main analyzer
 # ---------------------------------------------------------------------------
@@ -343,7 +341,13 @@ class MyoSuitePerturbationAnalyzer:
         assert self._base_coeffs is not None, (
             "set_base_torque_profile() must be called before perturb_torque()"
         )
-        perturbed = perturb_torque_coeffs(self._base_coeffs, noise_amplitude=config.noise_amplitude, noise_type=config.noise_type, seed=seed, perturb_mode=config.perturb_mode)
+        perturbed = perturb_torque_coeffs(
+            self._base_coeffs,
+            noise_amplitude=config.noise_amplitude,
+            noise_type=config.noise_type,
+            seed=seed,
+            perturb_mode=config.perturb_mode,
+        )
         return {"coeffs": perturbed}
 
     def extract_metrics(self, sim_result: object) -> dict[str, float | np.ndarray]:
@@ -433,7 +437,11 @@ class MyoSuitePerturbationAnalyzer:
 
         for i in range(config.n_trials):
             perturbed = perturb_torque_coeffs(
-                self._base_coeffs, noise_amplitude=config.noise_amplitude, noise_type=config.noise_type, seed=base_seed + i, perturb_mode=config.perturb_mode
+                self._base_coeffs,
+                noise_amplitude=config.noise_amplitude,
+                noise_type=config.noise_type,
+                seed=base_seed + i,
+                perturb_mode=config.perturb_mode,
             )
             try:
                 sim = self._simulate(perturbed)
@@ -526,7 +534,10 @@ class MyoSuitePerturbationAnalyzer:
             for i in range(config.n_trials):
                 perturbed = perturb_torque_coeffs(
                     self._base_coeffs,  # type: ignore[arg-type]
-                    noise_amplitude=config.noise_amplitude, noise_type=config.noise_type, seed=base_seed + i, perturb_mode=config.perturb_mode
+                    noise_amplitude=config.noise_amplitude,
+                    noise_type=config.noise_type,
+                    seed=base_seed + i,
+                    perturb_mode=config.perturb_mode,
                 )
                 try:
                     sim = self._simulate(perturbed)
