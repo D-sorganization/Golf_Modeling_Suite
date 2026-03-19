@@ -458,9 +458,13 @@ class PinocchioPerturbationAnalyzer:
 
         # Robustness score: 1 / (1 + CV_weighted) over scalar metrics
         cv_values = []
-        for _m, stats in metric_stats.items():
-            if stats.std > 0 and abs(stats.mean) > 1e-12:
-                cv_values.append(stats.std / abs(stats.mean))
+        for stats in metric_stats.values():
+            _std = float(stats.std) if not isinstance(stats.std, float) else stats.std
+            _mean = (
+                float(stats.mean) if not isinstance(stats.mean, float) else stats.mean
+            )
+            if _std > 0 and abs(_mean) > 1e-12:
+                cv_values.append(_std / abs(_mean))
             else:
                 cv_values.append(0.0)
         cv_weighted = float(np.mean(cv_values)) if cv_values else 0.0
