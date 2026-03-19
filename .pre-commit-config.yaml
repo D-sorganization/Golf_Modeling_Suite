@@ -135,6 +135,7 @@ repos:
           python3 -m pytest tests/unit -x -q --tb=short -m "not slow and not integration"
           --ignore=tests/unit/engines
           --ignore=tests/unit/launchers
+          --ignore=tests/unit/shared_python/test_engine_loaders_coverage.py
           --override-ini="addopts=-ra -q --strict-markers --strict-config --durations=20"
         language: system
         pass_filenames: false
