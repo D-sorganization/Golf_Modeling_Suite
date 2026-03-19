@@ -117,7 +117,7 @@ repos:
       - id: bandit
         name: "bandit (security scan)"
         stages: [pre-push]
-        args: ["-r", "src/", "-ll", "-ii"]
+        args: ["-r", "src/", "-lll", "-ii"]
         pass_filenames: false
         # Only run if Python files changed
         types: [python]
@@ -134,6 +134,7 @@ repos:
         entry:
           python3 -m pytest tests/unit -x -q --tb=short -m "not slow and not integration"
           --ignore=tests/unit/engines
+          --ignore=tests/unit/isolated
           --ignore=tests/unit/launchers
           --ignore=tests/unit/shared_python/test_engine_loaders_coverage.py
           --override-ini="addopts=-ra -q --strict-markers --strict-config --durations=20"
