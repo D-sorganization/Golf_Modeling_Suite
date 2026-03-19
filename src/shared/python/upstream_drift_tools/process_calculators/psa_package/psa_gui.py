@@ -113,7 +113,7 @@ class InputPanel(QWidget):
             max_value=100,
             default_value=100,
             orientation=Qt.Orientation.Horizontal,
-            value_changed_callback=lambda v: self.s2_recycle_label.setText(f"{v}%"),  # type: ignore
+            value_changed_callback=lambda v: self.s2_recycle_label.setText(f"{v}%"),  # type: ignore[has-type]
         )
         self.s2_recycle_label = QLabel("100%")
         op_layout.addWidget(self.s2_recycle_slider, 1, 1)
@@ -126,7 +126,7 @@ class InputPanel(QWidget):
             max_value=100,
             default_value=0,
             orientation=Qt.Orientation.Horizontal,
-            value_changed_callback=lambda v: self.prod_recycle_label.setText(f"{v}%"),  # type: ignore
+            value_changed_callback=lambda v: self.prod_recycle_label.setText(f"{v}%"),  # type: ignore[has-type]
         )
         self.prod_recycle_label = QLabel("0%")
         op_layout.addWidget(self.prod_recycle_slider, 2, 1)
