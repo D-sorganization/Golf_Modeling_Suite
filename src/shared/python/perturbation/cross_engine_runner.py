@@ -218,17 +218,19 @@ def _load_analyzer(engine_name: str, **kwargs: Any) -> Any:
 
 def _load_pendulum_analyzer(**kwargs: Any) -> Any:
     """Load PendulumPerturbationAnalyzer with default parameters."""
-    from src.shared.python.pendulum_simulator.perturbation_analysis import (  # noqa: PLC0415
-        PendulumPerturbationAnalyzer,
+    # PendulumPerturbationAnalyzer lives in a namespace package excluded from mypy
+    import importlib  # noqa: PLC0415
+
+    _ppa_mod = importlib.import_module(  # type: ignore[assignment]
+        "src.shared.python.pendulum_simulator.pendulum_perturbation_analyzer"
     )
-    from src.shared.python.pendulum_simulator.physics import (
-        PendulumParams,  # noqa: PLC0415
-    )
+    _phys_mod = importlib.import_module("src.shared.python.pendulum_simulator.physics")
+    PendulumParams = _phys_mod.PendulumParams  # type: ignore[attr-defined]
 
     params = kwargs.pop("params", PendulumParams(m1=5.0, m2=0.30, L1=0.65, L2=1.10))
     t_end = kwargs.pop("t_end", 1.5)
     dt = kwargs.pop("dt", 0.01)
-    return PendulumPerturbationAnalyzer(params, t_end=t_end, dt=dt)
+    return _ppa_mod.PendulumPerturbationAnalyzer(params, t_end=t_end, dt=dt)
 
 
 # ---------------------------------------------------------------------------
