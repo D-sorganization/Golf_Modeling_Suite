@@ -104,6 +104,7 @@ repos:
             src/archive/|
             src/legacy/|
             src/experimental/|
+            src/shared/python/pendulum_simulator/|
             __pycache__/|
             \.pytest_cache/|
             \.venv/|
