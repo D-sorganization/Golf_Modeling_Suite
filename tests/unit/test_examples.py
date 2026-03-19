@@ -96,9 +96,18 @@ def test_topography_demo_runs() -> None:
 
 
 def test_motion_training_demo_importable() -> None:
-    """Test motion_training_demo.py can be imported (lazy imports inside functions)."""
-    mod = load_module("motion_training_demo", motion_training_path)
-    # Verify key entry points are present
-    assert callable(mod.main)
-    assert callable(mod.run_ik_demo)
-    assert callable(mod.run_trajectory_analysis)
+    """Test motion_training_demo.py can be imported (lazy imports inside functions).
+
+    The script inserts the pinocchio/python directory into sys.path at module
+    level.  We save/restore sys.path so that worker-level state is not polluted,
+    which would cause other tests (e.g. dtack backend tests) to change behaviour.
+    """
+    orig_path = sys.path.copy()
+    try:
+        mod = load_module("motion_training_demo", motion_training_path)
+        # Verify key entry points are present
+        assert callable(mod.main)
+        assert callable(mod.run_ik_demo)
+        assert callable(mod.run_trajectory_analysis)
+    finally:
+        sys.path[:] = orig_path
