@@ -184,8 +184,23 @@ class TestWithMockedPinocchio:
 # ---------------------------------------------------------------------------
 
 
+def _real_pinocchio_available() -> bool:
+    """Return True only when the real pinocchio C extension is importable.
+
+    ``importlib.util.find_spec`` can raise ``ValueError`` when ``pinocchio``
+    is in ``sys.modules`` as a ``MagicMock`` (e.g. from another worker's
+    patch context) because ``mock.__spec__`` is not a real ``ModuleSpec``.
+    """
+    try:
+        import pinocchio as _pin  # noqa: F401
+
+        return True
+    except (ImportError, ModuleNotFoundError):
+        return False
+
+
 @pytest.mark.skipif(
-    not __import__("importlib").util.find_spec("pinocchio"),
+    not _real_pinocchio_available(),
     reason="pinocchio not installed",
 )
 class TestWithRealPinocchio:
