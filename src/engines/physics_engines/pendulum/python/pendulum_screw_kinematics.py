@@ -13,6 +13,7 @@ Reference: docs/assessments/project_design_guidelines.qmd Section C3
 from __future__ import annotations
 
 import math
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -23,6 +24,11 @@ from src.shared.python.screw_theory import (
     compute_screw_axis,
     compute_screw_endpoints,
 )
+
+if TYPE_CHECKING:
+    from src.engines.pendulum_models.python.double_pendulum_model.physics.double_pendulum import (
+        DoublePendulumDynamics,
+    )
 
 logger = get_logger(__name__)
 
@@ -50,7 +56,7 @@ class PendulumScrewKinematics:
     BODY_ARM_TIP = "arm_tip"
     BODY_CLUBHEAD = "clubhead"
 
-    def __init__(self, dynamics: object) -> None:
+    def __init__(self, dynamics: DoublePendulumDynamics) -> None:
         """Initialise with a ``DoublePendulumDynamics`` instance.
 
         Args:

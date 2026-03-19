@@ -9,6 +9,8 @@ Reference: docs/assessments/project_design_guidelines.qmd Section C3
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 
 from src.shared.python.engine_core.engine_availability import OPENSIM_AVAILABLE
@@ -43,7 +45,7 @@ class OpenSimScrewKinematics:
         logger.info("ISA pitch: %.4f m/rad", screw.pitch)
     """
 
-    def __init__(self, model: object, state: object) -> None:
+    def __init__(self, model: Any, state: Any) -> None:
         """Initialise with a loaded OpenSim model and state.
 
         Args:
