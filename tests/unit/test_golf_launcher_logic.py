@@ -230,8 +230,9 @@ def mock_pyqt(monkeypatch):
         yield
 
 
-@pytest.mark.skip(
-    reason="GolfLauncher construction hangs in CI (mixed mock/real Qt segfaults)"
+@pytest.mark.xfail(
+    reason="GolfLauncher construction hangs in CI (mixed mock/real Qt segfaults)",
+    strict=False,
 )
 class TestGolfLauncherLogic:
     @pytest.fixture(autouse=True)
