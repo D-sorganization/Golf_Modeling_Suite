@@ -29,7 +29,7 @@ from __future__ import annotations
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 
@@ -47,7 +47,7 @@ from .perturbation_analysis import (
     generate_noise,
     perturb_torque_coeffs,
 )
-from .physics import forward_kinematics, total_energy
+from .physics import TorqueFunc, forward_kinematics, total_energy
 from .simulation import SimulationResult, run_simulation
 from .torque_utils import make_polynomial_torque
 
@@ -582,8 +582,9 @@ class PendulumPerturbationAnalyzer:
 
     def _simulate(self, coeffs: list[list[float]]) -> SimulationResult:
         """Run a double pendulum simulation with the given polynomial coefficients."""
-        # make_polynomial_torque takes *coeffs_per_joint (one list per joint)
-        torque_fn = make_polynomial_torque(*coeffs)
+        # make_polynomial_torque takes *coeffs_per_joint (one list per joint);
+        # cast to TorqueFunc since mypy can't infer exact tuple length.
+        torque_fn = cast(TorqueFunc, make_polynomial_torque(*coeffs))
 
         flat = [c for joint in coeffs for c in joint]
         n_per = len(coeffs[0]) if coeffs else 0
