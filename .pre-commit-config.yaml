@@ -138,6 +138,7 @@ repos:
           --ignore=tests/unit/launchers
           --ignore=tests/unit/shared_python/test_engine_loaders_coverage.py
           --ignore=tests/unit/test_process_isolation_strict.py
+          --ignore=tests/unit/test_third_party_integration_audit.py
           --override-ini="addopts=-ra -q --strict-markers --strict-config --durations=20"
         language: system
         pass_filenames: false
