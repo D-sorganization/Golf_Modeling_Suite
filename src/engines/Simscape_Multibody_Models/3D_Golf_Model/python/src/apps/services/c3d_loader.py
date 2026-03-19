@@ -4,7 +4,7 @@ import os
 
 import numpy as np
 
-from ...c3d_reader import C3DDataReader  # type: ignore[import-untyped]
+from ...c3d_reader import C3DDataReader  # type: ignore
 from ...logger_utils import log_execution_time
 from ..core.models import AnalogData, C3DDataModel, MarkerData
 

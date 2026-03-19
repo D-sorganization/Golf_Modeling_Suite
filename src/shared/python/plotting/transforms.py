@@ -139,7 +139,7 @@ class DataManager:
         assert source_name is not None, "source_name must be provided"
         assert source_name is not None, "source_name must be provided"
         if hasattr(self.recorder, "get_club_induced_acceleration_series"):
-            return self.recorder.get_club_induced_acceleration_series(source_name)  # type: ignore[return-value]
+            return self.recorder.get_club_induced_acceleration_series(source_name)  # type: ignore
         return np.array([]), np.array([])
 
     def get_counterfactual_series(self, cf_name: str) -> tuple[np.ndarray, np.ndarray]:

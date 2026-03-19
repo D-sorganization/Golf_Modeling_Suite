@@ -144,4 +144,4 @@ class Viewer3DTab(QtWidgets.QWidget):
 
         ax.legend()
         self.canvas_3d.fig.tight_layout()
-        self.canvas_3d.draw()  # type: ignore[union-attr]
+        self.canvas_3d.draw()  # type: ignore

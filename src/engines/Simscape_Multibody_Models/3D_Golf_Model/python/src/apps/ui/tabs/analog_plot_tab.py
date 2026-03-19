@@ -79,4 +79,4 @@ class AnalogPlotTab(QtWidgets.QWidget):
         ax.legend()
 
         self.canvas_analog.fig.tight_layout()
-        self.canvas_analog.draw()  # type: ignore[union-attr]
+        self.canvas_analog.draw()  # type: ignore

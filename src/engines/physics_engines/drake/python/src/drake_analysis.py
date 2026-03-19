@@ -281,7 +281,7 @@ class DrakeRecorder:
             key = str(source_name)
             if key in self.induced_accelerations:
                 # If stored by int key or str(int) key
-                vals = self.induced_accelerations[key]  # type: ignore[index]
+                vals = self.induced_accelerations[key]  # type: ignore
                 times = np.array(self.times)
                 min_len = min(len(vals), len(times))
                 return times[:min_len], np.array(vals[:min_len])
@@ -289,7 +289,7 @@ class DrakeRecorder:
             is_int_key = isinstance(source_name, int)
             if is_int_key and source_name in self.induced_accelerations:
                 # Check for int key (less common in json but possible in dict)
-                vals = self.induced_accelerations[source_name]  # type: ignore[index]
+                vals = self.induced_accelerations[source_name]  # type: ignore
                 times = np.array(self.times)
                 min_len = min(len(vals), len(times))
                 return times[:min_len], np.array(vals[:min_len])

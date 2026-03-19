@@ -91,7 +91,7 @@ class OverlayWidget(QWidget):
         # Initially hidden
         self.setVisible(False)
 
-    def eventFilter(self, obj: object, event: Any) -> bool:  # type: ignore[override]
+    def eventFilter(self, obj: object, event: Any) -> bool:  # type: ignore
         """Handle resize events from parent."""
         assert obj is not None, "obj must be provided"
         assert obj is not None, "obj must be provided"

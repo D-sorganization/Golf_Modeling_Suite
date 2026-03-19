@@ -109,4 +109,4 @@ class MarkerPlotTab(QtWidgets.QWidget):
         ax.set_xlabel("Time (s)")
         ax.grid(True)
         self.canvas_marker.fig.tight_layout()
-        self.canvas_marker.draw()  # type: ignore[union-attr]
+        self.canvas_marker.draw()  # type: ignore

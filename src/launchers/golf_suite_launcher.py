@@ -29,9 +29,9 @@ logger = get_logger("GolfSuiteLauncher")
 if PYQT6_AVAILABLE:
     from PyQt6 import QtCore, QtGui, QtWidgets
 else:
-    QtWidgets = None  # type: ignore[assignment]
-    QtCore = None  # type: ignore[assignment]
-    QtGui = None  # type: ignore[assignment]
+    QtWidgets = None  # type: ignore
+    QtCore = None  # type: ignore
+    QtGui = None  # type: ignore
 
 # UI feedback timing constants
 LAUNCH_FEEDBACK_DURATION_MS = (
@@ -105,7 +105,7 @@ class GolfLauncher(QtWidgets.QMainWindow if PYQT6_AVAILABLE else object):  # typ
             icon_pixmap = QtWidgets.QStyle.StandardPixmap.SP_MediaPlay
 
         if PYQT6_AVAILABLE and icon_pixmap is not None:
-            btn.setIcon(self.style().standardIcon(icon_pixmap))  # type: ignore[union-attr]
+            btn.setIcon(self.style().standardIcon(icon_pixmap))  # type: ignore
         btn.setToolTip(tooltip)
         btn.setAccessibleName(accessible_name)
         btn.clicked.connect(slot)  # type: ignore[arg-type]
@@ -337,7 +337,7 @@ class GolfLauncher(QtWidgets.QMainWindow if PYQT6_AVAILABLE else object):  # typ
         if btn:
             btn.setText(text)
             if icon is not None:
-                btn.setIcon(icon)  # type: ignore[arg-type]
+                btn.setIcon(icon)  # type: ignore
 
     def clear_log(self) -> None:
         """Clear the log text area."""

@@ -104,6 +104,6 @@ class AnalysisTab(QtWidgets.QWidget):
             ax.set_ylabel("Speed")
             ax.grid(True)
             self.canvas_analysis.fig.tight_layout()
-            self.canvas_analysis.draw()  # type: ignore[union-attr]
+            self.canvas_analysis.draw()  # type: ignore
         else:
             self.canvas_analysis.clear_axes()

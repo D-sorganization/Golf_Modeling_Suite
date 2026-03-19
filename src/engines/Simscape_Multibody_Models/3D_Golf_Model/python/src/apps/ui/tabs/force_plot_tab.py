@@ -207,7 +207,7 @@ class ForcePlotTab(QtWidgets.QWidget):
                 ax.legend()
 
         self.time_series_canvas.fig.tight_layout()
-        self.time_series_canvas.draw()  # type: ignore[union-attr]
+        self.time_series_canvas.draw()  # type: ignore
 
     def _update_cop_trajectory(self) -> None:
         """Update COP trajectory plot."""
@@ -277,4 +277,4 @@ class ForcePlotTab(QtWidgets.QWidget):
         ax.legend()
 
         self.cop_canvas.fig.tight_layout()
-        self.cop_canvas.draw()  # type: ignore[union-attr]
+        self.cop_canvas.draw()  # type: ignore
