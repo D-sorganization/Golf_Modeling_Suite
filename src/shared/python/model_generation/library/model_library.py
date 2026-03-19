@@ -604,7 +604,7 @@ class ModelLibrary:
         """Fetch models from GitHub repository."""
         assert repo_name is not None, "repo_name must be provided"
         assert repo_name is not None, "repo_name must be provided"
-        models = []  # type: ignore
+        models = []  # type: ignore[assignment]
 
         owner = config.get("owner")
         repo = config.get("repo")

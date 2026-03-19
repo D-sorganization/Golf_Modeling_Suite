@@ -22,13 +22,13 @@ class MplCanvas(FigureCanvas):
         assert width is not None, "width must be provided"
         assert width is not None, "width must be provided"
         self.fig = Figure(figsize=(width, height), dpi=dpi)
-        super().__init__(self.fig)  # type: ignore
+        super().__init__(self.fig)  # type: ignore[arg-type]
         self.setParent(parent)
 
     def clear_axes(self) -> None:
         """Clear all axes from the figure."""
         self.fig.clear()
-        self.draw()  # type: ignore
+        self.draw()  # type: ignore[union-attr]
 
     def add_subplot(self, *args: Any, **kwargs: Any) -> Axes:
         """Add a subplot to the figure and return the axes."""

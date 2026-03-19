@@ -254,12 +254,12 @@ class ProcessingMixin:
             # Show preview without modifying current signal
             mode_map = {
                 "Hard Clip": SaturationMode.HARD,
-                "Soft Clip (tanh)": SaturationMode.SOFT_TANH,  # type: ignore
-                "Soft Clip (sigmoid)": SaturationMode.SOFT_SIGMOID,  # type: ignore
-                "Polynomial": SaturationMode.POLYNOMIAL,  # type: ignore
+                "Soft Clip (tanh)": SaturationMode.SOFT_TANH,  # type: ignore[arg-type]
+                "Soft Clip (sigmoid)": SaturationMode.SOFT_SIGMOID,  # type: ignore[arg-type]
+                "Polynomial": SaturationMode.POLYNOMIAL,  # type: ignore[arg-type]
             }
             mode = mode_map.get(
-                self.sat_mode_combo.currentText(),  # type: ignore
+                self.sat_mode_combo.currentText(),  # type: ignore[arg-type]
                 SaturationMode.HARD,  # type: ignore[attr-defined]
             )
 
@@ -465,7 +465,7 @@ class ProcessingMixin:
                 return
 
             # Calculate frequency response
-            w, h = scipy_signal.freqz(spec.b_coeffs, spec.a_coeffs, fs=fs)  # type: ignore
+            w, h = scipy_signal.freqz(spec.b_coeffs, spec.a_coeffs, fs=fs)  # type: ignore[import-untyped]
 
             # Plot on secondary canvas
             self.canvas2.axes.clear()  # type: ignore[attr-defined]

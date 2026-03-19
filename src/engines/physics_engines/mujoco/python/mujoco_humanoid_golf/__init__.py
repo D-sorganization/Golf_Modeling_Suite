@@ -53,7 +53,7 @@ except (ImportError, OSError):
         "ControlSystem",
         "ControlType",
     ):
-        globals()[_name] = None  # type: ignore
+        globals()[_name] = None  # type: ignore[assignment]
 
 # Telemetry
 from .telemetry import TelemetryRecorder, TelemetryReport
