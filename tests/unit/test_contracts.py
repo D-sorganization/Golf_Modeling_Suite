@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 
 from src.shared.python.contracts import (
+    CONTRACTS_ENABLED,
     ContractLevel,
     ContractViolationError,
     check_non_negative,
@@ -16,6 +17,11 @@ from src.shared.python.contracts import (
     require,
     require_positive,
     set_contract_level,
+)
+
+_needs_contracts = pytest.mark.skipif(
+    not CONTRACTS_ENABLED,
+    reason="DBC_LEVEL=off in this environment; enforcement tests are irrelevant",
 )
 
 
@@ -100,6 +106,7 @@ class TestPreconditionDecorator:
 
         assert compute(None, 5) == 10
 
+    @_needs_contracts
     def test_decorator_raises_on_violation(self) -> None:
         @precondition(lambda self, x: x > 0, "x must be positive")
         def compute(self, x):
