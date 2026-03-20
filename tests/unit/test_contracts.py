@@ -25,6 +25,15 @@ _needs_contracts = pytest.mark.skipif(
 )
 
 
+@pytest.fixture(autouse=True)
+def _enforce_contracts():
+    """Force ENFORCE mode so enforcement tests work regardless of DBC_LEVEL env var."""
+    original = get_contract_level()
+    set_contract_level(ContractLevel.ENFORCE)
+    yield
+    set_contract_level(original)
+
+
 class TestRequire:
     def test_passes_when_true(self) -> None:
         require(True, "should pass")  # No exception
