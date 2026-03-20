@@ -109,11 +109,16 @@ class TestPreconditionDecorator:
 
         assert compute(None, 5) == 10
 
-    @_needs_contracts
     def test_decorator_raises_on_violation(self) -> None:
-        @precondition(lambda self, x: x > 0, "x must be positive")
-        def compute(self, x):
-            return x * 2
+        original = get_contract_level()
+        set_contract_level(ContractLevel.ENFORCE)
+        try:
 
-        with pytest.raises((ContractViolationError, AssertionError, ValueError)):
-            compute(None, -1)
+            @precondition(lambda self, x: x > 0, "x must be positive")
+            def compute(self, x):
+                return x * 2
+
+            with pytest.raises((ContractViolationError, AssertionError, ValueError)):
+                compute(None, -1)
+        finally:
+            set_contract_level(original)
