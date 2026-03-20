@@ -5,6 +5,7 @@ This hook is installed by scripts/setup_hooks.py. Using `python -m pytest` inste
 bare `pytest` ensures the correct Python environment's pytest is always used, fixing
 the 'pytest not found' failures on Windows and in virtual environments.
 """
+
 import logging
 import subprocess
 import sys

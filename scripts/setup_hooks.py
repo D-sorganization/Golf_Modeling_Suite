@@ -78,7 +78,10 @@ def install_push_hooks() -> None:
     # Make executable on Unix
     if sys.platform != "win32":
         import stat
-        hook_dst.chmod(hook_dst.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
+
+        hook_dst.chmod(
+            hook_dst.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH
+        )
     logger.info("  pre-push hook installed (uses python -m pytest)")
 
 
