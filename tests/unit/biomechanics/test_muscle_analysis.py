@@ -2,19 +2,18 @@
 
 from __future__ import annotations
 
+import importlib.util
+
 import numpy as np
 import pytest
 
-try:
-    HAVE_SKLEARN = True
-except ImportError:
-    HAVE_SKLEARN = False
+HAVE_SKLEARN = importlib.util.find_spec("sklearn") is not None
 
 pytestmark = pytest.mark.skipif(
     not HAVE_SKLEARN, reason="sklearn not installed/broken (not_installed)"
 )
 
-from src.shared.python.biomechanics.muscle_analysis import (
+from src.shared.python.biomechanics.muscle_analysis import (  # noqa: E402
     MuscleSynergyAnalyzer,
     SynergyResult,
 )
