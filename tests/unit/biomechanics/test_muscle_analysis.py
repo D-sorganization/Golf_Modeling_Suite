@@ -6,7 +6,6 @@ import numpy as np
 import pytest
 
 try:
-    import sklearn
     HAVE_SKLEARN = True
 except ImportError:
     HAVE_SKLEARN = False
