@@ -5,6 +5,16 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+try:
+    import sklearn
+    HAVE_SKLEARN = True
+except ImportError:
+    HAVE_SKLEARN = False
+
+pytestmark = pytest.mark.skipif(
+    not HAVE_SKLEARN, reason="sklearn not installed/broken (not_installed)"
+)
+
 from src.shared.python.biomechanics.muscle_analysis import (
     MuscleSynergyAnalyzer,
     SynergyResult,
