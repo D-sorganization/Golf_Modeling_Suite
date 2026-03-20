@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from src.shared.python.contracts import (
-    CONTRACTS_ENABLED,
+    DBC_LEVEL,
     ContractLevel,
     ContractViolationError,
     check_non_negative,
@@ -20,8 +20,8 @@ from src.shared.python.contracts import (
 )
 
 _needs_contracts = pytest.mark.skipif(
-    not CONTRACTS_ENABLED,
-    reason="DBC_LEVEL=off in this environment; enforcement tests are irrelevant",
+    DBC_LEVEL != ContractLevel.ENFORCE,
+    reason="DBC_LEVEL is not 'enforce'; enforcement tests require ENFORCE mode",
 )
 
 
