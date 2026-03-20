@@ -7,10 +7,8 @@ import importlib.util
 import numpy as np
 import pytest
 
-HAVE_SKLEARN = importlib.util.find_spec("sklearn") is not None
-
-pytestmark = pytest.mark.skipif(
-    not HAVE_SKLEARN, reason="sklearn not installed/broken (not_installed)"
+pytest.importorskip(
+    "sklearn", reason="scikit-learn is required for muscle synergy analysis"
 )
 
 from src.shared.python.biomechanics.muscle_analysis import (  # noqa: E402
