@@ -19,6 +19,7 @@ API Versioning (#1488):
 """
 
 import os
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import Any
 
@@ -99,7 +100,7 @@ active_tasks = TaskManager()
 
 
 @asynccontextmanager
-async def lifespan(fastapi_app: FastAPI):  # type: ignore[type-arg]
+async def lifespan(fastapi_app: FastAPI) -> AsyncGenerator[None, None]:  # type: ignore[type-arg]
     """Manage application lifespan: startup and shutdown.
 
     All services are stored in app.state for proper dependency injection
