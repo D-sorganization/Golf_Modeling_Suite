@@ -232,7 +232,7 @@ if MYOSUITE_AVAILABLE:
             engine = _MyoSuitePhysicsEngine()
             try:
                 engine.load_from_path(model_name)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 pytest.skip(f"Model {model_name} not available: {e}")
 
             # Standard closure test

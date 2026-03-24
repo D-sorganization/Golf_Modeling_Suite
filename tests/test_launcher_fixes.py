@@ -36,7 +36,7 @@ class TestSharedModuleImports(unittest.TestCase):
             self.assertIsNotNone(config_manager)
         except ImportError as e:
             self.fail(f"Failed to import ConfigurationManager: {e}")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             # If instantiation fails due to missing file, that's expected in tests
             self.assertTrue(True, f"ConfigurationManager import successful: {e}")
 

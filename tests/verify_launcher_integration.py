@@ -42,7 +42,7 @@ def verify_launcher_init():
             return False
 
         return True
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"FAILED to initialize launcher: {e}")
         import traceback
 

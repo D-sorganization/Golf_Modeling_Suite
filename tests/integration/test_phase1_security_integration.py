@@ -303,7 +303,7 @@ class TestPhase1SecurityIntegration(unittest.TestCase):
                     timeout=10,
                 )
                 results.append(result.returncode)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 errors.append(e)
 
         # Run multiple subprocesses concurrently

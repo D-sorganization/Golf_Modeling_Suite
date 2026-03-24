@@ -88,7 +88,7 @@ class TestBasicContactPhysics:
         engine = MuJoCoPhysicsEngine()
         try:
             engine.load_from_path(ball_urdf)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             pytest.skip(f"MuJoCo URDF loading failed: {e}")
         _skip_if_mujoco_state_unavailable(engine)
 
@@ -154,7 +154,7 @@ class TestBasicContactPhysics:
         try:
             # We use a mock path or actual loaded path, but ball_urdf is provided
             engine.load_from_path(ball_urdf)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             pytest.skip(f"Pinocchio URDF loading failed/broken: {e}")
 
         # Ensure DbC logic works and it doesn't crash on contact calculation
@@ -187,7 +187,7 @@ class TestCrossEngineContactComparison:
         engine = MuJoCoPhysicsEngine()
         try:
             engine.load_from_path(ball_urdf)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             pytest.skip(f"MuJoCo URDF loading failed: {e}")
         _skip_if_mujoco_state_unavailable(engine)
 

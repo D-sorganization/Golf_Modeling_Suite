@@ -174,7 +174,7 @@ def _init_and_solve_ik(urdf_path, trajectory):
         )
         solver_model = solver.model
         print(f"      Model DOF: {solver_model.nq}")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"      Error loading model: {e}")
         print("      Try running with --plot-only to skip IK")
         return None

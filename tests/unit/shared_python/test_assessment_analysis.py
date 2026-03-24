@@ -43,7 +43,7 @@ ERROR_PYTHON = """\
 def danger():
     try:
         pass
-    except:
+    except Exception as e:  # noqa: BLE001
         pass
     try:
         pass

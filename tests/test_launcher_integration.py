@@ -68,7 +68,7 @@ class TestLauncherIntegration(unittest.TestCase):
             self.assertIsNotNone(config_manager)
             self.assertIsNotNone(engine_manager)
             self.assertIsNotNone(process_worker)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             # If instantiation fails due to missing files, that's expected in tests
             self.assertTrue(True, f"Modules imported successfully: {e}")
 
@@ -96,7 +96,7 @@ class TestLauncherIntegration(unittest.TestCase):
                 else:
                     print(f"[WARN] Engine not found: {expected}")
 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self.fail(f"Engine discovery failed: {e}")
 
     def test_grid_constants(self):
@@ -135,7 +135,7 @@ class TestLauncherIntegration(unittest.TestCase):
 
         except ImportError as e:
             self.skipTest(f"URDF generator not available: {e}")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self.fail(f"URDF generator engine support test failed: {e}")
 
     def test_dockerfile_configuration(self):

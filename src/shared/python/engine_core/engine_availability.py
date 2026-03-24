@@ -112,7 +112,7 @@ def _probe_engine(
     except ImportError as e:
         _engine_status_cache[name] = EngineStatus.NOT_INSTALLED
         _engine_error_cache[name] = e
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         # Any other exception during load means it's broken
         if is_broken_check is None or is_broken_check(e):
             _engine_status_cache[name] = EngineStatus.BROKEN
