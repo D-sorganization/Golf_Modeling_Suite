@@ -165,7 +165,6 @@ if MYOSUITE_AVAILABLE:
                 )
 
                 # Log for inspection (useful for understanding muscle function)
-                print(f"{muscle_name}: a = {a_muscle[0]:.6f} rad/s²")
 
         @pytest.mark.parametrize(
             "activation_level",

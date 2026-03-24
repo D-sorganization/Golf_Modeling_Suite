@@ -128,11 +128,7 @@ class TestBasicContactPhysics:
         )
 
         # Log for cross-engine comparison
-        restitution_effective = np.sqrt(E_final / E_initial)
-        print(f"MuJoCo - Effective restitution: {restitution_effective:.3f}")
-        print(
-            f"MuJoCo - Energy dissipated: {(E_initial - E_final) / E_initial * 100:.1f}%"
-        )
+        np.sqrt(E_final / E_initial)
 
     @pytest.mark.slow
     def test_drake_ball_drop_energy_dissipation(self, ball_urdf):
@@ -215,9 +211,6 @@ class TestCrossEngineContactComparison:
             e_measured = 0.0  # Didn't bounce (full dissipation)
 
         # Log for documentation
-        print(f"Drop height: {drop_height:.2f}m")
-        print(f"Bounce height: {final_height:.4f}m")
-        print(f"Coefficient of restitution (e): {e_measured:.3f}")
 
         # Sanity check: restitution should be between 0 and 1
         assert 0 <= e_measured <= 1, f"Invalid restitution coefficient: {e_measured}"

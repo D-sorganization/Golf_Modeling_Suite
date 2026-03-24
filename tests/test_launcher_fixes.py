@@ -485,7 +485,7 @@ if __name__ == "__main__":
             ]
         )
     else:
-        print("PyQt6 not available - skipping GUI tests")
+        pass
 
     for test_class in test_classes:
         suite.addTests(loader.loadTestsFromTestCase(test_class))
@@ -495,13 +495,6 @@ if __name__ == "__main__":
     result = runner.run(suite)
 
     # Print summary
-    print(f"\n{'=' * 60}")
-    print(f"Tests run: {result.testsRun}")
-    print(f"Failures: {len(result.failures)}")
-    print(f"Errors: {len(result.errors)}")
-    print(
-        f"Success rate: {((result.testsRun - len(result.failures) - len(result.errors)) / result.testsRun * 100):.1f}%"
-    )
 
     if not result.failures and not result.errors:
-        print("\nAll tests passed!")
+        pass
