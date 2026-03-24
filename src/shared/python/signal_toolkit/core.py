@@ -14,7 +14,7 @@ import numpy as np
 try:
     from src.shared.python.contracts import require
 except ImportError:
-    from contracts import require
+    from contracts import require  # type: ignore[no-redef]
 
 
 @dataclass
