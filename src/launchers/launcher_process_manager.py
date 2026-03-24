@@ -109,11 +109,19 @@ class ProcessManager:
         separator = ";" if os.name == "nt" else ":"
         current_paths = existing_path.split(separator) if existing_path else []
 
+        shared_python = str(self.repo_root / "src" / "shared" / "python")
+        mujoco_python = str(
+            self.repo_root / "src" / "engines" / "physics_engines" / "mujoco" / "python"
+        )
+        # Include conda site-packages for opensim/pinocchio if available
+        conda_sp = str(
+            Path.home() / "miniconda3" / "lib" / "python3.10" / "site-packages"
+        )
+
         paths_to_add = []
-        if repo_root_str not in current_paths:
-            paths_to_add.append(repo_root_str)
-        if src_dir not in current_paths:
-            paths_to_add.append(src_dir)
+        for p in [repo_root_str, src_dir, shared_python, mujoco_python, conda_sp]:
+            if p not in current_paths and Path(p).exists():
+                paths_to_add.append(p)
 
         if paths_to_add:
             new_paths = separator.join(paths_to_add)
