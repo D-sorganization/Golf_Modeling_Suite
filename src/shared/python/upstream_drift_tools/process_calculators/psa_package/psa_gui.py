@@ -5,10 +5,10 @@ This GUI provides interactive visualization and analysis of PSA system
 performance, including sensitivity analysis and O2 safety calculations.
 """
 
-import os
 import subprocess
 import sys
 import webbrowser
+from pathlib import Path
 
 import matplotlib
 import numpy as np
@@ -850,10 +850,10 @@ class PSAMainWindow(QMainWindow):
 
     def _launch_jupyter(self) -> None:
         """Launch the Jupyter notebook."""
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        notebook_path = os.path.join(script_dir, "psa_analysis.ipynb")
+        script_dir = Path(__file__).resolve().parent
+        notebook_path = script_dir / "psa_analysis.ipynb"
 
-        if os.path.exists(notebook_path):
+        if notebook_path.exists():
             try:
                 if sys.platform == "win32":
                     subprocess.Popen(
@@ -878,8 +878,8 @@ class PSAMainWindow(QMainWindow):
 
     def _launch_colab(self) -> None:
         """Open the Colab-compatible notebook in Google Colab."""
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        local_notebook = os.path.join(script_dir, "psa_analysis_colab.ipynb")
+        script_dir = Path(__file__).resolve().parent
+        local_notebook = script_dir / "psa_analysis_colab.ipynb"
 
         msg = QMessageBox(self)
         msg.setWindowTitle("Open in Google Colab")
@@ -901,10 +901,10 @@ class PSAMainWindow(QMainWindow):
 
     def _launch_webapp(self) -> None:
         """Launch the Streamlit web app."""
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        webapp_path = os.path.join(script_dir, "psa_webapp.py")
+        script_dir = Path(__file__).resolve().parent
+        webapp_path = script_dir / "psa_webapp.py"
 
-        if os.path.exists(webapp_path):
+        if webapp_path.exists():
             try:
                 if sys.platform == "win32":
                     subprocess.Popen(
