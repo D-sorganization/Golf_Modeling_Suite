@@ -20,13 +20,6 @@ from __future__ import annotations
 
 import os
 
-from src.shared.python.config.environment import (
-    get_api_host as _get_api_host,
-)
-from src.shared.python.config.environment import (
-    get_api_port as _get_api_port,
-)
-
 MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024
 MAX_UPLOAD_SIZE_MB = MAX_UPLOAD_SIZE_BYTES // (1024 * 1024)
 
@@ -72,8 +65,11 @@ def get_cors_origins() -> list[str]:
 
 
 # Server configuration
-# Canonical env vars: GOLF_API_HOST (falls back to API_HOST) and GOLF_API_PORT.
-# These constants are kept for reference; the accessors delegate to environment.py.
+# NOTE: These functions read API_HOST / API_PORT (legacy env var names).
+# The canonical env vars defined in src.shared.python.config.environment are
+# GOLF_API_HOST and GOLF_API_PORT.  A future cleanup task should migrate callers
+# to the shared accessors (get_api_host / get_api_port) and retire API_HOST /
+# API_PORT -- see issue #2068.
 DEFAULT_SERVER_HOST = "127.0.0.1"
 DEFAULT_SERVER_PORT = 8000
 
@@ -81,22 +77,32 @@ DEFAULT_SERVER_PORT = 8000
 def get_server_host() -> str:
     """Get server host from environment or default.
 
-    Delegates to ``src.shared.python.config.environment.get_api_host``.
-    Canonical env var: ``GOLF_API_HOST`` (default: ``127.0.0.1``).
+    Environment Variable:
+        API_HOST: Server bind address (default: 127.0.0.1)
 
     Returns:
         Server host address.
     """
-    return _get_api_host(default=DEFAULT_SERVER_HOST)
+    return os.getenv("API_HOST", DEFAULT_SERVER_HOST)
 
 
 def get_server_port() -> int:
     """Get server port from environment or default.
 
-    Delegates to ``src.shared.python.config.environment.get_api_port``.
-    Canonical env var: ``GOLF_API_PORT`` (default: ``8000``).
+    Environment Variable:
+        API_PORT: Server port (default: 8000)
 
     Returns:
         Server port number.
+
+    Raises:
+        ValueError: If API_PORT is not a valid integer or out of range.
     """
-    return _get_api_port(default=DEFAULT_SERVER_PORT)
+    port_str = os.getenv("API_PORT", str(DEFAULT_SERVER_PORT))
+    try:
+        port = int(port_str)
+        if not (1 <= port <= 65535):
+            raise ValueError(f"Invalid API_PORT value: {port_str!r}")
+        return port
+    except ValueError as e:
+        raise ValueError(f"Invalid API_PORT value: {port_str!r}") from e
