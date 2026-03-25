@@ -26,9 +26,11 @@ if database_url:
     config.set_main_option("sqlalchemy.url", database_url)
 
 # Interpret the config file for Python logging.
-# This line sets up loggers — if alembic.ini contains a [loggers] section.
+# Pass disable_existing_loggers=False so that pytest caplog handlers and other
+# loggers already configured by the test runner (or application startup) are
+# not silenced when Alembic runs migrations inside the test suite.
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 # Metadata object for autogenerate support (detects new/removed tables and columns).
 target_metadata = Base.metadata
