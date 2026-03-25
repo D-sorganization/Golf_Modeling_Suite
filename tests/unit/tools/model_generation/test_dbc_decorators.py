@@ -16,7 +16,7 @@ import pytest
 # Ensure contracts are enforced during testing
 os.environ["DBC_LEVEL"] = "enforce"
 
-from model_generation.core.contracts import ContractViolationError  # noqa: E402
+from src.shared.python.contracts import ContractViolationError  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Sample URDF fixtures
