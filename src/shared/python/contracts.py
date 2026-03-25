@@ -47,6 +47,7 @@ import functools
 import inspect
 import logging
 import os
+import sys
 from collections.abc import Callable
 from typing import Any, TypeVar, cast
 
@@ -665,13 +666,7 @@ def has_finite_elements(array: Any) -> bool:
 # The dual-loading creates two distinct class objects, breaking isinstance()
 # checks in pytest.raises() calls. Register all known alternate module names
 # to point to THIS module object, preventing class identity mismatches.
-import sys as _sys  # noqa: E402
-
-_this_module = _sys.modules[__name__]
+_this_module = sys.modules[__name__]
 for _alias in ("contracts", "shared.python.contracts", "src.shared.python.contracts"):
-    if _alias not in _sys.modules:
-        _sys.modules[_alias] = _this_module
-    elif _sys.modules[_alias] is not _this_module:
-        # If already loaded under a different identity, normalize to this one
-        _sys.modules[_alias] = _this_module
-del _sys, _this_module, _alias
+    sys.modules[_alias] = _this_module
+del _this_module, _alias
