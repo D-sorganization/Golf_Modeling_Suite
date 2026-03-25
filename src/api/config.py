@@ -1,8 +1,31 @@
-"""API configuration defaults and environment overrides."""
+"""API configuration defaults and environment overrides.
+
+Configuration precedence (highest to lowest):
+  1. Environment variables (ALLOWED_HOSTS, CORS_ORIGINS, API_HOST, API_PORT)
+  2. Defaults defined in this module
+
+For server host/port the canonical accessors live in
+``src.shared.python.config.environment`` (``get_api_host``, ``get_api_port``).
+This module re-exports them for backward compatibility with existing callers
+in ``src/api/server.py``.
+
+See also:
+  - ``src/config/interim_config.yaml`` -- YAML defaults for CORS origins,
+    trusted hosts, rate-limiting (not loaded at runtime; documents intent)
+  - ``src/shared/python/config/environment.py`` -- canonical env-var accessors
+  - ``src/shared/python/security/env_validator.py`` -- startup validator
+"""
 
 from __future__ import annotations
 
 import os
+
+from src.shared.python.config.environment import (
+    get_api_host as _get_api_host,
+)
+from src.shared.python.config.environment import (
+    get_api_port as _get_api_port,
+)
 
 MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024
 MAX_UPLOAD_SIZE_MB = MAX_UPLOAD_SIZE_BYTES // (1024 * 1024)
@@ -49,6 +72,8 @@ def get_cors_origins() -> list[str]:
 
 
 # Server configuration
+# Canonical env vars: GOLF_API_HOST (falls back to API_HOST) and GOLF_API_PORT.
+# These constants are kept for reference; the accessors delegate to environment.py.
 DEFAULT_SERVER_HOST = "127.0.0.1"
 DEFAULT_SERVER_PORT = 8000
 
@@ -56,32 +81,22 @@ DEFAULT_SERVER_PORT = 8000
 def get_server_host() -> str:
     """Get server host from environment or default.
 
-    Environment Variable:
-        API_HOST: Server bind address (default: 127.0.0.1)
+    Delegates to ``src.shared.python.config.environment.get_api_host``.
+    Canonical env var: ``GOLF_API_HOST`` (default: ``127.0.0.1``).
 
     Returns:
         Server host address.
     """
-    return os.getenv("API_HOST", DEFAULT_SERVER_HOST)
+    return _get_api_host(default=DEFAULT_SERVER_HOST)
 
 
 def get_server_port() -> int:
     """Get server port from environment or default.
 
-    Environment Variable:
-        API_PORT: Server port (default: 8000)
+    Delegates to ``src.shared.python.config.environment.get_api_port``.
+    Canonical env var: ``GOLF_API_PORT`` (default: ``8000``).
 
     Returns:
         Server port number.
-
-    Raises:
-        ValueError: If API_PORT is not a valid integer.
     """
-    port_str = os.getenv("API_PORT", str(DEFAULT_SERVER_PORT))
-    try:
-        port = int(port_str)
-        if not (1 <= port <= 65535):
-            raise ValueError(f"Port must be between 1 and 65535, got {port}")
-        return port
-    except ValueError as e:
-        raise ValueError(f"Invalid API_PORT value: {port_str!r}") from e
+    return _get_api_port(default=DEFAULT_SERVER_PORT)
