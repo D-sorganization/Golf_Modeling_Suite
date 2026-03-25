@@ -299,12 +299,12 @@ class ProcessingMixin(_Base):
             return
 
         diff = Differentiator()
-        self.derivative_signal = diff.differentiate(
+        derivative = diff.differentiate(
             self.current_signal,
             order=self.diff_order.value(),
         )
-
-        self._update_secondary_plot(self.derivative_signal, "Derivative")
+        self.derivative_signal = derivative
+        self._update_secondary_plot(derivative, "Derivative")
 
     def _show_integral(self) -> None:
         """Show the integral of the current signal."""
@@ -318,10 +318,12 @@ class ProcessingMixin(_Base):
             upper_bound=self.int_upper.value(),
         )
 
-        self.integral_signal = result.cumulative_signal
+        integral = result.cumulative_signal
+        self.integral_signal = integral
         self.integral_value_label.setText(f"Integral: {result.value:.4f}")
 
-        self._update_secondary_plot(self.integral_signal, "Integral")
+        if integral is not None:
+            self._update_secondary_plot(integral, "Integral")
 
     def _update_tangent_position(self, value: int) -> None:
         """Update tangent line position from slider."""
