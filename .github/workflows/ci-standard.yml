@@ -55,9 +55,11 @@ jobs:
       - run: pip install -e .[dev]
       # Baseline mypy check across all of src/
       - run: mypy src --config-file pyproject.toml
-      # Strict mypy for the fully-annotated API layer (issue #2105)
+      # Strict mypy for the fully-annotated API layer (issue #2105).
+      # --follow-imports=silent applies strict rules only to src/api/ files,
+      # not to their transitive dependencies (which have pre-existing issues).
       - name: MyPy Strict (src/api)
-        run: mypy src/api --strict --config-file pyproject.toml
+        run: mypy src/api --strict --follow-imports=silent --config-file pyproject.toml
 
       - name: Dependency Direction Fitness Check
         run: python3 scripts/check_dependency_direction.py
