@@ -767,8 +767,8 @@ class MeshLoader:
                     raise MeshLoadError("No meshes found in FBX", str(path))
                 mesh = meshes[0]
 
-            if not (isinstance(mesh):
-                raise ValueError(trimesh.Trimesh))
+            if not isinstance(mesh, trimesh.Trimesh):
+                raise ValueError(f"Expected trimesh.Trimesh, got {type(mesh).__name__}")
             vertices = [
                 MeshVertex(position=mesh.vertices[i]) for i in range(len(mesh.vertices))
             ]
@@ -807,8 +807,8 @@ class MeshLoader:
                     raise MeshLoadError("No meshes found in COLLADA", str(path))
                 mesh = meshes[0]
 
-            if not (isinstance(mesh):
-                raise ValueError(trimesh.Trimesh))
+            if not isinstance(mesh, trimesh.Trimesh):
+                raise ValueError(f"Expected trimesh.Trimesh, got {type(mesh).__name__}")
             vertices = [
                 MeshVertex(position=mesh.vertices[i]) for i in range(len(mesh.vertices))
             ]
@@ -839,8 +839,8 @@ class MeshLoader:
             import trimesh
 
             mesh = trimesh.load(str(path))
-            if not (isinstance(mesh):
-                raise ValueError(trimesh.Trimesh))
+            if not isinstance(mesh, trimesh.Trimesh):
+                raise ValueError(f"Expected trimesh.Trimesh, got {type(mesh).__name__}")
 
             vertices = [
                 MeshVertex(position=mesh.vertices[i]) for i in range(len(mesh.vertices))
