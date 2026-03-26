@@ -1,25 +1,25 @@
 # Completist Report: 2026-03-26
 
 ## Executive Summary
-- **Critical Gaps**: 328
-- **Feature Gaps (TODO)**: 44
+- **Critical Gaps**: 349
+- **Feature Gaps (TODO)**: 36
 - **Technical Debt**: 18
-- **Documentation Gaps**: 281
+- **Documentation Gaps**: 280
 
 ## Visualization
 ### Status Overview
 ```mermaid
 pie title Completion Status
-    "Impl Gaps (Critical)" : 328
-    "Feature Requests (TODO)" : 44
+    "Impl Gaps (Critical)" : 349
+    "Feature Requests (TODO)" : 36
     "Technical Debt (FIXME)" : 18
-    "Doc Gaps" : 281
+    "Doc Gaps" : 280
 ```
 
 ### Top Impacted Modules
 ```mermaid
 pie title Issues by Module
-    "src" : 353
+    "src" : 365
     "shared" : 14
     "scripts" : 11
     "tests" : 10
@@ -29,22 +29,22 @@ pie title Issues by Module
 ## Critical Incomplete (Top 50)
 | File | Line | Type | Impact | Coverage | Complexity |
 |---|---|---|---|---|---|
-| `./src/api/auth/security.py` | 330 | Stub | 5 | 2 | 4 |
+| `./src/api/auth/security.py` | 328 | Stub | 5 | 2 | 4 |
 | `./src/shared/python/physics/topography.py` | 92 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/physics/topography.py` | 103 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/physics/topography.py` | 115 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/physics/terrain_mixin.py` | 35 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/physics/flexible_shaft.py` | 303 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/physics/flexible_shaft.py` | 307 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/physics/flexible_shaft.py` | 311 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/physics/flexible_shaft.py` | 320 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/physics/flexible_shaft.py` | 350 | Stub | 5 | 3 | 4 |
+| `./src/shared/python/physics/flexible_shaft.py` | 318 | Stub | 5 | 3 | 4 |
+| `./src/shared/python/physics/flexible_shaft.py` | 322 | Stub | 5 | 3 | 4 |
+| `./src/shared/python/physics/flexible_shaft.py` | 326 | Stub | 5 | 3 | 4 |
+| `./src/shared/python/physics/flexible_shaft.py` | 335 | Stub | 5 | 3 | 4 |
+| `./src/shared/python/physics/flexible_shaft.py` | 365 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/physics/flight_models.py` | 162 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/physics/flight_models.py` | 168 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/physics/flight_models.py` | 174 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/physics/flight_models.py` | 179 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/physics/terrain_engine.py` | 43 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/physics/impact_model.py` | 144 | Stub | 5 | 3 | 4 |
+| `./src/shared/python/physics/impact_model.py` | 135 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/pendulum_simulator/perturbation_analysis.py` | 32 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/pendulum_simulator/perturbation_analysis.py` | 38 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/pendulum_simulator/gui/controls_widget_base.py` | 418 | Stub | 5 | 3 | 4 |
@@ -52,9 +52,9 @@ pie title Issues by Module
 | `./src/shared/python/pendulum_simulator/gui/controls_widget_base.py` | 438 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/pendulum_simulator/gui/controls_widget_base.py` | 448 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/pendulum_simulator/gui/controls_widget_base.py` | 479 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/pendulum_simulator/gui/simulation_panel.py` | 83 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/pendulum_simulator/gui/simulation_panel.py` | 84 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/pendulum_simulator/gui/simulation_panel.py` | 85 | Stub | 5 | 3 | 4 |
+| `./src/shared/python/pendulum_simulator/gui/simulation_panel.py` | 86 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/pendulum_simulator/gui/matrix_widget_base.py` | 144 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/pendulum_simulator/gui/matrix_widget_base.py` | 154 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/pendulum_simulator/gui/matrix_widget_base.py` | 169 | Stub | 5 | 3 | 4 |
@@ -77,21 +77,12 @@ pie title Issues by Module
 | `./src/shared/python/model_generation/editor/editor_modifications.py` | 51 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/model_generation/editor/editor_modifications.py` | 53 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/model_generation/editor/editor_modifications.py` | 55 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/model_generation/builders/base_builder.py` | 190 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/model_generation/builders/base_builder.py` | 200 | Stub | 5 | 3 | 4 |
+| `./src/shared/python/model_generation/builders/base_builder.py` | 191 | Stub | 5 | 3 | 4 |
+| `./src/shared/python/model_generation/builders/base_builder.py` | 201 | Stub | 5 | 3 | 4 |
 
 ## Feature Gap Matrix
 | Module | Feature Gap | Type |
 |---|---|---|
-| `./src/shared/models/opensim/opensim-models/Tutorials/Building_a_Passive_Dynamic_Walker/DynamicWalkerBuild/DynamicWalkerBuildModelStudent.cpp` | // TODO: Add Code to Begin Model here | TODO |
-| `./src/shared/models/opensim/opensim-models/Tutorials/Building_a_Passive_Dynamic_Walker/DynamicWalkerBuild/DynamicWalkerBuildModelStudent.cpp` | // TODO: Set the coordinate properties | TODO |
-| `./src/shared/models/opensim/opensim-models/Tutorials/Building_a_Passive_Dynamic_Walker/skeleton.cpp` | // TODO: Add Code to Begin Model here | TODO |
-| `./src/shared/models/opensim/opensim-models/Tutorials/Building_a_Passive_Dynamic_Walker/DynamicWalkerBuildModel.cpp` | // Section A.1 TODO: Create the Pelvis and set the coordinate | TODO |
-| `./src/shared/models/opensim/opensim-models/Tutorials/Building_a_Passive_Dynamic_Walker/DynamicWalkerBuildModel.cpp` | // Section A.2 TODO: Create the LeftThigh, LeftShank, RightThigh and | TODO |
-| `./src/shared/models/opensim/opensim-models/Tutorials/Building_a_Passive_Dynamic_Walker/DynamicWalkerBuildModel.cpp` | // Section B.1 TODO: Add ContactSphere to the left hip, the knee, | TODO |
-| `./src/shared/models/opensim/opensim-models/Tutorials/Building_a_Passive_Dynamic_Walker/DynamicWalkerBuildModel.cpp` | // Section B.2 TODO: Add HuntCrossleyForces | TODO |
-| `./src/shared/models/opensim/opensim-models/Tutorials/Building_a_Passive_Dynamic_Walker/DynamicWalkerBuildModel.cpp` | // Section B.2 TODO: Add HuntCrossleyForces betweeen the remaining | TODO |
-| `./src/shared/models/opensim/opensim-models/Tutorials/Building_a_Passive_Dynamic_Walker/DynamicWalkerBuildModel.cpp` | // Section C.1 TODO: Construct CoordinateLimitForces for the Hip and | TODO |
 | `./src/shared/models/opensim/opensim-models/CMakeLists.txt` | RENAME run_forward.xml) # TODO inconsistent filename; which should we use? | TODO |
 | `./src/shared/models/opensim/opensim-models/CMakeLists.txt` | # TODO subject01_metabolics* files? | TODO |
 | `./src/shared/models/opensim/opensim-models/CMakeLists.txt` | # TODO should we copy over the OutputReference folder? | TODO |
@@ -122,6 +113,7 @@ pie title Issues by Module
 | `./scripts/pragmatic_programmer_review.py` | """Report high TODO counts as a technical debt indicator.""" | TODO |
 | `./scripts/pragmatic_programmer_review.py` | if "TODO" in content: | TODO |
 | `./scripts/pragmatic_programmer_review.py` | "title": f"High TODO count ({len(todos)})", | TODO |
+| `./CLAUDE.md` | 5. No TODO/FIXME unless tied to a tracked GitHub issue | TODO |
 | `./tests/tools/test_code_quality_check.py` | lines = ["# TODO: fix this", "def test():", "    ...  ", "    pass"] | TODO |
 | `./tests/tools/test_code_quality_check.py` | assert any("TODO placeholder" in t for t in types) | TODO |
 | `./tests/tools/test_code_quality_check.py` | lines = ["# TODO: internal marker"] | TODO |
@@ -176,53 +168,53 @@ Prioritized by Impact (High) and Complexity (Low).
 | 20 | `./src/shared/python/physics/impact_model.py` | solve | 5/3/4 |
 
 ## Issues Created
-- Created `docs/assessments/issues/Issue_2027_Incomplete_Stub_in_security_py_330.md`
+- Created `docs/assessments/issues/Issue_2144_Incomplete_Stub_in_security_py_328.md`
 - Created `docs/assessments/issues/Issue_2028_Incomplete_Stub_in_topography_py_92.md`
 - Created `docs/assessments/issues/Issue_2029_Incomplete_Stub_in_topography_py_103.md`
 - Created `docs/assessments/issues/Issue_2030_Incomplete_Stub_in_topography_py_115.md`
 - Created `docs/assessments/issues/Issue_2031_Incomplete_Stub_in_terrain_mixin_py_35.md`
-- Created `docs/assessments/issues/Issue_2032_Incomplete_Stub_in_flexible_shaft_py_303.md`
-- Created `docs/assessments/issues/Issue_2033_Incomplete_Stub_in_flexible_shaft_py_307.md`
-- Created `docs/assessments/issues/Issue_2034_Incomplete_Stub_in_flexible_shaft_py_311.md`
-- Created `docs/assessments/issues/Issue_2035_Incomplete_Stub_in_flexible_shaft_py_320.md`
-- Created `docs/assessments/issues/Issue_2036_Incomplete_Stub_in_flexible_shaft_py_350.md`
-- Created `docs/assessments/issues/Issue_2037_Incomplete_Stub_in_flight_models_py_162.md`
-- Created `docs/assessments/issues/Issue_2038_Incomplete_Stub_in_flight_models_py_168.md`
-- Created `docs/assessments/issues/Issue_2039_Incomplete_Stub_in_flight_models_py_174.md`
-- Created `docs/assessments/issues/Issue_2040_Incomplete_Stub_in_flight_models_py_179.md`
+- Created `docs/assessments/issues/Issue_2149_Incomplete_Stub_in_flexible_shaft_py_318.md`
+- Created `docs/assessments/issues/Issue_2150_Incomplete_Stub_in_flexible_shaft_py_322.md`
+- Created `docs/assessments/issues/Issue_2151_Incomplete_Stub_in_flexible_shaft_py_326.md`
+- Created `docs/assessments/issues/Issue_2152_Incomplete_Stub_in_flexible_shaft_py_335.md`
+- Created `docs/assessments/issues/Issue_2153_Incomplete_Stub_in_flexible_shaft_py_365.md`
+- Created `docs/assessments/issues/Issue_2088_Incomplete_Stub_in_flight_models_py_162.md`
+- Created `docs/assessments/issues/Issue_2089_Incomplete_Stub_in_flight_models_py_168.md`
+- Created `docs/assessments/issues/Issue_2090_Incomplete_Stub_in_flight_models_py_174.md`
+- Created `docs/assessments/issues/Issue_2091_Incomplete_Stub_in_flight_models_py_179.md`
 - Created `docs/assessments/issues/Issue_2041_Incomplete_Stub_in_terrain_engine_py_43.md`
-- Created `docs/assessments/issues/Issue_2042_Incomplete_Stub_in_impact_model_py_144.md`
-- Created `docs/assessments/issues/Issue_2043_Incomplete_Stub_in_perturbation_analysis_py_32.md`
-- Created `docs/assessments/issues/Issue_2044_Incomplete_Stub_in_perturbation_analysis_py_38.md`
-- Created `docs/assessments/issues/Issue_2045_Incomplete_Stub_in_controls_widget_base_py_418.md`
-- Created `docs/assessments/issues/Issue_2046_Incomplete_Stub_in_controls_widget_base_py_428.md`
-- Created `docs/assessments/issues/Issue_2047_Incomplete_Stub_in_controls_widget_base_py_438.md`
-- Created `docs/assessments/issues/Issue_2048_Incomplete_Stub_in_controls_widget_base_py_448.md`
-- Created `docs/assessments/issues/Issue_2049_Incomplete_Stub_in_controls_widget_base_py_479.md`
-- Created `docs/assessments/issues/Issue_2050_Incomplete_Stub_in_simulation_panel_py_83.md`
-- Created `docs/assessments/issues/Issue_2051_Incomplete_Stub_in_simulation_panel_py_84.md`
-- Created `docs/assessments/issues/Issue_2052_Incomplete_Stub_in_simulation_panel_py_85.md`
-- Created `docs/assessments/issues/Issue_2053_Incomplete_Stub_in_matrix_widget_base_py_144.md`
-- Created `docs/assessments/issues/Issue_2054_Incomplete_Stub_in_matrix_widget_base_py_154.md`
-- Created `docs/assessments/issues/Issue_2055_Incomplete_Stub_in_matrix_widget_base_py_169.md`
-- Created `docs/assessments/issues/Issue_2056_Incomplete_Stub_in_matrix_widget_base_py_179.md`
-- Created `docs/assessments/issues/Issue_2057_Incomplete_Stub_in_base_pendulum_widget_py_111.md`
-- Created `docs/assessments/issues/Issue_2058_Incomplete_Stub_in_base_pendulum_widget_py_116.md`
-- Created `docs/assessments/issues/Issue_2059_Incomplete_Stub_in_base_pendulum_widget_py_121.md`
-- Created `docs/assessments/issues/Issue_2060_Incomplete_Stub_in_base_pendulum_widget_py_126.md`
-- Created `docs/assessments/issues/Issue_2061_Incomplete_Stub_in_base_pendulum_widget_py_131.md`
-- Created `docs/assessments/issues/Issue_2062_Incomplete_Stub_in___init___py_21.md`
-- Created `docs/assessments/issues/Issue_2063_Incomplete_Stub_in___init___py_27.md`
-- Created `docs/assessments/issues/Issue_2064_Incomplete_Stub_in___init___py_32.md`
-- Created `docs/assessments/issues/Issue_2065_Incomplete_Stub_in___init___py_36.md`
-- Created `docs/assessments/issues/Issue_2066_Incomplete_Stub_in_repository_py_44.md`
-- Created `docs/assessments/issues/Issue_2067_Incomplete_Stub_in_repository_py_50.md`
-- Created `docs/assessments/issues/Issue_2068_Incomplete_Stub_in_repository_py_55.md`
-- Created `docs/assessments/issues/Issue_2069_Incomplete_Stub_in_repository_py_60.md`
-- Created `docs/assessments/issues/Issue_2070_Incomplete_Stub_in_editor_clipboard_py_41.md`
-- Created `docs/assessments/issues/Issue_2071_Incomplete_Stub_in_editor_modifications_py_49.md`
-- Created `docs/assessments/issues/Issue_2072_Incomplete_Stub_in_editor_modifications_py_51.md`
-- Created `docs/assessments/issues/Issue_2073_Incomplete_Stub_in_editor_modifications_py_53.md`
-- Created `docs/assessments/issues/Issue_2074_Incomplete_Stub_in_editor_modifications_py_55.md`
-- Created `docs/assessments/issues/Issue_2075_Incomplete_Stub_in_base_builder_py_190.md`
-- Created `docs/assessments/issues/Issue_2076_Incomplete_Stub_in_base_builder_py_200.md`
+- Created `docs/assessments/issues/Issue_2159_Incomplete_Stub_in_impact_model_py_135.md`
+- Created `docs/assessments/issues/Issue_2125_Incomplete_Stub_in_perturbation_analysis_py_32.md`
+- Created `docs/assessments/issues/Issue_2126_Incomplete_Stub_in_perturbation_analysis_py_38.md`
+- Created `docs/assessments/issues/Issue_2127_Incomplete_Stub_in_controls_widget_base_py_418.md`
+- Created `docs/assessments/issues/Issue_2128_Incomplete_Stub_in_controls_widget_base_py_428.md`
+- Created `docs/assessments/issues/Issue_2129_Incomplete_Stub_in_controls_widget_base_py_438.md`
+- Created `docs/assessments/issues/Issue_2130_Incomplete_Stub_in_controls_widget_base_py_448.md`
+- Created `docs/assessments/issues/Issue_2131_Incomplete_Stub_in_controls_widget_base_py_479.md`
+- Created `docs/assessments/issues/Issue_2133_Incomplete_Stub_in_simulation_panel_py_84.md`
+- Created `docs/assessments/issues/Issue_2134_Incomplete_Stub_in_simulation_panel_py_85.md`
+- Created `docs/assessments/issues/Issue_2169_Incomplete_Stub_in_simulation_panel_py_86.md`
+- Created `docs/assessments/issues/Issue_2135_Incomplete_Stub_in_matrix_widget_base_py_144.md`
+- Created `docs/assessments/issues/Issue_2136_Incomplete_Stub_in_matrix_widget_base_py_154.md`
+- Created `docs/assessments/issues/Issue_2137_Incomplete_Stub_in_matrix_widget_base_py_169.md`
+- Created `docs/assessments/issues/Issue_2138_Incomplete_Stub_in_matrix_widget_base_py_179.md`
+- Created `docs/assessments/issues/Issue_2139_Incomplete_Stub_in_base_pendulum_widget_py_111.md`
+- Created `docs/assessments/issues/Issue_2140_Incomplete_Stub_in_base_pendulum_widget_py_116.md`
+- Created `docs/assessments/issues/Issue_2141_Incomplete_Stub_in_base_pendulum_widget_py_121.md`
+- Created `docs/assessments/issues/Issue_2142_Incomplete_Stub_in_base_pendulum_widget_py_126.md`
+- Created `docs/assessments/issues/Issue_2143_Incomplete_Stub_in_base_pendulum_widget_py_131.md`
+- Created `docs/assessments/issues/Issue_2043_Incomplete_Stub_in___init___py_21.md`
+- Created `docs/assessments/issues/Issue_2044_Incomplete_Stub_in___init___py_27.md`
+- Created `docs/assessments/issues/Issue_2045_Incomplete_Stub_in___init___py_32.md`
+- Created `docs/assessments/issues/Issue_2046_Incomplete_Stub_in___init___py_36.md`
+- Created `docs/assessments/issues/Issue_2047_Incomplete_Stub_in_repository_py_44.md`
+- Created `docs/assessments/issues/Issue_2048_Incomplete_Stub_in_repository_py_50.md`
+- Created `docs/assessments/issues/Issue_2049_Incomplete_Stub_in_repository_py_55.md`
+- Created `docs/assessments/issues/Issue_2050_Incomplete_Stub_in_repository_py_60.md`
+- Created `docs/assessments/issues/Issue_2051_Incomplete_Stub_in_editor_clipboard_py_41.md`
+- Created `docs/assessments/issues/Issue_2052_Incomplete_Stub_in_editor_modifications_py_49.md`
+- Created `docs/assessments/issues/Issue_2053_Incomplete_Stub_in_editor_modifications_py_51.md`
+- Created `docs/assessments/issues/Issue_2054_Incomplete_Stub_in_editor_modifications_py_53.md`
+- Created `docs/assessments/issues/Issue_2055_Incomplete_Stub_in_editor_modifications_py_55.md`
+- Created `docs/assessments/issues/Issue_2192_Incomplete_Stub_in_base_builder_py_191.md`
+- Created `docs/assessments/issues/Issue_2193_Incomplete_Stub_in_base_builder_py_201.md`
