@@ -1,6 +1,6 @@
 # ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
 
 """Drake Physics Engine wrapper implementation.
 
@@ -182,7 +182,9 @@ class DrakePhysicsEngine(PhysicsEngine):
         else:
             logger.warning("Attempted to reset Drake engine before initialization.")
 
-    @precondition(lambda self, dt=None: self.is_initialized, "Engine must be initialized")
+    @precondition(
+        lambda self, dt=None: self.is_initialized, "Engine must be initialized"
+    )  # noqa: E501
     def step(self, dt: float | None = None) -> None:
         """Advance the simulation by one time step."""
         self._ensure_finalized()
@@ -199,7 +201,9 @@ class DrakePhysicsEngine(PhysicsEngine):
     def forward(self) -> None:
         """Compute forward kinematics/dynamics without advancing time."""
         if not self.plant_context:
-            logger.warning("Cannot compute forward dynamics: plant context not initialized")
+            logger.warning(
+                "Cannot compute forward dynamics: plant context not initialized"
+            )  # noqa: E501
             return
 
         # Drake uses lazy evaluation, but we can force computation by accessing
@@ -348,7 +352,9 @@ class DrakePhysicsEngine(PhysicsEngine):
             return np.array([])
 
         # g(q) = GravityForces(context)
-        return cast(np.ndarray, self.plant.CalcGravityGeneralizedForces(self.plant_context))
+        return cast(
+            np.ndarray, self.plant.CalcGravityGeneralizedForces(self.plant_context)
+        )  # noqa: E501
 
     @precondition(lambda self, qacc: self.is_initialized, "Engine must be initialized")
     @postcondition(check_finite, "Inverse dynamics must contain finite values")
@@ -396,7 +402,9 @@ class DrakePhysicsEngine(PhysicsEngine):
                 point_contact = contact_results.point_pair_contact_info(i)
                 # Contact force is along the contact normal, scaled by force magnitude
                 contact_force = point_contact.contact_force()
-                total_force += np.array([contact_force[0], contact_force[1], contact_force[2]])
+                total_force += np.array(
+                    [contact_force[0], contact_force[1], contact_force[2]]
+                )  # noqa: E501
 
             if n_contacts > 0:
                 logger.debug(

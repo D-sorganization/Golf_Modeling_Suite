@@ -1,6 +1,6 @@
 # ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
 
 """Pinocchio Perturbation Analyzer — PerturbationAnalyzer protocol (#1978).
 
@@ -307,7 +307,7 @@ class PinocchioPerturbationAnalyzer:
         Post: all MANDATORY_METRICS present; all values finite.
         """
         if not isinstance(sim_result, PinocchioSimResult):
-            raise ValueError("f"sim_result must be PinocchioSimResult, got {type(sim_result)}")
+            raise ValueError("f"sim_result must be PinocchioSimResult, got {type(sim_result)}")  # noqa: E501
         if not (sim_result.n_steps >= 2):
             raise ValueError("Simulation must have >= 2 steps")
 

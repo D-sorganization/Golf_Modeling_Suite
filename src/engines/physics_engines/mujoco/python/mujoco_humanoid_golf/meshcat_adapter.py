@@ -86,7 +86,9 @@ class MuJoCoMeshcatAdapter:
             rgba = model.geom_rgba[i]
 
             # Material/Color
-            material = g.MeshPhongMaterial(color=self._rgba_to_hex(rgba), opacity=rgba[3])
+            material = g.MeshPhongMaterial(
+                color=self._rgba_to_hex(rgba), opacity=rgba[3]
+            )  # noqa: E501
 
             shape = None
 
@@ -214,10 +216,14 @@ class MuJoCoMeshcatAdapter:
             pos = data.xpos[i]
 
             if show_force and np.linalg.norm(f) > 1e-3:
-                self._draw_arrow(f"overlays/forces/{body_name}", pos, f * force_scale, 0xFF0000)
+                self._draw_arrow(
+                    f"overlays/forces/{body_name}", pos, f * force_scale, 0xFF0000
+                )  # noqa: E501
 
             if show_torque and np.linalg.norm(t) > 1e-3:
-                self._draw_arrow(f"overlays/torques/{body_name}", pos, t * torque_scale, 0x0000FF)
+                self._draw_arrow(
+                    f"overlays/torques/{body_name}", pos, t * torque_scale, 0x0000FF
+                )  # noqa: E501
 
     def draw_induced_vectors(
         self,
@@ -284,7 +290,9 @@ class MuJoCoMeshcatAdapter:
             arrow_dir = joint_axis * arrow_len
 
             # Magenta
-            self._draw_arrow(f"overlays/induced/joint_{j}", joint_pos, arrow_dir, 0xFF00FF)
+            self._draw_arrow(
+                f"overlays/induced/joint_{j}", joint_pos, arrow_dir, 0xFF00FF
+            )  # noqa: E501
 
     def draw_cf_vectors(
         self,
@@ -472,7 +480,9 @@ class MuJoCoMeshcatAdapter:
             self.vis["overlays/trajectories"].delete()
             self.vis["overlays/arrows"].delete()
 
-    def _draw_arrow(self, path: str, start: np.ndarray, vec: np.ndarray, color_hex: int) -> None:
+    def _draw_arrow(
+        self, path: str, start: np.ndarray, vec: np.ndarray, color_hex: int
+    ) -> None:  # noqa: E501
         if not (path is not None):
             raise ValueError("path must be provided")
         if not (path is not None):

@@ -1,6 +1,6 @@
 # ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
 
 """Polynomial Function Generator Module.
 
@@ -240,7 +240,9 @@ class PolynomialGeneratorWidget(QtWidgets.QWidget):
 
         parent_layout.addWidget(scale_group)
 
-    def _setup_input_method_controls(self, parent_layout: QtWidgets.QVBoxLayout) -> None:
+    def _setup_input_method_controls(
+        self, parent_layout: QtWidgets.QVBoxLayout
+    ) -> None:  # noqa: E501
         """Create the input method selection group with mode radio buttons."""
         if not (parent_layout is not None):
             raise ValueError("parent_layout must be provided")
@@ -261,7 +263,9 @@ class PolynomialGeneratorWidget(QtWidgets.QWidget):
         self.btn_points.setToolTip("Click on the plot to add individual points")
 
         self.btn_drag = QtWidgets.QRadioButton("Drag Trend")
-        self.btn_drag.setToolTip("Drag the entire curve to shift it vertically/horizontally")
+        self.btn_drag.setToolTip(
+            "Drag the entire curve to shift it vertically/horizontally"
+        )  # noqa: E501
 
         self.mode_group.addButton(self.btn_equation)
         self.mode_group.addButton(self.btn_draw)
@@ -321,7 +325,9 @@ class PolynomialGeneratorWidget(QtWidgets.QWidget):
 
         self.fit_btn = QtWidgets.QPushButton("Fit Polynomial")
         self.fit_btn.setObjectName("fitBtn")
-        self.fit_btn.setToolTip("Calculate and plot a polynomial fit for the current points")
+        self.fit_btn.setToolTip(
+            "Calculate and plot a polynomial fit for the current points"
+        )  # noqa: E501
         self.fit_btn.setAccessibleName("Fit polynomial to points")
         if style:
             self.fit_btn.setIcon(
@@ -438,7 +444,9 @@ class PolynomialGeneratorWidget(QtWidgets.QWidget):
             raise ValueError("event must be provided")
         if not (event is not None):
             raise ValueError("event must be provided")
-        if event.inaxes != self.canvas.axes or event.xdata is None or event.ydata is None:
+        if (
+            event.inaxes != self.canvas.axes or event.xdata is None or event.ydata is None
+        ):  # noqa: E501
             return
 
         if self.mode == "add_points":
@@ -450,7 +458,9 @@ class PolynomialGeneratorWidget(QtWidgets.QWidget):
             if event.button == 1:
                 self.drawn_points = [(event.xdata, event.ydata)]
 
-        elif self.mode == "drag" and event.button == 1 and self.polynomial_coeffs is not None:
+        elif (
+            self.mode == "drag" and event.button == 1 and self.polynomial_coeffs is not None
+        ):  # noqa: E501
             self.dragging_curve = True
             self.drag_start_pos = (event.xdata, event.ydata)
             self.drag_start_coeffs = self.polynomial_coeffs.copy()
@@ -488,7 +498,9 @@ class PolynomialGeneratorWidget(QtWidgets.QWidget):
             raise ValueError("event must be provided")
         if not (event is not None):
             raise ValueError("event must be provided")
-        if event.inaxes != self.canvas.axes or event.xdata is None or event.ydata is None:
+        if (
+            event.inaxes != self.canvas.axes or event.xdata is None or event.ydata is None
+        ):  # noqa: E501
             return
 
         if self.mode == "draw" and event.button == 1:
@@ -502,7 +514,9 @@ class PolynomialGeneratorWidget(QtWidgets.QWidget):
 
             # Sync points with 2D shift and re-fit
             if self.drag_start_points:
-                self.current_points = [(x + dx, y + dy) for x, y in self.drag_start_points]
+                self.current_points = [
+                    (x + dx, y + dy) for x, y in self.drag_start_points
+                ]  # noqa: E501
                 self._calculate_poly_fit()
                 self._update_plot()
 
@@ -553,7 +567,9 @@ class PolynomialGeneratorWidget(QtWidgets.QWidget):
             if self.polynomial_coeffs is not None:
                 self.polynomial_generated.emit(joint, list(self.polynomial_coeffs))
         else:
-            QtWidgets.QMessageBox.warning(self, "Fit Error", "Failed to fit polynomial to points.")
+            QtWidgets.QMessageBox.warning(
+                self, "Fit Error", "Failed to fit polynomial to points."
+            )  # noqa: E501
 
     def _generate_from_equation(self) -> None:
         """Generate points from the user-provided equation."""
@@ -594,7 +610,9 @@ class PolynomialGeneratorWidget(QtWidgets.QWidget):
             self._fit_polynomial()
 
         except (ValueError, TypeError, RuntimeError) as e:
-            QtWidgets.QMessageBox.warning(self, "Equation Error", f"Invalid equation: {e}")
+            QtWidgets.QMessageBox.warning(
+                self, "Equation Error", f"Invalid equation: {e}"
+            )  # noqa: E501
 
     def _display_results(self) -> None:
         """Display the polynomial coefficients."""

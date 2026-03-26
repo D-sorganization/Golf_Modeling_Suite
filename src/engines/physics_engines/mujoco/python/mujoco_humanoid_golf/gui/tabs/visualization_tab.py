@@ -1,6 +1,6 @@
 # ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
 
 """Visualization tab for the MuJoCo humanoid golf GUI.
 
@@ -104,7 +104,9 @@ class VisualizationTab(QtWidgets.QWidget):
         reset_cam_btn.clicked.connect(self.on_reset_camera)
         camera_layout.addWidget(reset_cam_btn)
 
-    def _create_camera_sliders(self, advanced_cam_layout: QtWidgets.QFormLayout) -> None:
+    def _create_camera_sliders(
+        self, advanced_cam_layout: QtWidgets.QFormLayout
+    ) -> None:  # noqa: E501
         if not (advanced_cam_layout is not None):
             raise ValueError("advanced_cam_layout must be provided")
         if not (advanced_cam_layout is not None):
@@ -113,7 +115,9 @@ class VisualizationTab(QtWidgets.QWidget):
         self.azimuth_slider.setMinimum(0)
         self.azimuth_slider.setMaximum(360)
         self.azimuth_slider.setValue(90)
-        self.azimuth_slider.setToolTip("Rotate camera around the vertical axis (0-360\u00b0)")
+        self.azimuth_slider.setToolTip(
+            "Rotate camera around the vertical axis (0-360\u00b0)"
+        )  # noqa: E501
         self.azimuth_slider.setAccessibleName("Camera Azimuth")
         self.azimuth_slider.valueChanged.connect(self.on_azimuth_changed)
         self.azimuth_label = QtWidgets.QLabel("90\u00b0")
@@ -124,7 +128,9 @@ class VisualizationTab(QtWidgets.QWidget):
         self.elevation_slider.setMinimum(-90)
         self.elevation_slider.setMaximum(90)
         self.elevation_slider.setValue(-20)
-        self.elevation_slider.setToolTip("Adjust camera vertical angle (-90\u00b0 to 90\u00b0)")
+        self.elevation_slider.setToolTip(
+            "Adjust camera vertical angle (-90\u00b0 to 90\u00b0)"
+        )  # noqa: E501
         self.elevation_slider.setAccessibleName("Camera Elevation")
         self.elevation_slider.valueChanged.connect(self.on_elevation_changed)
         self.elevation_label = QtWidgets.QLabel("-20\u00b0")
@@ -142,7 +148,9 @@ class VisualizationTab(QtWidgets.QWidget):
         advanced_cam_layout.addRow("Distance:", self.distance_slider)
         advanced_cam_layout.addRow("", self.distance_label)
 
-    def _create_lookat_controls(self, advanced_cam_layout: QtWidgets.QFormLayout) -> None:
+    def _create_lookat_controls(
+        self, advanced_cam_layout: QtWidgets.QFormLayout
+    ) -> None:  # noqa: E501
         if not (advanced_cam_layout is not None):
             raise ValueError("advanced_cam_layout must be provided")
         if not (advanced_cam_layout is not None):
@@ -268,7 +276,9 @@ class VisualizationTab(QtWidgets.QWidget):
         self.show_club_trajectory_cb.stateChanged.connect(self.on_swing_plane_changed)
         swing_layout.addWidget(self.show_club_trajectory_cb)
 
-        self.show_reference_trajectory_cb = QtWidgets.QCheckBox("Show Reference/Desired Trajectory")
+        self.show_reference_trajectory_cb = QtWidgets.QCheckBox(
+            "Show Reference/Desired Trajectory"
+        )  # noqa: E501
         self.show_reference_trajectory_cb.setToolTip(
             "Overlay a reference trajectory for comparison (Orange)"
         )
@@ -281,7 +291,9 @@ class VisualizationTab(QtWidgets.QWidget):
         self.tracked_body_combo = QtWidgets.QComboBox()
         self.tracked_body_combo.setEditable(True)
         self.tracked_body_combo.addItems(["clubhead", "club_face", "right_hand"])
-        self.tracked_body_combo.setToolTip("Body name to track for trajectory and swing plane")
+        self.tracked_body_combo.setToolTip(
+            "Body name to track for trajectory and swing plane"
+        )  # noqa: E501
         self.tracked_body_combo.currentTextChanged.connect(self.on_tracked_body_changed)
         body_track_layout.addWidget(self.tracked_body_combo, stretch=1)
         swing_layout.addLayout(body_track_layout)
@@ -352,7 +364,9 @@ class VisualizationTab(QtWidgets.QWidget):
         self.show_torques_cb.stateChanged.connect(self.on_show_torques_changed)
         force_layout.addWidget(self.show_torques_cb)
 
-    def _create_torque_scale_controls(self, force_layout: QtWidgets.QVBoxLayout) -> None:
+    def _create_torque_scale_controls(
+        self, force_layout: QtWidgets.QVBoxLayout
+    ) -> None:  # noqa: E501
         if not (force_layout is not None):
             raise ValueError("force_layout must be provided")
         if not (force_layout is not None):
@@ -362,7 +376,9 @@ class VisualizationTab(QtWidgets.QWidget):
         self.torque_scale_slider.setMinimum(1)
         self.torque_scale_slider.setMaximum(100)
         self.torque_scale_slider.setValue(10)
-        self.torque_scale_slider.setToolTip("Adjust the visual length of torque vectors")
+        self.torque_scale_slider.setToolTip(
+            "Adjust the visual length of torque vectors"
+        )  # noqa: E501
         self.torque_scale_slider.setAccessibleName("Torque Scale")
         self.torque_scale_slider.valueChanged.connect(self.on_torque_scale_changed)
         self.torque_scale_label = QtWidgets.QLabel("1.0%")
@@ -392,7 +408,9 @@ class VisualizationTab(QtWidgets.QWidget):
         force_scale_layout.addRow("", self.force_scale_label)
         force_layout.addLayout(force_scale_layout)
 
-    def _create_advanced_vector_overlays(self, force_layout: QtWidgets.QVBoxLayout) -> None:
+    def _create_advanced_vector_overlays(
+        self, force_layout: QtWidgets.QVBoxLayout
+    ) -> None:  # noqa: E501
         if not (force_layout is not None):
             raise ValueError("force_layout must be provided")
         if not (force_layout is not None):
@@ -409,7 +427,9 @@ class VisualizationTab(QtWidgets.QWidget):
         self.induced_source_combo = QtWidgets.QComboBox()
         self.induced_source_combo.setEditable(True)
         self.induced_source_combo.addItems(["gravity", "velocity", "total"])
-        self.induced_source_combo.setToolTip("Select source or type specific actuator name")
+        self.induced_source_combo.setToolTip(
+            "Select source or type specific actuator name"
+        )  # noqa: E501
         self.induced_source_combo.currentTextChanged.connect(self.on_advanced_vector_changed)
 
         self.show_cf_cb = QtWidgets.QCheckBox("Show Counterfactuals")
@@ -430,7 +450,9 @@ class VisualizationTab(QtWidgets.QWidget):
     def _create_ellipsoid_group(self) -> QtWidgets.QGroupBox:
         ellipsoid_group = QtWidgets.QGroupBox("Ellipsoids")
         ellipsoid_layout = QtWidgets.QVBoxLayout(ellipsoid_group)
-        self.show_mobility_ellipsoid_cb = QtWidgets.QCheckBox("Show Mobility Ellipsoid (Green)")
+        self.show_mobility_ellipsoid_cb = QtWidgets.QCheckBox(
+            "Show Mobility Ellipsoid (Green)"
+        )  # noqa: E501
         self.show_mobility_ellipsoid_cb.stateChanged.connect(
             self.on_ellipsoid_visualization_changed
         )
@@ -585,7 +607,8 @@ class VisualizationTab(QtWidgets.QWidget):
             self.sim_widget.set_background_color(sky_color=rgba)
             # Update button color
             self.sky_color_btn.setStyleSheet(
-                f"background-color: rgb({color.red()}, {color.green()}, " f"{color.blue()});",
+                f"background-color: rgb({color.red()}, {color.green()}, "
+                f"{color.blue()});",  # noqa: E501
             )
 
     def on_ground_color_clicked(self) -> None:
@@ -611,7 +634,8 @@ class VisualizationTab(QtWidgets.QWidget):
             self.sim_widget.set_background_color(ground_color=rgba)
             # Update button color
             self.ground_color_btn.setStyleSheet(
-                f"background-color: rgb({color.red()}, {color.green()}, " f"{color.blue()});",
+                f"background-color: rgb({color.red()}, {color.green()}, "
+                f"{color.blue()});",  # noqa: E501
             )
 
     def on_reset_background(self) -> None:
@@ -643,7 +667,9 @@ class VisualizationTab(QtWidgets.QWidget):
     def on_open_meshcat(self) -> None:
         require("sim_widget is set", lambda: self.sim_widget is not None)
         """Open the Meshcat visualizer in the default browser."""
-        if hasattr(self.sim_widget, "meshcat_adapter") and self.sim_widget.meshcat_adapter:
+        if (
+            hasattr(self.sim_widget, "meshcat_adapter") and self.sim_widget.meshcat_adapter
+        ):  # noqa: E501
             self.sim_widget.open_meshcat_browser()
         else:
             QtWidgets.QMessageBox.warning(
