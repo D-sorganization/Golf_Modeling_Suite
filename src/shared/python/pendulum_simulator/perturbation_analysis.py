@@ -25,6 +25,10 @@ from typing import Protocol
 
 import numpy as np
 
+from src.shared.python.pendulum_simulator.pendulum_perturbation_analyzer import (
+    PendulumPerturbationAnalyzer as PendulumPerturbationAnalyzer,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -177,6 +181,7 @@ def perturb_torque_coeffs(
     noise_amplitude: float,
     noise_type: str = "white",
     seed: int | None = None,
+    perturb_mode: str = "additive",
 ) -> list[list[float]]:
     """Perturb polynomial torque coefficients with noise.
 
