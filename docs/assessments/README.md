@@ -95,6 +95,7 @@ In addition to the standard framework, specialized audits monitor specific quali
 | `docs/assessments/completist/issues/ISSUE_GAPS_AND_INACCURACIES.md` | 2026-02-21 | Consolidated Identified Implementation Gaps and Inaccuracies Report            |
 | `docs/assessments/completist/Completist_Report_2026-03-01.md`       | 2026-03-01 | Widespread Placeholder Logic (TODOs, FIXMEs, NotImplementedErrors, and passes) |
 | `docs/assessments/completist/Completist_Report_2026-03-24.md`       | 2026-03-24 | Completist Audit Report                                                        |
+| `docs/assessments/completist/Completist_Report_2026-03-26.md`       | 2026-03-26 | Completist Audit Report                                                        |
 
 ---
 
@@ -169,6 +170,23 @@ In addition to the standard framework, specialized audits monitor specific quali
 | 2026-03-22 | Completist Audit Report                  | `docs/assessments/completist/Completist_Report_2026-03-22.md`                 |
 | 2026-03-23 | Completist Audit Report                  | `docs/assessments/completist/Completist_Report_2026-03-23.md`                 |
 | 2026-03-24 | Completist Audit Report                  | `docs/assessments/completist/Completist_Report_2026-03-24.md`                 |
+| 2026-03-26 | Completist Audit Report                  | `docs/assessments/completist/Completist_Report_2026-03-26.md`                 |
+| 2026-03-26 | Comprehensive Assessment                 | `docs/assessments/Comprehensive_Assessment_2026-03-26.md`                     |
+| 2026-03-26 | Assessment A Results                     | `docs/assessments/Assessment_A_Results_2026-03-26.md`                         |
+| 2026-03-26 | Assessment B Results                     | `docs/assessments/Assessment_B_Results_2026-03-26.md`                         |
+| 2026-03-26 | Assessment C Results                     | `docs/assessments/Assessment_C_Results_2026-03-26.md`                         |
+| 2026-03-26 | Assessment D Results                     | `docs/assessments/Assessment_D_Results_2026-03-26.md`                         |
+| 2026-03-26 | Assessment E Results                     | `docs/assessments/Assessment_E_Results_2026-03-26.md`                         |
+| 2026-03-26 | Assessment F Results                     | `docs/assessments/Assessment_F_Results_2026-03-26.md`                         |
+| 2026-03-26 | Assessment G Results                     | `docs/assessments/Assessment_G_Results_2026-03-26.md`                         |
+| 2026-03-26 | Assessment H Results                     | `docs/assessments/Assessment_H_Results_2026-03-26.md`                         |
+| 2026-03-26 | Assessment I Results                     | `docs/assessments/Assessment_I_Results_2026-03-26.md`                         |
+| 2026-03-26 | Assessment J Results                     | `docs/assessments/Assessment_J_Results_2026-03-26.md`                         |
+| 2026-03-26 | Assessment K Results                     | `docs/assessments/Assessment_K_Results_2026-03-26.md`                         |
+| 2026-03-26 | Assessment L Results                     | `docs/assessments/Assessment_L_Results_2026-03-26.md`                         |
+| 2026-03-26 | Assessment M Results                     | `docs/assessments/Assessment_M_Results_2026-03-26.md`                         |
+| 2026-03-26 | Assessment N Results                     | `docs/assessments/Assessment_N_Results_2026-03-26.md`                         |
+| 2026-03-26 | Assessment O Results                     | `docs/assessments/Assessment_O_Results_2026-03-26.md`                         |
 
 ---
 
