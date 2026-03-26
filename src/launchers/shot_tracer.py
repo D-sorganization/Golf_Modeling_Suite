@@ -441,7 +441,8 @@ def main() -> None:
     app.setStyle("Fusion")
 
     # Apply dark theme
-    app.setStyleSheet("""
+    app.setStyleSheet(
+        """
         QMainWindow, QWidget {
             background-color: #2b2b2b;
             color: #ffffff;
@@ -493,7 +494,8 @@ def main() -> None:
             padding: 5px;
             border: 1px solid #555;
         }
-        """)
+        """
+    )
 
     window = MultiModelShotTracerWindow()
     window.show()

@@ -21,6 +21,11 @@ def main() -> None:
     )
 
     parser = argparse.ArgumentParser(description="Drake Golf Analysis Dashboard")
+    parser.add_argument(
+        "--model", type=str, help="Path to model file (URDF/SDF)", default=None
+    )
+
+    parser = argparse.ArgumentParser(description="Drake Golf Analysis Dashboard")
     parser.add_argument("--model", type=str, help="Path to model file (URDF/SDF)", default=None)
     args = parser.parse_args()
 

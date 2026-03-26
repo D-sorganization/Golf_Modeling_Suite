@@ -148,7 +148,9 @@ def perturb_torque_profile(
     Post: output.shape == profile.shape
     """
     if profile.ndim != 1 or len(profile) == 0:
-        raise ValueError(f"profile must be a non-empty 1-D array, got shape {profile.shape}")
+        raise ValueError(
+            f"profile must be a non-empty 1-D array, got shape {profile.shape}"
+        )
     if noise_amplitude < 0:
         raise ValueError(f"noise_amplitude must be non-negative, got {noise_amplitude}")
     if noise_type != "additive":

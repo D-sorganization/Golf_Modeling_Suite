@@ -32,7 +32,7 @@ python3 -m pytest -x --timeout=60 -q
 7. No new `print()` calls in `src/` (use logging).
 8. File size budget: max 1200 lines per file. Exceptions in `scripts/config/file_size_budget.json`.
 9. Module size budget baseline in `module_size_budget_baseline.json` for modules exceeding default limits.
-10. No TRACKED_TASK/TRACKED_DEFECT comments unless a tracked GitHub issue exists.
+10. No TODO/FIXME comments unless a tracked GitHub issue exists.
 11. Use `python3` — never bare `python`.
 12. Pre-push hook uses `python3 -m pytest` (fixed in #2037). Run `pre-commit install --hook-type pre-push` after cloning.
 
