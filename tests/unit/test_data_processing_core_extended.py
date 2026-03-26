@@ -607,9 +607,7 @@ class TestSmoothColumn:
 
         e = DataProcessorEngine()
         e.load_dataframe(
-            pd.DataFrame(
-                {"a": [float(i) for i in range(20)], "b": [float(i) for i in range(20)]}
-            )
+            pd.DataFrame({"a": [float(i) for i in range(20)], "b": [float(i) for i in range(20)]})
         )
         return e
 

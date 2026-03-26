@@ -21,9 +21,7 @@ def main() -> None:
     )
 
     parser = argparse.ArgumentParser(description="Drake Golf Analysis Dashboard")
-    parser.add_argument(
-        "--model", type=str, help="Path to model file (URDF/SDF)", default=None
-    )
+    parser.add_argument("--model", type=str, help="Path to model file (URDF/SDF)", default=None)
     args = parser.parse_args()
 
     model_path = args.model
@@ -38,11 +36,6 @@ def main() -> None:
             selected = dialog.selectedFiles()
             if selected:
                 model_path = selected[0]
-
-    # Deferred import: only loads pydrake when this launcher is actually invoked
-    from src.engines.physics_engines.drake.python.drake_physics_engine import (  # noqa: PLC0415
-        DrakePhysicsEngine,
-    )
 
     launch_dashboard(
         engine_class=DrakePhysicsEngine,  # type: ignore[type-abstract]
