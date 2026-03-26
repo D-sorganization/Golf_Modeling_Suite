@@ -212,9 +212,7 @@ async def update_actuators(
     except ImportError as exc:
         if logger:
             logger.error("Actuator update error: %s", exc)
-        raise HTTPException(
-            status_code=500, detail=f"Actuator update failed: {str(exc)}"
-        ) from exc
+        raise HTTPException(status_code=500, detail=f"Actuator update failed: {str(exc)}") from exc
 
 
 @router.get("/simulation/actuators", response_model=ActuatorStateResponse)
@@ -314,9 +312,7 @@ async def get_forces(
     except ImportError as exc:
         if logger:
             logger.error("Force query error: %s", exc)
-        raise HTTPException(
-            status_code=500, detail=f"Force query failed: {str(exc)}"
-        ) from exc
+        raise HTTPException(status_code=500, detail=f"Force query failed: {str(exc)}") from exc
 
 
 # ──────────────────────────────────────────────────────────────
@@ -359,9 +355,7 @@ async def get_metrics(
                 linear_vel = jac["linear"] @ v
                 club_head_speed = float(np.linalg.norm(linear_vel))
         except ImportError as exc:
-            _logger.warning(
-                "numpy unavailable for club-head speed calculation: %s", exc
-            )
+            _logger.warning("numpy unavailable for club-head speed calculation: %s", exc)
 
         # Energy calculations
         kinetic_energy = None
@@ -398,9 +392,7 @@ async def get_metrics(
     except ImportError as exc:
         if logger:
             logger.error("Metrics query error: %s", exc)
-        raise HTTPException(
-            status_code=500, detail=f"Metrics query failed: {str(exc)}"
-        ) from exc
+        raise HTTPException(status_code=500, detail=f"Metrics query failed: {str(exc)}") from exc
 
 
 # ──────────────────────────────────────────────────────────────
@@ -605,9 +597,7 @@ async def control_recording(
                     indent=2,
                 )
             if logger:
-                logger.info(
-                    "Trajectory exported to %s (%d frames)", export_path, frame_count
-                )
+                logger.info("Trajectory exported to %s (%d frames)", export_path, frame_count)
 
         return TrajectoryRecordResponse(
             recording=getattr(engine_manager, "_is_recording", False),

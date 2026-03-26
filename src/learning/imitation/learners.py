@@ -375,9 +375,7 @@ class BehaviorCloning(ImitationLearner):
 
                 # Update weights
                 for layer, grad in zip(self._policy, gradients, strict=True):
-                    layer["W"] -= lr * (
-                        grad["W"] + self.config.weight_decay * layer["W"]
-                    )
+                    layer["W"] -= lr * (grad["W"] + self.config.weight_decay * layer["W"])
                     layer["b"] -= lr * grad["b"]
 
                 epoch_loss += self._compute_loss(batch_obs, batch_act)
@@ -443,8 +441,7 @@ class BehaviorCloning(ImitationLearner):
                 "hidden_sizes": self.config.hidden_sizes,
             },
             "layers": [
-                {"W": layer["W"].tolist(), "b": layer["b"].tolist()}
-                for layer in self._policy
+                {"W": layer["W"].tolist(), "b": layer["b"].tolist()} for layer in self._policy
             ],
         }
         np.savez(path, **{k: np.array(v, dtype=object) for k, v in data.items()})  # type: ignore[arg-type]
@@ -467,8 +464,7 @@ class BehaviorCloning(ImitationLearner):
 
         layers_data = data["layers"].tolist()
         self._policy = [
-            {"W": np.array(layer["W"]), "b": np.array(layer["b"])}
-            for layer in layers_data
+            {"W": np.array(layer["W"]), "b": np.array(layer["b"])} for layer in layers_data
         ]
 
 
@@ -810,9 +806,7 @@ class GAIL(ImitationLearner):
 
             # Binary cross entropy
             eps = 1e-8
-            disc_loss = -np.mean(
-                np.log(expert_preds + eps) + np.log(1 - policy_preds + eps)
-            )
+            disc_loss = -np.mean(np.log(expert_preds + eps) + np.log(1 - policy_preds + eps))
 
             # Update discriminator (simplified gradient)
             # expert_grad = expert_preds - 1  # gradient towards 1
@@ -902,8 +896,7 @@ class GAIL(ImitationLearner):
             "observation_dim": self.observation_dim,
             "action_dim": self.action_dim,
             "policy": [
-                {"W": layer["W"].tolist(), "b": layer["b"].tolist()}
-                for layer in self._policy
+                {"W": layer["W"].tolist(), "b": layer["b"].tolist()} for layer in self._policy
             ],
             "discriminator": [
                 {"W": layer["W"].tolist(), "b": layer["b"].tolist()}
@@ -926,12 +919,10 @@ class GAIL(ImitationLearner):
 
         policy_data = data["policy"].tolist()
         self._policy = [
-            {"W": np.array(layer["W"]), "b": np.array(layer["b"])}
-            for layer in policy_data
+            {"W": np.array(layer["W"]), "b": np.array(layer["b"])} for layer in policy_data
         ]
 
         disc_data = data["discriminator"].tolist()
         self._discriminator = [
-            {"W": np.array(layer["W"]), "b": np.array(layer["b"])}
-            for layer in disc_data
+            {"W": np.array(layer["W"]), "b": np.array(layer["b"])} for layer in disc_data
         ]
