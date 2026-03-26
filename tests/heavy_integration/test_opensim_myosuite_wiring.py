@@ -284,7 +284,9 @@ class TestMyoSuiteAdapter:
         mock_muscle = MagicMock()
         mock_muscle.muscles = {"biceps": MagicMock(), "triceps": MagicMock()}
 
-        with patch.object(MuscleDrivenEnv, "_get_muscle_names", return_value=["biceps", "triceps"]):
+        with patch.object(
+            MuscleDrivenEnv, "_get_muscle_names", return_value=["biceps", "triceps"]
+        ):
             env = MuscleDrivenEnv(muscle_system=mock_muscle)
             assert env is not None
 

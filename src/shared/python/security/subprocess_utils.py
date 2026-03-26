@@ -1,7 +1,3 @@
-import logging
-
-logger = logging.getLogger(__name__)
-
 """Subprocess utilities for eliminating subprocess management duplication.
 
 This module provides reusable subprocess patterns to eliminate repeated
@@ -66,12 +62,10 @@ def run_command(
     Example:
         result = run_command(["python", "--version"])
         if result and result.returncode == 0:
-            logger.info(result.stdout)
+            print(result.stdout)
     """
-    if not (cmd is not None):
-        raise ValueError("cmd must be provided")
-    if not (cmd is not None):
-        raise ValueError("cmd must be provided")
+    assert cmd is not None, "cmd must be provided"
+    assert cmd is not None, "cmd must be provided"
     effective_timeout = timeout if timeout is not None else DEFAULT_SUBPROCESS_TIMEOUT
     logger.debug(f"Running command: {' '.join(cmd)} (timeout={effective_timeout}s)")
 
@@ -100,7 +94,7 @@ class ProcessManager:
 
         # Check status
         if manager.is_running("server"):
-            logger.info("Server is running")
+            print("Server is running")
 
         # Stop processes
         manager.stop("server")
@@ -184,7 +178,9 @@ class ProcessManager:
                     process.wait(timeout=timeout)
                 except subprocess.TimeoutExpired:
                     # Force kill if termination times out
-                    logger.warning(f"Process '{name}' did not terminate gracefully, killing")
+                    logger.warning(
+                        f"Process '{name}' did not terminate gracefully, killing"
+                    )
                     process.kill()
                     process.wait()
 
@@ -205,10 +201,8 @@ class ProcessManager:
         Returns:
             True if running, False otherwise
         """
-        if not (name is not None):
-            raise ValueError("name must be provided")
-        if not (name is not None):
-            raise ValueError("name must be provided")
+        assert name is not None, "name must be provided"
+        assert name is not None, "name must be provided"
         if name not in self.processes:
             return False
 
@@ -224,10 +218,8 @@ class ProcessManager:
         Returns:
             Tuple of (stdout, stderr) as strings
         """
-        if not (name is not None):
-            raise ValueError("name must be provided")
-        if not (name is not None):
-            raise ValueError("name must be provided")
+        assert name is not None, "name must be provided"
+        assert name is not None, "name must be provided"
         if name not in self.processes:
             return "", ""
 
@@ -248,10 +240,8 @@ class ProcessManager:
         Args:
             timeout: Timeout for each process
         """
-        if not (timeout is not None):
-            raise ValueError("timeout must be provided")
-        if not (timeout is not None):
-            raise ValueError("timeout must be provided")
+        assert timeout is not None, "timeout must be provided"
+        assert timeout is not None, "timeout must be provided"
         logger.info("Stopping all processes")
 
         # Get list of names to avoid modifying dict during iteration
@@ -289,7 +279,9 @@ class CommandRunner:
         result = runner.run_with_retry(["flaky_command"], max_attempts=3)
     """
 
-    def __init__(self, cwd: str | Path | None = None, env: dict[str, str] | None = None) -> None:
+    def __init__(
+        self, cwd: str | Path | None = None, env: dict[str, str] | None = None
+    ) -> None:
         """Initialize command runner.
 
         Args:
@@ -366,10 +358,8 @@ class CommandRunner:
         Returns:
             CompletedProcess object or None if failed after all attempts
         """
-        if not (cmd is not None):
-            raise ValueError("cmd must be provided")
-        if not (cmd is not None):
-            raise ValueError("cmd must be provided")
+        assert cmd is not None, "cmd must be provided"
+        assert cmd is not None, "cmd must be provided"
         for attempt in range(max_attempts):
             result = self.run(cmd)
 

@@ -119,7 +119,9 @@ class TestMuJoCoEngineIntegration:
         - Loads actual URDF file
         - Verifies real physics engine behavior
         """
-        module_name = "engines.physics_engines.mujoco.python.mujoco_humanoid_golf.physics_engine"
+        module_name = (
+            "engines.physics_engines.mujoco.python.mujoco_humanoid_golf.physics_engine"
+        )
 
         # Ensure we are using the REAL engine module, not one cached with Mocks
         # Instead of reload (dangerous), we remove from sys.modules to force fresh import
@@ -152,7 +154,9 @@ class TestMuJoCoEngineIntegration:
         GOOD PRACTICE: Tests actual physics simulation, not mocks.
         Verifies that state changes over time as expected.
         """
-        module_name = "engines.physics_engines.mujoco.python.mujoco_humanoid_golf.physics_engine"
+        module_name = (
+            "engines.physics_engines.mujoco.python.mujoco_humanoid_golf.physics_engine"
+        )
 
         # Ensure we get the clean import
         sys.modules.pop(module_name, None)
@@ -249,7 +253,9 @@ class TestCrossEngineConsistency:
         for name, engine in available_engines.items():
             if hasattr(engine, "model"):
                 # MuJoCo-style
-                dof_counts[name] = engine.model.nq if hasattr(engine.model, "nq") else None
+                dof_counts[name] = (
+                    engine.model.nq if hasattr(engine.model, "nq") else None
+                )
             elif hasattr(engine, "plant"):
                 # Drake-style
                 dof_counts[name] = engine.plant.num_positions()

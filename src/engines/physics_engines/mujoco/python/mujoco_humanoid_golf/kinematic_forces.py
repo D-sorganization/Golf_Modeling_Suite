@@ -450,7 +450,9 @@ class KinematicForceAnalyzer:
         # the significantly faster Recursive Newton-Euler algorithm.
         return self.compute_coriolis_forces_rne(qpos, qvel)
 
-    def compute_coriolis_forces_rne(self, qpos: np.ndarray, qvel: np.ndarray) -> np.ndarray:
+    def compute_coriolis_forces_rne(
+        self, qpos: np.ndarray, qvel: np.ndarray
+    ) -> np.ndarray:
         """Compute Coriolis forces using analytical RNE (Phase 1).
 
         This method uses MuJoCo's Recursive Newton-Euler (mj_rne) algorithm
@@ -688,7 +690,9 @@ class KinematicForceAnalyzer:
         self._perturb_data.qvel[:] = qvel
         mujoco.mj_forward(self.model, self._perturb_data)
 
-        jacp_forward, _ = self._compute_jacobian(self.club_head_id, data=self._perturb_data)
+        jacp_forward, _ = self._compute_jacobian(
+            self.club_head_id, data=self._perturb_data
+        )
         jacp_forward = jacp_forward.copy()  # Save copy before buffer reuse
 
         # Compute Jacobian at backward-perturbed state
@@ -696,7 +700,9 @@ class KinematicForceAnalyzer:
         self._perturb_data.qvel[:] = qvel
         mujoco.mj_forward(self.model, self._perturb_data)
 
-        jacp_backward, _ = self._compute_jacobian(self.club_head_id, data=self._perturb_data)
+        jacp_backward, _ = self._compute_jacobian(
+            self.club_head_id, data=self._perturb_data
+        )
 
         # Second-order central difference
         # Accuracy: O(ε²) - much better than O(ε) forward difference
@@ -856,8 +862,8 @@ class KinematicForceAnalyzer:
             centrifugal, coupling = self.decompose_coriolis_forces(qpos, qvel)
 
             # Club head apparent forces
-            club_coriolis, club_centrifugal, club_apparent = self.compute_club_head_apparent_forces(
-                qpos, qvel, qacc
+            club_coriolis, club_centrifugal, club_apparent = (
+                self.compute_club_head_apparent_forces(qpos, qvel, qacc)
             )
 
             # Power contributions

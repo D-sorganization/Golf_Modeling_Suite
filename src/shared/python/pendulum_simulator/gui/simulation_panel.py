@@ -11,7 +11,6 @@ import shutil
 import subprocess
 import tempfile
 from collections.abc import Callable
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol, cast
 
 import numpy as np
@@ -61,8 +60,7 @@ class _SimWorker(QObject):
         run_fn: Any,
         run_kwargs: dict,
     ) -> None:
-        if not (run_kwargs is not None):
-            raise ValueError("run_kwargs must be provided")
+        assert run_kwargs is not None, "run_kwargs must be provided"
         super().__init__()
         self._run_fn = run_fn
         self._run_kwargs = run_kwargs
@@ -117,8 +115,7 @@ class SimulationPanel(QWidget):
         objective_builder: Any | None = None,
         parent: QWidget | None = None,
     ) -> None:
-        if not (controls is not None):
-            raise ValueError("controls must be provided")
+        assert controls is not None, "controls must be provided"
         super().__init__(parent)
         self.controls = controls
         self.pendulum = pendulum
@@ -223,8 +220,7 @@ class SimulationPanel(QWidget):
 
         Must be called after construction but before the widget is shown.
         """
-        if not (panel is not None):
-            raise ValueError("perturbation panel must not be None")
+        assert panel is not None, "perturbation panel must not be None"
         self.perturbation_panel = panel
         scroll = QScrollArea()
         scroll.setWidget(panel)
@@ -287,8 +283,7 @@ class SimulationPanel(QWidget):
 
             opt = cast("OptimizationWidget", self.optimizer)
             _obj_builder = self.objective_builder  # capture for closure
-            if not (callable(_obj_builder)):
-                raise ValueError("objective_builder must be callable")
+            assert callable(_obj_builder), "objective_builder must be callable"
 
             # Before each optimizer run, rebuild the objective with current params
             orig_on_run = opt._on_run
@@ -397,12 +392,9 @@ class SimulationPanel(QWidget):
 
         Pre: result has n_steps, t, states attributes (TrajectoryResultMixin).
         """
-        if not (result is not None):
-            raise ValueError("Simulation result must not be None")
-        if not (hasattr(result):
-            raise ValueError("n_steps"), "Result must have n_steps attribute")
-        if not (hasattr(result):
-            raise ValueError("t"), "Result must have t attribute")
+        assert result is not None, "Simulation result must not be None"
+        assert hasattr(result, "n_steps"), "Result must have n_steps attribute"
+        assert hasattr(result, "t"), "Result must have t attribute"
 
         res: Any = result  # pyqtSignal emits object; cast for attribute access
 
@@ -441,8 +433,7 @@ class SimulationPanel(QWidget):
 
     def _on_sim_error(self, msg: str) -> None:
         """Called on the main thread when simulation fails."""
-        if not (msg is not None):
-            raise ValueError("msg must be provided")
+        assert msg is not None, "msg must be provided"
         from .diagnostics import get_tracker
 
         logger.error("Simulation failed: %s", msg)
@@ -461,8 +452,7 @@ class SimulationPanel(QWidget):
 
     def _show_busy(self, busy: bool) -> None:
         """Show / hide a 'Simulating…' indicator in the top-right."""
-        if not (busy is not None):
-            raise ValueError("busy must be provided")
+        assert busy is not None, "busy must be provided"
         if not hasattr(self, "_busy_label"):
             self._busy_label = QLabel("⏳  Simulating…", self)
             self._busy_label.setStyleSheet(
@@ -523,13 +513,11 @@ class SimulationPanel(QWidget):
 
     def _on_speed_change(self, speed: float) -> None:
         """Pre: speed > 0"""
-        if not (speed > 0):
-            raise ValueError(f"Playback speed must be positive, got {speed}")
+        assert speed > 0, f"Playback speed must be positive, got {speed}"
         self._playback_speed = speed
 
     def _on_frame_change(self, frame: int) -> None:
-        if not (frame is not None):
-            raise ValueError("frame must be provided")
+        assert frame is not None, "frame must be provided"
         if self._result is None:
             return
         self._anim_idx = frame
@@ -563,8 +551,7 @@ class SimulationPanel(QWidget):
             return
 
         # Inv: _playback_speed > 0, _sim_dt > 0
-        if not (self._playback_speed > 0):
-            raise ValueError("Playback speed invariant violated")
+        assert self._playback_speed > 0, "Playback speed invariant violated"
 
         # Compute real-time frame advance (#1115)
         # frames_per_tick = wall_clock_tick / sim_dt × speed_multiplier
@@ -595,8 +582,7 @@ class SimulationPanel(QWidget):
         self.controls.set_slider_value(self._anim_idx)
 
     def _display_frame(self, idx: int) -> None:
-        if not (self._result is not None):
-            raise ValueError('DbC Blocked: Precondition failed.')
+        assert self._result is not None
         idx = max(0, min(idx, self._result.n_steps - 1))
         self.pendulum.set_frame(idx)
         self.matrix.set_frame(idx)
@@ -606,8 +592,7 @@ class SimulationPanel(QWidget):
 
     def scrub_to_frame(self, idx: int) -> None:
         """Jump to a specific frame index (called by toolstrip slider)."""
-        if not (idx is not None):
-            raise ValueError("idx must be provided")
+        assert idx is not None, "idx must be provided"
         if self._result is None:
             return
         idx = max(0, min(idx, self._result.n_steps - 1))
@@ -630,8 +615,7 @@ class SimulationPanel(QWidget):
         Pre: result has 'coeffs' key with a numpy array.
         Closes #1151.
         """
-        if not (result is not None):
-            raise ValueError("result must be provided")
+        assert result is not None, "result must be provided"
         import logging
 
         logger = logging.getLogger(__name__)
@@ -738,8 +722,7 @@ class SimulationPanel(QWidget):
 
     def _export_as_svg(self, path: str) -> None:
         """Export the pendulum widget as an SVG image."""
-        if not (path is not None):
-            raise ValueError("path must be provided")
+        assert path is not None, "path must be provided"
         from PyQt6.QtCore import QRect
         from PyQt6.QtGui import QPainter
 
@@ -762,8 +745,7 @@ class SimulationPanel(QWidget):
 
     def _export_as_pdf(self, path: str) -> None:
         """Export the pendulum widget as a PDF (via QPrinter)."""
-        if not (path is not None):
-            raise ValueError("path must be provided")
+        assert path is not None, "path must be provided"
         from PyQt6.QtCore import QMarginsF
         from PyQt6.QtGui import QPainter
         from PyQt6.QtPrintSupport import QPrinter
@@ -905,16 +887,16 @@ class SimulationPanel(QWidget):
                 self._display_frame(i)
                 QApplication.processEvents()
                 pix = cast("QWidget", self.pendulum).grab()
-                frame_path = Path(tmp_dir) / f"frame_{i:05d}.png"
-                pix.save(str(frame_path))
+                frame_path = os.path.join(tmp_dir, f"frame_{i:05d}.png")
+                pix.save(frame_path)
 
             if ffmpeg_path is None:
-                out_dir = str(Path(path).with_suffix("")) + "_frames"
+                out_dir = os.path.splitext(path)[0] + "_frames"
                 os.makedirs(out_dir, exist_ok=True)
                 for name in os.listdir(tmp_dir):
                     shutil.move(
-                        str(Path(tmp_dir) / name),
-                        str(Path(out_dir) / name),
+                        os.path.join(tmp_dir, name),
+                        os.path.join(out_dir, name),
                     )
                 QMessageBox.warning(
                     self,
@@ -930,7 +912,7 @@ class SimulationPanel(QWidget):
                 "-framerate",
                 str(fps),
                 "-i",
-                str(Path(tmp_dir) / "frame_%05d.png"),
+                os.path.join(tmp_dir, "frame_%05d.png"),
                 "-pix_fmt",
                 "yuv420p",
                 path,

@@ -424,7 +424,9 @@ class DatasetGenerator:
                 continue
 
         if not samples:
-            raise SimulationError(f"All {config.num_samples} samples failed during generation")
+            raise SimulationError(
+                f"All {config.num_samples} samples failed during generation"
+            )
 
         if failed_count > 0:
             logger.warning(
@@ -563,12 +565,22 @@ class DatasetGenerator:
             "velocities": np.zeros((n_steps, n_v)),
             "accelerations": np.zeros((n_steps, n_v)),
             "torques": np.zeros((n_steps, n_v)),
-            "mass_matrices": (np.zeros((n_steps, n_v, n_v)) if config.record_mass_matrix else None),
-            "bias_forces": (np.zeros((n_steps, n_v)) if config.record_bias_forces else None),
+            "mass_matrices": (
+                np.zeros((n_steps, n_v, n_v)) if config.record_mass_matrix else None
+            ),
+            "bias_forces": (
+                np.zeros((n_steps, n_v)) if config.record_bias_forces else None
+            ),
             "gravity": np.zeros((n_steps, n_v)) if config.record_gravity else None,
-            "contact": (np.zeros((n_steps, 3)) if config.record_contact_forces else None),
-            "drift": (np.zeros((n_steps, n_v)) if config.record_drift_control else None),
-            "control_accel": (np.zeros((n_steps, n_v)) if config.record_drift_control else None),
+            "contact": (
+                np.zeros((n_steps, 3)) if config.record_contact_forces else None
+            ),
+            "drift": (
+                np.zeros((n_steps, n_v)) if config.record_drift_control else None
+            ),
+            "control_accel": (
+                np.zeros((n_steps, n_v)) if config.record_drift_control else None
+            ),
             "kinetic_energy": np.zeros(n_steps),
             "potential_energy": np.zeros(n_steps),
         }
@@ -659,7 +671,9 @@ class DatasetGenerator:
                 if buffers["drift"] is not None:
                     buffers["drift"][step] = self.engine.compute_drift_acceleration()
                 if buffers["control_accel"] is not None:
-                    buffers["control_accel"][step] = self.engine.compute_control_acceleration(tau)
+                    buffers["control_accel"][step] = (
+                        self.engine.compute_control_acceleration(tau)
+                    )
             except (ValueError, RuntimeError, AttributeError):
                 pass
 
@@ -784,7 +798,9 @@ class DatasetGenerator:
         try:
             import h5py
         except ImportError:
-            raise ImportError("h5py required for HDF5 export: pip install h5py") from None
+            raise ImportError(
+                "h5py required for HDF5 export: pip install h5py"
+            ) from None
 
         output_path = Path(output_path)
         if not output_path.suffix:
@@ -835,7 +851,9 @@ class DatasetGenerator:
         s_grp.create_dataset("times", data=sample.times, compression="gzip")
         s_grp.create_dataset("positions", data=sample.positions, compression="gzip")
         s_grp.create_dataset("velocities", data=sample.velocities, compression="gzip")
-        s_grp.create_dataset("accelerations", data=sample.accelerations, compression="gzip")
+        s_grp.create_dataset(
+            "accelerations", data=sample.accelerations, compression="gzip"
+        )
         s_grp.create_dataset("torques", data=sample.torques, compression="gzip")
 
         optional_fields = [
@@ -857,7 +875,9 @@ class DatasetGenerator:
 
         s_grp.attrs["metadata"] = json.dumps(sample.metadata)
 
-    def export_to_sqlite(self, dataset: TrainingDataset, output_path: str | Path) -> Path:
+    def export_to_sqlite(
+        self, dataset: TrainingDataset, output_path: str | Path
+    ) -> Path:
         """Export dataset to SQLite database.
 
         Args:
@@ -931,7 +951,9 @@ class DatasetGenerator:
         )
 
     @staticmethod
-    def _insert_sqlite_metadata(cursor: sqlite3.Cursor, dataset: TrainingDataset) -> None:
+    def _insert_sqlite_metadata(
+        cursor: sqlite3.Cursor, dataset: TrainingDataset
+    ) -> None:
         """Insert dataset-level metadata into the SQLite database."""
         if not (cursor is not None):
             raise ValueError("cursor must be provided")
@@ -972,7 +994,11 @@ class DatasetGenerator:
 
         frame_rows = []
         for step in range(n_steps):
-            ke = float(sample.energies["kinetic"][step]) if "kinetic" in sample.energies else 0.0
+            ke = (
+                float(sample.energies["kinetic"][step])
+                if "kinetic" in sample.energies
+                else 0.0
+            )
             frame_rows.append(
                 (
                     sample.sample_id,
@@ -1108,4 +1134,6 @@ class DatasetGenerator:
             return self.export_to_sqlite(dataset, output_path)
         if format == "csv":
             return self.export_to_csv(dataset, output_path)
-        raise ValueError(f"Unsupported export format: {format}. Supported: hdf5, sqlite, csv")
+        raise ValueError(
+            f"Unsupported export format: {format}. Supported: hdf5, sqlite, csv"
+        )

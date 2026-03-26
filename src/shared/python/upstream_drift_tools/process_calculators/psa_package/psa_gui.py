@@ -56,7 +56,9 @@ matplotlib.use("QtAgg")
 class MplCanvas(FigureCanvas):
     """Matplotlib canvas widget for embedding in PyQt6."""
 
-    def __init__(self, parent: QWidget | None = None, width: float = 8, height: float = 6) -> None:
+    def __init__(
+        self, parent: QWidget | None = None, width: float = 8, height: float = 6
+    ) -> None:
         if not (width is not None):
             raise ValueError("width must be provided")
         if not (width is not None):
@@ -150,8 +152,12 @@ class InputPanel(QWidget):
         for i, comp in enumerate(DEFAULT_COMPONENTS):
             self.component_table.setItem(i, 0, QTableWidgetItem(comp["name"]))
             self.component_table.setItem(i, 1, QTableWidgetItem(str(comp["feed_pct"])))
-            self.component_table.setItem(i, 2, QTableWidgetItem(str(comp["stage1_removal_pct"])))
-            self.component_table.setItem(i, 3, QTableWidgetItem(str(comp["stage2_removal_pct"])))
+            self.component_table.setItem(
+                i, 2, QTableWidgetItem(str(comp["stage1_removal_pct"]))
+            )
+            self.component_table.setItem(
+                i, 3, QTableWidgetItem(str(comp["stage2_removal_pct"]))
+            )
 
         self.component_table.resizeColumnsToContents()
         comp_layout.addWidget(self.component_table)
@@ -171,8 +177,12 @@ class InputPanel(QWidget):
 
         for i, comp in enumerate(DEFAULT_COMPONENTS):
             self.component_table.setItem(i, 1, QTableWidgetItem(str(comp["feed_pct"])))
-            self.component_table.setItem(i, 2, QTableWidgetItem(str(comp["stage1_removal_pct"])))
-            self.component_table.setItem(i, 3, QTableWidgetItem(str(comp["stage2_removal_pct"])))
+            self.component_table.setItem(
+                i, 2, QTableWidgetItem(str(comp["stage1_removal_pct"]))
+            )
+            self.component_table.setItem(
+                i, 3, QTableWidgetItem(str(comp["stage2_removal_pct"]))
+            )
 
     def get_parameters(self) -> tuple[float, float, float, list[ComponentData]]:
         """Get current input parameters."""
@@ -397,7 +407,9 @@ class ResultsPanel(QWidget):
         for i, name in enumerate(results.component_names):
             self.flows_table.setItem(i, 0, QTableWidgetItem(name))
             for col_idx, col_data in enumerate(flow_columns):
-                self.flows_table.setItem(i, col_idx + 1, QTableWidgetItem(f"{col_data[i]:.4f}"))
+                self.flows_table.setItem(
+                    i, col_idx + 1, QTableWidgetItem(f"{col_data[i]:.4f}")
+                )
 
         # Totals row
         self.flows_table.setItem(n_comp, 0, QTableWidgetItem("TOTAL"))
@@ -412,7 +424,9 @@ class ResultsPanel(QWidget):
             results.total_net_product_scfm,
         ]
         for col_idx, total in enumerate(totals):
-            self.flows_table.setItem(n_comp, col_idx + 1, QTableWidgetItem(f"{total:.2f}"))
+            self.flows_table.setItem(
+                n_comp, col_idx + 1, QTableWidgetItem(f"{total:.2f}")
+            )
 
         self.flows_table.resizeColumnsToContents()
 
@@ -437,7 +451,9 @@ class ResultsPanel(QWidget):
         for i, name in enumerate(results.component_names):
             self.comp_table.setItem(i, 0, QTableWidgetItem(name))
             for col_idx, col_data in enumerate(comp_columns):
-                self.comp_table.setItem(i, col_idx + 1, QTableWidgetItem(f"{col_data[i]:.4f}"))
+                self.comp_table.setItem(
+                    i, col_idx + 1, QTableWidgetItem(f"{col_data[i]:.4f}")
+                )
 
         # Totals row
         self.comp_table.setItem(n_comp, 0, QTableWidgetItem("TOTAL"))
@@ -652,7 +668,9 @@ class SensitivityPlotWidget(QWidget):
             color="red",
         )
         ax.axvline(x=95, color="green", linestyle=":", alpha=0.7, label="Current (95%)")
-        ax.axvline(x=80, color="orange", linestyle=":", alpha=0.7, label="Concern (80%)")
+        ax.axvline(
+            x=80, color="orange", linestyle=":", alpha=0.7, label="Concern (80%)"
+        )
 
         ax.set_xlabel("Stage 1 O2 Removal (%)")
         ax.set_ylabel("Stage 2 Tail O2 (%)")
@@ -856,7 +874,9 @@ class PSAMainWindow(QMainWindow):
                     )
                 else:
                     subprocess.Popen(["jupyter", "notebook", notebook_path])
-                QMessageBox.information(self, "Jupyter Notebook", "Launching Jupyter Notebook...")
+                QMessageBox.information(
+                    self, "Jupyter Notebook", "Launching Jupyter Notebook..."
+                )
             except FileNotFoundError:
                 QMessageBox.warning(
                     self,
@@ -864,7 +884,9 @@ class PSAMainWindow(QMainWindow):
                     "Jupyter is not installed. Install with: pip install jupyter",
                 )
         else:
-            QMessageBox.warning(self, "File Not Found", f"Notebook not found: {notebook_path}")
+            QMessageBox.warning(
+                self, "File Not Found", f"Notebook not found: {notebook_path}"
+            )
 
     def _launch_colab(self) -> None:
         """Open the Colab-compatible notebook in Google Colab."""
@@ -881,7 +903,9 @@ class PSAMainWindow(QMainWindow):
             "2. Upload directly to Google Drive and open in Colab\n"
             "3. Copy the notebook content manually"
         )
-        msg.setStandardButtons(QMessageBox.StandardButton.Open | QMessageBox.StandardButton.Cancel)
+        msg.setStandardButtons(
+            QMessageBox.StandardButton.Open | QMessageBox.StandardButton.Cancel
+        )
         msg.setDefaultButton(QMessageBox.StandardButton.Open)
 
         if msg.exec() == QMessageBox.StandardButton.Open:
@@ -914,7 +938,9 @@ class PSAMainWindow(QMainWindow):
                     "Streamlit is not installed. Install with: pip install streamlit",
                 )
         else:
-            QMessageBox.warning(self, "File Not Found", f"Web app not found: {webapp_path}")
+            QMessageBox.warning(
+                self, "File Not Found", f"Web app not found: {webapp_path}"
+            )
 
     def _show_about(self) -> None:
         """Show about dialog."""
@@ -996,7 +1022,9 @@ class PSAMainWindow(QMainWindow):
     def _calculate(self) -> None:
         """Run PSA calculation with current inputs."""
         try:
-            total_feed, s2_recycle, prod_recycle, components = self.input_panel.get_parameters()
+            total_feed, s2_recycle, prod_recycle, components = (
+                self.input_panel.get_parameters()
+            )
 
             model = PSAModel(
                 total_feed_scfm=total_feed,

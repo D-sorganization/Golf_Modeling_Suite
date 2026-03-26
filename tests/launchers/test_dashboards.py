@@ -5,15 +5,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.engines.physics_engines.drake.python.drake_physics_engine import (  # noqa: E402
-    DrakePhysicsEngine,
-)
-from src.engines.physics_engines.mujoco.python.mujoco_humanoid_golf.physics_engine import (  # noqa: E402
-    MuJoCoPhysicsEngine,
-)
-from src.engines.physics_engines.pinocchio.python.pinocchio_physics_engine import (  # noqa: E402
-    PinocchioPhysicsEngine,
-)
 from src.launchers.drake_dashboard import main as drake_main  # noqa: E402
 from src.launchers.matlab_launcher_unified import MatlabLauncher  # noqa: E402
 from src.launchers.matlab_launcher_unified import main as matlab_main  # noqa: E402

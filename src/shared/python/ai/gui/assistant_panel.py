@@ -102,8 +102,12 @@ class MessageWidget(QFrame):
         self._content_label = QTextEdit()
         self._content_label.setReadOnly(True)
         self._content_label.setFrameShape(QFrame.Shape.NoFrame)
-        self._content_label.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self._content_label.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._content_label.setVerticalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        self._content_label.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
         self._content_label.setSizePolicy(
             QSizePolicy.Policy.Expanding,
             QSizePolicy.Policy.Minimum,
@@ -341,7 +345,9 @@ class AIAssistantPanel(QWidget):
             output = ["Found relevant documents:"]
             for doc, score in results:
                 output.append(f"--- Document: {doc.id} (Score: {score:.2f}) ---")
-                output.append(doc.content[:500] + "..." if len(doc.content) > 500 else doc.content)
+                output.append(
+                    doc.content[:500] + "..." if len(doc.content) > 500 else doc.content
+                )
             return "\n\n".join(output)
 
     def _setup_ui(self) -> None:
@@ -434,7 +440,9 @@ class AIAssistantPanel(QWidget):
         if not (layout is not None):
             raise ValueError("layout must be provided")
         self._provider_icon = QLabel("\U0001f916")
-        self._provider_icon.setStyleSheet("font-size: 18px; color: black; background: transparent;")
+        self._provider_icon.setStyleSheet(
+            "font-size: 18px; color: black; background: transparent;"
+        )
         layout.addWidget(self._provider_icon)
 
         self._model_label = QLabel("AI Assistant")
@@ -470,7 +478,9 @@ class AIAssistantPanel(QWidget):
         layout.addWidget(self._mode_combo)
 
         self._status_label = QLabel("Ready")
-        self._status_label.setStyleSheet("font-size: 11px; color: #333; background: transparent;")
+        self._status_label.setStyleSheet(
+            "font-size: 11px; color: #333; background: transparent;"
+        )
         layout.addWidget(self._status_label)
 
     def _add_header_action_buttons(self, layout) -> None:
@@ -677,7 +687,9 @@ class AIAssistantPanel(QWidget):
         if not (message is not None):
             raise ValueError("message must be provided")
         if not self._adapter:
-            self._add_system_message("⚠️ No AI provider configured. Click ⚙️ to set up a provider.")
+            self._add_system_message(
+                "⚠️ No AI provider configured. Click ⚙️ to set up a provider."
+            )
             return
 
         # Update status
@@ -696,7 +708,9 @@ class AIAssistantPanel(QWidget):
         self._current_worker.error.connect(self._on_stream_error)
 
         # Create assistant message with placeholder
-        self._current_assistant_message = self._add_message("assistant", "*Thinking...*")
+        self._current_assistant_message = self._add_message(
+            "assistant", "*Thinking...*"
+        )
         self._is_first_chunk = True
 
         # Start streaming
@@ -724,7 +738,9 @@ class AIAssistantPanel(QWidget):
 
         # Add to context
         if self._current_assistant_message:
-            self._context.add_assistant_message(self._current_assistant_message.get_content())
+            self._context.add_assistant_message(
+                self._current_assistant_message.get_content()
+            )
             self._save_history()
 
         self._current_assistant_message = None
@@ -918,8 +934,12 @@ class AIAssistantPanel(QWidget):
         self._provider_icon.setText(icon)
 
         # Update Model Label
-        self._model_label.setText(f"{settings.provider.name.title()} ({settings.model})")
-        self._model_label.setToolTip(f"Provider: {settings.provider.name}\nModel: {settings.model}")
+        self._model_label.setText(
+            f"{settings.provider.name.title()} ({settings.model})"
+        )
+        self._model_label.setToolTip(
+            f"Provider: {settings.provider.name}\nModel: {settings.model}"
+        )
 
         # Set expertise level
         level_map = {
@@ -928,7 +948,9 @@ class AIAssistantPanel(QWidget):
             3: ExpertiseLevel.ADVANCED,
             4: ExpertiseLevel.EXPERT,
         }
-        self.set_expertise_level(level_map.get(settings.expertise_level, ExpertiseLevel.BEGINNER))
+        self.set_expertise_level(
+            level_map.get(settings.expertise_level, ExpertiseLevel.BEGINNER)
+        )
 
         # Create adapter based on provider
         adapter: BaseAgentAdapter | None = None
@@ -972,10 +994,13 @@ class AIAssistantPanel(QWidget):
 
         if adapter:
             self.set_adapter(adapter)
-            self._add_system_message(f"✓ Connected to {settings.provider.name} ({settings.model})")
+            self._add_system_message(
+                f"✓ Connected to {settings.provider.name} ({settings.model})"
+            )
         else:
             self._add_system_message(
-                f"⚠️ Could not connect to {settings.provider.name}. " "Please check your settings."
+                f"⚠️ Could not connect to {settings.provider.name}. "
+                "Please check your settings."
             )
 
     def _show_settings(self) -> None:

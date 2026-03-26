@@ -1,7 +1,3 @@
-import logging
-
-logger = logging.getLogger(__name__)
-
 """Import utilities for checking module availability and versions.
 
 This module provides reusable import patterns for dependency checking.
@@ -33,7 +29,7 @@ def ensure_imports(*modules: str) -> dict[str, bool]:
     Example:
         available = ensure_imports("numpy", "matplotlib", "torch")
         if not available["torch"]:
-            logger.info("PyTorch not available")
+            print("PyTorch not available")
     """
     results = {}
 
@@ -135,7 +131,7 @@ def get_module_version(module_name: str) -> str | None:
 
     Example:
         version = get_module_version("numpy")
-        logger.info(f"NumPy version: {version}")
+        print(f"NumPy version: {version}")
     """
     try:
         module = __import__(module_name)
@@ -165,10 +161,8 @@ def check_minimum_version(
         if check_minimum_version("numpy", "1.20.0"):
             use_new_api()
     """
-    if not (module_name is not None):
-        raise ValueError("module_name must be provided")
-    if not (module_name is not None):
-        raise ValueError("module_name must be provided")
+    assert module_name is not None, "module_name must be provided"
+    assert module_name is not None, "module_name must be provided"
     from packaging import version
 
     current_version = get_module_version(module_name)
@@ -176,9 +170,13 @@ def check_minimum_version(
         return False
 
     try:
-        meets_requirement = version.parse(current_version) >= version.parse(minimum_version)
+        meets_requirement = version.parse(current_version) >= version.parse(
+            minimum_version
+        )
         if meets_requirement:
-            logger.debug(f"{module_name} {current_version} meets minimum {minimum_version}")
+            logger.debug(
+                f"{module_name} {current_version} meets minimum {minimum_version}"
+            )
         else:
             logger.warning(
                 f"{module_name} {current_version} does not meet minimum {minimum_version}"

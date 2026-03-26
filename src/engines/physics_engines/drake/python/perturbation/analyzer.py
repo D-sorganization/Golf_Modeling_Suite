@@ -298,15 +298,13 @@ class DrakePerturbationAnalyzer:
         Pre: profile is a dict with 'coeffs' key.
         Post: self._base_coeffs is set and self._nominal_result is cached.
         """
-        if not (isinstance(profile):
-            raise ValueError(dict), f"profile must be a dict, got {type(profile)}")
-        if not ("coeffs" in profile):
+        if not isinstance(profile, dict):
+            raise ValueError(f"profile must be a dict, got {type(profile)}")
+        if "coeffs" not in profile:
             raise ValueError("'coeffs' key missing from profile")
         coeffs = profile["coeffs"]
-        if not (isinstance(coeffs):
-            raise ValueError(list) and len(coeffs) > 0, ()
-            "profile['coeffs'] must be a non-empty list"
-        )
+        if not (isinstance(coeffs, list) and len(coeffs) > 0):
+            raise ValueError("profile['coeffs'] must be a non-empty list")
         self._base_coeffs = coeffs
         self._nominal_result = self._simulate(coeffs)
 
@@ -320,8 +318,8 @@ class DrakePerturbationAnalyzer:
         """
         if not (self._base_coeffs is not None):
             raise ValueError(
-            "set_base_torque_profile() must be called before perturb_torque()"
-        )
+                "set_base_torque_profile() must be called before perturb_torque()"
+            )
         perturbed = perturb_torque_coeffs(
             self._base_coeffs,
             noise_amplitude=config.noise_amplitude,
@@ -348,7 +346,9 @@ class DrakePerturbationAnalyzer:
         Post: all MANDATORY_METRICS present; all values finite.
         """
         if not isinstance(sim_result, DrakeSimResult):
-            raise ValueError("f"sim_result must be DrakeSimResult, got {type(sim_result)}")
+            raise ValueError(
+                f"sim_result must be DrakeSimResult, got {type(sim_result)}"
+            )
         if not (sim_result.n_steps >= 2):
             raise ValueError("Simulation must have >= 2 steps")
 
@@ -403,8 +403,8 @@ class DrakePerturbationAnalyzer:
         """
         if not (self._base_coeffs is not None):
             raise ValueError(
-            "set_base_torque_profile() must be called before run_batch()"
-        )
+                "set_base_torque_profile() must be called before run_batch()"
+            )
 
         t_start = time.monotonic()
         base_seed = config.seed if config.seed is not None else 0
@@ -441,7 +441,7 @@ class DrakePerturbationAnalyzer:
                         v = float(np.linalg.norm(v))
                     metric_lists[m].append(float(v))
                 n_success += 1
-            except Exception as e:  # noqa: BLE001
+            except Exception:  # noqa: BLE001
                 logger.debug("Trial %d failed", i, exc_info=True)
 
         success_rate = n_success / config.n_trials if config.n_trials > 0 else 0.0
@@ -535,7 +535,7 @@ class DrakePerturbationAnalyzer:
                     if isinstance(v, np.ndarray):
                         v = float(np.linalg.norm(v))
                     values.append(float(v))
-                except Exception as e:  # noqa: BLE001
+                except Exception:  # noqa: BLE001
                     pass
             return np.array(values) if values else np.array([0.0])
 
