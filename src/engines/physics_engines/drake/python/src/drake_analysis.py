@@ -286,7 +286,8 @@ class DrakeRecorder:
         if not (source_name is not None):
             raise ValueError("source_name must be provided")
         if (
-            isinstance(source_name, int) or source_name not in self.induced_accelerations
+            isinstance(source_name, int)
+            or source_name not in self.induced_accelerations
         ):  # noqa: E501
             # If int, maybe we have it stored by int key?
             # Or map int to name if possible?

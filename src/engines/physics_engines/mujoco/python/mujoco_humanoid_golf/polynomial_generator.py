@@ -321,7 +321,9 @@ class PolynomialGeneratorWidget(QtWidgets.QWidget):
         self.clear_btn.setAccessibleName("Clear all points")
         style = self.style()
         if style:
-            self.clear_btn.setIcon(style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_TrashIcon))
+            self.clear_btn.setIcon(
+                style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_TrashIcon)
+            )
 
         self.fit_btn = QtWidgets.QPushButton("Fit Polynomial")
         self.fit_btn.setObjectName("fitBtn")
@@ -445,7 +447,9 @@ class PolynomialGeneratorWidget(QtWidgets.QWidget):
         if not (event is not None):
             raise ValueError("event must be provided")
         if (
-            event.inaxes != self.canvas.axes or event.xdata is None or event.ydata is None
+            event.inaxes != self.canvas.axes
+            or event.xdata is None
+            or event.ydata is None
         ):  # noqa: E501
             return
 
@@ -459,7 +463,9 @@ class PolynomialGeneratorWidget(QtWidgets.QWidget):
                 self.drawn_points = [(event.xdata, event.ydata)]
 
         elif (
-            self.mode == "drag" and event.button == 1 and self.polynomial_coeffs is not None
+            self.mode == "drag"
+            and event.button == 1
+            and self.polynomial_coeffs is not None
         ):  # noqa: E501
             self.dragging_curve = True
             self.drag_start_pos = (event.xdata, event.ydata)
@@ -499,7 +505,9 @@ class PolynomialGeneratorWidget(QtWidgets.QWidget):
         if not (event is not None):
             raise ValueError("event must be provided")
         if (
-            event.inaxes != self.canvas.axes or event.xdata is None or event.ydata is None
+            event.inaxes != self.canvas.axes
+            or event.xdata is None
+            or event.ydata is None
         ):  # noqa: E501
             return
 

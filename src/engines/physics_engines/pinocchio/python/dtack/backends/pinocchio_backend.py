@@ -82,7 +82,9 @@ class PinocchioBackend:
             FileNotFoundError: If model file does not exist
         """
         if not PINOCCHIO_AVAILABLE:
-            msg = "Pinocchio is required but not installed. Install with: pip install pin"  # noqa: E501
+            msg = (
+                "Pinocchio is required but not installed. Install with: pip install pin"  # noqa: E501
+            )
             raise ImportError(msg)
 
         model_path_obj = Path(model_path)
@@ -92,8 +94,8 @@ class PinocchioBackend:
 
         # For now, assume URDF. Later we'll add YAML parser
         if model_path_obj.suffix == ".urdf":
-            self.model, self.collision_model, self.visual_model = pin.buildModelsFromUrdf(
-                str(model_path_obj), ""
+            self.model, self.collision_model, self.visual_model = (
+                pin.buildModelsFromUrdf(str(model_path_obj), "")
             )  # noqa: E501
         else:
             msg = f"Unsupported model format: {model_path_obj.suffix}"

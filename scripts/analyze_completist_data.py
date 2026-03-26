@@ -116,7 +116,12 @@ def analyze_todos() -> tuple[list[Finding], list[Finding]]:
             return None
 
         if re.search(r"\b" + todo_str + r"\b", content):
-            return {"file": filepath, "line": lineno, "text": content, "type": "TRACKED_TASK"}
+            return {
+                "file": filepath,
+                "line": lineno,
+                "text": content,
+                "type": "TRACKED_TASK",
+            }
 
         for m_marker in fixme_markers:
             if re.search(r"\b" + m_marker + r"\b", content):
@@ -350,7 +355,9 @@ def _generate_tech_debt_register(fixmes: list[Finding]) -> list[str]:
     ]
     for item in fixmes:
         text = item.get("text", "").replace("|", "\\|")
-        section.append(f"| `{item['file']}` | {item['line']} | {text[:100]} | {item['type']} |")
+        section.append(
+            f"| `{item['file']}` | {item['line']} | {text[:100]} | {item['type']} |"
+        )
     return section
 
 
@@ -360,7 +367,9 @@ def _priority_score(item: Mapping[str, Any]) -> int:
     return (imp * 10) - comp
 
 
-def _generate_priority_table(criticals: list[Finding], todos: list[Finding]) -> list[str]:
+def _generate_priority_table(
+    criticals: list[Finding], todos: list[Finding]
+) -> list[str]:
     """Generate the recommended implementation order section."""
     section = [
         "\n## Recommended Implementation Order",

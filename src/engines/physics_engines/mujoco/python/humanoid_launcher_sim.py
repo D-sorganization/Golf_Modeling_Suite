@@ -144,7 +144,8 @@ class SimulationMixin:
             self.log(f"Simulation failed with code {code} (Segmentation Fault).")
 
             self.log(
-                "⚠️ COMMON CAUSE: X11 Display Server not found or " "configured incorrectly."
+                "⚠️ COMMON CAUSE: X11 Display Server not found or "
+                "configured incorrectly."
             )  # noqa: E501
 
             self.log("1. Ensure VcXsrv (XLaunch) is running.")

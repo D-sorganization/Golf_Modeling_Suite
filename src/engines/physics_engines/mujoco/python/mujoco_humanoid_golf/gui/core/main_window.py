@@ -150,7 +150,9 @@ class AdvancedGolfAnalysisWindow(SimulationGUIBase, AdvancedGuiMethodsMixin):
         self.physics_tab.mode_changed.connect(self.controls_tab.on_mode_changed)
 
         if hasattr(self.controls_tab, "chk_live_analysis"):
-            self.controls_tab.chk_live_analysis.toggled.connect(self.on_live_analysis_toggled)
+            self.controls_tab.chk_live_analysis.toggled.connect(
+                self.on_live_analysis_toggled
+            )
 
         self.physics_tab.model_changed.connect(
             lambda n, c: self.manipulability_tab.on_model_loaded()

@@ -338,7 +338,8 @@ class MuJoCoSimWidget(  # type: ignore[misc]
             if self.model.njnt > 0:
                 first_joint_type = self.model.jnt_type[0]
                 if (
-                    first_joint_type == mujoco.mjtJoint.mjJNT_FREE and len(self.data.qpos) >= 3
+                    first_joint_type == mujoco.mjtJoint.mjJNT_FREE
+                    and len(self.data.qpos) >= 3
                 ):  # noqa: E501
                     self.data.qpos[2] = 0.9
         elif self.model.nq >= 1:

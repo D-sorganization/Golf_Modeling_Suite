@@ -653,9 +653,9 @@ class MotionDataLoader:
                     )
                     deltaq_data[gui_col] = diff
                 else:
-                    deltaq_data[f"{component.upper().replace('_', '')[:2]}{axis[-1].upper()}"] = (
-                        0.0  # noqa: E501
-                    )
+                    deltaq_data[
+                        f"{component.upper().replace('_', '')[:2]}{axis[-1].upper()}"
+                    ] = 0.0  # noqa: E501
 
         return deltaq_data
 

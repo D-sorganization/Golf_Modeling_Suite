@@ -205,7 +205,8 @@ class DrakePoseEditor(BasePoseEditor):
             x in name_lower for x in ["shoulder", "humerus", "elbow", "wrist", "arm"]
         ):  # noqa: E501
             if (
-                any(x in name_lower for x in ["l_", "left", "l"]) and name_lower[0] == "l"
+                any(x in name_lower for x in ["l_", "left", "l"])
+                and name_lower[0] == "l"
             ):  # noqa: E501
                 return "Left Arm"
             else:
@@ -213,7 +214,8 @@ class DrakePoseEditor(BasePoseEditor):
 
         if any(x in name_lower for x in ["hip", "knee", "ankle", "leg", "foot"]):
             if (
-                any(x in name_lower for x in ["l_", "left", "l"]) and name_lower[0] == "l"
+                any(x in name_lower for x in ["l_", "left", "l"])
+                and name_lower[0] == "l"
             ):  # noqa: E501
                 return "Left Leg"
             else:
@@ -277,9 +279,9 @@ class DrakePoseEditor(BasePoseEditor):
                 if info.num_positions == 1:
                     positions[info.position_index] = float(value)
                 else:
-                    positions[info.position_index : info.position_index + info.num_positions] = (
-                        value  # noqa: E501
-                    )
+                    positions[
+                        info.position_index : info.position_index + info.num_positions
+                    ] = value  # noqa: E501
 
                 self._plant.SetPositions(self._context, positions)
                 self._state.joint_positions = positions

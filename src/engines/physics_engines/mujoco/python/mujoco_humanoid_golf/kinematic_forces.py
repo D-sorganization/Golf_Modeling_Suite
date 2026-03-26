@@ -866,8 +866,8 @@ class KinematicForceAnalyzer:
             centrifugal, coupling = self.decompose_coriolis_forces(qpos, qvel)
 
             # Club head apparent forces
-            club_coriolis, club_centrifugal, club_apparent = self.compute_club_head_apparent_forces(
-                qpos, qvel, qacc
+            club_coriolis, club_centrifugal, club_apparent = (
+                self.compute_club_head_apparent_forces(qpos, qvel, qacc)
             )  # noqa: E501
 
             # Power contributions

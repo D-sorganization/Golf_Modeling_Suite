@@ -124,7 +124,9 @@ class CrossEngineReport:
                 "perturb_mode": self.config.perturb_mode,
                 "seed": self.config.seed,
             },
-            "summaries": {name: summary.to_dict() for name, summary in self.summaries.items()},
+            "summaries": {
+                name: summary.to_dict() for name, summary in self.summaries.items()
+            },
             "ranking": [
                 {
                     "rank": e.rank,
@@ -155,7 +157,8 @@ class CrossEngineReport:
 
 _ENGINE_LOADER_MAP: dict[str, str] = {
     "pendulum": (
-        "src.shared.python.pendulum_simulator.perturbation_analysis" "|PendulumPerturbationAnalyzer"
+        "src.shared.python.pendulum_simulator.perturbation_analysis"
+        "|PendulumPerturbationAnalyzer"
     ),
     "pinocchio": (
         "src.engines.physics_engines.pinocchio.python.perturbation.analyzer"
@@ -195,7 +198,9 @@ def _load_analyzer(engine_name: str, **kwargs: Any) -> Any:
     analyzer instance or raises ImportError / ValueError.
     """
     if not (engine_name in SUPPORTED_ENGINES):  # noqa: E713
-        raise ValueError(f"Unsupported engine: {engine_name!r}.  Choose from {SUPPORTED_ENGINES}")
+        raise ValueError(
+            f"Unsupported engine: {engine_name!r}.  Choose from {SUPPORTED_ENGINES}"
+        )
 
     entry = _ENGINE_LOADER_MAP[engine_name]
     module_path, cls_name = entry.split("|")
@@ -282,7 +287,9 @@ class CrossEnginePerturbationRunner:
 
         for name in engines:
             if not (name in SUPPORTED_ENGINES):  # noqa: E713
-                raise ValueError(f"Unknown engine: {name!r}.  Supported: {SUPPORTED_ENGINES}")
+                raise ValueError(
+                    f"Unknown engine: {name!r}.  Supported: {SUPPORTED_ENGINES}"
+                )
 
         self._engines = engines
         self._profile = profile
@@ -371,7 +378,9 @@ class CrossEnginePerturbationRunner:
             total_time_sec=total_time,
         )
 
-    def run_single(self, engine_name: str, config: PerturbationConfig) -> PerturbationSummary:
+    def run_single(
+        self, engine_name: str, config: PerturbationConfig
+    ) -> PerturbationSummary:
         """Run perturbation analysis on a single engine.
 
         Design by Contract
@@ -523,12 +532,15 @@ def format_report(report: CrossEngineReport) -> str:
         n_total = len(report.consistency)
         lines += [
             "",
-            f"Metric Consistency ({n_consistent}/{n_total} consistent " f"at CV < {0.2:.0%}):",
+            f"Metric Consistency ({n_consistent}/{n_total} consistent "
+            f"at CV < {0.2:.0%}):",
             "-" * 40,
         ]
         for metric_name, c in sorted(report.consistency.items()):
             status = "CONSISTENT" if c.is_consistent else "INCONSISTENT"
-            lines.append(f"  {status:<12} {metric_name:<35} CV={c.coefficient_of_variation:.3f}")
+            lines.append(
+                f"  {status:<12} {metric_name:<35} CV={c.coefficient_of_variation:.3f}"
+            )
 
     lines.append("=" * 60)
     return "\n".join(lines)

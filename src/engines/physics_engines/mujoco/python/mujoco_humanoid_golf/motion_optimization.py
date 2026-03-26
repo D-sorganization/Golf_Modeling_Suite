@@ -279,7 +279,8 @@ class SwingOptimizer:
         for _knot in range(self.num_knot_points):
             for joint_idx in range(self.model.njnt):
                 if (
-                    self.constraints.joint_position_limits and self.model.jnt_limited[joint_idx]
+                    self.constraints.joint_position_limits
+                    and self.model.jnt_limited[joint_idx]
                 ):  # noqa: E501
                     q_min = self.model.jnt_range[joint_idx, 0]
                     q_max = self.model.jnt_range[joint_idx, 1]

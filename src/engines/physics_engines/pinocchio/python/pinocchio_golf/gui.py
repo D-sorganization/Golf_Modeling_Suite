@@ -68,9 +68,7 @@ logger = get_logger(__name__)
 
 
 # Constants
-DT_DEFAULT = (
-    0.01  # [s] Physics time step. 10ms is standard for real-time visualization.  # noqa: E501
-)
+DT_DEFAULT = 0.01  # [s] Physics time step. 10ms is standard for real-time visualization.  # noqa: E501
 SLIDER_RANGE_RAD = 10.0  # [rad] Range for joint sliders provided in UI
 SLIDER_SCALE = 100.0  # Scale factor for QSlider (int) -> rad (float)
 COM_SPHERE_RADIUS = 0.02  # [m] Radius for Center of Mass visualization spheres
