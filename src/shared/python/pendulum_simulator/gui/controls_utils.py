@@ -81,7 +81,7 @@ STYLE_BTN_IMPORT = (
 )
 
 # ── Full-window dark stylesheet (fallback when fleet ThemeManager unavailable)
-# Tracked in #1042: derive from fleet ThemeManager palette when it is a hard dep.
+# Tracked in #1042: Derive from fleet ThemeManager palette when it's a hard dep.
 PENDULUM_DARK_STYLE = f"""
     QMainWindow {{ background: #12121c; }}
     QStatusBar  {{ background: #12121c; color: #7878a0; font-size: {FONT_STATUS}px;

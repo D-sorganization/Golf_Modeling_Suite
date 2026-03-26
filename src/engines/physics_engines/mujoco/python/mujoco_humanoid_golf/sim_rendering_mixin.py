@@ -254,7 +254,7 @@ class SimRenderingMixin:
                     1,
                 )
             except Exception as exc:  # noqa: BLE001
-                logger.debug("cv2 label overlay failed, skipping: %s", exc)
+                logger.debug("Overlay text render skipped: %s", exc)
         return img
 
     def _update_background_colors(self: Any) -> None:
