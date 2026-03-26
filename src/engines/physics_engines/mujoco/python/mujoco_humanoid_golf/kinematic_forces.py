@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Kinematic-dependent force analysis for golf swing biomechanics.
 
 This module computes motion-dependent forces that can be calculated from

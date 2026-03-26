@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """MuJoCo physics engine integration for humanoid golf simulation.
 
 Wraps the MuJoCo physics backend to provide a unified interface for

@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Pinocchio Perturbation Analyzer — PerturbationAnalyzer protocol (#1978).
 
 Implements the ``PerturbationAnalyzer`` protocol for the Pinocchio rigid-body
@@ -248,8 +252,8 @@ class PinocchioPerturbationAnalyzer:
         Pre: profile is a dict with 'coeffs' key.
         Post: self._base_coeffs is set and self._nominal_result is cached.
         """
-        if not (isinstance(profile):
-            raise ValueError(dict), f"profile must be a dict, got {type(profile)}")
+        if not isinstance(profile, dict):
+            raise ValueError(f"profile must be a dict, got {type(profile)}")
         if not ("coeffs" in profile):
             raise ValueError("'coeffs' key missing from profile")
         coeffs = profile["coeffs"]

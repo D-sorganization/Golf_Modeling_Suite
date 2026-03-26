@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """MuJoCo Perturbation Analyzer — PerturbationAnalyzer protocol for MuJoCo (#1980).
 
 Implements the ``PerturbationAnalyzer`` protocol for the MuJoCo physics
@@ -265,8 +269,8 @@ class MuJoCoPerturbationAnalyzer:
         Pre: profile is a dict with 'coeffs' key.
         Post: self._base_coeffs is set and self._nominal_result is cached.
         """
-        if not (isinstance(profile):
-            raise ValueError(dict), f"profile must be a dict, got {type(profile)}")
+        if not isinstance(profile, dict):
+            raise ValueError(f"profile must be a dict, got {type(profile)}")
         if not ("coeffs" in profile):
             raise ValueError("'coeffs' key missing from profile")
         coeffs = profile["coeffs"]

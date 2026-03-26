@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Multi-format mesh loading system for Unreal Engine integration.
 
 This module provides a unified interface for loading 3D mesh files

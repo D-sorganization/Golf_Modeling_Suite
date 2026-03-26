@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """MuJoCo humanoid-golf simulation core (Docker backend).
 
 Implements the main simulation loop, state management, and trajectory

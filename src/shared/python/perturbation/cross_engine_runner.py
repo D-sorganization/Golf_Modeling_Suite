@@ -304,8 +304,8 @@ class CrossEnginePerturbationRunner:
         ------------------
         Pre: profile is a dict with 'coeffs' key.
         """
-        if not (isinstance(profile):
-            raise ValueError(dict), f"profile must be a dict, got {type(profile)}")
+        if not isinstance(profile, dict):
+            raise ValueError(f"profile must be a dict, got {type(profile)}")
         if not ("coeffs" in profile):
             raise ValueError("'coeffs' key missing from profile")
         self._profile = profile

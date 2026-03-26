@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Advanced kinematics analysis for parallel mechanisms and redundant manipulators.
 
 This module provides state-of-the-art robotics analysis tools including:

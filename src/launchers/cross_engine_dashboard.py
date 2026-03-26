@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Cross-Engine Perturbation Comparison Dashboard.
 
 Addresses GH2020: provides a PyQt6 interactive dashboard (and optional CLI)
