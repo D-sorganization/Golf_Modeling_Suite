@@ -5,10 +5,10 @@ This GUI provides interactive visualization and analysis of PSA system
 performance, including sensitivity analysis and O2 safety calculations.
 """
 
-import os
 import subprocess
 import sys
 import webbrowser
+from pathlib import Path
 
 import matplotlib
 import numpy as np
@@ -59,8 +59,10 @@ class MplCanvas(FigureCanvas):
     def __init__(
         self, parent: QWidget | None = None, width: float = 8, height: float = 6
     ) -> None:
-        assert width is not None, "width must be provided"
-        assert width is not None, "width must be provided"
+        if not (width is not None):
+            raise ValueError("width must be provided")
+        if not (width is not None):
+            raise ValueError("width must be provided")
         self.fig = Figure(figsize=(width, height), dpi=100)
         super().__init__(self.fig)
         self.setParent(parent)
@@ -113,7 +115,7 @@ class InputPanel(QWidget):
             max_value=100,
             default_value=100,
             orientation=Qt.Orientation.Horizontal,
-            value_changed_callback=lambda v: self.s2_recycle_label.setText(f"{v}%"),  # type: ignore
+            value_changed_callback=lambda v: self.s2_recycle_label.setText(f"{v}%"),  # type: ignore[has-type]
         )
         self.s2_recycle_label = QLabel("100%")
         op_layout.addWidget(self.s2_recycle_slider, 1, 1)
@@ -126,7 +128,7 @@ class InputPanel(QWidget):
             max_value=100,
             default_value=0,
             orientation=Qt.Orientation.Horizontal,
-            value_changed_callback=lambda v: self.prod_recycle_label.setText(f"{v}%"),  # type: ignore
+            value_changed_callback=lambda v: self.prod_recycle_label.setText(f"{v}%"),  # type: ignore[has-type]
         )
         self.prod_recycle_label = QLabel("0%")
         op_layout.addWidget(self.prod_recycle_slider, 2, 1)
@@ -336,8 +338,10 @@ class ResultsPanel(QWidget):
 
     def update_results(self, results: PSAResults) -> None:
         """Update display with calculation results."""
-        assert results is not None, "results must be provided"
-        assert results is not None, "results must be provided"
+        if not (results is not None):
+            raise ValueError("results must be provided")
+        if not (results is not None):
+            raise ValueError("results must be provided")
         self._update_key_metrics(results)
         self._update_safety_metrics(results)
         self._update_flows_table(results)
@@ -345,8 +349,10 @@ class ResultsPanel(QWidget):
 
     def _update_key_metrics(self, results: PSAResults) -> None:
         """Update key performance metric labels."""
-        assert results is not None, "results must be provided"
-        assert results is not None, "results must be provided"
+        if not (results is not None):
+            raise ValueError("results must be provided")
+        if not (results is not None):
+            raise ValueError("results must be provided")
         self.h2_recovery_label.setText(f"{results.h2_recovery_pct:.2f}%")
         self.h2_purity_label.setText(f"{results.h2_purity_pct:.5f}%")
         self.net_product_label.setText(f"{results.total_net_product_scfm:.2f} SCFM")
@@ -355,8 +361,10 @@ class ResultsPanel(QWidget):
 
     def _update_safety_metrics(self, results: PSAResults) -> None:
         """Update safety/flammability metric labels and styling."""
-        assert results is not None, "results must be provided"
-        assert results is not None, "results must be provided"
+        if not (results is not None):
+            raise ValueError("results must be provided")
+        if not (results is not None):
+            raise ValueError("results must be provided")
         self.s2_tail_h2_label.setText(f"{results.s2_tail_h2_pct:.2f}%")
         self.s2_tail_o2_label.setText(f"{results.s2_tail_o2_pct:.2f}%")
 
@@ -378,8 +386,10 @@ class ResultsPanel(QWidget):
 
     def _update_flows_table(self, results: PSAResults) -> None:
         """Populate the flows table with component flow data and totals."""
-        assert results is not None, "results must be provided"
-        assert results is not None, "results must be provided"
+        if not (results is not None):
+            raise ValueError("results must be provided")
+        if not (results is not None):
+            raise ValueError("results must be provided")
         n_comp = len(results.component_names)
         self.flows_table.setRowCount(n_comp + 1)
 
@@ -422,8 +432,10 @@ class ResultsPanel(QWidget):
 
     def _update_compositions_table(self, results: PSAResults) -> None:
         """Populate the compositions table with component percentage data."""
-        assert results is not None, "results must be provided"
-        assert results is not None, "results must be provided"
+        if not (results is not None):
+            raise ValueError("results must be provided")
+        if not (results is not None):
+            raise ValueError("results must be provided")
         n_comp = len(results.component_names)
         self.comp_table.setRowCount(n_comp + 1)
 
@@ -850,10 +862,10 @@ class PSAMainWindow(QMainWindow):
 
     def _launch_jupyter(self) -> None:
         """Launch the Jupyter notebook."""
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        notebook_path = os.path.join(script_dir, "psa_analysis.ipynb")
+        script_dir = Path(__file__).resolve().parent
+        notebook_path = script_dir / "psa_analysis.ipynb"
 
-        if os.path.exists(notebook_path):
+        if notebook_path.exists():
             try:
                 if sys.platform == "win32":
                     subprocess.Popen(
@@ -878,8 +890,8 @@ class PSAMainWindow(QMainWindow):
 
     def _launch_colab(self) -> None:
         """Open the Colab-compatible notebook in Google Colab."""
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        local_notebook = os.path.join(script_dir, "psa_analysis_colab.ipynb")
+        script_dir = Path(__file__).resolve().parent
+        local_notebook = script_dir / "psa_analysis_colab.ipynb"
 
         msg = QMessageBox(self)
         msg.setWindowTitle("Open in Google Colab")
@@ -901,10 +913,10 @@ class PSAMainWindow(QMainWindow):
 
     def _launch_webapp(self) -> None:
         """Launch the Streamlit web app."""
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        webapp_path = os.path.join(script_dir, "psa_webapp.py")
+        script_dir = Path(__file__).resolve().parent
+        webapp_path = script_dir / "psa_webapp.py"
 
-        if os.path.exists(webapp_path):
+        if webapp_path.exists():
             try:
                 if sys.platform == "win32":
                     subprocess.Popen(
