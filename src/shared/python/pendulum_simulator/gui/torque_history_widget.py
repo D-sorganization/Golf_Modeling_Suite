@@ -302,7 +302,7 @@ class TorqueHistoryWidget(QWidget):
         if self._result is None or not _HAS_PYQTGRAPH:
             return
         if not (0 <= idx < self._result.n_steps):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
         t_now = self._result.t[idx]
         for cursor in self._cursors:
             cursor.setValue(t_now)

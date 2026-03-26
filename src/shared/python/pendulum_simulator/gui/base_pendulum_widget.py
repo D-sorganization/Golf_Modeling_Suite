@@ -351,7 +351,7 @@ class BasePendulumWidget(QWidget):
         h_scale = usable_h / total_len
         result = max(30.0, min(w_scale, h_scale))
         if not (result >= 30.0):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
         return result
 
     def _world_to_pixel(self, x_world: float, y_world: float) -> QPointF:

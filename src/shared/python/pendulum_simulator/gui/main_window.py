@@ -204,13 +204,13 @@ class MainWindow(QMainWindow):
     def _build_menu(self) -> None:
         _mb = self.menuBar()
         if not (_mb is not None):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
         menubar: QMenuBar = _mb
 
         # View menu
         _view = menubar.addMenu("&View")
         if not (_view is not None):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
         view_menu: QMenu = _view
 
         # Quick theme submenu
@@ -247,7 +247,7 @@ class MainWindow(QMainWindow):
         # Help menu
         _help = menubar.addMenu("&Help")
         if not (_help is not None):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
         action_about = QAction("About…", self)
         action_about.triggered.connect(self._show_about)
         _help.addAction(action_about)
@@ -541,7 +541,7 @@ class MainWindow(QMainWindow):
 
             # Use shared helper to build a full theme submenu (window first, then parent)
             if not (self._quick_theme_menu is not None):
-                raise ValueError('DbC Blocked: Precondition failed.')
+                raise ValueError("DbC Blocked: Precondition failed.")
             if create_theme_menu is not None:
                 create_theme_menu(
                     self,

@@ -32,7 +32,7 @@ def matrix_to_tsv(data: np.ndarray) -> str:
         lines.append("\t".join(f"{v:.6g}" for v in row))
     result = "\n".join(lines)
     if not (result.count("\n") == data.shape[0] - 1):
-        raise ValueError('DbC Blocked: Precondition failed.')
+        raise ValueError("DbC Blocked: Precondition failed.")
     return result
 
 

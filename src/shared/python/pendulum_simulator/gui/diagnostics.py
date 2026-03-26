@@ -328,7 +328,7 @@ class DiagnosticsViewer(QDialog):
         )
         header_view = self._table.horizontalHeader()
         if not (header_view is not None):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
         header_view.setStretchLastSection(True)
         header_view.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         header_view.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)

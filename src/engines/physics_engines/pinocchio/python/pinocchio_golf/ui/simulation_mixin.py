@@ -293,13 +293,13 @@ class SimulationMixin:
     def _record_frame(self: PinocchioGUI) -> None:
         """Capture and record a single frame of simulation state."""
         if not (self.model is not None):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
         if not (self.data is not None):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
         if not (self.q is not None):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
         if not (self.v is not None):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
         tau = np.zeros(self.model.nv)
 
         pin.computeKineticEnergy(self.model, self.data, self.q, self.v)
@@ -327,9 +327,9 @@ class SimulationMixin:
     ) -> tuple[np.ndarray | None, np.ndarray | None]:
         """Resolve club head frame and return its pose/velocity."""
         if not (self.model is not None):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
         if not (self.data is not None):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
 
         club_id = -1
         for fid in range(self.model.nframes):

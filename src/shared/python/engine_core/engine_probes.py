@@ -277,7 +277,7 @@ class DrakeProbe(EngineProbe):
         if error is not None:
             return error
         if not (version is not None):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
 
         available_port = self._check_meshcat_port()
         if available_port is None:

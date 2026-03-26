@@ -40,9 +40,6 @@ def main() -> None:
                 model_path = selected[0]
 
     # Deferred import: only loads pydrake when this launcher is actually invoked
-    from src.engines.physics_engines.drake.python.drake_physics_engine import (  # noqa: PLC0415
-        DrakePhysicsEngine,
-    )
 
     launch_dashboard(
         engine_class=DrakePhysicsEngine,  # type: ignore[type-abstract]
