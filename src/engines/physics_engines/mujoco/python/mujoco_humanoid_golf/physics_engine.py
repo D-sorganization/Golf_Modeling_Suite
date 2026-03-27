@@ -1,6 +1,6 @@
 # ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """MuJoCo physics engine integration for humanoid golf simulation.
 
@@ -125,8 +125,6 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         """Set model and data manually (e.g. from async loader)."""
         if not (model is not None):
             raise ValueError("model must be provided")
-        if not (model is not None):
-            raise ValueError("model must be provided")
         self.model = model
         self.data = data
         self.xml_path = None
@@ -141,7 +139,7 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
 
     @precondition(
         lambda self, dt=None: self.is_initialized, "Engine must be initialized"
-    )  # noqa: E501
+    )
     def step(self, dt: float | None = None) -> None:
         """Step the simulation forward."""
         if self.model is not None and self.data is not None:
@@ -180,14 +178,14 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             if len(q) != len(self.data.qpos):
                 raise ValueError(
                     f"State q size mismatch: got {len(q)}, "
-                    f"expected {len(self.data.qpos)}"  # noqa: E501
+                    f"expected {len(self.data.qpos)}"
                 )
             self.data.qpos[:] = q
 
             if len(v) != len(self.data.qvel):
                 raise ValueError(
                     f"State v size mismatch: got {len(v)}, "
-                    f"expected {len(self.data.qvel)}"  # noqa: E501
+                    f"expected {len(self.data.qvel)}"
                 )
             self.data.qvel[:] = v
 
@@ -201,7 +199,7 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             if len(u) != self.model.nu:
                 raise ValueError(
                     f"Control vector size mismatch: got {len(u)}, "
-                    f"expected {self.model.nu}"  # noqa: E501
+                    f"expected {self.model.nu}"
                 )
             self.data.ctrl[:] = u
 
@@ -339,8 +337,6 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         """
         if not (tau is not None):
             raise ValueError("tau must be provided")
-        if not (tau is not None):
-            raise ValueError("tau must be provided")
         if self.model is None or self.data is None:
             return np.array([])
 
@@ -382,8 +378,6 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
 
     def compute_jacobian(self, body_name: str) -> dict[str, np.ndarray] | None:
         """Compute spatial Jacobian for a specific body."""
-        if not (body_name is not None):
-            raise ValueError("body_name must be provided")
         if not (body_name is not None):
             raise ValueError("body_name must be provided")
         if self.model is None or self.data is None:
@@ -479,8 +473,6 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         """
         if not (q is not None):
             raise ValueError("q must be provided")
-        if not (q is not None):
-            raise ValueError("q must be provided")
         if self.model is None or self.data is None:
             return np.array([])
 
@@ -534,8 +526,6 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         """
         if not (q is not None):
             raise ValueError("q must be provided")
-        if not (q is not None):
-            raise ValueError("q must be provided")
         if self.model is None or self.data is None:
             return np.array([])
 
@@ -587,8 +577,6 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             True if successfully configured.
         """
         # Store shaft configuration
-        if not (length is not None):
-            raise ValueError("length must be provided")
         if not (length is not None):
             raise ValueError("length must be provided")
         self._shaft_config = {
@@ -646,8 +634,6 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         # Use average properties for simple analytical solution
         if not (length is not None):
             raise ValueError("length must be provided")
-        if not (length is not None):
-            raise ValueError("length must be provided")
         EI_avg = np.mean(EI_profile)
         mu_avg = np.mean(mass_profile)  # Linear mass density [kg/m]
 
@@ -696,7 +682,7 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         """
         if not hasattr(self, "_shaft_config") or not hasattr(
             self, "_shaft_modal_state"
-        ):  # noqa: E501
+        ):
             return None
 
         modes = self._shaft_modes
@@ -709,7 +695,7 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
 
         for i, (amp, vel) in enumerate(
             zip(state["amplitudes"], state["velocities"], strict=True)
-        ):  # noqa: E501
+        ):
             deflection += amp * modes["mode_shapes"][i]
             velocity += vel * modes["mode_shapes"][i]
 

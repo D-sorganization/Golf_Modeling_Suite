@@ -51,7 +51,7 @@ class PinocchioVisualizationMixin:
             or self.data is None
             or self.q is None
             or self.viz is None
-        ):  # noqa: E501
+        ):
             return
 
         # Update Visuals via Pinocchio Visualizer
@@ -92,7 +92,7 @@ class PinocchioVisualizationMixin:
         pin.computeJointJacobians(self.model, self.data, self.q)
         J = pin.getJointJacobian(
             self.model, self.data, joint_id, pin.ReferenceFrame.LOCAL
-        )  # noqa: E501
+        )
 
         try:
             s = np.linalg.svd(J, compute_uv=False)
@@ -139,7 +139,7 @@ class PinocchioVisualizationMixin:
                     if (
                         self.chk_mobility.isChecked()
                         and res.mobility_matrix is not None
-                    ):  # noqa: E501
+                    ):
                         path_name = f"{res.body_name}/mobility"
                         radii = res.velocity_ellipsoid.radii
                         self._draw_ellipsoid_meshcat(
@@ -153,7 +153,7 @@ class PinocchioVisualizationMixin:
                     if (
                         self.chk_force_ellip.isChecked()
                         and res.force_matrix is not None
-                    ):  # noqa: E501
+                    ):
                         path_name = f"{res.body_name}/force"
                         radii = res.force_ellipsoid.radii
                         self._draw_ellipsoid_meshcat(
@@ -173,8 +173,6 @@ class PinocchioVisualizationMixin:
         color: int,
     ) -> None:
         """Draw ellipsoid using Meshcat."""
-        if not (name is not None):
-            raise ValueError("name must be provided")
         if not (name is not None):
             raise ValueError("name must be provided")
         if self.viewer is None:
@@ -298,7 +296,7 @@ class PinocchioVisualizationMixin:
             or self.data is None
             or self.viewer is None
             or self.latest_cf is None
-        ):  # noqa: E501
+        ):
             return
 
         cf_type = self.combo_cf.currentText()
@@ -338,8 +336,6 @@ class PinocchioVisualizationMixin:
         self: Any, path: str, start: np.ndarray, vector: np.ndarray, color: int
     ) -> None:
         """Helper to draw an arrow in Meshcat."""
-        if not (path is not None):
-            raise ValueError("path must be provided")
         if not (path is not None):
             raise ValueError("path must be provided")
         if self.viewer is None:
@@ -412,8 +408,6 @@ class PinocchioVisualizationMixin:
     def _toggle_forces(self: Any, checked: bool) -> None:  # noqa: FBT001
         if not (checked is not None):
             raise ValueError("checked must be provided")
-        if not (checked is not None):
-            raise ValueError("checked must be provided")
         if self.viewer is None:
             return
         if not checked:
@@ -421,8 +415,6 @@ class PinocchioVisualizationMixin:
         self._update_viewer()
 
     def _toggle_torques(self: Any, checked: bool) -> None:  # noqa: FBT001
-        if not (checked is not None):
-            raise ValueError("checked must be provided")
         if not (checked is not None):
             raise ValueError("checked must be provided")
         if self.viewer is None:

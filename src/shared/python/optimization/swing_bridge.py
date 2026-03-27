@@ -411,8 +411,6 @@ class SwingOptimizationBridge:
         """
         if not (controls is not None):
             raise ValueError("controls must be provided")
-        if not (controls is not None):
-            raise ValueError("controls must be provided")
         n = self._config.n_joints
         dt = self._config.dt
         trajectory: list[np.ndarray] = [initial_state.copy()]

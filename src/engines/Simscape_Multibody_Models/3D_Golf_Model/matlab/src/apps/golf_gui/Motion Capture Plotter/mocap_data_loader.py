@@ -22,8 +22,6 @@ def safe_float(value: Any, default: float = 0.0) -> float:
     """Safely convert a value to float, returning default on failure."""
     if not (default is not None):
         raise ValueError("default must be provided")
-    if not (default is not None):
-        raise ValueError("default must be provided")
     if pd.isna(value):
         return default
     try:
@@ -38,8 +36,6 @@ def parse_excel_row(row: pd.Series, row_index: int) -> dict[str, float] | None:
     Returns a dict with mid-hands and club head position/orientation data,
     or None if the row has insufficient columns.
     """
-    if not (row is not None):
-        raise ValueError("row must be provided")
     if not (row is not None):
         raise ValueError("row must be provided")
     if len(row) < 25:
@@ -82,8 +78,6 @@ def process_excel_sheet(filename: str, sheet_name: str) -> pd.DataFrame | None:
     Returns:
         DataFrame with parsed frame data, or None if sheet is too small.
     """
-    if not (filename is not None):
-        raise ValueError("filename must be provided")
     if not (filename is not None):
         raise ValueError("filename must be provided")
     df = pd.read_excel(filename, sheet_name=sheet_name, header=None)
@@ -168,8 +162,6 @@ def find_available_joints(
     """
     if not (joint_positions is not None):
         raise ValueError("joint_positions must be provided")
-    if not (joint_positions is not None):
-        raise ValueError("joint_positions must be provided")
     available_joints: dict[str, list[str]] = {}
     for joint_name, columns in joint_positions.items():
         if all(col in df_columns for col in columns):
@@ -196,7 +188,7 @@ def parse_simscape_csv(filename: str) -> pd.DataFrame:
     df = pd.read_csv(filename)
     logger.debug(
         f"Successfully loaded CSV with {len(df)} rows and {len(df.columns)} columns"
-    )  # noqa: E501
+    )
     logger.info(f"Time range: {df['time'].min():.3f} to {df['time'].max():.3f} seconds")
 
     joint_positions = get_simscape_joint_positions()

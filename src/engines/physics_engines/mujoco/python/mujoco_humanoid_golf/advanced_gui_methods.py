@@ -76,8 +76,6 @@ class AdvancedGuiMethodsMixin:
         """Apply colors from config to the model."""
         if not (colors is not None):
             raise ValueError("colors must be provided")
-        if not (colors is not None):
-            raise ValueError("colors must be provided")
         if not hasattr(self, "sim_widget") or self.sim_widget.model is None:
             return
 
@@ -87,7 +85,7 @@ class AdvancedGuiMethodsMixin:
             for i in range(self.sim_widget.get_num_geoms()):
                 name = mujoco.mj_id2name(
                     self.sim_widget.model, mujoco.mjtObj.mjOBJ_GEOM, i
-                )  # noqa: E501
+                )
                 if name and name_part in name:
                     self.sim_widget.set_geom_rgba(i, rgba)
 
@@ -143,7 +141,7 @@ class AdvancedGuiMethodsMixin:
 
             QtWidgets.QMessageBox.warning(
                 None, "Error", "Matplotlib or shared modules not found."
-            )  # noqa: E501
+            )
             return
 
         if not hasattr(self, "sim_widget"):
@@ -198,7 +196,7 @@ class AdvancedGuiMethodsMixin:
         tab_widget.addTab(
             self._create_kinematic_sequence_tab(
                 plotter, recorder, Figure, FigureCanvasQTAgg
-            ),  # noqa: E501
+            ),
             "Kinematic Sequence",
         )
         tab_widget.addTab(
@@ -210,13 +208,13 @@ class AdvancedGuiMethodsMixin:
         tab_widget.addTab(
             self._create_work_loop_tab(
                 plotter, analyzer, torso_idx, Figure, FigureCanvasQTAgg
-            ),  # noqa: E501
+            ),
             "Work Loop",
         )
         tab_widget.addTab(
             self._create_ssc_tab(
                 plotter, pelvis_idx, torso_idx, Figure, FigureCanvasQTAgg
-            ),  # noqa: E501
+            ),
             "Stretch-Shortening",
         )
 
@@ -224,10 +222,8 @@ class AdvancedGuiMethodsMixin:
 
     def _prepare_analysis_data(
         self, recorder, np_mod, analyzer_cls, plotter_cls
-    ) -> tuple:  # noqa: E501
+    ) -> tuple:
         """Prepare analyzer, report, plotter, and radar metrics from recorded data."""
-        if not (recorder is not None):
-            raise ValueError("recorder must be provided")
         if not (recorder is not None):
             raise ValueError("recorder must be provided")
         times, positions = recorder.get_time_series("joint_positions")
@@ -306,10 +302,8 @@ class AdvancedGuiMethodsMixin:
 
     def _create_swing_profile_tab(
         self, plotter, metrics, fig_cls, canvas_cls
-    ) -> QWidget:  # noqa: E501
+    ) -> QWidget:
         """Create the Swing Profile (radar chart) tab widget."""
-        if not (plotter is not None):
-            raise ValueError("plotter must be provided")
         if not (plotter is not None):
             raise ValueError("plotter must be provided")
         from PyQt6 import QtWidgets
@@ -324,8 +318,6 @@ class AdvancedGuiMethodsMixin:
 
     def _create_cop_tab(self, plotter, recorder, fig_cls, canvas_cls) -> QWidget:
         """Create the Center of Pressure vector field tab widget."""
-        if not (plotter is not None):
-            raise ValueError("plotter must be provided")
         if not (plotter is not None):
             raise ValueError("plotter must be provided")
         from PyQt6 import QtWidgets
@@ -346,8 +338,6 @@ class AdvancedGuiMethodsMixin:
         """Create the Power Flow tab widget."""
         if not (plotter is not None):
             raise ValueError("plotter must be provided")
-        if not (plotter is not None):
-            raise ValueError("plotter must be provided")
         from PyQt6 import QtWidgets
 
         widget = QtWidgets.QWidget()
@@ -364,10 +354,8 @@ class AdvancedGuiMethodsMixin:
 
     def _create_kinematic_sequence_tab(
         self, plotter, recorder, fig_cls, canvas_cls
-    ) -> QWidget:  # noqa: E501
+    ) -> QWidget:
         """Create the Kinematic Sequence tab widget."""
-        if not (plotter is not None):
-            raise ValueError("plotter must be provided")
         if not (plotter is not None):
             raise ValueError("plotter must be provided")
         from PyQt6 import QtWidgets
@@ -418,7 +406,7 @@ class AdvancedGuiMethodsMixin:
                     ks_result = ks_analyzer.analyze(ks_data, ks_times)
                     plotter.plot_kinematic_sequence(
                         fig, segment_indices, analyzer_result=ks_result
-                    )  # noqa: E501
+                    )
                 else:
                     plotter.plot_kinematic_sequence(fig, segment_indices)
             else:
@@ -442,8 +430,6 @@ class AdvancedGuiMethodsMixin:
         self, plotter, analyzer, pelvis_idx, torso_idx, fig_cls, canvas_cls
     ) -> QWidget:
         """Create the Coordination (Angle-Angle and Vector Coding) tab widget."""
-        if not (plotter is not None):
-            raise ValueError("plotter must be provided")
         if not (plotter is not None):
             raise ValueError("plotter must be provided")
         from PyQt6 import QtWidgets
@@ -470,7 +456,7 @@ class AdvancedGuiMethodsMixin:
 
                 coupling_angles = analyzer.compute_coupling_angles(
                     pelvis_idx, torso_idx
-                )  # noqa: E501
+                )
                 plotter.plot_coupling_angle(
                     fig,
                     coupling_angles,
@@ -498,10 +484,8 @@ class AdvancedGuiMethodsMixin:
 
     def _create_work_loop_tab(
         self, plotter, analyzer, torso_idx, fig_cls, canvas_cls
-    ) -> QWidget:  # noqa: E501
+    ) -> QWidget:
         """Create the Work Loop (Energetics) tab widget."""
-        if not (plotter is not None):
-            raise ValueError("plotter must be provided")
         if not (plotter is not None):
             raise ValueError("plotter must be provided")
         from PyQt6 import QtWidgets
@@ -537,10 +521,8 @@ class AdvancedGuiMethodsMixin:
 
     def _create_ssc_tab(
         self, plotter, pelvis_idx, torso_idx, fig_cls, canvas_cls
-    ) -> QWidget:  # noqa: E501
+    ) -> QWidget:
         """Create the Stretch-Shortening Cycle (X-Factor) tab widget."""
-        if not (plotter is not None):
-            raise ValueError("plotter must be provided")
         if not (plotter is not None):
             raise ValueError("plotter must be provided")
         from PyQt6 import QtWidgets

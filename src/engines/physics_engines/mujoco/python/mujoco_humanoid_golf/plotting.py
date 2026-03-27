@@ -14,7 +14,7 @@ from src.shared.python.plotting import GolfSwingPlotter as SharedGolfSwingPlotte
 from src.shared.python.plotting import MplCanvas
 
 if TYPE_CHECKING:
-    from engines.physics_engines.mujoco.python.mujoco_humanoid_golf.biomechanics import (  # noqa: E501
+    from engines.physics_engines.mujoco.python.mujoco_humanoid_golf.biomechanics import (
         SwingRecorder,
     )
 
@@ -36,8 +36,6 @@ class GolfSwingPlotter(SharedGolfSwingPlotter):
             model: Optional MuJoCo model for joint names
         """
         # Create joint names list if model is provided
-        if not (recorder is not None):
-            raise ValueError("recorder must be provided")
         if not (recorder is not None):
             raise ValueError("recorder must be provided")
         joint_names = None

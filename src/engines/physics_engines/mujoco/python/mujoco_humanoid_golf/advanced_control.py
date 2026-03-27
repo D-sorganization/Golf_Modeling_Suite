@@ -1,6 +1,6 @@
 # ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """Advanced control schemes for robotics applications.
 
@@ -53,11 +53,9 @@ class ImpedanceParameters:
         # Stiffness
         if not (dim is not None):
             raise ValueError("dim must be provided")
-        if not (dim is not None):
-            raise ValueError("dim must be provided")
         k_matrix = (
             np.diag(self.stiffness) if self.stiffness.ndim == 1 else self.stiffness
-        )  # noqa: E501
+        )
 
         # Damping
         d_matrix = np.diag(self.damping) if self.damping.ndim == 1 else self.damping
@@ -111,8 +109,6 @@ class AdvancedController:
         """
         if not (model is not None):
             raise ValueError("model must be provided")
-        if not (model is not None):
-            raise ValueError("model must be provided")
         self.model = model
         self.data = data
 
@@ -143,8 +139,6 @@ class AdvancedController:
 
     def _find_body_id(self, name_pattern: str) -> int | None:
         """Find body ID by name pattern."""
-        if not (name_pattern is not None):
-            raise ValueError("name_pattern must be provided")
         if not (name_pattern is not None):
             raise ValueError("name_pattern must be provided")
         for i in range(self.model.nbody):
@@ -200,7 +194,7 @@ class AdvancedController:
                 feedforward_torque
                 if feedforward_torque is not None
                 else np.zeros(self.model.nu)
-            )  # noqa: E501
+            )
 
         if self.mode == ControlMode.IMPEDANCE:
             return self._compute_impedance_control(target_position, target_velocity)
@@ -454,7 +448,7 @@ class AdvancedController:
             jacr_flat = np.zeros(3 * self.model.nv)
             mujoco.mj_jacBody(
                 self.model, self.data, jacp_flat, jacr_flat, self.club_head_id
-            )  # noqa: E501
+            )
             jacp = jacp_flat.reshape(3, self.model.nv)
 
         # Current end-effector state
@@ -538,8 +532,6 @@ class AdvancedController:
         """
         # Compute Jacobian
         # MuJoCo 3.3+ may require reshaped arrays - try both approaches
-        if not (target_position is not None):
-            raise ValueError("target_position must be provided")
         if not (target_position is not None):
             raise ValueError("target_position must be provided")
         try:
@@ -629,8 +621,6 @@ class TrajectoryGenerator:
         """
         if not (start is not None):
             raise ValueError("start must be provided")
-        if not (start is not None):
-            raise ValueError("start must be provided")
         num_steps = int(duration / dt)
         t = np.linspace(0, duration, num_steps)
 
@@ -648,7 +638,7 @@ class TrajectoryGenerator:
         # Interpolate
         positions = (
             start[np.newaxis, :] + (goal - start)[np.newaxis, :] * s[:, np.newaxis]
-        )  # noqa: E501
+        )
         velocities = (goal - start)[np.newaxis, :] * s_dot[:, np.newaxis]
         accelerations = (goal - start)[np.newaxis, :] * s_ddot[:, np.newaxis]
 
@@ -671,8 +661,6 @@ class TrajectoryGenerator:
             Tuple of (positions, velocities, accelerations)
         """
         # Simplified: use minimum jerk between consecutive waypoints
-        if not (waypoints is not None):
-            raise ValueError("waypoints must be provided")
         if not (waypoints is not None):
             raise ValueError("waypoints must be provided")
         all_positions = []

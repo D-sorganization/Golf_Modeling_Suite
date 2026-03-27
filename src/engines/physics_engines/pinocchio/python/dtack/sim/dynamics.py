@@ -22,8 +22,6 @@ class DynamicsEngine:
         """
         if not (model is not None):
             raise ValueError("model must be provided")
-        if not (model is not None):
-            raise ValueError("model must be provided")
         self.model = model
         self.data = data
 
@@ -46,8 +44,6 @@ class DynamicsEngine:
         """
         if not (q is not None):
             raise ValueError("q must be provided")
-        if not (q is not None):
-            raise ValueError("q must be provided")
         if f_ext is None:
             result = pin.aba(self.model, self.data, q, v, tau)
             return np.array(result, dtype=np.float64)
@@ -61,8 +57,6 @@ class DynamicsEngine:
 
         Returns: tau (torque)
         """
-        if not (q is not None):
-            raise ValueError("q must be provided")
         if not (q is not None):
             raise ValueError("q must be provided")
         if f_ext is None:
@@ -82,8 +76,6 @@ class DynamicsEngine:
         Returns:
             (q_next, v_next)
         """
-        if not (q is not None):
-            raise ValueError("q must be provided")
         if not (q is not None):
             raise ValueError("q must be provided")
         tau_zero = np.zeros(self.model.nv)
@@ -107,8 +99,6 @@ class DynamicsEngine:
         """
         if not (q is not None):
             raise ValueError("q must be provided")
-        if not (q is not None):
-            raise ValueError("q must be provided")
         v_zero = np.zeros(self.model.nv)
         a = self.forward_dynamics(q, v_zero, tau)
 
@@ -118,7 +108,7 @@ class DynamicsEngine:
 
     def compute_induced_acceleration(
         self, q: np.ndarray, tau_source: np.ndarray
-    ) -> np.ndarray:  # noqa: E501
+    ) -> np.ndarray:
         """Compute acceleration induced solely by a specific torque source.
 
         Equation: a = M(q)^-1 * tau_source
@@ -132,8 +122,6 @@ class DynamicsEngine:
             Induced acceleration vector
         """
         # Compute Mass Matrix Inverse
-        if not (q is not None):
-            raise ValueError("q must be provided")
         if not (q is not None):
             raise ValueError("q must be provided")
         pin.computeMinverse(self.model, self.data, q)

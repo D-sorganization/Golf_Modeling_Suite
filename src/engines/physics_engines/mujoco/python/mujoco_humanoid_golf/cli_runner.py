@@ -61,7 +61,7 @@ def load_model(model_key: str) -> tuple[mujoco.MjModel, mujoco.MjData]:
         if not candidate.exists():
             raise ValueError(
                 f"Unknown model '{model_key}'. Available: "
-                f"{', '.join(sorted(MODEL_SPECS))}",  # noqa: E501
+                f"{', '.join(sorted(MODEL_SPECS))}",
             )
         model = mujoco.MjModel.from_xml_path(candidate.as_posix())
     elif spec["mode"] == "xml_string":
@@ -123,8 +123,6 @@ def run_simulation(
     """Simulate the provided model for the requested duration."""
     if not (model is not None):
         raise ValueError("model must be provided")
-    if not (model is not None):
-        raise ValueError("model must be provided")
     analyzer = BiomechanicalAnalyzer(model, data)
     recorder = SwingRecorder()
     recorder.start_recording()
@@ -164,8 +162,6 @@ def export_json(path: Path, payload: Mapping[str, Any]) -> None:
     """Persist telemetry to a JSON file with provenance metadata."""
     if not (path is not None):
         raise ValueError("path must be provided")
-    if not (path is not None):
-        raise ValueError("path must be provided")
     from src.shared.python.data_io.provenance import ProvenanceInfo
 
     provenance = ProvenanceInfo.capture()
@@ -186,8 +182,6 @@ def export_json(path: Path, payload: Mapping[str, Any]) -> None:
 
 def export_csv(path: Path, payload: Mapping[str, Any]) -> None:
     """Persist telemetry to a CSV file with provenance header."""
-    if not (path is not None):
-        raise ValueError("path must be provided")
     if not (path is not None):
         raise ValueError("path must be provided")
     from src.shared.python.data_io.provenance import (
@@ -256,8 +250,6 @@ def run_batch(batch_path: Path, base_args: argparse.Namespace) -> None:
     """Execute every entry described in a batch configuration file."""
     if not (batch_path is not None):
         raise ValueError("batch_path must be provided")
-    if not (batch_path is not None):
-        raise ValueError("batch_path must be provided")
     spec = json.loads(batch_path.read_text(encoding="utf-8"))
     runs: Iterable[Mapping[str, Any]]
     if isinstance(spec, Mapping) and "runs" in spec:
@@ -275,7 +267,7 @@ def run_batch(batch_path: Path, base_args: argparse.Namespace) -> None:
             timestep=entry.get("timestep", base_args.timestep),
             control_config=(
                 Path(entry["control_config"]) if "control_config" in entry else None
-            ),  # noqa: E501
+            ),
             output_json=Path(entry["output_json"]) if "output_json" in entry else None,
             output_csv=Path(entry["output_csv"]) if "output_csv" in entry else None,
             show_summary=entry.get("summary", base_args.summary),

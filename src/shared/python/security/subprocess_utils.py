@@ -70,8 +70,6 @@ def run_command(
     """
     if not (cmd is not None):
         raise ValueError("cmd must be provided")
-    if not (cmd is not None):
-        raise ValueError("cmd must be provided")
     effective_timeout = timeout if timeout is not None else DEFAULT_SUBPROCESS_TIMEOUT
     logger.debug(f"Running command: {' '.join(cmd)} (timeout={effective_timeout}s)")
 
@@ -209,8 +207,6 @@ class ProcessManager:
         """
         if not (name is not None):
             raise ValueError("name must be provided")
-        if not (name is not None):
-            raise ValueError("name must be provided")
         if name not in self.processes:
             return False
 
@@ -226,8 +222,6 @@ class ProcessManager:
         Returns:
             Tuple of (stdout, stderr) as strings
         """
-        if not (name is not None):
-            raise ValueError("name must be provided")
         if not (name is not None):
             raise ValueError("name must be provided")
         if name not in self.processes:
@@ -250,8 +244,6 @@ class ProcessManager:
         Args:
             timeout: Timeout for each process
         """
-        if not (timeout is not None):
-            raise ValueError("timeout must be provided")
         if not (timeout is not None):
             raise ValueError("timeout must be provided")
         logger.info("Stopping all processes")
@@ -370,8 +362,6 @@ class CommandRunner:
         Returns:
             CompletedProcess object or None if failed after all attempts
         """
-        if not (cmd is not None):
-            raise ValueError("cmd must be provided")
         if not (cmd is not None):
             raise ValueError("cmd must be provided")
         for attempt in range(max_attempts):

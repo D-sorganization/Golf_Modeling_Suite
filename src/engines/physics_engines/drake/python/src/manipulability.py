@@ -59,8 +59,6 @@ class DrakeManipulabilityAnalyzer:
         """Initialize with a Drake MultibodyPlant."""
         if not (plant is not None):
             raise ValueError("plant must be provided")
-        if not (plant is not None):
-            raise ValueError("plant must be provided")
         self.plant = plant
         if DRAKE_AVAILABLE:
             self.world_frame = plant.world_frame()
@@ -103,8 +101,6 @@ class DrakeManipulabilityAnalyzer:
     def _decompose_mobility_matrix(self, mobility_matrix):
         if not (mobility_matrix is not None):
             raise ValueError("mobility_matrix must be provided")
-        if not (mobility_matrix is not None):
-            raise ValueError("mobility_matrix must be provided")
         eigvals_v, eigvecs_v = np.linalg.eigh(mobility_matrix)
         idx = np.argsort(eigvals_v)[::-1]
         eigvals_v = eigvals_v[idx]
@@ -113,8 +109,6 @@ class DrakeManipulabilityAnalyzer:
         return radii_v, eigvecs_v
 
     def _check_condition_number(self, name, cond):
-        if not (name is not None):
-            raise ValueError("name must be provided")
         if not (name is not None):
             raise ValueError("name must be provided")
         if cond > 1e6:
@@ -134,9 +128,7 @@ class DrakeManipulabilityAnalyzer:
 
     def _build_result_for_body(
         self, context: Context, name, body, radii_v, eigvecs_v, cond
-    ):  # noqa: E501
-        if not (context is not None):
-            raise ValueError("context must be provided")
+    ):
         if not (context is not None):
             raise ValueError("context must be provided")
         isotropy = 1.0 / cond if cond > 0 else 0.0
@@ -170,8 +162,6 @@ class DrakeManipulabilityAnalyzer:
         """
         if not (context is not None):
             raise ValueError("context must be provided")
-        if not (context is not None):
-            raise ValueError("context must be provided")
         if not DRAKE_AVAILABLE:
             return []
 
@@ -197,7 +187,7 @@ class DrakeManipulabilityAnalyzer:
 
             res = self._build_result_for_body(
                 context, name, body, radii_v, eigvecs_v, cond
-            )  # noqa: E501
+            )
             results.append(res)
 
         return results

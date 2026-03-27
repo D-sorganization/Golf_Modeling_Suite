@@ -15,7 +15,7 @@ from pydrake.all import (
 )
 
 FRAME_AXIS_LENGTH_M: typing.Final[float] = (
-    0.2  # [m] Axle length for frame visualization  # noqa: E501
+    0.2  # [m] Axle length for frame visualization
 )
 FRAME_AXIS_RADIUS_M: typing.Final[float] = 0.005  # [m] Axle radius
 COM_SPHERE_RADIUS_M: typing.Final[float] = 0.015  # [m] COM marker radius
@@ -25,8 +25,6 @@ class DrakeVisualizer:
     """Helper class to manage advanced visualizations in Meshcat."""
 
     def __init__(self, meshcat: Meshcat, plant: MultibodyPlant) -> None:  # type: ignore[no-any-unimported]
-        if not (meshcat is not None):
-            raise ValueError("meshcat must be provided")
         if not (meshcat is not None):
             raise ValueError("meshcat must be provided")
         self.meshcat = meshcat
@@ -42,8 +40,6 @@ class DrakeVisualizer:
         """Toggle coordinate frame visualization for a body."""
         if not (body_name is not None):
             raise ValueError("body_name must be provided")
-        if not (body_name is not None):
-            raise ValueError("body_name must be provided")
         from numpy import pi
 
         path = f"{self.prefix}/frames/{body_name}"
@@ -55,7 +51,7 @@ class DrakeVisualizer:
             # X Axis (Red)
             self.meshcat.SetObject(
                 f"{path}/x", Cylinder(radius, length), Rgba(1, 0, 0, 1)
-            )  # noqa: E501
+            )
             X_x = RigidTransform(
                 RotationMatrix.MakeYRotation(pi / 2),
                 [length / 2, 0, 0],  # type: ignore[call-overload]  # pydrake list-to-array overload
@@ -65,7 +61,7 @@ class DrakeVisualizer:
             # Y Axis (Green)
             self.meshcat.SetObject(
                 f"{path}/y", Cylinder(radius, length), Rgba(0, 1, 0, 1)
-            )  # noqa: E501
+            )
             X_y = RigidTransform(
                 RotationMatrix.MakeXRotation(-pi / 2),
                 [0, length / 2, 0],  # type: ignore[call-overload]  # pydrake list-to-array overload
@@ -75,7 +71,7 @@ class DrakeVisualizer:
             # Z Axis (Blue)
             self.meshcat.SetObject(
                 f"{path}/z", Cylinder(radius, length), Rgba(0, 0, 1, 1)
-            )  # noqa: E501
+            )
             X_z = RigidTransform(RotationMatrix(), [0, 0, length / 2])  # type: ignore[call-overload]  # pydrake list-to-array overload
             self.meshcat.SetTransform(f"{path}/z", X_z)
 
@@ -86,8 +82,6 @@ class DrakeVisualizer:
 
     def update_frame_transforms(self, context: Context) -> None:  # type: ignore[no-any-unimported]
         """Update transforms of visible frames."""
-        if not (context is not None):
-            raise ValueError("context must be provided")
         if not (context is not None):
             raise ValueError("context must be provided")
         plant_context = self.plant.GetMyContextFromRoot(context)
@@ -101,14 +95,12 @@ class DrakeVisualizer:
         """Toggle Center of Mass visualization for a body."""
         if not (body_name is not None):
             raise ValueError("body_name must be provided")
-        if not (body_name is not None):
-            raise ValueError("body_name must be provided")
         path = f"{self.prefix}/coms/{body_name}"
         if visible:
             # Sphere for COM
             self.meshcat.SetObject(
                 path, Sphere(COM_SPHERE_RADIUS_M), Rgba(1, 1, 0, 1)
-            )  # Yellow  # noqa: E501
+            )  # Yellow
             self.visible_coms.add(body_name)
         else:
             self.meshcat.Delete(path)
@@ -116,8 +108,6 @@ class DrakeVisualizer:
 
     def update_com_transforms(self, context: Context) -> None:  # type: ignore[no-any-unimported]
         """Update transforms of visible COMs."""
-        if not (context is not None):
-            raise ValueError("context must be provided")
         if not (context is not None):
             raise ValueError("context must be provided")
         plant_context = self.plant.GetMyContextFromRoot(context)
@@ -155,8 +145,6 @@ class DrakeVisualizer:
             position: Center position.
             color: (r, g, b, alpha)
         """
-        if not (name is not None):
-            raise ValueError("name must be provided")
         if not (name is not None):
             raise ValueError("name must be provided")
         path = f"{self.prefix}/ellipsoids/{name}"

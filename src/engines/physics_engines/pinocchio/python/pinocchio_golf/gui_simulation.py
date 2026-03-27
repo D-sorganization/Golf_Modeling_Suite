@@ -38,12 +38,10 @@ class SimulationMixin:
     def _toggle_run(self: Any, checked: bool = False) -> None:  # noqa: FBT001, FBT002
         if not (checked is not None):
             raise ValueError("checked must be provided")
-        if not (checked is not None):
-            raise ValueError("checked must be provided")
         self.is_running = not self.is_running
         self.btn_run.setText(
             "Pause Simulation" if self.is_running else "Run Simulation"
-        )  # noqa: E501
+        )
         self.btn_run.setChecked(self.is_running)
 
     def _reset_simulation(self: Any) -> None:
@@ -75,7 +73,7 @@ class SimulationMixin:
             self.recorder.stop_recording()
             self.log_write(
                 f"Recording stopped. Frames: {self.recorder.get_num_frames()}"
-            )  # noqa: E501
+            )
             self.btn_record.setText("Record")
 
     def _game_loop(self: Any) -> None:
@@ -212,8 +210,6 @@ class SimulationMixin:
         Returns:
             Tuple of (induced_accelerations, counterfactuals), each may be None.
         """
-        if not (tau is not None):
-            raise ValueError("tau must be provided")
         if not (tau is not None):
             raise ValueError("tau must be provided")
         induced = None

@@ -83,7 +83,7 @@ class PinocchioBackend:
         """
         if not PINOCCHIO_AVAILABLE:
             msg = (
-                "Pinocchio is required but not installed. Install with: pip install pin"  # noqa: E501
+                "Pinocchio is required but not installed. Install with: pip install pin"
             )
             raise ImportError(msg)
 
@@ -96,7 +96,7 @@ class PinocchioBackend:
         if model_path_obj.suffix == ".urdf":
             self.model, self.collision_model, self.visual_model = (
                 pin.buildModelsFromUrdf(str(model_path_obj), "")
-            )  # noqa: E501
+            )
         else:
             msg = f"Unsupported model format: {model_path_obj.suffix}"
             raise ValueError(msg)
@@ -129,8 +129,6 @@ class PinocchioBackend:
         """
         if not (q is not None):
             raise ValueError("q must be provided")
-        if not (q is not None):
-            raise ValueError("q must be provided")
         q_arr = np.asarray(q, dtype=np.float64)
         v_arr = np.asarray(v, dtype=np.float64)
         a_arr = np.asarray(a, dtype=np.float64)
@@ -156,8 +154,6 @@ class PinocchioBackend:
         """
         if not (q is not None):
             raise ValueError("q must be provided")
-        if not (q is not None):
-            raise ValueError("q must be provided")
         q_arr = np.asarray(q, dtype=np.float64)
         v_arr = np.asarray(v, dtype=np.float64)
         tau_arr = np.asarray(tau, dtype=np.float64)
@@ -167,7 +163,7 @@ class PinocchioBackend:
 
     def compute_mass_matrix(
         self, q: npt.NDArray[np.float64]
-    ) -> npt.NDArray[np.float64]:  # noqa: E501
+    ) -> npt.NDArray[np.float64]:
         """Compute mass matrix (CRBA).
 
         Args:
@@ -176,8 +172,6 @@ class PinocchioBackend:
         Returns:
             Mass matrix [nv x nv]
         """
-        if not (q is not None):
-            raise ValueError("q must be provided")
         if not (q is not None):
             raise ValueError("q must be provided")
         q_arr = np.asarray(q, dtype=np.float64)
@@ -198,8 +192,6 @@ class PinocchioBackend:
         Returns:
             Bias forces [nv]
         """
-        if not (q is not None):
-            raise ValueError("q must be provided")
         if not (q is not None):
             raise ValueError("q must be provided")
         q_arr = np.asarray(q, dtype=np.float64)
@@ -230,8 +222,6 @@ class PinocchioBackend:
         """
         if not (q is not None):
             raise ValueError("q must be provided")
-        if not (q is not None):
-            raise ValueError("q must be provided")
         q_arr = np.asarray(q, dtype=np.float64)
 
         if isinstance(frame_id, str):
@@ -241,7 +231,7 @@ class PinocchioBackend:
         pin.updateFramePlacements(self.model, self.data)
         result = pin.computeFrameJacobian(
             self.model, self.data, q_arr, frame_id, reference_frame
-        )  # noqa: E501
+        )
         return np.asarray(result, dtype=np.float64)
 
     def forward_kinematics(self, q: npt.NDArray[np.float64]) -> list[pin.SE3]:
@@ -253,8 +243,6 @@ class PinocchioBackend:
         Returns:
             List of frame placements
         """
-        if not (q is not None):
-            raise ValueError("q must be provided")
         if not (q is not None):
             raise ValueError("q must be provided")
         q_arr = np.asarray(q, dtype=np.float64)

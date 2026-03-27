@@ -167,8 +167,6 @@ def check_minimum_version(
     """
     if not (module_name is not None):
         raise ValueError("module_name must be provided")
-    if not (module_name is not None):
-        raise ValueError("module_name must be provided")
     from packaging import version
 
     current_version = get_module_version(module_name)

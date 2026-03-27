@@ -37,7 +37,7 @@ class SimulationMixin:
                     name = urdf_file.stem.replace("_", " ").title()
                     self.available_models.append(
                         {"name": f"URDF: {name}", "path": str(urdf_file)}
-                    )  # noqa: E501
+                    )
         except (RuntimeError, ValueError, OSError) as e:
             logger.error(f"Failed to scan URDF models: {e}")
 
@@ -168,8 +168,6 @@ class SimulationMixin:
         """Add a single joint control row."""
         if not (i is not None):
             raise ValueError("i must be provided")
-        if not (i is not None):
-            raise ValueError("i must be provided")
         if self.model is None:
             return
 
@@ -204,7 +202,7 @@ class SimulationMixin:
 
         slider.valueChanged.connect(
             lambda val, s=spin, k=idx: self._on_slider(val, s, k)
-        )  # noqa: E501
+        )
         spin.valueChanged.connect(lambda val, s=slider, k=idx: self._on_spin(val, s, k))
 
         r_layout.addWidget(slider)
@@ -239,9 +237,7 @@ class SimulationMixin:
 
     def _on_slider(
         self: PinocchioGUI, val: int, spin: QtWidgets.QDoubleSpinBox, idx: int
-    ) -> None:  # noqa: E501
-        if not (val is not None):
-            raise ValueError("val must be provided")
+    ) -> None:
         if not (val is not None):
             raise ValueError("val must be provided")
         angle = val / SLIDER_SCALE
@@ -251,7 +247,7 @@ class SimulationMixin:
 
     def _on_spin(
         self: PinocchioGUI, val: float, slider: QtWidgets.QSlider, idx: int
-    ) -> None:  # noqa: E501
+    ) -> None:
         with SignalBlocker(slider):
             slider.setValue(int(val * SLIDER_SCALE))
         self._update_q(idx, val)
@@ -353,8 +349,6 @@ class SimulationMixin:
         self: PinocchioGUI, tau: np.ndarray
     ) -> tuple[dict[str, np.ndarray] | None, dict[str, np.ndarray] | None]:
         """Run real-time induced/counterfactual analysis if enabled."""
-        if not (tau is not None):
-            raise ValueError("tau must be provided")
         if not (tau is not None):
             raise ValueError("tau must be provided")
         if not self.chk_live_analysis.isChecked():

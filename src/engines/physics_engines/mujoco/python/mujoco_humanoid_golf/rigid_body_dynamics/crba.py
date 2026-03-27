@@ -35,8 +35,6 @@ def _crba_forward_pass(
     """
     if not (nb is not None):
         raise ValueError("nb must be provided")
-    if not (nb is not None):
-        raise ValueError("nb must be provided")
     s_subspace: list[np.ndarray] = []
     dof_indices: list[int] = []
 
@@ -80,8 +78,6 @@ def _crba_backward_pass(
         Composite inertia array (nb, 6, 6).
     """
     # OPTIMIZATION: Bulk copy to 3D array is faster than list comprehension with copy()
-    if not (nb is not None):
-        raise ValueError("nb must be provided")
     if not (nb is not None):
         raise ValueError("nb must be provided")
     ic_composite = np.array(model_inertia, dtype=float)
@@ -130,8 +126,6 @@ def _crba_mass_matrix(
     Returns:
         Symmetric positive-definite mass matrix H (nb, nb).
     """
-    if not (nb is not None):
-        raise ValueError("nb must be provided")
     if not (nb is not None):
         raise ValueError("nb must be provided")
     for i in range(nb):
@@ -238,7 +232,7 @@ def crba(model: dict, q: np.ndarray) -> np.ndarray:
     # Phase 2: Backward pass - compute composite inertias
     ic_composite = _crba_backward_pass(
         nb, model_parent, model_inertia, xup, xup_T, tmp_6x6, xj_buf
-    )  # noqa: E501
+    )
 
     # Phase 3: Compute mass matrix from composite inertias
     return _crba_mass_matrix(

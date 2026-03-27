@@ -23,8 +23,6 @@ class InducedAccelerationAnalyzer:
     def __init__(self, model: pin.Model, data: pin.Data) -> None:
         if not (model is not None):
             raise ValueError("model must be provided")
-        if not (model is not None):
-            raise ValueError("model must be provided")
         self.model = model
         self.data = data
         self.nq = model.nq
@@ -55,11 +53,9 @@ class InducedAccelerationAnalyzer:
         # Pinocchio ABA: a = aba(model, data, q, v, tau)
         if not (q is not None):
             raise ValueError("q must be provided")
-        if not (q is not None):
-            raise ValueError("q must be provided")
         q_ddot_g = pin.aba(
             self.model, self._temp_data, q, np.zeros(self.nv), np.zeros(self.nv)
-        )  # noqa: E501
+        )
 
         # 2. Velocity Induced Acceleration
         # M * q_ddot_v = -C(q, v)v
@@ -105,7 +101,7 @@ class InducedAccelerationAnalyzer:
 
     def compute_specific_control(
         self, q: np.ndarray, specific_tau: np.ndarray
-    ) -> np.ndarray:  # noqa: E501
+    ) -> np.ndarray:
         """
         Compute induced acceleration for a specific control torque vector.
 
@@ -126,8 +122,6 @@ class InducedAccelerationAnalyzer:
 
         if not (q is not None):
             raise ValueError("q must be provided")
-        if not (q is not None):
-            raise ValueError("q must be provided")
         a_tau_G: np.ndarray = pin.aba(
             self.model, self._temp_data, q, np.zeros(self.nv), specific_tau
         )
@@ -139,7 +133,7 @@ class InducedAccelerationAnalyzer:
 
     def compute_counterfactuals(
         self, q: np.ndarray, v: np.ndarray
-    ) -> dict[str, np.ndarray]:  # noqa: E501
+    ) -> dict[str, np.ndarray]:
         """
         Decompose acceleration into Zero-Torque (ZTCF) and Zero-Velocity (ZVCF)
         components.
@@ -158,8 +152,6 @@ class InducedAccelerationAnalyzer:
         # ZTCF: Acceleration if tau=0.
         # M*a + C*v + G = 0  => a = -M^-1 * (C*v + G)
         # This is just ABA with tau=0.
-        if not (q is not None):
-            raise ValueError("q must be provided")
         if not (q is not None):
             raise ValueError("q must be provided")
         ztcf_accel = pin.aba(self.model, self._temp_data, q, v, np.zeros(self.nv))
