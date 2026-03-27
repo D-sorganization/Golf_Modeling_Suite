@@ -15,7 +15,7 @@ from src.engines.physics_engines.pinocchio.python.dtack.backends.mujoco_backend 
 from src.engines.physics_engines.pinocchio.python.dtack.backends.pink_backend import (
     PINKBackend,
 )
-from src.engines.physics_engines.pinocchio.python.dtack.backends.pinocchio_backend import (
+from src.engines.physics_engines.pinocchio.python.dtack.backends.pinocchio_backend import (  # noqa: E501
     PinocchioBackend,
 )
 

@@ -10,28 +10,28 @@ logger = get_logger(__name__)
 # Import them individually to avoid cascading ImportError.
 
 try:
-    from src.engines.physics_engines.pinocchio.python.dtack.backends.pinocchio_backend import (
+    from src.engines.physics_engines.pinocchio.python.dtack.backends.pinocchio_backend import (  # noqa: E501
         PinocchioBackend,
     )
 except ImportError:
     PinocchioBackend = None  # type: ignore[assignment,misc]
 
 try:
-    from src.engines.physics_engines.pinocchio.python.dtack.backends.mujoco_backend import (
+    from src.engines.physics_engines.pinocchio.python.dtack.backends.mujoco_backend import (  # noqa: E501
         MuJoCoBackend,
     )
 except ImportError:
     MuJoCoBackend = None  # type: ignore[assignment,misc]
 
 try:
-    from src.engines.physics_engines.pinocchio.python.dtack.backends.pink_backend import (
+    from src.engines.physics_engines.pinocchio.python.dtack.backends.pink_backend import (  # noqa: E501
         PINKBackend,
     )
 except ImportError:
     PINKBackend = None  # type: ignore[assignment,misc]
 
 try:
-    from src.engines.physics_engines.pinocchio.python.dtack.backends.backend_factory import (
+    from src.engines.physics_engines.pinocchio.python.dtack.backends.backend_factory import (  # noqa: E501
         BackendFactory,
         BackendType,
     )

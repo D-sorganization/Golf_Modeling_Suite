@@ -1,6 +1,8 @@
 # ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+# This module historically exceeds standard length metrics and
+# accumulates excessive domain responsibility.  It requires
+# domain-aware structural extraction to isolate its internal
+# classes appropriately.
 
 """Biomechanical analysis module for golf swing simulations.
 
@@ -79,7 +81,7 @@ class BiomechanicalAnalyzer:
             self._jacr_flat = np.zeros(3 * self.model.nv)
 
         # Import locally to avoid circular import at module level
-        from src.engines.physics_engines.mujoco.python.mujoco_humanoid_golf.rigid_body_dynamics.induced_acceleration import (
+        from src.engines.physics_engines.mujoco.python.mujoco_humanoid_golf.rigid_body_dynamics.induced_acceleration import (  # noqa: E501
             MuJoCoInducedAccelerationAnalyzer,
         )
 
