@@ -225,10 +225,8 @@ class PendulumPerturbationAnalyzer:
 
             raise ValueError("profile must be a dict with 'coeffs' key")
         coeffs = profile["coeffs"]
-        if not (isinstance(coeffs):
-            raise ValueError(list) and len(coeffs) >= 1, ()
-            "profile['coeffs'] must be a non-empty list of lists"
-        )
+        if not (isinstance(coeffs, list) and len(coeffs) >= 1):
+            raise ValueError("profile['coeffs'] must be a non-empty list of lists")
         self._base_coeffs = [list(c) for c in coeffs]
         # Pre-run nominal to cache for trajectory RMSE
         self._nominal_result = self._simulate(self._base_coeffs)
@@ -279,7 +277,7 @@ class PendulumPerturbationAnalyzer:
         Post: all MANDATORY_METRICS present in output; all values are finite.
         """
         if not isinstance(sim_result, SimulationResult):
-            raise ValueError("f"sim_result must be SimulationResult, got {type(sim_result)}")
+            raise ValueError(f"sim_result must be SimulationResult, got {type(sim_result)}")
         if not (sim_result.n_steps >= 2):
             raise ValueError("Simulation must have >= 2 steps")
 

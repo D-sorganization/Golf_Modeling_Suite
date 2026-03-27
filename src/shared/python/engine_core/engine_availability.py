@@ -327,6 +327,5 @@ def skip_if_unavailable(engine_name: str) -> Any:
         )
     except ImportError:
         raise ImportError(
-            "pytest is required for skip_if_unavailable. "
-            "Use require_engine decorator instead."
+            "pytest is required for skip_if_unavailable. " "Use require_engine decorator instead."
         ) from None

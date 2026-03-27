@@ -86,9 +86,7 @@ def find_python_files(root: Path | str = ".") -> list[Path]:
         "dist",
     }
 
-    return [
-        f for f in root_path.glob("**/*.py") if not any(p in f.parts for p in excluded)
-    ]
+    return [f for f in root_path.glob("**/*.py") if not any(p in f.parts for p in excluded)]
 
 
 def count_test_files(root: Path | str = ".") -> int:

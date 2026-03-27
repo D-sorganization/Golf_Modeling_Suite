@@ -185,11 +185,7 @@ class Tool:
 
         # Check enum constraints
         for param in self.parameters:
-            if (
-                param.enum
-                and param.name in arguments
-                and arguments[param.name] not in param.enum
-            ):
+            if param.enum and param.name in arguments and arguments[param.name] not in param.enum:
                 errors.append(
                     f"Invalid value for {param.name}: {arguments[param.name]}. "
                     f"Must be one of: {param.enum}"

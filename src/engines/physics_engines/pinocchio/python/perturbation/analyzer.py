@@ -257,10 +257,8 @@ class PinocchioPerturbationAnalyzer:
         if not ("coeffs" in profile):
             raise ValueError("'coeffs' key missing from profile")
         coeffs = profile["coeffs"]
-        if not (isinstance(coeffs):
-            raise ValueError(list) and len(coeffs) > 0, ()
-            "profile['coeffs'] must be a non-empty list"
-        )
+        if not (isinstance(coeffs, list) and len(coeffs) > 0):
+            raise ValueError("profile['coeffs'] must be a non-empty list")
         self._base_coeffs = coeffs
         self._nominal_result = self._simulate(coeffs)
 
@@ -307,7 +305,7 @@ class PinocchioPerturbationAnalyzer:
         Post: all MANDATORY_METRICS present; all values finite.
         """
         if not isinstance(sim_result, PinocchioSimResult):
-            raise ValueError("f"sim_result must be PinocchioSimResult, got {type(sim_result)}")  # noqa: E501
+            raise ValueError(f"sim_result must be PinocchioSimResult, got {type(sim_result)}")  # noqa: E501
         if not (sim_result.n_steps >= 2):
             raise ValueError("Simulation must have >= 2 steps")
 

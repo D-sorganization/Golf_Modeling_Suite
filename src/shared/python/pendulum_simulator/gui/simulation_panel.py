@@ -403,10 +403,10 @@ class SimulationPanel(QWidget):
         """
         if not (result is not None):
             raise ValueError("Simulation result must not be None")
-        if not (hasattr(result):
-            raise ValueError("n_steps"), "Result must have n_steps attribute")
-        if not (hasattr(result):
-            raise ValueError("t"), "Result must have t attribute")
+        if not hasattr(result, "n_steps"):
+            raise ValueError("Result must have n_steps attribute")
+        if not hasattr(result, "t"):
+            raise ValueError("Result must have t attribute")
 
         res: Any = result  # pyqtSignal emits object; cast for attribute access
 
