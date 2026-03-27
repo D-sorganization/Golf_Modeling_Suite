@@ -690,3 +690,37 @@ scaling:
   height: 1.75
   mass_total: 75.0
   scaling_method: geometric
+exercise_profiles:
+  squat:
+    joint_limit_overrides:
+      hip_flexion: [-2.27, 0.17]
+      knee_flexion: [-0.09, 2.79]
+      ankle_dorsiflexion: [-0.70, 0.52]
+      lumbar_flexion: [-0.87, 0.17]
+      shoulder_flexion: [-0.52, 1.05]
+  deadlift:
+    joint_limit_overrides:
+      hip_flexion: [-1.92, 0.17]
+      knee_flexion: [-0.09, 2.09]
+      lumbar_flexion: [-0.87, 0.17]
+      shoulder_flexion: [-0.35, 0.52]
+  bench_press:
+    joint_limit_overrides:
+      hip_flexion: [-0.52, 0.17]
+      knee_flexion: [-0.09, 0.35]
+      shoulder_flexion: [-0.52, 3.14]
+      shoulder_abduction: [-0.17, 1.40]
+      elbow_flexion: [0, 2.62]
+  clean_and_jerk:
+    joint_limit_overrides:
+      hip_flexion: [-2.27, 0.17]
+      knee_flexion: [-0.09, 2.79]
+      shoulder_flexion: [-0.52, 3.14]
+      lumbar_flexion: [-0.87, 0.17]
+  snatch:
+    joint_limit_overrides:
+      hip_flexion: [-2.27, 0.17]
+      knee_flexion: [-0.09, 2.79]
+      shoulder_flexion: [-0.17, 3.14]
+      shoulder_abduction: [-0.17, 3.14]
+      lumbar_flexion: [-0.87, 0.17]
