@@ -9,15 +9,15 @@ simplified, chainable interface suitable for scripting, API backends, and tests.
 See issue #407.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import ast
-import logging
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Any
+import ast  # noqa: E402
+import logging  # noqa: E402
+from dataclasses import dataclass, field  # noqa: E402
+from pathlib import Path  # noqa: E402
+from typing import Any  # noqa: E402
 
-import pandas as pd
+import pandas as pd  # noqa: E402
 
 logger = logging.getLogger(__name__)
 SUPPORTED_FILTER_TYPES = {"butterworth", "moving_average", "median", "savgol"}

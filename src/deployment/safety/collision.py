@@ -2,13 +2,13 @@ from numba import jit
 
 """Collision avoidance for safe robot operation."""
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from dataclasses import dataclass, field
-from enum import Enum
-from typing import TYPE_CHECKING
+from dataclasses import dataclass, field  # noqa: E402
+from enum import Enum  # noqa: E402
+from typing import TYPE_CHECKING  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray

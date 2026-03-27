@@ -7,16 +7,16 @@ deadband, and hysteresis to signals with optional smoothing to prevent
 discontinuities in control applications.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from collections.abc import Callable
-from enum import Enum
+from collections.abc import Callable  # noqa: E402
+from enum import Enum  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-from src.shared.python.core.contracts import require  # type: ignore[import-untyped]
+from src.shared.python.core.contracts import require  # type: ignore[import-untyped]  # noqa: E402
 
-from .core import Signal
+from .core import Signal  # noqa: E402
 
 
 class SaturationMode(Enum):

@@ -7,21 +7,21 @@ Converts MATLAB SimScape Multibody models to URDF format,
 enabling use of models created in Simulink with ROS and other robotics frameworks.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import logging
-import math
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Any
+import logging  # noqa: E402
+import math  # noqa: E402
+from dataclasses import dataclass, field  # noqa: E402
+from pathlib import Path  # noqa: E402
+from typing import Any  # noqa: E402
 
-from model_generation.converters.simscape.mdl_parser import (
+from model_generation.converters.simscape.mdl_parser import (  # noqa: E402
     MDLParser,
     SimscapeBlock,
     SimscapeBlockType,
     SimscapeModel,
 )
-from model_generation.core.types import (
+from model_generation.core.types import (  # noqa: E402
     Geometry,
     GeometryType,
     Inertia,

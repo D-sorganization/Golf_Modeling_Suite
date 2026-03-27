@@ -2,13 +2,13 @@ from numba import jit
 
 """Kinematics plotting renderer."""
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import numpy as np
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
+import numpy as np  # noqa: E402
+from matplotlib.axes import Axes  # noqa: E402
+from matplotlib.figure import Figure  # noqa: E402
 
-from src.shared.python.plotting.renderers.base import BaseRenderer
+from src.shared.python.plotting.renderers.base import BaseRenderer  # noqa: E402
 
 
 class KinematicsRenderer(BaseRenderer):

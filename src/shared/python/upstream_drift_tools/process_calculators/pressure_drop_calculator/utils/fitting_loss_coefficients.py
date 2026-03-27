@@ -28,7 +28,7 @@ References:
     - Miller, D.S. (1990): Internal Flow Systems, 2nd Edition
 """
 
-import logging
+import logging  # noqa: E402
 
 logger = logging.getLogger(__name__)
 

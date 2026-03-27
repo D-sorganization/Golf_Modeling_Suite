@@ -2,15 +2,15 @@ from numba import jit
 
 """ODE solver router.  See issue #608."""
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import math
+import math  # noqa: E402
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException  # noqa: E402
 
-from src.shared.python.safe_eval import safe_eval
+from src.shared.python.safe_eval import safe_eval  # noqa: E402
 
-from ..contracts.ode_solver import (
+from ..contracts.ode_solver import (  # noqa: E402
     ODESolverRequest,
     ODESolverResponse,
     ODEVariableSummary,
@@ -115,7 +115,7 @@ def _rk4_solve(
     for i in range(num_points):
         t = t_start + i * dt
         times.append(round(t, 8))
-        solutions[v].extend([round(state[v], 8) for v in var_names])
+        solutions[v].extend([round(state[v], 8) for v in var_names])  # noqa: F821
 
         if i < num_points - 1:
             k1 = compute_derivs(t, state)

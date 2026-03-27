@@ -7,18 +7,18 @@ Parses MATLAB Simulink/SimScape model files to extract
 multibody system definitions.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import logging
-import re
-import xml.etree.ElementTree as ET
-import zipfile
-from dataclasses import dataclass, field
-from enum import Enum
-from pathlib import Path
-from typing import Any
+import logging  # noqa: E402
+import re  # noqa: E402
+import xml.etree.ElementTree as ET  # noqa: E402
+import zipfile  # noqa: E402
+from dataclasses import dataclass, field  # noqa: E402
+from enum import Enum  # noqa: E402
+from pathlib import Path  # noqa: E402
+from typing import Any  # noqa: E402
 
-import defusedxml.ElementTree as DefusedET
+import defusedxml.ElementTree as DefusedET  # noqa: E402
 
 logger = logging.getLogger(__name__)
 

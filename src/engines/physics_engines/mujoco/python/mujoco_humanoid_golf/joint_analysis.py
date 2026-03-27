@@ -12,11 +12,11 @@ This module provides tools for analyzing:
 Author: MuJoCo Golf Swing Project
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import matplotlib.pyplot as plt
-import mujoco as mj
-import numpy as np
+import matplotlib.pyplot as plt  # noqa: E402
+import mujoco as mj  # noqa: E402
+import numpy as np  # noqa: E402
 
 
 class UniversalJointAnalyzer:

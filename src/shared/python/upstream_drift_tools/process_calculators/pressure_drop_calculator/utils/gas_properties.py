@@ -15,15 +15,15 @@ References:
     - Lee-Kesler correlation for compressibility factor
 """
 
-import logging
-import math
-from dataclasses import dataclass
+import logging  # noqa: E402
+import math  # noqa: E402
+from dataclasses import dataclass  # noqa: E402
 
-from ....utils.unit_constants import R_UNIVERSAL as R_UNIVERSAL_J_MOL_K
-from ....utils.unit_constants import (
+from ....utils.unit_constants import R_UNIVERSAL as R_UNIVERSAL_J_MOL_K  # noqa: E402
+from ....utils.unit_constants import (  # noqa: E402
     R_UNIVERSAL_KMOL,
 )
-from ...constants import DEFAULT_GAMMA_DIATOMIC, GAMMA_UPPER_BOUND
+from ...constants import DEFAULT_GAMMA_DIATOMIC, GAMMA_UPPER_BOUND  # noqa: E402
 
 logger = logging.getLogger(__name__)
 

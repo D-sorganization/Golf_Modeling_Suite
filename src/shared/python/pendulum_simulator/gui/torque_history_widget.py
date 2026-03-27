@@ -14,14 +14,14 @@ when available, falling back to hardcoded dark defaults.  The distinctive *trace
 colours are preserved regardless of theme.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import logging
-from typing import TYPE_CHECKING, Any
+import logging  # noqa: E402
+from typing import TYPE_CHECKING, Any  # noqa: E402
 
-import numpy as np
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QLabel, QScrollArea, QSizePolicy, QVBoxLayout, QWidget
+import numpy as np  # noqa: E402
+from PyQt6.QtCore import Qt  # noqa: E402
+from PyQt6.QtWidgets import QLabel, QScrollArea, QSizePolicy, QVBoxLayout, QWidget  # noqa: E402
 
 if TYPE_CHECKING:
     pass  # SimulationResult variants handled via duck typing

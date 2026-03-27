@@ -14,19 +14,19 @@ These examples show how to analyze real player swings captured with
 motion capture systems.
 """
 
-import traceback
+import traceback  # noqa: E402
 
-import mujoco
-import numpy as np
+import mujoco  # noqa: E402
+import numpy as np  # noqa: E402
 
-from .inverse_dynamics import (
+from .inverse_dynamics import (  # noqa: E402
     InverseDynamicsAnalyzer,
     InverseDynamicsSolver,
     export_inverse_dynamics_to_csv,
 )
-from .kinematic_forces import KinematicForceAnalyzer, export_kinematic_forces_to_csv
-from .models import ADVANCED_BIOMECHANICAL_GOLF_SWING_XML
-from .motion_capture import (
+from .kinematic_forces import KinematicForceAnalyzer, export_kinematic_forces_to_csv  # noqa: E402
+from .models import ADVANCED_BIOMECHANICAL_GOLF_SWING_XML  # noqa: E402
+from .motion_capture import (  # noqa: E402
     MarkerSet,
     MotionCaptureFrame,
     MotionCaptureProcessor,
@@ -50,7 +50,7 @@ def example_1_load_motion_capture() -> None:
     frames = []
     for t in times:
         # Simulate some marker motion
-        # OPTIMIZATION_TARGET: Migrate computationally bound loop to PyO3/Rust Core natively
+        # OPTIMIZATION_TARGET: Migrate computationally bound loop to PyO3/Rust Core natively  # noqa: E501
         markers = {}
         for i in range(num_markers):
             # Sinusoidal motion
@@ -227,20 +227,32 @@ def example_4_inverse_dynamics() -> None:
 
     # Statistics
     max(np.max(np.abs(r.joint_torques)) for r in id_results)
-    max(np.max(np.abs(r.inertial_torques)) for r in id_results if r.inertial_torques is not None)
-    max(np.max(np.abs(r.coriolis_torques)) for r in id_results if r.coriolis_torques is not None)
-    max(np.max(np.abs(r.gravity_torques)) for r in id_results if r.gravity_torques is not None)
+    max(
+        np.max(np.abs(r.inertial_torques)) for r in id_results if r.inertial_torques is not None
+    )  # noqa: E501
+    max(
+        np.max(np.abs(r.coriolis_torques)) for r in id_results if r.coriolis_torques is not None
+    )  # noqa: E501
+    max(
+        np.max(np.abs(r.gravity_torques)) for r in id_results if r.gravity_torques is not None
+    )  # noqa: E501
 
     # Decomposition percentages
     np.mean([np.linalg.norm(r.joint_torques) for r in id_results])
     np.mean(
-        [np.linalg.norm(r.inertial_torques) for r in id_results if r.inertial_torques is not None],
+        [
+            np.linalg.norm(r.inertial_torques) for r in id_results if r.inertial_torques is not None
+        ],  # noqa: E501
     )
     np.mean(
-        [np.linalg.norm(r.coriolis_torques) for r in id_results if r.coriolis_torques is not None],
+        [
+            np.linalg.norm(r.coriolis_torques) for r in id_results if r.coriolis_torques is not None
+        ],  # noqa: E501
     )
     np.mean(
-        [np.linalg.norm(r.gravity_torques) for r in id_results if r.gravity_torques is not None],
+        [
+            np.linalg.norm(r.gravity_torques) for r in id_results if r.gravity_torques is not None
+        ],  # noqa: E501
     )
 
     export_inverse_dynamics_to_csv(times, id_results, "inverse_dynamics.csv")

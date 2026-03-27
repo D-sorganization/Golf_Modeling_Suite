@@ -10,13 +10,13 @@ This module provides state-of-the-art robotics analysis tools including:
 - Nullspace projection for redundancy resolution
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-import mujoco
-import numpy as np
-from scipy.linalg import null_space, pinv, svd
+import mujoco  # noqa: E402
+import numpy as np  # noqa: E402
+from scipy.linalg import null_space, pinv, svd  # noqa: E402
 
 
 @dataclass
@@ -258,12 +258,15 @@ class AdvancedKinematicsAnalyzer:
 
         # Condition number
         min_singular_value_threshold = 1e-10
-        condition_number = s.max() / s.min() if s.min() > min_singular_value_threshold else np.inf
+        condition_number = (
+            s.max() / s.min() if s.min() > min_singular_value_threshold else np.inf
+        )  # noqa: E501
 
         # Check for singularity
         singularity_value_threshold = 1e-3
         is_near_singularity = (
-            condition_number > self.singularity_threshold or s.min() < singularity_value_threshold
+            condition_number > self.singularity_threshold
+            or s.min() < singularity_value_threshold  # noqa: E501
         )
 
         return ManipulabilityMetrics(

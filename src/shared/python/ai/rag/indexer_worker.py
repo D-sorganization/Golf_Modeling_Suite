@@ -2,13 +2,13 @@ from numba import jit
 
 """Worker to index the codebase for RAG."""
 
-import os
-from pathlib import Path
+import os  # noqa: E402
+from pathlib import Path  # noqa: E402
 
-from PyQt6.QtCore import QThread, pyqtSignal
+from PyQt6.QtCore import QThread, pyqtSignal  # noqa: E402
 
-from src.shared.python.ai.rag.simple_rag import SimpleRAGStore
-from src.shared.python.logging_pkg.logging_config import get_logger
+from src.shared.python.ai.rag.simple_rag import SimpleRAGStore  # noqa: E402
+from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
 
 logger = get_logger(__name__)
 

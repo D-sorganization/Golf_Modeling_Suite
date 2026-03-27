@@ -9,17 +9,17 @@ This module provides professional video export capabilities:
 - Progress tracking
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from enum import Enum
-from pathlib import Path
-from typing import TYPE_CHECKING, Any  # noqa: ICN003
+from enum import Enum  # noqa: E402
+from pathlib import Path  # noqa: E402
+from typing import TYPE_CHECKING, Any  # noqa: E402, ICN003
 
-import mujoco as mj
-import numpy as np
+import mujoco as mj  # noqa: E402
+import numpy as np  # noqa: E402
 
-from src.shared.python.core.constants import DEFAULT_FPS, HD_HEIGHT, HD_WIDTH
-from src.shared.python.logging_pkg.logging_config import get_logger
+from src.shared.python.core.constants import DEFAULT_FPS, HD_HEIGHT, HD_WIDTH  # noqa: E402
+from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -213,7 +213,9 @@ class VideoExporter:
         control_function: Callable[[float], np.ndarray],
         duration: float,
         camera_id: int | None = None,
-        overlay_callback: Callable[[np.ndarray, float, mj.MjData], np.ndarray] | None = None,
+        overlay_callback: (
+            Callable[[np.ndarray, float, mj.MjData], np.ndarray] | None
+        ) = None,  # noqa: E501
         progress_callback: Callable[[int, int], None] | None = None,
     ) -> bool:
         """Export a complete simulation as video.

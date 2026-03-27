@@ -10,17 +10,17 @@ Design by Contract:
     and validates all inputs/outputs.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from typing import Any
+from typing import Any  # noqa: E402
 
-import numpy as np
-from numpy.typing import NDArray
+import numpy as np  # noqa: E402
+from numpy.typing import NDArray  # noqa: E402
 
-from src.robotics.core.exceptions import ContactError
-from src.robotics.core.protocols import ContactCapable, RoboticsCapable
-from src.robotics.core.types import ContactState, ContactType
-from src.shared.python.core.contracts import (
+from src.robotics.core.exceptions import ContactError  # noqa: E402
+from src.robotics.core.protocols import ContactCapable, RoboticsCapable  # noqa: E402
+from src.robotics.core.types import ContactState, ContactType  # noqa: E402
+from src.shared.python.core.contracts import (  # noqa: E402
     ContractChecker,
     postcondition,
 )

@@ -10,13 +10,13 @@ Design by Contract:
     Jacobians must be finite and have correct shape.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from dataclasses import dataclass, field
-from enum import Enum, auto
+from dataclasses import dataclass, field  # noqa: E402
+from enum import Enum, auto  # noqa: E402
 
-import numpy as np
-from numpy.typing import NDArray
+import numpy as np  # noqa: E402
+from numpy.typing import NDArray  # noqa: E402
 
 
 class TaskType(Enum):

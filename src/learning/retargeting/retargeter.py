@@ -2,12 +2,12 @@ from numba import jit
 
 """Motion retargeting between different embodiments."""
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from dataclasses import dataclass, field  # noqa: E402
+from typing import TYPE_CHECKING  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray

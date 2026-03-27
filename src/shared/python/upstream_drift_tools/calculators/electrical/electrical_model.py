@@ -6,15 +6,15 @@ Enhanced electrical model that calculates system states, resistance, and current
 distribution with support for multiple conductive path geometries.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import logging
-from collections import deque
+import logging  # noqa: E402
+from collections import deque  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-from .config import ElectrodeConfig
-from .glass_interface import GlassPropertiesInterface
+from .config import ElectrodeConfig  # noqa: E402
+from .glass_interface import GlassPropertiesInterface  # noqa: E402
 
 logger = logging.getLogger(__name__)
 

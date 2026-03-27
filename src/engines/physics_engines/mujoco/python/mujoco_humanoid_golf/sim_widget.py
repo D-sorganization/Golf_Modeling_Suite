@@ -6,30 +6,30 @@ Refactored: Rendering/overlay logic lives in ``sim_rendering_mixin.py``.
 Camera/mouse interaction lives in ``sim_camera_mixin.py``.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import os
-from pathlib import Path
-from typing import Any, Final
+import os  # noqa: E402
+from pathlib import Path  # noqa: E402
+from typing import Any, Final  # noqa: E402
 
-import mujoco
-import numpy as np
-from PyQt6 import QtCore, QtWidgets
+import mujoco  # noqa: E402
+import numpy as np  # noqa: E402
+from PyQt6 import QtCore, QtWidgets  # noqa: E402
 
-from src.shared.python.biomechanics.biomechanics_data import BiomechanicalData
-from src.shared.python.biomechanics.swing_plane_visualization import (
+from src.shared.python.biomechanics.biomechanics_data import BiomechanicalData  # noqa: E402
+from src.shared.python.biomechanics.swing_plane_visualization import (  # noqa: E402
     SwingPlaneVisualizer,
 )
-from src.shared.python.logging_pkg.logging_config import get_logger
+from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
 
-from .biomechanics import BiomechanicalAnalyzer, SwingRecorder
-from .control_system import ControlSystem, ControlType
-from .interactive_manipulation import InteractiveManipulator
-from .meshcat_adapter import MuJoCoMeshcatAdapter
-from .physics_engine import MuJoCoPhysicsEngine
-from .sim_camera_mixin import SimCameraMixin
-from .sim_rendering_mixin import SimRenderingMixin
-from .telemetry import TelemetryRecorder
+from .biomechanics import BiomechanicalAnalyzer, SwingRecorder  # noqa: E402
+from .control_system import ControlSystem, ControlType  # noqa: E402
+from .interactive_manipulation import InteractiveManipulator  # noqa: E402
+from .meshcat_adapter import MuJoCoMeshcatAdapter  # noqa: E402
+from .physics_engine import MuJoCoPhysicsEngine  # noqa: E402
+from .sim_camera_mixin import SimCameraMixin  # noqa: E402
+from .sim_rendering_mixin import SimRenderingMixin  # noqa: E402
+from .telemetry import TelemetryRecorder  # noqa: E402
 
 logger = get_logger(__name__)
 
@@ -335,7 +335,9 @@ class MuJoCoSimWidget(  # type: ignore[misc]
         elif self.model.nq >= 10:
             if self.model.njnt > 0:
                 first_joint_type = self.model.jnt_type[0]
-                if first_joint_type == mujoco.mjtJoint.mjJNT_FREE and len(self.data.qpos) >= 3:
+                if (
+                    first_joint_type == mujoco.mjtJoint.mjJNT_FREE and len(self.data.qpos) >= 3
+                ):  # noqa: E501
                     self.data.qpos[2] = 0.9
         elif self.model.nq >= 1:
             self.data.qpos[0] = 0.2
@@ -531,7 +533,9 @@ class MuJoCoSimWidget(  # type: ignore[misc]
 
         self._render_once()
 
-    def set_torque_visualization(self, enabled: bool, scale: float | None = None) -> None:
+    def set_torque_visualization(
+        self, enabled: bool, scale: float | None = None
+    ) -> None:  # noqa: E501
         """Toggle torque vector overlay and optionally set scale."""
         self.show_torque_vectors = enabled
         if scale is not None:
@@ -550,13 +554,17 @@ class MuJoCoSimWidget(  # type: ignore[misc]
         if not screw:
             self._prev_body_ts.clear()
 
-    def set_force_visualization(self, enabled: bool, scale: float | None = None) -> None:
+    def set_force_visualization(
+        self, enabled: bool, scale: float | None = None
+    ) -> None:  # noqa: E501
         """Toggle force vector overlay and optionally set scale."""
         self.show_force_vectors = enabled
         if scale is not None:
             self.force_scale = scale
 
-    def set_ellipsoid_visualization(self, mobility_enabled: bool, force_enabled: bool) -> None:
+    def set_ellipsoid_visualization(
+        self, mobility_enabled: bool, force_enabled: bool
+    ) -> None:  # noqa: E501
         """Toggle mobility and force ellipsoid overlays."""
         self.show_mobility_ellipsoid = mobility_enabled
         self.show_force_ellipsoid = force_enabled
@@ -884,7 +892,9 @@ class MuJoCoSimWidget(  # type: ignore[misc]
                 self._render_once()
                 return
 
-            steps_per_frame = max(1, int(1.0 / (self.fps * self._safe_model_timestep())))
+            steps_per_frame = max(
+                1, int(1.0 / (self.fps * self._safe_model_timestep()))
+            )  # noqa: E501
 
             for _ in range(steps_per_frame):
                 if self.control_system is not None:
@@ -892,7 +902,9 @@ class MuJoCoSimWidget(  # type: ignore[misc]
 
                 if self.control_system is not None:
                     nu = self._safe_model_nu()
-                    velocities = self.data.qvel[:nu] if nu <= len(self.data.qvel) else None
+                    velocities = (
+                        self.data.qvel[:nu] if nu <= len(self.data.qvel) else None
+                    )  # noqa: E501
                     control_torques = self.control_system.compute_control_vector(
                         velocities,
                     )

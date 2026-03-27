@@ -4,14 +4,14 @@ from numba import jit
 Torque preview widget for polynomial joint torques.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from collections.abc import Iterable
+from collections.abc import Iterable  # noqa: E402
 
-import numpy as np
-from PyQt6.QtCore import QPointF, QRectF, Qt
-from PyQt6.QtGui import QColor, QFont, QPainter, QPen
-from PyQt6.QtWidgets import QWidget
+import numpy as np  # noqa: E402
+from PyQt6.QtCore import QPointF, QRectF, Qt  # noqa: E402
+from PyQt6.QtGui import QColor, QFont, QPainter, QPen  # noqa: E402
+from PyQt6.QtWidgets import QWidget  # noqa: E402
 
 
 class TorquePreviewWidget(QWidget):

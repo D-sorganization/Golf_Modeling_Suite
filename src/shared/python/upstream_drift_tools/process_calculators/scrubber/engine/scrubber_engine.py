@@ -2,10 +2,10 @@ from numba import jit
 
 """Scrubber Calculation Engine."""
 
-import logging
-from typing import Any
+import logging  # noqa: E402
+from typing import Any  # noqa: E402
 
-from ...scrubber_calculator import (
+from ...scrubber_calculator import (  # noqa: E402
     PACKING_DATABASE,
     calculate_caustic_requirement,
     calculate_column_diameter,
@@ -18,7 +18,7 @@ from ...scrubber_calculator import (
     calculate_pressure_drop,
     calculate_required_packed_height,
 )
-from ..models.scrubber_models import ScrubberInputs, ScrubberResults
+from ..models.scrubber_models import ScrubberInputs, ScrubberResults  # noqa: E402
 
 logger = logging.getLogger(__name__)
 

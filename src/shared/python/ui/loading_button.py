@@ -18,11 +18,11 @@ Usage:
     btn.set_loading(False)
 """
 
-from typing import Any
+from typing import Any  # noqa: E402
 
-from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QColor, QFont, QPainter, QPen
-from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QSizePolicy, QWidget
+from PyQt6.QtCore import Qt, QTimer  # noqa: E402
+from PyQt6.QtGui import QColor, QFont, QPainter, QPen  # noqa: E402
+from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QSizePolicy, QWidget  # noqa: E402
 
 # Import theme if available
 try:

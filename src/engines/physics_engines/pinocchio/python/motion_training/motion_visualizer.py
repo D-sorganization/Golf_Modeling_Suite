@@ -7,16 +7,16 @@ Provides visualization using:
 2. Matplotlib (2D plots and static 3D views)
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import time
-from dataclasses import dataclass
-from pathlib import Path
-from typing import TYPE_CHECKING, Any
+import time  # noqa: E402
+from dataclasses import dataclass  # noqa: E402
+from pathlib import Path  # noqa: E402
+from typing import TYPE_CHECKING, Any  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-from src.shared.python.engine_core.engine_availability import PINOCCHIO_AVAILABLE
+from src.shared.python.engine_core.engine_availability import PINOCCHIO_AVAILABLE  # noqa: E402
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -45,10 +45,10 @@ try:
 except ImportError:
     MATPLOTLIB_AVAILABLE = False
 
-import logging
+import logging  # noqa: E402
 
-from motion_training.club_trajectory_parser import ClubTrajectory
-from motion_training.dual_hand_ik_solver import TrajectoryIKResult
+from motion_training.club_trajectory_parser import ClubTrajectory  # noqa: E402
+from motion_training.dual_hand_ik_solver import TrajectoryIKResult  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -190,7 +190,8 @@ class MotionVisualizer:
         x_mat = mcg.MeshBasicMaterial(color=0xFF0000)
         self.viewer[f"{name}/x"].set_object(x_cyl, x_mat)
         self.viewer[f"{name}/x"].set_transform(
-            mctf.rotation_matrix(np.pi / 2, [0, 1, 0]) @ mctf.translation_matrix([size / 2, 0, 0])
+            mctf.rotation_matrix(np.pi / 2, [0, 1, 0])
+            @ mctf.translation_matrix([size / 2, 0, 0])  # noqa: E501
         )
 
         # Y axis (green)
@@ -198,14 +199,17 @@ class MotionVisualizer:
         y_mat = mcg.MeshBasicMaterial(color=0x00FF00)
         self.viewer[f"{name}/y"].set_object(y_cyl, y_mat)
         self.viewer[f"{name}/y"].set_transform(
-            mctf.rotation_matrix(-np.pi / 2, [1, 0, 0]) @ mctf.translation_matrix([0, size / 2, 0])
+            mctf.rotation_matrix(-np.pi / 2, [1, 0, 0])
+            @ mctf.translation_matrix([0, size / 2, 0])  # noqa: E501
         )
 
         # Z axis (blue)
         z_cyl = mcg.Cylinder(size, 0.002)
         z_mat = mcg.MeshBasicMaterial(color=0x0000FF)
         self.viewer[f"{name}/z"].set_object(z_cyl, z_mat)
-        self.viewer[f"{name}/z"].set_transform(mctf.translation_matrix([0, 0, size / 2]))
+        self.viewer[f"{name}/z"].set_transform(
+            mctf.translation_matrix([0, 0, size / 2])
+        )  # noqa: E501
 
         if transform is not None:
             self.viewer[name].set_transform(transform)
@@ -392,7 +396,9 @@ class MotionVisualizer:
         if trajectory.frames:
             self.add_club_at_frame(trajectory.frames[0])
 
-        logger.info("Playing %s frames at %sx speed", trajectory.num_frames, s.playback_speed)
+        logger.info(
+            "Playing %s frames at %sx speed", trajectory.num_frames, s.playback_speed
+        )  # noqa: E501
         logger.info("Press Ctrl+C to stop")
 
         try:
@@ -453,7 +459,9 @@ class MotionVisualizer:
         if trajectory.num_frames <= num_frames_to_show:
             indices: list[int] | np.ndarray = list(range(trajectory.num_frames))
         else:
-            indices = np.linspace(0, trajectory.num_frames - 1, num_frames_to_show).astype(int)
+            indices = np.linspace(0, trajectory.num_frames - 1, num_frames_to_show).astype(
+                int
+            )  # noqa: E501
 
         for i, idx in enumerate(indices):
             frame = trajectory.frames[idx]
@@ -584,7 +592,9 @@ class MatplotlibVisualizer:
                 frame = trajectory.get_event_frame(event_name)
                 if frame:
                     pos = frame.grip_position
-                    ax.plot([pos[0]], [pos[1]], [pos[2]], marker, markersize=15, label=label)
+                    ax.plot(
+                        [pos[0]], [pos[1]], [pos[2]], marker, markersize=15, label=label
+                    )  # noqa: E501
 
         ax.set_xlabel("X (m)")
         ax.set_ylabel("Y (m)")
@@ -641,7 +651,9 @@ class MatplotlibVisualizer:
         axes[0].grid(True)
 
         # Combined error
-        combined = np.array(ik_result.left_hand_errors) + np.array(ik_result.right_hand_errors)
+        combined = np.array(ik_result.left_hand_errors) + np.array(
+            ik_result.right_hand_errors
+        )  # noqa: E501
         axes[1].plot(times, combined, "b-", label="Total Error")
         axes[1].set_xlabel("Time (s)")
         axes[1].set_ylabel("Combined Error (m)")

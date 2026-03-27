@@ -47,7 +47,9 @@ class ConnectionPool:
     def get_connection(self) -> sqlite3.Connection:
         """Get connection for current thread."""
         if not hasattr(self._local, "connection") or self._local.connection is None:
-            self._local.connection = sqlite3.connect(self.db_path, check_same_thread=False)
+            self._local.connection = sqlite3.connect(
+                self.db_path, check_same_thread=False
+            )  # noqa: E501
         return self._local.connection  # type: ignore[no-any-return]
 
     def close_all(self) -> None:
@@ -269,7 +271,7 @@ class RecordingLibrary:
         is_safe = self._is_relative_to(resolved_dest, resolved_lib)
 
         if not is_safe:
-            msg = f"Security violation: Attempt to save file '{filename}' outside library"
+            msg = f"Security violation: Attempt to save file '{filename}' outside library"  # noqa: E501
             logger.warning(msg)
             raise ValueError(msg)
 
@@ -280,7 +282,9 @@ class RecordingLibrary:
         # Note: We compare absolute paths to avoid copying if source == dest.
         if dest_file.absolute() != data_path.absolute():
             # SEC-006: Use SHA-256 instead of MD5 for consistency
-            timestamp_hash = hashlib.sha256(str(datetime.now()).encode()).hexdigest()[:8]
+            timestamp_hash = hashlib.sha256(str(datetime.now()).encode()).hexdigest()[
+                :8
+            ]  # noqa: E501
             temp_name = f".tmp_{filename}_{timestamp_hash}"
             temp_dest = self.library_path / temp_name
             try:
@@ -499,7 +503,9 @@ class RecordingLibrary:
 
         # Filter by tags if specified
         if tags:
-            results = [r for r in results if all(tag in r.tags.split(",") for tag in tags)]
+            results = [
+                r for r in results if all(tag in r.tags.split(",") for tag in tags)
+            ]  # noqa: E501
 
         return results
 

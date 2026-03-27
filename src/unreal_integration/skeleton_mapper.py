@@ -27,14 +27,14 @@ Usage:
     physics_pose = mapper.apply_pose(mixamo_pose)
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import logging
-from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import Any
+import logging  # noqa: E402
+from dataclasses import dataclass, field  # noqa: E402
+from enum import Enum, auto  # noqa: E402
+from typing import Any  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
 logger = logging.getLogger(__name__)
 

@@ -6,18 +6,18 @@ This module provides a comprehensive set of digital filters for signal
 processing including IIR and FIR filters, smoothing, and specialized filters.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from collections.abc import Callable
-from dataclasses import dataclass
-from enum import Enum
+from collections.abc import Callable  # noqa: E402
+from dataclasses import dataclass  # noqa: E402
+from enum import Enum  # noqa: E402
 
-import numpy as np
-from scipy import signal as scipy_signal
-from scipy.signal import (
+import numpy as np  # noqa: E402
+from scipy import signal as scipy_signal  # noqa: E402
+from scipy.signal import (  # noqa: E402
     bessel as _scipy_bessel,
 )
-from scipy.signal import (
+from scipy.signal import (  # noqa: E402
     butter,
     cheby1,
     cheby2,
@@ -28,9 +28,9 @@ from scipy.signal import (
     savgol_filter,
 )
 
-from src.shared.python.core.contracts import require  # type: ignore[import-untyped]
+from src.shared.python.core.contracts import require  # type: ignore[import-untyped]  # noqa: E402
 
-from .core import Signal
+from .core import Signal  # noqa: E402
 
 
 class FilterType(Enum):

@@ -11,13 +11,13 @@ This module provides:
 - Real-time data display helpers.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from collections import deque
-from collections.abc import Callable
-from typing import Any
+from collections import deque  # noqa: E402
+from collections.abc import Callable  # noqa: E402
+from typing import Any  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -58,7 +58,9 @@ class TrajectoryTracer:
             body_name: Body whose desired path is being stored.
             positions: Sequence of (3,) world-frame positions.
         """
-        self._desired_traces[body_name] = [np.asarray(p, dtype=np.float64) for p in positions]
+        self._desired_traces[body_name] = [
+            np.asarray(p, dtype=np.float64) for p in positions
+        ]  # noqa: E501
 
     def get_desired_trace(self, body_name: str) -> list[np.ndarray]:
         """Return the desired reference trajectory for a body."""

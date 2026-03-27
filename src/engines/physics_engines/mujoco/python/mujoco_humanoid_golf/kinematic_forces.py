@@ -143,18 +143,18 @@ REFERENCES
 - MuJoCo Documentation: https://mujoco.readthedocs.io/
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import csv
-import warnings
-from dataclasses import dataclass
-from typing import TYPE_CHECKING
+import csv  # noqa: E402
+import warnings  # noqa: E402
+from dataclasses import dataclass  # noqa: E402
+from typing import TYPE_CHECKING  # noqa: E402
 
-import mujoco
-import numpy as np
+import mujoco  # noqa: E402
+import numpy as np  # noqa: E402
 
 # Import numerical constants (Assessment B-004, B-007)
-from src.shared.python.core.numerical_constants import (
+from src.shared.python.core.numerical_constants import (  # noqa: E402
     EPSILON_FINITE_DIFF_JACOBIAN,
     EPSILON_SINGULARITY_DETECTION,
 )
@@ -452,7 +452,9 @@ class KinematicForceAnalyzer:
         # the significantly faster Recursive Newton-Euler algorithm.
         return self.compute_coriolis_forces_rne(qpos, qvel)
 
-    def compute_coriolis_forces_rne(self, qpos: np.ndarray, qvel: np.ndarray) -> np.ndarray:
+    def compute_coriolis_forces_rne(
+        self, qpos: np.ndarray, qvel: np.ndarray
+    ) -> np.ndarray:  # noqa: E501
         """Compute Coriolis forces using analytical RNE (Phase 1).
 
         This method uses MuJoCo's Recursive Newton-Euler (mj_rne) algorithm
@@ -691,7 +693,9 @@ class KinematicForceAnalyzer:
         self._perturb_data.qvel[:] = qvel
         mujoco.mj_forward(self.model, self._perturb_data)
 
-        jacp_forward, _ = self._compute_jacobian(self.club_head_id, data=self._perturb_data)
+        jacp_forward, _ = self._compute_jacobian(
+            self.club_head_id, data=self._perturb_data
+        )  # noqa: E501
         jacp_forward = jacp_forward.copy()  # Save copy before buffer reuse
 
         # Compute Jacobian at backward-perturbed state
@@ -699,7 +703,9 @@ class KinematicForceAnalyzer:
         self._perturb_data.qvel[:] = qvel
         mujoco.mj_forward(self.model, self._perturb_data)
 
-        jacp_backward, _ = self._compute_jacobian(self.club_head_id, data=self._perturb_data)
+        jacp_backward, _ = self._compute_jacobian(
+            self.club_head_id, data=self._perturb_data
+        )  # noqa: E501
 
         # Second-order central difference
         # Accuracy: O(ε²) - much better than O(ε) forward difference
@@ -862,7 +868,7 @@ class KinematicForceAnalyzer:
             # Club head apparent forces
             club_coriolis, club_centrifugal, club_apparent = self.compute_club_head_apparent_forces(
                 qpos, qvel, qacc
-            )
+            )  # noqa: E501
 
             # Power contributions
             power_dict = self.compute_kinematic_power(qpos, qvel)

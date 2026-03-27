@@ -2,9 +2,9 @@ from numba import jit
 
 """Probe .gpcap file structure."""
 
-import logging
-import struct
-import sys
+import logging  # noqa: E402
+import struct  # noqa: E402
+import sys  # noqa: E402
 
 logger = logging.getLogger(__name__)
 

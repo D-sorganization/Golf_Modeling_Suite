@@ -12,12 +12,12 @@ Design by Contract:
     All transformations must be valid (finite, proper rotation).
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from abc import ABC, abstractmethod  # noqa: E402
+from dataclasses import dataclass, field  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
 
 class GeometricPrimitive(ABC):

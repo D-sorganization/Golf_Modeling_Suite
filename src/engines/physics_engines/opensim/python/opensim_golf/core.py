@@ -8,14 +8,14 @@ There is NO demo or fallback mode - if OpenSim is not available,
 explicit errors will be raised to prevent displaying incorrect data.
 """
 
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Any
+from dataclasses import dataclass  # noqa: E402
+from pathlib import Path  # noqa: E402
+from typing import Any  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-from src.shared.python.core import constants
-from src.shared.python.logging_pkg.logging_config import get_logger
+from src.shared.python.core import constants  # noqa: E402
+from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
 
 # Configure logging
 logger = get_logger(__name__)

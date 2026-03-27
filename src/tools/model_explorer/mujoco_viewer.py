@@ -10,19 +10,19 @@ Provides real-time URDF preview via MJCF conversion.
 Issue #755: Enhanced visualization toggles for collision, frames, joints, and contacts.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import subprocess
-import sys
-import tempfile
-from dataclasses import dataclass
-from typing import TYPE_CHECKING
+import subprocess  # noqa: E402
+import sys  # noqa: E402
+import tempfile  # noqa: E402
+from dataclasses import dataclass  # noqa: E402
+from typing import TYPE_CHECKING  # noqa: E402
 
-import defusedxml.ElementTree as ET
-import numpy as np
-from PyQt6.QtCore import QPointF, Qt, QTimer, pyqtSignal
-from PyQt6.QtGui import QImage, QMouseEvent, QPixmap, QWheelEvent
-from PyQt6.QtWidgets import (
+import defusedxml.ElementTree as ET  # noqa: E402
+import numpy as np  # noqa: E402
+from PyQt6.QtCore import QPointF, Qt, QTimer, pyqtSignal  # noqa: E402
+from PyQt6.QtGui import QImage, QMouseEvent, QPixmap, QWheelEvent  # noqa: E402
+from PyQt6.QtWidgets import (  # noqa: E402
     QCheckBox,
     QFrame,
     QHBoxLayout,
@@ -32,11 +32,11 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from src.shared.python.core.constants import (
+from src.shared.python.core.constants import (  # noqa: E402
     GRAVITY_M_S2,  # DRY: Use centralized constant
 )
-from src.shared.python.engine_core.engine_availability import MUJOCO_AVAILABLE
-from src.shared.python.logging_pkg.logging_config import get_logger
+from src.shared.python.engine_core.engine_availability import MUJOCO_AVAILABLE  # noqa: E402
+from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
 
 if TYPE_CHECKING:
     from typing import Any

@@ -6,15 +6,15 @@ This module provides tools for generating various types of noise
 and adding disturbances to signals for simulation and testing.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from enum import Enum
+from enum import Enum  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-from src.shared.python.core.contracts import require  # type: ignore[import-untyped]
+from src.shared.python.core.contracts import require  # type: ignore[import-untyped]  # noqa: E402
 
-from .core import Signal
+from .core import Signal  # noqa: E402
 
 # Module-level constants for periodic noise generation
 DEFAULT_LINE_FREQUENCY_HZ: float = 60.0

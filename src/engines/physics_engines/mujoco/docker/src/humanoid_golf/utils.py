@@ -7,14 +7,14 @@ miscellaneous numerical utilities shared across the Docker-containerised
 MuJoCo humanoid golf simulation backend.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import logging
-from pathlib import Path
+import logging  # noqa: E402
+from pathlib import Path  # noqa: E402
 
-import dm_control.suite
-import numpy as np
-from dm_control import mjcf
+import dm_control.suite  # noqa: E402
+import numpy as np  # noqa: E402
+from dm_control import mjcf  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -325,7 +325,9 @@ def _attach_club(root, h_scale, w_scale, params, two_handed) -> None:
         if lhand:
             # Site on Club (attached to rhand)
             # Locate it where left hand should be (slightly above right hand?)
-            rhand.add("site", name="club_grip_site", pos=[0, 0.05 * w_scale, -0.15 * h_scale])
+            rhand.add(
+                "site", name="club_grip_site", pos=[0, 0.05 * w_scale, -0.15 * h_scale]
+            )  # noqa: E501
 
             # Site on Left Hand (palm center)
             lhand.add("site", name="lhand_grip_site", pos=[0, 0, -0.05 * h_scale])

@@ -23,16 +23,16 @@ References:
 - MacKenzie (2012) Understanding the role of shaft stiffness
 """
 
-from collections.abc import Callable
-from dataclasses import dataclass, field
-from enum import Enum
-from typing import Any, cast
+from collections.abc import Callable  # noqa: E402
+from dataclasses import dataclass, field  # noqa: E402
+from enum import Enum  # noqa: E402
+from typing import Any, cast  # noqa: E402
 
-import numpy as np
-from scipy import optimize
+import numpy as np  # noqa: E402
+from scipy import optimize  # noqa: E402
 
-from src.shared.python.core.constants import GRAVITY_M_S2
-from src.shared.python.core.contracts import (
+from src.shared.python.core.constants import GRAVITY_M_S2  # noqa: E402
+from src.shared.python.core.contracts import (  # noqa: E402
     ContractChecker,
     invariant,
     postcondition,

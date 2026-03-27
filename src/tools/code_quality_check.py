@@ -3,10 +3,10 @@ from numba import jit
 #!/usr/bin/env python3
 """Quality check script to verify AI-generated code meets standards."""
 
-import ast
-import re
-import sys
-from pathlib import Path
+import ast  # noqa: E402
+import re  # noqa: E402
+import sys  # noqa: E402
+from pathlib import Path  # noqa: E402
 
 
 # ANSI colors for terminal output

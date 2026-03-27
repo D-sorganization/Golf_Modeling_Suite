@@ -6,13 +6,13 @@ Implements closed kinematic loop constraints and methods to compute
 forces and accelerations at joints.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-from .golfer_dynamics import analytical_fk_jacobians
-from .golfer_kinematics import forward_kinematics
-from .physics_golfer import N_DOF, GolferParams
+from .golfer_dynamics import analytical_fk_jacobians  # noqa: E402
+from .golfer_kinematics import forward_kinematics  # noqa: E402
+from .physics_golfer import N_DOF, GolferParams  # noqa: E402
 
 
 def constraint_vector(q: np.ndarray, p: GolferParams) -> np.ndarray:

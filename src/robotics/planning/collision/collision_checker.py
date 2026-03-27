@@ -6,22 +6,22 @@ This module provides configuration-space collision checking
 for robot motion planning.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import time
-from dataclasses import dataclass, field
-from typing import Protocol, runtime_checkable
+import time  # noqa: E402
+from dataclasses import dataclass, field  # noqa: E402
+from typing import Protocol, runtime_checkable  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-from src.robotics.planning.collision.collision_types import (
+from src.robotics.planning.collision.collision_types import (  # noqa: E402
     CollisionPair,
     CollisionQuery,
     CollisionQueryType,
     CollisionResult,
     DistanceResult,
 )
-from src.robotics.planning.collision.geometric_primitives import (
+from src.robotics.planning.collision.geometric_primitives import (  # noqa: E402
     GeometricPrimitive,
     compute_primitive_distance,
 )

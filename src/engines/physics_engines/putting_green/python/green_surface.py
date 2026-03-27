@@ -17,19 +17,19 @@ Design by Contract:
     - Slopes are expressed as gradients (rise/run)
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Any
+from dataclasses import dataclass  # noqa: E402
+from pathlib import Path  # noqa: E402
+from typing import Any  # noqa: E402
 
-import numpy as np
-from scipy import interpolate, ndimage
+import numpy as np  # noqa: E402
+from scipy import interpolate, ndimage  # noqa: E402
 
-from src.engines.physics_engines.putting_green.python.turf_properties import (
+from src.engines.physics_engines.putting_green.python.turf_properties import (  # noqa: E402
     TurfProperties,
 )
-from src.shared.python.core.physics_constants import GRAVITY_M_S2
+from src.shared.python.core.physics_constants import GRAVITY_M_S2  # noqa: E402
 
 
 @dataclass

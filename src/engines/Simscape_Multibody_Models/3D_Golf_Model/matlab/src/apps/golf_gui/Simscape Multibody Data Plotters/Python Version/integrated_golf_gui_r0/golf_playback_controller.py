@@ -5,13 +5,13 @@ from numba import jit
 Extracted from golf_gui_application.py for Single Responsibility Principle.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from copy import copy
+from copy import copy  # noqa: E402
 
-import numpy as np
-from golf_data_core import FrameData, FrameProcessor
-from PyQt6.QtCore import (
+import numpy as np  # noqa: E402
+from golf_data_core import FrameData, FrameProcessor  # noqa: E402
+from PyQt6.QtCore import (  # noqa: E402
     QEasingCurve,
     QObject,
     QPropertyAnimation,

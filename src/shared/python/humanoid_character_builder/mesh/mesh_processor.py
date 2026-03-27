@@ -7,15 +7,15 @@ This module provides mesh loading, segmentation, simplification,
 and export capabilities.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import logging
-from dataclasses import dataclass
-from pathlib import Path
-from typing import TYPE_CHECKING, Any
+import logging  # noqa: E402
+from dataclasses import dataclass  # noqa: E402
+from pathlib import Path  # noqa: E402
+from typing import TYPE_CHECKING, Any  # noqa: E402
 
-import numpy as np
-from numpy.typing import NDArray
+import numpy as np  # noqa: E402
+from numpy.typing import NDArray  # noqa: E402
 
 if TYPE_CHECKING:
     pass

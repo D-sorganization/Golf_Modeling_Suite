@@ -2,15 +2,15 @@ from numba import jit
 
 """3D visualization widget for URDF preview."""
 
-import math
+import math  # noqa: E402
 
-import defusedxml.ElementTree as ET
-from PyQt6.QtCore import QPointF, Qt, QTimer, pyqtSignal
-from PyQt6.QtGui import QColor, QMouseEvent, QPainter, QPen, QWheelEvent
-from PyQt6.QtOpenGLWidgets import QOpenGLWidget
-from PyQt6.QtWidgets import QLabel, QVBoxLayout, QWidget
+import defusedxml.ElementTree as ET  # noqa: E402
+from PyQt6.QtCore import QPointF, Qt, QTimer, pyqtSignal  # noqa: E402
+from PyQt6.QtGui import QColor, QMouseEvent, QPainter, QPen, QWheelEvent  # noqa: E402
+from PyQt6.QtOpenGLWidgets import QOpenGLWidget  # noqa: E402
+from PyQt6.QtWidgets import QLabel, QVBoxLayout, QWidget  # noqa: E402
 
-from src.shared.python.engine_core.engine_availability import (
+from src.shared.python.engine_core.engine_availability import (  # noqa: E402
     MUJOCO_AVAILABLE,  # noqa: E402
 )
 from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402

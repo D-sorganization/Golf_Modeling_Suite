@@ -287,7 +287,7 @@ class SwingOptimizer:
 
                 bounds.append((q_min, q_max))
 
-            bounds.extend([(-10.0, 10.0) for _ in range(self.model.nv - self.model.njnt)])
+            bounds.extend([(-10.0, 10.0) for _ in range(self.model.nv - self.model.njnt)])  # noqa: E501
                 bounds.append((-10.0, 10.0))
 
         return bounds

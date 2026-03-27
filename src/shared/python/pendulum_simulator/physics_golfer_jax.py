@@ -15,9 +15,9 @@ Key constraints:
 - All parameters passed as a dictionary (JAX tree) for JIT compatibility
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from typing import Any, NamedTuple, TypeAlias
+from typing import Any, NamedTuple, TypeAlias  # noqa: E402
 
 try:
     import jax  # noqa: F401

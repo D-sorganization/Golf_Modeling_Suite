@@ -5,17 +5,17 @@ Widget for displaying the 8x8 mass matrix, force balance, energy,
 and constraint violation for the golfer model.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import logging
+import logging  # noqa: E402
 
-import numpy as np
-from PyQt6.QtCore import QRectF, Qt
-from PyQt6.QtGui import QBrush, QColor, QFont, QPainter, QPen
-from PyQt6.QtWidgets import QWidget
+import numpy as np  # noqa: E402
+from PyQt6.QtCore import QRectF, Qt  # noqa: E402
+from PyQt6.QtGui import QBrush, QColor, QFont, QPainter, QPen  # noqa: E402
+from PyQt6.QtWidgets import QWidget  # noqa: E402
 
-from ..simulation_golfer import GolferSimulationResult
-from .matrix_widget_base import MatrixWidgetBase
+from ..simulation_golfer import GolferSimulationResult  # noqa: E402
+from .matrix_widget_base import MatrixWidgetBase  # noqa: E402
 
 logger = logging.getLogger(__name__)
 

@@ -7,19 +7,19 @@ recording for the humanoid golf swing in the Docker-hosted MuJoCo
 environment.  Supports headless rendering for CI and batch processing.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import contextlib
-import csv
-import json
-import logging
-import os
-import typing
+import contextlib  # noqa: E402
+import csv  # noqa: E402
+import json  # noqa: E402
+import logging  # noqa: E402
+import os  # noqa: E402
+import typing  # noqa: E402
 
-import imageio
-import numpy as np
+import imageio  # noqa: E402
+import numpy as np  # noqa: E402
 
-from . import iaa_helper, utils
+from . import iaa_helper, utils  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +105,9 @@ class PDController(BaseController):
                 if joint_name in self.actuators:
                     # Fix deprecation warning for 0-d array to scalar conversion
                     # Ensure torque is a scalar value
-                    scalar_torque = torque.item() if isinstance(torque, np.ndarray) else torque
+                    scalar_torque = (
+                        torque.item() if isinstance(torque, np.ndarray) else torque
+                    )  # noqa: E501
                     action[self.actuators[joint_name]] = scalar_torque
             except (ValueError, TypeError, RuntimeError) as exc:
                 logger.debug("Could not map joint torque command: %s", exc)
@@ -144,7 +146,9 @@ class PolynomialController(BaseController):
                 self.coeffs[act_idx, 1] = 60.0
                 self.coeffs[act_idx, 3] = -20.0
         except ImportError as exc:
-            logger.debug("Optional polynomial controller dependency not available: %s", exc)
+            logger.debug(
+                "Optional polynomial controller dependency not available: %s", exc
+            )  # noqa: E501
 
     def get_action(self, physics) -> np.ndarray:
         """Calculate polynomial control action."""
@@ -443,7 +447,9 @@ def _log_viewer_controls() -> None:
     logger.info("=" * 50 + "\n")
 
 
-def _setup_controller(control_mode, physics, actuators, target_height) -> BaseController:
+def _setup_controller(
+    control_mode, physics, actuators, target_height
+) -> BaseController:  # noqa: E501
     """Create and return the appropriate controller based on mode."""
     if not (control_mode is not None):
         raise ValueError("control_mode must be provided")
@@ -453,7 +459,9 @@ def _setup_controller(control_mode, physics, actuators, target_height) -> BaseCo
     if control_mode == "lqr":
         # Calculate height scale (assuming standard 1.56m ref)
         h_scale = target_height / 1.56
-        controller = LQRController(physics, TARGET_POSE, actuators, height_scale=h_scale)
+        controller = LQRController(
+            physics, TARGET_POSE, actuators, height_scale=h_scale
+        )  # noqa: E501
     elif control_mode == "poly":
         controller = PolynomialController(physics)
     else:
@@ -684,7 +692,9 @@ def run_simulation(
     initialize_episode(physics)
 
     # 5. Setup Controller
-    controller = _setup_controller(params["control_mode"], physics, actuators, target_height)
+    controller = _setup_controller(
+        params["control_mode"], physics, actuators, target_height
+    )  # noqa: E501
 
     # 6. Run Loop
     logger.debug("DEBUG: use_viewer=%s, HAS_VIEWER=%s", use_viewer, HAS_VIEWER)

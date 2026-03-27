@@ -6,15 +6,15 @@ Uses Lagrangian formulation with analytical Jacobian-based computation
 and optional native backend acceleration.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from collections.abc import Callable
+from collections.abc import Callable  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-from . import native_backend as _native_backend
-from .golfer_kinematics import forward_kinematics
-from .physics_golfer import N_DOF, GolferParams, State
+from . import native_backend as _native_backend  # noqa: E402
+from .golfer_kinematics import forward_kinematics  # noqa: E402
+from .physics_golfer import N_DOF, GolferParams, State  # noqa: E402
 
 
 def _mass_point_positions(q: np.ndarray, p: GolferParams) -> list[tuple[float, Callable]]:

@@ -2,15 +2,15 @@ from numba import jit
 
 """Deformable object simulation classes."""
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from abc import ABC, abstractmethod  # noqa: E402
+from dataclasses import dataclass  # noqa: E402
+from typing import TYPE_CHECKING  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-from src.shared.python.core.constants import GRAVITY
+from src.shared.python.core.constants import GRAVITY  # noqa: E402
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray

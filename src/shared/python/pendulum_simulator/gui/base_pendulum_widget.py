@@ -17,15 +17,15 @@ Design by Contract
 Closes DRY violation between PendulumWidget and GolferPendulumWidget.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from abc import abstractmethod
-from collections import deque
+from abc import abstractmethod  # noqa: E402
+from collections import deque  # noqa: E402
 
-import numpy as np
-from PyQt6.QtCore import QPoint, QPointF, Qt
-from PyQt6.QtGui import QBrush, QColor, QFont, QMouseEvent, QPainter, QPen
-from PyQt6.QtWidgets import QWidget
+import numpy as np  # noqa: E402
+from PyQt6.QtCore import QPoint, QPointF, Qt  # noqa: E402
+from PyQt6.QtGui import QBrush, QColor, QFont, QMouseEvent, QPainter, QPen  # noqa: E402
+from PyQt6.QtWidgets import QWidget  # noqa: E402
 
 
 class BasePendulumWidget(QWidget):

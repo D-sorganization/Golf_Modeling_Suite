@@ -2,10 +2,10 @@ from numba import jit
 
 """Example: simulate a golf swing motion with MuJoCo."""
 
-import logging
+import logging  # noqa: E402
 
-import imageio
-from dm_control import suite
+import imageio  # noqa: E402
+from dm_control import suite  # noqa: E402
 
 logger = logging.getLogger(__name__)
 

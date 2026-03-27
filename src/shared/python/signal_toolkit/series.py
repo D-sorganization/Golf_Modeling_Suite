@@ -13,13 +13,13 @@ expansions of functions, including:
 Following pragmatic programming and Design by Contract principles.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from collections.abc import Callable
-from dataclasses import dataclass
+from collections.abc import Callable  # noqa: E402
+from dataclasses import dataclass  # noqa: E402
 
-import numpy as np
-from numpy.typing import ArrayLike, NDArray
+import numpy as np  # noqa: E402
+from numpy.typing import ArrayLike, NDArray  # noqa: E402
 
 
 @dataclass

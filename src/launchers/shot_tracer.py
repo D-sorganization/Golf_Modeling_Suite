@@ -14,13 +14,13 @@ This serves as both a validation tool for comparing models and a
 visualization utility for shot analysis.
 """
 
-import sys
-from typing import Any
+import sys  # noqa: E402
+from typing import Any  # noqa: E402
 
-import numpy as np
-from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import (
+import numpy as np  # noqa: E402
+from PyQt6.QtCore import Qt, QTimer  # noqa: E402
+from PyQt6.QtGui import QFont  # noqa: E402
+from PyQt6.QtWidgets import (  # noqa: E402
     QApplication,
     QCheckBox,
     QDoubleSpinBox,
@@ -40,7 +40,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from src.shared.python.logging_pkg.logging_config import (
+from src.shared.python.logging_pkg.logging_config import (  # noqa: E402
     configure_gui_logging,
     get_logger,
 )

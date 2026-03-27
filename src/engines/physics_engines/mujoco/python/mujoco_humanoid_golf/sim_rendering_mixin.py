@@ -7,16 +7,16 @@ vector drawing, manipulation overlays, swing plane overlays, and
 frame/COM overlays from MuJoCoSimWidget.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from collections.abc import Callable
-from typing import Any
+from collections.abc import Callable  # noqa: E402
+from typing import Any  # noqa: E402
 
-import mujoco
-import numpy as np
-from PyQt6 import QtGui
+import mujoco  # noqa: E402
+import numpy as np  # noqa: E402
+from PyQt6 import QtGui  # noqa: E402
 
-from src.shared.python.logging_pkg.logging_config import get_logger
+from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
 
 # Lazy loading for OpenCV (mutable holder avoids 'global' keyword)
 _cv2_state: dict[str, Any] = {"lib": None, "invalid": False}
@@ -93,7 +93,9 @@ class SimRenderingMixin:
         # Add force/torque/accel overlays
         rgb = self._add_force_torque_overlays(rgb)
 
-        if self.manipulator is not None and (self.show_selected_body or self.show_constraints):
+        if self.manipulator is not None and (
+            self.show_selected_body or self.show_constraints
+        ):  # noqa: E501
             rgb = self._add_manipulation_overlays(rgb)
 
         if self.show_club_trajectory or self.show_swing_plane:
@@ -161,7 +163,9 @@ class SimRenderingMixin:
             return rgb
 
         selected_id = (
-            getattr(self.manipulator, "selected_body_id", None) if self.manipulator else None
+            getattr(self.manipulator, "selected_body_id", None)
+            if self.manipulator
+            else None  # noqa: E501
         )
         if selected_id is None or selected_id < 0:
             return rgb
@@ -208,7 +212,8 @@ class SimRenderingMixin:
 
         if getattr(self, "show_live_quat", False):
             msg = (
-                f"Quat (w,x,y,z): [{quat[0]:.2f}, " f"{quat[1]:.2f}, {quat[2]:.2f}, {quat[3]:.2f}]"
+                f"Quat (w,x,y,z): [{quat[0]:.2f}, "
+                f"{quat[1]:.2f}, {quat[2]:.2f}, {quat[3]:.2f}]"  # noqa: E501
             )
             cv2.putText(
                 img,
@@ -264,7 +269,9 @@ class SimRenderingMixin:
             except (AttributeError, TypeError) as exc:
                 logger.debug("Background colour update failed: %s", exc)
 
-    def set_background_color(self: Any, sky_color: Any = None, ground_color: Any = None) -> None:
+    def set_background_color(
+        self: Any, sky_color: Any = None, ground_color: Any = None
+    ) -> None:  # noqa: E501
         """Set sky and ground background colors for the scene."""
         if sky_color is not None:
             self.sky_color = np.array(sky_color, dtype=np.float32)

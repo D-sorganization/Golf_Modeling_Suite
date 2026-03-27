@@ -2,11 +2,11 @@ from numba import jit
 
 """Utilities for analyzing Python code quality and structure."""
 
-import ast
-import logging
-import re
-from pathlib import Path
-from typing import Any
+import ast  # noqa: E402
+import logging  # noqa: E402
+import re  # noqa: E402
+from pathlib import Path  # noqa: E402
+from typing import Any  # noqa: E402
 
 logger = logging.getLogger(__name__)
 

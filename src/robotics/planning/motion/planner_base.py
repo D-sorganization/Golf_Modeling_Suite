@@ -6,14 +6,14 @@ This module defines abstract interfaces and common data structures
 for sampling-based motion planners.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import Protocol
+from abc import ABC, abstractmethod  # noqa: E402
+from dataclasses import dataclass, field  # noqa: E402
+from enum import Enum, auto  # noqa: E402
+from typing import Protocol  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
 
 class PlannerStatus(Enum):

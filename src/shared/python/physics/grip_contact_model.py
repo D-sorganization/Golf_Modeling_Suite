@@ -14,15 +14,15 @@ The grip model replaces rigid constraints with contact pairs,
 enabling realistic force transmission and slip analysis.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from dataclasses import dataclass
-from enum import Enum, auto
-from typing import TYPE_CHECKING
+from dataclasses import dataclass  # noqa: E402
+from enum import Enum, auto  # noqa: E402
+from typing import TYPE_CHECKING  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-from src.shared.python.logging_pkg.logging_config import get_logger
+from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
 
 if TYPE_CHECKING:
     pass

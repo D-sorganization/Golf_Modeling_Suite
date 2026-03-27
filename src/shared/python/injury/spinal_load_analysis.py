@@ -26,19 +26,19 @@ References:
 - Lindsay et al. (2002) review of spine loading mechanisms
 """
 
-import logging
-from dataclasses import dataclass, field
-from enum import Enum
+import logging  # noqa: E402
+from dataclasses import dataclass, field  # noqa: E402
+from enum import Enum  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-from src.shared.python.analysis.dataclasses import (
+from src.shared.python.analysis.dataclasses import (  # noqa: E402
     CITATION_CRUNCH_FACTOR,
     CITATION_SPINAL_LOAD,
     CITATION_X_FACTOR,
     MethodCitation,
 )
-from src.shared.python.core.constants import GRAVITY_M_S2
+from src.shared.python.core.constants import GRAVITY_M_S2  # noqa: E402
 
 logger = logging.getLogger(__name__)
 

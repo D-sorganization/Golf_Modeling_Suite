@@ -10,22 +10,22 @@ Design by Contract:
     Failed solves are indicated, never silent failures.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field  # noqa: E402
 
-import numpy as np
-from numpy.typing import NDArray
+import numpy as np  # noqa: E402
+from numpy.typing import NDArray  # noqa: E402
 
-from src.robotics.control.whole_body.qp_solver import (
+from src.robotics.control.whole_body.qp_solver import (  # noqa: E402
     QPProblem,
     QPSolution,
     QPSolver,
     create_default_solver,
 )
-from src.robotics.control.whole_body.task import Task
-from src.robotics.core.protocols import RoboticsCapable
-from src.shared.python.core.contracts import precondition
+from src.robotics.control.whole_body.task import Task  # noqa: E402
+from src.robotics.core.protocols import RoboticsCapable  # noqa: E402
+from src.shared.python.core.contracts import precondition  # noqa: E402
 
 
 @dataclass

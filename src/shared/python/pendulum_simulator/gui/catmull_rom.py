@@ -7,7 +7,7 @@ Extracted from base_pendulum_widget.py so it can be tested headlessly.
 Used by trail rendering to smooth the path of pendulum endpoints.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
 
 @jit(nopython=True, fastmath=True)

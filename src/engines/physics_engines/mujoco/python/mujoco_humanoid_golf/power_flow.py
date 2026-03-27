@@ -9,15 +9,15 @@ aligned with drift/control/constraint components."
 Reference: docs/assessments/project_design_guidelines.qmd Section E3
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from dataclasses import dataclass  # noqa: E402
+from typing import TYPE_CHECKING  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-from src.shared.python.core.contracts import precondition
-from src.shared.python.logging_pkg.logging_config import get_logger
+from src.shared.python.core.contracts import precondition  # noqa: E402
+from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
 
 if TYPE_CHECKING:
     import mujoco
@@ -150,7 +150,9 @@ class PowerFlowAnalyzer:
         return joint_work_drift, joint_work_control, joint_work_total
 
     @jit(nopython=True, fastmath=True)
-    def _compute_segment_energies(self, qvel: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def _compute_segment_energies(
+        self, qvel: np.ndarray
+    ) -> tuple[np.ndarray, np.ndarray]:  # noqa: E501
         if not (qvel is not None):
             raise ValueError("qvel must be provided")
         if not (qvel is not None):
@@ -249,7 +251,7 @@ class PowerFlowAnalyzer:
 
         joint_work_drift, joint_work_control, joint_work_total = self._compute_work_decomposition(
             tau, qvel, dt, tau_drift, tau_control
-        )
+        )  # noqa: E501
 
         segment_ke, segment_pe = self._compute_segment_energies(qvel)
         total_me = float(np.sum(segment_ke) + np.sum(segment_pe))
@@ -276,7 +278,11 @@ class PowerFlowAnalyzer:
     )
     @precondition(
         lambda self, times, qpos_traj, qvel_traj, qacc_traj, tau_traj: (
-            len(times) == len(qpos_traj) == len(qvel_traj) == len(qacc_traj) == len(tau_traj)
+            len(times)
+            == len(qpos_traj)
+            == len(qvel_traj)
+            == len(qacc_traj)
+            == len(tau_traj)  # noqa: E501
         ),
         "All trajectory arrays must have the same length",
     )
@@ -359,11 +365,15 @@ class PowerFlowAnalyzer:
             parent_id = body.parentid[0]
             parent_name = "world" if parent_id == 0 else self.model.body(parent_id).name
 
-            power_from_parent, power_generation = self._compute_body_joint_power(i, tau, qvel)
+            power_from_parent, power_generation = self._compute_body_joint_power(
+                i, tau, qvel
+            )  # noqa: E501
             power_to_children = self._compute_child_joint_power(i, tau, qvel)
             power_diss = self._compute_joint_dissipation(i, qvel)
 
-            net_balance = power_from_parent - power_to_children - power_generation + power_diss
+            net_balance = (
+                power_from_parent - power_to_children - power_generation + power_diss
+            )  # noqa: E501
 
             transfers.append(
                 InterSegmentTransfer(
@@ -409,7 +419,9 @@ class PowerFlowAnalyzer:
                         power_generation = joint_power
         return power_from_parent, power_generation
 
-    def _compute_child_joint_power(self, body_id: int, tau: np.ndarray, qvel: np.ndarray) -> float:
+    def _compute_child_joint_power(
+        self, body_id: int, tau: np.ndarray, qvel: np.ndarray
+    ) -> float:  # noqa: E501
         """Compute total power transferred to child bodies through their joints.
 
         Args:

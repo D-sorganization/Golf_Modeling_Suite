@@ -6,13 +6,13 @@ This module parses golf club motion capture data typically stored in Excel forma
 with position and orientation data for grip (mid-hands) and club face markers.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import TYPE_CHECKING
+from dataclasses import dataclass, field  # noqa: E402
+from pathlib import Path  # noqa: E402
+from typing import TYPE_CHECKING  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray

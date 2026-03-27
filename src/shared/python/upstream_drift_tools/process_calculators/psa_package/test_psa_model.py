@@ -7,11 +7,11 @@ This module tests the PSA calculation model against known Excel results
 to ensure consistency across all implementations (Python core, Jupyter notebook, GUI).
 """
 
-import numpy as np
-import pytest
-from numpy.testing import assert_allclose
+import numpy as np  # noqa: E402
+import pytest  # noqa: E402
+from numpy.testing import assert_allclose  # noqa: E402
 
-from .psa_model import (
+from .psa_model import (  # noqa: E402
     PSAModel,
     calculate_o2_safety_analysis,
     calculate_sensitivity,

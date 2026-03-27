@@ -2,15 +2,15 @@ from numba import jit
 
 """Imitation learning algorithms."""
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from abc import ABC, abstractmethod
-from collections.abc import Callable
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from abc import ABC, abstractmethod  # noqa: E402
+from collections.abc import Callable  # noqa: E402
+from dataclasses import dataclass, field  # noqa: E402
+from pathlib import Path  # noqa: E402
+from typing import TYPE_CHECKING, Any  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -25,7 +25,7 @@ except ImportError:
     gym = None  # type: ignore[assignment]
     spaces = None  # type: ignore[assignment]
 
-from src.learning.imitation.dataset import Demonstration, DemonstrationDataset
+from src.learning.imitation.dataset import Demonstration, DemonstrationDataset  # noqa: E402
 
 
 @dataclass

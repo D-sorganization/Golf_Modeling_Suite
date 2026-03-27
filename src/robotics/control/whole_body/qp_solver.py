@@ -10,15 +10,15 @@ Design by Contract:
     Infeasible problems are indicated by success=False.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from abc import ABC, abstractmethod  # noqa: E402
+from dataclasses import dataclass  # noqa: E402
 
-import numpy as np
-from numpy.typing import NDArray
+import numpy as np  # noqa: E402
+from numpy.typing import NDArray  # noqa: E402
 
-from src.shared.python.core.contracts import invariant
+from src.shared.python.core.contracts import invariant  # noqa: E402
 
 
 @dataclass

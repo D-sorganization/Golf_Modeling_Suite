@@ -8,7 +8,7 @@ This module provides ODE solvers for the constrained golfer equations of motion
 using JAX arrays and the diffrax library for efficient GPU-based integration.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
 try:
     import jax
@@ -26,7 +26,7 @@ except ImportError:
         "Install with: pip install jax jaxlib diffrax"
     ) from None
 
-from .physics_golfer_jax import (
+from .physics_golfer_jax import (  # noqa: E402
     N_CONSTRAINTS,
     N_DOF,
     GolferParamsJAX,

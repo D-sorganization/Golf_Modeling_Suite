@@ -6,15 +6,15 @@ This module implements IK solving with both hands as end-effectors that must
 track positions on a golf club grip as it moves through the swing trajectory.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import TYPE_CHECKING
+from dataclasses import dataclass, field  # noqa: E402
+from pathlib import Path  # noqa: E402
+from typing import TYPE_CHECKING  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-from src.shared.python.engine_core.engine_availability import PINOCCHIO_AVAILABLE
+from src.shared.python.engine_core.engine_availability import PINOCCHIO_AVAILABLE  # noqa: E402
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -34,9 +34,9 @@ try:
 except ImportError:
     PINK_AVAILABLE = False
 
-import logging
+import logging  # noqa: E402
 
-from motion_training.club_trajectory_parser import ClubFrame, ClubTrajectory
+from motion_training.club_trajectory_parser import ClubFrame, ClubTrajectory  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -274,8 +274,12 @@ class DualHandIKSolver:
             left_current = self.data.oMf[self.left_hand_frame_id]
             right_current = self.data.oMf[self.right_hand_frame_id]
 
-            left_error = np.linalg.norm(left_current.translation - left_target.translation)
-            right_error = np.linalg.norm(right_current.translation - right_target.translation)
+            left_error = np.linalg.norm(
+                left_current.translation - left_target.translation
+            )  # noqa: E501
+            right_error = np.linalg.norm(
+                right_current.translation - right_target.translation
+            )  # noqa: E501
 
             # Check convergence
             if left_error < s.position_tolerance and right_error < s.position_tolerance:
@@ -558,4 +562,6 @@ def create_ik_solver(
         return DualHandIKSolver(urdf_path, left_hand_frame, right_hand_frame, settings)
     else:
         logger.info("Pink not available, using fallback damped least-squares solver")
-        return DualHandIKSolverFallback(urdf_path, left_hand_frame, right_hand_frame, settings)
+        return DualHandIKSolverFallback(
+            urdf_path, left_hand_frame, right_hand_frame, settings
+        )  # noqa: E501

@@ -17,19 +17,19 @@ Planned enhancement: implement Inter-segmental Power Flow calculation.
 Known limitation: `efficiency_score` may have patent exposure and should be re-reviewed before release.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import itertools
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+import itertools  # noqa: E402
+from dataclasses import dataclass, field  # noqa: E402
+from typing import TYPE_CHECKING  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-from src.shared.python.analysis.dataclasses import (
+from src.shared.python.analysis.dataclasses import (  # noqa: E402
     CITATION_SEGMENT_TIMING,
     MethodCitation,
 )
-from src.shared.python.core.contracts import ensure, require
+from src.shared.python.core.contracts import ensure, require  # noqa: E402
 
 if TYPE_CHECKING:
     from typing import Any

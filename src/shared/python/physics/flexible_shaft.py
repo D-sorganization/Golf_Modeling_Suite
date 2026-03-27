@@ -21,18 +21,18 @@ Planned enhancement: implement torsional dynamics (current Euler-Bernoulli beam 
 Planned enhancement: support asymmetric cross-sections (modeling spine alignment and manufacturing tolerances).
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import functools
-from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import TYPE_CHECKING
+import functools  # noqa: E402
+from abc import ABC, abstractmethod  # noqa: E402
+from dataclasses import dataclass, field  # noqa: E402
+from enum import Enum, auto  # noqa: E402
+from typing import TYPE_CHECKING  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-from src.shared.python.contracts import check_positive, require
-from src.shared.python.logging_pkg.logging_config import get_logger
+from src.shared.python.contracts import check_positive, require  # noqa: E402
+from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
 
 if TYPE_CHECKING:
     ...

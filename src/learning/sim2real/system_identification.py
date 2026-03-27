@@ -2,12 +2,12 @@ from numba import jit
 
 """System Identification for sim-to-real transfer."""
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from dataclasses import dataclass  # noqa: E402
+from typing import TYPE_CHECKING, Any  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray

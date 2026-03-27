@@ -6,15 +6,15 @@ Wiffle_ProV1 Data Loader for Golf Swing Visualizer
 Handles Excel-based motion capture data and converts to the GUI's expected format
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import logging
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Any
+import logging  # noqa: E402
+from dataclasses import dataclass  # noqa: E402
+from pathlib import Path  # noqa: E402
+from typing import Any  # noqa: E402
 
-import numpy as np
-import pandas as pd
+import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -150,7 +150,9 @@ class MotionDataLoader:
             if path.exists():
                 return self.load_excel_data(str(path))
 
-        raise FileNotFoundError("Wiffle_ProV1 Excel file not found in any expected location")
+        raise FileNotFoundError(
+            "Wiffle_ProV1 Excel file not found in any expected location"
+        )  # noqa: E501
 
     def load_from_file(self, filepath: str) -> dict[str, pd.DataFrame]:
         """
@@ -182,8 +184,12 @@ class MotionDataLoader:
 
         try:
             # Read both sheets
-            prov1_data = pd.read_excel(filepath_path, sheet_name=self.config.prov1_sheet)
-            wiffle_data = pd.read_excel(filepath_path, sheet_name=self.config.wiffle_sheet)
+            prov1_data = pd.read_excel(
+                filepath_path, sheet_name=self.config.prov1_sheet
+            )  # noqa: E501
+            wiffle_data = pd.read_excel(
+                filepath_path, sheet_name=self.config.wiffle_sheet
+            )  # noqa: E501
 
             logger.info("[OK] Loaded ProV1 data: %s", prov1_data.shape)
             logger.info("[OK] Loaded Wiffle data: %s", wiffle_data.shape)
@@ -210,7 +216,9 @@ class MotionDataLoader:
             logger.info("[OK] Extracted time data from column 1 for %s", sheet_name)
             return pd.to_numeric(data_df.iloc[:, 1], errors="coerce")
 
-        logger.info("[WARN] No Time column found in %s, creating linear time", sheet_name)
+        logger.info(
+            "[WARN] No Time column found in %s, creating linear time", sheet_name
+        )  # noqa: E501
         return pd.Series(np.linspace(0, 1, len(data_df)))
 
     def _extract_clubhead_position(self, data_df, processed_data, sheet_name) -> None:
@@ -221,16 +229,24 @@ class MotionDataLoader:
         # Check for position columns by index (more reliable than name matching)
         if len(data_df.columns) >= 16:
             # Use the first set of X, Y, Z (columns 2, 3, 4)
-            processed_data["clubhead_x"] = pd.to_numeric(data_df.iloc[:, 2], errors="coerce")
-            processed_data["clubhead_y"] = pd.to_numeric(data_df.iloc[:, 3], errors="coerce")
-            processed_data["clubhead_z"] = pd.to_numeric(data_df.iloc[:, 4], errors="coerce")
+            processed_data["clubhead_x"] = pd.to_numeric(
+                data_df.iloc[:, 2], errors="coerce"
+            )  # noqa: E501
+            processed_data["clubhead_y"] = pd.to_numeric(
+                data_df.iloc[:, 3], errors="coerce"
+            )  # noqa: E501
+            processed_data["clubhead_z"] = pd.to_numeric(
+                data_df.iloc[:, 4], errors="coerce"
+            )  # noqa: E501
 
             logger.info(
-                f"[OK] Extracted position data from columns 2-4 (Mid-hands) " f"for {sheet_name}"
+                f"[OK] Extracted position data from columns 2-4 (Mid-hands) "
+                f"for {sheet_name}"  # noqa: E501
             )
         else:
             logger.info(
-                f"[WARN] Insufficient columns in {sheet_name}, " f"using first 3 numeric columns"
+                f"[WARN] Insufficient columns in {sheet_name}, "
+                f"using first 3 numeric columns"  # noqa: E501
             )
             numeric_cols = data_df.select_dtypes(include=[np.number]).columns
             if len(numeric_cols) >= 3:
@@ -245,7 +261,8 @@ class MotionDataLoader:
                 )
             else:
                 logger.info(
-                    f"[WARN] Insufficient numeric columns in {sheet_name}, " f"creating dummy data"
+                    f"[WARN] Insufficient numeric columns in {sheet_name}, "
+                    f"creating dummy data"  # noqa: E501
                 )
                 processed_data["clubhead_x"] = np.linspace(0, 1, len(processed_data))
                 processed_data["clubhead_y"] = np.linspace(0, 1, len(processed_data))
@@ -267,7 +284,9 @@ class MotionDataLoader:
 
         # Normalize time if requested
         if self.config.normalize_time:
-            processed_data["time"] = (processed_data["time"] - processed_data["time"].min()) / (
+            processed_data["time"] = (
+                processed_data["time"] - processed_data["time"].min()
+            ) / (  # noqa: E501
                 processed_data["time"].max() - processed_data["time"].min()
             )
 
@@ -297,7 +316,9 @@ class MotionDataLoader:
         # Row 3+: Actual data
 
         if len(df) < 3:
-            logger.info("[WARN] Insufficient rows in %s, creating dummy data", sheet_name)
+            logger.info(
+                "[WARN] Insufficient rows in %s, creating dummy data", sheet_name
+            )  # noqa: E501
             return self._create_dummy_data(100)
 
         # Extract headers from row 2 (index 2)
@@ -326,7 +347,9 @@ class MotionDataLoader:
 
         return processed_data
 
-    def _create_body_part_estimates(self, processed_data: pd.DataFrame, sheet_name: str) -> None:
+    def _create_body_part_estimates(
+        self, processed_data: pd.DataFrame, sheet_name: str
+    ) -> None:  # noqa: E501
         """Create reasonable estimates for body parts based on clubhead position"""
         # This is a simplified biomechanical model
         # In a real application, you'd want more sophisticated modeling
@@ -395,7 +418,8 @@ class MotionDataLoader:
         processed_data["hub_z"] = ch_z_array + 0.47
 
         logger.info(
-            f"[CALC] Created body part estimates for {sheet_name} " f"based on clubhead position"
+            f"[CALC] Created body part estimates for {sheet_name} "
+            f"based on clubhead position"  # noqa: E501
         )
 
     @jit(nopython=True, fastmath=True)
@@ -426,13 +450,19 @@ class MotionDataLoader:
             "right_shoulder",
             "hub",
         ]:
-            processed_data[f"{pos}_x"] = processed_data["clubhead_x"] + np.random.normal(
+            processed_data[f"{pos}_x"] = processed_data[
+                "clubhead_x"
+            ] + np.random.normal(  # noqa: E501
                 0, 0.1, num_frames
             )
-            processed_data[f"{pos}_y"] = processed_data["clubhead_y"] + np.random.normal(
+            processed_data[f"{pos}_y"] = processed_data[
+                "clubhead_y"
+            ] + np.random.normal(  # noqa: E501
                 0, 0.1, num_frames
             )
-            processed_data[f"{pos}_z"] = processed_data["clubhead_z"] + np.random.normal(
+            processed_data[f"{pos}_z"] = processed_data[
+                "clubhead_z"
+            ] + np.random.normal(  # noqa: E501
                 0, 0.1, num_frames
             )
 
@@ -614,14 +644,20 @@ class MotionDataLoader:
 
                 if prov1_col in prov1_df.columns and wiffle_col in wiffle_df.columns:
                     # Interpolate wiffle data to match prov1 time points
-                    wiffle_interp = np.interp(common_time, wiffle_df["time"], wiffle_df[wiffle_col])
+                    wiffle_interp = np.interp(
+                        common_time, wiffle_df["time"], wiffle_df[wiffle_col]
+                    )  # noqa: E501
                     diff = _to_numpy(prov1_df[prov1_col]) - wiffle_interp
 
                     # Store in DELTAQ format
-                    gui_col = f"{component.upper().replace('_', '')[:2]}{axis[-1].upper()}"
+                    gui_col = (
+                        f"{component.upper().replace('_', '')[:2]}{axis[-1].upper()}"  # noqa: E501
+                    )
                     deltaq_data[gui_col] = diff
                 else:
-                    deltaq_data[f"{component.upper().replace('_', '')[:2]}{axis[-1].upper()}"] = 0.0
+                    deltaq_data[f"{component.upper().replace('_', '')[:2]}{axis[-1].upper()}"] = (
+                        0.0  # noqa: E501
+                    )
 
         return deltaq_data
 

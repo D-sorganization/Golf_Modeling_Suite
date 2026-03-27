@@ -12,18 +12,18 @@ Run examples with:
     python -m mujoco_humanoid_golf.examples_joint_analysis
 """
 
-import os
-from typing import Any
+import os  # noqa: E402
+from typing import Any  # noqa: E402
 
-import matplotlib.pyplot as plt
-import mujoco as mj
-import numpy as np
-from mujoco_humanoid_golf.joint_analysis import (
+import matplotlib.pyplot as plt  # noqa: E402
+import mujoco as mj  # noqa: E402
+import numpy as np  # noqa: E402
+from mujoco_humanoid_golf.joint_analysis import (  # noqa: E402
     GimbalJointAnalyzer,
     UniversalJointAnalyzer,
     plot_torque_wobble,
 )
-from mujoco_humanoid_golf.models import (
+from mujoco_humanoid_golf.models import (  # noqa: E402
     CLUB_CONFIGS,
     GIMBAL_JOINT_DEMO_XML,
     TWO_LINK_INCLINED_PLANE_UNIVERSAL_XML,

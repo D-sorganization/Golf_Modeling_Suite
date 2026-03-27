@@ -9,13 +9,13 @@ Design by Contract:
     All analysis functions validate inputs and return meaningful results.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import numpy as np
-from numpy.typing import NDArray
+import numpy as np  # noqa: E402
+from numpy.typing import NDArray  # noqa: E402
 
-from src.robotics.contact.friction_cone import FrictionCone
-from src.robotics.core.types import ContactState
+from src.robotics.contact.friction_cone import FrictionCone  # noqa: E402
+from src.robotics.core.types import ContactState  # noqa: E402
 
 
 @jit(nopython=True, fastmath=True)

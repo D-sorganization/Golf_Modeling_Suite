@@ -26,16 +26,16 @@ References:
     - Jorgensen, T. (1999). The Physics of Golf. Springer.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import math
-from dataclasses import dataclass, field, replace
-from typing import Any
+import math  # noqa: E402
+from dataclasses import dataclass, field, replace  # noqa: E402
+from typing import Any  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-from src.shared.python.core.contracts import precondition
-from src.shared.python.core.physics_constants import (
+from src.shared.python.core.contracts import precondition  # noqa: E402
+from src.shared.python.core.physics_constants import (  # noqa: E402
     AIR_DENSITY_SEA_LEVEL_KG_M3,
     AIR_VISCOSITY_KG_M_S,
     GOLF_BALL_CROSS_SECTIONAL_AREA_M2,

@@ -2,12 +2,12 @@ from numba import jit
 
 """Common utilities shared across all golf modeling engines."""
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from pathlib import Path
-from typing import TYPE_CHECKING
+from pathlib import Path  # noqa: E402
+from typing import TYPE_CHECKING  # noqa: E402
 
-from src.shared.python.core import (
+from src.shared.python.core import (  # noqa: E402
     DataFormatError,
     EngineNotFoundError,
     GolfModelingError,
@@ -18,7 +18,7 @@ from src.shared.python.core import (
 
 # Import OUTPUT_ROOT from constants to avoid circular dependency
 # Import core utilities (exceptions, logging) from the lightweight module
-from src.shared.python.core.constants import (
+from src.shared.python.core.constants import (  # noqa: E402
     DEG_TO_RAD,
     KG_TO_LB,
     M_TO_FT,
@@ -47,8 +47,8 @@ __all__ = [
     "normalize_z_score",
 ]
 
-import numpy as np
-import pandas as pd
+import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
 
 if TYPE_CHECKING:
     import matplotlib.pyplot as plt

@@ -882,10 +882,10 @@ class EndEffectorManagerWidget(QWidget):
                         child.set("link", name_mapping[old_link])
 
         # Add links to model
-        root.extend([link for link in links])
+        root.extend([link for link in links])  # noqa: C416
 
         # Add joints to model
-        root.extend([joint for joint in joints])
+        root.extend([joint for joint in joints])  # noqa: C416
 
         # Create attachment joint
         ee_root_name = links[0].get("name", "end_effector")

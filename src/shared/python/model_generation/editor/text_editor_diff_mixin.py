@@ -6,11 +6,11 @@ Extracts diff generation and side-by-side comparison logic
 from the main editor class to improve single-responsibility adherence.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import difflib
-import re
-from typing import TYPE_CHECKING
+import difflib  # noqa: E402
+import re  # noqa: E402
+from typing import TYPE_CHECKING  # noqa: E402
 
 if TYPE_CHECKING:
     from .text_editor import DiffResult

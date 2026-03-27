@@ -6,16 +6,16 @@ Includes Lyapunov exponents, correlation dimension, recurrence quantification,
 entropy measures, fractal dimension, and local divergence rates.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from typing import Any, cast
+from typing import Any, cast  # noqa: E402
 
-import numpy as np
-from scipy.spatial import cKDTree
-from scipy.spatial.distance import pdist, squareform
+import numpy as np  # noqa: E402
+from scipy.spatial import cKDTree  # noqa: E402
+from scipy.spatial.distance import pdist, squareform  # noqa: E402
 
-from src.shared.python.analysis.dataclasses import RQAMetrics
-from src.shared.python.core.contracts import ensure, require
+from src.shared.python.analysis.dataclasses import RQAMetrics  # noqa: E402
+from src.shared.python.core.contracts import ensure, require  # noqa: E402
 
 
 class NonlinearDynamicsMixin:

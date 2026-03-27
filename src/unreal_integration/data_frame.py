@@ -6,23 +6,23 @@ Contains the complete visualization frame that is serialized and sent
 over WebSocket to Unreal Engine for rendering.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import json
-from dataclasses import dataclass
-from typing import Any
+import json  # noqa: E402
+from dataclasses import dataclass  # noqa: E402
+from typing import Any  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-from .geometry import Quaternion, Vector3
-from .golf_state import (
+from .geometry import Quaternion, Vector3  # noqa: E402
+from .golf_state import (  # noqa: E402
     BallState,
     ClubState,
     EnvironmentState,
     SwingMetrics,
     TrajectoryPoint,
 )
-from .skeleton import ForceVector, JointState
+from .skeleton import ForceVector, JointState  # noqa: E402
 
 
 @dataclass

@@ -2,19 +2,19 @@ from numba import jit
 
 """Specialized MPC implementations for robotics."""
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from dataclasses import dataclass  # noqa: E402
+from typing import TYPE_CHECKING  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-from src.research.mpc.controller import (
+from src.research.mpc.controller import (  # noqa: E402
     CostFunction,
     ModelPredictiveController,
     MPCResult,
 )
-from src.shared.python.core.constants import GRAVITY
+from src.shared.python.core.constants import GRAVITY  # noqa: E402
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray

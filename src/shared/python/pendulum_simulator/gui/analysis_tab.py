@@ -22,12 +22,12 @@ DRY
 - Delegates regression to popout_chart.fit_regression().
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import logging
-from typing import TYPE_CHECKING, Any
+import logging  # noqa: E402
+from typing import TYPE_CHECKING, Any  # noqa: E402
 
-import numpy as np
+import numpy as np  # noqa: E402
 
 if TYPE_CHECKING:
     pass

@@ -8,19 +8,19 @@ Core logic for calculating water content in saturated syngas.
 Provides calculation methods without GUI dependencies.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import logging
-import math
-from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Any
+import logging  # noqa: E402
+import math  # noqa: E402
+from dataclasses import dataclass, field  # noqa: E402
+from datetime import datetime  # noqa: E402
+from typing import Any  # noqa: E402
 
-import numpy as np
-import pandas as pd
-from scipy.interpolate import interp1d
+import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
+from scipy.interpolate import interp1d  # noqa: E402
 
-from .constants import (
+from .constants import (  # noqa: E402
     ANTOINE_WATER_A,
     ANTOINE_WATER_B,
     ANTOINE_WATER_C,

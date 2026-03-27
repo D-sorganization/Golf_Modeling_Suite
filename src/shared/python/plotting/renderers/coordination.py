@@ -2,18 +2,18 @@ from numba import jit
 
 """Coordination and sequencing plotting renderer."""
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from typing import Any
+from typing import Any  # noqa: E402
 
-import numpy as np
-from matplotlib.axes import Axes
-from matplotlib.colors import ListedColormap
-from matplotlib.figure import Figure
-from matplotlib.patches import Rectangle
+import numpy as np  # noqa: E402
+from matplotlib.axes import Axes  # noqa: E402
+from matplotlib.colors import ListedColormap  # noqa: E402
+from matplotlib.figure import Figure  # noqa: E402
+from matplotlib.patches import Rectangle  # noqa: E402
 
-from src.shared.python.logging_pkg.logging_config import get_logger
-from src.shared.python.plotting.renderers.base import BaseRenderer
+from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
+from src.shared.python.plotting.renderers.base import BaseRenderer  # noqa: E402
 
 logger = get_logger(__name__)
 

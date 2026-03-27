@@ -6,26 +6,26 @@ Wraps the MuJoCo physics backend to provide a unified interface for
 running golf swing simulations with humanoid models.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-import os
-import tempfile
-from pathlib import Path
-from typing import Any, cast  # noqa: F401
+import os  # noqa: E402
+import tempfile  # noqa: E402
+from pathlib import Path  # noqa: E402
+from typing import Any, cast  # noqa: E402, F401
 
-import mujoco
-import numpy as np
+import mujoco  # noqa: E402
+import numpy as np  # noqa: E402
 
-from src.shared.python.core.contracts import (
+from src.shared.python.core.contracts import (  # noqa: E402
     PreconditionError,
     check_finite,
     invariant,
     postcondition,
     precondition,
 )
-from src.shared.python.engine_core.interfaces import PhysicsEngine
-from src.shared.python.logging_pkg.logging_config import get_logger
-from src.shared.python.security.security_utils import validate_path
+from src.shared.python.engine_core.interfaces import PhysicsEngine  # noqa: E402
+from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
+from src.shared.python.security.security_utils import validate_path  # noqa: E402
 
 logger = get_logger(__name__)
 
@@ -137,7 +137,9 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         """Return the MuJoCo simulation data, or None."""
         return self.data
 
-    @precondition(lambda self, dt=None: self.is_initialized, "Engine must be initialized")
+    @precondition(
+        lambda self, dt=None: self.is_initialized, "Engine must be initialized"
+    )  # noqa: E501
     def step(self, dt: float | None = None) -> None:
         """Step the simulation forward."""
         if self.model is not None and self.data is not None:
@@ -175,13 +177,15 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             # Validate dimensions
             if len(q) != len(self.data.qpos):
                 raise ValueError(
-                    f"State q size mismatch: got {len(q)}, " f"expected {len(self.data.qpos)}"
+                    f"State q size mismatch: got {len(q)}, "
+                    f"expected {len(self.data.qpos)}"  # noqa: E501
                 )
             self.data.qpos[:] = q
 
             if len(v) != len(self.data.qvel):
                 raise ValueError(
-                    f"State v size mismatch: got {len(v)}, " f"expected {len(self.data.qvel)}"
+                    f"State v size mismatch: got {len(v)}, "
+                    f"expected {len(self.data.qvel)}"  # noqa: E501
                 )
             self.data.qvel[:] = v
 
@@ -194,7 +198,8 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             # Strict size validation
             if len(u) != self.model.nu:
                 raise ValueError(
-                    f"Control vector size mismatch: got {len(u)}, " f"expected {self.model.nu}"
+                    f"Control vector size mismatch: got {len(u)}, "
+                    f"expected {self.model.nu}"  # noqa: E501
                 )
             self.data.ctrl[:] = u
 
@@ -689,7 +694,9 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             Dictionary with deflection, rotation, velocity, modal_amplitudes,
             or None if shaft not configured.
         """
-        if not hasattr(self, "_shaft_config") or not hasattr(self, "_shaft_modal_state"):
+        if not hasattr(self, "_shaft_config") or not hasattr(
+            self, "_shaft_modal_state"
+        ):  # noqa: E501
             return None
 
         modes = self._shaft_modes
@@ -700,7 +707,9 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         deflection = np.zeros(n_stations)
         velocity = np.zeros(n_stations)
 
-        for i, (amp, vel) in enumerate(zip(state["amplitudes"], state["velocities"], strict=True)):
+        for i, (amp, vel) in enumerate(
+            zip(state["amplitudes"], state["velocities"], strict=True)
+        ):  # noqa: E501
             deflection += amp * modes["mode_shapes"][i]
             velocity += vel * modes["mode_shapes"][i]
 

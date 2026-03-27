@@ -7,9 +7,9 @@ This script creates visually appealing tile images for each model/engine
 in the launcher grid. Images use a modern dark theme with colored accents.
 """
 
-import struct
-import zlib
-from pathlib import Path
+import struct  # noqa: E402
+import zlib  # noqa: E402
+from pathlib import Path  # noqa: E402
 
 # Output directory
 ASSETS_DIR = Path(__file__).parent

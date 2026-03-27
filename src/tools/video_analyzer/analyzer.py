@@ -7,15 +7,15 @@ Main analysis engine that processes video and generates
 comprehensive swing analysis reports.
 """
 
-import logging
-import math
-import uuid
-from collections.abc import Callable
-from datetime import datetime
+import logging  # noqa: E402
+import math  # noqa: E402
+import uuid  # noqa: E402
+from collections.abc import Callable  # noqa: E402
+from datetime import datetime  # noqa: E402
 
-from src.shared.python.core.contracts import precondition
+from src.shared.python.core.contracts import precondition  # noqa: E402
 
-from .types import (
+from .types import (  # noqa: E402
     BalanceMetrics,
     BodyAngles,
     Landmark,
@@ -32,7 +32,7 @@ from .types import (
     SwingType,
     TempoMetrics,
 )
-from .video_processor import VideoProcessor
+from .video_processor import VideoProcessor  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
