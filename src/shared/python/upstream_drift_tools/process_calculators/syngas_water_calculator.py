@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """
 Syngas Water Calculator
@@ -8,19 +10,19 @@ Core logic for calculating water content in saturated syngas.
 Provides calculation methods without GUI dependencies.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import logging  # noqa: E402
-import math  # noqa: E402
-from dataclasses import dataclass, field  # noqa: E402
-from datetime import datetime  # noqa: E402
-from typing import Any  # noqa: E402
+import logging
+import math
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
 
-import numpy as np  # noqa: E402
-import pandas as pd  # noqa: E402
-from scipy.interpolate import interp1d  # noqa: E402
+import numpy as np
+import pandas as pd
+from scipy.interpolate import interp1d
 
-from .constants import (  # noqa: E402
+from .constants import (
     ANTOINE_WATER_A,
     ANTOINE_WATER_B,
     ANTOINE_WATER_C,
@@ -437,7 +439,6 @@ class SyngasWaterCalculator:
             self._init_vapor_pressure_table()
         return float(self.vapor_pressure_table(temperature_k))
 
-    @jit(nopython=True, fastmath=True)
     def calculate_dew_point(
         self, partial_pressure_pa: float, total_pressure_pa: float
     ) -> float:

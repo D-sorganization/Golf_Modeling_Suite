@@ -1,27 +1,25 @@
-from numba import jit
-
 """Collision checker for motion planning.
 
 This module provides configuration-space collision checking
 for robot motion planning.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import time  # noqa: E402
-from dataclasses import dataclass, field  # noqa: E402
-from typing import Protocol, runtime_checkable  # noqa: E402
+import time
+from dataclasses import dataclass, field
+from typing import Protocol, runtime_checkable
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from src.robotics.planning.collision.collision_types import (  # noqa: E402
+from src.robotics.planning.collision.collision_types import (
     CollisionPair,
     CollisionQuery,
     CollisionQueryType,
     CollisionResult,
     DistanceResult,
 )
-from src.robotics.planning.collision.geometric_primitives import (  # noqa: E402
+from src.robotics.planning.collision.geometric_primitives import (
     GeometricPrimitive,
     compute_primitive_distance,
 )
@@ -339,9 +337,6 @@ class CollisionChecker:
         # Check overlap
         return bool(np.all(max_a >= min_b) and np.all(max_b >= min_a))
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def compute_distance(
         self,
         q: np.ndarray,
@@ -469,7 +464,6 @@ class CollisionChecker:
 
         return compute_primitive_distance(body_geom, env_primitive)
 
-    @jit(nopython=True, fastmath=True)
     def check_path_collision(
         self,
         q_start: np.ndarray,

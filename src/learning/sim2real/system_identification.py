@@ -1,13 +1,11 @@
-from numba import jit
-
 """System Identification for sim-to-real transfer."""
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from dataclasses import dataclass  # noqa: E402
-from typing import TYPE_CHECKING, Any  # noqa: E402
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any
 
-import numpy as np  # noqa: E402
+import numpy as np
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -101,7 +99,6 @@ class SystemIdentifier:
 
         return params
 
-    @jit(nopython=True, fastmath=True)
     def _apply_params(self, param_vector: NDArray[np.floating]) -> None:
         """Apply parameter vector to model.
 
@@ -382,7 +379,6 @@ class SystemIdentifier:
 
         return best_params, best_error, converged, _iteration
 
-    @jit(nopython=True, fastmath=True)
     def compute_reality_gap(
         self,
         sim_trajectory: NDArray[np.floating],

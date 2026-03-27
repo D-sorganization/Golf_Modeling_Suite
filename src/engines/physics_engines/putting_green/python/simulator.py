@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """Putting Green Simulator - Main Physics Engine.
 
@@ -20,39 +22,39 @@ Design by Contract:
     - Deterministic simulation (same inputs = same outputs)
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import json  # noqa: E402
-from dataclasses import dataclass  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import Any  # noqa: E402
+import json
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from src.engines.physics_engines.putting_green.python.ball_roll_physics import (  # noqa: E402
+from src.engines.physics_engines.putting_green.python.ball_roll_physics import (
     BallRollPhysics,
     BallState,
     RollMode,
 )
-from src.engines.physics_engines.putting_green.python.green_surface import (  # noqa: E402
+from src.engines.physics_engines.putting_green.python.green_surface import (
     GreenSurface,
     SlopeRegion,
 )
-from src.engines.physics_engines.putting_green.python.putter_stroke import (  # noqa: E402
+from src.engines.physics_engines.putting_green.python.putter_stroke import (
     PutterStroke,
     StrokeParameters,
 )
-from src.engines.physics_engines.putting_green.python.turf_properties import (  # noqa: E402
+from src.engines.physics_engines.putting_green.python.turf_properties import (
     GrassType,
     TurfProperties,
 )
-from src.shared.python.core.physics_constants import (  # noqa: E402
+from src.shared.python.core.physics_constants import (
     AIR_DENSITY_SEA_LEVEL_KG_M3,
     GOLF_BALL_CROSS_SECTIONAL_AREA_M2,
     PUTTING_WIND_DRAG_COEFFICIENT,
     PUTTING_WIND_FORCE_SCALING,
 )
-from src.shared.python.engine_core.checkpoint import StateCheckpoint  # noqa: E402
+from src.shared.python.engine_core.checkpoint import StateCheckpoint
 
 
 @dataclass
@@ -730,7 +732,6 @@ class PuttingGreenSimulator:
         return feedback
 
     # Scatter analysis
-    @jit(nopython=True, fastmath=True)
     def simulate_scatter(
         self,
         start_position: np.ndarray,

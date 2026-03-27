@@ -1,5 +1,3 @@
-from numba import jit
-
 """
 Pose Estimator using MediaPipe.
 
@@ -7,14 +5,14 @@ Provides real-time pose estimation for golf swing analysis,
 extracting 33 body landmarks from video frames.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import logging  # noqa: E402
+import logging
 
-import cv2  # noqa: E402
-import numpy as np  # noqa: E402
+import cv2
+import numpy as np
 
-from .types import Landmark, PoseFrame  # noqa: E402
+from .types import Landmark, PoseFrame
 
 logger = logging.getLogger(__name__)
 
@@ -253,7 +251,6 @@ class PoseEstimator:
             confidence=confidence,
         )
 
-    @jit(nopython=True, fastmath=True)
     def draw_landmarks(
         self,
         frame: np.ndarray,

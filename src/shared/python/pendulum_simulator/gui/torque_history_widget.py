@@ -1,5 +1,3 @@
-from numba import jit
-
 """
 Torque history plot widget — N-DOF aware.
 
@@ -14,20 +12,14 @@ when available, falling back to hardcoded dark defaults.  The distinctive *trace
 colours are preserved regardless of theme.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import logging  # noqa: E402
-from typing import TYPE_CHECKING, Any  # noqa: E402
+import logging
+from typing import TYPE_CHECKING, Any
 
-import numpy as np  # noqa: E402
-from PyQt6.QtCore import Qt  # noqa: E402
-from PyQt6.QtWidgets import (  # noqa: E402
-    QLabel,
-    QScrollArea,
-    QSizePolicy,
-    QVBoxLayout,
-    QWidget,
-)
+import numpy as np
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QLabel, QScrollArea, QSizePolicy, QVBoxLayout, QWidget
 
 if TYPE_CHECKING:
     pass  # SimulationResult variants handled via duck typing
@@ -180,7 +172,6 @@ class TorqueHistoryWidget(QWidget):
         self._scroll.setWidget(self._plot_container)
         self._outer_layout.addWidget(self._scroll)
 
-    @jit(nopython=True, fastmath=True)
     def _create_plots_for_ndof(self, n_joints: int) -> None:
         """Dynamically create sub-plots for the given joint count.
 
@@ -268,7 +259,7 @@ class TorqueHistoryWidget(QWidget):
 
         # Detect DOF count from first sample
         sample = result.torques_at(0)
-        if isinstance(sample, (tuple, list)):
+        if isinstance(sample, tuple | list):
             n_joints = len(sample)
         elif isinstance(sample, np.ndarray):
             n_joints = sample.shape[0]

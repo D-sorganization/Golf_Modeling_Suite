@@ -1,5 +1,3 @@
-from numba import jit
-
 """Examples for analyzing universal and gimbal joints in golf swing models.
 
 This module demonstrates:
@@ -12,18 +10,18 @@ Run examples with:
     python -m mujoco_humanoid_golf.examples_joint_analysis
 """
 
-import os  # noqa: E402
-from typing import Any  # noqa: E402
+import os
+from typing import Any
 
-import matplotlib.pyplot as plt  # noqa: E402
-import mujoco as mj  # noqa: E402
-import numpy as np  # noqa: E402
-from mujoco_humanoid_golf.joint_analysis import (  # noqa: E402
+import matplotlib.pyplot as plt
+import mujoco as mj
+import numpy as np
+from mujoco_humanoid_golf.joint_analysis import (
     GimbalJointAnalyzer,
     UniversalJointAnalyzer,
     plot_torque_wobble,
 )
-from mujoco_humanoid_golf.models import (  # noqa: E402
+from mujoco_humanoid_golf.models import (
     CLUB_CONFIGS,
     GIMBAL_JOINT_DEMO_XML,
     TWO_LINK_INCLINED_PLANE_UNIVERSAL_XML,
@@ -64,7 +62,6 @@ def example_universal_joint_wobble() -> None:
     plot_torque_wobble(results, save_path="output/universal_joint_wobble.png")
 
 
-@jit(nopython=True, fastmath=True)
 def example_constraint_forces() -> None:
     """Example: Analyze constraint forces in universal joint during motion."""
 

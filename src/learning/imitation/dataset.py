@@ -1,15 +1,13 @@
-from numba import jit
-
 """Demonstration dataset for imitation learning."""
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import json  # noqa: E402
-from dataclasses import dataclass, field  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import TYPE_CHECKING, Any  # noqa: E402
+import json
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
-import numpy as np  # noqa: E402
+import numpy as np
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -264,8 +262,6 @@ class DemonstrationDataset:
         """Total number of state transitions (frames - 1 per demo)."""
         return sum(max(0, d.n_frames - 1) for d in self.demonstrations)
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def to_transitions(
         self,
     ) -> tuple[NDArray[np.floating], NDArray[np.floating], NDArray[np.floating]]:

@@ -1,17 +1,15 @@
-from numba import jit
-
 """MJCF exporter from canonical YAML specification."""
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import math  # noqa: E402
-import typing  # noqa: E402
-from pathlib import Path  # noqa: E402
+import math
+import typing
+from pathlib import Path
 
-import yaml  # type: ignore[import-untyped]  # noqa: E402
+import yaml  # type: ignore[import-untyped]
 
-from src.shared.python.core.constants import GRAVITY_M_S2  # noqa: E402
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
+from src.shared.python.core.constants import GRAVITY_M_S2
+from src.shared.python.logging_pkg.logging_config import get_logger
 
 logger = get_logger(__name__)
 
@@ -19,19 +17,25 @@ logger = get_logger(__name__)
 class MJCFExporter:
     """Export MJCF from canonical YAML model specification."""
 
-    def __init__(self, yaml_path: Path | str) -> None:
+    def __init__(self, yaml_path: Path | str, exercise_type: str | None = None) -> None:
         """Initialize MJCF exporter.
 
         Args:
             yaml_path: Path to canonical YAML specification
+            exercise_type: Optional exercise type to apply joint limit overrides
         """
-        if not (yaml_path is not None):
-            raise ValueError("yaml_path must be provided")
         if not (yaml_path is not None):
             raise ValueError("yaml_path must be provided")
         self.yaml_path = Path(yaml_path)
         with self.yaml_path.open() as f:
             self.spec = yaml.safe_load(f)
+
+        self.exercise_type = exercise_type
+        if self.exercise_type and "exercise_profiles" in self.spec:
+            profile = self.spec["exercise_profiles"].get(self.exercise_type, {})
+            overrides = profile.get("joint_limit_overrides", {})
+            if overrides:
+                self._apply_limit_overrides(overrides)
 
         # Build children map for O(1) lookup
         self._children_map: dict[str, list[dict[str, typing.Any]]] = {}
@@ -41,6 +45,54 @@ class MJCFExporter:
                 if parent not in self._children_map:
                     self._children_map[parent] = []
                 self._children_map[parent].append(segment)
+
+    def _apply_limit_overrides(self, overrides: dict[str, list[float]]) -> None:
+        """Apply joint limit overrides to the segment specifications."""
+        mapping: dict[str, typing.Any] = {
+            "hip_flexion": {
+                "segments": ["right_thigh", "left_thigh"],
+                "axis": [0, 1, 0],
+            },
+            "knee_flexion": {
+                "segments": ["right_shank", "left_shank"],
+                "axis": [0, 1, 0],
+            },
+            "ankle_dorsiflexion": {
+                "segments": ["right_foot", "left_foot"],
+                "axis": [1, 0, 0],
+            },
+            "lumbar_flexion": {
+                "segments": ["lumbar1", "lumbar2", "lumbar3"],
+                "axis": [1, 0, 0],
+            },
+            "shoulder_flexion": {
+                "segments": ["upper_arm_right", "upper_arm_left"],
+                "axis": [1, 0, 0],
+            },
+            "shoulder_abduction": {
+                "segments": ["upper_arm_right", "upper_arm_left"],
+                "axis": [0, 1, 0],
+            },
+            "elbow_flexion": {
+                "segments": ["forearm_right", "forearm_left"],
+                "axis": [0, 1, 0],
+            },
+        }
+
+        segments = self.spec.get("segments", [])
+        for over_name, limits in overrides.items():
+            if over_name not in mapping:
+                continue
+            rule = mapping[over_name]
+            for segment in segments:
+                if segment.get("name") in rule["segments"]:
+                    joint = segment.get("joint", {})
+                    if "dofs" in joint:
+                        for dof in joint["dofs"]:
+                            if dof.get("axis") == rule["axis"]:
+                                dof["limits"] = limits
+                    elif joint.get("axis") == rule["axis"]:
+                        joint["limits"] = limits
 
     def export(self, output_path: Path | str) -> None:
         """Export MJCF file.
@@ -100,7 +152,6 @@ class MJCFExporter:
         lines.append("</mujoco>")
         return "\n".join(lines)
 
-    @jit(nopython=True, fastmath=True)
     def _generate_segments_mjcf(self, parent_name: str, depth: int = 1) -> list[str]:
         """Generate MJCF for segments recursively.
 

@@ -1,18 +1,15 @@
-from numba import jit
-
 """Analyse and visualise coordinate system orientation for motion-capture data."""
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import logging  # noqa: E402
+import logging
 
-import numpy as np  # noqa: E402
-import pandas as pd  # noqa: E402
+import numpy as np
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
 
-@jit(nopython=True, fastmath=True)
 def _load_excel_frame_data(filename, sheet_name) -> list:
     """Load and parse frame data from an Excel sheet.
 

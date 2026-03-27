@@ -1,28 +1,26 @@
-from numba import jit
-
 """UnrealDataFrame — the primary data structure for Unreal Engine streaming.
 
 Contains the complete visualization frame that is serialized and sent
 over WebSocket to Unreal Engine for rendering.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import json  # noqa: E402
-from dataclasses import dataclass  # noqa: E402
-from typing import Any  # noqa: E402
+import json
+from dataclasses import dataclass
+from typing import Any
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from .geometry import Quaternion, Vector3  # noqa: E402
-from .golf_state import (  # noqa: E402
+from .geometry import Quaternion, Vector3
+from .golf_state import (
     BallState,
     ClubState,
     EnvironmentState,
     SwingMetrics,
     TrajectoryPoint,
 )
-from .skeleton import ForceVector, JointState  # noqa: E402
+from .skeleton import ForceVector, JointState
 
 
 @dataclass
@@ -241,7 +239,6 @@ class UnrealDataFrame:
         return cls.from_dict(d, validate=validate)
 
     @classmethod
-    @jit(nopython=True, fastmath=True)
     def from_physics_state(  # noqa: PLR0913
         cls,
         q: np.ndarray,

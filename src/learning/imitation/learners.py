@@ -1,16 +1,18 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """Imitation learning algorithms."""
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from abc import ABC, abstractmethod  # noqa: E402
-from collections.abc import Callable  # noqa: E402
-from dataclasses import dataclass, field  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import TYPE_CHECKING, Any  # noqa: E402
+from abc import ABC, abstractmethod
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
-import numpy as np  # noqa: E402
+import numpy as np
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -25,10 +27,7 @@ except ImportError:
     gym = None  # type: ignore[assignment]
     spaces = None  # type: ignore[assignment]
 
-from src.learning.imitation.dataset import (  # noqa: E402
-    Demonstration,
-    DemonstrationDataset,
-)
+from src.learning.imitation.dataset import Demonstration, DemonstrationDataset
 
 
 @dataclass
@@ -227,7 +226,6 @@ class BehaviorCloning(ImitationLearner):
 
         self._policy = layers
 
-    @jit(nopython=True, fastmath=True)
     def _forward(self, x: NDArray[np.floating]) -> NDArray[np.floating]:
         """Forward pass through network.
 
@@ -269,8 +267,6 @@ class BehaviorCloning(ImitationLearner):
         predictions = self._forward(observations)
         return float(np.mean((predictions - actions) ** 2))
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def _backward(
         self,
         observations: NDArray[np.floating],
@@ -319,9 +315,6 @@ class BehaviorCloning(ImitationLearner):
 
         return gradients
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def train(
         self,
         dataset: DemonstrationDataset,
@@ -745,7 +738,6 @@ class GAIL(ImitationLearner):
         )
         self._discriminator = disc_layers  # type: ignore[assignment]
 
-    @jit(nopython=True, fastmath=True)
     def _forward_policy(self, x: NDArray[np.floating]) -> NDArray[np.floating]:
         """Forward pass through policy network."""
         if not (x is not None):
@@ -758,7 +750,6 @@ class GAIL(ImitationLearner):
                 x = np.maximum(0, x)  # ReLU
         return x
 
-    @jit(nopython=True, fastmath=True)
     def _forward_discriminator(
         self, state: NDArray[np.floating], action: NDArray[np.floating]
     ) -> NDArray[np.floating]:
@@ -776,8 +767,6 @@ class GAIL(ImitationLearner):
                 x = 1 / (1 + np.exp(-x))  # Sigmoid
         return x
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def train(
         self,
         dataset: DemonstrationDataset,

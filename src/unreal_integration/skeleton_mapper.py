@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """Skeleton mapping system for gaming skeletons to physics models.
 
@@ -27,14 +29,14 @@ Usage:
     physics_pose = mapper.apply_pose(mixamo_pose)
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import logging  # noqa: E402
-from dataclasses import dataclass, field  # noqa: E402
-from enum import Enum, auto  # noqa: E402
-from typing import Any  # noqa: E402
+import logging
+from dataclasses import dataclass, field
+from enum import Enum, auto
+from typing import Any
 
-import numpy as np  # noqa: E402
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -570,7 +572,6 @@ class SkeletonMapper:
         mapping = self.profile.get_reverse_mapping(target_bone)
         return mapping.source_bone if mapping else None
 
-    @jit(nopython=True, fastmath=True)
     def apply_pose(
         self, source_pose: dict[str, PoseTransform]
     ) -> dict[str, PoseTransform]:
@@ -622,7 +623,6 @@ class SkeletonMapper:
 
         return target_pose
 
-    @jit(nopython=True, fastmath=True)
     def apply_joint_angles(
         self,
         joint_angles: dict[str, float],
@@ -684,7 +684,6 @@ class SkeletonMapper:
 
         return [bone for bone in source_bones if not self.profile.has_mapping(bone)]
 
-    @jit(nopython=True, fastmath=True)
     def interpolate_poses(
         self,
         pose_a: dict[str, PoseTransform],

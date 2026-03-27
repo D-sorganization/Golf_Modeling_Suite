@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """Ball flight physics simulation with Magnus effect and drag.
 
@@ -24,12 +26,12 @@ Planned enhancement: implement Turbulence Modeling.
 Planned enhancement: implement Mud Ball Physics.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from dataclasses import dataclass, field  # noqa: E402
-from typing import TYPE_CHECKING, Any  # noqa: E402
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any
 
-import numpy as np  # noqa: E402
+import numpy as np
 
 if TYPE_CHECKING:
     from src.shared.python.physics.aerodynamics import (
@@ -38,17 +40,10 @@ if TYPE_CHECKING:
         WindConfig,
     )
 
-from src.shared.python.core.constants import (  # noqa: E402
-    AIR_DENSITY_SEA_LEVEL_KG_M3,
-    GRAVITY_M_S2,
-)
-from src.shared.python.core.contracts import (  # noqa: E402
-    invariant,
-    postcondition,
-    precondition,
-)
-from src.shared.python.core.physics_constants import SPIN_DECAY_RATE_S  # noqa: E402
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
+from src.shared.python.core.constants import AIR_DENSITY_SEA_LEVEL_KG_M3, GRAVITY_M_S2
+from src.shared.python.core.contracts import invariant, postcondition, precondition
+from src.shared.python.core.physics_constants import SPIN_DECAY_RATE_S
+from src.shared.python.logging_pkg.logging_config import get_logger
 
 logger = get_logger(__name__)
 
@@ -238,7 +233,6 @@ class BallFlightSimulator:
         )
         return self._post_process_rust(rust_result, launch)
 
-    @jit(nopython=True, fastmath=True)
     def _post_process_rust(
         self, rust_result: Any, launch: LaunchConditions
     ) -> list[TrajectoryPoint]:
@@ -559,7 +553,6 @@ class EnhancedBallFlightSimulator:
         lambda result: result is not None and isinstance(result, list),
         "Trajectory must be returned as a non-None list",
     )
-    @jit(nopython=True, fastmath=True)
     def simulate_trajectory(
         self,
         launch: LaunchConditions,

@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """Terrain-aware physics engine integration.
 
@@ -20,16 +22,16 @@ Design by Contract:
         - Generated geometry is valid for target engine
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from dataclasses import dataclass  # noqa: E402
-from typing import Any, Protocol  # noqa: E402
+from dataclasses import dataclass
+from typing import Any, Protocol
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from src.shared.python.core.constants import GRAVITY  # noqa: E402
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
-from src.shared.python.physics.terrain import (  # noqa: E402
+from src.shared.python.core.constants import GRAVITY_FLOAT
+from src.shared.python.logging_pkg.logging_config import get_logger
+from src.shared.python.physics.terrain import (
     MATERIALS,
     TERRAIN_MATERIAL_MAP,
     Terrain,
@@ -572,7 +574,7 @@ class CompressibleTurfModel:
         terrain_type = self.terrain.get_terrain_type(x, y)
 
         # Ball weight creates compression
-        ball_weight = 0.04593 * GRAVITY  # Golf ball weight in N
+        ball_weight = 0.04593 * GRAVITY_FLOAT  # Golf ball weight in N
 
         # Effective sitting depth based on compression
         max_compression = material.get_max_compression_depth()
@@ -700,9 +702,6 @@ class TerrainGeometryGenerator:
             raise ValueError("terrain must be provided")
         self.terrain = terrain
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def generate_mesh(self) -> tuple[np.ndarray, list[tuple[int, int, int]]]:
         """Generate triangle mesh from terrain.
 
@@ -728,7 +727,6 @@ class TerrainGeometryGenerator:
         # Generate triangles (2 per grid cell)
         triangles: list[tuple[int, int, int]] = []
         for j in range(n_rows - 1):
-            # OPTIMIZATION_TARGET: Migrate computationally bound loop to PyO3/Rust Core natively
             for i in range(n_cols - 1):
                 # Vertex indices for this cell
                 v00 = j * n_cols + i

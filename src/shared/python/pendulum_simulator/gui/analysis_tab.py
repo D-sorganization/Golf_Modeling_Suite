@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """
 Docked Analysis tab for the Pendulum Simulator.
@@ -22,12 +24,12 @@ DRY
 - Delegates regression to popout_chart.fit_regression().
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import logging  # noqa: E402
-from typing import TYPE_CHECKING, Any  # noqa: E402
+import logging
+from typing import TYPE_CHECKING, Any
 
-import numpy as np  # noqa: E402
+import numpy as np
 
 if TYPE_CHECKING:
     pass
@@ -676,7 +678,6 @@ class AnalysisTab:
         eps = 1e-7
         n_dof = len(angle_keys)
 
-        @jit(nopython=True, fastmath=True)
         def _eval(angles: dict) -> float:
             fk0 = fk_fn(angles)
             tip0 = np.asarray(fk0[tip_key], dtype=float)

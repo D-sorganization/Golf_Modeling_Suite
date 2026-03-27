@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
 
 """Interactive drag-and-pose manipulation system for MuJoCo models.
 
@@ -10,15 +12,15 @@ This module provides:
 - Visual feedback for selected bodies and constraints
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import json  # noqa: E402
-import time  # noqa: E402
-from dataclasses import dataclass  # noqa: E402
-from enum import Enum  # noqa: E402
+import json
+import time
+from dataclasses import dataclass
+from enum import Enum
 
-import mujoco  # noqa: E402
-import numpy as np  # noqa: E402
+import mujoco
+import numpy as np
 
 
 class ConstraintType(Enum):
@@ -136,7 +138,6 @@ class MousePickingRay:
 
         return ray_origin, ray_dir
 
-    @jit(nopython=True, fastmath=True)
     def pick_body(
         self,
         x: int,

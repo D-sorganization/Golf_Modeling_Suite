@@ -1,5 +1,3 @@
-from numba import jit
-
 """
 Scientific Verification Engine for Golf Modeling Suite.
 
@@ -12,12 +10,12 @@ These verifiers are designed to be run alongside simulations to detect 'phantom 
 integration errors, or model definition flaws.
 """
 
-from dataclasses import dataclass  # noqa: E402
+from dataclasses import dataclass
 
-import mujoco  # noqa: E402
-import numpy as np  # noqa: E402
+import mujoco
+import numpy as np
 
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
+from src.shared.python.logging_pkg.logging_config import get_logger
 
 # Configure logging
 logger = get_logger(__name__)
@@ -163,7 +161,6 @@ class JacobianTester:
         # Use a private MjData to avoid side effects (Phase 1 Fix)
         self.data = mujoco.MjData(model)
 
-    @jit(nopython=True, fastmath=True)
     def check_body_jacobian(
         self, body_name: str, qpos: np.ndarray, epsilon: float = 1e-6
     ) -> float:  # noqa: E501

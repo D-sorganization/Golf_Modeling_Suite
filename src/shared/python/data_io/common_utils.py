@@ -1,13 +1,11 @@
-from numba import jit
-
 """Common utilities shared across all golf modeling engines."""
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from pathlib import Path  # noqa: E402
-from typing import TYPE_CHECKING  # noqa: E402
+from pathlib import Path
+from typing import TYPE_CHECKING
 
-from src.shared.python.core import (  # noqa: E402
+from src.shared.python.core import (
     DataFormatError,
     EngineNotFoundError,
     GolfModelingError,
@@ -18,7 +16,7 @@ from src.shared.python.core import (  # noqa: E402
 
 # Import OUTPUT_ROOT from constants to avoid circular dependency
 # Import core utilities (exceptions, logging) from the lightweight module
-from src.shared.python.core.constants import (  # noqa: E402
+from src.shared.python.core.constants import (
     DEG_TO_RAD,
     KG_TO_LB,
     M_TO_FT,
@@ -47,8 +45,8 @@ __all__ = [
     "normalize_z_score",
 ]
 
-import numpy as np  # noqa: E402
-import pandas as pd  # noqa: E402
+import numpy as np
+import pandas as pd
 
 if TYPE_CHECKING:
     import matplotlib.pyplot as plt
@@ -278,7 +276,6 @@ def convert_units(value: float, from_unit: str, to_unit: str) -> float:
         ) from None
 
 
-@jit(nopython=True, fastmath=True)
 def get_shared_urdf_path() -> Path | None:
     """Get the path to the shared URDF directory.
 

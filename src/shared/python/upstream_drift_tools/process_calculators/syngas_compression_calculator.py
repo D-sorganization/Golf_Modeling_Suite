@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 #!/usr/bin/env python3
 """Advanced Syngas Compression Calculator
@@ -191,7 +193,6 @@ class SyngasCompressionEngine:
         # Universal gas constant
         self.R = R_GAS_J_MOL_K  # J/(mol·K)
 
-    @jit(nopython=True, fastmath=True)
     def calculate_mixture_properties(
         self,
         composition: dict[str, float],
@@ -684,7 +685,6 @@ if HAS_PYQT:
 
             self.tab_widget.addTab(input_widget, "Input Parameters")
 
-        @jit(nopython=True, fastmath=True)
         def _create_composition_group(self) -> QGroupBox:
             """Create the gas composition input group."""
             comp_group = QGroupBox("Syngas Composition (mol%)")
@@ -1076,9 +1076,8 @@ if HAS_PYQT:
                         "-" * 25 + "\n",
                     ]
                 )
-                output_parts.extend(
-                    [f"• {warning}\n" for warning in analysis["warnings"]]
-                )
+                for warning in analysis["warnings"]:
+                    output_parts.append(f"• {warning}\n")
                 output_parts.append("\n")
 
             if analysis["concerns"]:
@@ -1088,9 +1087,8 @@ if HAS_PYQT:
                         "-" * 15 + "\n",
                     ]
                 )
-                output_parts.extend(
-                    [f"• {concern}\n" for concern in analysis["concerns"]]
-                )
+                for concern in analysis["concerns"]:
+                    output_parts.append(f"• {concern}\n")
                 output_parts.append("\n")
 
             if analysis["recommendations"]:
@@ -1100,9 +1098,8 @@ if HAS_PYQT:
                         "-" * 20 + "\n",
                     ]
                 )
-                output_parts.extend(
-                    [f"• {rec}\n" for rec in analysis["recommendations"]]
-                )
+                for rec in analysis["recommendations"]:
+                    output_parts.append(f"• {rec}\n")
                 output_parts.append("\n")
 
             if not analysis["warnings"] and not analysis["concerns"]:

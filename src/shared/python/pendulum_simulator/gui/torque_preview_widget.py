@@ -1,17 +1,15 @@
-from numba import jit
-
 """
 Torque preview widget for polynomial joint torques.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from collections.abc import Iterable  # noqa: E402
+from collections.abc import Iterable
 
-import numpy as np  # noqa: E402
-from PyQt6.QtCore import QPointF, QRectF, Qt  # noqa: E402
-from PyQt6.QtGui import QColor, QFont, QPainter, QPen  # noqa: E402
-from PyQt6.QtWidgets import QWidget  # noqa: E402
+import numpy as np
+from PyQt6.QtCore import QPointF, QRectF, Qt
+from PyQt6.QtGui import QColor, QFont, QPainter, QPen
+from PyQt6.QtWidgets import QWidget
 
 
 class TorquePreviewWidget(QWidget):
@@ -53,12 +51,6 @@ class TorquePreviewWidget(QWidget):
         self._clamp_limits = list(clamp_limits) if clamp_limits else []
         self.update()
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def paintEvent(self, event: object) -> None:
         if not (event is not None):
             raise ValueError("event must be provided")
@@ -170,8 +162,6 @@ class TorquePreviewWidget(QWidget):
         self._draw_legend(painter, qrect)
         painter.end()
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def _draw_grid(self, painter: QPainter, rect: QRectF) -> None:
         if not (painter is not None):
             raise ValueError("painter must be provided")

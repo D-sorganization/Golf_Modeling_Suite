@@ -1,5 +1,3 @@
-from numba import jit
-
 # mypy: ignore-errors
 """
 GPU-accelerated batch simulation using JAX and diffrax.
@@ -8,7 +6,7 @@ This module provides ODE solvers for the constrained golfer equations of motion
 using JAX arrays and the diffrax library for efficient GPU-based integration.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
 try:
     import jax
@@ -26,7 +24,7 @@ except ImportError:
         "Install with: pip install jax jaxlib diffrax"
     ) from None
 
-from .physics_golfer_jax import (  # noqa: E402
+from .physics_golfer_jax import (
     N_CONSTRAINTS,
     N_DOF,
     GolferParamsJAX,
@@ -138,7 +136,6 @@ def constrained_eom_jax(
     return jnp.concatenate([qdot, qddot])
 
 
-@jit(nopython=True, fastmath=True)
 def _constraint_acceleration_bias_jax(
     q: JaxArray, qdot: JaxArray, p: GolferParamsJAX
 ) -> JaxArray:

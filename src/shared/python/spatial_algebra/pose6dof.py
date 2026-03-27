@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """
 6DOF (Six Degrees of Freedom) positioning module.
@@ -15,19 +17,19 @@ Follows pragmatic programmer principles:
 - Clear separation of concerns
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from copy import deepcopy  # noqa: E402
-from dataclasses import dataclass, field  # noqa: E402
-from typing import TYPE_CHECKING, Any  # noqa: E402
+from copy import deepcopy
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any
 
-import numpy as np  # noqa: E402
-import numpy.typing as npt  # noqa: E402
+import numpy as np
+import numpy.typing as npt
 
-from src.shared.python.contracts import require  # noqa: E402
+from src.shared.python.contracts import require
 
-from .spatial_vectors import skew  # noqa: E402
-from .transforms import xtrans  # noqa: E402
+from .spatial_vectors import skew
+from .transforms import xtrans
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -1165,7 +1167,6 @@ class PlacementGroup:
         for entity in self._entities.values():
             entity.pose._position += offset
 
-    @jit(nopython=True, fastmath=True)
     def rotate_around_point(
         self,
         point: Vec3 | list[float],

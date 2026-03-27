@@ -1,5 +1,3 @@
-from numba import jit
-
 #!/usr/bin/env python3
 """
 Video Export Module for Golf Visualizer
@@ -12,17 +10,17 @@ Features:
 - Background rendering (non-blocking UI)
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import logging  # noqa: E402
-import subprocess  # noqa: E402
-from dataclasses import dataclass  # noqa: E402
-from pathlib import Path  # noqa: E402
+import logging
+import subprocess
+from dataclasses import dataclass
+from pathlib import Path
 
-import numpy as np  # noqa: E402
-from golf_data_core import RenderConfig  # noqa: E402
-from PyQt6.QtCore import QObject, QThread, pyqtSignal  # noqa: E402
-from PyQt6.QtWidgets import (  # noqa: E402
+import numpy as np
+from golf_data_core import RenderConfig
+from PyQt6.QtCore import QObject, QThread, pyqtSignal
+from PyQt6.QtWidgets import (
     QComboBox,
     QDialog,
     QFileDialog,
@@ -74,7 +72,6 @@ class VideoExporter(QObject):
         self.renderer = renderer
         self.frame_processor = frame_processor
 
-    @jit(nopython=True, fastmath=True)
     def export_video(self, config: VideoExportConfig) -> None:
         """
         Export animation to video file

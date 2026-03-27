@@ -1,5 +1,3 @@
-from numba import jit
-
 """Task definitions for whole-body control.
 
 This module provides task descriptors that define objectives
@@ -10,13 +8,13 @@ Design by Contract:
     Jacobians must be finite and have correct shape.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from dataclasses import dataclass, field  # noqa: E402
-from enum import Enum, auto  # noqa: E402
+from dataclasses import dataclass, field
+from enum import Enum, auto
 
-import numpy as np  # noqa: E402
-from numpy.typing import NDArray  # noqa: E402
+import numpy as np
+from numpy.typing import NDArray
 
 
 class TaskType(Enum):
@@ -385,7 +383,6 @@ def create_contact_constraint(
     )
 
 
-@jit(nopython=True, fastmath=True)
 def create_joint_limit_task(
     n_v: int,
     q_current: NDArray[np.float64],

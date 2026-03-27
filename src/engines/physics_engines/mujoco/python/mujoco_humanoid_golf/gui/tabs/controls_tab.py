@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
 
 """Controls tab for the MuJoCo humanoid golf GUI.
 
@@ -6,22 +8,22 @@ Provides joint angle sliders, actuator controls, and simulation
 playback controls for the humanoid golf simulation viewer.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import typing  # noqa: E402
-from collections.abc import Callable  # noqa: E402
-from datetime import datetime  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import Any  # noqa: E402
+import typing
+from collections.abc import Callable
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
-from PyQt6 import QtCore, QtWidgets  # noqa: E402
+from PyQt6 import QtCore, QtWidgets
 
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
-from src.shared.python.theme.style_constants import Styles  # noqa: E402
+from src.shared.python.logging_pkg.logging_config import get_logger
+from src.shared.python.theme.style_constants import Styles
 
-from ...control_system import ControlSystem, ControlType  # noqa: E402
-from ...polynomial_generator import PolynomialGeneratorWidget  # noqa: E402
-from ...sim_widget import MuJoCoSimWidget  # noqa: E402
+from ...control_system import ControlSystem, ControlType
+from ...polynomial_generator import PolynomialGeneratorWidget
+from ...sim_widget import MuJoCoSimWidget
 
 if typing.TYPE_CHECKING:
     from ..advanced_gui import AdvancedGolfAnalysisWindow
@@ -701,7 +703,6 @@ class ControlsTab(QtWidgets.QWidget):
         if hasattr(self.main_window, "on_export_data"):
             self.main_window.on_export_data()
 
-    @jit(nopython=True, fastmath=True)
     def _refresh_kinematic_controls(self) -> None:
         """Rebuild the kinematic joint controls."""
         # Clear existing
@@ -941,7 +942,6 @@ class ActuatorDetailDialog(QtWidgets.QDialog):
         const_form.addRow("Damping:", self.damping_input)
         layout.addLayout(const_form)
 
-    @jit(nopython=True, fastmath=True)
     def _create_polynomial_section(self, layout: QtWidgets.QVBoxLayout) -> None:
         if not (layout is not None):
             raise ValueError("layout must be provided")

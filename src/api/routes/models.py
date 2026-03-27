@@ -1,5 +1,3 @@
-from numba import jit
-
 """URDF/MJCF model serving routes.
 
 Provides endpoints for listing and retrieving parsed URDF/MJCF models
@@ -11,18 +9,18 @@ All dependencies are injected via FastAPI's Depends() mechanism.
 No module-level mutable state.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from pathlib import Path  # noqa: E402
-from typing import Any  # noqa: E402
+from pathlib import Path
+from typing import Any
 
-import defusedxml.ElementTree as ElementTree  # noqa: E402
-from fastapi import APIRouter, Depends, HTTPException  # noqa: E402
+import defusedxml.ElementTree as ElementTree
+from fastapi import APIRouter, Depends, HTTPException
 
-from src.shared.python.core.contracts import postcondition, precondition  # noqa: E402
+from src.shared.python.core.contracts import postcondition, precondition
 
-from ..dependencies import get_logger  # noqa: E402
-from ..models.responses import (  # noqa: E402
+from ..dependencies import get_logger
+from ..models.responses import (
     ModelListResponse,
     URDFJointDescriptor,
     URDFLinkGeometry,
@@ -39,7 +37,6 @@ _MODEL_DIRS = [
 ]
 
 
-@jit(nopython=True, fastmath=True)
 def _find_project_root() -> Path:
     """Find the project root directory by looking for known markers."""
     # Walk up from this file's location

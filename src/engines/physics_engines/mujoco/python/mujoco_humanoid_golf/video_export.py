@@ -1,5 +1,3 @@
-from numba import jit
-
 """Video export module for golf swing animations.
 
 This module provides professional video export capabilities:
@@ -9,21 +7,17 @@ This module provides professional video export capabilities:
 - Progress tracking
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from enum import Enum  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import TYPE_CHECKING, Any  # noqa: E402, ICN003
+from enum import Enum
+from pathlib import Path
+from typing import TYPE_CHECKING, Any  # noqa: ICN003
 
-import mujoco as mj  # noqa: E402
-import numpy as np  # noqa: E402
+import mujoco as mj
+import numpy as np
 
-from src.shared.python.core.constants import (  # noqa: E402
-    DEFAULT_FPS,
-    HD_HEIGHT,
-    HD_WIDTH,
-)
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
+from src.shared.python.core.constants import DEFAULT_FPS, HD_HEIGHT, HD_WIDTH
+from src.shared.python.logging_pkg.logging_config import get_logger
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -297,7 +291,6 @@ class VideoExporter:
             self.writer.release()
 
 
-@jit(nopython=True, fastmath=True)
 def create_metrics_overlay(
     frame: np.ndarray,
     time: float,

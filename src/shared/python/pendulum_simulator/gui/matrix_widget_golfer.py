@@ -1,21 +1,19 @@
-from numba import jit
-
 """
 Widget for displaying the 8x8 mass matrix, force balance, energy,
 and constraint violation for the golfer model.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import logging  # noqa: E402
+import logging
 
-import numpy as np  # noqa: E402
-from PyQt6.QtCore import QRectF, Qt  # noqa: E402
-from PyQt6.QtGui import QBrush, QColor, QFont, QPainter, QPen  # noqa: E402
-from PyQt6.QtWidgets import QWidget  # noqa: E402
+import numpy as np
+from PyQt6.QtCore import QRectF, Qt
+from PyQt6.QtGui import QBrush, QColor, QFont, QPainter, QPen
+from PyQt6.QtWidgets import QWidget
 
-from ..simulation_golfer import GolferSimulationResult  # noqa: E402
-from .matrix_widget_base import MatrixWidgetBase  # noqa: E402
+from ..simulation_golfer import GolferSimulationResult
+from .matrix_widget_base import MatrixWidgetBase
 
 logger = logging.getLogger(__name__)
 
@@ -95,8 +93,6 @@ class GolferMatrixWidget(MatrixWidgetBase):
 
         painter.end()
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def _draw_mass_matrix_compact(self, painter: QPainter, y: int) -> int:
         """Draw the 8x8 mass matrix in compact heat-map style."""
         if not (self._result is not None):
@@ -113,7 +109,6 @@ class GolferMatrixWidget(MatrixWidgetBase):
         painter.setFont(QFont("Monospace", 7))
 
         for row in range(n):
-            # OPTIMIZATION_TARGET: Migrate computationally bound loop to PyO3/Rust Core natively
             for col in range(n):
                 cx = margin_x + col * cell
                 cy = y + row * cell

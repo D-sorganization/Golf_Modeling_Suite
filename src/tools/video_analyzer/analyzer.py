@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """
 Golf Swing Analyzer.
@@ -7,15 +9,15 @@ Main analysis engine that processes video and generates
 comprehensive swing analysis reports.
 """
 
-import logging  # noqa: E402
-import math  # noqa: E402
-import uuid  # noqa: E402
-from collections.abc import Callable  # noqa: E402
-from datetime import datetime  # noqa: E402
+import logging
+import math
+import uuid
+from collections.abc import Callable
+from datetime import datetime
 
-from src.shared.python.core.contracts import precondition  # noqa: E402
+from src.shared.python.core.contracts import precondition
 
-from .types import (  # noqa: E402
+from .types import (
     BalanceMetrics,
     BodyAngles,
     Landmark,
@@ -32,7 +34,7 @@ from .types import (  # noqa: E402
     SwingType,
     TempoMetrics,
 )
-from .video_processor import VideoProcessor  # noqa: E402
+from .video_processor import VideoProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +55,7 @@ class SwingAnalyzer:
     Usage:
         analyzer = SwingAnalyzer()
         results = analyzer.analyze_video("swing.mp4")
-        print(f"Overall Score: {results.scores.overall}")
+        logger.info(f"Overall Score: {results.scores.overall}")
     """
 
     # Landmark indices (MediaPipe standard)
@@ -577,7 +579,6 @@ class SwingAnalyzer:
             on_plane=True,
         )
 
-    @jit(nopython=True, fastmath=True)
     def _calculate_posture(
         self,
         poses: list[PoseFrame],

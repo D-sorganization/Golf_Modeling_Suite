@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 # mypy: ignore-errors
 """
@@ -15,9 +17,9 @@ Key constraints:
 - All parameters passed as a dictionary (JAX tree) for JIT compatibility
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from typing import Any, NamedTuple, TypeAlias  # noqa: E402
+from typing import Any, NamedTuple, TypeAlias
 
 try:
     import jax  # noqa: F401
@@ -63,7 +65,7 @@ class GolferParamsJAX(NamedTuple):
     m_clubhead: float = 0.2
 
     # Gravity
-    g: float = 9.81
+    g: float = 9.80665
 
     # Dissipation (viscous damping coefficients)
     b_hub: float = 0.0
@@ -428,7 +430,6 @@ def analytical_fk_jacobians_jax(q: JaxArray, p: GolferParamsJAX) -> dict[str, Ja
 # ---------------------------------------------------------------------------
 
 
-@jit(nopython=True, fastmath=True)
 def mass_matrix_jax(q: JaxArray, p: GolferParamsJAX) -> JaxArray:
     """Compute mass matrix M(q) analytically from Jacobians (JAX version).
 
@@ -513,7 +514,6 @@ def coriolis_jax(q: JaxArray, qdot: JaxArray, p: GolferParamsJAX) -> JaxArray:
 # ---------------------------------------------------------------------------
 
 
-@jit(nopython=True, fastmath=True)
 def gravity_vector_jax(q: JaxArray, p: GolferParamsJAX) -> JaxArray:
     """Compute gravitational torque vector G(q) analytically (JAX version).
 
@@ -670,7 +670,6 @@ def constraint_jacobian_jax(q: JaxArray, p: GolferParamsJAX) -> JaxArray:
 # ---------------------------------------------------------------------------
 
 
-@jit(nopython=True, fastmath=True)
 def _constraint_acceleration_bias_jax(
     q: JaxArray, qdot: JaxArray, p: GolferParamsJAX
 ) -> JaxArray:

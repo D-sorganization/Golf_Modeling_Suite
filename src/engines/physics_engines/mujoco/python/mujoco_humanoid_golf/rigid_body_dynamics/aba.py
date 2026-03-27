@@ -1,21 +1,19 @@
-from numba import jit
-
 """
 Articulated Body Algorithm (ABA) for forward dynamics.
 
 Computes joint accelerations given applied torques.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from dataclasses import dataclass  # noqa: E402
+from dataclasses import dataclass
 
-import numpy as np  # noqa: E402
-from mujoco_humanoid_golf.rigid_body_dynamics.common import (  # noqa: E402
+import numpy as np
+from mujoco_humanoid_golf.rigid_body_dynamics.common import (
     DEFAULT_GRAVITY,
     NEG_DEFAULT_GRAVITY,
 )
-from mujoco_humanoid_golf.spatial_algebra import (  # noqa: E402
+from mujoco_humanoid_golf.spatial_algebra import (
     cross_force_fast,
     cross_motion_fast,
     jcalc,
@@ -284,7 +282,6 @@ def _aba_backward_pass(
         )
 
 
-@jit(nopython=True, fastmath=True)
 def _aba_forward_accelerations(
     nb: int,
     model_parent: np.ndarray,

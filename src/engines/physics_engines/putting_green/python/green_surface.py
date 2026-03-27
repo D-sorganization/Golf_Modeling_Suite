@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """Green Surface Model for Putting Simulation.
 
@@ -17,19 +19,19 @@ Design by Contract:
     - Slopes are expressed as gradients (rise/run)
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from dataclasses import dataclass  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import Any  # noqa: E402
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
-import numpy as np  # noqa: E402
-from scipy import interpolate, ndimage  # noqa: E402
+import numpy as np
+from scipy import interpolate, ndimage
 
-from src.engines.physics_engines.putting_green.python.turf_properties import (  # noqa: E402
+from src.engines.physics_engines.putting_green.python.turf_properties import (
     TurfProperties,
 )
-from src.shared.python.core.physics_constants import GRAVITY_M_S2  # noqa: E402
+from src.shared.python.core.physics_constants import GRAVITY_M_S2
 
 
 @dataclass
@@ -306,7 +308,6 @@ class GreenSurface:
 
         return np.array([dzdx, dzdy])
 
-    @jit(nopython=True, fastmath=True)
     def get_slope_at(self, position: np.ndarray) -> np.ndarray:
         """Get slope vector at position.
 
@@ -506,7 +507,6 @@ class GreenSurface:
         elevation = -depth * (1 - normalized_dist**2)
         return elevation
 
-    @jit(nopython=True, fastmath=True)
     def calculate_break(
         self,
         start: np.ndarray,
@@ -792,8 +792,8 @@ class GreenSurface:
         points = []
         with open(filepath) as f:
             reader = csv.DictReader(f)
-            points.extend(
-                [
+            for row in reader:
+                points.append(
                     ContourPoint(
                         x=float(row.get("x", row.get("X", 0))),
                         y=float(row.get("y", row.get("Y", 0))),
@@ -801,9 +801,7 @@ class GreenSurface:
                             row.get("elevation", row.get("z", row.get("Z", 0)))
                         ),
                     )
-                    for row in reader
-                ]
-            )
+                )
 
         self.set_contour_points(points)
 

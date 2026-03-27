@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """
 BasePendulumWidget — shared base class for all pendulum visualization widgets.
@@ -17,15 +19,15 @@ Design by Contract
 Closes DRY violation between PendulumWidget and GolferPendulumWidget.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from abc import abstractmethod  # noqa: E402
-from collections import deque  # noqa: E402
+from abc import abstractmethod
+from collections import deque
 
-import numpy as np  # noqa: E402
-from PyQt6.QtCore import QPoint, QPointF, Qt  # noqa: E402
-from PyQt6.QtGui import QBrush, QColor, QFont, QMouseEvent, QPainter, QPen  # noqa: E402
-from PyQt6.QtWidgets import QWidget  # noqa: E402
+import numpy as np
+from PyQt6.QtCore import QPoint, QPointF, Qt
+from PyQt6.QtGui import QBrush, QColor, QFont, QMouseEvent, QPainter, QPen
+from PyQt6.QtWidgets import QWidget
 
 
 class BasePendulumWidget(QWidget):
@@ -535,7 +537,6 @@ class BasePendulumWidget(QWidget):
         painter.setPen(QPen(QColor(160, 160, 160), 1))
         painter.drawEllipse(center, r_px, r_px)
 
-    @jit(nopython=True, fastmath=True)
     def _draw_trail(self, painter: QPainter) -> None:
         """Draw Catmull-Rom smoothed tip trail with fade-in."""
         if not (painter is not None):

@@ -1,19 +1,17 @@
-from numba import jit
-
 """Base classes for motion planners.
 
 This module defines abstract interfaces and common data structures
 for sampling-based motion planners.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from abc import ABC, abstractmethod  # noqa: E402
-from dataclasses import dataclass, field  # noqa: E402
-from enum import Enum, auto  # noqa: E402
-from typing import Protocol  # noqa: E402
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from enum import Enum, auto
+from typing import Protocol
 
-import numpy as np  # noqa: E402
+import numpy as np
 
 
 class PlannerStatus(Enum):
@@ -342,7 +340,6 @@ class MotionPlanner(ABC):
         )
         return is_free
 
-    @jit(nopython=True, fastmath=True)
     def _compute_path_length(self, path: list[np.ndarray]) -> float:
         """Compute total path length.
 

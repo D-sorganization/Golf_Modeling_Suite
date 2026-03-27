@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """Whole-body controller with hierarchical task prioritization.
 
@@ -10,22 +12,22 @@ Design by Contract:
     Failed solves are indicated, never silent failures.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from dataclasses import dataclass, field  # noqa: E402
+from dataclasses import dataclass, field
 
-import numpy as np  # noqa: E402
-from numpy.typing import NDArray  # noqa: E402
+import numpy as np
+from numpy.typing import NDArray
 
-from src.robotics.control.whole_body.qp_solver import (  # noqa: E402
+from src.robotics.control.whole_body.qp_solver import (
     QPProblem,
     QPSolution,
     QPSolver,
     create_default_solver,
 )
-from src.robotics.control.whole_body.task import Task  # noqa: E402
-from src.robotics.core.protocols import RoboticsCapable  # noqa: E402
-from src.shared.python.core.contracts import precondition  # noqa: E402
+from src.robotics.control.whole_body.task import Task
+from src.robotics.core.protocols import RoboticsCapable
+from src.shared.python.core.contracts import precondition
 
 
 @dataclass
@@ -282,7 +284,6 @@ class WholeBodyController:
                 status=f"Solve failed: {e}",
             )
 
-    @jit(nopython=True, fastmath=True)
     def _solve_weighted(
         self,
         n_v: int,
@@ -420,7 +421,6 @@ class WholeBodyController:
 
         return self._extract_solution_from_x(x_solution, n_v, n_contact_vars, M, nle)
 
-    @jit(nopython=True, fastmath=True)
     def _build_priority_level_cost(self, tasks, n_v, n_vars, accumulated_A):
         if not (tasks is not None):
             raise ValueError("tasks must be provided")
@@ -485,7 +485,6 @@ class WholeBodyController:
             x_ub=x_ub,
         )
 
-    @jit(nopython=True, fastmath=True)
     def _build_dynamics_constraint(
         self,
         n_v: int,
@@ -535,8 +534,6 @@ class WholeBodyController:
 
         return A_eq, b_eq
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def _build_inequality_constraints(
         self,
         n_v: int,
@@ -681,7 +678,6 @@ class WholeBodyController:
 
         return self._extract_solution_from_x(qp_solution.x, n_v, n_contact_vars, M, nle)
 
-    @jit(nopython=True, fastmath=True)
     def _extract_solution_from_x(
         self,
         x: NDArray[np.float64],
@@ -737,7 +733,6 @@ class WholeBodyController:
             task_errors=task_errors,
         )
 
-    @jit(nopython=True, fastmath=True)
     def _compute_task_errors(
         self,
         qdd: NDArray[np.float64],

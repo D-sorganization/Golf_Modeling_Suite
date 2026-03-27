@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 #!/usr/bin/env python3
 """User-friendly Python interface for advanced pressure drop calculator.
@@ -50,34 +52,34 @@ GAS COMPONENTS:
     H2, CO, CO2, CH4, C2H6, C2H4, N2, O2, H2O, Ar, H2S, NH3, Air
 """
 
-import logging  # noqa: E402
-from typing import Any  # noqa: E402
+import logging
+from typing import Any
 
-from .engine.pressure_drop_calculation_engine import (  # noqa: E402
+from .engine.pressure_drop_calculation_engine import (
     PressureDropCalculationEngine,
     friction_factor_churchill,
     friction_factor_colebrook,
     friction_factor_haaland,
     friction_factor_swamee_jain,
 )
-from .models.pressure_drop_data_models import (  # noqa: E402
+from .models.pressure_drop_data_models import (
     GasComposition,
     PipeFitting,
     PressureDropInputs,
 )
-from .utils.fitting_loss_coefficients import FITTING_K_FACTORS  # noqa: E402
-from .utils.flow_rate_converter import (  # noqa: E402
+from .utils.fitting_loss_coefficients import FITTING_K_FACTORS
+from .utils.flow_rate_converter import (
     MASS_FLOW_CONVERSIONS,
     MOLAR_FLOW_CONVERSIONS,
     STANDARD_CONDITIONS,
     VOLUMETRIC_FLOW_CONVERSIONS_TO_M3_S,
     convert_flow_rate_to_mass,
 )
-from .utils.gas_properties import (  # noqa: E402
+from .utils.gas_properties import (
     GAS_DATABASE,
     calculate_mixture_molecular_weight,
 )
-from .utils.pipe_database import (  # noqa: E402
+from .utils.pipe_database import (
     MATERIAL_ROUGHNESS,
     get_pipe_spec,
     get_roughness,
@@ -670,7 +672,6 @@ def validate_inputs(
     return is_valid, errors, warnings
 
 
-@jit(nopython=True, fastmath=True)
 def _wrap_text(text: str, width: int) -> list[str]:
     """Wrap text to specified width."""
     if not (text is not None):

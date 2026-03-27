@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
 
 #!/usr/bin/env python3
 """Modern Golf Swing Visualizer - Production Implementation
@@ -10,22 +12,22 @@ Key Technologies:
 - NumPy + Numba for high-performance computations
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
 # ============================================================================
 # HIGH-PERFORMANCE DATA STRUCTURES
 # ============================================================================
-import logging  # noqa: E402
-import sys  # noqa: E402
-import time  # noqa: E402
-from dataclasses import dataclass  # noqa: E402
+import logging
+import sys
+import time
+from dataclasses import dataclass
 
-import moderngl as mgl  # noqa: E402
-import numpy as np  # noqa: E402
-import scipy.io  # noqa: E402
-from PyQt6.QtCore import Qt, QTimer  # noqa: E402
-from PyQt6.QtOpenGLWidgets import QOpenGLWidget  # noqa: E402
-from PyQt6.QtWidgets import (  # noqa: E402
+import moderngl as mgl
+import numpy as np
+import scipy.io
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtOpenGLWidgets import QOpenGLWidget
+from PyQt6.QtWidgets import (
     QApplication,
     QCheckBox,
     QDockWidget,
@@ -400,8 +402,6 @@ class OpenGLRenderer:
         self._create_club_geometry()
         self._create_arrow_geometry()
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def _create_cylinder_geometry(self) -> None:
         """Create optimized cylinder with proper normals"""
         segments = 16
@@ -582,8 +582,6 @@ class OpenGLRenderer:
     def _create_club_geometry(self) -> None:
         """Create detailed club geometry"""
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def _create_arrow_geometry(self) -> None:
         """Create arrow geometry for force/torque vectors"""
         segments = 16
@@ -763,8 +761,6 @@ class OpenGLRenderer:
         self.programs["standard"]["opacity"].value = opacity
         self.vaos["cylinder"].render()
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def _render_vectors(
         self,
         frame_data: FrameData,

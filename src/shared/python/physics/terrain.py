@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """Terrain modeling system for golf simulation.
 
@@ -24,20 +26,20 @@ Design by Contract:
         - All materials have valid physics properties
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import functools  # noqa: E402
-import json  # noqa: E402
-import math  # noqa: E402
-from dataclasses import dataclass, field  # noqa: E402
-from enum import Enum, auto  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import Any  # noqa: E402
+import functools
+import json
+import math
+from dataclasses import dataclass, field
+from enum import Enum, auto
+from pathlib import Path
+from typing import Any
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from src.shared.python.core.physics_constants import GRAVITY_M_S2  # noqa: E402
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
+from src.shared.python.core.physics_constants import GRAVITY_M_S2
+from src.shared.python.logging_pkg.logging_config import get_logger
 
 logger = get_logger(__name__)
 
@@ -756,7 +758,6 @@ class TerrainRegion:
         return False
 
     @staticmethod
-    @jit(nopython=True, fastmath=True)
     def _point_in_polygon(
         x: float, y: float, vertices: list[tuple[float, float]]
     ) -> bool:

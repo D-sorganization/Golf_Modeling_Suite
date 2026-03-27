@@ -1,16 +1,18 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """3D visualization widget for URDF preview."""
 
-import math  # noqa: E402
+import math
 
-import defusedxml.ElementTree as ET  # noqa: E402
-from PyQt6.QtCore import QPointF, Qt, QTimer, pyqtSignal  # noqa: E402
-from PyQt6.QtGui import QColor, QMouseEvent, QPainter, QPen, QWheelEvent  # noqa: E402
-from PyQt6.QtOpenGLWidgets import QOpenGLWidget  # noqa: E402
-from PyQt6.QtWidgets import QLabel, QVBoxLayout, QWidget  # noqa: E402
+import defusedxml.ElementTree as ET
+from PyQt6.QtCore import QPointF, Qt, QTimer, pyqtSignal
+from PyQt6.QtGui import QColor, QMouseEvent, QPainter, QPen, QWheelEvent
+from PyQt6.QtOpenGLWidgets import QOpenGLWidget
+from PyQt6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
-from src.shared.python.engine_core.engine_availability import (  # noqa: E402
+from src.shared.python.engine_core.engine_availability import (
     MUJOCO_AVAILABLE,  # noqa: E402
 )
 from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
@@ -489,7 +491,6 @@ class Simple3DVisualizationWidget(QOpenGLWidget):
 
         return screen_x, screen_y
 
-    @jit(nopython=True, fastmath=True)
     def _draw_grid(self, painter: QPainter) -> None:
         """Draw the XZ ground plane grid lines.
 

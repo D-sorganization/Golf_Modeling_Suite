@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """3D Ellipsoid Visualization Module.
 
@@ -18,17 +20,17 @@ References:
     The International Journal of Robotics Research, 4(2), 3-9.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import json  # noqa: E402
-from dataclasses import dataclass, field  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import TYPE_CHECKING  # noqa: E402
+import json
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import TYPE_CHECKING
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from src.shared.python.data_io.io_utils import ensure_directory  # noqa: E402
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
+from src.shared.python.data_io.io_utils import ensure_directory
+from src.shared.python.logging_pkg.logging_config import get_logger
 
 if TYPE_CHECKING:
     from shared.python.engine_core.interfaces import PhysicsEngine
@@ -433,7 +435,6 @@ def export_ellipsoid_stl(
     LOGGER.info(f"Exported ellipsoid STL to {output_path}")
 
 
-@jit(nopython=True, fastmath=True)
 def _write_stl_binary(
     vertices: np.ndarray,
     faces: np.ndarray,
@@ -487,7 +488,6 @@ def _write_stl_binary(
             f.write(struct.pack("<H", 0))
 
 
-@jit(nopython=True, fastmath=True)
 def _write_stl_ascii(
     vertices: np.ndarray,
     faces: np.ndarray,

@@ -1,5 +1,3 @@
-from numba import jit
-
 """
 Physics validation for humanoid models.
 
@@ -9,12 +7,12 @@ This module provides validation checks for:
 - Collision detection
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from dataclasses import dataclass, field  # noqa: E402
+from dataclasses import dataclass, field
 
-import numpy as np  # noqa: E402
-from humanoid_character_builder.core.model import (  # noqa: E402
+import numpy as np
+from humanoid_character_builder.core.model import (
     GeneratedLink,
     HumanoidModel,
 )
@@ -146,7 +144,6 @@ class PhysicsValidator:
             is_stable=is_stable, margin=margin, tipping_angle=tipping_angle
         )
 
-    @jit(nopython=True, fastmath=True)
     def check_self_collisions(self, model: HumanoidModel) -> list[str]:
         """
         Check for self-collisions (intersections) between links.
@@ -200,7 +197,8 @@ class PhysicsValidator:
             corners = []
             for x in [min_bound[0], max_bound[0]]:
                 for y in [min_bound[1], max_bound[1]]:
-                    corners.extend([[x, y, z] for z in [min_bound[2], max_bound[2]]])
+                    for z in [min_bound[2], max_bound[2]]:
+                        corners.append([x, y, z])
 
             T = transforms[name]
             global_corners = []

@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
 
 """Kinematic-dependent force analysis for golf swing biomechanics.
 
@@ -128,11 +130,11 @@ results = analyzer.analyze_trajectory(times, positions, velocities, acceleration
 
 # Access force data
 for result in results:
-    print(f"Time: {result.time:.3f} s")
-    print(f"Coriolis power: {result.coriolis_power:.2f} W")
+    logger.info(f"Time: {result.time:.3f} s")
+    logger.info(f"Coriolis power: {result.coriolis_power:.2f} W")
     total_ke = (result.rotational_kinetic_energy +
                 result.translational_kinetic_energy)
-    print(f"Total kinetic energy: {total_ke:.2f} J")
+    logger.info(f"Total kinetic energy: {total_ke:.2f} J")
 ```
 
 REFERENCES
@@ -143,18 +145,18 @@ REFERENCES
 - MuJoCo Documentation: https://mujoco.readthedocs.io/
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import csv  # noqa: E402
-import warnings  # noqa: E402
-from dataclasses import dataclass  # noqa: E402
-from typing import TYPE_CHECKING  # noqa: E402
+import csv
+import warnings
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-import mujoco  # noqa: E402
-import numpy as np  # noqa: E402
+import mujoco
+import numpy as np
 
 # Import numerical constants (Assessment B-004, B-007)
-from src.shared.python.core.numerical_constants import (  # noqa: E402
+from src.shared.python.core.numerical_constants import (
     EPSILON_FINITE_DIFF_JACOBIAN,
     EPSILON_SINGULARITY_DETECTION,
 )
@@ -607,7 +609,6 @@ class KinematicForceAnalyzer:
 
         return M
 
-    @jit(nopython=True, fastmath=True)
     def compute_coriolis_matrix(self, qpos: np.ndarray, qvel: np.ndarray) -> np.ndarray:
         """Compute Coriolis matrix C(q,q̇).
 
@@ -779,7 +780,6 @@ class KinematicForceAnalyzer:
             "total_conservative_power": float(coriolis_power + gravity_power),
         }
 
-    @jit(nopython=True, fastmath=True)
     def compute_kinetic_energy_components(
         self,
         qpos: np.ndarray,

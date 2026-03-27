@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """Contact-Based Grip Model Module.
 
@@ -14,15 +16,15 @@ The grip model replaces rigid constraints with contact pairs,
 enabling realistic force transmission and slip analysis.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from dataclasses import dataclass  # noqa: E402
-from enum import Enum, auto  # noqa: E402
-from typing import TYPE_CHECKING  # noqa: E402
+from dataclasses import dataclass
+from enum import Enum, auto
+from typing import TYPE_CHECKING
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
+from src.shared.python.logging_pkg.logging_config import get_logger
 
 if TYPE_CHECKING:
     pass
@@ -220,7 +222,6 @@ def classify_contact_state(
     return ContactState.SLIPPING
 
 
-@jit(nopython=True, fastmath=True)
 def compute_center_of_pressure(
     contacts: list[ContactPoint],
 ) -> np.ndarray:
@@ -251,7 +252,6 @@ def compute_center_of_pressure(
     return weighted_position / total_force
 
 
-@jit(nopython=True, fastmath=True)
 def compute_grip_torque(
     contacts: list[ContactPoint],
     grip_center: np.ndarray,
@@ -377,7 +377,6 @@ class GripContactModel:
         self.contact_history.append(self.current_state)
         return self.current_state
 
-    @jit(nopython=True, fastmath=True)
     def check_static_equilibrium(
         self,
         club_weight: float,
@@ -505,19 +504,17 @@ def create_mujoco_grip_contacts(
         hand_body_names = ["left_hand", "right_hand"]
 
     contact_pairs = []
-    contact_pairs.extend(
-        [
+    for hand in hand_body_names:
+        contact_pairs.append(
             {
                 "body1": hand,
                 "body2": grip_body_name,
                 "friction": list(friction),
-                "condim": 4,
-                "margin": 0.001,
+                "condim": 4,  # Full 3D friction cone
+                "margin": 0.001,  # 1mm contact margin
                 "gap": 0.0,
             }
-            for hand in hand_body_names
-        ]
-    )
+        )
 
     return {
         "contact_pairs": contact_pairs,

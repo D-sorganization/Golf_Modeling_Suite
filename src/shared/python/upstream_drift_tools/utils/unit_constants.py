@@ -1,5 +1,3 @@
-from numba import jit
-
 #!/usr/bin/env python3
 """Unit Conversion Constants
 
@@ -7,13 +5,12 @@ NIST-standard conversion factors and physical constants for unit conversions.
 Loaded dynamically from JSON configuration for reversibility.
 """
 
-import json  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import Final  # noqa: E402
+import json
+from pathlib import Path
+from typing import Final
 
 
 # Load Configuration dynamically
-@jit(nopython=True, fastmath=True)
 def _load_config() -> dict:
     """Load constants from external JSON config."""
     # Find assets across development and built application

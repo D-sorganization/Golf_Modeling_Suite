@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
 
 """Motion capture integration and retargeting for golf swing analysis.
 
@@ -10,22 +12,22 @@ This module provides comprehensive motion capture data handling, including:
 - Temporal alignment and filtering
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import json  # noqa: E402
-from dataclasses import dataclass, field  # noqa: E402
-from typing import TYPE_CHECKING  # noqa: E402, ICN003
+import json
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING  # noqa: ICN003
 
-import mujoco  # noqa: E402
+import mujoco
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-import numpy as np  # noqa: E402
-from scipy.interpolate import CubicSpline, interp1d  # noqa: E402
-from scipy.signal import butter, filtfilt  # noqa: E402
+import numpy as np
+from scipy.interpolate import CubicSpline, interp1d
+from scipy.signal import butter, filtfilt
 
-from .advanced_kinematics import AdvancedKinematicsAnalyzer  # noqa: E402
+from .advanced_kinematics import AdvancedKinematicsAnalyzer
 
 
 @dataclass
@@ -153,8 +155,6 @@ class MarkerSet:
 class MotionCaptureLoader:
     """Load motion capture data from various file formats."""
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     @staticmethod
     def load_csv(
         filepath: str | Path,
@@ -370,7 +370,6 @@ class MotionRetargeting:
 
         return (np.array(times), np.array(joint_trajectories), success_flags)
 
-    @jit(nopython=True, fastmath=True)
     def _solve_frame_ik(
         self,
         frame: MotionCaptureFrame,

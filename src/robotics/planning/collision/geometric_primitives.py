@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """Geometric primitives for collision detection.
 
@@ -12,12 +14,12 @@ Design by Contract:
     All transformations must be valid (finite, proper rotation).
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from abc import ABC, abstractmethod  # noqa: E402
-from dataclasses import dataclass, field  # noqa: E402
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
 
-import numpy as np  # noqa: E402
+import numpy as np
 
 
 class GeometricPrimitive(ABC):
@@ -665,7 +667,6 @@ def _closest_points_segments(
     return a0 + s * d1, b0 + t * d2
 
 
-@jit(nopython=True, fastmath=True)
 def _gjk_distance(
     prim_a: GeometricPrimitive,
     prim_b: GeometricPrimitive,

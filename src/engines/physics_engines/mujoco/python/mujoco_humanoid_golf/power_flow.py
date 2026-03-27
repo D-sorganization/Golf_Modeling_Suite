@@ -1,5 +1,3 @@
-from numba import jit
-
 """Power flow and inter-segment energy transfer (Guideline E3 - Required).
 
 This module implements power flow analysis per project design guidelines Section E3:
@@ -9,15 +7,15 @@ aligned with drift/control/constraint components."
 Reference: docs/assessments/project_design_guidelines.qmd Section E3
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from dataclasses import dataclass  # noqa: E402
-from typing import TYPE_CHECKING  # noqa: E402
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from src.shared.python.core.contracts import precondition  # noqa: E402
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
+from src.shared.python.core.contracts import precondition
+from src.shared.python.logging_pkg.logging_config import get_logger
 
 if TYPE_CHECKING:
     import mujoco
@@ -149,7 +147,6 @@ class PowerFlowAnalyzer:
         joint_work_total = tau * qvel * dt
         return joint_work_drift, joint_work_control, joint_work_total
 
-    @jit(nopython=True, fastmath=True)
     def _compute_segment_energies(
         self, qvel: np.ndarray
     ) -> tuple[np.ndarray, np.ndarray]:  # noqa: E501
@@ -186,7 +183,6 @@ class PowerFlowAnalyzer:
 
         return segment_ke, segment_pe
 
-    @jit(nopython=True, fastmath=True)
     def _compute_power_dissipation(self, qvel: np.ndarray) -> float:
         if not (qvel is not None):
             raise ValueError("qvel must be provided")
@@ -326,7 +322,6 @@ class PowerFlowAnalyzer:
 
         return results
 
-    @jit(nopython=True, fastmath=True)
     def compute_inter_segment_transfer(
         self,
         qpos: np.ndarray,
@@ -448,7 +443,6 @@ class PowerFlowAnalyzer:
                         power_to_children += tau[v_start] * qvel[v_start]
         return power_to_children
 
-    @jit(nopython=True, fastmath=True)
     def _compute_joint_dissipation(self, body_id: int, qvel: np.ndarray) -> float:
         """Compute power dissipation from joint damping for a body.
 

@@ -1,13 +1,11 @@
-from numba import jit
-
 """Example: optimise arm motion using the shared optimisation framework."""
 
-import logging  # noqa: E402
-import os  # noqa: E402
-import sys  # noqa: E402
-from typing import Any  # noqa: E402
+import logging
+import os
+import sys
+from typing import Any
 
-import numpy as np  # noqa: E402
+import numpy as np
 
 try:
     import casadi as ca
@@ -37,7 +35,6 @@ def _load_model(urdf_path: str) -> object:
     return model
 
 
-@jit(nopython=True, fastmath=True)
 def _setup_optimization(model: Any, cmodel: Any, cdata: Any) -> tuple:
     """Create optimizer, decision variables, and apply dynamics constraints.
 

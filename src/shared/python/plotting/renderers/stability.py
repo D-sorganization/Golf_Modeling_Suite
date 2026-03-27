@@ -1,13 +1,11 @@
-from numba import jit
-
 """Stability plotting renderer."""
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import numpy as np  # noqa: E402
-from matplotlib.figure import Figure  # noqa: E402
+import numpy as np
+from matplotlib.figure import Figure
 
-from src.shared.python.plotting.renderers.base import BaseRenderer  # noqa: E402
+from src.shared.python.plotting.renderers.base import BaseRenderer
 
 
 class StabilityRenderer(BaseRenderer):
@@ -165,7 +163,6 @@ class StabilityRenderer(BaseRenderer):
         fig.colorbar(q, ax=ax, label="Time (s)")
         fig.tight_layout()
 
-    @jit(nopython=True, fastmath=True)
     def plot_grf_butterfly_diagram(
         self,
         fig: Figure,
@@ -239,7 +236,6 @@ class StabilityRenderer(BaseRenderer):
 
         fig.tight_layout()
 
-    @jit(nopython=True, fastmath=True)
     def plot_3d_vector_field(
         self,
         fig: Figure,

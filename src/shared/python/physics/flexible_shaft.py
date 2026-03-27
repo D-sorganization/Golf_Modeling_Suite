@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """Flexible Beam Shaft Module.
 
@@ -21,18 +23,18 @@ Planned enhancement: implement torsional dynamics (current Euler-Bernoulli beam 
 Planned enhancement: support asymmetric cross-sections (modeling spine alignment and manufacturing tolerances).
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import functools  # noqa: E402
-from abc import ABC, abstractmethod  # noqa: E402
-from dataclasses import dataclass, field  # noqa: E402
-from enum import Enum, auto  # noqa: E402
-from typing import TYPE_CHECKING  # noqa: E402
+import functools
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from enum import Enum, auto
+from typing import TYPE_CHECKING
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from src.shared.python.contracts import check_positive, require  # noqa: E402
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
+from src.shared.python.contracts import check_positive, require
+from src.shared.python.logging_pkg.logging_config import get_logger
 
 if TYPE_CHECKING:
     ...
@@ -43,7 +45,7 @@ logger = get_logger(__name__)
 SHAFT_LENGTH_DRIVER = 1.168  # [m] 46" driver shaft
 SHAFT_LENGTH_IRON = 0.965  # [m] 38" 7-iron shaft
 STEEL_DENSITY = 7850  # [kg/m³]
-GRAPHITE_DENSITY = 1800  # [kg/m³]
+GRAPHITE_DENSITY = 1750  # [kg/m³] — matches physics_constants.GRAPHITE_DENSITY_KG_M3
 STEEL_E = 200e9  # [Pa] Young's modulus for steel
 GRAPHITE_E = 130e9  # [Pa] Young's modulus for graphite
 
@@ -408,7 +410,6 @@ class ModalShaftModel(ShaftModel):
         self.n_stations = 0
         self.time = 0.0
 
-    @jit(nopython=True, fastmath=True)
     def initialize(self, properties: ShaftProperties) -> None:
         """Initialize model and compute modes.
 
@@ -457,7 +458,6 @@ class ModalShaftModel(ShaftModel):
         self.modal_coords = np.zeros(self.n_modes)
         self.modal_velocities = np.zeros(self.n_modes)
 
-    @jit(nopython=True, fastmath=True)
     def get_state(self) -> ShaftState:
         """Get current state by superposing modal contributions."""
         if not self.modes:
@@ -488,7 +488,6 @@ class ModalShaftModel(ShaftModel):
             timestamp=self.time,
         )
 
-    @jit(nopython=True, fastmath=True)
     def apply_load(
         self,
         position: float,
@@ -517,7 +516,6 @@ class ModalShaftModel(ShaftModel):
             modal_force = phi_at_load * np.linalg.norm(force)
             self.modal_coords[i] += modal_force * 1e-6  # Scale factor
 
-    @jit(nopython=True, fastmath=True)
     def step(self, dt: float) -> ShaftState:
         """Advance modal coordinates by dt."""
         if not (dt is not None):
@@ -610,7 +608,6 @@ class FiniteElementShaftModel(ShaftModel):
             f"{self.n_free_dof} free DOFs"
         )
 
-    @jit(nopython=True, fastmath=True)
     def _create_elements(self) -> None:
         """Create beam elements from shaft properties."""
         if self.properties is None:
@@ -720,7 +717,6 @@ class FiniteElementShaftModel(ShaftModel):
 
         return m
 
-    @jit(nopython=True, fastmath=True)
     def _assemble_matrices(self) -> None:
         """Assemble global stiffness and mass matrices."""
         n_dof = self.n_dof
@@ -971,7 +967,6 @@ class FiniteElementShaftModel(ShaftModel):
         return state
 
 
-@jit(nopython=True, fastmath=True)
 def compute_static_deflection(
     properties: ShaftProperties,
     load_position: float,

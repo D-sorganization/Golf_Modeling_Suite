@@ -1,14 +1,12 @@
-from numba import jit
-
 """Collision avoidance for safe robot operation."""
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from dataclasses import dataclass, field  # noqa: E402
-from enum import Enum  # noqa: E402
-from typing import TYPE_CHECKING  # noqa: E402
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import TYPE_CHECKING
 
-import numpy as np  # noqa: E402
+import numpy as np
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -90,7 +88,6 @@ class Obstacle:
 
         return 0.0
 
-    @jit(nopython=True, fastmath=True)
     def get_gradient(self, point: NDArray[np.floating]) -> NDArray[np.floating]:
         """Compute gradient of distance function.
 
@@ -271,8 +268,6 @@ class CollisionAvoidance:
 
         return positions
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def compute_repulsive_field(
         self,
         state: RobotState,

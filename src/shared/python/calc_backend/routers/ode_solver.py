@@ -1,16 +1,14 @@
-from numba import jit
-
 """ODE solver router.  See issue #608."""
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import math  # noqa: E402
+import math
 
-from fastapi import APIRouter, HTTPException  # noqa: E402
+from fastapi import APIRouter, HTTPException
 
-from src.shared.python.safe_eval import safe_eval  # noqa: E402
+from src.shared.python.safe_eval import safe_eval
 
-from ..contracts.ode_solver import (  # noqa: E402
+from ..contracts.ode_solver import (
     ODESolverRequest,
     ODESolverResponse,
     ODEVariableSummary,
@@ -86,8 +84,6 @@ def _safe_eval(
     return float(safe_eval(expr, namespace))
 
 
-@jit(nopython=True, fastmath=True)
-@jit(nopython=True, fastmath=True)
 def _rk4_solve(
     var_names: list[str],
     expressions: dict[str, str],
@@ -115,7 +111,8 @@ def _rk4_solve(
     for i in range(num_points):
         t = t_start + i * dt
         times.append(round(t, 8))
-        solutions[v].extend([round(state[v], 8) for v in var_names])  # noqa: F821
+        for v in var_names:
+            solutions[v].append(round(state[v], 8))
 
         if i < num_points - 1:
             k1 = compute_derivs(t, state)

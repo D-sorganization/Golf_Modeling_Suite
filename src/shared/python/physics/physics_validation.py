@@ -1,5 +1,3 @@
-from numba import jit
-
 """Physics consistency validation for simulation correctness.
 
 Phase 3 Implementation: Enhanced Validation from FUTURE_ROADMAP.md
@@ -15,13 +13,13 @@ These tests help catch:
 - Numerical precision issues
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import logging  # noqa: E402
-from dataclasses import dataclass  # noqa: E402
-from typing import TYPE_CHECKING  # noqa: E402
+import logging
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-import numpy as np  # noqa: E402
+import numpy as np
 
 if TYPE_CHECKING:
     import mujoco
@@ -165,7 +163,6 @@ class PhysicsValidator:
         mass_matrix_used = M[:dof_count, :dof_count]
         return float(0.5 * qvel_used @ mass_matrix_used @ qvel_used)
 
-    @jit(nopython=True, fastmath=True)
     def compute_potential_energy(self, qpos: np.ndarray) -> float:
         """Compute gravitational potential energy.
 
@@ -325,7 +322,6 @@ class PhysicsValidator:
             message=message,
         )
 
-    @jit(nopython=True, fastmath=True)
     def verify_jacobian(
         self,
         qpos: np.ndarray,

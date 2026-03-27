@@ -1,5 +1,3 @@
-from numba import jit
-
 """
 Core simulation logic for the Golf Swing Simulator.
 
@@ -8,14 +6,14 @@ There is NO demo or fallback mode - if OpenSim is not available,
 explicit errors will be raised to prevent displaying incorrect data.
 """
 
-from dataclasses import dataclass  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import Any  # noqa: E402
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from src.shared.python.core import constants  # noqa: E402
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
+from src.shared.python.core import constants
+from src.shared.python.logging_pkg.logging_config import get_logger
 
 # Configure logging
 logger = get_logger(__name__)
@@ -137,7 +135,7 @@ class GolfSwingModel:
                 # Some versions might need setInitialTime
 
             logger.info(f"Loaded OpenSim model from {self.model_path}")
-        except Exception as e:  # noqa: BLE001 — convert any error to OpenSimModelLoadError
+        except (OSError, RuntimeError, ValueError, ImportError, AttributeError) as e:
             raise OpenSimModelLoadError(
                 f"Failed to load OpenSim model: {self.model_path}\n"
                 f"Error: {e}\n"
@@ -164,7 +162,6 @@ class GolfSwingModel:
         """
         return self._run_opensim_simulation()
 
-    @jit(nopython=True, fastmath=True)
     def _run_opensim_simulation(self) -> SimulationResult:
         """Run simulation using OpenSim."""
 

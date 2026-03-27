@@ -1,5 +1,3 @@
-from numba import jit
-
 """Utility helpers for the MuJoCo humanoid-golf Docker simulation.
 
 Provides model-loading helpers, environment variable resolution, and
@@ -7,14 +5,14 @@ miscellaneous numerical utilities shared across the Docker-containerised
 MuJoCo humanoid golf simulation backend.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import logging  # noqa: E402
-from pathlib import Path  # noqa: E402
+import logging
+from pathlib import Path
 
-import dm_control.suite  # noqa: E402
-import numpy as np  # noqa: E402
-from dm_control import mjcf  # noqa: E402
+import dm_control.suite
+import numpy as np
+from dm_control import mjcf
 
 logger = logging.getLogger(__name__)
 
@@ -127,7 +125,6 @@ def _scale_model_positions(root, height_scale) -> None:
             site.pos = [x * height_scale for x in pos]
 
 
-@jit(nopython=True, fastmath=True)
 def _scale_geom_sizes(root, height_scale, width_scale) -> None:
     for geom in root.find_all("geom"):
         size = getattr(geom, "size", None)
@@ -229,8 +226,6 @@ def _add_face_features(root, h_scale, w_scale) -> None:
     )
 
 
-@jit(nopython=True, fastmath=True)
-@jit(nopython=True, fastmath=True)
 def _add_articulated_fingers(root, h_scale, w_scale) -> None:
     """Add articulated fingers to the model."""
     for side in ["l", "r"]:

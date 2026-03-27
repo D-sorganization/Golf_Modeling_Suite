@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
 
 """Advanced kinematics analysis for parallel mechanisms and redundant manipulators.
 
@@ -10,13 +12,13 @@ This module provides state-of-the-art robotics analysis tools including:
 - Nullspace projection for redundancy resolution
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from dataclasses import dataclass  # noqa: E402
+from dataclasses import dataclass
 
-import mujoco  # noqa: E402
-import numpy as np  # noqa: E402
-from scipy.linalg import null_space, pinv, svd  # noqa: E402
+import mujoco
+import numpy as np
+from scipy.linalg import null_space, pinv, svd
 
 
 @dataclass
@@ -278,7 +280,6 @@ class AdvancedKinematicsAnalyzer:
             max_singular_value=s.max() if len(s) > 0 else 0.0,
         )
 
-    @jit(nopython=True, fastmath=True)
     def solve_inverse_kinematics(
         self,
         target_body_id: int,

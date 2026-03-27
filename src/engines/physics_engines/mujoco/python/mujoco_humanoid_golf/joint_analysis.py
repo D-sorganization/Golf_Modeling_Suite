@@ -1,5 +1,3 @@
-from numba import jit
-
 """Analysis tools for joint constraint forces, torque transmission, and universal
 joints.
 
@@ -12,11 +10,11 @@ This module provides tools for analyzing:
 Author: MuJoCo Golf Swing Project
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import matplotlib.pyplot as plt  # noqa: E402
-import mujoco as mj  # noqa: E402
-import numpy as np  # noqa: E402
+import matplotlib.pyplot as plt
+import mujoco as mj
+import numpy as np
 
 
 class UniversalJointAnalyzer:
@@ -132,7 +130,6 @@ class UniversalJointAnalyzer:
 
         return float(cos_beta / denominator)
 
-    @jit(nopython=True, fastmath=True)
     def analyze_torque_transmission(
         self,
         input_joint: str,

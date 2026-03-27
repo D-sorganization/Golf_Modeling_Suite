@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
 
 #!/usr/bin/env python3
 """
@@ -6,15 +8,15 @@ Wiffle_ProV1 Data Loader for Golf Swing Visualizer
 Handles Excel-based motion capture data and converts to the GUI's expected format
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import logging  # noqa: E402
-from dataclasses import dataclass  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import Any  # noqa: E402
+import logging
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
-import numpy as np  # noqa: E402
-import pandas as pd  # noqa: E402
+import numpy as np
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -422,7 +424,6 @@ class MotionDataLoader:
             f"based on clubhead position"  # noqa: E501
         )
 
-    @jit(nopython=True, fastmath=True)
     def _create_dummy_data(self, num_frames: int) -> pd.DataFrame:
         """Create dummy data for testing purposes"""
         if not (num_frames is not None):
@@ -468,7 +469,6 @@ class MotionDataLoader:
 
         return processed_data
 
-    @jit(nopython=True, fastmath=True)
     def _apply_noise_filtering(self, df: pd.DataFrame) -> pd.DataFrame:
         """Apply noise filtering to position data"""
         if not (df is not None):
@@ -607,8 +607,6 @@ class MotionDataLoader:
 
         return baseq_data
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def _create_deltaq_format(
         self, prov1_df: pd.DataFrame, wiffle_df: pd.DataFrame
     ) -> pd.DataFrame:

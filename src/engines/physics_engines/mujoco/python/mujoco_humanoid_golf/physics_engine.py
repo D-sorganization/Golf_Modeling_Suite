@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
 
 """MuJoCo physics engine integration for humanoid golf simulation.
 
@@ -6,26 +8,26 @@ Wraps the MuJoCo physics backend to provide a unified interface for
 running golf swing simulations with humanoid models.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import os  # noqa: E402
-import tempfile  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import Any, cast  # noqa: E402, F401
+import os
+import tempfile
+from pathlib import Path
+from typing import Any, cast  # noqa: F401
 
-import mujoco  # noqa: E402
-import numpy as np  # noqa: E402
+import mujoco
+import numpy as np
 
-from src.shared.python.core.contracts import (  # noqa: E402
+from src.shared.python.core.contracts import (
     PreconditionError,
     check_finite,
     invariant,
     postcondition,
     precondition,
 )
-from src.shared.python.engine_core.interfaces import PhysicsEngine  # noqa: E402
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
-from src.shared.python.security.security_utils import validate_path  # noqa: E402
+from src.shared.python.engine_core.interfaces import PhysicsEngine
+from src.shared.python.logging_pkg.logging_config import get_logger
+from src.shared.python.security.security_utils import validate_path
 
 logger = get_logger(__name__)
 
@@ -621,7 +623,6 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         )
         return True
 
-    @jit(nopython=True, fastmath=True)
     def _compute_shaft_modes(
         self,
         length: float,
@@ -686,7 +687,6 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
 
         return frequencies, mode_shapes
 
-    @jit(nopython=True, fastmath=True)
     def get_shaft_state(self) -> dict[str, np.ndarray] | None:
         """Get current shaft deformation state.
 

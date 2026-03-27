@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """
 SimScape Multibody to URDF converter.
@@ -7,21 +9,21 @@ Converts MATLAB SimScape Multibody models to URDF format,
 enabling use of models created in Simulink with ROS and other robotics frameworks.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import logging  # noqa: E402
-import math  # noqa: E402
-from dataclasses import dataclass, field  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import Any  # noqa: E402
+import logging
+import math
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
 
-from model_generation.converters.simscape.mdl_parser import (  # noqa: E402
+from model_generation.converters.simscape.mdl_parser import (
     MDLParser,
     SimscapeBlock,
     SimscapeBlockType,
     SimscapeModel,
 )
-from model_generation.core.types import (  # noqa: E402
+from model_generation.core.types import (
     Geometry,
     GeometryType,
     Inertia,
@@ -577,8 +579,6 @@ class SimscapeToURDFConverter:
 
         return joint
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def _get_joint_origin(self, block: SimscapeBlock) -> Origin:
         """Extract joint origin from block parameters."""
         if not (block is not None):
@@ -616,7 +616,6 @@ class SimscapeToURDFConverter:
 
         return Origin(xyz=xyz, rpy=rpy)
 
-    @jit(nopython=True, fastmath=True)
     def _get_joint_axis(self, block: SimscapeBlock) -> tuple[float, float, float]:
         """Extract joint axis from block parameters."""
         # Try common parameter names

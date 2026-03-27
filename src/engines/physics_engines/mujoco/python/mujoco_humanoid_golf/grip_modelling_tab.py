@@ -1,23 +1,25 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
 
 """Grip Modelling Tab for Advanced Hand Models.
 
 Issue #757: Contact-based hand-grip model in MuJoCo with pressure visualization.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import os  # noqa: E402
-import re  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import Any  # noqa: E402
+import os
+import re
+from pathlib import Path
+from typing import Any
 
-import mujoco  # noqa: E402
-import numpy as np  # noqa: E402
-from PyQt6 import QtCore, QtGui, QtWidgets  # noqa: E402
+import mujoco
+import numpy as np
+from PyQt6 import QtCore, QtGui, QtWidgets
 
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
-from src.shared.python.physics.grip_contact_model import (  # noqa: E402
+from src.shared.python.logging_pkg.logging_config import get_logger
+from src.shared.python.physics.grip_contact_model import (
     GripContactExporter,
     GripContactModel,
     GripParameters,
@@ -25,7 +27,7 @@ from src.shared.python.physics.grip_contact_model import (  # noqa: E402
     compute_pressure_visualization,
 )
 
-from .sim_widget import MuJoCoSimWidget  # noqa: E402
+from .sim_widget import MuJoCoSimWidget
 
 logger = get_logger(__name__)
 
@@ -69,7 +71,6 @@ class PressureVisualizationWidget(QtWidgets.QWidget):
         self.pressure_data = None
         self.update()
 
-    @jit(nopython=True, fastmath=True)
     def _get_color_for_value(self, normalized_value: float) -> QtGui.QColor:
         """Get color from gradient for normalized value [0, 1]."""
         if not (normalized_value is not None):
@@ -93,8 +94,6 @@ class PressureVisualizationWidget(QtWidgets.QWidget):
 
         return self.color_stops[-1][1]
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def paintEvent(self, event: QtGui.QPaintEvent | None) -> None:
         """Paint the pressure visualization."""
         painter = QtGui.QPainter(self)

@@ -1,12 +1,10 @@
-from numba import jit
-
 """Thermal profile predictor router.  See issue #608."""
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException  # noqa: E402
+from fastapi import APIRouter, HTTPException
 
-from ..contracts.thermal_profile import (  # noqa: E402
+from ..contracts.thermal_profile import (
     ThermalProfileDataPoint,
     ThermalProfileRequest,
     ThermalProfileResponse,
@@ -27,7 +25,6 @@ def predict_thermal_profile(
     return result
 
 
-@jit(nopython=True, fastmath=True)
 def _solve_thermal_profile(
     request: ThermalProfileRequest,
 ) -> ThermalProfileResponse:

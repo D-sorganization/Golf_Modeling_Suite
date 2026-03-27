@@ -1,5 +1,3 @@
-from numba import jit
-
 """Segment Timing Analysis Module.
 
 This module provides tools to analyze the timing sequence of body segment
@@ -17,19 +15,19 @@ Planned enhancement: implement Inter-segmental Power Flow calculation.
 Known limitation: `efficiency_score` may have patent exposure and should be re-reviewed before release.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import itertools  # noqa: E402
-from dataclasses import dataclass, field  # noqa: E402
-from typing import TYPE_CHECKING  # noqa: E402
+import itertools
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from src.shared.python.analysis.dataclasses import (  # noqa: E402
+from src.shared.python.analysis.dataclasses import (
     CITATION_SEGMENT_TIMING,
     MethodCitation,
 )
-from src.shared.python.core.contracts import ensure, require  # noqa: E402
+from src.shared.python.core.contracts import ensure, require
 
 if TYPE_CHECKING:
     from typing import Any
@@ -210,7 +208,6 @@ class SegmentTimingAnalyzer:
 
         return peaks
 
-    @jit(nopython=True, fastmath=True)
     def _compute_extended_metrics(
         self,
         peaks: list[SegmentPeak],
@@ -266,7 +263,6 @@ class SegmentTimingAnalyzer:
                         peak_info.deceleration_rate = -slope
 
     @staticmethod
-    @jit(nopython=True, fastmath=True)
     def _compute_timing_gaps(peaks: list[SegmentPeak]) -> dict[str, float]:
         """Compute time gaps between consecutive peaks.
 

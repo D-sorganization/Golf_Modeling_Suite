@@ -1,5 +1,3 @@
-from numba import jit
-
 """Examples demonstrating motion capture integration and force analysis.
 
 This module provides comprehensive examples for the complete workflow:
@@ -14,22 +12,19 @@ These examples show how to analyze real player swings captured with
 motion capture systems.
 """
 
-import traceback  # noqa: E402
+import traceback
 
-import mujoco  # noqa: E402
-import numpy as np  # noqa: E402
+import mujoco
+import numpy as np
 
-from .inverse_dynamics import (  # noqa: E402
+from .inverse_dynamics import (
     InverseDynamicsAnalyzer,
     InverseDynamicsSolver,
     export_inverse_dynamics_to_csv,
 )
-from .kinematic_forces import (  # noqa: E402
-    KinematicForceAnalyzer,
-    export_kinematic_forces_to_csv,
-)
-from .models import ADVANCED_BIOMECHANICAL_GOLF_SWING_XML  # noqa: E402
-from .motion_capture import (  # noqa: E402
+from .kinematic_forces import KinematicForceAnalyzer, export_kinematic_forces_to_csv
+from .models import ADVANCED_BIOMECHANICAL_GOLF_SWING_XML
+from .motion_capture import (
     MarkerSet,
     MotionCaptureFrame,
     MotionCaptureProcessor,
@@ -38,7 +33,6 @@ from .motion_capture import (  # noqa: E402
 )
 
 
-@jit(nopython=True, fastmath=True)
 def example_1_load_motion_capture() -> None:
     """Example 1: Load motion capture data from file.
 
@@ -53,7 +47,6 @@ def example_1_load_motion_capture() -> None:
     frames = []
     for t in times:
         # Simulate some marker motion
-        # OPTIMIZATION_TARGET: Migrate computationally bound loop to PyO3/Rust Core natively  # noqa: E501
         markers = {}
         for i in range(num_markers):
             # Sinusoidal motion
@@ -79,7 +72,6 @@ def example_1_load_motion_capture() -> None:
     return mocap_sequence  # type: ignore[return-value]
 
 
-@jit(nopython=True, fastmath=True)
 def example_2_motion_retargeting() -> None:
     """Example 2: Retarget motion capture to MuJoCo model.
 
@@ -128,7 +120,6 @@ def example_2_motion_retargeting() -> None:
     return times_ret, joint_traj  # type: ignore[return-value]
 
 
-@jit(nopython=True, fastmath=True)
 def example_3_compute_kinematic_forces() -> None:
     """Example 3: Compute Coriolis and centrifugal forces from kinematics.
 
@@ -194,7 +185,6 @@ def example_3_compute_kinematic_forces() -> None:
     return force_data_list  # type: ignore[return-value]
 
 
-@jit(nopython=True, fastmath=True)
 def example_4_inverse_dynamics() -> None:
     """Example 4: Full inverse dynamics analysis.
 
@@ -275,7 +265,6 @@ def example_4_inverse_dynamics() -> None:
     return id_results  # type: ignore[return-value]
 
 
-@jit(nopython=True, fastmath=True)
 def _generate_synthetic_mocap() -> MotionCaptureSequence:
     times_mocap = np.linspace(0, 1.5, 180)  # 120 Hz
     frames = []
@@ -400,8 +389,6 @@ def example_5_complete_analysis_pipeline() -> None:
     }
 
 
-@jit(nopython=True, fastmath=True)
-@jit(nopython=True, fastmath=True)
 def example_6_swing_comparison() -> None:
     """Example 6: Compare two different swings.
 

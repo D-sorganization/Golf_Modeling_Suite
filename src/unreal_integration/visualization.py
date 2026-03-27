@@ -1,5 +1,3 @@
-from numba import jit
-
 """Visualization components for Unreal Engine integration.
 
 This module provides renderers and data providers for visualizing
@@ -26,16 +24,16 @@ Usage:
     render_data = renderer.render(forces)
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import logging  # noqa: E402
-from dataclasses import dataclass, field  # noqa: E402
-from enum import Enum, auto  # noqa: E402
-from typing import Any  # noqa: E402
+import logging
+from dataclasses import dataclass, field
+from enum import Enum, auto
+from typing import Any
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from src.unreal_integration.data_models import (  # noqa: E402
+from src.unreal_integration.data_models import (
     ForceVector,
     SwingMetrics,
     TrajectoryPoint,
@@ -233,7 +231,6 @@ class ForceVectorRenderer:
             },
         )
 
-    @jit(nopython=True, fastmath=True)
     def _render_torque(self, force: ForceVector) -> RenderData:
         """Render torque as circular arc.
 

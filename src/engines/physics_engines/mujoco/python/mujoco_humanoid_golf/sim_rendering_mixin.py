@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
 
 """MuJoCo sim widget rendering mixin.
 
@@ -7,16 +9,16 @@ vector drawing, manipulation overlays, swing plane overlays, and
 frame/COM overlays from MuJoCoSimWidget.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from collections.abc import Callable  # noqa: E402
-from typing import Any  # noqa: E402
+from collections.abc import Callable
+from typing import Any
 
-import mujoco  # noqa: E402
-import numpy as np  # noqa: E402
-from PyQt6 import QtGui  # noqa: E402
+import mujoco
+import numpy as np
+from PyQt6 import QtGui
 
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
+from src.shared.python.logging_pkg.logging_config import get_logger
 
 # Lazy loading for OpenCV (mutable holder avoids 'global' keyword)
 _cv2_state: dict[str, Any] = {"lib": None, "invalid": False}
@@ -255,8 +257,8 @@ class SimRenderingMixin:
                     (255, 0, 255),
                     1,
                 )
-            except Exception as exc:  # noqa: BLE001
-                logger.debug("cv2 label overlay failed, skipping: %s", exc)
+            except (RuntimeError, ValueError, AttributeError, IndexError) as exc:
+                logger.debug("Overlay text render skipped: %s", exc)
         return img
 
     def _update_background_colors(self: Any) -> None:
@@ -335,7 +337,6 @@ class SimRenderingMixin:
 
         return img
 
-    @jit(nopython=True, fastmath=True)
     def _draw_torque_vectors(self: Any, draw_arrow_func: Callable) -> None:
         if not (draw_arrow_func is not None):
             raise ValueError("draw_arrow_func must be provided")
@@ -408,7 +409,6 @@ class SimRenderingMixin:
             arrow_end = body_pos + joint_force * self.force_scale
             draw_arrow_func(body_pos, arrow_end, (0, 255, 255))
 
-    @jit(nopython=True, fastmath=True)
     def _draw_induced_vectors(self: Any, draw_arrow_func: Callable) -> None:
         """Draw Induced Acceleration vectors (Magenta)."""
         if not (draw_arrow_func is not None):
@@ -453,7 +453,6 @@ class SimRenderingMixin:
 
             draw_arrow_func(joint_pos, arrow_end, (255, 0, 255))
 
-    @jit(nopython=True, fastmath=True)
     def _draw_cf_vectors(self: Any, draw_arrow_func: Callable) -> None:
         """Draw Counterfactual vectors (Yellow)."""
         if not (draw_arrow_func is not None):
@@ -486,7 +485,6 @@ class SimRenderingMixin:
 
             draw_arrow_func(joint_pos, arrow_end, (0, 255, 255))
 
-    @jit(nopython=True, fastmath=True)
     def _add_manipulation_overlays(self: Any, rgb: np.ndarray) -> np.ndarray:
         if not (rgb is not None):
             raise ValueError("rgb must be provided")
@@ -653,7 +651,6 @@ class SimRenderingMixin:
 
         return img
 
-    @jit(nopython=True, fastmath=True)
     def _add_frame_and_com_overlays(self: Any, rgb: np.ndarray) -> np.ndarray:
         if not (rgb is not None):
             raise ValueError("rgb must be provided")

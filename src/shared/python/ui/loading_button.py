@@ -1,5 +1,3 @@
-from numba import jit
-
 """Loading-aware button component for Golf Modeling Suite.
 
 Provides a button that shows a loading spinner and disables interaction
@@ -18,11 +16,11 @@ Usage:
     btn.set_loading(False)
 """
 
-from typing import Any  # noqa: E402
+from typing import Any
 
-from PyQt6.QtCore import Qt, QTimer  # noqa: E402
-from PyQt6.QtGui import QColor, QFont, QPainter, QPen  # noqa: E402
-from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QSizePolicy, QWidget  # noqa: E402
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import QColor, QFont, QPainter, QPen
+from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QSizePolicy, QWidget
 
 # Import theme if available
 try:
@@ -75,7 +73,6 @@ class LoadingSpinner(QWidget):
         self._timer.stop()
         self.hide()
 
-    @jit(nopython=True, fastmath=True)
     def paintEvent(self, event: Any) -> None:
         """Paint the spinner."""
         if not self._spinning:

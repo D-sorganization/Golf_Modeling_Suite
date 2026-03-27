@@ -1,16 +1,18 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """Deformable object simulation classes."""
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from abc import ABC, abstractmethod  # noqa: E402
-from dataclasses import dataclass  # noqa: E402
-from typing import TYPE_CHECKING  # noqa: E402
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from src.shared.python.core.constants import GRAVITY  # noqa: E402
+from src.shared.python.core.constants import GRAVITY_FLOAT
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -214,7 +216,6 @@ class SoftBody(DeformableObject):
         self._rest_volumes = self._compute_volumes(self._rest_mesh)
         self._B_matrices = self._compute_shape_matrices()
 
-    @jit(nopython=True, fastmath=True)
     def _compute_volumes(self, positions: NDArray[np.floating]) -> NDArray[np.floating]:
         """Compute volumes of tetrahedra.
 
@@ -242,7 +243,6 @@ class SoftBody(DeformableObject):
 
         return volumes
 
-    @jit(nopython=True, fastmath=True)
     def _compute_shape_matrices(self) -> list[NDArray[np.floating]]:
         """Compute shape function matrices for each element.
 
@@ -268,7 +268,6 @@ class SoftBody(DeformableObject):
 
         return B_matrices
 
-    @jit(nopython=True, fastmath=True)
     def compute_internal_forces(self) -> NDArray[np.floating]:
         """Compute internal elastic forces using FEM.
 
@@ -409,8 +408,6 @@ class Cable(DeformableObject):
         # Average force magnitude
         return float(np.mean(np.linalg.norm(forces, axis=1)))
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def compute_internal_forces(self) -> NDArray[np.floating]:
         """Compute spring and bending forces.
 
@@ -472,7 +469,7 @@ class Cable(DeformableObject):
         total_forces = internal_forces + self._external_forces
 
         # Gravity
-        gravity = np.array([0.0, 0.0, -GRAVITY])
+        gravity = np.array([0.0, 0.0, -GRAVITY_FLOAT])
         node_mass = self._material.density * self._total_rest_length / self.n_nodes
         total_forces += node_mass * gravity
 
@@ -538,12 +535,6 @@ class Cloth(DeformableObject):
         """Grid height."""
         return self._height
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def _build_springs(self) -> list[tuple[int, int, float, str]]:
         """Build spring connectivity.
 
@@ -608,7 +599,6 @@ class Cloth(DeformableObject):
 
         return springs  # type: ignore[return-value]
 
-    @jit(nopython=True, fastmath=True)
     def compute_internal_forces(self) -> NDArray[np.floating]:
         """Compute spring forces for cloth.
 
@@ -659,7 +649,7 @@ class Cloth(DeformableObject):
         total_forces = internal_forces + self._external_forces
 
         # Gravity
-        gravity = np.array([0.0, 0.0, -GRAVITY])
+        gravity = np.array([0.0, 0.0, -GRAVITY_FLOAT])
         node_mass = self._material.density * 0.01  # Assume thin cloth
         total_forces += node_mass * gravity
 

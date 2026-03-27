@@ -1,5 +1,3 @@
-from numba import jit
-
 """MJCF models for golf swing systems.
 
 Demo/utility models and club XML generation live here.
@@ -7,11 +5,11 @@ Pendulum models are in pendulum_models_xml.py.
 Golf swing models are in golf_swing_models_xml.py.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from typing import Any, cast  # noqa: E402
+from typing import Any, cast
 
-from src.shared.python.core.constants import (  # noqa: E402
+from src.shared.python.core.constants import (
     DEFAULT_TIME_STEP,
     GOLF_BALL_MASS_KG,
     GOLF_BALL_RADIUS_M,
@@ -19,13 +17,13 @@ from src.shared.python.core.constants import (  # noqa: E402
 )
 
 # Re-export pendulum models for backward compatibility
-from .golf_swing_models_xml import (  # noqa: E402, F401
+from .golf_swing_models_xml import (  # noqa: F401
     ADVANCED_BIOMECHANICAL_GOLF_SWING_XML,
     CLUB_CONFIGS,
     FULL_BODY_GOLF_SWING_XML,
     UPPER_BODY_GOLF_SWING_XML,
 )
-from .pendulum_models_xml import (  # noqa: E402, F401
+from .pendulum_models_xml import (  # noqa: F401
     CHAOTIC_PENDULUM_XML,
     DOUBLE_PENDULUM_XML,
     TRIPLE_PENDULUM_XML,
@@ -357,7 +355,6 @@ def _generate_grip_xml(
     ]
 
 
-@jit(nopython=True, fastmath=True)
 def _generate_shaft_segments_xml(
     num_segments: int,
     config: dict[str, Any],

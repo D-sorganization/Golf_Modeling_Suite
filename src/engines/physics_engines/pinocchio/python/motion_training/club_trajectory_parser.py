@@ -1,18 +1,16 @@
-from numba import jit
-
 """Parser for club trajectory data from motion capture Excel files.
 
 This module parses golf club motion capture data typically stored in Excel format
 with position and orientation data for grip (mid-hands) and club face markers.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from dataclasses import dataclass, field  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import TYPE_CHECKING  # noqa: E402
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import TYPE_CHECKING
 
-import numpy as np  # noqa: E402
+import numpy as np
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -274,7 +272,6 @@ class ClubTrajectoryParser:
         """Parse event markers from pandas row."""
         return self._parse_events_list(row.tolist())
 
-    @jit(nopython=True, fastmath=True)
     def _parse_events_list(self, row: list) -> SwingEventMarkers:
         """Parse event markers from list."""
         if not (row is not None):
@@ -404,7 +401,7 @@ class ClubTrajectoryParser:
         get = self._make_row_accessor(row)
 
         sample = get(self.SAMPLE_COL)
-        if sample is None or not isinstance(sample, (int, float)):
+        if sample is None or not isinstance(sample, int | float):
             return None
 
         try:

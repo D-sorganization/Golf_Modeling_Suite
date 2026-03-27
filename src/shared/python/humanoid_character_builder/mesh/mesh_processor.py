@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """
 Mesh processing utilities for humanoid character builder.
@@ -7,15 +9,15 @@ This module provides mesh loading, segmentation, simplification,
 and export capabilities.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import logging  # noqa: E402
-from dataclasses import dataclass  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import TYPE_CHECKING, Any  # noqa: E402
+import logging
+from dataclasses import dataclass
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
-import numpy as np  # noqa: E402
-from numpy.typing import NDArray  # noqa: E402
+import numpy as np
+from numpy.typing import NDArray
 
 if TYPE_CHECKING:
     pass
@@ -561,7 +563,6 @@ class LODGenerator:
         """Initialize the LOD generator."""
         self._processor = MeshProcessor()
 
-    @jit(nopython=True, fastmath=True)
     def generate_lods(
         self,
         mesh_path: Path | str,
@@ -764,7 +765,6 @@ class LODGenerator:
                 error_message=str(e),
             )
 
-    @jit(nopython=True, fastmath=True)
     def estimate_memory_savings(
         self, lod_result: LODGenerationResult
     ) -> dict[str, Any]:

@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """
 SimScape MDL/SLX file parser.
@@ -7,18 +9,18 @@ Parses MATLAB Simulink/SimScape model files to extract
 multibody system definitions.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import logging  # noqa: E402
-import re  # noqa: E402
-import xml.etree.ElementTree as ET  # noqa: E402
-import zipfile  # noqa: E402
-from dataclasses import dataclass, field  # noqa: E402
-from enum import Enum  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import Any  # noqa: E402
+import logging
+import re
+import xml.etree.ElementTree as ET
+import zipfile
+from dataclasses import dataclass, field
+from enum import Enum
+from pathlib import Path
+from typing import Any
 
-import defusedxml.ElementTree as DefusedET  # noqa: E402
+import defusedxml.ElementTree as DefusedET
 
 logger = logging.getLogger(__name__)
 
@@ -472,7 +474,6 @@ class MDLParser:
 
         return model
 
-    @jit(nopython=True, fastmath=True)
     def _parse_mdl_content(self, content: str, model: SimscapeModel) -> None:
         """Parse MDL text content."""
         # Find Model name
@@ -537,17 +538,15 @@ class MDLParser:
             re.MULTILINE,
         )
 
-        model.connections.extend(
-            [
+        for match in line_pattern.finditer(content):
+            model.connections.append(
                 SimscapeConnection(
                     source_block=match.group(1),
                     source_port=match.group(2),
                     dest_block=match.group(3),
                     dest_port=match.group(4),
                 )
-                for match in line_pattern.finditer(content)
-            ]
-        )
+            )
 
     def _get_block_type(
         self, block_type_str: str, source_block: str

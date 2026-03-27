@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """Aerodynamics module for golf ball flight simulation.
 
@@ -26,16 +28,16 @@ References:
     - Jorgensen, T. (1999). The Physics of Golf. Springer.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import math  # noqa: E402
-from dataclasses import dataclass, field, replace  # noqa: E402
-from typing import Any  # noqa: E402
+import math
+from dataclasses import dataclass, field, replace
+from typing import Any
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from src.shared.python.core.contracts import precondition  # noqa: E402
-from src.shared.python.core.physics_constants import (  # noqa: E402
+from src.shared.python.core.contracts import precondition
+from src.shared.python.core.physics_constants import (
     AIR_DENSITY_SEA_LEVEL_KG_M3,
     AIR_VISCOSITY_KG_M_S,
     GOLF_BALL_CROSS_SECTIONAL_AREA_M2,
@@ -579,8 +581,6 @@ class TurbulenceModel:
         self._phases = self._rng.uniform(0, 2 * np.pi, (3, 10))
         self._freqs = self._rng.uniform(0.1, 2.0, 10)
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def get_perturbation(
         self,
         t: float,

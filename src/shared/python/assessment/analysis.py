@@ -1,17 +1,14 @@
-from numba import jit
-
 """Utilities for analyzing Python code quality and structure."""
 
-import ast  # noqa: E402
-import logging  # noqa: E402
-import re  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import Any  # noqa: E402
+import ast
+import logging
+import re
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-@jit(nopython=True, fastmath=True)
 def get_python_metrics(file_path: Path) -> dict[str, Any]:
     """Extract metrics from a Python file using AST."""
     metrics = {
@@ -69,7 +66,6 @@ def assess_logging_content(content: str) -> dict[str, int]:
     }
 
 
-@jit(nopython=True, fastmath=True)
 def get_detailed_function_metrics(content: str) -> list[dict[str, Any]]:
     """Extract detailed metrics for each function in a file."""
     functions = []

@@ -1,5 +1,3 @@
-from numba import jit
-
 """Multi-Model Shot Tracer Visualization GUI.
 
 A standalone PyQt6 application for visualizing golf ball trajectories
@@ -14,13 +12,13 @@ This serves as both a validation tool for comparing models and a
 visualization utility for shot analysis.
 """
 
-import sys  # noqa: E402
-from typing import Any  # noqa: E402
+import sys
+from typing import Any
 
-import numpy as np  # noqa: E402
-from PyQt6.QtCore import Qt, QTimer  # noqa: E402
-from PyQt6.QtGui import QFont  # noqa: E402
-from PyQt6.QtWidgets import (  # noqa: E402
+import numpy as np
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import (
     QApplication,
     QCheckBox,
     QDoubleSpinBox,
@@ -40,7 +38,7 @@ from PyQt6.QtWidgets import (  # noqa: E402
     QWidget,
 )
 
-from src.shared.python.logging_pkg.logging_config import (  # noqa: E402
+from src.shared.python.logging_pkg.logging_config import (
     configure_gui_logging,
     get_logger,
 )
@@ -207,7 +205,6 @@ class MultiModelShotTracerWidget(QWidget):
 
         return button_layout
 
-    @jit(nopython=True, fastmath=True)
     def _create_legend_group(self) -> QGroupBox:
         legend_group = QGroupBox("Legend")
         legend_layout = QVBoxLayout()

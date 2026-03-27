@@ -1,5 +1,3 @@
-from numba import jit
-
 """Export trajectory data for use in MuJoCo, Drake, and other engines.
 
 Provides export functionality to various formats:
@@ -9,22 +7,22 @@ Provides export functionality to various formats:
 - Generic: CSV and NPZ formats
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import json  # noqa: E402
-from dataclasses import asdict, dataclass  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import TYPE_CHECKING  # noqa: E402
+import json
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import TYPE_CHECKING
 
-import numpy as np  # noqa: E402
+import numpy as np
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-import logging  # noqa: E402
+import logging
 
-from motion_training.club_trajectory_parser import ClubTrajectory  # noqa: E402
-from motion_training.dual_hand_ik_solver import TrajectoryIKResult  # noqa: E402
+from motion_training.club_trajectory_parser import ClubTrajectory
+from motion_training.dual_hand_ik_solver import TrajectoryIKResult
 
 logger = logging.getLogger(__name__)
 
@@ -132,7 +130,6 @@ class TrajectoryExporter:
             export_format=format,
         )
 
-    @jit(nopython=True, fastmath=True)
     def _export_mujoco(self, output_path: Path, **kwargs) -> Path:
         """Export for MuJoCo.
 
@@ -162,16 +159,14 @@ class TrajectoryExporter:
 
         # Build keyframes
         keyframes = []
-        keyframes.extend(
-            [
+        for i in range(self.num_frames):
+            keyframes.append(
                 {
                     "time": float(self.times[i]),
                     "qpos": self.q_traj[i].tolist(),
                     "qvel": qvel[i].tolist(),
                 }
-                for i in range(self.num_frames)
-            ]
-        )
+            )
 
         # Include club trajectory if available
         club_data = None

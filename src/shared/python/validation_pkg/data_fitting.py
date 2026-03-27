@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """Data fitting and parameter estimation for golf biomechanics (Guideline A3).
 
@@ -12,16 +14,16 @@ Issue #754: Implements complete A3 model fitting and parameter identification.
 Reference: docs/assessments/project_design_guidelines.qmd Section A3
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from dataclasses import dataclass, field  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import TYPE_CHECKING, Any  # noqa: E402
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
-import numpy as np  # noqa: E402
-from scipy import optimize  # noqa: E402
+import numpy as np
+from scipy import optimize
 
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
+from src.shared.python.logging_pkg.logging_config import get_logger
 
 if TYPE_CHECKING:
     pass
@@ -333,7 +335,6 @@ class InverseKinematicsSolver:
             message=result.message,
         )
 
-    @jit(nopython=True, fastmath=True)
     def _forward_kinematics(self, angles: np.ndarray) -> np.ndarray:
         """Compute forward kinematics for given joint angles.
 
@@ -551,7 +552,6 @@ class ParameterEstimator:
             message="Anthropometric estimation (no marker data)",
         )
 
-    @jit(nopython=True, fastmath=True)
     def _fit_from_markers(
         self,
         marker_array: np.ndarray,

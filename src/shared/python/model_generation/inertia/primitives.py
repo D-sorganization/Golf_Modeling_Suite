@@ -1,5 +1,3 @@
-from numba import jit
-
 """
 Analytical inertia formulas for primitive shapes.
 
@@ -7,11 +5,13 @@ This module provides closed-form solutions for computing inertia
 tensors of common geometric primitives.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import math  # noqa: E402
+import functools
+import math
 
 
+@functools.lru_cache(maxsize=512)
 def box_inertia(
     mass: float,
     size_x: float,
@@ -50,6 +50,7 @@ def box_inertia(
     }
 
 
+@functools.lru_cache(maxsize=512)
 def cylinder_inertia(
     mass: float,
     radius: float,
@@ -109,6 +110,7 @@ def cylinder_inertia(
     }
 
 
+@functools.lru_cache(maxsize=512)
 def sphere_inertia(mass: float, radius: float) -> dict[str, float]:
     """
     Compute inertia tensor for a solid sphere.
@@ -138,6 +140,7 @@ def sphere_inertia(mass: float, radius: float) -> dict[str, float]:
     }
 
 
+@functools.lru_cache(maxsize=512)
 def capsule_inertia(
     mass: float,
     radius: float,
@@ -224,6 +227,7 @@ def capsule_inertia(
     }
 
 
+@functools.lru_cache(maxsize=512)
 def ellipsoid_inertia(
     mass: float,
     a: float,
@@ -263,6 +267,7 @@ def ellipsoid_inertia(
     }
 
 
+@functools.lru_cache(maxsize=512)
 def hollow_cylinder_inertia(
     mass: float,
     inner_radius: float,
@@ -322,6 +327,7 @@ def hollow_cylinder_inertia(
     }
 
 
+@functools.lru_cache(maxsize=512)
 def cone_inertia(
     mass: float,
     radius: float,
@@ -329,9 +335,10 @@ def cone_inertia(
     axis: str = "z",
 ) -> dict[str, float]:
     """
-    Compute inertia tensor for a solid cone.
+    Compute inertia tensor for a solid cone about its center of mass.
 
-    The cone has its apex at the origin and extends along the positive axis.
+    The cone's center of mass is located at 3h/4 from the apex (h/4 from the
+    base), where h is the height.
 
     Args:
         mass: Mass in kg
@@ -342,13 +349,13 @@ def cone_inertia(
     Returns:
         Dict with ixx, iyy, izz, ixy, ixz, iyz
     """
-    # Inertia about apex
+    # Inertia about center of mass (COM at 3h/4 from apex, h/4 from base)
     if not (mass is not None):
         raise ValueError("mass must be provided")
     if not (mass is not None):
         raise ValueError("mass must be provided")
     i_axial = (3.0 / 10.0) * mass * radius**2
-    i_perp = mass * ((3.0 / 20.0) * radius**2 + (3.0 / 5.0) * height**2)
+    i_perp = mass * ((3.0 / 20.0) * radius**2 + (3.0 / 80.0) * height**2)
 
     if axis == "x":
         return {
@@ -412,7 +419,6 @@ def parallel_axis(
     }
 
 
-@jit(nopython=True, fastmath=True)
 def combine_inertias(
     inertias: list[tuple[dict[str, float], float, tuple[float, float, float]]],
 ) -> dict[str, float]:

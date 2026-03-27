@@ -1,17 +1,15 @@
-from numba import jit
-
 """Smooth playback controller with frame interpolation for 60+ FPS animation.
 
 Extracted from golf_gui_application.py for Single Responsibility Principle.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from copy import copy  # noqa: E402
+from copy import copy
 
-import numpy as np  # noqa: E402
-from golf_data_core import FrameData, FrameProcessor  # noqa: E402
-from PyQt6.QtCore import (  # noqa: E402
+import numpy as np
+from golf_data_core import FrameData, FrameProcessor
+from PyQt6.QtCore import (
     QEasingCurve,
     QObject,
     QPropertyAnimation,
@@ -217,10 +215,7 @@ class SmoothPlaybackController(QObject):
         # Interpolate all positions
         return self._lerp_frame_data(frame_low, frame_high, t)
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     @staticmethod
-    @jit(nopython=True, fastmath=True)
     def _lerp_frame_data(frame_a: FrameData, frame_b: FrameData, t: float) -> FrameData:
         """Linear interpolation between two frames.
 

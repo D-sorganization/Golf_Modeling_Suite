@@ -1,20 +1,18 @@
-from numba import jit
-
 """Three-Phase Electrical Model for Electrode Systems
 
 Enhanced electrical model that calculates system states, resistance, and current
 distribution with support for multiple conductive path geometries.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import logging  # noqa: E402
-from collections import deque  # noqa: E402
+import logging
+from collections import deque
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from .config import ElectrodeConfig  # noqa: E402
-from .glass_interface import GlassPropertiesInterface  # noqa: E402
+from .config import ElectrodeConfig
+from .glass_interface import GlassPropertiesInterface
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +42,6 @@ class ThreePhaseElectricalModelEnhanced:
         self._position_cache_key: tuple | None = None
         self._position_cache_value: list[dict] | None = None
 
-    @jit(nopython=True, fastmath=True)
     def calculate_system_state(
         self,
         depths: np.ndarray,
@@ -183,7 +180,6 @@ class ThreePhaseElectricalModelEnhanced:
 
         return total_resistance, path_info
 
-    @jit(nopython=True, fastmath=True)
     def _calculate_electrode_positions_3d(
         self,
         depths: np.ndarray,
@@ -467,7 +463,6 @@ class ThreePhaseElectricalModelEnhanced:
             return float(distance_m / (conductivity_metal * area_m2))
         return 0.0001
 
-    @jit(nopython=True, fastmath=True)
     def _analyze_current_distribution_new(self, current_paths: dict) -> dict:
         """Analyze current distribution with new path model"""
         if not (current_paths is not None):

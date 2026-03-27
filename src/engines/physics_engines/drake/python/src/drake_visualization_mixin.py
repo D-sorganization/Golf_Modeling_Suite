@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
 
 """Drake GUI visualization mixin.
 
@@ -6,18 +8,18 @@ Extracts vector drawing, ellipsoid rendering, analysis plots,
 and data export from DrakeSimApp (drake_gui_app.py).
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import contextlib  # noqa: E402
-from typing import TYPE_CHECKING, Any  # noqa: E402
+import contextlib
+from typing import TYPE_CHECKING, Any
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from src.shared.python.engine_core.engine_availability import (  # noqa: E402
+from src.shared.python.engine_core.engine_availability import (
     MATPLOTLIB_AVAILABLE,
     PYQT6_AVAILABLE,
 )
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
+from src.shared.python.logging_pkg.logging_config import get_logger
 
 HAS_QT = PYQT6_AVAILABLE
 HAS_MATPLOTLIB = MATPLOTLIB_AVAILABLE
@@ -118,7 +120,6 @@ class DrakeVisualizationMixin:
         tau = self.plant.CalcGravityGeneralizedForces(self.eval_context)
         self._draw_accel_vectors(-tau, "torques", Rgba(0, 0, 1, 1), scale=0.05)
 
-    @jit(nopython=True, fastmath=True)
     def _draw_gravity_force_vectors(self: Any) -> None:
         for i in range(self.plant.num_bodies()):
             body = self.plant.get_body(BodyIndex(i))
@@ -229,7 +230,6 @@ class DrakeVisualizationMixin:
         if self.chk_cf_vec.isChecked():
             self._draw_counterfactual_vectors(analyzer)
 
-    @jit(nopython=True, fastmath=True)
     def _draw_accel_vectors(
         self: Any,
         values: np.ndarray,

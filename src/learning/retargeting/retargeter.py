@@ -1,13 +1,15 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """Motion retargeting between different embodiments."""
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from dataclasses import dataclass, field  # noqa: E402
-from typing import TYPE_CHECKING  # noqa: E402
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
-import numpy as np  # noqa: E402
+import numpy as np
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -466,10 +468,6 @@ class MotionRetargeter:
 
         return positions  # type: ignore[return-value]
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def _optimize_frame(
         self,
         initial_angles: NDArray[np.floating],
@@ -637,7 +635,6 @@ class MotionRetargeter:
 
         return mapping
 
-    @jit(nopython=True, fastmath=True)
     def _positions_to_angles(
         self,
         joint_positions: dict[str, NDArray[np.floating]],

@@ -1,21 +1,19 @@
-from numba import jit
-
 """
 Recursive Newton-Euler Algorithm (RNEA) for inverse dynamics.
 
 Computes the joint forces/torques required to produce a given motion.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from dataclasses import dataclass  # noqa: E402
+from dataclasses import dataclass
 
-import numpy as np  # noqa: E402
-from mujoco_humanoid_golf.rigid_body_dynamics.common import (  # noqa: E402
+import numpy as np
+from mujoco_humanoid_golf.rigid_body_dynamics.common import (
     DEFAULT_GRAVITY,
     NEG_DEFAULT_GRAVITY,
 )
-from mujoco_humanoid_golf.spatial_algebra import (  # noqa: E402
+from mujoco_humanoid_golf.spatial_algebra import (
     cross_force_fast,
     cross_motion_axis,
     cross_motion_fast,
@@ -139,7 +137,6 @@ def _rnea_forward_pass_body(
         a[:, i] += buf.cross_buf
 
 
-@jit(nopython=True, fastmath=True)
 def _rnea_backward_pass(
     nb,
     mdl: _RneaModelCache,

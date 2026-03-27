@@ -1,5 +1,3 @@
-from numba import jit
-
 """Quadratic programming solver for whole-body control.
 
 This module provides a QP solver interface and implementations
@@ -10,15 +8,15 @@ Design by Contract:
     Infeasible problems are indicated by success=False.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from abc import ABC, abstractmethod  # noqa: E402
-from dataclasses import dataclass  # noqa: E402
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
 
-import numpy as np  # noqa: E402
-from numpy.typing import NDArray  # noqa: E402
+import numpy as np
+from numpy.typing import NDArray
 
-from src.shared.python.core.contracts import invariant  # noqa: E402
+from src.shared.python.core.contracts import invariant
 
 
 @dataclass
@@ -293,7 +291,6 @@ class ScipyQPSolver(QPSolver):
 
         return constraints
 
-    @jit(nopython=True, fastmath=True)
     def _add_inequality_constraints(
         self,
         constraints: list[dict],

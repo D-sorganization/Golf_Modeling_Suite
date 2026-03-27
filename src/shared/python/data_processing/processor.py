@@ -1,5 +1,3 @@
-from numba import jit
-
 """DataProcessor facade -- clean API over the extracted core modules.
 
 This is the main entry point for programmatic data processing without any GUI.
@@ -9,15 +7,15 @@ simplified, chainable interface suitable for scripting, API backends, and tests.
 See issue #407.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import ast  # noqa: E402
-import logging  # noqa: E402
-from dataclasses import dataclass, field  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import Any  # noqa: E402
+import ast
+import logging
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
 
-import pandas as pd  # noqa: E402
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 SUPPORTED_FILTER_TYPES = {"butterworth", "moving_average", "median", "savgol"}
@@ -391,7 +389,6 @@ class DataProcessor:
         except ImportError:
             self._apply_filter_fallback(df=df, columns=columns, window_size=window_size)
 
-    @jit(nopython=True, fastmath=True)
     def _apply_filter_with_scipy(
         self,
         df: pd.DataFrame,

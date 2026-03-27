@@ -1,5 +1,3 @@
-from numba import jit
-
 """Force/torque vector overlay routes.
 
 Provides endpoints for streaming force/torque visualization data
@@ -12,20 +10,20 @@ All dependencies are injected via FastAPI's Depends() mechanism.
 No module-level mutable state.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import math  # noqa: E402
-from typing import TYPE_CHECKING, Any  # noqa: E402
+import math
+from typing import TYPE_CHECKING, Any
 
-from fastapi import APIRouter, Depends  # noqa: E402
+from fastapi import APIRouter, Depends
 
-from src.api.middleware.error_handler import handle_api_errors  # noqa: E402
-from src.shared.python.core.constants import GRAVITY  # noqa: E402
-from src.shared.python.core.contracts import precondition  # noqa: E402
+from src.api.middleware.error_handler import handle_api_errors
+from src.shared.python.core.constants import GRAVITY_FLOAT
+from src.shared.python.core.contracts import precondition
 
-from ..dependencies import get_engine_manager, get_logger  # noqa: E402
-from ..models.requests import ForceOverlayRequest  # noqa: E402
-from ..models.responses import (  # noqa: E402
+from ..dependencies import get_engine_manager, get_logger
+from ..models.requests import ForceOverlayRequest
+from ..models.responses import (
     ForceOverlayResponse,
     ForceVector3D,
 )
@@ -208,7 +206,6 @@ def _build_applied_torque_vectors(
     return vectors
 
 
-@jit(nopython=True, fastmath=True)
 def _build_gravity_vectors(
     config: ForceOverlayRequest,
     joint_names: list[str],
@@ -236,7 +233,7 @@ def _build_gravity_vectors(
             continue
 
         y_pos = 0.5 + i * 0.3
-        gravity_mag = GRAVITY * (0.5 + 0.1 * i)
+        gravity_mag = GRAVITY_FLOAT * (0.5 + 0.1 * i)
         vectors.append(
             ForceVector3D(
                 body_name=body_name,
@@ -308,7 +305,6 @@ def _build_force_vectors(
     return vectors
 
 
-@jit(nopython=True, fastmath=True)
 def _build_demo_vectors(config: ForceOverlayRequest) -> list[ForceVector3D]:
     """Build demo force vectors when no engine is active.
 
@@ -342,7 +338,7 @@ def _build_demo_vectors(config: ForceOverlayRequest) -> list[ForceVector3D]:
             )
 
         if "gravity" in config.force_types or "all" in config.force_types:
-            grav_mag = GRAVITY * (1.0 + 0.2 * i)
+            grav_mag = GRAVITY_FLOAT * (1.0 + 0.2 * i)
             vectors.append(
                 ForceVector3D(
                     body_name=body,

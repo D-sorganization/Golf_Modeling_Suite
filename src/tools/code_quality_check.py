@@ -1,12 +1,10 @@
-from numba import jit
-
 #!/usr/bin/env python3
 """Quality check script to verify AI-generated code meets standards."""
 
-import ast  # noqa: E402
-import re  # noqa: E402
-import sys  # noqa: E402
-from pathlib import Path  # noqa: E402
+import ast
+import re
+import sys
+from pathlib import Path
 
 
 # ANSI colors for terminal output
@@ -67,9 +65,6 @@ MAGIC_NUMBERS = [
 ]
 
 
-@jit(nopython=True, fastmath=True)
-@jit(nopython=True, fastmath=True)
-@jit(nopython=True, fastmath=True)
 def is_legitimate_pass_context(lines: list[str], line_num: int) -> bool:
     """Check if a pass statement is in a legitimate context."""
     if not (lines is not None):

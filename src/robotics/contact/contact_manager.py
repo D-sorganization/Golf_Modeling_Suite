@@ -1,5 +1,3 @@
-from numba import jit
-
 """Contact manager for multi-contact scenarios.
 
 This module provides the ContactManager class for detecting, tracking,
@@ -10,17 +8,17 @@ Design by Contract:
     and validates all inputs/outputs.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from typing import Any  # noqa: E402
+from typing import Any
 
-import numpy as np  # noqa: E402
-from numpy.typing import NDArray  # noqa: E402
+import numpy as np
+from numpy.typing import NDArray
 
-from src.robotics.core.exceptions import ContactError  # noqa: E402
-from src.robotics.core.protocols import ContactCapable, RoboticsCapable  # noqa: E402
-from src.robotics.core.types import ContactState, ContactType  # noqa: E402
-from src.shared.python.core.contracts import (  # noqa: E402
+from src.robotics.core.exceptions import ContactError
+from src.robotics.core.protocols import ContactCapable, RoboticsCapable
+from src.robotics.core.types import ContactState, ContactType
+from src.shared.python.core.contracts import (
     ContractChecker,
     postcondition,
 )
@@ -432,7 +430,6 @@ def _cross_product_2d(
     return float((a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]))
 
 
-@jit(nopython=True, fastmath=True)
 def _point_in_polygon(
     point: NDArray[np.float64],
     polygon: NDArray[np.float64],

@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
 
 """MuJoCo humanoid-golf simulation core (Docker backend).
 
@@ -7,19 +9,19 @@ recording for the humanoid golf swing in the Docker-hosted MuJoCo
 environment.  Supports headless rendering for CI and batch processing.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import contextlib  # noqa: E402
-import csv  # noqa: E402
-import json  # noqa: E402
-import logging  # noqa: E402
-import os  # noqa: E402
-import typing  # noqa: E402
+import contextlib
+import csv
+import json
+import logging
+import os
+import typing
 
-import imageio  # noqa: E402
-import numpy as np  # noqa: E402
+import imageio
+import numpy as np
 
-from . import iaa_helper, utils  # noqa: E402
+from . import iaa_helper, utils
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +90,6 @@ class PDController(BaseController):
         self.kp = kp
         self.kd = kd
 
-    @jit(nopython=True, fastmath=True)
     def get_action(self, physics) -> np.ndarray:
         """Calculate PD control action."""
         if not (physics is not None):

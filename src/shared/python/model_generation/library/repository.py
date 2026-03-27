@@ -1,5 +1,3 @@
-from numba import jit
-
 """
 Repository interfaces for model library.
 
@@ -7,21 +5,21 @@ Provides abstract and concrete repository implementations for
 fetching models from various sources.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import json  # noqa: E402
-import logging  # noqa: E402
-import os  # noqa: E402
-import re  # noqa: E402
-import tempfile  # noqa: E402
-import time  # noqa: E402
-import urllib.error  # noqa: E402
-import urllib.request  # noqa: E402
-import zipfile  # noqa: E402
-from abc import ABC, abstractmethod  # noqa: E402
-from dataclasses import dataclass  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import Any  # noqa: E402
+import json
+import logging
+import os
+import re
+import tempfile
+import time
+import urllib.error
+import urllib.request
+import zipfile
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -285,7 +283,6 @@ class GitHubRepository(Repository):
 
         return all_results
 
-    @jit(nopython=True, fastmath=True)
     def _single_api_request(
         self, url: str, max_retries: int, timeout: int
     ) -> tuple[Any, str | None]:

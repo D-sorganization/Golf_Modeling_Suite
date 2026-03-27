@@ -1,15 +1,12 @@
-from numba import jit
-
 """Probe .gpcap file structure."""
 
-import logging  # noqa: E402
-import struct  # noqa: E402
-import sys  # noqa: E402
+import logging
+import struct
+import sys
 
 logger = logging.getLogger(__name__)
 
 
-@jit(nopython=True, fastmath=True)
 def probe(filepath: str) -> None:
     """Read a .gpcap file and log embedded string locations."""
     with open(filepath, "rb") as f:

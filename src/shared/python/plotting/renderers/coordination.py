@@ -1,19 +1,21 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """Coordination and sequencing plotting renderer."""
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from typing import Any  # noqa: E402
+from typing import Any
 
-import numpy as np  # noqa: E402
-from matplotlib.axes import Axes  # noqa: E402
-from matplotlib.colors import ListedColormap  # noqa: E402
-from matplotlib.figure import Figure  # noqa: E402
-from matplotlib.patches import Rectangle  # noqa: E402
+import numpy as np
+from matplotlib.axes import Axes
+from matplotlib.colors import ListedColormap
+from matplotlib.figure import Figure
+from matplotlib.patches import Rectangle
 
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
-from src.shared.python.plotting.renderers.base import BaseRenderer  # noqa: E402
+from src.shared.python.logging_pkg.logging_config import get_logger
+from src.shared.python.plotting.renderers.base import BaseRenderer
 
 logger = get_logger(__name__)
 
@@ -421,7 +423,6 @@ class CoordinationRenderer(BaseRenderer):
         cbar.set_label("Time Lag (s)\n(Pos: Row leads Col)", rotation=270, labelpad=20)
         fig.tight_layout()
 
-    @jit(nopython=True, fastmath=True)
     def plot_kinematic_sequence(
         self,
         fig: Figure,
@@ -643,7 +644,6 @@ class CoordinationRenderer(BaseRenderer):
         fig.colorbar(sc, ax=ax, label="Time (s)")
         fig.tight_layout()
 
-    @jit(nopython=True, fastmath=True)
     def plot_muscle_synergies(
         self,
         fig: Figure,
