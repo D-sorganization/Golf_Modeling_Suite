@@ -12,6 +12,7 @@ the URDF kinematic tree.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
@@ -47,8 +48,8 @@ class GeometryType(Enum):
 class JointLimits:
     """Joint limits specification."""
 
-    lower: float = -3.14159  # radians
-    upper: float = 3.14159
+    lower: float = -math.pi  # radians
+    upper: float = math.pi
     effort: float = 100.0  # N*m
     velocity: float = 10.0  # rad/s
 
@@ -223,12 +224,16 @@ SEGMENT_HIERARCHY = {
 
 
 def _torso_segments() -> dict[str, SegmentDefinition]:
-    """Create torso segment definitions (pelvis through head)."""
+    """Create torso segment definitions (pelvis through head).
+
+    Mass ratios are normalized to sum to 1.0 across all segments
+    (derived from de Leva 1996 proportional scaling).
+    """
     return {
         "pelvis": SegmentDefinition(
             name="pelvis",
             parent=None,
-            mass_ratio=0.117,
+            mass_ratio=0.112,
             length_ratio=0.10,
             visual_geometry=GeometrySpec(
                 GeometryType.CAPSULE,
@@ -239,7 +244,7 @@ def _torso_segments() -> dict[str, SegmentDefinition]:
         "lumbar": SegmentDefinition(
             name="lumbar",
             parent="pelvis",
-            mass_ratio=0.139,
+            mass_ratio=0.131,
             length_ratio=0.10,
             visual_geometry=GeometrySpec(
                 GeometryType.CAPSULE,
@@ -250,7 +255,7 @@ def _torso_segments() -> dict[str, SegmentDefinition]:
         "thorax": SegmentDefinition(
             name="thorax",
             parent="lumbar",
-            mass_ratio=0.179,
+            mass_ratio=0.169,
             length_ratio=0.12,
             visual_geometry=GeometrySpec(
                 GeometryType.CAPSULE,
@@ -261,7 +266,7 @@ def _torso_segments() -> dict[str, SegmentDefinition]:
         "neck": SegmentDefinition(
             name="neck",
             parent="thorax",
-            mass_ratio=0.024,
+            mass_ratio=0.023,
             length_ratio=0.052,
             visual_geometry=GeometrySpec(
                 GeometryType.CYLINDER,
@@ -272,7 +277,7 @@ def _torso_segments() -> dict[str, SegmentDefinition]:
         "head": SegmentDefinition(
             name="head",
             parent="neck",
-            mass_ratio=0.069,
+            mass_ratio=0.065,
             length_ratio=0.14,
             visual_geometry=GeometrySpec(
                 GeometryType.SPHERE,
@@ -290,7 +295,7 @@ def _shoulder_segments() -> dict[str, SegmentDefinition]:
         "left_shoulder": SegmentDefinition(
             name="left_shoulder",
             parent="thorax",
-            mass_ratio=0.015,
+            mass_ratio=0.014,
             length_ratio=0.06,
             visual_geometry=GeometrySpec(
                 GeometryType.CAPSULE,
@@ -301,7 +306,7 @@ def _shoulder_segments() -> dict[str, SegmentDefinition]:
         "right_shoulder": SegmentDefinition(
             name="right_shoulder",
             parent="thorax",
-            mass_ratio=0.015,
+            mass_ratio=0.014,
             length_ratio=0.06,
             visual_geometry=GeometrySpec(
                 GeometryType.CAPSULE,
@@ -318,7 +323,7 @@ def _arm_segments() -> dict[str, SegmentDefinition]:
         "left_upper_arm": SegmentDefinition(
             name="left_upper_arm",
             parent="left_shoulder",
-            mass_ratio=0.027,
+            mass_ratio=0.026,
             length_ratio=0.186,
             visual_geometry=GeometrySpec(
                 GeometryType.CAPSULE,
@@ -329,7 +334,7 @@ def _arm_segments() -> dict[str, SegmentDefinition]:
         "right_upper_arm": SegmentDefinition(
             name="right_upper_arm",
             parent="right_shoulder",
-            mass_ratio=0.027,
+            mass_ratio=0.026,
             length_ratio=0.186,
             visual_geometry=GeometrySpec(
                 GeometryType.CAPSULE,
@@ -340,7 +345,7 @@ def _arm_segments() -> dict[str, SegmentDefinition]:
         "left_forearm": SegmentDefinition(
             name="left_forearm",
             parent="left_upper_arm",
-            mass_ratio=0.016,
+            mass_ratio=0.015,
             length_ratio=0.146,
             visual_geometry=GeometrySpec(
                 GeometryType.CAPSULE,
@@ -351,7 +356,7 @@ def _arm_segments() -> dict[str, SegmentDefinition]:
         "right_forearm": SegmentDefinition(
             name="right_forearm",
             parent="right_upper_arm",
-            mass_ratio=0.016,
+            mass_ratio=0.015,
             length_ratio=0.146,
             visual_geometry=GeometrySpec(
                 GeometryType.CAPSULE,
@@ -362,7 +367,7 @@ def _arm_segments() -> dict[str, SegmentDefinition]:
         "left_hand": SegmentDefinition(
             name="left_hand",
             parent="left_forearm",
-            mass_ratio=0.006,
+            mass_ratio=0.005682,
             length_ratio=0.108,
             visual_geometry=GeometrySpec(
                 GeometryType.BOX,
@@ -374,7 +379,7 @@ def _arm_segments() -> dict[str, SegmentDefinition]:
         "right_hand": SegmentDefinition(
             name="right_hand",
             parent="right_forearm",
-            mass_ratio=0.006,
+            mass_ratio=0.005682,
             length_ratio=0.108,
             visual_geometry=GeometrySpec(
                 GeometryType.BOX,
@@ -392,7 +397,7 @@ def _hip_segments() -> dict[str, SegmentDefinition]:
         "left_hip": SegmentDefinition(
             name="left_hip",
             parent="pelvis",
-            mass_ratio=0.001,
+            mass_ratio=0.000947,
             length_ratio=0.0,
             visual_geometry=GeometrySpec(
                 GeometryType.SPHERE,
@@ -403,7 +408,7 @@ def _hip_segments() -> dict[str, SegmentDefinition]:
         "right_hip": SegmentDefinition(
             name="right_hip",
             parent="pelvis",
-            mass_ratio=0.001,
+            mass_ratio=0.000947,
             length_ratio=0.0,
             visual_geometry=GeometrySpec(
                 GeometryType.SPHERE,
@@ -420,7 +425,7 @@ def _leg_segments() -> dict[str, SegmentDefinition]:
         "left_thigh": SegmentDefinition(
             name="left_thigh",
             parent="left_hip",
-            mass_ratio=0.142,
+            mass_ratio=0.134,
             length_ratio=0.245,
             visual_geometry=GeometrySpec(
                 GeometryType.CAPSULE,
@@ -431,7 +436,7 @@ def _leg_segments() -> dict[str, SegmentDefinition]:
         "right_thigh": SegmentDefinition(
             name="right_thigh",
             parent="right_hip",
-            mass_ratio=0.142,
+            mass_ratio=0.134,
             length_ratio=0.245,
             visual_geometry=GeometrySpec(
                 GeometryType.CAPSULE,
@@ -442,7 +447,7 @@ def _leg_segments() -> dict[str, SegmentDefinition]:
         "left_shin": SegmentDefinition(
             name="left_shin",
             parent="left_thigh",
-            mass_ratio=0.043,
+            mass_ratio=0.041,
             length_ratio=0.246,
             visual_geometry=GeometrySpec(
                 GeometryType.CAPSULE,
@@ -453,7 +458,7 @@ def _leg_segments() -> dict[str, SegmentDefinition]:
         "right_shin": SegmentDefinition(
             name="right_shin",
             parent="right_thigh",
-            mass_ratio=0.043,
+            mass_ratio=0.041,
             length_ratio=0.246,
             visual_geometry=GeometrySpec(
                 GeometryType.CAPSULE,
@@ -464,7 +469,7 @@ def _leg_segments() -> dict[str, SegmentDefinition]:
         "left_foot": SegmentDefinition(
             name="left_foot",
             parent="left_shin",
-            mass_ratio=0.014,
+            mass_ratio=0.013,
             length_ratio=0.152,
             visual_geometry=GeometrySpec(
                 GeometryType.BOX,
@@ -476,7 +481,7 @@ def _leg_segments() -> dict[str, SegmentDefinition]:
         "right_foot": SegmentDefinition(
             name="right_foot",
             parent="right_shin",
-            mass_ratio=0.014,
+            mass_ratio=0.013,
             length_ratio=0.152,
             visual_geometry=GeometrySpec(
                 GeometryType.BOX,

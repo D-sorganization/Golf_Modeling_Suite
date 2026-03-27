@@ -347,7 +347,7 @@ class OpenSimPerturbationAnalyzer:
         if "coeffs" not in profile:
             raise ValueError("'coeffs' key missing from profile")
         coeffs = profile["coeffs"]
-        if not (isinstance(coeffs, list) and len(coeffs) > 0):
+        if not isinstance(coeffs, list) or len(coeffs) == 0:
             raise ValueError("profile['coeffs'] must be a non-empty list")
         self._base_coeffs = coeffs
         self._nominal_result = self._simulate(coeffs)
@@ -486,7 +486,7 @@ class OpenSimPerturbationAnalyzer:
                         v = float(np.linalg.norm(v))
                     metric_lists[m].append(float(v))
                 n_success += 1
-            except Exception:  # noqa: BLE001
+            except (RuntimeError, ValueError, TypeError, ArithmeticError):
                 logger.debug("Trial %d failed", i, exc_info=True)
 
         success_rate = n_success / config.n_trials if config.n_trials > 0 else 0.0
@@ -580,7 +580,7 @@ class OpenSimPerturbationAnalyzer:
                     if isinstance(v, np.ndarray):
                         v = float(np.linalg.norm(v))
                     values.append(float(v))
-                except Exception:  # noqa: BLE001
+                except (RuntimeError, ValueError, TypeError, ArithmeticError):
                     pass
             return np.array(values) if values else np.array([0.0])
 
@@ -682,7 +682,7 @@ class OpenSimPerturbationAnalyzer:
                     force_obj.setControls(
                         osim.Vector(1, ctrl), model.updDefaultControls()
                     )
-                except Exception:  # noqa: BLE001
+                except (RuntimeError, ValueError, TypeError, ArithmeticError):
                     pass
 
             # Realize to acceleration
@@ -711,7 +711,7 @@ class OpenSimPerturbationAnalyzer:
                     ee_pos = np.array(
                         [pos_in_ground[0], pos_in_ground[1], pos_in_ground[2]]
                     )
-            except Exception:  # noqa: BLE001
+            except (RuntimeError, ValueError, TypeError, ArithmeticError):
                 # Fallback: use simple forward kinematics from joint angles
                 link_len = 0.5
                 angle_sum = float(np.sum(q))
@@ -738,7 +738,7 @@ class OpenSimPerturbationAnalyzer:
                 model.realizeVelocity(state)
                 ke = float(model.calcKineticEnergy(state))
                 pe = float(model.calcPotentialEnergy(state))
-            except Exception:  # noqa: BLE001
+            except (RuntimeError, ValueError, TypeError, ArithmeticError):
                 pass
 
             t_list.append(t)
@@ -756,7 +756,7 @@ class OpenSimPerturbationAnalyzer:
                 manager.setInitialTime(t)
                 manager.setFinalTime(t + dt)
                 manager.integrate(state)
-            except Exception:  # noqa: BLE001
+            except (RuntimeError, ValueError, TypeError, ArithmeticError):
                 # Manual Euler fallback for joint coordinates
                 for k in range(nq):
                     coord = coord_set.get(k)
@@ -764,7 +764,7 @@ class OpenSimPerturbationAnalyzer:
                         new_val = q[k] + qdot[k] * dt
                         coord.setValue(state, new_val)
                         coord.setSpeedValue(state, qdot[k])
-                    except Exception:  # noqa: BLE001
+                    except (RuntimeError, ValueError, TypeError, ArithmeticError):
                         pass
 
         t_arr = np.array(t_list)

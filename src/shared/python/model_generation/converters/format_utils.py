@@ -261,7 +261,9 @@ def validate_mjcf(source: str | Path) -> list[str]:
         return []
     except ImportError:
         # MuJoCo not available, do basic XML validation
-        import xml.etree.ElementTree as StdET
+        from xml.etree.ElementTree import (
+            ParseError,  # noqa: S405 — only exception class, not parsing
+        )
 
         import defusedxml.ElementTree as DefusedET
 
@@ -272,7 +274,7 @@ def validate_mjcf(source: str | Path) -> list[str]:
                 content = source
             DefusedET.fromstring(content)
             return []
-        except StdET.ParseError as e:
+        except ParseError as e:
             return [f"XML parse error: {e}"]
     except (PermissionError, OSError) as e:
         return [str(e)]
