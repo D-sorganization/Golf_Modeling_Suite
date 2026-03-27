@@ -600,7 +600,7 @@ class SimulationPanel(QWidget):
 
     def _display_frame(self, idx: int) -> None:
         if not (self._result is not None):
-            raise ValueError("DbC Blocked: Precondition failed.")
+            raise ValueError('DbC Blocked: Precondition failed.')
         idx = max(0, min(idx, self._result.n_steps - 1))
         self.pendulum.set_frame(idx)
         self.matrix.set_frame(idx)

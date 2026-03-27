@@ -480,9 +480,7 @@ class CollisionGeometryGenerator:
             method_used=SimplificationMethod.PRIMITIVES,
             components=primitives,
             original_triangles=len(mesh.faces),
-            final_triangles=sum(
-                len(p.faces) if hasattr(p, "faces") else 0 for p in primitives
-            ),
+            final_triangles=sum(len(p.faces) if hasattr(p, "faces") else 0 for p in primitives),
             reduction_ratio=0.0,
             volume_preservation=1.0,
             hausdorff_distance=0.0,
@@ -673,9 +671,7 @@ class CollisionGeometryGenerator:
             original_triangles=len(mesh.faces),
             final_triangles=len(simplified.faces),
             reduction_ratio=1.0 - len(simplified.faces) / len(mesh.faces),
-            volume_preservation=(
-                simplified.volume / mesh.volume if mesh.volume > 0 else 1.0
-            ),
+            volume_preservation=(simplified.volume / mesh.volume if mesh.volume > 0 else 1.0),
             hausdorff_distance=0.0,
         )
 
@@ -709,10 +705,7 @@ class CollisionGeometryGenerator:
         prim_result = self._generate_primitives(mesh, max_primitives)
 
         # If primitives fit well, use them
-        if (
-            prim_result.primitive_fits
-            and prim_result.primitive_fits[0].volume_ratio > 0.8
-        ):
+        if prim_result.primitive_fits and prim_result.primitive_fits[0].volume_ratio > 0.8:
             return prim_result
 
         # Otherwise use decimation for remaining detail

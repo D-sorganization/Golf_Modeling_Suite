@@ -271,13 +271,11 @@ class MuJoCoPerturbationAnalyzer:
         """
         if not isinstance(profile, dict):
             raise ValueError(f"profile must be a dict, got {type(profile)}")
-        if not ("coeffs" in profile):
+        if "coeffs" not in profile:
             raise ValueError("'coeffs' key missing from profile")
         coeffs = profile["coeffs"]
-        if not (isinstance(coeffs):
-            raise ValueError(list) and len(coeffs) > 0, ()
-            "profile['coeffs'] must be a non-empty list"
-        )
+        if not (isinstance(coeffs, list) and len(coeffs) > 0):
+            raise ValueError("profile['coeffs'] must be a non-empty list")
         self._base_coeffs = coeffs
         self._nominal_result = self._simulate(coeffs)
 
@@ -319,7 +317,7 @@ class MuJoCoPerturbationAnalyzer:
         Post: all MANDATORY_METRICS present; all values finite.
         """
         if not isinstance(sim_result, MuJoCoSimResult):
-            raise ValueError("f"sim_result must be MuJoCoSimResult, got {type(sim_result)}")  # noqa: E501
+            raise ValueError(f"sim_result must be MuJoCoSimResult, got {type(sim_result)}")  # noqa: E501
         if not (sim_result.n_steps >= 2):
             raise ValueError("Simulation must have >= 2 steps")
 
@@ -414,7 +412,7 @@ class MuJoCoPerturbationAnalyzer:
                         v = float(np.linalg.norm(v))
                     metric_lists[m].append(float(v))
                 n_success += 1
-            except Exception as e:  # noqa: BLE001
+            except Exception:  # noqa: BLE001
                 logger.debug("Trial %d failed", i, exc_info=True)
 
         success_rate = n_success / config.n_trials if config.n_trials > 0 else 0.0
@@ -508,7 +506,7 @@ class MuJoCoPerturbationAnalyzer:
                     if isinstance(v, np.ndarray):
                         v = float(np.linalg.norm(v))
                     values.append(float(v))
-                except Exception as e:  # noqa: BLE001
+                except Exception:  # noqa: BLE001
                     pass
             return np.array(values) if values else np.array([0.0])
 

@@ -84,9 +84,7 @@ class JointSliderWidget(QtWidgets.QWidget):  # type: ignore[misc]
         self.slider.setMinimum(int(lower * self.SLIDER_SCALE))
         self.slider.setMaximum(int(upper * self.SLIDER_SCALE))
         self.slider.setValue(0)
-        self.slider.setToolTip(
-            f"Range: {lower:.2f} to {upper:.2f} {self.joint_info.unit}"
-        )
+        self.slider.setToolTip(f"Range: {lower:.2f} to {upper:.2f} {self.joint_info.unit}")
         self.slider.valueChanged.connect(self._on_slider_changed)
         layout.addWidget(self.slider, stretch=1)
 
@@ -174,9 +172,7 @@ class GravityControlWidget(QtWidgets.QGroupBox):  # type: ignore[misc]
         # Enable/disable checkbox
         self.chk_gravity = QtWidgets.QCheckBox("Gravity Enabled")
         self.chk_gravity.setChecked(True)
-        self.chk_gravity.setToolTip(
-            "Disable gravity to pose the model without it falling"
-        )
+        self.chk_gravity.setToolTip("Disable gravity to pose the model without it falling")
         self.chk_gravity.toggled.connect(self._on_gravity_toggled)
         layout.addWidget(self.chk_gravity)
 
@@ -252,9 +248,7 @@ class PoseLibraryWidget(QtWidgets.QGroupBox):  # type: ignore[misc]
     """Widget for managing pose library (save/load/export/import)."""
 
     pose_loaded = QtCore.pyqtSignal(object)  # Emits StoredPose
-    interpolation_requested = QtCore.pyqtSignal(
-        str, str, float
-    )  # pose_a, pose_b, alpha
+    interpolation_requested = QtCore.pyqtSignal(str, str, float)  # pose_a, pose_b, alpha
 
     def __init__(
         self,
@@ -350,9 +344,7 @@ class PoseLibraryWidget(QtWidgets.QGroupBox):  # type: ignore[misc]
         interp_group = QtWidgets.QGroupBox("Pose Interpolation")
         interp_layout = QtWidgets.QVBoxLayout(interp_group)
 
-        interp_info = QtWidgets.QLabel(
-            "Select two poses in the list to blend between them"
-        )
+        interp_info = QtWidgets.QLabel("Select two poses in the list to blend between them")
         interp_info.setStyleSheet(Styles.TEXT_ITALIC_SMALL)
         interp_layout.addWidget(interp_info)
 
@@ -411,9 +403,7 @@ class PoseLibraryWidget(QtWidgets.QGroupBox):  # type: ignore[misc]
         """Handle save pose button click."""
         name = self.txt_pose_name.text().strip()
         if not name:
-            QtWidgets.QMessageBox.warning(
-                self, "No Name", "Please enter a name for the pose."
-            )
+            QtWidgets.QMessageBox.warning(self, "No Name", "Please enter a name for the pose.")
             return
 
         # Check for overwrite
@@ -422,8 +412,7 @@ class PoseLibraryWidget(QtWidgets.QGroupBox):  # type: ignore[misc]
                 self,
                 "Overwrite?",
                 f"Pose '{name}' already exists. Overwrite?",
-                QtWidgets.QMessageBox.StandardButton.Yes
-                | QtWidgets.QMessageBox.StandardButton.No,
+                QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No,
             )
             if reply != QtWidgets.QMessageBox.StandardButton.Yes:
                 return
@@ -449,9 +438,7 @@ class PoseLibraryWidget(QtWidgets.QGroupBox):  # type: ignore[misc]
         """Handle load pose button click."""
         selected = self.list_poses.currentItem()
         if not selected:
-            QtWidgets.QMessageBox.warning(
-                self, "No Selection", "Please select a pose to load."
-            )
+            QtWidgets.QMessageBox.warning(self, "No Selection", "Please select a pose to load.")
             return
 
         pose = selected.data(QtCore.Qt.ItemDataRole.UserRole)
@@ -479,8 +466,7 @@ class PoseLibraryWidget(QtWidgets.QGroupBox):  # type: ignore[misc]
             self,
             "Delete Pose?",
             f"Are you sure you want to delete '{name}'?",
-            QtWidgets.QMessageBox.StandardButton.Yes
-            | QtWidgets.QMessageBox.StandardButton.No,
+            QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No,
         )
 
         if reply == QtWidgets.QMessageBox.StandardButton.Yes:
@@ -509,9 +495,7 @@ class PoseLibraryWidget(QtWidgets.QGroupBox):  # type: ignore[misc]
                     f"Exported {count} poses to {filename}",
                 )
             except (RuntimeError, ValueError, OSError) as e:
-                QtWidgets.QMessageBox.critical(
-                    self, "Export Error", f"Failed to export: {e}"
-                )
+                QtWidgets.QMessageBox.critical(self, "Export Error", f"Failed to export: {e}")
 
     def _on_import(self) -> None:
         """Handle import button click."""
@@ -532,9 +516,7 @@ class PoseLibraryWidget(QtWidgets.QGroupBox):  # type: ignore[misc]
                     f"Imported {count} poses from {filename}",
                 )
             except ImportError as e:
-                QtWidgets.QMessageBox.critical(
-                    self, "Import Error", f"Failed to import: {e}"
-                )
+                QtWidgets.QMessageBox.critical(self, "Import Error", f"Failed to import: {e}")
 
     def _on_interpolation_changed(self, value: int) -> None:
         """Handle interpolation slider change."""
