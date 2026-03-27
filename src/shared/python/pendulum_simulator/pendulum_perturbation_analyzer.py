@@ -222,7 +222,6 @@ class PendulumPerturbationAnalyzer:
         Post: self._base_coeffs is set; nominal simulation is cached.
         """
         if not isinstance(profile, dict):
-
             raise ValueError("profile must be a dict with 'coeffs' key")
         coeffs = profile["coeffs"]
         if not (isinstance(coeffs, list) and len(coeffs) >= 1):
@@ -254,9 +253,7 @@ class PendulumPerturbationAnalyzer:
         Post: returned dict has same structure as the base profile.
         """
         if not (self._base_coeffs is not None):
-            raise ValueError(
-            "Call set_base_torque_profile() before perturb_torque()"
-        )
+            raise ValueError("Call set_base_torque_profile() before perturb_torque()")
         perturbed = _perturb_coeffs_by_mode(self._base_coeffs, config, seed)
         return {"coeffs": perturbed}
 
@@ -277,7 +274,9 @@ class PendulumPerturbationAnalyzer:
         Post: all MANDATORY_METRICS present in output; all values are finite.
         """
         if not isinstance(sim_result, SimulationResult):
-            raise ValueError(f"sim_result must be SimulationResult, got {type(sim_result)}")
+            raise ValueError(
+                f"sim_result must be SimulationResult, got {type(sim_result)}"
+            )
         if not (sim_result.n_steps >= 2):
             raise ValueError("Simulation must have >= 2 steps")
 
@@ -359,8 +358,8 @@ class PendulumPerturbationAnalyzer:
 
         if not (all(k in metrics for k in MANDATORY_METRICS)):
             raise ValueError(
-            f"Missing mandatory metrics: {set(MANDATORY_METRICS) - set(metrics)}"
-        )
+                f"Missing mandatory metrics: {set(MANDATORY_METRICS) - set(metrics)}"
+            )
         return metrics
 
     def run_batch(self, config: PerturbationConfig) -> PerturbationSummary:
@@ -382,11 +381,9 @@ class PendulumPerturbationAnalyzer:
         Post: summary.robustness_score in [0.0, 1.0].
         """
         if not (self._base_coeffs is not None):
-            raise ValueError(
-            "Call set_base_torque_profile() before run_batch()"
-        )
+            raise ValueError("Call set_base_torque_profile() before run_batch()")
         if not (config.n_trials > 0):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
 
         base_seed = config.seed if config.seed is not None else 0
         t_start = time.monotonic()
@@ -525,7 +522,7 @@ class PendulumPerturbationAnalyzer:
                     if isinstance(v, np.ndarray):
                         v = float(np.linalg.norm(v))
                     values.append(float(v))
-                except Exception as e:  # noqa: BLE001
+                except Exception:  # noqa: BLE001
                     pass
             return np.array(values) if values else np.array([0.0])
 
