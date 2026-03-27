@@ -601,7 +601,6 @@ class OpenSimPhysicsEngine(PhysicsEngine):
 
         return dict(analyzer.compute_muscle_induced_accelerations())
 
-
     def compute_iaa_decomposition(self) -> dict[str, np.ndarray]:
         """Update the IAA decomposition to separate active vs. passive muscle contributions."""
         analyzer = self.get_muscle_analyzer()
@@ -610,7 +609,7 @@ class OpenSimPhysicsEngine(PhysicsEngine):
 
         # M * a = tau  =>  a = M^-1 * tau
         M = self.compute_mass_matrix()
-        
+
         cond = np.linalg.cond(M)
         if cond > 1e8:
             lambda_reg = 1e-6 * np.trace(M) / M.shape[0]
@@ -624,7 +623,9 @@ class OpenSimPhysicsEngine(PhysicsEngine):
         velocity_forces = bias - gravity
 
         gravity_accel = np.linalg.solve(M_solve, gravity)
-        velocity_accel = -np.linalg.solve(M_solve, velocity_forces)  # Since bias = C*v + G
+        velocity_accel = -np.linalg.solve(
+            M_solve, velocity_forces
+        )  # Since bias = C*v + G
 
         # Muscle Active vs Passive
         active_forces = analyzer.get_muscle_forces()
@@ -641,13 +642,21 @@ class OpenSimPhysicsEngine(PhysicsEngine):
                 for coord_idx, r in enumerate(moment_arm_values):
                     if coord_idx < n_u:
                         active_tau[coord_idx] += active_forces[muscle_name] * r
-                        passive_tau[coord_idx] += passive_forces.get(muscle_name, 0.0) * r
+                        passive_tau[coord_idx] += (
+                            passive_forces.get(muscle_name, 0.0) * r
+                        )
 
         active_muscle_accel = np.linalg.solve(M_solve, active_tau)
         passive_muscle_accel = np.linalg.solve(M_solve, passive_tau)
 
         external_accel = np.zeros(n_u)
-        total_accel = gravity_accel + velocity_accel + active_muscle_accel + passive_muscle_accel + external_accel
+        total_accel = (
+            gravity_accel
+            + velocity_accel
+            + active_muscle_accel
+            + passive_muscle_accel
+            + external_accel
+        )
 
         return {
             "gravity": gravity_accel,
@@ -655,7 +664,7 @@ class OpenSimPhysicsEngine(PhysicsEngine):
             "active_muscle": active_muscle_accel,
             "passive_muscle": passive_muscle_accel,
             "external": external_accel,
-            "total": total_accel
+            "total": total_accel,
         }
 
     def analyze_muscle_contributions(self) -> Any | None:

@@ -105,7 +105,9 @@ class InducedAccelerationAnalyzer:
             "total": q_ddot_total,
         }
 
-    def compute_external_acceleration(self, q: np.ndarray, v: np.ndarray, f_ext: dict) -> np.ndarray:
+    def compute_external_acceleration(
+        self, q: np.ndarray, v: np.ndarray, f_ext: dict
+    ) -> np.ndarray:
         """Compute acceleration due to external forces only."""
         # a_ext = M^{-1} @ sum(J_i^T @ f_ext_i)
         pin.computeAllTerms(self.model, self.data, q, v)
@@ -116,6 +118,7 @@ class InducedAccelerationAnalyzer:
             J = pin.computeFrameJacobian(self.model, self.data, q, frame_id)
             tau_ext += J.T @ wrench
         return np.linalg.solve(M, tau_ext)
+
     def compute_specific_control(
         self, q: np.ndarray, specific_tau: np.ndarray
     ) -> np.ndarray:  # noqa: E501

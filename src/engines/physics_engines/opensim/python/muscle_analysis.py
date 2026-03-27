@@ -261,7 +261,9 @@ class OpenSimMuscleAnalyzer:
         # Check conditioning once before loop
         cond = np.linalg.cond(M)
         if cond > 1e8:
-            logger.warning(f"Mass matrix ill-conditioned (cond={cond:.2e}), using regularized solve")
+            logger.warning(
+                f"Mass matrix ill-conditioned (cond={cond:.2e}), using regularized solve"
+            )
             lambda_reg = 1e-6 * np.trace(M) / M.shape[0]
             M_solve = M + lambda_reg * np.eye(M.shape[0])
         else:
