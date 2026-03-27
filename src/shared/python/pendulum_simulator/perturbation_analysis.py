@@ -177,6 +177,7 @@ def perturb_torque_coeffs(
     noise_amplitude: float,
     noise_type: str = "white",
     seed: int | None = None,
+    perturb_mode: str = "additive",
 ) -> list[list[float]]:
     """Perturb polynomial torque coefficients with noise.
 
