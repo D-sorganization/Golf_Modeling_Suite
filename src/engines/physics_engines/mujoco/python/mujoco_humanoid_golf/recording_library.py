@@ -631,6 +631,7 @@ class RecordingLibrary:
         # Whitelist allowed fields to prevent SQL injection
         if not (field is not None):
             raise ValueError("field must be provided")
+
         allowed_fields = {
             "golfer_name",
             "club_type",
@@ -646,8 +647,12 @@ class RecordingLibrary:
         conn = self._get_connection()
         cursor = conn.cursor()
 
-        # Safe: field is validated against whitelist above (allowed_fields)
-        cursor.execute(f"SELECT DISTINCT {field} FROM recordings WHERE {field} != ''")  # nosec B608
+        # Safe: field is validated against whitelist above
+        query = (
+            f"SELECT DISTINCT {field} "  # nosec B608
+            f"FROM recordings WHERE {field} != ''"
+        )
+        cursor.execute(query)
         values = [row[0] for row in cursor.fetchall()]
 
         return sorted(values)
