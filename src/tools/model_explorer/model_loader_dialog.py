@@ -123,7 +123,9 @@ class ModelLoaderDialog(QDialog):
         self.info_display = QTextEdit()
         self.info_display.setReadOnly(True)
         self.info_display.setMaximumHeight(150)
-        self.info_display.setPlainText("Select a model above to see its specifications...")
+        self.info_display.setPlainText(
+            "Select a model above to see its specifications..."
+        )
         layout.addWidget(self.info_display)
 
         button_box = QDialogButtonBox(
@@ -214,7 +216,9 @@ class ModelLoaderDialog(QDialog):
 
             header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
 
-        self.repo_tree.itemSelectionChanged.connect(lambda: self._on_model_selected("discovered"))
+        self.repo_tree.itemSelectionChanged.connect(
+            lambda: self._on_model_selected("discovered")
+        )
 
         layout.addWidget(self.repo_tree)
 
@@ -242,7 +246,9 @@ class ModelLoaderDialog(QDialog):
         self.repo_tree.clear()
 
         for model in models:
-            item = QTreeWidgetItem([model["name"], model["type"].upper(), model["path"]])
+            item = QTreeWidgetItem(
+                [model["name"], model["type"].upper(), model["path"]]
+            )
 
             item.setData(0, Qt.ItemDataRole.UserRole, model["config_key"])
 
@@ -276,7 +282,9 @@ class ModelLoaderDialog(QDialog):
 
         self.embedded_list = QListWidget()
 
-        self.embedded_list.itemSelectionChanged.connect(lambda: self._on_model_selected("embedded"))
+        self.embedded_list.itemSelectionChanged.connect(
+            lambda: self._on_model_selected("embedded")
+        )
 
         layout.addWidget(self.embedded_list)
 
@@ -322,11 +330,15 @@ class ModelLoaderDialog(QDialog):
 
         # Populate
 
-        community_models = self.library.list_available_models().get("robot_descriptions", [])
+        community_models = self.library.list_available_models().get(
+            "robot_descriptions", []
+        )
 
         if not community_models:
             layout.addWidget(
-                QLabel("No community models found.\nEnsure 'robot_descriptions' is installed.")
+                QLabel(
+                    "No community models found.\nEnsure 'robot_descriptions' is installed."
+                )
             )
 
         for model in community_models:
@@ -338,7 +350,9 @@ class ModelLoaderDialog(QDialog):
 
         load_btn = QPushButton("Load Selected Community Model")
 
-        load_btn.clicked.connect(lambda: self._load_selected_model("robot_descriptions"))
+        load_btn.clicked.connect(
+            lambda: self._load_selected_model("robot_descriptions")
+        )
 
         layout.addWidget(load_btn)
 
@@ -361,7 +375,9 @@ class ModelLoaderDialog(QDialog):
 
         self.imported_tree.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
 
-        self.imported_tree.customContextMenuRequested.connect(self._on_imported_context_menu)
+        self.imported_tree.customContextMenuRequested.connect(
+            self._on_imported_context_menu
+        )
 
         header = self.imported_tree.header()
 
@@ -370,7 +386,9 @@ class ModelLoaderDialog(QDialog):
 
             header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
 
-        self.imported_tree.itemSelectionChanged.connect(lambda: self._on_model_selected("imported"))
+        self.imported_tree.itemSelectionChanged.connect(
+            lambda: self._on_model_selected("imported")
+        )
 
         layout.addWidget(self.imported_tree)
 
@@ -408,11 +426,15 @@ class ModelLoaderDialog(QDialog):
         models = self.library.discover_imported_models()
 
         for model in models:
-            item = QTreeWidgetItem([model["name"], model["type"].upper(), model["path"]])
+            item = QTreeWidgetItem(
+                [model["name"], model["type"].upper(), model["path"]]
+            )
 
             item.setData(0, Qt.ItemDataRole.UserRole, model["config_key"])
 
-            item.setData(0, Qt.ItemDataRole.UserRole + 1, model["path"])  # Store path for file ops
+            item.setData(
+                0, Qt.ItemDataRole.UserRole + 1, model["path"]
+            )  # Store path for file ops
 
             self.imported_tree.addTopLevelItem(item)
 
@@ -461,7 +483,9 @@ class ModelLoaderDialog(QDialog):
         if action == rename_action:
             old_name = item.text(0)
 
-            new_name, ok = QInputDialog.getText(self, "Rename Model", "New name:", text=old_name)
+            new_name, ok = QInputDialog.getText(
+                self, "Rename Model", "New name:", text=old_name
+            )
 
             if ok and new_name and new_name != old_name:
                 if self.library.rename_imported_model(model_path, new_name):
@@ -549,7 +573,9 @@ class ModelLoaderDialog(QDialog):
             if model_info:
                 self.human_combo.addItem(model_info["name"], model_key)
 
-        self.human_combo.currentIndexChanged.connect(lambda: self._on_model_selected("human"))
+        self.human_combo.currentIndexChanged.connect(
+            lambda: self._on_model_selected("human")
+        )
 
         selector_layout.addWidget(self.human_combo)
 
@@ -577,7 +603,9 @@ class ModelLoaderDialog(QDialog):
 
         download_btn = QPushButton("Download from human-gazebo")
 
-        download_btn.setToolTip("Download URDF and mesh files from the human-gazebo repository")
+        download_btn.setToolTip(
+            "Download URDF and mesh files from the human-gazebo repository"
+        )
 
         download_btn.clicked.connect(self._download_human_model)
 
@@ -639,7 +667,9 @@ class ModelLoaderDialog(QDialog):
             if club_info:
                 self.club_combo.addItem(club_info["name"], club_key)
 
-        self.club_combo.currentIndexChanged.connect(lambda: self._on_model_selected("golf_clubs"))
+        self.club_combo.currentIndexChanged.connect(
+            lambda: self._on_model_selected("golf_clubs")
+        )
 
         selector_layout.addWidget(self.club_combo)
 
@@ -942,12 +972,16 @@ class ModelLoaderDialog(QDialog):
                     )
 
                 else:
-                    QMessageBox.warning(self, "Download Failed", "Failed to download model files.")
+                    QMessageBox.warning(
+                        self, "Download Failed", "Failed to download model files."
+                    )
 
             except (RuntimeError, ValueError, OSError) as e:
                 logger.error(f"Download error: {e}")
 
-                QMessageBox.critical(self, "Error", f"Download failed with error:\n{str(e)}")
+                QMessageBox.critical(
+                    self, "Error", f"Download failed with error:\n{str(e)}"
+                )
 
     def _load_selected_model(self, category: str) -> None:
         """Load the selected model.

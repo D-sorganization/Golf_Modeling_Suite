@@ -240,7 +240,9 @@ class PinocchioAnalysisMixin:
                 parts = [float(x) for x in txt.split(",")]
                 if len(parts) == self.model.nv:
                     spec_tau = np.array(parts)
-                    QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
+                    QtWidgets.QApplication.setOverrideCursor(
+                        QtCore.Qt.CursorShape.WaitCursor
+                    )
                     for frame in self.recorder.frames:
                         if frame.joint_positions is not None:
                             a_spec = self.analyzer.compute_specific_control(

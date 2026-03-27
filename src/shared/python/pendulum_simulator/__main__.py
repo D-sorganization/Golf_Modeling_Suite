@@ -58,7 +58,9 @@ class _WheelBlockFilter(QObject):
             font = app.font()
             font.setPointSize(self._default_font_pt)
             app.setFont(font)
-            logging.getLogger(__name__).info("Font reset to %dpt", self._default_font_pt)
+            logging.getLogger(__name__).info(
+                "Font reset to %dpt", self._default_font_pt
+            )
 
 
 _LOG_FORMAT = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"

@@ -91,7 +91,16 @@ class SyngasComposition:
 
     def normalize(self) -> SyngasComposition:
         """Normalize composition to sum to 1.0."""
-        total = self.h2 + self.co + self.co2 + self.ch4 + self.n2 + self.ar + self.h2o + self.other
+        total = (
+            self.h2
+            + self.co
+            + self.co2
+            + self.ch4
+            + self.n2
+            + self.ar
+            + self.h2o
+            + self.other
+        )
         if total > 0:
             return SyngasComposition(
                 h2=self.h2 / total,
@@ -122,7 +131,16 @@ class SyngasComposition:
     @property
     def total(self) -> float:
         """Total mole fraction (should be 1.0 for dry basis)"""
-        return self.h2 + self.co + self.co2 + self.ch4 + self.n2 + self.ar + self.h2o + self.other
+        return (
+            self.h2
+            + self.co
+            + self.co2
+            + self.ch4
+            + self.n2
+            + self.ar
+            + self.h2o
+            + self.other
+        )
 
 
 @dataclass
@@ -420,7 +438,9 @@ class SyngasWaterCalculator:
         return float(self.vapor_pressure_table(temperature_k))
 
     @jit(nopython=True, fastmath=True)
-    def calculate_dew_point(self, partial_pressure_pa: float, total_pressure_pa: float) -> float:
+    def calculate_dew_point(
+        self, partial_pressure_pa: float, total_pressure_pa: float
+    ) -> float:
         """
         Calculate dew point temperature
 
@@ -447,7 +467,10 @@ class SyngasWaterCalculator:
 
             # Derivative approximation
             dp_dT = (
-                (self._buck_equation(T_guess + 0.1) - self._buck_equation(T_guess - 0.1))
+                (
+                    self._buck_equation(T_guess + 0.1)
+                    - self._buck_equation(T_guess - 0.1)
+                )
                 / 0.2
                 / 1000
             )
@@ -495,13 +518,17 @@ class SyngasWaterCalculator:
         pressure_pa = pressure_bar * 1e5
 
         # Calculate vapor pressure
-        vapor_pressure_pa, method_used = self.calculate_vapor_pressure(temperature_c, method)
+        vapor_pressure_pa, method_used = self.calculate_vapor_pressure(
+            temperature_c, method
+        )
         vapor_pressure_bar = vapor_pressure_pa / 1e5
 
         # Check for warnings
         warnings = []
         if vapor_pressure_pa > pressure_pa:
-            warnings.append("Vapor pressure exceeds total pressure - condensation will occur")
+            warnings.append(
+                "Vapor pressure exceeds total pressure - condensation will occur"
+            )
             vapor_pressure_pa = pressure_pa
 
         # Calculate water mole fraction
@@ -509,7 +536,9 @@ class SyngasWaterCalculator:
 
         # Calculate mass fraction
         mw_dry_gas = self._calculate_mixture_mw(comp)
-        x_water = (y_water * self.mw_water) / (y_water * self.mw_water + (1 - y_water) * mw_dry_gas)
+        x_water = (y_water * self.mw_water) / (
+            y_water * self.mw_water + (1 - y_water) * mw_dry_gas
+        )
 
         # Convert to various unit systems
         units = self._convert_water_content_units(
@@ -562,7 +591,9 @@ class SyngasWaterCalculator:
             raise ValueError("y_water must be provided")
         if not (y_water is not None):
             raise ValueError("y_water must be provided")
-        water_content_g_m3 = vapor_pressure_pa * self.mw_water / (R_GAS_DENSITY * temperature_k)
+        water_content_g_m3 = (
+            vapor_pressure_pa * self.mw_water / (R_GAS_DENSITY * temperature_k)
+        )
 
         # Water content at normal conditions (mg/Nm³) — 0°C, 1.01325 bar
         water_content_mg_nm3 = (

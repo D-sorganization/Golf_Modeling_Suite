@@ -992,8 +992,8 @@ class GripModellingTab(QtWidgets.QWidget):
             self.metrics_widget.update_metrics(0, 0, 0, 0, 0.0, False)
             return
 
-        positions, normals, forces, velocities, body_names = self._extract_hand_contacts(
-            model, data
+        positions, normals, forces, velocities, body_names = (
+            self._extract_hand_contacts(model, data)
         )  # noqa: E501
 
         if not positions:

@@ -273,7 +273,9 @@ class ForceVectorRenderer:
         vertices = []
         for i in range(arc_segments + 1):
             angle = arc_angle * i / arc_segments
-            point = origin + arc_radius * (np.cos(angle) * perp1 + np.sin(angle) * perp2)
+            point = origin + arc_radius * (
+                np.cos(angle) * perp1 + np.sin(angle) * perp2
+            )
             vertices.append(point)
 
         vertices_array = np.array(vertices)
@@ -361,7 +363,9 @@ class TrajectoryRenderer:
         colors_array = np.array(colors)
 
         viz_type = (
-            VisualizationType.TRAJECTORY_RIBBON if as_ribbon else VisualizationType.TRAJECTORY_LINE
+            VisualizationType.TRAJECTORY_RIBBON
+            if as_ribbon
+            else VisualizationType.TRAJECTORY_LINE
         )
 
         return RenderData(
@@ -371,7 +375,9 @@ class TrajectoryRenderer:
             metadata={
                 "point_count": len(points),
                 "line_width": self.config.trajectory_width,
-                "total_time": (points[-1].time - points[0].time if len(points) > 1 else 0),
+                "total_time": (
+                    points[-1].time - points[0].time if len(points) > 1 else 0
+                ),
             },
         )
 

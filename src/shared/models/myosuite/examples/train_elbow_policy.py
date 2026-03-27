@@ -1,4 +1,5 @@
 from numba import jit
+
 """
 MyoSuite Elbow Control Training Example
 ========================================

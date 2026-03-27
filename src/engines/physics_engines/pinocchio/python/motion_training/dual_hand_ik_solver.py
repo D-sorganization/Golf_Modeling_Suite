@@ -14,7 +14,9 @@ from typing import TYPE_CHECKING  # noqa: E402
 
 import numpy as np  # noqa: E402
 
-from src.shared.python.engine_core.engine_availability import PINOCCHIO_AVAILABLE  # noqa: E402
+from src.shared.python.engine_core.engine_availability import (
+    PINOCCHIO_AVAILABLE,  # noqa: E402
+)
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -36,7 +38,10 @@ except ImportError:
 
 import logging  # noqa: E402
 
-from motion_training.club_trajectory_parser import ClubFrame, ClubTrajectory  # noqa: E402
+from motion_training.club_trajectory_parser import (  # noqa: E402
+    ClubFrame,
+    ClubTrajectory,
+)
 
 logger = logging.getLogger(__name__)
 

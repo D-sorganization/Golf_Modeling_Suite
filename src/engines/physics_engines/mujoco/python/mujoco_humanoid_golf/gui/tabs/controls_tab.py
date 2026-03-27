@@ -171,7 +171,9 @@ class ControlsTab(QtWidgets.QWidget):
 
         scroll = QtWidgets.QScrollArea()
         scroll.setWidgetResizable(True)
-        scroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.setHorizontalScrollBarPolicy(
+            QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
 
         self.actuator_container = QtWidgets.QWidget()
         self.actuator_layout = QtWidgets.QVBoxLayout(self.actuator_container)
@@ -269,7 +271,8 @@ class ControlsTab(QtWidgets.QWidget):
 
         actuators = config.get("actuators", [])
         if (
-            self.sim_widget.has_model() and len(actuators) != self.sim_widget.get_num_actuators()
+            self.sim_widget.has_model()
+            and len(actuators) != self.sim_widget.get_num_actuators()
         ):  # noqa: E501
             # Re-verify if fixup happened in PhysicsTab, but just in case
             logger.warning("Actuator count mismatch in ControlsTab update")
@@ -668,7 +671,9 @@ class ControlsTab(QtWidgets.QWidget):
             self.record_btn.setText("Start Recording")
             if style := self.style():
                 self.record_btn.setIcon(
-                    style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_DialogYesButton)
+                    style.standardIcon(
+                        QtWidgets.QStyle.StandardPixmap.SP_DialogYesButton
+                    )
                 )
             recorder.stop_recording()
 

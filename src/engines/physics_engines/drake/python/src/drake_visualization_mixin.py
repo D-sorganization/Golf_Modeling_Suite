@@ -398,7 +398,10 @@ class DrakeVisualizationMixin:
     def _draw_ellipsoids(self: Any) -> None:
         """Draw force/mobility ellipsoids using Meshcat."""
         if (
-            not self.meshcat or not self.manip_analyzer or not self.context or not self.plant
+            not self.meshcat
+            or not self.manip_analyzer
+            or not self.context
+            or not self.plant
         ):  # noqa: E501
             return
 

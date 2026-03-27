@@ -67,7 +67,10 @@ class VisualizationMixin:
     def _update_viewer(self: PinocchioGUI) -> None:
         """Update the 3D viewer state and overlays."""
         if (
-            self.model is None or self.data is None or self.q is None or self.viz is None
+            self.model is None
+            or self.data is None
+            or self.q is None
+            or self.viz is None
         ):  # noqa: E501
             return
 
@@ -152,7 +155,8 @@ class VisualizationMixin:
                     pos = res.velocity_ellipsoid.center
 
                     if (
-                        self.chk_mobility.isChecked() and res.mobility_matrix is not None
+                        self.chk_mobility.isChecked()
+                        and res.mobility_matrix is not None
                     ):  # noqa: E501
                         path_name = f"{res.body_name}/mobility"
                         radii = res.velocity_ellipsoid.radii
@@ -165,7 +169,8 @@ class VisualizationMixin:
                         )
 
                     if (
-                        self.chk_force_ellip.isChecked() and res.force_matrix is not None
+                        self.chk_force_ellip.isChecked()
+                        and res.force_matrix is not None
                     ):  # noqa: E501
                         path_name = f"{res.body_name}/force"
                         radii = res.force_ellipsoid.radii
@@ -323,7 +328,9 @@ class VisualizationMixin:
 
             transform = self.data.oMf[i]
             homogeneous_matrix = transform.homogeneous
-            self.viewer[f"overlays/frames/{frame.name}"].set_transform(homogeneous_matrix)
+            self.viewer[f"overlays/frames/{frame.name}"].set_transform(
+                homogeneous_matrix
+            )
 
     def _draw_coms(self: PinocchioGUI) -> None:
         """Render individual joint COMs."""
@@ -351,7 +358,9 @@ class VisualizationMixin:
                 for frame in self.model.frames:
                     if frame.name == "universe":
                         continue
-                    self.viewer[f"overlays/frames/{frame.name}"].set_object(g.triad(scale=0.1))
+                    self.viewer[f"overlays/frames/{frame.name}"].set_object(
+                        g.triad(scale=0.1)
+                    )
             self._update_viewer()
 
     def _toggle_coms(self: PinocchioGUI, checked: bool) -> None:

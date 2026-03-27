@@ -80,14 +80,18 @@ class ManipulationTab(QtWidgets.QWidget):
         self.maintain_orientation_cb = QtWidgets.QCheckBox(
             "Maintain Orientation While Dragging"
         )  # noqa: E501
-        self.maintain_orientation_cb.stateChanged.connect(self.on_maintain_orientation_changed)
+        self.maintain_orientation_cb.stateChanged.connect(
+            self.on_maintain_orientation_changed
+        )
         drag_layout.addWidget(self.maintain_orientation_cb)
 
         self.nullspace_posture_cb = QtWidgets.QCheckBox(
             "Use Nullspace Posture Optimization"
         )  # noqa: E501
         self.nullspace_posture_cb.setChecked(True)
-        self.nullspace_posture_cb.stateChanged.connect(self.on_nullspace_posture_changed)
+        self.nullspace_posture_cb.stateChanged.connect(
+            self.on_nullspace_posture_changed
+        )
         drag_layout.addWidget(self.nullspace_posture_cb)
 
         return drag_group
@@ -647,8 +651,9 @@ class ManipulationTab(QtWidgets.QWidget):
             | QtWidgets.QMessageBox.StandardButton.No,  # noqa: E501
         )
 
-        if reply == QtWidgets.QMessageBox.StandardButton.Yes and manipulator.delete_pose(
-            pose_name
+        if (
+            reply == QtWidgets.QMessageBox.StandardButton.Yes
+            and manipulator.delete_pose(pose_name)
         ):  # noqa: E501
             self.update_pose_list()
             logger.info("Pose '%s' deleted successfully", pose_name)

@@ -188,7 +188,9 @@ class MeshProcessor:
         import trimesh
 
         vertex_set = set(vertex_indices)
-        face_mask = np.array([all(v in vertex_set for v in face) for face in mesh.faces])
+        face_mask = np.array(
+            [all(v in vertex_set for v in face) for face in mesh.faces]
+        )
 
         if not np.any(face_mask):
             return self._empty_segment_result(
@@ -287,7 +289,9 @@ class MeshProcessor:
             box_max = np.asarray(box_max)
 
             # Find vertices inside box
-            inside = np.all((mesh.vertices >= box_min) & (mesh.vertices <= box_max), axis=1)
+            inside = np.all(
+                (mesh.vertices >= box_min) & (mesh.vertices <= box_max), axis=1
+            )
             vertex_groups[name] = np.where(inside)[0]
 
         return self.segment_by_vertex_groups(mesh, vertex_groups, output_dir, config)
@@ -367,7 +371,9 @@ class MeshProcessor:
             reduction = target_faces / current_faces
             pitch = mesh.extents.max() * (1 - reduction) / 10
 
-            simplified = trimesh.voxel.ops.points_to_marching_cubes(mesh.vertices, pitch=pitch)
+            simplified = trimesh.voxel.ops.points_to_marching_cubes(
+                mesh.vertices, pitch=pitch
+            )
             return simplified
         except (ValueError, ZeroDivisionError, OverflowError, TypeError):
             # Return original if simplification fails
@@ -484,7 +490,9 @@ class PrimitiveMeshGenerator:
 
         import trimesh
 
-        return trimesh.creation.cylinder(radius=radius, height=height, sections=sections)
+        return trimesh.creation.cylinder(
+            radius=radius, height=height, sections=sections
+        )
 
     def create_sphere(self, radius: float, subdivisions: int = 3) -> Any:
         """Create a sphere mesh."""
@@ -502,7 +510,9 @@ class PrimitiveMeshGenerator:
 
         import trimesh
 
-        return trimesh.creation.capsule(radius=radius, height=height, count=[sections, sections])
+        return trimesh.creation.capsule(
+            radius=radius, height=height, count=[sections, sections]
+        )
 
     def _check_trimesh(self) -> bool:
         """Check if trimesh is available."""
@@ -639,7 +649,9 @@ class LODGenerator:
                 f"{[f'{lod.face_count} faces' for lod in levels]}"
             )
 
-            return LODGenerationResult(success=True, source_mesh=mesh_path, levels=levels)
+            return LODGenerationResult(
+                success=True, source_mesh=mesh_path, levels=levels
+            )
 
         except (ValueError, ZeroDivisionError, OverflowError, TypeError) as e:
             logger.error(f"LOD generation failed for {mesh_path}: {e}")
@@ -695,7 +707,9 @@ class LODGenerator:
             # LOD0: Convex hull
             hull = self._processor.create_convex_hull(mesh)
             hull_path = output_dir / f"{mesh_path.stem}_collision_hull.{output_format}"
-            self._processor.export_mesh(hull, hull_path, MeshExportConfig(format=output_format))
+            self._processor.export_mesh(
+                hull, hull_path, MeshExportConfig(format=output_format)
+            )
             levels.append(
                 LODLevel(
                     level=0,
@@ -738,7 +752,9 @@ class LODGenerator:
                 )
             )
 
-            return LODGenerationResult(success=True, source_mesh=mesh_path, levels=levels)
+            return LODGenerationResult(
+                success=True, source_mesh=mesh_path, levels=levels
+            )
 
         except (ValueError, ZeroDivisionError, OverflowError, TypeError) as e:
             return LODGenerationResult(
@@ -749,7 +765,9 @@ class LODGenerator:
             )
 
     @jit(nopython=True, fastmath=True)
-    def estimate_memory_savings(self, lod_result: LODGenerationResult) -> dict[str, Any]:
+    def estimate_memory_savings(
+        self, lod_result: LODGenerationResult
+    ) -> dict[str, Any]:
         """Estimate memory savings from LOD generation.
 
         Args:
@@ -778,7 +796,8 @@ class LODGenerator:
             total_bytes = vertex_bytes + face_bytes
 
             original_bytes = (
-                original.vertex_count * bytes_per_vertex + original.face_count * bytes_per_face
+                original.vertex_count * bytes_per_vertex
+                + original.face_count * bytes_per_face
             )
 
             estimates.append(
@@ -788,7 +807,9 @@ class LODGenerator:
                     "vertices": level.vertex_count,
                     "estimated_bytes": total_bytes,
                     "savings_percent": (
-                        (1 - total_bytes / original_bytes) * 100 if original_bytes > 0 else 0
+                        (1 - total_bytes / original_bytes) * 100
+                        if original_bytes > 0
+                        else 0
                     ),
                 }
             )

@@ -322,7 +322,9 @@ class DrakeUIMixin:
         if line_edit := self.combo_induced_source.lineEdit():
             line_edit.editingFinished.connect(self._on_visualization_changed)
         # Also connect index changed for dropdown selection
-        self.combo_induced_source.currentIndexChanged.connect(self._on_visualization_changed)
+        self.combo_induced_source.currentIndexChanged.connect(
+            self._on_visualization_changed
+        )
 
         self.chk_cf_vec = QtWidgets.QCheckBox("CF Vectors")
         self.chk_cf_vec.toggled.connect(self._on_visualization_changed)

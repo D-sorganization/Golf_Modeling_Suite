@@ -24,7 +24,10 @@ from .inverse_dynamics import (  # noqa: E402
     InverseDynamicsSolver,
     export_inverse_dynamics_to_csv,
 )
-from .kinematic_forces import KinematicForceAnalyzer, export_kinematic_forces_to_csv  # noqa: E402
+from .kinematic_forces import (  # noqa: E402
+    KinematicForceAnalyzer,
+    export_kinematic_forces_to_csv,
+)
 from .models import ADVANCED_BIOMECHANICAL_GOLF_SWING_XML  # noqa: E402
 from .motion_capture import (  # noqa: E402
     MarkerSet,
@@ -228,30 +231,42 @@ def example_4_inverse_dynamics() -> None:
     # Statistics
     max(np.max(np.abs(r.joint_torques)) for r in id_results)
     max(
-        np.max(np.abs(r.inertial_torques)) for r in id_results if r.inertial_torques is not None
+        np.max(np.abs(r.inertial_torques))
+        for r in id_results
+        if r.inertial_torques is not None
     )  # noqa: E501
     max(
-        np.max(np.abs(r.coriolis_torques)) for r in id_results if r.coriolis_torques is not None
+        np.max(np.abs(r.coriolis_torques))
+        for r in id_results
+        if r.coriolis_torques is not None
     )  # noqa: E501
     max(
-        np.max(np.abs(r.gravity_torques)) for r in id_results if r.gravity_torques is not None
+        np.max(np.abs(r.gravity_torques))
+        for r in id_results
+        if r.gravity_torques is not None
     )  # noqa: E501
 
     # Decomposition percentages
     np.mean([np.linalg.norm(r.joint_torques) for r in id_results])
     np.mean(
         [
-            np.linalg.norm(r.inertial_torques) for r in id_results if r.inertial_torques is not None
+            np.linalg.norm(r.inertial_torques)
+            for r in id_results
+            if r.inertial_torques is not None
         ],  # noqa: E501
     )
     np.mean(
         [
-            np.linalg.norm(r.coriolis_torques) for r in id_results if r.coriolis_torques is not None
+            np.linalg.norm(r.coriolis_torques)
+            for r in id_results
+            if r.coriolis_torques is not None
         ],  # noqa: E501
     )
     np.mean(
         [
-            np.linalg.norm(r.gravity_torques) for r in id_results if r.gravity_torques is not None
+            np.linalg.norm(r.gravity_torques)
+            for r in id_results
+            if r.gravity_torques is not None
         ],  # noqa: E501
     )
 

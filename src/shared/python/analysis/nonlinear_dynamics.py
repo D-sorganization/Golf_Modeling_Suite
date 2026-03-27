@@ -177,7 +177,9 @@ class NonlinearDynamicsMixin:
                         recurrence_matrix[i, j] = 1
                         recurrence_matrix[j, i] = 1
 
-            return cast(np.ndarray[tuple[int, int], np.dtype[np.int_]], recurrence_matrix)
+            return cast(
+                np.ndarray[tuple[int, int], np.dtype[np.int_]], recurrence_matrix
+            )
 
         dists = pdist(normalized_state, metric=metric)
         dist_matrix = squareform(dists)
@@ -300,7 +302,9 @@ class NonlinearDynamicsMixin:
         )
 
     @jit(nopython=True, fastmath=True)
-    def compute_correlation_dimension(self, data: np.ndarray, tau: int = 1, dim: int = 3) -> float:
+    def compute_correlation_dimension(
+        self, data: np.ndarray, tau: int = 1, dim: int = 3
+    ) -> float:
         """Estimate Correlation Dimension (D2) using Grassberger-Procaccia algorithm.
 
         Args:

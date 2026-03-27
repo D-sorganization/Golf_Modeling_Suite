@@ -180,7 +180,9 @@ class ProcessManager:
                     process.wait(timeout=timeout)
                 except subprocess.TimeoutExpired:
                     # Force kill if termination times out
-                    logger.warning(f"Process '{name}' did not terminate gracefully, killing")
+                    logger.warning(
+                        f"Process '{name}' did not terminate gracefully, killing"
+                    )
                     process.kill()
                     process.wait()
 
@@ -285,7 +287,9 @@ class CommandRunner:
         result = runner.run_with_retry(["flaky_command"], max_attempts=3)
     """
 
-    def __init__(self, cwd: str | Path | None = None, env: dict[str, str] | None = None) -> None:
+    def __init__(
+        self, cwd: str | Path | None = None, env: dict[str, str] | None = None
+    ) -> None:
         """Initialize command runner.
 
         Args:

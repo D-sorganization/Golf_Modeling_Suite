@@ -18,7 +18,11 @@ from typing import TYPE_CHECKING, Any  # noqa: E402, ICN003
 import mujoco as mj  # noqa: E402
 import numpy as np  # noqa: E402
 
-from src.shared.python.core.constants import DEFAULT_FPS, HD_HEIGHT, HD_WIDTH  # noqa: E402
+from src.shared.python.core.constants import (  # noqa: E402
+    DEFAULT_FPS,
+    HD_HEIGHT,
+    HD_WIDTH,
+)
 from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
 
 if TYPE_CHECKING:

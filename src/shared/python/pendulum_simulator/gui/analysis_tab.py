@@ -276,8 +276,12 @@ class AnalysisTab:
         from ..data_extractor import extract_series
 
         try:
-            x_vals, x_desc, x_unit = extract_series(self._result, x_key, self._model_type)
-            y_vals, y_desc, y_unit = extract_series(self._result, y_key, self._model_type)
+            x_vals, x_desc, x_unit = extract_series(
+                self._result, x_key, self._model_type
+            )
+            y_vals, y_desc, y_unit = extract_series(
+                self._result, y_key, self._model_type
+            )
         except (KeyError, AttributeError) as exc:
             logger.error("Failed to extract series: %s", exc)
             return
@@ -427,7 +431,9 @@ class AnalysisTab:
         if self._model_type == "golfer":
             return self._evaluator_golfer(z_key)
 
-        logger.warning("Surface evaluator not available for model=%s z=%s", self._model_type, z_key)
+        logger.warning(
+            "Surface evaluator not available for model=%s z=%s", self._model_type, z_key
+        )
         return None
 
     # ── Double pendulum evaluators ──────────────────────────────────
@@ -469,7 +475,9 @@ class AnalysisTab:
         if z_key == "potential_energy":
 
             def _eval(angles: dict) -> float:
-                state = np.array([angles.get("theta1", 0.0), angles.get("phi", 0.0), 0.0, 0.0])
+                state = np.array(
+                    [angles.get("theta1", 0.0), angles.get("phi", 0.0), 0.0, 0.0]
+                )
                 return potential_energy(state, params)
 
             return _eval

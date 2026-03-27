@@ -249,8 +249,8 @@ class PowerFlowAnalyzer:
 
         joint_powers = tau * qvel
 
-        joint_work_drift, joint_work_control, joint_work_total = self._compute_work_decomposition(
-            tau, qvel, dt, tau_drift, tau_control
+        joint_work_drift, joint_work_control, joint_work_total = (
+            self._compute_work_decomposition(tau, qvel, dt, tau_drift, tau_control)
         )  # noqa: E501
 
         segment_ke, segment_pe = self._compute_segment_energies(qvel)

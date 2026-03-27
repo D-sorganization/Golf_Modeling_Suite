@@ -61,7 +61,9 @@ class StoredPose:
             "name": self.name,
             "joint_positions": self.joint_positions.tolist(),
             "joint_velocities": (
-                self.joint_velocities.tolist() if self.joint_velocities is not None else None
+                self.joint_velocities.tolist()
+                if self.joint_velocities is not None
+                else None
             ),
             "description": self.description,
             "category": self.category.value,
@@ -89,7 +91,9 @@ class StoredPose:
             name=data.get("name", "Unnamed"),
             joint_positions=np.array(data.get("joint_positions", [])),
             joint_velocities=(
-                np.array(data["joint_velocities"]) if data.get("joint_velocities") else None
+                np.array(data["joint_velocities"])
+                if data.get("joint_velocities")
+                else None
             ),
             description=data.get("description", ""),
             category=category,
@@ -130,7 +134,9 @@ class PoseInterpolator:
         len_b = len(pose_b.joint_positions)
 
         if len_a != len_b:
-            logger.warning("Pose size mismatch: %d vs %d. Using minimum size.", len_a, len_b)
+            logger.warning(
+                "Pose size mismatch: %d vs %d. Using minimum size.", len_a, len_b
+            )
             min_len = min(len_a, len_b)
             pos_a = pose_a.joint_positions[:min_len]
             pos_b = pose_b.joint_positions[:min_len]
@@ -208,7 +214,12 @@ class PoseInterpolator:
         p3 = pose_b.joint_positions
 
         # Bezier formula
-        return (1 - t) ** 3 * p0 + 3 * (1 - t) ** 2 * t * p1 + 3 * (1 - t) * t2 * p2 + t3 * p3
+        return (
+            (1 - t) ** 3 * p0
+            + 3 * (1 - t) ** 2 * t * p1
+            + 3 * (1 - t) * t2 * p2
+            + t3 * p3
+        )
 
     @staticmethod
     def sequence(
@@ -663,4 +674,8 @@ def list_preset_poses_by_category(category: str) -> list[str]:
     Returns:
         List of pose names in the category
     """
-    return [name for name, data in PRESET_POSES.items() if data.get("category", "") == category]
+    return [
+        name
+        for name, data in PRESET_POSES.items()
+        if data.get("category", "") == category
+    ]

@@ -16,7 +16,9 @@ from typing import TYPE_CHECKING, Any  # noqa: E402
 
 import numpy as np  # noqa: E402
 
-from src.shared.python.engine_core.engine_availability import PINOCCHIO_AVAILABLE  # noqa: E402
+from src.shared.python.engine_core.engine_availability import (
+    PINOCCHIO_AVAILABLE,  # noqa: E402
+)
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -354,7 +356,9 @@ class MotionVisualizer:
                 opacity=s.left_hand_color[3],
             )
             self.viewer["targets/left_hand"].set_object(left_sphere, left_mat)
-            self.viewer["targets/left_hand"].set_transform(mctf.translation_matrix(left_pos))
+            self.viewer["targets/left_hand"].set_transform(
+                mctf.translation_matrix(left_pos)
+            )
 
             # Right hand target
             right_sphere = mcg.Sphere(s.hand_target_radius)
@@ -364,7 +368,9 @@ class MotionVisualizer:
                 opacity=s.right_hand_color[3],
             )
             self.viewer["targets/right_hand"].set_object(right_sphere, right_mat)
-            self.viewer["targets/right_hand"].set_transform(mctf.translation_matrix(right_pos))
+            self.viewer["targets/right_hand"].set_transform(
+                mctf.translation_matrix(right_pos)
+            )
 
     def display_humanoid(self, q: NDArray[np.float64]) -> None:
         """Display humanoid at given configuration."""
@@ -459,9 +465,9 @@ class MotionVisualizer:
         if trajectory.num_frames <= num_frames_to_show:
             indices: list[int] | np.ndarray = list(range(trajectory.num_frames))
         else:
-            indices = np.linspace(0, trajectory.num_frames - 1, num_frames_to_show).astype(
-                int
-            )  # noqa: E501
+            indices = np.linspace(
+                0, trajectory.num_frames - 1, num_frames_to_show
+            ).astype(int)  # noqa: E501
 
         for i, idx in enumerate(indices):
             frame = trajectory.frames[idx]

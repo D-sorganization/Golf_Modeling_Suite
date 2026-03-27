@@ -17,7 +17,9 @@ from src.shared.python.core.contracts import (  # noqa: E402
     postcondition,
     precondition,
 )
-from src.shared.python.engine_core.engine_availability import OPENSIM_AVAILABLE  # noqa: E402
+from src.shared.python.engine_core.engine_availability import (
+    OPENSIM_AVAILABLE,  # noqa: E402
+)
 from src.shared.python.engine_core.interfaces import PhysicsEngine  # noqa: E402
 from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
 
@@ -62,7 +64,9 @@ class OpenSimPhysicsEngine(PhysicsEngine):
     def load_from_path(self, path: str) -> None:
         """Load an OpenSim model from a file path."""
         if self.is_initialized:
-            raise RuntimeError("Engine already has a loaded model. Re-loading is not supported.")
+            raise RuntimeError(
+                "Engine already has a loaded model. Re-loading is not supported."
+            )
 
         if opensim is None:
             raise ImportError("OpenSim library not installed")
@@ -93,7 +97,9 @@ class OpenSimPhysicsEngine(PhysicsEngine):
         suffix = f".{extension}" if extension else ".osim"
         tmp_path = ""
         try:
-            with tempfile.NamedTemporaryFile(mode="w", suffix=suffix, delete=False) as tmp:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=suffix, delete=False
+            ) as tmp:
                 tmp.write(content)
                 tmp_path = tmp.name
 
@@ -107,7 +113,9 @@ class OpenSimPhysicsEngine(PhysicsEngine):
                 try:
                     os.remove(tmp_path)
                 except (RuntimeError, ValueError, OSError) as cleanup_error:
-                    logger.warning(f"Failed to remove temporary file {tmp_path}: {cleanup_error}")
+                    logger.warning(
+                        f"Failed to remove temporary file {tmp_path}: {cleanup_error}"
+                    )
 
     @precondition(lambda self: self.is_initialized, "Engine must be initialized")
     def reset(self) -> None:
@@ -119,7 +127,9 @@ class OpenSimPhysicsEngine(PhysicsEngine):
             self._manager.setSessionTime(0.0)
             self._manager.setIntegrator(opensim.RungeKuttaMersonIntegrator(self._model))
 
-    @precondition(lambda self, dt=None: self.is_initialized, "Engine must be initialized")
+    @precondition(
+        lambda self, dt=None: self.is_initialized, "Engine must be initialized"
+    )
     def step(self, dt: float | None = None) -> None:
         """Integrate the simulation forward by one time step."""
         if not self._model or not self._state:
@@ -416,7 +426,9 @@ class OpenSimPhysicsEngine(PhysicsEngine):
                 # Compute angular velocity from rotation difference
                 # R_pert = R_0 * exp([w] * local_eps) => [w] ≈ logm(R_0^T * R_pert) / local_eps
                 # Simplified: use axis-angle representation difference
-                jacr[:, i] = self._rotation_difference(rotation_0, rotation_pert) / local_eps
+                jacr[:, i] = (
+                    self._rotation_difference(rotation_0, rotation_pert) / local_eps
+                )
 
             # Restore original state
             for i in range(nq):

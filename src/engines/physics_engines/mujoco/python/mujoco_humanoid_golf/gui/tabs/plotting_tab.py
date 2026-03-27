@@ -130,7 +130,9 @@ class PlottingTab(QtWidgets.QWidget):
         plot_layout.addWidget(self.generate_plot_btn)
 
         self.btn_advanced_dialog = QtWidgets.QPushButton("Open Advanced Analysis...")
-        self.btn_advanced_dialog.clicked.connect(self.main_window.show_advanced_plots_dialog)
+        self.btn_advanced_dialog.clicked.connect(
+            self.main_window.show_advanced_plots_dialog
+        )
         self.btn_advanced_dialog.setStyleSheet(Styles.BTN_ADVANCED_ANALYSIS)
         plot_layout.addWidget(self.btn_advanced_dialog)
 

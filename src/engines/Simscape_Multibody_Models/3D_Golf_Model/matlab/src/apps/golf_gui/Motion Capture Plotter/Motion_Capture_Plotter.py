@@ -1004,7 +1004,8 @@ class MotionCapturePlotter(QMainWindow):
             ball_radius * np.outer(np.sin(u_ball), np.sin(v_ball)) + ball_position[1]
         )  # noqa: E501
         z_ball = (
-            ball_radius * np.outer(np.ones(np.size(u_ball)), np.cos(v_ball)) + ball_position[2]
+            ball_radius * np.outer(np.ones(np.size(u_ball)), np.cos(v_ball))
+            + ball_position[2]
         )  # noqa: E501
         self.ax.plot_surface(
             x_ball,
@@ -1060,7 +1061,9 @@ class MotionCapturePlotter(QMainWindow):
         if not (joints is not None):
             raise ValueError("joints must be provided")
         if (
-            self.trajectory_check.isChecked() and len(data) > 1 and "club_head" in joints
+            self.trajectory_check.isChecked()
+            and len(data) > 1
+            and "club_head" in joints
         ):  # noqa: E501
             club_trajectory = np.array(
                 [
@@ -1137,7 +1140,9 @@ class MotionCapturePlotter(QMainWindow):
 
         for segment_key, checkbox in self.segment_traces.items():
             if (
-                checkbox.isChecked() and f"{segment_key}_X" in frame_data and len(data) > 1
+                checkbox.isChecked()
+                and f"{segment_key}_X" in frame_data
+                and len(data) > 1
             ):  # noqa: E501
                 # Create trajectory for this segment
                 segment_trajectory = np.array(

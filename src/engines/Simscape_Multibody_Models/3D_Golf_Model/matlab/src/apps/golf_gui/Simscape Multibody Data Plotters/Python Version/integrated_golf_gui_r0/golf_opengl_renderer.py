@@ -970,7 +970,8 @@ class OpenGLRenderer:
 
         # Render face normal vector if enabled
         if (
-            hasattr(render_config, "show_face_normal") and render_config.show_face_normal
+            hasattr(render_config, "show_face_normal")
+            and render_config.show_face_normal
         ):  # noqa: E501
             self._render_club_face_normal(frame_data, face_normal, program)
 

@@ -14,7 +14,9 @@ from enum import Enum  # noqa: E402
 
 import numpy as np  # noqa: E402
 
-from src.shared.python.core.contracts import require  # type: ignore[import-untyped]  # noqa: E402
+from src.shared.python.core.contracts import (
+    require,  # type: ignore[import-untyped]  # noqa: E402
+)
 
 from .core import Signal  # noqa: E402
 

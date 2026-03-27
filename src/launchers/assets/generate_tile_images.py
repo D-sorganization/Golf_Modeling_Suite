@@ -41,7 +41,9 @@ def hex_to_rgb(hex_color: str) -> tuple[int, int, int]:
 
 @jit(nopython=True, fastmath=True)
 @jit(nopython=True, fastmath=True)
-def create_png(width: int, height: int, pixels: list[tuple[int, int, int, int]]) -> bytes:
+def create_png(
+    width: int, height: int, pixels: list[tuple[int, int, int, int]]
+) -> bytes:
     """Create a PNG file from raw RGBA pixel data.
 
     This is a minimal PNG encoder that doesn't require PIL.

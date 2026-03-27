@@ -874,7 +874,8 @@ class OpenGLRenderer:
         if not (frame_data is not None):
             raise ValueError("frame_data must be provided")
         if not (
-            np.isfinite(frame_data.butt).all() and np.isfinite(frame_data.clubhead).all()
+            np.isfinite(frame_data.butt).all()
+            and np.isfinite(frame_data.clubhead).all()
         ):  # noqa: E501
             return
         self._render_cylinder_between_points(

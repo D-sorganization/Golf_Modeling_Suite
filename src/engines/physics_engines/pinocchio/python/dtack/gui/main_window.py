@@ -473,7 +473,8 @@ class UnifiedGolfGUI(QtWidgets.QMainWindow):
             plotter.plot_induced_acceleration(self.results_canvas.fig, "gravity")
             # Or actuator if available
             if (
-                self.recorded_data and "actuator" in self.recorded_data[0].induced_accelerations
+                self.recorded_data
+                and "actuator" in self.recorded_data[0].induced_accelerations
             ):  # noqa: E501
                 # Override for demo
                 self.results_canvas.fig.clear()

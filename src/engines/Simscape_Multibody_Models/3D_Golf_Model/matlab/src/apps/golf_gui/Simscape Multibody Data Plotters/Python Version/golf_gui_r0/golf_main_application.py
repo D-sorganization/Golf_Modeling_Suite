@@ -250,7 +250,9 @@ class EnhancedMainWindow(GolfVisualizerMainWindow):
             # Connect camera signals
             self.camera_controller.cameraChanged.connect(self.gl_widget.update)
             self.camera_controller.modeChanged.connect(self._on_camera_mode_changed)
-            self.camera_controller.animationFinished.connect(self._on_camera_animation_finished)
+            self.camera_controller.animationFinished.connect(
+                self._on_camera_animation_finished
+            )
 
         # Add camera preset menu
         self._add_camera_preset_menu()
@@ -608,7 +610,9 @@ class EnhancedMainWindow(GolfVisualizerMainWindow):
         """Update enhanced status information"""
         if self.gl_widget.frame_processor:
             # Update performance panel with additional info
-            self.perf_panel.update_render_time(self.gl_widget.performance_stats.frame_time_ms)
+            self.perf_panel.update_render_time(
+                self.gl_widget.performance_stats.frame_time_ms
+            )
 
 
 # ============================================================================

@@ -139,7 +139,9 @@ def constrained_eom_jax(
 
 
 @jit(nopython=True, fastmath=True)
-def _constraint_acceleration_bias_jax(q: JaxArray, qdot: JaxArray, p: GolferParamsJAX) -> JaxArray:
+def _constraint_acceleration_bias_jax(
+    q: JaxArray, qdot: JaxArray, p: GolferParamsJAX
+) -> JaxArray:
     """Compute gamma = Phi_qq * qdot * qdot (centripetal acceleration bias).
 
     Uses finite difference of constraint Jacobian.

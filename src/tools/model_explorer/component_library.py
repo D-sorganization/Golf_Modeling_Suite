@@ -71,7 +71,9 @@ class URDFComponent:
 
     def get_hash(self) -> str:
         """Get unique hash for this component."""
-        return hashlib.md5(self.xml_content.encode(), usedforsecurity=False).hexdigest()[:8]
+        return hashlib.md5(
+            self.xml_content.encode(), usedforsecurity=False
+        ).hexdigest()[:8]
 
     def to_dict(self) -> dict[str, Any]:
         """Convert component to dictionary."""
@@ -228,7 +230,9 @@ class ComponentLibrary:
                 self._working_components[component.name] = component
                 components.append(component)
 
-        logger.info(f"Loaded {len(components)} working components from {urdf_path.name}")
+        logger.info(
+            f"Loaded {len(components)} working components from {urdf_path.name}"
+        )
         return components
 
     def copy_to_working(
@@ -268,7 +272,9 @@ class ComponentLibrary:
         # Add to working components
         self._working_components[new_component.name] = new_component
 
-        logger.info(f"Copied library component '{library_key}' as '{new_component.name}'")
+        logger.info(
+            f"Copied library component '{library_key}' as '{new_component.name}'"
+        )
         return new_component
 
     def get_library_components(
@@ -303,7 +309,9 @@ class ComponentLibrary:
             components = [c for c in components if c.component_type == filter_type]
         return components
 
-    def get_component(self, name: str, from_library: bool = False) -> URDFComponent | None:
+    def get_component(
+        self, name: str, from_library: bool = False
+    ) -> URDFComponent | None:
         """Get a component by name.
 
         Args:
@@ -489,7 +497,9 @@ class ComponentLibraryWidget(QWidget):
         # Library tree
         self.library_tree = QTreeWidget()
         self.library_tree.setHeaderLabels(["Component", "Type", "Source"])
-        self.library_tree.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.library_tree.setSelectionMode(
+            QAbstractItemView.SelectionMode.SingleSelection
+        )
         header = self.library_tree.header()
         if header:
             header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
@@ -511,7 +521,9 @@ class ComponentLibraryWidget(QWidget):
         # Working tree
         self.working_tree = QTreeWidget()
         self.working_tree.setHeaderLabels(["Component", "Type", "Status"])
-        self.working_tree.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.working_tree.setSelectionMode(
+            QAbstractItemView.SelectionMode.SingleSelection
+        )
         header = self.working_tree.header()
         if header:
             header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
@@ -547,8 +559,12 @@ class ComponentLibraryWidget(QWidget):
         self.edit_btn.clicked.connect(self._on_edit_component)
         self.remove_btn.clicked.connect(self._on_remove_component)
 
-        self.library_tree.itemSelectionChanged.connect(self._on_library_selection_changed)
-        self.working_tree.itemSelectionChanged.connect(self._on_working_selection_changed)
+        self.library_tree.itemSelectionChanged.connect(
+            self._on_library_selection_changed
+        )
+        self.working_tree.itemSelectionChanged.connect(
+            self._on_working_selection_changed
+        )
 
     def _on_load_library(self) -> None:
         """Handle load library button click."""
@@ -627,7 +643,8 @@ class ComponentLibraryWidget(QWidget):
         """Handle library tree selection change."""
         current = self.library_tree.currentItem()
         self.copy_btn.setEnabled(
-            current is not None and current.data(0, Qt.ItemDataRole.UserRole) is not None
+            current is not None
+            and current.data(0, Qt.ItemDataRole.UserRole) is not None
         )
 
         if current:

@@ -186,9 +186,13 @@ class TextEditorDiffMixin:
                     ]
                 )
             elif opcode == "insert":
-                result.extend([(None, modified_lines[j], "insert") for j in range(j1, j2)])
+                result.extend(
+                    [(None, modified_lines[j], "insert") for j in range(j1, j2)]
+                )
             elif opcode == "delete":
-                result.extend([(original_lines[i], None, "delete") for i in range(i1, i2)])
+                result.extend(
+                    [(original_lines[i], None, "delete") for i in range(i1, i2)]
+                )
             elif opcode == "replace":
                 max_len = max(i2 - i1, j2 - j1)
                 for k in range(max_len):

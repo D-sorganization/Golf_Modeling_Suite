@@ -28,7 +28,9 @@ from scipy.signal import (  # noqa: E402
     savgol_filter,
 )
 
-from src.shared.python.core.contracts import require  # type: ignore[import-untyped]  # noqa: E402
+from src.shared.python.core.contracts import (
+    require,  # type: ignore[import-untyped]  # noqa: E402
+)
 
 from .core import Signal  # noqa: E402
 
@@ -154,7 +156,11 @@ def _normalize_cutoff(
         if filter_type == FilterType.NOTCH:
             btype = "bandstop"
     else:
-        wn = cutoff / nyquist if isinstance(cutoff, (int, float)) else cutoff[0] / nyquist
+        wn = (
+            cutoff / nyquist
+            if isinstance(cutoff, (int, float))
+            else cutoff[0] / nyquist
+        )
 
     return wn, btype
 

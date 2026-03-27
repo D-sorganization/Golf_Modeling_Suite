@@ -13,7 +13,9 @@ from typing import Any  # noqa: E402
 import mujoco  # noqa: E402
 import numpy as np  # noqa: E402
 
-from src.shared.python.biomechanics.biomechanics_data import BiomechanicalData  # noqa: E402
+from src.shared.python.biomechanics.biomechanics_data import (
+    BiomechanicalData,  # noqa: E402
+)
 from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
 
 try:
@@ -53,9 +55,7 @@ class MuJoCoMeshcatAdapter:
         logger.info(f"Meshcat initialized at {self.url}")
 
         # Determine host-accessible URL if in Docker
-        if (
-            os.environ.get("MESHCAT_HOST") == "0.0.0.0"
-        ):  # nosec B104 - comparing env var value, not binding to an address
+        if os.environ.get("MESHCAT_HOST") == "0.0.0.0":  # nosec B104 - comparing env var value, not binding to an address
             try:
                 port = self.url.split(":")[-1].split("/")[0]
                 host_url = f"http://127.0.0.1:{port}/static/"

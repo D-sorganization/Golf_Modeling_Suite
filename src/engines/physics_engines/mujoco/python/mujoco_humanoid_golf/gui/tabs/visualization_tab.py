@@ -245,7 +245,9 @@ class VisualizationTab(QtWidgets.QWidget):
         btn_meshcat = QtWidgets.QPushButton("Open Web Visualizer")
         style = self.style()
         if style:
-            btn_meshcat.setIcon(style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_ComputerIcon))
+            btn_meshcat.setIcon(
+                style.standardIcon(QtWidgets.QStyle.StandardPixmap.SP_ComputerIcon)
+            )
         btn_meshcat.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         btn_meshcat.setToolTip("Open the scene in your default web browser")
         btn_meshcat.clicked.connect(self.on_open_meshcat)
@@ -278,7 +280,9 @@ class VisualizationTab(QtWidgets.QWidget):
         self.show_reference_trajectory_cb.setToolTip(
             "Overlay a reference trajectory for comparison (Orange)"
         )
-        self.show_reference_trajectory_cb.stateChanged.connect(self.on_swing_plane_changed)
+        self.show_reference_trajectory_cb.stateChanged.connect(
+            self.on_swing_plane_changed
+        )
         swing_layout.addWidget(self.show_reference_trajectory_cb)
 
         # Tracked body selector
@@ -426,7 +430,9 @@ class VisualizationTab(QtWidgets.QWidget):
         self.induced_source_combo.setToolTip(
             "Select source or type specific actuator name"
         )  # noqa: E501
-        self.induced_source_combo.currentTextChanged.connect(self.on_advanced_vector_changed)
+        self.induced_source_combo.currentTextChanged.connect(
+            self.on_advanced_vector_changed
+        )
 
         self.show_cf_cb = QtWidgets.QCheckBox("Show Counterfactuals")
         self.show_cf_cb.setToolTip(
@@ -455,7 +461,9 @@ class VisualizationTab(QtWidgets.QWidget):
         ellipsoid_layout.addWidget(self.show_mobility_ellipsoid_cb)
 
         self.show_force_ellipsoid_cb = QtWidgets.QCheckBox("Show Force Ellipsoid (Red)")
-        self.show_force_ellipsoid_cb.stateChanged.connect(self.on_ellipsoid_visualization_changed)
+        self.show_force_ellipsoid_cb.stateChanged.connect(
+            self.on_ellipsoid_visualization_changed
+        )
         ellipsoid_layout.addWidget(self.show_force_ellipsoid_cb)
 
         return ellipsoid_group
@@ -664,7 +672,8 @@ class VisualizationTab(QtWidgets.QWidget):
         require("sim_widget is set", lambda: self.sim_widget is not None)
         """Open the Meshcat visualizer in the default browser."""
         if (
-            hasattr(self.sim_widget, "meshcat_adapter") and self.sim_widget.meshcat_adapter
+            hasattr(self.sim_widget, "meshcat_adapter")
+            and self.sim_widget.meshcat_adapter
         ):  # noqa: E501
             self.sim_widget.open_meshcat_browser()
         else:
