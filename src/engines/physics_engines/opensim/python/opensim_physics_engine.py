@@ -172,8 +172,6 @@ class OpenSimPhysicsEngine(PhysicsEngine):
         """Set coordinate positions and speeds on the model state."""
         if not (q is not None):
             raise ValueError("q must be provided")
-        if not (q is not None):
-            raise ValueError("q must be provided")
         if not self._model or not self._state:
             return
 
@@ -197,8 +195,6 @@ class OpenSimPhysicsEngine(PhysicsEngine):
 
     def set_control(self, u: np.ndarray) -> None:
         """Set controls for the model."""
-        if not (u is not None):
-            raise ValueError("u must be provided")
         if not (u is not None):
             raise ValueError("u must be provided")
         if not self._model or not self._state:
@@ -297,8 +293,6 @@ class OpenSimPhysicsEngine(PhysicsEngine):
         """Compute required torques for the given joint accelerations."""
         if not (qacc is not None):
             raise ValueError("qacc must be provided")
-        if not (qacc is not None):
-            raise ValueError("qacc must be provided")
         if not self._model or not self._state:
             return np.array([])
 
@@ -351,8 +345,6 @@ class OpenSimPhysicsEngine(PhysicsEngine):
             - 'angular': Rotation Jacobian (3 × nv) [rad/rad or rad/m]
             - 'spatial': Combined [angular; linear] (6 × nv)
         """
-        if not (body_name is not None):
-            raise ValueError("body_name must be provided")
         if not (body_name is not None):
             raise ValueError("body_name must be provided")
         if not self._model or not self._state or opensim is None:
@@ -541,8 +533,6 @@ class OpenSimPhysicsEngine(PhysicsEngine):
         """
         if not (tau is not None):
             raise ValueError("tau must be provided")
-        if not (tau is not None):
-            raise ValueError("tau must be provided")
         if not self._model or not self._state:
             logger.warning("Model or state not initialized")
             return np.array([])
@@ -641,8 +631,6 @@ class OpenSimPhysicsEngine(PhysicsEngine):
         """
         if not (q is not None):
             raise ValueError("q must be provided")
-        if not (q is not None):
-            raise ValueError("q must be provided")
         if not self._model or not self._state:
             return np.array([])
 
@@ -691,8 +679,6 @@ class OpenSimPhysicsEngine(PhysicsEngine):
         Returns:
             q̈_ZVCF: Acceleration with v=0 (n_v,)
         """
-        if not (q is not None):
-            raise ValueError("q must be provided")
         if not (q is not None):
             raise ValueError("q must be provided")
         if not self._model or not self._state:

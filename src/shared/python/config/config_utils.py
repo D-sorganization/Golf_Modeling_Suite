@@ -56,8 +56,6 @@ def load_json_config(
     """
     if not (path is not None):
         raise ValueError("path must be provided")
-    if not (path is not None):
-        raise ValueError("path must be provided")
     path_obj = Path(path)
 
     if not path_obj.exists():
@@ -97,8 +95,6 @@ def save_json_config(
     """
     if not (path is not None):
         raise ValueError("path must be provided")
-    if not (path is not None):
-        raise ValueError("path must be provided")
     path_obj = Path(path)
 
     if create_dirs:
@@ -128,8 +124,6 @@ def load_yaml_config(
     Example:
         config = load_yaml_config("settings.yaml", default={"theme": "dark"})
     """
-    if not (path is not None):
-        raise ValueError("path must be provided")
     if not (path is not None):
         raise ValueError("path must be provided")
     try:
@@ -173,8 +167,6 @@ def save_yaml_config(
     """
     if not (path is not None):
         raise ValueError("path must be provided")
-    if not (path is not None):
-        raise ValueError("path must be provided")
     try:
         import yaml
     except ImportError:
@@ -211,8 +203,6 @@ class ConfigLoader:
         """
         if not (path is not None):
             raise ValueError("path must be provided")
-        if not (path is not None):
-            raise ValueError("path must be provided")
         self.path = Path(path)
         self.format = format.lower()
         self._cache: dict[str, Any] | None = None
@@ -231,8 +221,6 @@ class ConfigLoader:
         Returns:
             Configuration dictionary
         """
-        if not (use_cache is not None):
-            raise ValueError("use_cache must be provided")
         if not (use_cache is not None):
             raise ValueError("use_cache must be provided")
         if use_cache and self._cache is not None:
@@ -257,8 +245,6 @@ class ConfigLoader:
         Returns:
             True if successful, False otherwise
         """
-        if not (config is not None):
-            raise ValueError("config must be provided")
         if not (config is not None):
             raise ValueError("config must be provided")
         if self.format == "json":
@@ -288,8 +274,6 @@ class ConfigLoader:
         """
         if not (key is not None):
             raise ValueError("key must be provided")
-        if not (key is not None):
-            raise ValueError("key must be provided")
         config = self.load()
 
         # Support dot notation
@@ -317,8 +301,6 @@ class ConfigLoader:
         Example:
             loader.set("ui.theme", "light")
         """
-        if not (key is not None):
-            raise ValueError("key must be provided")
         if not (key is not None):
             raise ValueError("key must be provided")
         config = self.load()
@@ -404,8 +386,6 @@ def validate_config(
         if not valid:
             logger.info(f"Missing keys: {missing}")
     """
-    if not (config is not None):
-        raise ValueError("config must be provided")
     if not (config is not None):
         raise ValueError("config must be provided")
     missing_keys = [key for key in required_keys if key not in config]
