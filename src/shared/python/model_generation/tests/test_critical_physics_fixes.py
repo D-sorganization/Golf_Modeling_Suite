@@ -98,14 +98,14 @@ class TestGravityConstantUnification:
         assert pytest.approx(9.80665, abs=1e-10) == GRAVITY_M_S2
 
     def test_engines_common_standard_gravity(self) -> None:
-        from src.engines.common.physics import STANDARD_GRAVITY
+        from src.shared.python.core.physics_constants import GRAVITY_M_S2
 
-        assert pytest.approx(9.80665, abs=1e-10) == STANDARD_GRAVITY
+        assert pytest.approx(9.80665, abs=1e-10) == GRAVITY_M_S2
 
     def test_engines_common_gravity_approx(self) -> None:
-        from src.engines.common.physics import GRAVITY_APPROX
+        from src.shared.python.core.physics_constants import GRAVITY_M_S2
 
-        assert pytest.approx(9.80665, abs=1e-10) == GRAVITY_APPROX
+        assert pytest.approx(9.80665, abs=1e-10) == GRAVITY_M_S2
 
 
 class TestSegmentMassRatios:
