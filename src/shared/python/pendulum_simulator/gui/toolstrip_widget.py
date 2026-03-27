@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """
 ToolStrip — persistent header bar with stacked overlay controls.
 
@@ -780,7 +784,7 @@ class ToolStrip(QWidget):
     def set_frame_range(self, n_steps: int) -> None:
         """Set the playback slider maximum after simulation completes."""
         if not (n_steps >= 0):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
         self._frame_slider.setRange(0, max(0, n_steps - 1))
         self._frame_slider.setValue(0)
         self._frame_lbl.setText(f"0% (0/{max(0, n_steps - 1)})")
@@ -841,8 +845,8 @@ class ToolStrip(QWidget):
         seg_item = overlay_layout.itemAt(overlay_layout.count() - 1)
         if seg_item is not None and seg_item.layout() is not None:
             seg_layout = seg_item.layout()
-            if not (seg_layout is not None  # narrowing for mypy):
-                raise ValueError('DbC Blocked: Precondition failed.')
+            if not (seg_layout is not None):  # narrowing for mypy
+                raise ValueError("DbC Blocked: Precondition failed.")
             # Clear old widgets (keep "Segments:" label at position 0)
             while seg_layout.count() > 1:
                 item = seg_layout.takeAt(1)

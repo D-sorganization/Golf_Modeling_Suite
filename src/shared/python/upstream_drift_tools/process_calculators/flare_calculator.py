@@ -173,13 +173,13 @@ class FlareCalculator:
         )
         # DbC postconditions
         if not (result.height >= FLARE_MIN_HEIGHT):
-            raise ValueError(()
-            f"Flare height must be >= minimum ({FLARE_MIN_HEIGHT}), got {result.height}"
-        )
+            raise ValueError(
+                f"Flare height must be >= minimum ({FLARE_MIN_HEIGHT}), got {result.height}"
+            )
         if not (result.diameter >= 0):
-            raise ValueError(()
-            f"Flare diameter must be non-negative, got {result.diameter}"
-        )
+            raise ValueError(
+                f"Flare diameter must be non-negative, got {result.diameter}"
+            )
         return result
 
     def calculate_radiation_zones(self, flare_design: FlareDesign) -> dict[str, float]:

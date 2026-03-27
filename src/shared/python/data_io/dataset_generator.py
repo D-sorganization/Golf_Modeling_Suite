@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Dataset Generator for Neural Network Training.
 
 Generates large-scale simulation datasets by varying inputs across physics engines.
@@ -513,19 +517,13 @@ class DatasetGenerator:
         if not (buffers["velocities"] is not None):
             raise ValueError("velocities buffer must not be None")
         if not (buffers["accelerations"] is not None):
-            raise ValueError(()
-            "accelerations buffer must not be None"
-        )
+            raise ValueError("accelerations buffer must not be None")
         if not (buffers["torques"] is not None):
             raise ValueError("torques buffer must not be None")
         if not (buffers["kinetic_energy"] is not None):
-            raise ValueError(()
-            "kinetic_energy buffer must not be None"
-        )
+            raise ValueError("kinetic_energy buffer must not be None")
         if not (buffers["potential_energy"] is not None):
-            raise ValueError(()
-            "potential_energy buffer must not be None"
-        )
+            raise ValueError("potential_energy buffer must not be None")
 
         return SimulationSample(
             sample_id=sample_id,
@@ -920,16 +918,13 @@ class DatasetGenerator:
     @staticmethod
     def _create_sqlite_tables(cursor: sqlite3.Cursor) -> None:
         """Create the SQLite schema tables."""
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS dataset_metadata (
                 key TEXT PRIMARY KEY,
                 value TEXT
             )
-        """
-        )
-        cursor.execute(
-            """
+        """)
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS samples (
                 sample_id INTEGER PRIMARY KEY,
                 metadata_json TEXT,
@@ -937,10 +932,8 @@ class DatasetGenerator:
                 n_q INTEGER,
                 n_v INTEGER
             )
-        """
-        )
-        cursor.execute(
-            """
+        """)
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS frames (
                 sample_id INTEGER,
                 step INTEGER,
@@ -953,8 +946,7 @@ class DatasetGenerator:
                 PRIMARY KEY (sample_id, step),
                 FOREIGN KEY (sample_id) REFERENCES samples(sample_id)
             )
-        """
-        )
+        """)
 
     @staticmethod
     def _insert_sqlite_metadata(

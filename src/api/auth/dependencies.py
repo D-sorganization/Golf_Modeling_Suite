@@ -64,8 +64,8 @@ async def get_current_user(
 
     # In mypy, SQLAlchemy query results are sometimes ambiguous
     # We assert user is of type User to satisfy mypy
-    if not (isinstance(user):
-        raise ValueError(User))
+    if not isinstance(user, User):
+        raise ValueError(f"Expected User, got {type(user).__name__}")
     return user
 
 
@@ -88,8 +88,8 @@ def _lookup_cached_api_key(api_key: str, db: Session) -> APIKey | None:
     if not record or not record.is_active:
         return None
 
-    if not (isinstance(record):
-        raise ValueError(APIKey))
+    if not isinstance(record, APIKey):
+        raise ValueError(f"Expected APIKey, got {type(record).__name__}")
     return record
 
 
@@ -124,8 +124,8 @@ def _lookup_api_key_by_prefix(api_key: str, db: Session) -> APIKey:
 
     for key_candidate in active_keys:
         if security_manager.verify_api_key(api_key, str(key_candidate.key_hash)):
-            if not (isinstance(key_candidate):
-                raise ValueError(APIKey))
+            if not isinstance(key_candidate, APIKey):
+                raise ValueError(f"Expected APIKey, got {type(key_candidate).__name__}")
             return key_candidate
 
     raise HTTPException(
@@ -143,8 +143,8 @@ def _get_active_user_for_api_key(api_key_record: APIKey, db: Session) -> User:
             detail="User not found or inactive",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    if not (isinstance(user):
-        raise ValueError(User))
+    if not isinstance(user, User):
+        raise ValueError(f"Expected User, got {type(user).__name__}")
     return user
 
 

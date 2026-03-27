@@ -1,4 +1,7 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Modular Impact Model Module.
 
 Guideline K3 Implementation: Modular Impact Model (MuJoCo).
@@ -363,7 +366,6 @@ class SpringDamperImpactModel(ImpactModel):
     @precondition(
         lambda self, pre_state, params: params.contact_stiffness > 0,
         "Contact stiffness must be positive",
-    @jit(nopython=True, fastmath=True)
     )
     def solve(
         self,
@@ -765,7 +767,27 @@ class ImpactRecorder:
         Returns:
             Dictionary with all impact events and summary
         """
-        events_data.extend([{'impact_id': event.impact_id, 'timestamp': event.timestamp, 'model_type': event.model_type.name, 'pre_impact': {'clubhead_velocity': event.pre_state.clubhead_velocity.tolist(), 'ball_velocity': event.pre_state.ball_velocity.tolist(), 'ball_spin': event.pre_state.ball_angular_velocity.tolist()}, 'post_impact': {'ball_velocity': event.post_state.ball_velocity.tolist(), 'ball_spin': event.post_state.ball_angular_velocity.tolist(), 'clubhead_velocity': event.post_state.clubhead_velocity.tolist(), 'contact_duration': event.post_state.contact_duration, 'energy_transfer': event.post_state.energy_transfer}, 'energy_balance': event.energy_balance} for event in self.events])
+        events_data = []
+        for event in self.events:
+            events_data.append(
+                {
+                    "impact_id": event.impact_id,
+                    "timestamp": event.timestamp,
+                    "model_type": event.model_type.name,
+                    "pre_impact": {
+                        "clubhead_velocity": event.pre_state.clubhead_velocity.tolist(),
+                        "ball_velocity": event.pre_state.ball_velocity.tolist(),
+                        "ball_spin": event.pre_state.ball_angular_velocity.tolist(),
+                    },
+                    "post_impact": {
+                        "ball_velocity": event.post_state.ball_velocity.tolist(),
+                        "ball_spin": event.post_state.ball_angular_velocity.tolist(),
+                        "clubhead_velocity": event.post_state.clubhead_velocity.tolist(),
+                        "contact_duration": event.post_state.contact_duration,
+                        "energy_transfer": event.post_state.energy_transfer,
+                    },
+                    "energy_balance": event.energy_balance,
+                }
             )
 
         return {
@@ -993,7 +1015,18 @@ class ImpactSolverAPI:
         if not self.recorder.events:
             return {"error": "No impacts recorded"}
 
-        reports.extend([{'impact_id': event.impact_id, 'timestamp': event.timestamp, 'ke_pre': event.energy_balance['total_ke_pre'], 'ke_post': event.energy_balance['total_ke_post'], 'energy_lost': event.energy_balance['energy_lost'], 'loss_ratio': event.energy_balance['energy_loss_ratio'], 'ball_speed': event.energy_balance['ball_launch_speed']} for event in self.recorder.events])
+        reports = []
+        for event in self.recorder.events:
+            reports.append(
+                {
+                    "impact_id": event.impact_id,
+                    "timestamp": event.timestamp,
+                    "ke_pre": event.energy_balance["total_ke_pre"],
+                    "ke_post": event.energy_balance["total_ke_post"],
+                    "energy_lost": event.energy_balance["energy_lost"],
+                    "loss_ratio": event.energy_balance["energy_loss_ratio"],
+                    "ball_speed": event.energy_balance["ball_launch_speed"],
+                }
             )
 
         # Aggregate statistics
@@ -1010,7 +1043,6 @@ class ImpactSolverAPI:
             ),
         }
 
-    @jit(nopython=True, fastmath=True)
     def validate_cor_behavior(
         self, tolerance: float = 0.05
     ) -> dict[str, bool | float | str | int]:

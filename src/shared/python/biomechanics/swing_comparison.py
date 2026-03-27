@@ -1,24 +1,20 @@
-from numba import jit
-
 """Swing comparison module for biomechanical analysis.
 
 This module provides tools to compare two swing datasets (e.g., Student vs Pro),
 quantifying similarities and differences in kinematics, timing, and coordination.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from dataclasses import dataclass  # noqa: E402
-from typing import Any  # noqa: E402
+from dataclasses import dataclass
+from typing import Any
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from src.shared.python.core.contracts import ensure, require  # noqa: E402
-from src.shared.python.data_io import common_utils  # noqa: E402
-from src.shared.python.signal_toolkit import signal_processing  # noqa: E402
-from src.shared.python.validation_pkg.statistical_analysis import (
-    StatisticalAnalyzer,  # noqa: E402
-)
+from src.shared.python.core.contracts import ensure, require
+from src.shared.python.data_io import common_utils
+from src.shared.python.signal_toolkit import signal_processing
+from src.shared.python.validation_pkg.statistical_analysis import StatisticalAnalyzer
 
 # Constants for scoring
 EPSILON = 1e-9
@@ -172,7 +168,6 @@ class SwingComparator:
         )
         return result
 
-    @jit(nopython=True, fastmath=True)
     def compare_peak_speeds(
         self,
         segment_indices: dict[str, int],

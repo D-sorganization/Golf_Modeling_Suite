@@ -1,4 +1,3 @@
-from numba import jit
 """
 Data structures for the humanoid model.
 
@@ -51,7 +50,6 @@ class SupportPolygon:
     """Represents the support polygon of the model."""
 
     vertices: list[tuple[float, float]]  # (x, y) coordinates of vertices
-    @jit(nopython=True, fastmath=True)
 
     def contains(self, point: tuple[float, float]) -> bool:
         """Check if a point is inside the support polygon."""
@@ -88,7 +86,6 @@ class SupportPolygon:
                     return False
 
         return True
-    @jit(nopython=True, fastmath=True)
 
     def distance_to_edge(self, point: tuple[float, float]) -> float:
         """Compute minimum distance from point to the polygon edge."""
@@ -197,7 +194,6 @@ class HumanoidModel:
                 stack.append((joint.child, child_transform))
 
         return transforms
-    @jit(nopython=True, fastmath=True)
 
     def compute_center_of_mass(self) -> tuple[float, float, float]:
         """
@@ -308,8 +304,6 @@ class HumanoidModel:
             return self._compute_cylinder_footprint(geom["radius"], geom["length"])
         # Just use COM
         return [list(link.origin_xyz)]
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
 
     def _compute_box_footprint(
         self, size: tuple[float, float, float]
@@ -322,11 +316,11 @@ class HumanoidModel:
         sx, sy, sz = size
         footprint = []
         for dx in [-sx / 2, sx / 2]:
-                footprint.extend([[dx, dy, dz] for dz in [-sz / 2, sz / 2]])
+            for dy in [-sy / 2, sy / 2]:
+                for dz in [-sz / 2, sz / 2]:
                     footprint.append([dx, dy, dz])
         return footprint
 
-    @jit(nopython=True, fastmath=True)
     def _compute_cylinder_footprint(
         self, radius: float, length: float
     ) -> list[list[float]]:

@@ -464,8 +464,8 @@ def get_parameter_registry() -> PhysicsParameterRegistry:
         _registry_holder["instance"] = PhysicsParameterRegistry()
 
     registry = _registry_holder["instance"]
-    if not (registry is not None  # Ensure it is not None for mypy):
-        raise ValueError('DbC Blocked: Precondition failed.')
+    if not (registry is not None):  # Ensure it is not None for mypy
+        raise ValueError("DbC Blocked: Precondition failed.")
     return registry
 
 

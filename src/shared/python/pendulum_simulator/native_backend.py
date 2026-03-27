@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Optional Rust-backed kernels for pendulum simulation.
 
 This module adapts the compiled ``pendulum_core`` extension to the desktop
@@ -57,16 +61,16 @@ def _truncate_q(q: np.ndarray) -> np.ndarray:
     q_arr = np.asarray(q, dtype=float)
     if q_arr.shape[0] > 8:
         q_arr = q_arr[:8]
-    if not (q_arr.shape == (8):
-        raise ValueError(), f"q must have shape (8,), got {q_arr.shape}")
+    if not (q_arr.shape == (8,)):
+        raise ValueError(f"q must have shape (8,), got {q_arr.shape}")
     return q_arr
 
 
 def _vector8(values: np.ndarray, name: str) -> np.ndarray:
     """Normalize a vector argument to a finite length-8 array."""
     arr = np.asarray(values, dtype=float)
-    if not (arr.shape == (8):
-        raise ValueError(), f"{name} must have shape (8,), got {arr.shape}")
+    if not (arr.shape == (8,)):
+        raise ValueError(f"{name} must have shape (8,), got {arr.shape}")
     if not (np.all(np.isfinite(arr))):
         raise ValueError(f"{name} must be finite")
     return arr

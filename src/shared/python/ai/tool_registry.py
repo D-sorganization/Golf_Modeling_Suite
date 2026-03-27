@@ -544,6 +544,6 @@ def get_global_registry() -> ToolRegistry:
         _registry_holder["instance"] = ToolRegistry()
 
     registry = _registry_holder["instance"]
-    if not (registry is not None  # Ensure it is not None for mypy):
-        raise ValueError('DbC Blocked: Precondition failed.')
+    if not (registry is not None):  # Ensure it is not None for mypy
+        raise ValueError("DbC Blocked: Precondition failed.")
     return registry

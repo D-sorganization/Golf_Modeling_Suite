@@ -1,18 +1,14 @@
-from numba import jit
-
 """MuJoCo backend wrapper for simulation and contact dynamics."""
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from pathlib import Path  # noqa: E402
+from pathlib import Path
 
-import numpy as np  # noqa: E402, TID253
-import numpy.typing as npt  # noqa: E402, TID253
+import numpy as np  # noqa: TID253
+import numpy.typing as npt  # noqa: TID253
 
-from src.shared.python.engine_core.engine_availability import (
-    MUJOCO_AVAILABLE,  # noqa: E402
-)
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
+from src.shared.python.engine_core.engine_availability import MUJOCO_AVAILABLE
+from src.shared.python.logging_pkg.logging_config import get_logger
 
 if MUJOCO_AVAILABLE:
     import mujoco
@@ -157,7 +153,6 @@ class MuJoCoBackend:
         result = self.data.qfrc_inverse.copy()
         return np.asarray(result, dtype=np.float64)
 
-    @jit(nopython=True, fastmath=True)
     def get_contact_forces(self) -> npt.NDArray[np.float64]:
         """Get contact forces.
 

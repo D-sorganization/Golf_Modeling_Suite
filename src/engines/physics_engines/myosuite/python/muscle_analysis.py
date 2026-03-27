@@ -1,22 +1,18 @@
-from numba import jit
-
 """MyoSuite Muscle Analysis and Grip Modeling.
 
 Section K: MyoSuite-Style Muscle + Neural Control Support
 Provides muscle-driven simulation capabilities matching OpenSim analysis.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from dataclasses import dataclass  # noqa: E402
-from typing import Any  # noqa: E402
+from dataclasses import dataclass
+from typing import Any
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from src.shared.python.engine_core.engine_availability import (
-    MUJOCO_AVAILABLE,  # noqa: E402
-)
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
+from src.shared.python.engine_core.engine_availability import MUJOCO_AVAILABLE
+from src.shared.python.logging_pkg.logging_config import get_logger
 
 logger = get_logger(__name__)
 
@@ -272,8 +268,6 @@ class MyoSuiteMuscleAnalyzer:
             logger.error(f"Failed to extract muscle velocities: {e}")
             return np.zeros(len(self.muscle_names))
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def compute_moment_arms(self) -> dict[str, np.ndarray]:
         """Compute muscle moment arms about joints via finite differences.
 
@@ -394,7 +388,6 @@ class MyoSuiteMuscleAnalyzer:
 
         return induced_accelerations
 
-    @jit(nopython=True, fastmath=True)
     def compute_activation_power(self) -> dict[str, float]:
         """Compute metabolic activation cost for each muscle.
 

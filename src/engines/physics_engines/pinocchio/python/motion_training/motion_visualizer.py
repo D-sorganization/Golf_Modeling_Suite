@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
 
 """Visualization system for golf swing motion and club trajectory.
 
@@ -7,18 +9,16 @@ Provides visualization using:
 2. Matplotlib (2D plots and static 3D views)
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import time  # noqa: E402
-from dataclasses import dataclass  # noqa: E402
-from pathlib import Path  # noqa: E402
-from typing import TYPE_CHECKING, Any  # noqa: E402
+import time
+from dataclasses import dataclass
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from src.shared.python.engine_core.engine_availability import (
-    PINOCCHIO_AVAILABLE,  # noqa: E402
-)
+from src.shared.python.engine_core.engine_availability import PINOCCHIO_AVAILABLE
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -47,10 +47,10 @@ try:
 except ImportError:
     MATPLOTLIB_AVAILABLE = False
 
-import logging  # noqa: E402
+import logging
 
-from motion_training.club_trajectory_parser import ClubTrajectory  # noqa: E402
-from motion_training.dual_hand_ik_solver import TrajectoryIKResult  # noqa: E402
+from motion_training.club_trajectory_parser import ClubTrajectory
+from motion_training.dual_hand_ik_solver import TrajectoryIKResult
 
 logger = logging.getLogger(__name__)
 
@@ -377,7 +377,6 @@ class MotionVisualizer:
         if self.pin_viz is not None:
             self.pin_viz.display(q)
 
-    @jit(nopython=True, fastmath=True)
     def play_motion(
         self,
         trajectory: ClubTrajectory,
@@ -441,7 +440,6 @@ class MotionVisualizer:
         except KeyboardInterrupt:
             logger.info("\nPlayback stopped")
 
-    @jit(nopython=True, fastmath=True)
     def show_static_trajectory(
         self,
         trajectory: ClubTrajectory,

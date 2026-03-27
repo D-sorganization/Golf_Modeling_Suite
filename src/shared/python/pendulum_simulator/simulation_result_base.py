@@ -18,41 +18,31 @@ class TrajectoryResultMixin:
         return len(self.t)
 
     def _validate_trajectory(self, expected_state_width: int) -> None:
-        if not (self.t.ndim == 1):
-            raise ValueError(f"t must be 1D, got shape {self.t.shape}")
-        if not (self.states.ndim == 2):
-            raise ValueError(()
+        assert self.t.ndim == 1, f"t must be 1D, got shape {self.t.shape}"
+        assert self.states.ndim == 2, (
             f"states must be 2D, got shape {self.states.shape}"
         )
-        if not (self.t.size >= 1):
-            raise ValueError("Trajectory must contain at least one time sample")
-        if not (self.states.shape[0] == self.t.size):
-            raise ValueError(()
+        assert self.t.size >= 1, "Trajectory must contain at least one time sample"
+        assert self.states.shape[0] == self.t.size, (
             "states row count must match the number of time samples"
         )
-        if not (self.states.shape[1] == expected_state_width):
-            raise ValueError(()
+        assert self.states.shape[1] == expected_state_width, (
             f"states must have width {expected_state_width}, got {self.states.shape[1]}"
         )
-        if not (np.all(np.isfinite(self.t))):
-            raise ValueError("Time vector must be finite")
-        if not (np.all(np.isfinite(self.states))):
-            raise ValueError("State trajectory must be finite")
+        assert np.all(np.isfinite(self.t)), "Time vector must be finite"
+        assert np.all(np.isfinite(self.states)), "State trajectory must be finite"
         if self.t.size > 1:
-            if not (np.all(np.diff(self.t) > 0)):
-                raise ValueError(()
+            assert np.all(np.diff(self.t) > 0), (
                 "Time vector must be strictly increasing"
             )
 
     def _check_idx(self, idx: int) -> None:
-        if not (0 <= idx < self.n_steps):
-            raise ValueError(f"Index {idx} out of range [0, {self.n_steps})")
+        assert 0 <= idx < self.n_steps, f"Index {idx} out of range [0, {self.n_steps})"
 
     @staticmethod
     def _assert_energy_finite(result: dict, idx: int) -> None:
         """Shared postcondition: all energy components must be finite."""
-        if not (all(np.isfinite(v) for v in result.values())):
-            raise ValueError(()
+        assert all(np.isfinite(v) for v in result.values()), (
             f"Non-finite energy at idx={idx}: {result}"
         )
 
@@ -63,8 +53,7 @@ class TrajectoryResultMixin:
         apply torque clamping (e.g. double-pendulum with TorqueClamp) must
         override this method.
         """
-        if not (idx is not None):
-            raise ValueError("idx must be provided")
+        assert idx is not None, "idx must be provided"
         self._check_idx(idx)
         torque_func = self.torque_func  # type: ignore[attr-defined]
         tau_drive = np.array(torque_func(self.t[idx]))

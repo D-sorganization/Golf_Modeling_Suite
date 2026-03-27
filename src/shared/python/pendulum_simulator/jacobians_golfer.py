@@ -37,8 +37,8 @@ def _numerical_jacobian(
     -------
     J : np.ndarray, shape (2, 8)
     """
-    if not (q.shape == (N_DOF):
-        raise ValueError(), f"q shape must be ({N_DOF},)")
+    if not (q.shape == (N_DOF,)):
+        raise ValueError(f"q shape must be ({N_DOF},)")
     fk0 = forward_kinematics(q, p)
     pos0 = np.array(fk0[joint_name])
 

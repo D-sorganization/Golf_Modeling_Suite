@@ -1,4 +1,3 @@
-from numba import jit
 """Animation utilities for golf swing data visualisation.
 
 This module creates frame-by-frame matplotlib animations from recorded
@@ -198,7 +197,6 @@ class SwingAnimator:
             lines[name] = line
             points[name] = pt
         return lines, points
-    @jit(nopython=True, fastmath=True)
 
     def _set_axis_limits_from_data(self, ax, body_data):
         if not (ax is not None):
@@ -215,7 +213,6 @@ class SwingAnimator:
     @precondition(
         lambda self, body_positions, links=None: len(body_positions) > 0,
         "Body positions dict must be non-empty",
-    @jit(nopython=True, fastmath=True)
     )
     def create_stick_figure_animation(
         self,
@@ -282,7 +279,6 @@ class SwingAnimator:
         ),
         "Positions and vectors must have the same length",
     )
-    @jit(nopython=True, fastmath=True)
     def create_vector_field_animation(
         self,
         positions: np.ndarray,

@@ -301,13 +301,9 @@ class BaghouseCalculator:
              carbon_only_fill_hours, ash_only_fill_hours)
         """
         if not (solid_carbon_in_kg_hr is not None):
-            raise ValueError(()
-            "solid_carbon_in_kg_hr must be provided"
-        )
+            raise ValueError("solid_carbon_in_kg_hr must be provided")
         if not (solid_carbon_in_kg_hr is not None):
-            raise ValueError(()
-            "solid_carbon_in_kg_hr must be provided"
-        )
+            raise ValueError("solid_carbon_in_kg_hr must be provided")
         carbon_removed = solid_carbon_in_kg_hr * carbon_removal_efficiency
         ash_removed = ash_in_kg_hr * ash_removal_efficiency
         total_solids = carbon_removed + ash_removed
@@ -372,19 +368,19 @@ class BaghouseCalculator:
         if not (pressure_pa > 0):
             raise ValueError(f"Pressure must be positive, got {pressure_pa}")
         if not (0 <= carbon_removal_efficiency <= 1):
-            raise ValueError(()
-            f"Carbon removal efficiency must be 0-1, got {carbon_removal_efficiency}"
-        )
+            raise ValueError(
+                f"Carbon removal efficiency must be 0-1, got {carbon_removal_efficiency}"
+            )
         if not (0 <= ash_removal_efficiency <= 1):
-            raise ValueError(()
-            f"Ash removal efficiency must be 0-1, got {ash_removal_efficiency}"
-        )
+            raise ValueError(
+                f"Ash removal efficiency must be 0-1, got {ash_removal_efficiency}"
+            )
         if not (drum_volume_m3 > 0):
             raise ValueError(f"Drum volume must be positive, got {drum_volume_m3}")
         if not (solid_density_kg_m3 > 0):
-            raise ValueError(()
-            f"Solid density must be positive, got {solid_density_kg_m3}"
-        )
+            raise ValueError(
+                f"Solid density must be positive, got {solid_density_kg_m3}"
+            )
 
         outlet_temp_c, flow_acfm, flow_scfm = self._calculate_outlet_thermal(
             gas_flow_kg_s,

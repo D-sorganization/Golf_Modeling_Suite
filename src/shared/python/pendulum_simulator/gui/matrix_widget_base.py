@@ -69,9 +69,9 @@ class MatrixWidgetBase(QWidget):
         if not (result is not None):
             raise ValueError(f"{self.__class__.__name__}: result must not be None")
         if not (result.n_steps >= 1):
-            raise ValueError(()
-            f"{self.__class__.__name__}: result must have at least one time step"
-        )
+            raise ValueError(
+                f"{self.__class__.__name__}: result must have at least one time step"
+            )
         self._result = result
         self._current_idx = 0
         logger.debug(
@@ -312,7 +312,7 @@ class MatrixWidgetBase(QWidget):
             New y cursor position
         """
         if not (self._result is not None):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
         idx = self._current_idx
         tau = self._result.torques_at(idx)
         G = self._result.gravity_at(idx)
@@ -358,7 +358,7 @@ class MatrixWidgetBase(QWidget):
             New y cursor position
         """
         if not (self._result is not None):
-            raise ValueError('DbC Blocked: Precondition failed.')
+            raise ValueError("DbC Blocked: Precondition failed.")
         e = self._result.energy_at(self._current_idx)
         painter.setFont(QFont("Monospace", 10))
         lines = [

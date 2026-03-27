@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Multi-robot coordination algorithms."""
 
 from __future__ import annotations
@@ -456,13 +460,9 @@ class CooperativeManipulation:
             List of force vectors for each contact.
         """
         if not (desired_object_wrench is not None):
-            raise ValueError(()
-            "desired_object_wrench must be provided"
-        )
+            raise ValueError("desired_object_wrench must be provided")
         if not (desired_object_wrench is not None):
-            raise ValueError(()
-            "desired_object_wrench must be provided"
-        )
+            raise ValueError("desired_object_wrench must be provided")
         G = self.compute_grasp_matrix(object_pose)
         n_contacts = len(self._grasp_points)
 

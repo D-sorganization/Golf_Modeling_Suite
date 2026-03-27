@@ -263,13 +263,13 @@ class FinancialModelCalculator:
         """Calculate comprehensive financial model."""
         # DbC preconditions
         if not (parameters.total_capital_investment >= 0):
-            raise ValueError(()
-            f"Capital investment must be non-negative, got {parameters.total_capital_investment}"
-        )
+            raise ValueError(
+                f"Capital investment must be non-negative, got {parameters.total_capital_investment}"
+            )
         if not (parameters.operating_days_per_year >= 0):
-            raise ValueError(()
-            f"Operating days must be non-negative, got {parameters.operating_days_per_year}"
-        )
+            raise ValueError(
+                f"Operating days must be non-negative, got {parameters.operating_days_per_year}"
+            )
 
         self.parameters = parameters
         results = FinancialResults()

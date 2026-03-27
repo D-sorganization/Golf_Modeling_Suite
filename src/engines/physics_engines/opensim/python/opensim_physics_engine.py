@@ -1,27 +1,27 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """OpenSim Physics Engine implementation.
 
 Refactored to use shared engine availability module (DRY principle).
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-import os  # noqa: E402
-from typing import Any  # noqa: E402
+import os
+from typing import Any
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from src.shared.python.core.contracts import (  # noqa: E402
+from src.shared.python.core.contracts import (
     check_finite,
     postcondition,
     precondition,
 )
-from src.shared.python.engine_core.engine_availability import (
-    OPENSIM_AVAILABLE,  # noqa: E402
-)
-from src.shared.python.engine_core.interfaces import PhysicsEngine  # noqa: E402
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
+from src.shared.python.engine_core.engine_availability import OPENSIM_AVAILABLE
+from src.shared.python.engine_core.interfaces import PhysicsEngine
+from src.shared.python.logging_pkg.logging_config import get_logger
 
 # Configure logging
 logger = get_logger(__name__)
@@ -337,7 +337,6 @@ class OpenSimPhysicsEngine(PhysicsEngine):
             logger.error(f"OpenSim ID failed: {e}")
             return np.array([])
 
-    @jit(nopython=True, fastmath=True)
     def compute_jacobian(self, body_name: str) -> dict[str, np.ndarray] | None:
         """Compute spatial Jacobian for a body in OpenSim.
 

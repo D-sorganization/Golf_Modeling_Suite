@@ -1,22 +1,18 @@
-from numba import jit
-
 """MeshCat adapter for MuJoCo humanoid golf visualization.
 
 Provides a browser-based 3D visualization backend via MeshCat,
 wrapping MuJoCo model data for interactive display.
 """
 
-import os  # noqa: E402
-import webbrowser  # noqa: E402
-from typing import Any  # noqa: E402
+import os
+import webbrowser
+from typing import Any
 
-import mujoco  # noqa: E402
-import numpy as np  # noqa: E402
+import mujoco
+import numpy as np
 
-from src.shared.python.biomechanics.biomechanics_data import (
-    BiomechanicalData,  # noqa: E402
-)
-from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
+from src.shared.python.biomechanics.biomechanics_data import BiomechanicalData
+from src.shared.python.logging_pkg.logging_config import get_logger
 
 try:
     import meshcat
@@ -70,7 +66,6 @@ class MuJoCoMeshcatAdapter:
         if self.vis is not None:
             webbrowser.open(self.vis.url())
 
-    @jit(nopython=True, fastmath=True)
     def load_model_geometry(self) -> None:
         """
         Parses MuJoCo model geoms and creates corresponding Meshcat objects.
@@ -228,7 +223,6 @@ class MuJoCoMeshcatAdapter:
                     f"overlays/torques/{body_name}", pos, t * torque_scale, 0x0000FF
                 )  # noqa: E501
 
-    @jit(nopython=True, fastmath=True)
     def draw_induced_vectors(
         self,
         data: mujoco.MjData,
@@ -298,7 +292,6 @@ class MuJoCoMeshcatAdapter:
                 f"overlays/induced/joint_{j}", joint_pos, arrow_dir, 0xFF00FF
             )  # noqa: E501
 
-    @jit(nopython=True, fastmath=True)
     def draw_cf_vectors(
         self,
         data: mujoco.MjData,

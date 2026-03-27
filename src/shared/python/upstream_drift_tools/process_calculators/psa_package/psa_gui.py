@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """
 PyQt6 GUI for Two-Stage PSA System Analysis.
@@ -7,23 +9,19 @@ This GUI provides interactive visualization and analysis of PSA system
 performance, including sensitivity analysis and O2 safety calculations.
 """
 
-import subprocess  # noqa: E402
-import sys  # noqa: E402
-import webbrowser  # noqa: E402
-from pathlib import Path  # noqa: E402
+import subprocess
+import sys
+import webbrowser
+from pathlib import Path
 
-import matplotlib  # noqa: E402
-import numpy as np  # noqa: E402
-from matplotlib.backends.backend_qtagg import (
-    FigureCanvasQTAgg as FigureCanvas,  # noqa: E402
-)
-from matplotlib.backends.backend_qtagg import (
-    NavigationToolbar2QT as NavigationToolbar,
-)  # noqa: E402
-from matplotlib.figure import Figure  # noqa: E402
-from PyQt6.QtCore import Qt  # noqa: E402
-from PyQt6.QtGui import QAction, QDoubleValidator, QFont, QPixmap  # noqa: E402
-from PyQt6.QtWidgets import (  # noqa: E402
+import matplotlib
+import numpy as np
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.figure import Figure
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QAction, QDoubleValidator, QFont, QPixmap
+from PyQt6.QtWidgets import (
     QApplication,
     QCheckBox,
     QComboBox,
@@ -45,8 +43,8 @@ from PyQt6.QtWidgets import (  # noqa: E402
     QWidget,
 )
 
-from ...ui.utils.widget_factory import create_slider  # noqa: E402
-from .psa_model import (  # noqa: E402
+from ...ui.utils.widget_factory import create_slider
+from .psa_model import (
     DEFAULT_COMPONENTS,
     ComponentData,
     PSAModel,
@@ -750,7 +748,6 @@ class PFDWidget(QWidget):
         super().__init__(parent)
         self._setup_ui()
 
-    @jit(nopython=True, fastmath=True)
     def _setup_ui(self) -> None:
         layout = QVBoxLayout(self)
 

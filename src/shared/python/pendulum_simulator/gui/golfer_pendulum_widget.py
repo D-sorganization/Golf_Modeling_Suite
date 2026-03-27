@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """
 Custom QWidget that draws the golfer upper-body model animation.
 
@@ -105,8 +109,7 @@ class GolferPendulumWidget(BasePendulumWidget):
 
         Pre: result is not None
         """
-        if not (result is not None):
-            raise ValueError("GolferSimulationResult must not be None")
+        assert result is not None, "GolferSimulationResult must not be None"
         self._result = result
         self._current_idx = 0
         self._trail.clear()
@@ -154,8 +157,7 @@ class GolferPendulumWidget(BasePendulumWidget):
         Rebuilds the trail from the precomputed club tip positions so
         scrubbing back and forth always shows a clean path.
         """
-        if not (idx is not None):
-            raise ValueError("idx must be provided")
+        assert idx is not None, "idx must be provided"
         if self._result is None:
             return
         idx = max(0, min(idx, self._result.n_steps - 1))
@@ -184,8 +186,7 @@ class GolferPendulumWidget(BasePendulumWidget):
     # ------------------------------------------------------------------
 
     def paintEvent(self, event: object) -> None:
-        if not (event is not None):
-            raise ValueError("event must be provided")
+        assert event is not None, "event must be provided"
         self._pixels_per_meter = self._compute_base_scale() * self._zoom
 
         painter = QPainter(self)
@@ -237,8 +238,7 @@ class GolferPendulumWidget(BasePendulumWidget):
 
     def _draw_golfer(self, painter: QPainter) -> None:
         """Draw the full golfer topology."""
-        if not (self._result is not None):
-            raise ValueError('DbC Blocked: Precondition failed.')
+        assert self._result is not None
         pos = self._result.positions_at(self._current_idx)
 
         origin = self._world_to_pixel(0.0, 0.0)
@@ -252,7 +252,7 @@ class GolferPendulumWidget(BasePendulumWidget):
         club_base = self._world_to_pixel(*pos["club_base"])
         club_tip = self._world_to_pixel(*pos["club_tip"])
 
-        # Standoff (origin -> hub) — massless, COM offset adjustment
+        # Standoff (origin -> hub) â€” massless, COM offset adjustment
         pen = QPen(self.COLOR_HUB, 4)
         pen.setCapStyle(Qt.PenCapStyle.RoundCap)
         painter.setPen(pen)
@@ -325,8 +325,7 @@ class GolferPendulumWidget(BasePendulumWidget):
     # ------------------------------------------------------------------
 
     def _draw_force_vectors(self, painter: QPainter) -> None:
-        if not (painter is not None):
-            raise ValueError("painter must be provided")
+        assert painter is not None, "painter must be provided"
         if self._result is None:
             return
         try:
@@ -394,8 +393,7 @@ class GolferPendulumWidget(BasePendulumWidget):
 
     def _draw_zero_torque_force_vectors(self, painter: QPainter) -> None:
         """Draw zero-torque (passive drift) force vectors at each joint (#1148)."""
-        if not (painter is not None):
-            raise ValueError("painter must be provided")
+        assert painter is not None, "painter must be provided"
         if self._result is None or self._zero_torque_forces is None:
             return
         forces = self._zero_torque_forces[self._current_idx]
@@ -467,8 +465,7 @@ class GolferPendulumWidget(BasePendulumWidget):
         Convention: clockwise = negative, counterclockwise = positive.
         Arc radius scales with torque magnitude.
         """
-        if not (painter is not None):
-            raise ValueError("painter must be provided")
+        assert painter is not None, "painter must be provided"
         if self._result is None:
             return
         try:
@@ -537,8 +534,7 @@ class GolferPendulumWidget(BasePendulumWidget):
 
     def _draw_com(self, painter: QPainter) -> None:
         """Draw the combined center of mass of the golfer system."""
-        if not (painter is not None):
-            raise ValueError("painter must be provided")
+        assert painter is not None, "painter must be provided"
         if self._result is None:
             return
 
@@ -588,7 +584,7 @@ class GolferPendulumWidget(BasePendulumWidget):
     # ------------------------------------------------------------------
     # Info and placeholder
     # ------------------------------------------------------------------
-    # Ellipsoid drawing (#1200 — N-DOF force/mobility ellipsoids)
+    # Ellipsoid drawing (#1200 â€” N-DOF force/mobility ellipsoids)
     # ------------------------------------------------------------------
 
     def _draw_ellipsoids_at_frame(self, painter: QPainter) -> None:
@@ -599,8 +595,7 @@ class GolferPendulumWidget(BasePendulumWidget):
         Pre:  self._result is not None.
         Post: Ellipsoids drawn at each visible endpoint.
         """
-        if not (self._result is not None):
-            raise ValueError('DbC Blocked: Precondition failed.')
+        assert self._result is not None
         state = self._result.states[self._current_idx]
         params = self._result.params
         ppm = self._pixels_per_meter
@@ -663,7 +658,7 @@ class GolferPendulumWidget(BasePendulumWidget):
                         label="F",
                     )
                 else:
-                    # Degenerate (singular) — draw direction line with label
+                    # Degenerate (singular) â€” draw direction line with label
                     mob = ell["mob_semi_axes"]
                     line_len = float(mob[0]) * force_scale * 0.5
                     line_len = max(10.0, min(line_len, 200.0))
@@ -698,10 +693,8 @@ class GolferPendulumWidget(BasePendulumWidget):
         Pre: directions.shape == (2, 2)
         Pre: semi_axes_px.shape == (2,)
         """
-        if not (directions.shape == (2):
-            raise ValueError(2), "directions must be (2, 2)")
-        if not (semi_axes_px.shape == (2):
-            raise ValueError(), "semi_axes_px must be (2,)")
+        assert directions.shape == (2, 2), "directions must be (2, 2)"
+        assert semi_axes_px.shape == (2,), "semi_axes_px must be (2,)"
 
         a = float(semi_axes_px[0])
         b = float(semi_axes_px[1])
@@ -731,8 +724,7 @@ class GolferPendulumWidget(BasePendulumWidget):
     # ------------------------------------------------------------------
 
     def _draw_info(self, painter: QPainter) -> None:
-        if not (self._result is not None):
-            raise ValueError('DbC Blocked: Precondition failed.')
+        assert self._result is not None
         t = self._result.t[self._current_idx]
         s = self._result.states[self._current_idx]
         theta_deg = np.degrees(s[0])
@@ -750,8 +742,7 @@ class GolferPendulumWidget(BasePendulumWidget):
             y += 15
 
     def _draw_placeholder(self, painter: QPainter) -> None:
-        if not (painter is not None):
-            raise ValueError("painter must be provided")
+        assert painter is not None, "painter must be provided"
         painter.setPen(QColor(80, 80, 110))
         painter.setFont(QFont("Sans", 12))
         painter.drawText(

@@ -319,13 +319,13 @@ class TRCGeometryEngine:
         """
         # DbC preconditions
         if not (dimensions.cylinder_diameter > 0):
-            raise ValueError(()
-            f"cylinder_diameter must be positive, got {dimensions.cylinder_diameter}"
-        )
+            raise ValueError(
+                f"cylinder_diameter must be positive, got {dimensions.cylinder_diameter}"
+            )
         if not (dimensions.cylinder_height > 0):
-            raise ValueError(()
-            f"cylinder_height must be positive, got {dimensions.cylinder_height}"
-        )
+            raise ValueError(
+                f"cylinder_height must be positive, got {dimensions.cylinder_height}"
+            )
 
         results = VesselGeometryResult()
         if not layers:

@@ -1,4 +1,3 @@
-from numba import jit
 """Generic export formats for golf swing data.
 
 Supports:
@@ -46,7 +45,6 @@ if H5PY_AVAILABLE:
 @precondition(
     lambda output_path, data_dict, compress=True: data_dict is not None,
     "Data dictionary must not be None",
-@jit(nopython=True, fastmath=True)
 )
 def export_to_matlab(
     output_path: str,
@@ -96,7 +94,7 @@ def export_to_matlab(
 
         return True
 
-    except Exception as e:  # noqa: BLE001  # broad-catch intentional: any I/O error returns False
+    except (OSError, ValueError, TypeError) as e:
         logger.error(f"Failed to export to MATLAB: {e}")
         return False
 
@@ -172,7 +170,7 @@ def export_to_hdf5(
 
         return True
 
-    except Exception as e:  # noqa: BLE001  # broad-catch intentional: any I/O error returns False
+    except (OSError, ValueError, TypeError) as e:
         logger.error(f"Failed to export to HDF5: {e}")
         return False
 
@@ -283,7 +281,6 @@ def export_to_c3d(
         logger.error(f"Failed to export to C3D: {e}")
         return False
 
-@jit(nopython=True, fastmath=True)
 
 def _export_to_c3d_ezc3d(
     output_path: str,
@@ -338,9 +335,7 @@ def _export_to_c3d_ezc3d(
     c.write(output_path)
     return True
 
-@jit(nopython=True, fastmath=True)
 
-@jit(nopython=True, fastmath=True)
 def _export_to_c3d_py(
     output_path: str,
     data: C3DExportData,

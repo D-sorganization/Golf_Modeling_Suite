@@ -223,8 +223,8 @@ class DRYRefactorer:
         self, directory: Path, refactor_func: Callable[[Path], bool]
     ) -> int:
         """Process all Python files in directory with given refactor function."""
-        if not (isinstance(directory):
-            raise ValueError(Path), "directory must be a Path object")
+        if not isinstance(directory, Path):
+            raise ValueError("directory must be a Path object")
         if not (callable(refactor_func)):
             raise ValueError("refactor_func must be callable")
         count = 0

@@ -210,9 +210,7 @@ class BasePhysicsEngine(ContractChecker, PhysicsEngine):
 
         # Verify postconditions
         if not (self._is_initialized):
-            raise ValueError(()
-            "Postcondition: engine must be initialized after load"
-        )
+            raise ValueError("Postcondition: engine must be initialized after load")
         if not (self.model is not None):
             raise ValueError("Postcondition: model must be loaded")
 
@@ -252,9 +250,7 @@ class BasePhysicsEngine(ContractChecker, PhysicsEngine):
 
         # Verify postconditions
         if not (self._is_initialized):
-            raise ValueError(()
-            "Postcondition: engine must be initialized after load"
-        )
+            raise ValueError("Postcondition: engine must be initialized after load")
         if not (self.model is not None):
             raise ValueError("Postcondition: model must be loaded")
 

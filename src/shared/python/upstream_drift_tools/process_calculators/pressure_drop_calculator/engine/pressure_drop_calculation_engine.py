@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 #!/usr/bin/env python3
 """Advanced pressure drop calculation engine for combustion and gasification gases.
 
@@ -332,21 +336,19 @@ def calculate_flow_properties(inputs: PressureDropInputs) -> FlowProperties:
     """
     # DbC preconditions
     if not (inputs.pipe_diameter > 0):
-        raise ValueError(()
-        f"Pipe diameter must be positive, got {inputs.pipe_diameter}"
-    )
+        raise ValueError(f"Pipe diameter must be positive, got {inputs.pipe_diameter}")
     if not (inputs.mass_flow_rate > 0):
-        raise ValueError(()
-        f"Mass flow rate must be positive, got {inputs.mass_flow_rate}"
-    )
+        raise ValueError(
+            f"Mass flow rate must be positive, got {inputs.mass_flow_rate}"
+        )
     if not (inputs.inlet_temperature > 0):
-        raise ValueError(()
-        f"Inlet temperature must be positive (K), got {inputs.inlet_temperature}"
-    )
+        raise ValueError(
+            f"Inlet temperature must be positive (K), got {inputs.inlet_temperature}"
+        )
     if not (inputs.inlet_pressure > 0):
-        raise ValueError(()
-        f"Inlet pressure must be positive, got {inputs.inlet_pressure}"
-    )
+        raise ValueError(
+            f"Inlet pressure must be positive, got {inputs.inlet_pressure}"
+        )
 
     # Calculate gas mixture properties (now includes gamma and speed of sound)
     gas_props = calculate_gas_properties(
@@ -400,17 +402,15 @@ def calculate_flow_properties(inputs: PressureDropInputs) -> FlowProperties:
 
     # DbC postconditions
     if not (flow_props.velocity > 0):
-        raise ValueError(()
-        f"Flow velocity must be positive, got {flow_props.velocity}"
-    )
+        raise ValueError(f"Flow velocity must be positive, got {flow_props.velocity}")
     if not (flow_props.reynolds_number > 0):
-        raise ValueError(()
-        f"Reynolds number must be positive, got {flow_props.reynolds_number}"
-    )
+        raise ValueError(
+            f"Reynolds number must be positive, got {flow_props.reynolds_number}"
+        )
     if not (0 <= flow_props.mach_number < 50):
-        raise ValueError(()
-        f"Mach number out of physical range, got {flow_props.mach_number}"
-    )
+        raise ValueError(
+            f"Mach number out of physical range, got {flow_props.mach_number}"
+        )
 
     logger.info("Flow properties calculated:")
     logger.info(f"  Velocity: {velocity:.2f} m/s")
@@ -475,9 +475,7 @@ def calculate_frictional_pressure_drop(
     """
     # DbC preconditions
     if not (friction_factor > 0):
-        raise ValueError(()
-        f"friction_factor must be positive, got {friction_factor}"
-    )
+        raise ValueError(f"friction_factor must be positive, got {friction_factor}")
     if not (length > 0):
         raise ValueError(f"length must be positive, got {length}")
     if not (diameter > 0):
@@ -688,9 +686,7 @@ def calculate_compressible_flow_correction(
     if not (temperature > 0):
         raise ValueError(f"temperature must be positive (K), got {temperature}")
     if not (molecular_weight > 0):
-        raise ValueError(()
-        f"molecular_weight must be positive, got {molecular_weight}"
-    )
+        raise ValueError(f"molecular_weight must be positive, got {molecular_weight}")
 
     area = PI * (diameter**2) / 4.0
     G = mass_flow_rate / area

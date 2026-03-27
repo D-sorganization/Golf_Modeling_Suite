@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """
 Steam Calculation Engine
 ========================
@@ -286,9 +290,7 @@ class SteamCalculationEngine:
 
         # DbC postcondition: enthalpy and entropy should be finite
         if not (np.isfinite(result.enthalpy)):
-            raise ValueError(()
-            f"Enthalpy must be finite, got {result.enthalpy}"
-        )
+            raise ValueError(f"Enthalpy must be finite, got {result.enthalpy}")
         return result
 
     def calculate_saturated_properties_from_temperature(

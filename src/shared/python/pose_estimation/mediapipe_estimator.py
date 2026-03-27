@@ -114,13 +114,9 @@ class MediaPipeEstimator(PoseEstimator):
             enable_temporal_smoothing: Whether to apply Kalman filtering
         """
         if not (min_detection_confidence is not None):
-            raise ValueError(()
-            "min_detection_confidence must be provided"
-        )
+            raise ValueError("min_detection_confidence must be provided")
         if not (min_detection_confidence is not None):
-            raise ValueError(()
-            "min_detection_confidence must be provided"
-        )
+            raise ValueError("min_detection_confidence must be provided")
         self.pose_detector: Any | None = None
         self.min_detection_confidence = min_detection_confidence
         self.min_tracking_confidence = min_tracking_confidence

@@ -65,16 +65,12 @@ def clubhead_speed_objective(
     neg_speed : JaxArray, shape ()
         Negative clubhead speed (for minimization)
     """
-    if not (torque_coeffs.shape == (7):
-        raise ValueError(), ()
+    assert torque_coeffs.shape == (7,), (
         f"Expected (7,) coeffs, got {torque_coeffs.shape}"
     )
-    if not (t_end > 0):
-        raise ValueError(f"t_end must be positive, got {t_end}")
-    if not (dt > 0):
-        raise ValueError(f"dt must be positive, got {dt}")
-    if not (initial_state.shape == (16):
-        raise ValueError(), ()
+    assert t_end > 0, f"t_end must be positive, got {t_end}"
+    assert dt > 0, f"dt must be positive, got {dt}"
+    assert initial_state.shape == (16,), (
         f"Expected (16,) state, got {initial_state.shape}"
     )
     sol = run_single_simulation_jax(
@@ -121,16 +117,12 @@ def clubhead_velocity_at_final_time(
     speed : JaxArray, shape ()
         Clubhead speed magnitude (positive)
     """
-    if not (torque_coeffs.shape == (7):
-        raise ValueError(), ()
+    assert torque_coeffs.shape == (7,), (
         f"Expected (7,) coeffs, got {torque_coeffs.shape}"
     )
-    if not (t_end > 0):
-        raise ValueError(f"t_end must be positive, got {t_end}")
-    if not (dt > 0):
-        raise ValueError(f"dt must be positive, got {dt}")
-    if not (initial_state.shape == (16):
-        raise ValueError(), ()
+    assert t_end > 0, f"t_end must be positive, got {t_end}"
+    assert dt > 0, f"dt must be positive, got {dt}"
+    assert initial_state.shape == (16,), (
         f"Expected (16,) state, got {initial_state.shape}"
     )
     sol = run_single_simulation_jax(
@@ -192,15 +184,11 @@ def optimize_torque_profile(
     history : list[float]
         Loss values at each iteration (negative speeds, so larger = better)
     """
-    if not (n_coeffs_per_joint >= 1):
-        raise ValueError(f"n_coeffs must be >= 1, got {n_coeffs_per_joint}")
-    if not (n_iterations >= 1):
-        raise ValueError(f"n_iterations must be >= 1, got {n_iterations}")
-    if not (learning_rate > 0):
-        raise ValueError(f"learning_rate must be positive, got {learning_rate}")
-    if not (t_end > 0):
-        raise ValueError(f"t_end must be positive, got {t_end}")
-    # Initialize: 7 joints × n_coeffs_per_joint
+    assert n_coeffs_per_joint >= 1, f"n_coeffs must be >= 1, got {n_coeffs_per_joint}"
+    assert n_iterations >= 1, f"n_iterations must be >= 1, got {n_iterations}"
+    assert learning_rate > 0, f"learning_rate must be positive, got {learning_rate}"
+    assert t_end > 0, f"t_end must be positive, got {t_end}"
+    # Initialize: 7 joints Ã— n_coeffs_per_joint
     key = jax.random.PRNGKey(seed)
     torque_coeffs = jax.random.normal(key, (7, n_coeffs_per_joint)) * 0.1
     torque_coeffs = torque_coeffs.reshape(-1)  # Flatten to 1D for optimization
@@ -232,12 +220,10 @@ def optimize_torque_profile(
             logger.info("Iteration %d/%d: loss = %.6f", i + 1, n_iterations, loss_val)
 
     optimal_coeffs = torque_coeffs.reshape(7, n_coeffs_per_joint)
-    if not (len(history) == n_iterations):
-        raise ValueError(()
+    assert len(history) == n_iterations, (
         f"Expected {n_iterations} history entries, got {len(history)}"
     )
-    if not (optimal_coeffs.shape == (7):
-        raise ValueError(n_coeffs_per_joint))
+    assert optimal_coeffs.shape == (7, n_coeffs_per_joint)
 
     return optimal_coeffs, history
 
@@ -281,12 +267,9 @@ def optimize_simple_torque_profile(
     history : list[float]
         Loss values at each iteration
     """
-    if not (n_iterations >= 1):
-        raise ValueError(f"n_iterations must be >= 1, got {n_iterations}")
-    if not (learning_rate > 0):
-        raise ValueError(f"learning_rate must be positive, got {learning_rate}")
-    if not (t_end > 0):
-        raise ValueError(f"t_end must be positive, got {t_end}")
+    assert n_iterations >= 1, f"n_iterations must be >= 1, got {n_iterations}"
+    assert learning_rate > 0, f"learning_rate must be positive, got {learning_rate}"
+    assert t_end > 0, f"t_end must be positive, got {t_end}"
     # Initialize: one torque per joint
     key = jax.random.PRNGKey(seed)
     torque_coeffs = jax.random.normal(key, (7,)) * 0.1
@@ -314,8 +297,7 @@ def optimize_simple_torque_profile(
         if (i + 1) % max(1, n_iterations // 10) == 0:
             logger.info("Iteration %d/%d: loss = %.6f", i + 1, n_iterations, loss_val)
 
-    if not (len(history) == n_iterations):
-        raise ValueError('DbC Blocked: Precondition failed.')
+    assert len(history) == n_iterations
     return torque_coeffs, history
 
 
@@ -346,12 +328,10 @@ def compute_gradient_via_finite_difference(
     -------
     grad : JaxArray, shape (7,)
     """
-    if not (torque_coeffs.shape == (7):
-        raise ValueError(), ()
+    assert torque_coeffs.shape == (7,), (
         f"Expected (7,) coeffs, got {torque_coeffs.shape}"
     )
-    if not (eps > 0):
-        raise ValueError(f"eps must be positive, got {eps}")
+    assert eps > 0, f"eps must be positive, got {eps}"
     grad = jnp.zeros(7)
 
     f0 = clubhead_speed_objective(
@@ -365,6 +345,5 @@ def compute_gradient_via_finite_difference(
         )
         grad = grad.at[i].set((f_plus - f0) / eps)
 
-    if not (grad.shape == (7):
-        raise ValueError())
+    assert grad.shape == (7,)
     return grad

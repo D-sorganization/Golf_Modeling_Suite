@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Multi-format mesh loading system for Unreal Engine integration.
 
 This module provides a unified interface for loading 3D mesh files
@@ -23,8 +27,8 @@ Usage:
     mesh = loader.load("character.gltf")
 
     # Access mesh data
-    print(f"Vertices: {mesh.vertex_count}")
-    print(f"Has skeleton: {mesh.has_skeleton}")
+    logger.info(f"Vertices: {mesh.vertex_count}")
+    logger.info(f"Has skeleton: {mesh.has_skeleton}")
 """
 
 from __future__ import annotations
@@ -767,8 +771,8 @@ class MeshLoader:
                     raise MeshLoadError("No meshes found in FBX", str(path))
                 mesh = meshes[0]
 
-            if not (isinstance(mesh):
-                raise ValueError(trimesh.Trimesh))
+            if not isinstance(mesh, trimesh.Trimesh):
+                raise ValueError(f"Expected trimesh.Trimesh, got {type(mesh).__name__}")
             vertices = [
                 MeshVertex(position=mesh.vertices[i]) for i in range(len(mesh.vertices))
             ]
@@ -807,8 +811,8 @@ class MeshLoader:
                     raise MeshLoadError("No meshes found in COLLADA", str(path))
                 mesh = meshes[0]
 
-            if not (isinstance(mesh):
-                raise ValueError(trimesh.Trimesh))
+            if not isinstance(mesh, trimesh.Trimesh):
+                raise ValueError(f"Expected trimesh.Trimesh, got {type(mesh).__name__}")
             vertices = [
                 MeshVertex(position=mesh.vertices[i]) for i in range(len(mesh.vertices))
             ]
@@ -839,8 +843,8 @@ class MeshLoader:
             import trimesh
 
             mesh = trimesh.load(str(path))
-            if not (isinstance(mesh):
-                raise ValueError(trimesh.Trimesh))
+            if not isinstance(mesh, trimesh.Trimesh):
+                raise ValueError(f"Expected trimesh.Trimesh, got {type(mesh).__name__}")
 
             vertices = [
                 MeshVertex(position=mesh.vertices[i]) for i in range(len(mesh.vertices))

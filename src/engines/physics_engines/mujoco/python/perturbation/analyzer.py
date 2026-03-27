@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
+
 """MuJoCo Perturbation Analyzer — PerturbationAnalyzer protocol for MuJoCo (#1980).
 
 Implements the ``PerturbationAnalyzer`` protocol for the MuJoCo physics
@@ -69,7 +73,7 @@ MANDATORY_METRICS: tuple[str, ...] = (
 # ---------------------------------------------------------------------------
 
 _MINIMAL_MJCF: str = """<mujoco model="minimal_pendulum">
-  <option timestep="0.005" gravity="0 0 -9.81"/>
+  <option timestep="0.005" gravity="0 0 -9.80665"/>
   <worldbody>
     <body name="link1" pos="0 0 1">
       <joint name="j1" type="hinge" axis="0 1 0"/>
@@ -265,15 +269,13 @@ class MuJoCoPerturbationAnalyzer:
         Pre: profile is a dict with 'coeffs' key.
         Post: self._base_coeffs is set and self._nominal_result is cached.
         """
-        if not (isinstance(profile):
-            raise ValueError(dict), f"profile must be a dict, got {type(profile)}")
-        if not ("coeffs" in profile):
+        if not isinstance(profile, dict):
+            raise ValueError(f"profile must be a dict, got {type(profile)}")
+        if "coeffs" not in profile:
             raise ValueError("'coeffs' key missing from profile")
         coeffs = profile["coeffs"]
-        if not (isinstance(coeffs):
-            raise ValueError(list) and len(coeffs) > 0, ()
-            "profile['coeffs'] must be a non-empty list"
-        )
+        if not isinstance(coeffs, list) or len(coeffs) == 0:
+            raise ValueError("profile['coeffs'] must be a non-empty list")
         self._base_coeffs = coeffs
         self._nominal_result = self._simulate(coeffs)
 
@@ -286,9 +288,9 @@ class MuJoCoPerturbationAnalyzer:
         Post: returned dict has 'coeffs' with same shape as base.
         """
         if not (self._base_coeffs is not None):
-            raise ValueError(()
-            "set_base_torque_profile() must be called before perturb_torque()"
-        )
+            raise ValueError(
+                "set_base_torque_profile() must be called before perturb_torque()"
+            )
         perturbed = perturb_torque_coeffs(
             self._base_coeffs,
             noise_amplitude=config.noise_amplitude,
@@ -314,10 +316,10 @@ class MuJoCoPerturbationAnalyzer:
         Pre: sim_result is a MuJoCoSimResult with n_steps >= 2.
         Post: all MANDATORY_METRICS present; all values finite.
         """
-        if not (isinstance(sim_result):
-            raise ValueError(MuJoCoSimResult), ()
-            f"sim_result must be MuJoCoSimResult, got {type(sim_result)}"
-        )
+        if not isinstance(sim_result, MuJoCoSimResult):
+            raise ValueError(
+                f"sim_result must be MuJoCoSimResult, got {type(sim_result)}"
+            )  # noqa: E501
         if not (sim_result.n_steps >= 2):
             raise ValueError("Simulation must have >= 2 steps")
 
@@ -373,9 +375,9 @@ class MuJoCoPerturbationAnalyzer:
         Post: result.robustness_score in [0, 1].
         """
         if not (self._base_coeffs is not None):
-            raise ValueError(()
-            "set_base_torque_profile() must be called before run_batch()"
-        )
+            raise ValueError(
+                "set_base_torque_profile() must be called before run_batch()"
+            )
 
         t_start = time.monotonic()
         base_seed = config.seed if config.seed is not None else 0
@@ -412,7 +414,7 @@ class MuJoCoPerturbationAnalyzer:
                         v = float(np.linalg.norm(v))
                     metric_lists[m].append(float(v))
                 n_success += 1
-            except Exception as e:  # noqa: BLE001
+            except (RuntimeError, ValueError, TypeError, ArithmeticError):
                 logger.debug("Trial %d failed", i, exc_info=True)
 
         success_rate = n_success / config.n_trials if config.n_trials > 0 else 0.0
@@ -506,7 +508,7 @@ class MuJoCoPerturbationAnalyzer:
                     if isinstance(v, np.ndarray):
                         v = float(np.linalg.norm(v))
                     values.append(float(v))
-                except Exception as e:  # noqa: BLE001
+                except (RuntimeError, ValueError, TypeError, ArithmeticError):
                     pass
             return np.array(values) if values else np.array([0.0])
 

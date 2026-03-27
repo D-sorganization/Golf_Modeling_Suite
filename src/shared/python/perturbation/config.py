@@ -37,21 +37,13 @@ class PerturbationConfig:
         if not (self.n_trials > 0):
             raise ValueError(f"n_trials must be positive, got {self.n_trials}")
         if not (self.noise_amplitude >= 0):
-            raise ValueError(()
-            f"noise_amplitude must be non-negative, got {self.noise_amplitude}"
-        )
-        if not (self.noise_type in {):
-            raise ValueError('DbC Blocked: Precondition failed.')
-            "white",
-            "pink",
-            "brown",
-        }, f"Unknown noise_type: {self.noise_type}"
-        if not (self.perturb_mode in {):
-            raise ValueError('DbC Blocked: Precondition failed.')
-            "additive",
-            "multiplicative",
-            "both",
-        }, f"Unknown perturb_mode: {self.perturb_mode}"
+            raise ValueError(
+                f"noise_amplitude must be non-negative, got {self.noise_amplitude}"
+            )
+        if self.noise_type not in {"white", "pink", "brown"}:
+            raise ValueError(f"Unknown noise_type: {self.noise_type}")
+        if self.perturb_mode not in {"additive", "multiplicative", "both"}:
+            raise ValueError(f"Unknown perturb_mode: {self.perturb_mode}")
 
 
 @dataclass
