@@ -94,6 +94,27 @@ class OpenSimMuscleAnalyzer:
 
         return forces
 
+    def get_passive_muscle_forces(self) -> dict[str, float]:
+        """Compute current passive muscle forces for all muscles.
+
+        Returns:
+            Dictionary mapping muscle names to passive forces [N]
+        """
+        if opensim is None:
+            return {}
+
+        forces = {}
+        self.model.realizeDynamics(self.state)
+
+        for i in range(self.n_muscles):
+            muscle = opensim.Muscle.safeDownCast(self.muscle_set.get(i))
+            if muscle:
+                name = muscle.getName()
+                force = muscle.getPassiveFiberForce(self.state)
+                forces[name] = float(force)
+
+        return forces
+
     def get_moment_arms(
         self, coordinate_name: str | None = None
     ) -> dict[str, dict[str, float]]:
