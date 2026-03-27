@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Signal processing utilities for biomechanical data analysis.
 
 This module provides common signal processing functions used across
@@ -762,8 +766,6 @@ def compute_time_shift(
     return float(-lag_sample / fs)
 
 
-@jit(nopython=True, fastmath=True)
-@jit(nopython=True, fastmath=True)
 def compute_dtw_distance(
     series1: np.ndarray,
     series2: np.ndarray,
@@ -862,7 +864,8 @@ def compute_dtw_path(
     # pi, pj are in reverse order from backtracking
     path = []
     # Loop backwards to reverse
-    path.extend([(int(pi[k]), int(pj[k])) for k in range(len(pi) - 1, -1, -1)])
+    for k in range(len(pi) - 1, -1, -1):
+        path.append((int(pi[k]), int(pj[k])))
 
     return dist, path
 

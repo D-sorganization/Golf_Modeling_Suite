@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Signal import and export utilities.
 
 This module provides functionality for importing signals from various
@@ -82,7 +86,7 @@ class SignalImporter:
             # Import all columns except time
             value_indices = [i for i in range(len(header)) if i != time_idx]
             value_names = [header[i] for i in value_indices]
-        elif isinstance(value_columns, (str, int)):
+        elif isinstance(value_columns, str | int):
             value_indices = [resolve_column(value_columns)]
             value_names = [header[value_indices[0]]]
         else:
@@ -342,7 +346,8 @@ class SignalExporter:
 
             for i in range(len(time)):
                 row = [round(time[i], precision)]
-                row.extend([round(sig.values[i], precision) for sig in signals])
+                for sig in signals:
+                    row.append(round(sig.values[i], precision))
                 writer.writerow(row)
 
     @staticmethod
