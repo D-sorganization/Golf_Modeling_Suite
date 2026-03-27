@@ -114,7 +114,7 @@ class InducedAccelerationAnalyzer:
         M = self.data.M
         tau_ext = np.zeros(self.model.nv)
         for frame_id, wrench in f_ext.items():
-            # some versions require reference_frame, let's use pin.LOCAL if needed, but try default first
+            # use pin.LOCAL for reference_frame if needed, else try default
             J = pin.computeFrameJacobian(self.model, self.data, q, frame_id)
             tau_ext += J.T @ wrench
         return np.linalg.solve(M, tau_ext)
