@@ -1,4 +1,6 @@
-from numba import jit
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """Nonlinear dynamics and complexity analysis.
 
@@ -6,16 +8,16 @@ Includes Lyapunov exponents, correlation dimension, recurrence quantification,
 entropy measures, fractal dimension, and local divergence rates.
 """
 
-from __future__ import annotations  # noqa: E402, F404
+from __future__ import annotations
 
-from typing import Any, cast  # noqa: E402
+from typing import Any, cast
 
-import numpy as np  # noqa: E402
-from scipy.spatial import cKDTree  # noqa: E402
-from scipy.spatial.distance import pdist, squareform  # noqa: E402
+import numpy as np
+from scipy.spatial import cKDTree
+from scipy.spatial.distance import pdist, squareform
 
-from src.shared.python.analysis.dataclasses import RQAMetrics  # noqa: E402
-from src.shared.python.core.contracts import ensure, require  # noqa: E402
+from src.shared.python.analysis.dataclasses import RQAMetrics
+from src.shared.python.core.contracts import ensure, require
 
 
 class NonlinearDynamicsMixin:
@@ -33,8 +35,6 @@ class NonlinearDynamicsMixin:
     joint_velocities: np.ndarray
     dt: float
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def compute_local_divergence_rate(
         self,
         joint_idx: int = 0,
@@ -301,7 +301,6 @@ class NonlinearDynamicsMixin:
             trapping_time=tt,
         )
 
-    @jit(nopython=True, fastmath=True)
     def compute_correlation_dimension(
         self, data: np.ndarray, tau: int = 1, dim: int = 3
     ) -> float:
@@ -354,9 +353,6 @@ class NonlinearDynamicsMixin:
         slope, _ = np.polyfit(log_r[start:end], log_c[start:end], 1)
         return float(slope)
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def estimate_lyapunov_exponent(
         self,
         data: np.ndarray,
@@ -457,8 +453,6 @@ class NonlinearDynamicsMixin:
 
         return 0.0
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def compute_permutation_entropy(
         self,
         data: np.ndarray,
@@ -579,7 +573,6 @@ class NonlinearDynamicsMixin:
         ensure(result >= 0, "sample entropy must be non-negative", result)
         return result
 
-    @jit(nopython=True, fastmath=True)
     def compute_multiscale_entropy(
         self,
         data: np.ndarray,
@@ -630,8 +623,6 @@ class NonlinearDynamicsMixin:
 
         return scales, np.array(mse_values)
 
-    @jit(nopython=True, fastmath=True)
-    @jit(nopython=True, fastmath=True)
     def compute_fractal_dimension(
         self,
         data: np.ndarray,
