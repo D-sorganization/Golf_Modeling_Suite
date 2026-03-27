@@ -1,3 +1,5 @@
+from numba import jit
+
 """Ball flight physics simulation with Magnus effect and drag.
 
 This module implements research-grade ball flight physics including:
@@ -139,9 +141,7 @@ class BallFlightSimulator:
         self.environment = env or environment or EnvironmentalConditions()
 
     @precondition(
-        lambda self, launch, max_time=10.0, dt=0.01: (
-            launch is not None and launch.velocity >= 0
-        ),
+        lambda self, launch, max_time=10.0, dt=0.01: (launch is not None and launch.velocity >= 0),
         "Launch conditions must not be None and velocity must be non-negative",
     )
     @precondition(
@@ -181,9 +181,7 @@ class BallFlightSimulator:
         initial = np.array([0.0, 0.0, 0.0, v0 * cv * ca, v0 * cv * sa, v0 * sv])
         omega = launch.spin_rate * 2 * np.pi / 60
 
-        config = upstream_physics.IntegratorConfig(
-            dt=dt, max_steps=int(max_time / dt) + 1
-        )
+        config = upstream_physics.IntegratorConfig(dt=dt, max_steps=int(max_time / dt) + 1)
         ball_props = upstream_physics.AeroBallProperties(
             mass=self.ball.mass,
             radius=self.ball.radius,
@@ -229,6 +227,7 @@ class BallFlightSimulator:
         )
         return self._post_process_rust(rust_result, launch)
 
+    @jit(nopython=True, fastmath=True)
     def _post_process_rust(
         self, rust_result: Any, launch: LaunchConditions
     ) -> list[TrajectoryPoint]:
@@ -242,9 +241,7 @@ class BallFlightSimulator:
             pos = np.array([p.x, p.y, p.z])
             vel = np.array([p.vx, p.vy, p.vz])
             forces = self._calculate_forces(vel, launch)
-            acc = (
-                forces["gravity"] + forces["drag"] + forces["magnus"]
-            ) / self.ball.mass
+            acc = (forces["gravity"] + forces["drag"] + forces["magnus"]) / self.ball.mass
             points.append(TrajectoryPoint(p.t, pos, vel, acc, forces))
         return points
 
@@ -339,9 +336,7 @@ class BallFlightSimulator:
             "trajectory_points": len(trajectory),
         }
 
-    def _calculate_forces(
-        self, vel: np.ndarray, launch: LaunchConditions
-    ) -> dict[str, np.ndarray]:
+    def _calculate_forces(self, vel: np.ndarray, launch: LaunchConditions) -> dict[str, np.ndarray]:
         """Calculate forces on the ball (supports vectorized input)."""
         if not (vel is not None):
             raise ValueError("vel must be provided")
@@ -390,9 +385,7 @@ class BallFlightSimulator:
         valid_speed = speed[mask]
         valid_rel_vel = rel_vel[:, mask]
         s_ratio = (omega * self.ball.radius) / valid_speed
-        aero_prefix = (
-            0.5 * self.environment.air_density * self.ball.cross_sectional_area
-        )
+        aero_prefix = 0.5 * self.environment.air_density * self.ball.cross_sectional_area
 
         # Drag
         cd = self.ball.cd0 + s_ratio * (self.ball.cd1 + s_ratio * self.ball.cd2)
@@ -437,9 +430,7 @@ class BallFlightSimulator:
         s_ratio = (omega * self.ball.radius) / speed
         cd = self.ball.calculate_cd(s_ratio)
         cl = self.ball.calculate_cl(s_ratio)
-        aero_prefix = (
-            0.5 * self.environment.air_density * self.ball.cross_sectional_area
-        )
+        aero_prefix = 0.5 * self.environment.air_density * self.ball.cross_sectional_area
 
         drag = -(aero_prefix * cd * speed**2) * (rel_vel / speed)
 
@@ -549,6 +540,7 @@ class EnhancedBallFlightSimulator:
         lambda result: result is not None and isinstance(result, list),
         "Trajectory must be returned as a non-None list",
     )
+    @jit(nopython=True, fastmath=True)
     def simulate_trajectory(
         self,
         launch: LaunchConditions,
@@ -589,9 +581,7 @@ class EnhancedBallFlightSimulator:
 
         # Gravity acceleration
         gravity_acc = (
-            np.array([0.0, 0.0, -self.environment.gravity])
-            if include_gravity
-            else np.zeros(3)
+            np.array([0.0, 0.0, -self.environment.gravity]) if include_gravity else np.zeros(3)
         )
 
         # Run simulation
@@ -601,9 +591,7 @@ class EnhancedBallFlightSimulator:
 
         for _ in range(max_steps):
             # Calculate forces
-            aero_forces = self._aero_engine.compute_forces(
-                velocity, spin, t=t, position=position
-            )
+            aero_forces = self._aero_engine.compute_forces(velocity, spin, t=t, position=position)
 
             # Total acceleration
             gravity_force = self.ball.mass * gravity_acc
@@ -633,9 +621,7 @@ class EnhancedBallFlightSimulator:
                 break
 
             # RK4 integration step
-            position, velocity, spin = self._rk4_step(
-                position, velocity, spin, gravity_acc, t, dt
-            )
+            position, velocity, spin = self._rk4_step(position, velocity, spin, gravity_acc, t, dt)
 
             # Update spin (decay)
             spin = self._aero_engine.compute_spin_decay(spin, dt)
@@ -672,9 +658,7 @@ class EnhancedBallFlightSimulator:
         if not (pos is not None):
             raise ValueError("pos must be provided")
 
-        def derivatives(
-            p: np.ndarray, v: np.ndarray, time: float
-        ) -> tuple[np.ndarray, np.ndarray]:
+        def derivatives(p: np.ndarray, v: np.ndarray, time: float) -> tuple[np.ndarray, np.ndarray]:
             """Compute velocity and acceleration derivatives for RK4 integration."""
             if not (p is not None):
                 raise ValueError("p must be provided")
@@ -688,12 +672,8 @@ class EnhancedBallFlightSimulator:
 
         # RK4 coefficients
         k1_v, k1_a = derivatives(pos, vel, t)
-        k2_v, k2_a = derivatives(
-            pos + 0.5 * dt * k1_v, vel + 0.5 * dt * k1_a, t + 0.5 * dt
-        )
-        k3_v, k3_a = derivatives(
-            pos + 0.5 * dt * k2_v, vel + 0.5 * dt * k2_a, t + 0.5 * dt
-        )
+        k2_v, k2_a = derivatives(pos + 0.5 * dt * k1_v, vel + 0.5 * dt * k1_a, t + 0.5 * dt)
+        k3_v, k3_a = derivatives(pos + 0.5 * dt * k2_v, vel + 0.5 * dt * k2_a, t + 0.5 * dt)
         k4_v, k4_a = derivatives(pos + dt * k3_v, vel + dt * k3_a, t + dt)
 
         # Update state

@@ -28,17 +28,14 @@ def matrix_to_tsv(data: np.ndarray) -> str:
     if not (data.ndim == 2):
         raise ValueError(f"Expected 2D array, got {data.ndim}D")
     lines = []
-    for row in data:
-        lines.append("\t".join(f"{v:.6g}" for v in row))
+    lines.extend(["\t".join(f"{v:.6g}" for v in row) for row in data])
     result = "\n".join(lines)
     if not (result.count("\n") == data.shape[0] - 1):
-        raise ValueError('DbC Blocked: Precondition failed.')
+        raise ValueError("DbC Blocked: Precondition failed.")
     return result
 
 
-def series_to_tsv(
-    x: np.ndarray, y: np.ndarray, x_label: str = "x", y_label: str = "y"
-) -> str:
+def series_to_tsv(x: np.ndarray, y: np.ndarray, x_label: str = "x", y_label: str = "y") -> str:
     """Convert two 1D arrays to tab-separated text with header.
 
     Pre: x.shape == y.shape, both 1D
@@ -50,8 +47,7 @@ def series_to_tsv(
         raise ValueError(f"Length mismatch: {len(x)} vs {len(y)}")
     header = f"{x_label}\t{y_label}"
     lines = [header]
-    for xi, yi in zip(x, y, strict=False):
-        lines.append(f"{xi:.6g}\t{yi:.6g}")
+    lines.extend([f"{xi:.6g}\t{yi:.6g}" for (xi, yi) in zip(x, y, strict=False)])
     return "\n".join(lines)
 
 
@@ -67,6 +63,5 @@ def scalar_dict_to_text(d: dict[str, float], title: str = "") -> str:
     if title:
         lines.append(title)
         lines.append("=" * len(title))
-    for key, val in d.items():
-        lines.append(f"{key}: {val:.6g}")
+    lines.extend([f"{key}: {val:.6g}" for (key, val) in d.items()])
     return "\n".join(lines)

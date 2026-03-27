@@ -147,17 +147,17 @@ def _delta_robot_equality_xml(forearm_length: float) -> str:
         )
     lines.append("")
     lines.append("        <!-- Keep forearm pairs parallel -->")
-    for arm_num in range(1, 4):
-        lines.append(
+    lines.extend(
+        [
             f'        <joint joint1="elbow{arm_num}a" joint2="elbow{arm_num}b" polycoef="0 1 0 0 0"/>'
-        )
+            for arm_num in range(1, 4)
+        ]
+    )
     lines.append("    </equality>")
     return "\n".join(lines)
 
 
-def generate_delta_robot_xml(
-    base_radius: float = 2.0, platform_radius: float = 0.5
-) -> str:
+def generate_delta_robot_xml(base_radius: float = 2.0, platform_radius: float = 0.5) -> str:
     """Generate a 3-DOF Delta parallel robot (high-speed pick-and-place).
 
     Parameters
@@ -409,17 +409,16 @@ def _stewart_equality_xml(platform_radius: float) -> str:
 def _stewart_actuator_xml() -> str:
     """Generate XML for the 6 leg motor actuators."""
     lines = []
-    for i in range(1, 7):
-        lines.append(
-            f'        <motor name="leg{i}_motor" joint="leg{i}_extend" gear="100"'
-            f'\n               ctrllimited="true" ctrlrange="-15 15"/>'
-        )
+    lines.extend(
+        [
+            f'        <motor name="leg{i}_motor" joint="leg{i}_extend" gear="100"\n               ctrllimited="true" ctrlrange="-15 15"/>'
+            for i in range(1, 7)
+        ]
+    )
     return "\n".join(lines)
 
 
-def generate_stewart_platform_xml(
-    base_radius: float = 1.5, platform_radius: float = 0.8
-) -> str:
+def generate_stewart_platform_xml(base_radius: float = 1.5, platform_radius: float = 0.8) -> str:
     """Generate a Stewart platform (6-DOF parallel manipulator).
 
     Parameters

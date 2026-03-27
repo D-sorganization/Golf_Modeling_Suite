@@ -227,9 +227,7 @@ class SignalImporter:
         metadata = data.get("metadata", {})
         metadata["source_file"] = str(file_path)
 
-        return Signal(
-            time=time, values=values, name=name, units=units, metadata=metadata
-        )
+        return Signal(time=time, values=values, name=name, units=units, metadata=metadata)
 
     @staticmethod
     def from_dict(
@@ -342,8 +340,7 @@ class SignalExporter:
 
             for i in range(len(time)):
                 row = [round(time[i], precision)]
-                for sig in signals:
-                    row.append(round(sig.values[i], precision))
+                row.extend([round(sig.values[i], precision) for sig in signals])
                 writer.writerow(row)
 
     @staticmethod

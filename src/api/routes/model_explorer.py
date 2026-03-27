@@ -1,3 +1,5 @@
+from numba import jit
+
 """Model explorer routes.
 
 Provides endpoints for browsing, inspecting, and comparing
@@ -39,6 +41,7 @@ _MODEL_DIRS = [
 ]
 
 
+@jit(nopython=True, fastmath=True)
 def _find_project_root() -> Path:
     """Find the project root directory by looking for known markers."""
     current = Path(__file__).resolve()
@@ -228,9 +231,7 @@ def _parse_urdf_tree(urdf_content: str, file_path: str) -> ModelExplorerResponse
     # Find root link (not a child of any joint)
     root_links = link_names - child_links
     root_link_name = (
-        next(iter(root_links))
-        if root_links
-        else (next(iter(link_names)) if link_names else "base")
+        next(iter(root_links)) if root_links else (next(iter(link_names)) if link_names else "base")
     )
 
     # Mark root node
@@ -338,15 +339,11 @@ async def get_model_explorer(
         content = filepath.read_text(encoding="utf-8")
         return _parse_urdf_tree(content, model_entry["path"])
     except ValueError as exc:
-        raise HTTPException(
-            status_code=422, detail=f"Failed to parse model: {str(exc)}"
-        ) from exc
+        raise HTTPException(status_code=422, detail=f"Failed to parse model: {str(exc)}") from exc
     except ImportError as exc:
         if logger:
             logger.error("Error in model explorer for %s: %s", model_name, exc)
-        raise HTTPException(
-            status_code=500, detail=f"Model explorer error: {str(exc)}"
-        ) from exc
+        raise HTTPException(status_code=500, detail=f"Model explorer error: {str(exc)}") from exc
 
 
 @router.post(

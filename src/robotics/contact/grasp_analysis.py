@@ -1,3 +1,5 @@
+from numba import jit
+
 """Grasp analysis utilities for manipulation.
 
 This module provides functions for analyzing grasp quality,
@@ -16,6 +18,7 @@ from src.robotics.contact.friction_cone import FrictionCone
 from src.robotics.core.types import ContactState
 
 
+@jit(nopython=True, fastmath=True)
 def compute_grasp_matrix(
     contacts: list[ContactState],
     object_frame: NDArray[np.float64] | None = None,
@@ -315,6 +318,7 @@ def compute_contact_wrench_cone(
     return _build_wrench_generators(contacts, num_faces)
 
 
+@jit(nopython=True, fastmath=True)
 def required_contact_forces(
     contacts: list[ContactState],
     desired_wrench: NDArray[np.float64],

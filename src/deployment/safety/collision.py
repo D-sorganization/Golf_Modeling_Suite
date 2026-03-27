@@ -1,3 +1,5 @@
+from numba import jit
+
 """Collision avoidance for safe robot operation."""
 
 from __future__ import annotations
@@ -60,9 +62,7 @@ class Obstacle:
             raise ValueError("point must be provided")
         if self.obstacle_type == ObstacleType.SPHERE:
             return float(
-                np.linalg.norm(point - self.position)
-                - self.dimensions[0]
-                - self.inflation
+                np.linalg.norm(point - self.position) - self.dimensions[0] - self.inflation
             )
 
         if self.obstacle_type in (ObstacleType.BOX, ObstacleType.HUMAN):
@@ -88,6 +88,7 @@ class Obstacle:
 
         return 0.0
 
+    @jit(nopython=True, fastmath=True)
     def get_gradient(self, point: NDArray[np.floating]) -> NDArray[np.floating]:
         """Compute gradient of distance function.
 
@@ -110,9 +111,9 @@ class Obstacle:
             point_minus = point.copy()
             point_minus[i] -= eps
 
-            gradient[i] = (
-                self.get_distance(point_plus) - self.get_distance(point_minus)
-            ) / (2 * eps)
+            gradient[i] = (self.get_distance(point_plus) - self.get_distance(point_minus)) / (
+                2 * eps
+            )
 
         norm = np.linalg.norm(gradient)
         if norm > eps:
@@ -136,9 +137,7 @@ class HumanState:
 
     position: NDArray[np.floating]
     velocity: NDArray[np.floating] = field(default_factory=lambda: np.zeros(3))
-    bounding_box: NDArray[np.floating] = field(
-        default_factory=lambda: np.array([0.5, 0.3, 1.7])
-    )
+    bounding_box: NDArray[np.floating] = field(default_factory=lambda: np.array([0.5, 0.3, 1.7]))
     skeleton_joints: dict[str, NDArray[np.floating]] | None = None
     confidence: float = 1.0
     is_moving: bool = False
@@ -268,6 +267,8 @@ class CollisionAvoidance:
 
         return positions
 
+    @jit(nopython=True, fastmath=True)
+    @jit(nopython=True, fastmath=True)
     def compute_repulsive_field(
         self,
         state: RobotState,

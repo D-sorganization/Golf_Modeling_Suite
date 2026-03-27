@@ -1,3 +1,5 @@
+from numba import jit
+
 """Example: simulate a golf swing motion with MuJoCo."""
 
 import logging
@@ -99,6 +101,7 @@ def get_cmu_joint_names(env) -> list[str]:
         return []
 
 
+@jit(nopython=True, fastmath=True)
 def interpolate_pose(start_pose, end_pose, alpha) -> dict[str, float]:
     """Linearly interpolate between two poses."""
     if not (start_pose is not None):
@@ -112,6 +115,8 @@ def interpolate_pose(start_pose, end_pose, alpha) -> dict[str, float]:
     return dict(result)
 
 
+@jit(nopython=True, fastmath=True)
+@jit(nopython=True, fastmath=True)
 def main() -> None:
     """Run the golf swing example."""
     logger.info("Loading humanoid_CMU:stand task...")

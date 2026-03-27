@@ -55,8 +55,7 @@ class EndEffector:
     def get_all_link_names(self) -> list[str]:
         """Get names of all links in this end effector."""
         names = [self.link_element.get("name", "")]
-        for link in self.child_links:
-            names.append(link.get("name", ""))
+        names.extend([link.get("name", "") for link in self.child_links])
         return names
 
     def get_attachment_joint_type(self) -> str:
@@ -192,13 +191,15 @@ class EndEffectorLibrary:
 
         # Parse child links
         child_links = []
-        for link_xml in definition["child_links"]:
-            child_links.append(DefusedET.fromstring(link_xml.strip()))
+        child_links.extend(
+            [DefusedET.fromstring(link_xml.strip()) for link_xml in definition["child_links"]]
+        )
 
         # Parse child joints
         child_joints = []
-        for joint_xml in definition["child_joints"]:
-            child_joints.append(DefusedET.fromstring(joint_xml.strip()))
+        child_joints.extend(
+            [DefusedET.fromstring(joint_xml.strip()) for joint_xml in definition["child_joints"]]
+        )
 
         return EndEffector(
             name=definition["name"],
@@ -553,15 +554,9 @@ class EndEffectorManagerWidget(QWidget):
         self.import_from_file_btn.clicked.connect(self._on_import_from_file)
         self.attach_btn.clicked.connect(self._on_attach_end_effector)
 
-        self.current_list.itemSelectionChanged.connect(
-            self._on_current_selection_changed
-        )
-        self.builtin_list.itemSelectionChanged.connect(
-            self._on_library_selection_changed
-        )
-        self.custom_list.itemSelectionChanged.connect(
-            self._on_library_selection_changed
-        )
+        self.current_list.itemSelectionChanged.connect(self._on_current_selection_changed)
+        self.builtin_list.itemSelectionChanged.connect(self._on_library_selection_changed)
+        self.custom_list.itemSelectionChanged.connect(self._on_library_selection_changed)
 
     def _populate_builtin_list(self) -> None:
         """Populate the built-in end effectors list."""
@@ -681,8 +676,7 @@ class EndEffectorManagerWidget(QWidget):
         reply = QMessageBox.question(
             self,
             "Remove End Effector",
-            f"Remove end effector '{link_name}' and all its children?\n"
-            "This cannot be undone.",
+            f"Remove end effector '{link_name}' and all its children?\n" "This cannot be undone.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
 
@@ -789,13 +783,9 @@ class EndEffectorManagerWidget(QWidget):
                 item.setData(Qt.ItemDataRole.UserRole, key)
                 self.custom_list.addItem(item)
 
-                self.status_label.setText(
-                    f"Imported '{link_name}' from {Path(file_path).name}"
-                )
+                self.status_label.setText(f"Imported '{link_name}' from {Path(file_path).name}")
 
-    def _select_from_list(
-        self, title: str, label: str, items: list[str]
-    ) -> tuple[str, bool]:
+    def _select_from_list(self, title: str, label: str, items: list[str]) -> tuple[str, bool]:
         """Show a simple selection dialog."""
         if not (title is not None):
             raise ValueError("title must be provided")
@@ -892,12 +882,10 @@ class EndEffectorManagerWidget(QWidget):
                         child.set("link", name_mapping[old_link])
 
         # Add links to model
-        for link in links:
-            root.append(link)
+        root.extend([link for link in links])
 
         # Add joints to model
-        for joint in joints:
-            root.append(joint)
+        root.extend([joint for joint in joints])
 
         # Create attachment joint
         ee_root_name = links[0].get("name", "end_effector")
@@ -939,9 +927,7 @@ class EndEffectorManagerWidget(QWidget):
         self.urdf_content = new_content
         self._on_identify_end_effectors()
         self.urdf_modified.emit(new_content)
-        self.status_label.setText(
-            f"Attached end effector '{ee.name}' to '{parent_link}'"
-        )
+        self.status_label.setText(f"Attached end effector '{ee.name}' to '{parent_link}'")
 
     def get_urdf_content(self) -> str:
         """Get the current URDF content."""

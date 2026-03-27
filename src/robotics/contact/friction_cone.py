@@ -1,3 +1,4 @@
+from numba import jit
 """Friction cone utilities for contact dynamics.
 
 This module provides friction cone representations and linearization
@@ -102,6 +103,7 @@ class FrictionCone:
 @postcondition(
     lambda result: result.shape[1] >= 3,
     "Must have at least 3 generators",
+@jit(nopython=True, fastmath=True)
 )
 def _compute_cone_generators(
     normal: NDArray[np.float64],
@@ -173,6 +175,7 @@ def _get_tangent_vectors(
     lambda mu, normal, num_faces: mu >= 0,
     "Friction coefficient must be non-negative",
 )
+@jit(nopython=True, fastmath=True)
 def linearize_friction_cone(
     mu: float,
     normal: NDArray[np.float64],

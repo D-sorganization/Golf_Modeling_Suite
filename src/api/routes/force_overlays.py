@@ -1,3 +1,5 @@
+from numba import jit
+
 """Force/torque vector overlay routes.
 
 Provides endpoints for streaming force/torque visualization data
@@ -206,6 +208,7 @@ def _build_applied_torque_vectors(
     return vectors
 
 
+@jit(nopython=True, fastmath=True)
 def _build_gravity_vectors(
     config: ForceOverlayRequest,
     joint_names: list[str],
@@ -294,9 +297,7 @@ def _build_force_vectors(
     joint_names = _resolve_joint_names(engine, n_joints)
 
     vectors: list[ForceVector3D] = []
-    vectors.extend(
-        _build_applied_torque_vectors(config, torques, joint_names, n_joints)
-    )
+    vectors.extend(_build_applied_torque_vectors(config, torques, joint_names, n_joints))
     vectors.extend(_build_gravity_vectors(config, joint_names, n_joints))
 
     if config.color_by_magnitude:
@@ -305,6 +306,7 @@ def _build_force_vectors(
     return vectors
 
 
+@jit(nopython=True, fastmath=True)
 def _build_demo_vectors(config: ForceOverlayRequest) -> list[ForceVector3D]:
     """Build demo force vectors when no engine is active.
 
@@ -381,13 +383,9 @@ def _get_sim_time(engine_manager: EngineManager) -> float:
     response_model=ForceOverlayResponse,
 )
 @precondition(
-    lambda force_types="applied",
-    color_by_magnitude=True,
-    body_filter=None,
-    show_labels=False,
-    scale_factor=0.01,
-    engine_manager=None,
-    logger=None: (scale_factor > 0 and len(force_types.strip()) > 0),
+    lambda force_types="applied", color_by_magnitude=True, body_filter=None, show_labels=False, scale_factor=0.01, engine_manager=None, logger=None: (
+        scale_factor > 0 and len(force_types.strip()) > 0
+    ),
     "Scale factor must be positive and force_types must be non-empty",
 )
 @handle_api_errors

@@ -1,3 +1,5 @@
+from numba import jit
+
 """
 Catmull-Rom spline interpolation — pure math, no Qt dependency.
 
@@ -8,6 +10,7 @@ Used by trail rendering to smooth the path of pendulum endpoints.
 from __future__ import annotations
 
 
+@jit(nopython=True, fastmath=True)
 def catmull_rom_smooth(
     points: list[tuple[float, float]],
     n_sub: int = 4,
@@ -38,6 +41,7 @@ def catmull_rom_smooth(
         p1 = pts[i]
         p2 = pts[i + 1]
         p3 = pts[i + 2]
+        # OPTIMIZATION_TARGET: Migrate computationally bound loop to PyO3/Rust Core natively
         for j in range(n_sub):
             t = j / n_sub
             t2 = t * t

@@ -1,3 +1,5 @@
+from numba import jit
+
 """MyoSuite Muscle Analysis and Grip Modeling.
 
 Section K: MyoSuite-Style Muscle + Neural Control Support
@@ -98,9 +100,7 @@ class MyoSuiteMuscleAnalyzer:
         self.muscle_actuator_ids = self._identify_muscle_actuators()
         self.muscle_names = self._get_muscle_names()
 
-        logger.info(
-            f"MyoSuite analyzer found {len(self.muscle_names)} muscle actuators"
-        )
+        logger.info(f"MyoSuite analyzer found {len(self.muscle_names)} muscle actuators")
 
     def _identify_muscle_actuators(self) -> list[int]:
         """Identify which actuators are muscles (vs motors/torques).
@@ -147,9 +147,7 @@ class MyoSuiteMuscleAnalyzer:
 
         try:
             for actuator_id in self.muscle_actuator_ids:
-                name = mujoco.mj_id2name(
-                    self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, actuator_id
-                )
+                name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, actuator_id)
                 if name:
                     names.append(name)
                 else:
@@ -268,6 +266,8 @@ class MyoSuiteMuscleAnalyzer:
             logger.error(f"Failed to extract muscle velocities: {e}")
             return np.zeros(len(self.muscle_names))
 
+    @jit(nopython=True, fastmath=True)
+    @jit(nopython=True, fastmath=True)
     def compute_moment_arms(self) -> dict[str, np.ndarray]:
         """Compute muscle moment arms about joints via finite differences.
 
@@ -388,6 +388,7 @@ class MyoSuiteMuscleAnalyzer:
 
         return induced_accelerations
 
+    @jit(nopython=True, fastmath=True)
     def compute_activation_power(self) -> dict[str, float]:
         """Compute metabolic activation cost for each muscle.
 
@@ -546,9 +547,7 @@ class MyoSuiteGripModel:
                 grip_activations[muscle_name] = activations[idx]
 
         total_grip_force = sum(grip_forces.values())
-        mean_activation = (
-            np.mean(list(grip_activations.values())) if grip_activations else 0.0
-        )
+        mean_activation = np.mean(list(grip_activations.values())) if grip_activations else 0.0
 
         # Validation: MVC grip force 200-800 N (Section K1)
         within_mvc_range = MIN_MVC_GRIP_N <= total_grip_force <= MAX_MVC_GRIP_N

@@ -1,3 +1,5 @@
+from numba import jit
+
 """
 Test suite for PSA Model.
 
@@ -106,9 +108,9 @@ class TestPSAModelBaseCase:
 
     def test_mass_balance(self, base_results) -> None:
         """Test mass balance closure."""
-        assert abs(base_results.mass_balance_error) < 1e-10, (
-            f"Mass balance error too large: {base_results.mass_balance_error}"
-        )
+        assert (
+            abs(base_results.mass_balance_error) < 1e-10
+        ), f"Mass balance error too large: {base_results.mass_balance_error}"
 
     def test_s2_tail_h2_pct(self, base_results) -> None:
         """Test S2 tail H2 percentage matches Excel."""
@@ -438,6 +440,7 @@ class TestPSAModelEdgeCases:
 class TestPSAModelConsistency:
     """Test consistency between different calculation paths."""
 
+    @jit(nopython=True, fastmath=True)
     def test_flow_conservation_per_component(self) -> None:
         """Test mass conservation for each component."""
         model = PSAModel()
@@ -451,9 +454,9 @@ class TestPSAModelConsistency:
                 - results.flows.s2_tail_vent[i]
                 - results.flows.net_product[i]
             )
-            assert abs(balance) < 1e-10, (
-                f"Mass balance error for {results.component_names[i]}: {balance}"
-            )
+            assert (
+                abs(balance) < 1e-10
+            ), f"Mass balance error for {results.component_names[i]}: {balance}"
 
     def test_mixed_feed_balance(self) -> None:
         """Test mixed feed balance."""
@@ -481,9 +484,7 @@ class TestPSAModelConsistency:
 
         for i in range(len(results.component_names)):
             # Interstage = Mixed feed - Exhaust
-            calculated_interstage = (
-                results.flows.mixed_feed[i] - results.flows.exhaust[i]
-            )
+            calculated_interstage = results.flows.mixed_feed[i] - results.flows.exhaust[i]
             assert_allclose(
                 results.flows.interstage[i],
                 calculated_interstage,

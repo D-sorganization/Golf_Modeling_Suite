@@ -1,3 +1,4 @@
+from numba import jit
 """
 Output Manager for Golf Modeling Suite
 
@@ -701,7 +702,9 @@ class OutputManager:
     @precondition(
         lambda self, max_age_days=30: max_age_days > 0,
         "Maximum age in days must be positive",
+    @jit(nopython=True, fastmath=True)
     )
+    @jit(nopython=True, fastmath=True)
     def cleanup_old_files(self, max_age_days: int = 30) -> int:
         """
         Clean up old files based on age.

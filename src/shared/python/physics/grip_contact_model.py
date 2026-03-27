@@ -1,3 +1,5 @@
+from numba import jit
+
 """Contact-Based Grip Model Module.
 
 Guideline K2 Implementation: Contact-Based Grip Model (MuJoCo).
@@ -218,6 +220,7 @@ def classify_contact_state(
     return ContactState.SLIPPING
 
 
+@jit(nopython=True, fastmath=True)
 def compute_center_of_pressure(
     contacts: list[ContactPoint],
 ) -> np.ndarray:
@@ -248,6 +251,7 @@ def compute_center_of_pressure(
     return weighted_position / total_force
 
 
+@jit(nopython=True, fastmath=True)
 def compute_grip_torque(
     contacts: list[ContactPoint],
     grip_center: np.ndarray,
@@ -336,9 +340,7 @@ class GripContactModel:
             slip_velocity = vel - vel_normal
 
             # Classify state
-            state = classify_contact_state(
-                normal_force, tangent_force, slip_velocity, self.params
-            )
+            state = classify_contact_state(normal_force, tangent_force, slip_velocity, self.params)
 
             contacts.append(
                 ContactPoint(
@@ -373,6 +375,7 @@ class GripContactModel:
         self.contact_history.append(self.current_state)
         return self.current_state
 
+    @jit(nopython=True, fastmath=True)
     def check_static_equilibrium(
         self,
         club_weight: float,
@@ -500,17 +503,19 @@ def create_mujoco_grip_contacts(
         hand_body_names = ["left_hand", "right_hand"]
 
     contact_pairs = []
-    for hand in hand_body_names:
-        contact_pairs.append(
+    contact_pairs.extend(
+        [
             {
                 "body1": hand,
                 "body2": grip_body_name,
                 "friction": list(friction),
-                "condim": 4,  # Full 3D friction cone
-                "margin": 0.001,  # 1mm contact margin
+                "condim": 4,
+                "margin": 0.001,
                 "gap": 0.0,
             }
-        )
+            for hand in hand_body_names
+        ]
+    )
 
     return {
         "contact_pairs": contact_pairs,
@@ -600,13 +605,9 @@ class GripContactExporter:
         # Extract per-contact data
         contact_forces = np.array([c.normal_force for c in state.contacts])
         contact_positions = (
-            np.array([c.position for c in state.contacts])
-            if state.contacts
-            else np.zeros((0, 3))
+            np.array([c.position for c in state.contacts]) if state.contacts else np.zeros((0, 3))
         )
-        slip_velocities = np.array(
-            [np.linalg.norm(c.slip_velocity) for c in state.contacts]
-        )
+        slip_velocities = np.array([np.linalg.norm(c.slip_velocity) for c in state.contacts])
 
         timestep = GripContactTimestep(
             timestamp=state.timestamp,
@@ -615,9 +616,7 @@ class GripContactExporter:
             num_contacts=len(state.contacts),
             num_slipping=state.num_slipping,
             num_sticking=state.num_sticking,
-            slip_ratio=(
-                state.num_slipping / len(state.contacts) if state.contacts else 0.0
-            ),
+            slip_ratio=(state.num_slipping / len(state.contacts) if state.contacts else 0.0),
             min_slip_margin=margins["min_margin"],
             mean_slip_margin=margins["mean_margin"],
             center_of_pressure=state.center_of_pressure.copy(),
@@ -786,10 +785,7 @@ def compute_pressure_visualization(
     # Extract positions and compute pressures
     positions = np.array([c.position for c in contacts])
     pressures = np.array(
-        [
-            c.normal_force / area_per_contact if area_per_contact > 0 else 0.0
-            for c in contacts
-        ]
+        [c.normal_force / area_per_contact if area_per_contact > 0 else 0.0 for c in contacts]
     )
 
     max_pressure = float(np.max(pressures)) if len(pressures) > 0 else 0.0

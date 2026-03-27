@@ -1,3 +1,5 @@
+from numba import jit
+
 """
 Core simulation logic for the Golf Swing Simulator.
 
@@ -162,6 +164,7 @@ class GolfSwingModel:
         """
         return self._run_opensim_simulation()
 
+    @jit(nopython=True, fastmath=True)
     def _run_opensim_simulation(self) -> SimulationResult:
         """Run simulation using OpenSim."""
 

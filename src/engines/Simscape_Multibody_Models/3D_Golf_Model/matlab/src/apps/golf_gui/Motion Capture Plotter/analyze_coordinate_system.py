@@ -1,3 +1,5 @@
+from numba import jit
+
 """Analyse and visualise coordinate system orientation for motion-capture data."""
 
 from __future__ import annotations
@@ -10,6 +12,7 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
+@jit(nopython=True, fastmath=True)
 def _load_excel_frame_data(filename, sheet_name) -> list:
     """Load and parse frame data from an Excel sheet.
 
@@ -155,9 +158,7 @@ def _interpret_swing_motion(mid_motion_ranges, club_motion_ranges) -> None:
     # Check if this looks like a golf swing
     logger.info("\nGolf swing interpretation:")
     if max(club_motion_ranges) > max(mid_motion_ranges) * 1.5:
-        logger.info(
-            "  ✓ Club head has larger motion than hands (typical of golf swing)"
-        )
+        logger.info("  ✓ Club head has larger motion than hands (typical of golf swing)")
     else:
         logger.info("  ✗ Club head motion similar to hands (unusual for golf swing)")
 
@@ -187,8 +188,7 @@ def _analyze_key_frame(name, frame) -> None:
         raise ValueError("name must be provided")
     logger.info("%s frame (t=%ss):", name, frame["time"])
     logger.info(
-        f"  Mid-hands: X={frame['mid_X']:.3f}, Y={frame['mid_Y']:.3f}, "
-        f"Z={frame['mid_Z']:.3f}"
+        f"  Mid-hands: X={frame['mid_X']:.3f}, Y={frame['mid_Y']:.3f}, " f"Z={frame['mid_Z']:.3f}"
     )
     logger.info(
         f"  Club head: X={frame['club_X']:.3f}, Y={frame['club_Y']:.3f}, "
@@ -210,16 +210,13 @@ def _analyze_key_frame(name, frame) -> None:
     # Analyze direction cosines for mid-hands
     logger.info("  Mid-hands direction cosines:")
     logger.info(
-        f"    X-axis: [{frame['mid_Xx']:.3f}, {frame['mid_Xy']:.3f}, "
-        f"{frame['mid_Xz']:.3f}]"
+        f"    X-axis: [{frame['mid_Xx']:.3f}, {frame['mid_Xy']:.3f}, " f"{frame['mid_Xz']:.3f}]"
     )
     logger.info(
-        f"    Y-axis: [{frame['mid_Yx']:.3f}, {frame['mid_Yy']:.3f}, "
-        f"{frame['mid_Yz']:.3f}]"
+        f"    Y-axis: [{frame['mid_Yx']:.3f}, {frame['mid_Yy']:.3f}, " f"{frame['mid_Yz']:.3f}]"
     )
     logger.info(
-        f"    Z-axis: [{frame['mid_Zx']:.3f}, {frame['mid_Zy']:.3f}, "
-        f"{frame['mid_Zz']:.3f}]"
+        f"    Z-axis: [{frame['mid_Zx']:.3f}, {frame['mid_Zy']:.3f}, " f"{frame['mid_Zz']:.3f}]"
     )
 
     # Check if direction cosines form a proper rotation matrix

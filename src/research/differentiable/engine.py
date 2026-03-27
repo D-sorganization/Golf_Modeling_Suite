@@ -1,3 +1,4 @@
+from numba import jit
 """Differentiable physics simulation engines."""
 
 from __future__ import annotations
@@ -144,6 +145,8 @@ class DifferentiableEngine:
             trajectory[t + 1] = np.concatenate([q, v])
 
         return trajectory
+    @jit(nopython=True, fastmath=True)
+    @jit(nopython=True, fastmath=True)
 
     def compute_gradient(
         self,
@@ -246,6 +249,7 @@ class DifferentiableEngine:
         v = state[self._n_q :]
         self._set_engine_state(q, v, control)
         return self._step_and_read_state(q, v, dt)
+    @jit(nopython=True, fastmath=True)
 
     def _compute_state_jacobian(
         self,
@@ -272,6 +276,7 @@ class DifferentiableEngine:
             A[:, i] = (x_new - x_next) / eps
 
         return A
+    @jit(nopython=True, fastmath=True)
 
     def _compute_control_jacobian(
         self,
@@ -323,6 +328,7 @@ class DifferentiableEngine:
         A = self._compute_state_jacobian(state, control, x_next, dt, eps)
         B = self._compute_control_jacobian(state, control, x_next, dt, eps)
         return A, B
+    @jit(nopython=True, fastmath=True)
 
     def optimize_trajectory(
         self,
@@ -444,6 +450,7 @@ class ContactDifferentiableEngine(DifferentiableEngine):
         super().__init__(engine)
         self.contact_method = contact_method
         self.smoothing_factor = smoothing_factor
+    @jit(nopython=True, fastmath=True)
 
     def compute_gradient(
         self,
@@ -577,6 +584,7 @@ class ContactDifferentiableEngine(DifferentiableEngine):
         goal_state: NDArray[np.floating],
         schedule: list[bool],
         contact_penalty_weight: float,
+        @jit(nopython=True, fastmath=True)
     ) -> Callable[[NDArray[np.floating]], float]:
         def loss_fn(trajectory: NDArray[np.floating]) -> float:
             """Compute goal error plus contact-transition velocity penalty."""
@@ -594,6 +602,7 @@ class ContactDifferentiableEngine(DifferentiableEngine):
 
         return loss_fn
 
+    @jit(nopython=True, fastmath=True)
     def _adam_optimize_contact(
         self,
         initial_state: NDArray[np.floating],

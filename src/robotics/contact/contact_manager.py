@@ -1,3 +1,5 @@
+from numba import jit
+
 """Contact manager for multi-contact scenarios.
 
 This module provides the ContactManager class for detecting, tracking,
@@ -66,8 +68,7 @@ class ContactManager(ContractChecker):
         """
         if not isinstance(engine, RoboticsCapable):
             raise TypeError(
-                f"Engine must implement RoboticsCapable protocol, "
-                f"got {type(engine).__name__}"
+                f"Engine must implement RoboticsCapable protocol, " f"got {type(engine).__name__}"
             )
 
         self._engine = engine
@@ -85,8 +86,7 @@ class ContactManager(ContractChecker):
             ),
             (
                 lambda: (
-                    len({c.contact_id for c in self._contact_cache})
-                    == len(self._contact_cache)
+                    len({c.contact_id for c in self._contact_cache}) == len(self._contact_cache)
                 ),
                 "All contact IDs must be unique",
             ),
@@ -430,6 +430,7 @@ def _cross_product_2d(
     return float((a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]))
 
 
+@jit(nopython=True, fastmath=True)
 def _point_in_polygon(
     point: NDArray[np.float64],
     polygon: NDArray[np.float64],

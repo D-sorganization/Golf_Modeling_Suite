@@ -1,3 +1,5 @@
+from numba import jit
+
 """Green Surface Model for Putting Simulation.
 
 This module defines the putting green surface including slopes,
@@ -293,17 +295,16 @@ class GreenSurface:
 
         # Central difference
         dzdx = (
-            self.get_elevation_at(pos + [delta, 0])
-            - self.get_elevation_at(pos - [delta, 0])
+            self.get_elevation_at(pos + [delta, 0]) - self.get_elevation_at(pos - [delta, 0])
         ) / (2 * delta)
 
         dzdy = (
-            self.get_elevation_at(pos + [0, delta])
-            - self.get_elevation_at(pos - [0, delta])
+            self.get_elevation_at(pos + [0, delta]) - self.get_elevation_at(pos - [0, delta])
         ) / (2 * delta)
 
         return np.array([dzdx, dzdy])
 
+    @jit(nopython=True, fastmath=True)
     def get_slope_at(self, position: np.ndarray) -> np.ndarray:
         """Get slope vector at position.
 
@@ -356,9 +357,7 @@ class GreenSurface:
         # a = g * sin(theta) ≈ g * slope for small slopes
         return -GRAVITY_M_S2 * slope
 
-    def is_in_hole(
-        self, position: np.ndarray, velocity: np.ndarray | None = None
-    ) -> bool:
+    def is_in_hole(self, position: np.ndarray, velocity: np.ndarray | None = None) -> bool:
         """Check if ball position is in the hole.
 
         A ball is considered holed if:
@@ -481,9 +480,7 @@ class GreenSurface:
         elevation = height * np.exp(-0.5 * (distance / (width / 2.5)) ** 2)
         return elevation
 
-    def _depression_elevation(
-        self, position: np.ndarray, depression: dict[str, Any]
-    ) -> float:
+    def _depression_elevation(self, position: np.ndarray, depression: dict[str, Any]) -> float:
         """Compute elevation contribution from a depression."""
         if not (position is not None):
             raise ValueError("position must be provided")
@@ -503,6 +500,7 @@ class GreenSurface:
         elevation = -depth * (1 - normalized_dist**2)
         return elevation
 
+    @jit(nopython=True, fastmath=True)
     def calculate_break(
         self,
         start: np.ndarray,
@@ -788,16 +786,16 @@ class GreenSurface:
         points = []
         with open(filepath) as f:
             reader = csv.DictReader(f)
-            for row in reader:
-                points.append(
+            points.extend(
+                [
                     ContourPoint(
                         x=float(row.get("x", row.get("X", 0))),
                         y=float(row.get("y", row.get("Y", 0))),
-                        elevation=float(
-                            row.get("elevation", row.get("z", row.get("Z", 0)))
-                        ),
+                        elevation=float(row.get("elevation", row.get("z", row.get("Z", 0)))),
                     )
-                )
+                    for row in reader
+                ]
+            )
 
         self.set_contour_points(points)
 
@@ -815,8 +813,7 @@ class GreenSurface:
         # Load contour points if present
         if "contours" in data:
             points = [
-                ContourPoint(x=p["x"], y=p["y"], elevation=p["elevation"])
-                for p in data["contours"]
+                ContourPoint(x=p["x"], y=p["y"], elevation=p["elevation"]) for p in data["contours"]
             ]
             self.set_contour_points(points)
 

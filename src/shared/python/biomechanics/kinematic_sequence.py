@@ -1,3 +1,5 @@
+from numba import jit
+
 """Segment Timing Analysis Module.
 
 This module provides tools to analyze the timing sequence of body segment
@@ -54,9 +56,7 @@ class SegmentTimingResult:
     sequence_order: list[str]  # Names in order of peak time
     expected_order: list[str] | None
     sequence_consistency: float  # 0.0 to 1.0 (adherence to expected order)
-    timing_gaps: dict[str, float] = field(
-        default_factory=dict
-    )  # Time diff between peaks
+    timing_gaps: dict[str, float] = field(default_factory=dict)  # Time diff between peaks
     is_valid_sequence: bool = False  # True if order matches expected
     methodology: MethodCitation | None = None
 
@@ -125,9 +125,7 @@ class SegmentTimingAnalyzer:
         timing_gaps = self._compute_timing_gaps(peaks)
 
         # 5. Evaluate against expected order
-        sequence_consistency, is_valid = self._evaluate_sequence_order(
-            peaks, segment_velocities
-        )
+        sequence_consistency, is_valid = self._evaluate_sequence_order(peaks, segment_velocities)
 
         result = SegmentTimingResult(
             peaks=peaks,
@@ -208,6 +206,7 @@ class SegmentTimingAnalyzer:
 
         return peaks
 
+    @jit(nopython=True, fastmath=True)
     def _compute_extended_metrics(
         self,
         peaks: list[SegmentPeak],
@@ -263,6 +262,7 @@ class SegmentTimingAnalyzer:
                         peak_info.deceleration_rate = -slope
 
     @staticmethod
+    @jit(nopython=True, fastmath=True)
     def _compute_timing_gaps(peaks: list[SegmentPeak]) -> dict[str, float]:
         """Compute time gaps between consecutive peaks.
 
@@ -302,9 +302,7 @@ class SegmentTimingAnalyzer:
             return 0.0, False
 
         # Filter expected order to only include segments present in data
-        relevant_expected = [
-            name for name in self.expected_order if name in segment_velocities
-        ]
+        relevant_expected = [name for name in self.expected_order if name in segment_velocities]
 
         if not relevant_expected:
             return 0.0, False

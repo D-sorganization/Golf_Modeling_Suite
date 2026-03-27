@@ -1,3 +1,5 @@
+from numba import jit
+
 """System Identification for sim-to-real transfer."""
 
 from __future__ import annotations
@@ -99,6 +101,7 @@ class SystemIdentifier:
 
         return params
 
+    @jit(nopython=True, fastmath=True)
     def _apply_params(self, param_vector: NDArray[np.floating]) -> None:
         """Apply parameter vector to model.
 
@@ -379,6 +382,7 @@ class SystemIdentifier:
 
         return best_params, best_error, converged, _iteration
 
+    @jit(nopython=True, fastmath=True)
     def compute_reality_gap(
         self,
         sim_trajectory: NDArray[np.floating],

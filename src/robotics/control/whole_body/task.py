@@ -1,3 +1,5 @@
+from numba import jit
+
 """Task definitions for whole-body control.
 
 This module provides task descriptors that define objectives
@@ -87,8 +89,7 @@ class Task:
 
         if self.target.shape != (self._task_dim,):
             raise ValueError(
-                f"Target shape {self.target.shape} doesn't match "
-                f"Jacobian rows {self._task_dim}"
+                f"Target shape {self.target.shape} doesn't match " f"Jacobian rows {self._task_dim}"
             )
 
         # Validate weight if provided
@@ -249,11 +250,7 @@ def create_posture_task(
     jacobian = np.eye(n_v)[mask]
 
     # Handle quaternion joints (n_q > n_v case)
-    q_error = (
-        q_target[:n_v] - q_current[:n_v]
-        if len(q_current) > n_v
-        else q_target - q_current
-    )
+    q_error = q_target[:n_v] - q_current[:n_v] if len(q_current) > n_v else q_target - q_current
     v_target = np.zeros(n_v)
 
     error_p = q_error[mask]
@@ -383,6 +380,7 @@ def create_contact_constraint(
     )
 
 
+@jit(nopython=True, fastmath=True)
 def create_joint_limit_task(
     n_v: int,
     q_current: NDArray[np.float64],

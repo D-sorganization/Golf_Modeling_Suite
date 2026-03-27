@@ -1,3 +1,5 @@
+from numba import jit
+
 #!/usr/bin/env python3
 """Fitting loss coefficients (K-factors) for pressure drop calculations.
 
@@ -175,13 +177,12 @@ def get_fitting_k_factor(fitting_type: str) -> float:
     """
     if fitting_type not in FITTING_K_FACTORS:
         available = ", ".join(sorted(FITTING_K_FACTORS.keys()))
-        raise ValueError(
-            f"Fitting type '{fitting_type}' not found.\nAvailable types: {available}"
-        )
+        raise ValueError(f"Fitting type '{fitting_type}' not found.\nAvailable types: {available}")
 
     return FITTING_K_FACTORS[fitting_type]
 
 
+@jit(nopython=True, fastmath=True)
 def get_multiple_fittings_k(fittings: dict[str, int]) -> float:
     """Calculate total K-factor for multiple fittings.
 
@@ -417,9 +418,7 @@ def print_fitting_database() -> None:
                 logger.info(f"  {name:50s} K = {k_factor:6.0f}")
 
 
-def calculate_fitting_pressure_drop(
-    k_factor: float, density: float, velocity: float
-) -> float:
+def calculate_fitting_pressure_drop(k_factor: float, density: float, velocity: float) -> float:
     """Calculate pressure drop across a fitting.
 
     ΔP = K × (ρV²/2)

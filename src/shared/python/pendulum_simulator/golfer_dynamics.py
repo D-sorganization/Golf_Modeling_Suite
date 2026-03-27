@@ -1,3 +1,5 @@
+from numba import jit
+
 """Dynamics (mass matrix, Coriolis, gravity, energy) for golfer model.
 
 Uses Lagrangian formulation with analytical Jacobian-based computation
@@ -15,9 +17,7 @@ from .golfer_kinematics import forward_kinematics
 from .physics_golfer import N_DOF, GolferParams, State
 
 
-def _mass_point_positions(
-    q: np.ndarray, p: GolferParams
-) -> list[tuple[float, Callable]]:
+def _mass_point_positions(q: np.ndarray, p: GolferParams) -> list[tuple[float, Callable]]:
     """Return list of (mass, position_function) for all point masses."""
     if not isinstance(q, np.ndarray):
         raise TypeError("q must be a numpy ndarray")
@@ -68,6 +68,7 @@ def _mass_point_positions(
     ]
 
 
+@jit(nopython=True, fastmath=True)
 def potential_energy_from_q(q: np.ndarray, p: GolferParams) -> float:
     """Compute total gravitational potential energy from coordinates."""
     if not isinstance(q, np.ndarray):
@@ -134,9 +135,7 @@ class _TrigCache:
         self.cos_club = np.cos(q[7])
 
 
-def _hub_and_shoulder_jacobians(
-    p: GolferParams, tc: _TrigCache
-) -> dict[str, np.ndarray]:
+def _hub_and_shoulder_jacobians(p: GolferParams, tc: _TrigCache) -> dict[str, np.ndarray]:
     """Compute Jacobians for hub, right shoulder, and left shoulder."""
     if not (p is not None):
         raise ValueError("p must be provided")
@@ -193,9 +192,7 @@ def _right_arm_chain_jacobian(
     return J_re, J_rh, J_rh
 
 
-def _left_arm_chain_jacobian(
-    p: GolferParams, tc: _TrigCache
-) -> tuple[np.ndarray, np.ndarray]:
+def _left_arm_chain_jacobian(p: GolferParams, tc: _TrigCache) -> tuple[np.ndarray, np.ndarray]:
     """Compute Jacobians for LE, LH along the left arm kinematic chain."""
     # LE (left elbow): depends on q[0], q[4]
     if not (p is not None):
@@ -300,6 +297,7 @@ def analytical_fk_jacobians(q: np.ndarray, p: GolferParams) -> dict[str, np.ndar
     return jacobians
 
 
+@jit(nopython=True, fastmath=True)
 def analytical_mass_matrix(q: np.ndarray, p: GolferParams) -> np.ndarray:
     """Compute mass matrix M(q) analytically from Jacobians.
 
@@ -351,6 +349,7 @@ def analytical_mass_matrix(q: np.ndarray, p: GolferParams) -> np.ndarray:
     return M
 
 
+@jit(nopython=True, fastmath=True)
 def analytical_coriolis(q: np.ndarray, qdot: np.ndarray, p: GolferParams) -> np.ndarray:
     """Compute C(q, qdot) = (dM/dt) * qdot analytically.
 
@@ -400,6 +399,7 @@ def analytical_coriolis(q: np.ndarray, qdot: np.ndarray, p: GolferParams) -> np.
     return result
 
 
+@jit(nopython=True, fastmath=True)
 def analytical_gravity_vector(q: np.ndarray, p: GolferParams) -> np.ndarray:
     """Compute gravity torque vector G(q) analytically.
 
@@ -487,6 +487,4 @@ def total_energy(state: State, p: GolferParams) -> float:
 
     q = state[:N_DOF]
     qdot = state[N_DOF:]
-    return total_energy_from_parts(
-        kinetic_energy(q, qdot, p), potential_energy(state, p)
-    )
+    return total_energy_from_parts(kinetic_energy(q, qdot, p), potential_energy(state, p))

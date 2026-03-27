@@ -1,3 +1,5 @@
+from numba import jit
+
 """Examples demonstrating motion capture integration and force analysis.
 
 This module provides comprehensive examples for the complete workflow:
@@ -33,6 +35,7 @@ from .motion_capture import (
 )
 
 
+@jit(nopython=True, fastmath=True)
 def example_1_load_motion_capture() -> None:
     """Example 1: Load motion capture data from file.
 
@@ -47,6 +50,7 @@ def example_1_load_motion_capture() -> None:
     frames = []
     for t in times:
         # Simulate some marker motion
+        # OPTIMIZATION_TARGET: Migrate computationally bound loop to PyO3/Rust Core natively
         markers = {}
         for i in range(num_markers):
             # Sinusoidal motion
@@ -72,6 +76,7 @@ def example_1_load_motion_capture() -> None:
     return mocap_sequence  # type: ignore[return-value]
 
 
+@jit(nopython=True, fastmath=True)
 def example_2_motion_retargeting() -> None:
     """Example 2: Retarget motion capture to MuJoCo model.
 
@@ -120,6 +125,7 @@ def example_2_motion_retargeting() -> None:
     return times_ret, joint_traj  # type: ignore[return-value]
 
 
+@jit(nopython=True, fastmath=True)
 def example_3_compute_kinematic_forces() -> None:
     """Example 3: Compute Coriolis and centrifugal forces from kinematics.
 
@@ -185,6 +191,7 @@ def example_3_compute_kinematic_forces() -> None:
     return force_data_list  # type: ignore[return-value]
 
 
+@jit(nopython=True, fastmath=True)
 def example_4_inverse_dynamics() -> None:
     """Example 4: Full inverse dynamics analysis.
 
@@ -220,44 +227,20 @@ def example_4_inverse_dynamics() -> None:
 
     # Statistics
     max(np.max(np.abs(r.joint_torques)) for r in id_results)
-    max(
-        np.max(np.abs(r.inertial_torques))
-        for r in id_results
-        if r.inertial_torques is not None
-    )
-    max(
-        np.max(np.abs(r.coriolis_torques))
-        for r in id_results
-        if r.coriolis_torques is not None
-    )
-    max(
-        np.max(np.abs(r.gravity_torques))
-        for r in id_results
-        if r.gravity_torques is not None
-    )
+    max(np.max(np.abs(r.inertial_torques)) for r in id_results if r.inertial_torques is not None)
+    max(np.max(np.abs(r.coriolis_torques)) for r in id_results if r.coriolis_torques is not None)
+    max(np.max(np.abs(r.gravity_torques)) for r in id_results if r.gravity_torques is not None)
 
     # Decomposition percentages
     np.mean([np.linalg.norm(r.joint_torques) for r in id_results])
     np.mean(
-        [
-            np.linalg.norm(r.inertial_torques)
-            for r in id_results
-            if r.inertial_torques is not None
-        ],
+        [np.linalg.norm(r.inertial_torques) for r in id_results if r.inertial_torques is not None],
     )
     np.mean(
-        [
-            np.linalg.norm(r.coriolis_torques)
-            for r in id_results
-            if r.coriolis_torques is not None
-        ],
+        [np.linalg.norm(r.coriolis_torques) for r in id_results if r.coriolis_torques is not None],
     )
     np.mean(
-        [
-            np.linalg.norm(r.gravity_torques)
-            for r in id_results
-            if r.gravity_torques is not None
-        ],
+        [np.linalg.norm(r.gravity_torques) for r in id_results if r.gravity_torques is not None],
     )
 
     export_inverse_dynamics_to_csv(times, id_results, "inverse_dynamics.csv")
@@ -265,6 +248,7 @@ def example_4_inverse_dynamics() -> None:
     return id_results  # type: ignore[return-value]
 
 
+@jit(nopython=True, fastmath=True)
 def _generate_synthetic_mocap() -> MotionCaptureSequence:
     times_mocap = np.linspace(0, 1.5, 180)  # 120 Hz
     frames = []
@@ -389,6 +373,8 @@ def example_5_complete_analysis_pipeline() -> None:
     }
 
 
+@jit(nopython=True, fastmath=True)
+@jit(nopython=True, fastmath=True)
 def example_6_swing_comparison() -> None:
     """Example 6: Compare two different swings.
 

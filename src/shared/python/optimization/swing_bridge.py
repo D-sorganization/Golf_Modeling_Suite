@@ -1,3 +1,5 @@
+from numba import jit
+
 """
 Swing Optimization Bridge Module
 
@@ -76,14 +78,11 @@ class SwingOptimizationConfig:
             raise TypeError(f"n_joints must be int, got {type(self.n_joints).__name__}")
         if not (_MIN_JOINTS <= self.n_joints <= _MAX_JOINTS):
             raise ValueError(
-                f"n_joints must be in [{_MIN_JOINTS}, {_MAX_JOINTS}], "
-                f"got {self.n_joints}"
+                f"n_joints must be in [{_MIN_JOINTS}, {_MAX_JOINTS}], " f"got {self.n_joints}"
             )
 
         if not isinstance(self.horizon_steps, int):
-            raise TypeError(
-                f"horizon_steps must be int, got {type(self.horizon_steps).__name__}"
-            )
+            raise TypeError(f"horizon_steps must be int, got {type(self.horizon_steps).__name__}")
         if not (_MIN_HORIZON <= self.horizon_steps <= _MAX_HORIZON):
             raise ValueError(
                 f"horizon_steps must be in [{_MIN_HORIZON}, {_MAX_HORIZON}], "
@@ -96,16 +95,13 @@ class SwingOptimizationConfig:
             raise ValueError(f"dt must be in [{_MIN_DT}, {_MAX_DT}], got {self.dt}")
 
         if not isinstance(self.max_iterations, int):
-            raise TypeError(
-                f"max_iterations must be int, got {type(self.max_iterations).__name__}"
-            )
+            raise TypeError(f"max_iterations must be int, got {type(self.max_iterations).__name__}")
         if self.max_iterations < 1:
             raise ValueError(f"max_iterations must be >= 1, got {self.max_iterations}")
 
         if not isinstance(self.convergence_tol, (int, float)):
             raise TypeError(
-                f"convergence_tol must be numeric, got "
-                f"{type(self.convergence_tol).__name__}"
+                f"convergence_tol must be numeric, got " f"{type(self.convergence_tol).__name__}"
             )
         if self.convergence_tol <= 0:
             raise ValueError(f"convergence_tol must be > 0, got {self.convergence_tol}")
@@ -117,8 +113,7 @@ class SwingOptimizationConfig:
             )
         if self.target_clubhead_velocity <= 0:
             raise ValueError(
-                f"target_clubhead_velocity must be > 0, got "
-                f"{self.target_clubhead_velocity}"
+                f"target_clubhead_velocity must be > 0, got " f"{self.target_clubhead_velocity}"
             )
 
         if not isinstance(self.control_cost_weight, (int, float)):
@@ -127,9 +122,7 @@ class SwingOptimizationConfig:
                 f"{type(self.control_cost_weight).__name__}"
             )
         if self.control_cost_weight < 0:
-            raise ValueError(
-                f"control_cost_weight must be >= 0, got {self.control_cost_weight}"
-            )
+            raise ValueError(f"control_cost_weight must be >= 0, got {self.control_cost_weight}")
 
         if not isinstance(self.terminal_cost_weight, (int, float)):
             raise TypeError(
@@ -137,9 +130,7 @@ class SwingOptimizationConfig:
                 f"{type(self.terminal_cost_weight).__name__}"
             )
         if self.terminal_cost_weight < 0:
-            raise ValueError(
-                f"terminal_cost_weight must be >= 0, got {self.terminal_cost_weight}"
-            )
+            raise ValueError(f"terminal_cost_weight must be >= 0, got {self.terminal_cost_weight}")
 
 
 # ---------------------------------------------------------------------------
@@ -201,9 +192,7 @@ class SwingOptimizationBridge:
     ) -> None:
         # --- Preconditions (DbC) ---
         if not isinstance(config, SwingOptimizationConfig):
-            raise TypeError(
-                f"config must be SwingOptimizationConfig, got {type(config).__name__}"
-            )
+            raise TypeError(f"config must be SwingOptimizationConfig, got {type(config).__name__}")
         self._config = config
         self._engine = engine
 
@@ -237,7 +226,8 @@ class SwingOptimizationBridge:
         return self._control_dim
 
     # -- public API ---------------------------------------------------------
-
+    @jit(nopython=True, fastmath=True)
+    @jit(nopython=True, fastmath=True)
     def optimize_swing(
         self,
         initial_state: np.ndarray,
@@ -259,17 +249,12 @@ class SwingOptimizationBridge:
         """
         # --- Preconditions (DbC) ---
         if not isinstance(initial_state, np.ndarray):
-            raise TypeError(
-                f"initial_state must be np.ndarray, got {type(initial_state).__name__}"
-            )
+            raise TypeError(f"initial_state must be np.ndarray, got {type(initial_state).__name__}")
         if initial_state.ndim != 1:
-            raise ValueError(
-                f"initial_state must be 1-D, got ndim={initial_state.ndim}"
-            )
+            raise ValueError(f"initial_state must be 1-D, got ndim={initial_state.ndim}")
         if initial_state.shape[0] != self._state_dim:
             raise ValueError(
-                f"initial_state length must be {self._state_dim}, "
-                f"got {initial_state.shape[0]}"
+                f"initial_state length must be {self._state_dim}, " f"got {initial_state.shape[0]}"
             )
         if not np.all(np.isfinite(initial_state)):
             raise ValueError("initial_state must contain only finite values")
@@ -277,9 +262,7 @@ class SwingOptimizationBridge:
         t_start = time.perf_counter()
 
         # Initialise controls to zero
-        controls = [
-            np.zeros(self._control_dim) for _ in range(self._config.horizon_steps)
-        ]
+        controls = [np.zeros(self._control_dim) for _ in range(self._config.horizon_steps)]
 
         best_cost = float("inf")
         converged = False
@@ -287,9 +270,7 @@ class SwingOptimizationBridge:
 
         for iteration in range(1, self._config.max_iterations + 1):
             # Forward-simulate current controls
-            trajectory, clubhead_vel = self._evaluate_trajectory(
-                controls, initial_state
-            )
+            trajectory, clubhead_vel = self._evaluate_trajectory(controls, initial_state)
 
             # Compute running cost (sum of quadratic control cost)
             running_cost = sum(float(u @ self._R @ u) for u in controls)
@@ -302,13 +283,8 @@ class SwingOptimizationBridge:
 
             # Check convergence
             if best_cost < float("inf"):
-                relative_improvement = (best_cost - total_cost) / (
-                    abs(best_cost) + 1e-12
-                )
-                if (
-                    abs(relative_improvement) < self._config.convergence_tol
-                    and iteration > 1
-                ):
+                relative_improvement = (best_cost - total_cost) / (abs(best_cost) + 1e-12)
+                if abs(relative_improvement) < self._config.convergence_tol and iteration > 1:
                     converged = True
                     best_cost = min(best_cost, total_cost)
                     break
@@ -317,12 +293,7 @@ class SwingOptimizationBridge:
 
             # Simple gradient step on controls
             # Gradient of terminal cost w.r.t. clubhead velocity
-            grad_scale = (
-                2.0
-                * self._config.terminal_cost_weight
-                * velocity_error
-                * self._config.dt
-            )
+            grad_scale = 2.0 * self._config.terminal_cost_weight * velocity_error * self._config.dt
 
             # Distribute gradient to last-quarter of horizon (most impact)
             start_idx = int(0.75 * self._config.horizon_steps)
@@ -381,6 +352,7 @@ class SwingOptimizationBridge:
 
         return Q, R
 
+    @jit(nopython=True, fastmath=True)
     def _evaluate_trajectory(
         self,
         controls: list[np.ndarray],

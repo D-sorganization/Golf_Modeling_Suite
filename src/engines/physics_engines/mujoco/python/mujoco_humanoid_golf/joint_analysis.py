@@ -1,3 +1,5 @@
+from numba import jit
+
 """Analysis tools for joint constraint forces, torque transmission, and universal
 joints.
 
@@ -130,6 +132,7 @@ class UniversalJointAnalyzer:
 
         return float(cos_beta / denominator)
 
+    @jit(nopython=True, fastmath=True)
     def analyze_torque_transmission(
         self,
         input_joint: str,

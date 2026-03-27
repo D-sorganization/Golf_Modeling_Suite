@@ -1,3 +1,5 @@
+from numba import jit
+
 """Nonlinear dynamics and complexity analysis.
 
 Includes Lyapunov exponents, correlation dimension, recurrence quantification,
@@ -31,6 +33,8 @@ class NonlinearDynamicsMixin:
     joint_velocities: np.ndarray
     dt: float
 
+    @jit(nopython=True, fastmath=True)
+    @jit(nopython=True, fastmath=True)
     def compute_local_divergence_rate(
         self,
         joint_idx: int = 0,
@@ -173,9 +177,7 @@ class NonlinearDynamicsMixin:
                         recurrence_matrix[i, j] = 1
                         recurrence_matrix[j, i] = 1
 
-            return cast(
-                np.ndarray[tuple[int, int], np.dtype[np.int_]], recurrence_matrix
-            )
+            return cast(np.ndarray[tuple[int, int], np.dtype[np.int_]], recurrence_matrix)
 
         dists = pdist(normalized_state, metric=metric)
         dist_matrix = squareform(dists)
@@ -297,9 +299,8 @@ class NonlinearDynamicsMixin:
             trapping_time=tt,
         )
 
-    def compute_correlation_dimension(
-        self, data: np.ndarray, tau: int = 1, dim: int = 3
-    ) -> float:
+    @jit(nopython=True, fastmath=True)
+    def compute_correlation_dimension(self, data: np.ndarray, tau: int = 1, dim: int = 3) -> float:
         """Estimate Correlation Dimension (D2) using Grassberger-Procaccia algorithm.
 
         Args:
@@ -349,6 +350,9 @@ class NonlinearDynamicsMixin:
         slope, _ = np.polyfit(log_r[start:end], log_c[start:end], 1)
         return float(slope)
 
+    @jit(nopython=True, fastmath=True)
+    @jit(nopython=True, fastmath=True)
+    @jit(nopython=True, fastmath=True)
     def estimate_lyapunov_exponent(
         self,
         data: np.ndarray,
@@ -449,6 +453,8 @@ class NonlinearDynamicsMixin:
 
         return 0.0
 
+    @jit(nopython=True, fastmath=True)
+    @jit(nopython=True, fastmath=True)
     def compute_permutation_entropy(
         self,
         data: np.ndarray,
@@ -569,6 +575,7 @@ class NonlinearDynamicsMixin:
         ensure(result >= 0, "sample entropy must be non-negative", result)
         return result
 
+    @jit(nopython=True, fastmath=True)
     def compute_multiscale_entropy(
         self,
         data: np.ndarray,
@@ -619,6 +626,8 @@ class NonlinearDynamicsMixin:
 
         return scales, np.array(mse_values)
 
+    @jit(nopython=True, fastmath=True)
+    @jit(nopython=True, fastmath=True)
     def compute_fractal_dimension(
         self,
         data: np.ndarray,

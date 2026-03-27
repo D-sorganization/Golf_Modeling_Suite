@@ -1,3 +1,5 @@
+from numba import jit
+
 """Physics Validation for URDF Models.
 
 This module provides comprehensive physics validation to catch issues
@@ -149,9 +151,7 @@ class PhysicsValidator:
         if not np.allclose(tensor, tensor.T, rtol=1e-10):
             result.is_symmetric = False
             result.is_valid = False
-            result.errors.append(
-                f"Inertia tensor is not symmetric for {component or 'unknown'}"
-            )
+            result.errors.append(f"Inertia tensor is not symmetric for {component or 'unknown'}")
 
         # Compute eigenvalues
         try:
@@ -163,8 +163,7 @@ class PhysicsValidator:
                 result.is_positive_definite = False
                 result.is_valid = False
                 result.errors.append(
-                    f"Inertia tensor is not positive definite. "
-                    f"Eigenvalues: {eigenvalues}"
+                    f"Inertia tensor is not positive definite. " f"Eigenvalues: {eigenvalues}"
                 )
 
             # Compute condition number
@@ -202,12 +201,12 @@ class PhysicsValidator:
         min_inertia = min(Ixx, Iyy, Izz)
         if min_inertia < 1e-9:
             result.warnings.append(
-                f"Very small inertia value ({min_inertia:.2e}) may cause "
-                "numerical instability"
+                f"Very small inertia value ({min_inertia:.2e}) may cause " "numerical instability"
             )
 
         return result
 
+    @jit(nopython=True, fastmath=True)
     @staticmethod
     def _compute_center_of_mass(
         links: list[Link],
@@ -255,9 +254,7 @@ class PhysicsValidator:
 
             if link_z_positions:
                 min_z = min(z for _, z in link_z_positions)
-                support_link_names = [
-                    name for name, z in link_z_positions if abs(z - min_z) < 0.1
-                ]
+                support_link_names = [name for name, z in link_z_positions if abs(z - min_z) < 0.1]
 
         support_points: list[tuple[float, float]] = []
         for link in links:
@@ -355,9 +352,7 @@ class PhysicsValidator:
             )
 
         com, total_mass = com_result
-        support_points, support_link_names = self._find_support_polygon(
-            links, support_link_names
-        )
+        support_points, support_link_names = self._find_support_polygon(links, support_link_names)
         is_stable, margin, support_polygon, tipping_angle = self._evaluate_stability(
             com, total_mass, support_points
         )
@@ -370,6 +365,8 @@ class PhysicsValidator:
             tipping_angle_deg=tipping_angle,
         )
 
+    @jit(nopython=True, fastmath=True)
+    @jit(nopython=True, fastmath=True)
     def check_collision_geometry(
         self,
         links: list[Link],
@@ -427,6 +424,7 @@ class PhysicsValidator:
 
         return result
 
+    @jit(nopython=True, fastmath=True)
     def validate_physics(
         self,
         links: list[Link],
@@ -460,14 +458,10 @@ class PhysicsValidator:
                 inertial = link.inertial
 
                 # Check if inertial has full tensor attributes
-                has_inertia_tensor = hasattr(inertial, "ixx") and hasattr(
-                    inertial, "iyy"
-                )
+                has_inertia_tensor = hasattr(inertial, "ixx") and hasattr(inertial, "iyy")
 
                 if has_inertia_tensor:
-                    inertia_result = self.validate_inertia_tensor(
-                        inertial, component=link.name
-                    )
+                    inertia_result = self.validate_inertia_tensor(inertial, component=link.name)
                     result.inertia_results[link.name] = inertia_result
 
                     if not inertia_result.is_valid:
@@ -514,6 +508,7 @@ class PhysicsValidator:
 
         return result
 
+    @jit(nopython=True, fastmath=True)
     @staticmethod
     def _point_in_polygon(
         point: np.ndarray,
@@ -540,6 +535,7 @@ class PhysicsValidator:
         return inside
 
     @staticmethod
+    @jit(nopython=True, fastmath=True)
     def _distance_to_polygon_edge(
         point: np.ndarray,
         polygon: list[tuple[float, float]],

@@ -1,3 +1,5 @@
+from numba import jit
+
 """
 Articulated Body Algorithm (ABA) for forward dynamics.
 
@@ -282,6 +284,7 @@ def _aba_backward_pass(
         )
 
 
+@jit(nopython=True, fastmath=True)
 def _aba_forward_accelerations(
     nb: int,
     model_parent: np.ndarray,

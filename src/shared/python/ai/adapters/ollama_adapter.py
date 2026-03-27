@@ -131,8 +131,7 @@ class OllamaAdapter(BaseAgentAdapter):
                 self._client = httpx.Client(timeout=self._timeout)
             except ImportError as e:
                 raise AIProviderError(
-                    "httpx package required for OllamaAdapter. "
-                    "Install with: pip install httpx",
+                    "httpx package required for OllamaAdapter. " "Install with: pip install httpx",
                     provider="ollama",
                 ) from e
         return self._client
@@ -323,12 +322,9 @@ class OllamaAdapter(BaseAgentAdapter):
 
             if not available:
                 if not model_names:
-                    return False, (
-                        f"No models installed. Pull one with: ollama pull {self._model}"
-                    )
+                    return False, (f"No models installed. Pull one with: ollama pull {self._model}")
                 return False, (
-                    f"Model '{self._model}' not found. "
-                    f"Available: {', '.join(model_names[:5])}"
+                    f"Model '{self._model}' not found. " f"Available: {', '.join(model_names[:5])}"
                 )
 
             return True, f"Connected to Ollama with {self._model}"
@@ -382,13 +378,12 @@ class OllamaAdapter(BaseAgentAdapter):
         )
 
         # Add conversation history
-        for msg in context.messages:
-            messages.append(
-                {
-                    "role": msg.role if msg.role != "tool" else "assistant",
-                    "content": msg.content,
-                }
-            )
+        messages.extend(
+            [
+                {"role": msg.role if msg.role != "tool" else "assistant", "content": msg.content}
+                for msg in context.messages
+            ]
+        )
 
         # Add current message
         messages.append(
@@ -419,14 +414,16 @@ class OllamaAdapter(BaseAgentAdapter):
         # Parse tool calls if present (model-dependent)
         tool_calls: list[ToolCall] = []
         if "tool_calls" in message:
-            for tc in message["tool_calls"]:
-                tool_calls.append(
+            tool_calls.extend(
+                [
                     ToolCall(
                         id=tc.get("id", f"tc_{len(tool_calls)}"),
                         name=tc.get("function", {}).get("name", ""),
                         arguments=tc.get("function", {}).get("arguments", {}),
                     )
-                )
+                    for tc in message["tool_calls"]
+                ]
+            )
 
         # Extract usage if available
         usage: dict[str, int] = {}

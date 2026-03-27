@@ -135,9 +135,7 @@ class AnthropicAdapter(BaseAgentAdapter):
                 ) from e
         return self._client
 
-    @precondition(
-        lambda message: bool(message.strip()), "message must not be empty or blank"
-    )
+    @precondition(lambda message: bool(message.strip()), "message must not be empty or blank")
     def send_message(
         self,
         message: str,
@@ -289,9 +287,7 @@ class AnthropicAdapter(BaseAgentAdapter):
             return True, "Connected to Anthropic"
 
         except AIProviderError:
-            return False, (
-                "anthropic package not installed. Install with: pip install anthropic"
-            )
+            return False, ("anthropic package not installed. Install with: pip install anthropic")
         except (RuntimeError, ValueError, OSError) as e:
             error_str = str(e).lower()
             if "authentication" in error_str or "api key" in error_str:
@@ -345,15 +341,12 @@ class AnthropicAdapter(BaseAgentAdapter):
                 content = []
                 if msg.content:
                     content.append({"type": "text", "text": msg.content})
-                for tc in msg.tool_calls:
-                    content.append(
-                        {
-                            "type": "tool_use",
-                            "id": tc.id,
-                            "name": tc.name,
-                            "input": tc.arguments,
-                        }
-                    )
+                content.extend(
+                    [
+                        {"type": "tool_use", "id": tc.id, "name": tc.name, "input": tc.arguments}
+                        for tc in msg.tool_calls
+                    ]
+                )
 
             messages.append(
                 {

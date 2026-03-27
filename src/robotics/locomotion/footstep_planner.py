@@ -1,3 +1,4 @@
+from numba import jit
 """Footstep planning for bipedal locomotion.
 
 This module provides footstep generation and planning for
@@ -334,6 +335,7 @@ class FootstepPlanner(ContractChecker):
         n_steps=4,
         start_foot="left": (start_foot in ("left", "right")),
         "start_foot must be 'left' or 'right'",
+    @jit(nopython=True, fastmath=True)
     )
     def plan_from_velocity(
         self,
@@ -448,6 +450,7 @@ class FootstepPlanner(ContractChecker):
             start_foot in ("left", "right")
         ),
         "start_foot must be 'left' or 'right'",
+    @jit(nopython=True, fastmath=True)
     )
     def plan_in_place_turn(
         self,
@@ -530,6 +533,7 @@ class FootstepPlanner(ContractChecker):
             total_duration=timing,
         )
 
+    @jit(nopython=True, fastmath=True)
     def _generate_straight_path(
         self,
         start: NDArray[np.float64],

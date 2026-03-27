@@ -1,3 +1,5 @@
+from numba import jit
+
 """Kinematics plotting renderer."""
 
 from __future__ import annotations
@@ -298,9 +300,7 @@ class KinematicsRenderer(BaseRenderer):
             raise ValueError("fig must be provided")
         if len(dimensions) != 3:
             ax = fig.add_subplot(111)
-            ax.text(
-                0.5, 0.5, "Must specify exactly 3 dimensions", ha="center", va="center"
-            )
+            ax.text(0.5, 0.5, "Must specify exactly 3 dimensions", ha="center", va="center")
             return
 
         cond_type, cond_idx, cond_val = section_condition
@@ -361,6 +361,7 @@ class KinematicsRenderer(BaseRenderer):
             return d[:, idx]
         return None
 
+    @jit(nopython=True, fastmath=True)
     @staticmethod
     def _find_section_crossings(
         cond_data: np.ndarray, cond_val: float, direction: str
@@ -382,6 +383,8 @@ class KinematicsRenderer(BaseRenderer):
                 crossings.append(i)
         return crossings
 
+    @jit(nopython=True, fastmath=True)
+    @jit(nopython=True, fastmath=True)
     def _interpolate_crossings(
         self,
         crossings: list[int],
@@ -454,11 +457,7 @@ class KinematicsRenderer(BaseRenderer):
             unit = (
                 "deg"
                 if dt == "position"
-                else "deg/s"
-                if dt == "velocity"
-                else "Nm"
-                if dt == "torque"
-                else ""
+                else "deg/s" if dt == "velocity" else "Nm" if dt == "torque" else ""
             )
             labels.append(f"{name} {dt[:3]} ({unit})")
 
@@ -499,9 +498,7 @@ class KinematicsRenderer(BaseRenderer):
         return times, np.asarray(data_full)
 
     @staticmethod
-    def _build_delay_embedding(
-        x: np.ndarray, delay: int, embedding_dim: int
-    ) -> np.ndarray:
+    def _build_delay_embedding(x: np.ndarray, delay: int, embedding_dim: int) -> np.ndarray:
         """Construct time-delay embedding vectors from a 1D signal.
 
         Args:
@@ -590,9 +587,7 @@ class KinematicsRenderer(BaseRenderer):
                 s=10,
                 alpha=0.6,
             )
-            ax.plot(
-                vectors[:, 0], vectors[:, 1], color="gray", alpha=0.2, linewidth=0.5
-            )
+            ax.plot(vectors[:, 0], vectors[:, 1], color="gray", alpha=0.2, linewidth=0.5)
             ax.set_xlabel("x(t)", fontsize=10)
             ax.set_ylabel(f"x(t+{delay})", fontsize=10)
 

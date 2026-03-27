@@ -762,6 +762,8 @@ def compute_time_shift(
     return float(-lag_sample / fs)
 
 
+@jit(nopython=True, fastmath=True)
+@jit(nopython=True, fastmath=True)
 def compute_dtw_distance(
     series1: np.ndarray,
     series2: np.ndarray,
@@ -860,8 +862,7 @@ def compute_dtw_path(
     # pi, pj are in reverse order from backtracking
     path = []
     # Loop backwards to reverse
-    for k in range(len(pi) - 1, -1, -1):
-        path.append((int(pi[k]), int(pj[k])))
+    path.extend([(int(pi[k]), int(pj[k])) for k in range(len(pi) - 1, -1, -1)])
 
     return dist, path
 
@@ -873,15 +874,11 @@ class KalmanFilter:
     """
 
     @precondition(
-        lambda self, dim_x, dim_z, F=None, H=None, Q=None, R=None, P=None, x=None: (
-            dim_x > 0
-        ),
+        lambda self, dim_x, dim_z, F=None, H=None, Q=None, R=None, P=None, x=None: (dim_x > 0),
         "State dimension must be positive",
     )
     @precondition(
-        lambda self, dim_x, dim_z, F=None, H=None, Q=None, R=None, P=None, x=None: (
-            dim_z > 0
-        ),
+        lambda self, dim_x, dim_z, F=None, H=None, Q=None, R=None, P=None, x=None: (dim_z > 0),
         "Measurement dimension must be positive",
     )
     def __init__(

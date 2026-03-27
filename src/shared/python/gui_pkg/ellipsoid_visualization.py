@@ -1,3 +1,5 @@
+from numba import jit
+
 """3D Ellipsoid Visualization Module.
 
 Guideline I (Mobility and Force Ellipsoids) Implementation.
@@ -308,9 +310,7 @@ def generate_ellipsoid_mesh(
     z_sphere = np.cos(phi_grid)
 
     # Stack into (3, n_vertices) array
-    sphere_points = np.stack(
-        [x_sphere.ravel(), y_sphere.ravel(), z_sphere.ravel()], axis=0
-    )
+    sphere_points = np.stack([x_sphere.ravel(), y_sphere.ravel(), z_sphere.ravel()], axis=0)
 
     # Scale by radii (in principal axis frame)
     # Handle case where we have fewer than 3 radii (2D Jacobian)
@@ -390,9 +390,7 @@ def export_ellipsoid_obj(
         f.write("\n")
 
         # Write faces (OBJ uses 1-indexed vertices, batched for performance)
-        face_lines = [
-            f"f {face[0] + 1} {face[1] + 1} {face[2] + 1}\n" for face in faces
-        ]
+        face_lines = [f"f {face[0] + 1} {face[1] + 1} {face[2] + 1}\n" for face in faces]
         f.writelines(face_lines)
 
     LOGGER.info(f"Exported ellipsoid mesh to {output_path}")
@@ -431,6 +429,7 @@ def export_ellipsoid_stl(
     LOGGER.info(f"Exported ellipsoid STL to {output_path}")
 
 
+@jit(nopython=True, fastmath=True)
 def _write_stl_binary(
     vertices: np.ndarray,
     faces: np.ndarray,
@@ -448,11 +447,9 @@ def _write_stl_binary(
 
     with open(output_path, "wb") as f:
         # 80-byte header
-        header = (
-            f"Ellipsoid: {ellipsoid.body_name} ({ellipsoid.ellipsoid_type})".encode(
-                "ascii"
-            )[:80].ljust(80, b"\0")
-        )
+        header = f"Ellipsoid: {ellipsoid.body_name} ({ellipsoid.ellipsoid_type})".encode("ascii")[
+            :80
+        ].ljust(80, b"\0")
         f.write(header)
 
         # Number of triangles (uint32)
@@ -484,6 +481,7 @@ def _write_stl_binary(
             f.write(struct.pack("<H", 0))
 
 
+@jit(nopython=True, fastmath=True)
 def _write_stl_ascii(
     vertices: np.ndarray,
     faces: np.ndarray,
@@ -515,9 +513,7 @@ def _write_stl_ascii(
             f.write("    endloop\n")
             f.write("  endfacet\n")
 
-        f.write(
-            f"endsolid {ellipsoid.body_name}_{ellipsoid.ellipsoid_type}_ellipsoid\n"
-        )
+        f.write(f"endsolid {ellipsoid.body_name}_{ellipsoid.ellipsoid_type}_ellipsoid\n")
 
 
 class EllipsoidVisualizer:

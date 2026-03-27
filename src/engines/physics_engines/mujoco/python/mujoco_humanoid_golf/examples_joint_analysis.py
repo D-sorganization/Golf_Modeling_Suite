@@ -1,3 +1,5 @@
+from numba import jit
+
 """Examples for analyzing universal and gimbal joints in golf swing models.
 
 This module demonstrates:
@@ -62,6 +64,7 @@ def example_universal_joint_wobble() -> None:
     plot_torque_wobble(results, save_path="output/universal_joint_wobble.png")
 
 
+@jit(nopython=True, fastmath=True)
 def example_constraint_forces() -> None:
     """Example: Analyze constraint forces in universal joint during motion."""
 

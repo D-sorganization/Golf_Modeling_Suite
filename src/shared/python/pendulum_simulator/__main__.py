@@ -27,9 +27,7 @@ class _WheelBlockFilter(QObject):
     _MAX_FONT_PT = 40
     _default_font_pt: int | None = None
 
-    def eventFilter(  # noqa: N802
-        self, obj: QObject | None, event: QEvent | None
-    ) -> bool:
+    def eventFilter(self, obj: QObject | None, event: QEvent | None) -> bool:  # noqa: N802
         if event is not None and event.type() == QEvent.Type.Wheel:
             wheel: QWheelEvent = event  # type: ignore[assignment]
             # Ctrl+Wheel → font zoom
@@ -60,9 +58,7 @@ class _WheelBlockFilter(QObject):
             font = app.font()
             font.setPointSize(self._default_font_pt)
             app.setFont(font)
-            logging.getLogger(__name__).info(
-                "Font reset to %dpt", self._default_font_pt
-            )
+            logging.getLogger(__name__).info("Font reset to %dpt", self._default_font_pt)
 
 
 _LOG_FORMAT = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"

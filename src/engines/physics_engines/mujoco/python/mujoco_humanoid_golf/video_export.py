@@ -1,3 +1,5 @@
+from numba import jit
+
 """Video export module for golf swing animations.
 
 This module provides professional video export capabilities:
@@ -211,9 +213,7 @@ class VideoExporter:
         control_function: Callable[[float], np.ndarray],
         duration: float,
         camera_id: int | None = None,
-        overlay_callback: (
-            Callable[[np.ndarray, float, mj.MjData], np.ndarray] | None
-        ) = None,
+        overlay_callback: Callable[[np.ndarray, float, mj.MjData], np.ndarray] | None = None,
         progress_callback: Callable[[int, int], None] | None = None,
     ) -> bool:
         """Export a complete simulation as video.
@@ -291,6 +291,7 @@ class VideoExporter:
             self.writer.release()
 
 
+@jit(nopython=True, fastmath=True)
 def create_metrics_overlay(
     frame: np.ndarray,
     time: float,

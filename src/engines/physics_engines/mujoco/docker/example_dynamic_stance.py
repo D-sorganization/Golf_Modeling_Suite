@@ -1,3 +1,5 @@
+from numba import jit
+
 """Example: run a dynamic stance simulation in MuJoCo."""
 
 from __future__ import annotations
@@ -50,6 +52,7 @@ def get_cmu_xml_path() -> str:
     return str(suite_dir / "humanoid_CMU.xml")
 
 
+@jit(nopython=True, fastmath=True)
 def pd_control(physics, target_pose, actuators, kp=10.0, kd=1.0) -> np.ndarray:
     """Compute PD control action."""
     if not (physics is not None):

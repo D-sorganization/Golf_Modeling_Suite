@@ -115,9 +115,7 @@ def discover_routes(
         try:
             module = importlib.import_module(full_module_path)
         except ImportError:
-            logger.warning(
-                "Failed to import route module %s — skipping", full_module_path
-            )
+            logger.warning("Failed to import route module %s — skipping", full_module_path)
             continue
 
         router = getattr(module, "router", None)
@@ -135,8 +133,7 @@ def discover_routes(
             ordered.append((name, discovered_map.pop(name)))
 
     # Append any newly added modules not in _REGISTRATION_ORDER (alphabetically)
-    for name in sorted(discovered_map):
-        ordered.append((name, discovered_map[name]))
+    ordered.extend([(name, discovered_map[name]) for name in sorted(discovered_map)])
 
     logger.info("Discovered %d route modules", len(ordered))
     return ordered

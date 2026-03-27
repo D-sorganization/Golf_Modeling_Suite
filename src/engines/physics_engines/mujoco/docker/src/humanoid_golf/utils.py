@@ -1,3 +1,5 @@
+from numba import jit
+
 """Utility helpers for the MuJoCo humanoid-golf Docker simulation.
 
 Provides model-loading helpers, environment variable resolution, and
@@ -125,6 +127,7 @@ def _scale_model_positions(root, height_scale) -> None:
             site.pos = [x * height_scale for x in pos]
 
 
+@jit(nopython=True, fastmath=True)
 def _scale_geom_sizes(root, height_scale, width_scale) -> None:
     for geom in root.find_all("geom"):
         size = getattr(geom, "size", None)
@@ -226,6 +229,8 @@ def _add_face_features(root, h_scale, w_scale) -> None:
     )
 
 
+@jit(nopython=True, fastmath=True)
+@jit(nopython=True, fastmath=True)
 def _add_articulated_fingers(root, h_scale, w_scale) -> None:
     """Add articulated fingers to the model."""
     for side in ["l", "r"]:
@@ -320,9 +325,7 @@ def _attach_club(root, h_scale, w_scale, params, two_handed) -> None:
         if lhand:
             # Site on Club (attached to rhand)
             # Locate it where left hand should be (slightly above right hand?)
-            rhand.add(
-                "site", name="club_grip_site", pos=[0, 0.05 * w_scale, -0.15 * h_scale]
-            )
+            rhand.add("site", name="club_grip_site", pos=[0, 0.05 * w_scale, -0.15 * h_scale])
 
             # Site on Left Hand (palm center)
             lhand.add("site", name="lhand_grip_site", pos=[0, 0, -0.05 * h_scale])

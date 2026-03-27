@@ -1,3 +1,5 @@
+from numba import jit
+
 """Skeleton mapping system for gaming skeletons to physics models.
 
 This module provides mapping between gaming industry skeleton formats
@@ -260,9 +262,7 @@ class MappingProfile:
 
     def __post_init__(self) -> None:
         """Build lookup table."""
-        self._source_to_target: dict[str, BoneMapping] = {
-            m.source_bone: m for m in self.mappings
-        }
+        self._source_to_target: dict[str, BoneMapping] = {m.source_bone: m for m in self.mappings}
         # Build reverse mapping, preferring longer/qualified source names
         self._target_to_source: dict[str, BoneMapping] = {}
         for m in self.mappings:
@@ -499,10 +499,7 @@ class SkeletonMapper:
         Returns:
             SkeletonMapper configured for Mixamo.
         """
-        mappings = [
-            BoneMapping(source, target)
-            for source, target in MIXAMO_TO_PHYSICS_MAP.items()
-        ]
+        mappings = [BoneMapping(source, target) for source, target in MIXAMO_TO_PHYSICS_MAP.items()]
         profile = MappingProfile(
             name="mixamo_to_physics",
             source_type=SkeletonType.MIXAMO,
@@ -568,9 +565,8 @@ class SkeletonMapper:
         mapping = self.profile.get_reverse_mapping(target_bone)
         return mapping.source_bone if mapping else None
 
-    def apply_pose(
-        self, source_pose: dict[str, PoseTransform]
-    ) -> dict[str, PoseTransform]:
+    @jit(nopython=True, fastmath=True)
+    def apply_pose(self, source_pose: dict[str, PoseTransform]) -> dict[str, PoseTransform]:
         """Apply pose mapping from source to target skeleton.
 
         Args:
@@ -600,16 +596,12 @@ class SkeletonMapper:
                 # Convert offset from degrees to radians
                 offset_rad = np.radians(mapping.rotation_offset)
                 offset_quat = self._euler_to_quaternion(*offset_rad)
-                new_rotation = self._quaternion_multiply(
-                    transform.rotation, offset_quat
-                )
+                new_rotation = self._quaternion_multiply(transform.rotation, offset_quat)
             else:
                 new_rotation = transform.rotation
 
             # Apply position offset and scale
-            new_position = (
-                transform.position * mapping.scale_factor + mapping.position_offset
-            )
+            new_position = transform.position * mapping.scale_factor + mapping.position_offset
 
             target_pose[mapping.target_bone] = PoseTransform(
                 position=new_position,
@@ -619,6 +611,7 @@ class SkeletonMapper:
 
         return target_pose
 
+    @jit(nopython=True, fastmath=True)
     def apply_joint_angles(
         self,
         joint_angles: dict[str, float],
@@ -680,6 +673,7 @@ class SkeletonMapper:
 
         return [bone for bone in source_bones if not self.profile.has_mapping(bone)]
 
+    @jit(nopython=True, fastmath=True)
     def interpolate_poses(
         self,
         pose_a: dict[str, PoseTransform],

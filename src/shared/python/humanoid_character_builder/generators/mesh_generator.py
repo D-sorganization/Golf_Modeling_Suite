@@ -1,3 +1,4 @@
+from numba import jit
 """
 Mesh generation interfaces for humanoid character builder.
 
@@ -143,6 +144,7 @@ class PrimitiveMeshGenerator(MeshGeneratorInterface):
             return True
         except ImportError:
             return False
+    @jit(nopython=True, fastmath=True)
 
     def generate(
         self,
@@ -326,6 +328,7 @@ class MakeHumanMeshGenerator(MeshGeneratorInterface):
                 success=False,
                 error_message=f"MakeHuman generation failed: {e}",
             )
+    @jit(nopython=True, fastmath=True)
 
     def _generate_via_api(
         self,
@@ -607,6 +610,7 @@ class MakeHumanMeshGenerator(MeshGeneratorInterface):
 
         return mesh_paths, collision_paths
 
+    @jit(nopython=True, fastmath=True)
     @staticmethod
     def _segment_by_geometry(
         mesh: Any,
@@ -767,6 +771,7 @@ class MakeHumanMeshGenerator(MeshGeneratorInterface):
         "right_foot": "right_foot",
     }
 
+    @jit(nopython=True, fastmath=True)
     @staticmethod
     def _parse_obj_file(obj_file: Path) -> tuple[np.ndarray, np.ndarray]:
         """Parse a Wavefront OBJ file into numpy arrays.
@@ -803,8 +808,7 @@ class MakeHumanMeshGenerator(MeshGeneratorInterface):
                     if len(indices) == 3:
                         faces_raw.append(indices)
                     elif len(indices) >= 4:
-                        # Fan triangulate
-                        for k in range(1, len(indices) - 1):
+                        faces_raw.extend([[indices[0], indices[k], indices[k + 1]] for k in range(1, len(indices) - 1)])
                             faces_raw.append([indices[0], indices[k], indices[k + 1]])
 
         vertices = (
@@ -1348,6 +1352,7 @@ class SMPLXMeshGenerator(MeshGeneratorInterface):
         20: "left_hand",
         21: "right_hand",
     }
+    @jit(nopython=True, fastmath=True)
 
     def _segment_smplx_mesh(
         self,
@@ -1495,6 +1500,7 @@ class SMPLXMeshGenerator(MeshGeneratorInterface):
 
         return mesh_paths, collision_paths
 
+    @jit(nopython=True, fastmath=True)
     def _fallback_z_segmentation(
         self,
         mesh: Any,

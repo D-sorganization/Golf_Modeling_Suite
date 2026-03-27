@@ -1,3 +1,5 @@
+from numba import jit
+
 """Base classes for motion planners.
 
 This module defines abstract interfaces and common data structures
@@ -340,6 +342,7 @@ class MotionPlanner(ABC):
         )
         return is_free
 
+    @jit(nopython=True, fastmath=True)
     def _compute_path_length(self, path: list[np.ndarray]) -> float:
         """Compute total path length.
 

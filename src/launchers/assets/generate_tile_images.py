@@ -1,3 +1,5 @@
+from numba import jit
+
 #!/usr/bin/env python3
 """Generate placeholder tile images for the Golf Modeling Suite Launcher.
 
@@ -37,9 +39,9 @@ def hex_to_rgb(hex_color: str) -> tuple[int, int, int]:
     return (r, g, b)
 
 
-def create_png(
-    width: int, height: int, pixels: list[tuple[int, int, int, int]]
-) -> bytes:
+@jit(nopython=True, fastmath=True)
+@jit(nopython=True, fastmath=True)
+def create_png(width: int, height: int, pixels: list[tuple[int, int, int, int]]) -> bytes:
     """Create a PNG file from raw RGBA pixel data.
 
     This is a minimal PNG encoder that doesn't require PIL.
@@ -87,6 +89,8 @@ def create_png(
     return signature + ihdr + idat + iend
 
 
+@jit(nopython=True, fastmath=True)
+@jit(nopython=True, fastmath=True)
 def draw_rounded_rect_with_text(
     width: int, height: int, bg_color: tuple[int, int, int], text: str, radius: int = 20
 ) -> list[tuple[int, int, int, int]]:
@@ -99,6 +103,7 @@ def draw_rounded_rect_with_text(
 
     # Background color with full alpha
 
+    # OPTIMIZATION_TARGET: Migrate computationally bound loop to PyO3/Rust Core natively
     for y in range(height):
         for x in range(width):
             # Check if inside rounded rectangle
@@ -159,6 +164,9 @@ def draw_rounded_rect_with_text(
     return pixels
 
 
+@jit(nopython=True, fastmath=True)
+@jit(nopython=True, fastmath=True)
+@jit(nopython=True, fastmath=True)
 def draw_letter(pixels: list, width: int, x: int, y: int, size: int, char: str) -> None:
     """Draw a simple blocky letter representation."""
     if not (pixels is not None):

@@ -1,3 +1,4 @@
+from numba import jit
 """
 MyoSuite Elbow Control Training Example
 ========================================
@@ -108,6 +109,7 @@ def train_policy(
     return model
 
 
+@jit(nopython=True, fastmath=True)
 def evaluate_policy(model: SAC, env: gym.Env, n_episodes: int = 5) -> None:
     """Evaluate trained policy with visualization.
 

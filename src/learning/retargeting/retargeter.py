@@ -1,3 +1,5 @@
+from numba import jit
+
 """Motion retargeting between different embodiments."""
 
 from __future__ import annotations
@@ -464,6 +466,10 @@ class MotionRetargeter:
 
         return positions  # type: ignore[return-value]
 
+    @jit(nopython=True, fastmath=True)
+    @jit(nopython=True, fastmath=True)
+    @jit(nopython=True, fastmath=True)
+    @jit(nopython=True, fastmath=True)
     def _optimize_frame(
         self,
         initial_angles: NDArray[np.floating],
@@ -631,6 +637,7 @@ class MotionRetargeter:
 
         return mapping
 
+    @jit(nopython=True, fastmath=True)
     def _positions_to_angles(
         self,
         joint_positions: dict[str, NDArray[np.floating]],

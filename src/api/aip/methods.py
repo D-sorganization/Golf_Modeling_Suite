@@ -326,9 +326,7 @@ def _model_query(
                 if property_name == "joints" and hasattr(engine, "get_joint_names"):
                     return {"joints": list(engine.get_joint_names())}
         except (ValueError, RuntimeError, AttributeError) as exc:
-            _logger.warning(
-                "model.get_property(%r): engine query failed: %s", property_name, exc
-            )
+            _logger.warning("model.get_property(%r): engine query failed: %s", property_name, exc)
 
     return {"property": property_name, "data": None, "note": "No active model"}
 
@@ -452,14 +450,9 @@ def _system_capabilities(
     namespaces = registry.list_by_namespace()
 
     capabilities = []
-    for ns, methods in namespaces.items():
-        capabilities.append(
-            {
-                "name": ns,
-                "version": "1.0",
-                "methods": methods,
-            }
-        )
+    capabilities.extend(
+        [{"name": ns, "version": "1.0", "methods": methods} for (ns, methods) in namespaces.items()]
+    )
 
     return {
         "server_name": "UpstreamDrift AIP Server",

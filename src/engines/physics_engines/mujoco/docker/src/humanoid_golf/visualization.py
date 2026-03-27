@@ -1,3 +1,5 @@
+from numba import jit
+
 """Enhanced visualization module for MuJoCo humanoid golf simulation.
 
 This module provides:
@@ -56,9 +58,7 @@ class TrajectoryTracer:
             body_name: Body whose desired path is being stored.
             positions: Sequence of (3,) world-frame positions.
         """
-        self._desired_traces[body_name] = [
-            np.asarray(p, dtype=np.float64) for p in positions
-        ]
+        self._desired_traces[body_name] = [np.asarray(p, dtype=np.float64) for p in positions]
 
     def get_desired_trace(self, body_name: str) -> list[np.ndarray]:
         """Return the desired reference trajectory for a body."""
@@ -311,6 +311,7 @@ def _record_tracer_positions(
             pass
 
 
+@jit(nopython=True, fastmath=True)
 def _overlay_contact_forces(
     visualizer: ForceVisualizer,
     add_geom: Callable[[], Any | None],
@@ -357,6 +358,7 @@ def _add_friction_arrow(
         _init_arrow_geom(g, start, fric_end, 0.003, FORCE_COLORS["contact_friction"])
 
 
+@jit(nopython=True, fastmath=True)
 def _overlay_joint_torques(
     visualizer: ForceVisualizer,
     physics: Any,
@@ -391,6 +393,7 @@ def _overlay_joint_torques(
             _init_sphere_geom(g, pos, max(radius, 0.005), colour)
 
 
+@jit(nopython=True, fastmath=True)
 def _overlay_trajectory_traces(
     tracer: TrajectoryTracer,
     tracer_bodies: list[str],
@@ -409,6 +412,8 @@ def _overlay_trajectory_traces(
             _init_line_geom(g, trace[k], trace[k + step], 0.002, color)
 
 
+@jit(nopython=True, fastmath=True)
+@jit(nopython=True, fastmath=True)
 def _overlay_desired_trajectory(
     tracer: TrajectoryTracer,
     tracer_bodies: list[str],
@@ -469,8 +474,8 @@ def create_trace_line_geom(
     if not (points is not None):
         raise ValueError("points must be provided")
     segments = []
-    for i in range(len(points) - 1):
-        segments.append(
+    segments.extend(
+        [
             {
                 "type": "line",
                 "start": points[i],
@@ -478,7 +483,9 @@ def create_trace_line_geom(
                 "radius": radius,
                 "color": color,
             }
-        )
+            for i in range(len(points) - 1)
+        ]
+    )
     return segments
 
 

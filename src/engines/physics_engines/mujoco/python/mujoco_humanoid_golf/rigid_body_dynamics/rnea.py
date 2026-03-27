@@ -1,3 +1,5 @@
+from numba import jit
+
 """
 Recursive Newton-Euler Algorithm (RNEA) for inverse dynamics.
 
@@ -137,6 +139,7 @@ def _rnea_forward_pass_body(
         a[:, i] += buf.cross_buf
 
 
+@jit(nopython=True, fastmath=True)
 def _rnea_backward_pass(
     nb,
     mdl: _RneaModelCache,

@@ -1,3 +1,5 @@
+from numba import jit
+
 """MuJoCo sim widget rendering mixin.
 
 Extracts frame rendering, overlay compositing, force/torque/induced/CF
@@ -91,9 +93,7 @@ class SimRenderingMixin:
         # Add force/torque/accel overlays
         rgb = self._add_force_torque_overlays(rgb)
 
-        if self.manipulator is not None and (
-            self.show_selected_body or self.show_constraints
-        ):
+        if self.manipulator is not None and (self.show_selected_body or self.show_constraints):
             rgb = self._add_manipulation_overlays(rgb)
 
         if self.show_club_trajectory or self.show_swing_plane:
@@ -161,9 +161,7 @@ class SimRenderingMixin:
             return rgb
 
         selected_id = (
-            getattr(self.manipulator, "selected_body_id", None)
-            if self.manipulator
-            else None
+            getattr(self.manipulator, "selected_body_id", None) if self.manipulator else None
         )
         if selected_id is None or selected_id < 0:
             return rgb
@@ -210,8 +208,7 @@ class SimRenderingMixin:
 
         if getattr(self, "show_live_quat", False):
             msg = (
-                f"Quat (w,x,y,z): [{quat[0]:.2f}, "
-                f"{quat[1]:.2f}, {quat[2]:.2f}, {quat[3]:.2f}]"
+                f"Quat (w,x,y,z): [{quat[0]:.2f}, " f"{quat[1]:.2f}, {quat[2]:.2f}, {quat[3]:.2f}]"
             )
             cv2.putText(
                 img,
@@ -267,9 +264,7 @@ class SimRenderingMixin:
             except (AttributeError, TypeError) as exc:
                 logger.debug("Background colour update failed: %s", exc)
 
-    def set_background_color(
-        self: Any, sky_color: Any = None, ground_color: Any = None
-    ) -> None:
+    def set_background_color(self: Any, sky_color: Any = None, ground_color: Any = None) -> None:
         """Set sky and ground background colors for the scene."""
         if sky_color is not None:
             self.sky_color = np.array(sky_color, dtype=np.float32)
@@ -333,6 +328,7 @@ class SimRenderingMixin:
 
         return img
 
+    @jit(nopython=True, fastmath=True)
     def _draw_torque_vectors(self: Any, draw_arrow_func: Callable) -> None:
         if not (draw_arrow_func is not None):
             raise ValueError("draw_arrow_func must be provided")
@@ -405,6 +401,7 @@ class SimRenderingMixin:
             arrow_end = body_pos + joint_force * self.force_scale
             draw_arrow_func(body_pos, arrow_end, (0, 255, 255))
 
+    @jit(nopython=True, fastmath=True)
     def _draw_induced_vectors(self: Any, draw_arrow_func: Callable) -> None:
         """Draw Induced Acceleration vectors (Magenta)."""
         if not (draw_arrow_func is not None):
@@ -449,6 +446,7 @@ class SimRenderingMixin:
 
             draw_arrow_func(joint_pos, arrow_end, (255, 0, 255))
 
+    @jit(nopython=True, fastmath=True)
     def _draw_cf_vectors(self: Any, draw_arrow_func: Callable) -> None:
         """Draw Counterfactual vectors (Yellow)."""
         if not (draw_arrow_func is not None):
@@ -481,6 +479,7 @@ class SimRenderingMixin:
 
             draw_arrow_func(joint_pos, arrow_end, (0, 255, 255))
 
+    @jit(nopython=True, fastmath=True)
     def _add_manipulation_overlays(self: Any, rgb: np.ndarray) -> np.ndarray:
         if not (rgb is not None):
             raise ValueError("rgb must be provided")
@@ -647,6 +646,7 @@ class SimRenderingMixin:
 
         return img
 
+    @jit(nopython=True, fastmath=True)
     def _add_frame_and_com_overlays(self: Any, rgb: np.ndarray) -> np.ndarray:
         if not (rgb is not None):
             raise ValueError("rgb must be provided")

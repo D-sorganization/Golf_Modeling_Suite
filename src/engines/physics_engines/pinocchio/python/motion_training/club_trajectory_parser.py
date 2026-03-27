@@ -1,3 +1,5 @@
+from numba import jit
+
 """Parser for club trajectory data from motion capture Excel files.
 
 This module parses golf club motion capture data typically stored in Excel format
@@ -272,6 +274,7 @@ class ClubTrajectoryParser:
         """Parse event markers from pandas row."""
         return self._parse_events_list(row.tolist())
 
+    @jit(nopython=True, fastmath=True)
     def _parse_events_list(self, row: list) -> SwingEventMarkers:
         """Parse event markers from list."""
         if not (row is not None):

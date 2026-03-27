@@ -1,3 +1,5 @@
+from numba import jit
+
 """Example: optimise arm motion using the shared optimisation framework."""
 
 import logging
@@ -35,6 +37,7 @@ def _load_model(urdf_path: str) -> object:
     return model
 
 
+@jit(nopython=True, fastmath=True)
 def _setup_optimization(model: Any, cmodel: Any, cdata: Any) -> tuple:
     """Create optimizer, decision variables, and apply dynamics constraints.
 
@@ -99,9 +102,7 @@ def _solve_and_export(opti: Any, Q: Any, V: Any, U: Any) -> None:
         np.savetxt("trajectory_v.csv", v_opt.T, delimiter=",", header="v1,v2")
         np.savetxt("trajectory_u.csv", u_opt.T, delimiter=",", header="u1,u2")
 
-        logger.info(
-            "Trajectory saved to trajectory_q.csv, trajectory_v.csv, and trajectory_u.csv"
-        )
+        logger.info("Trajectory saved to trajectory_q.csv, trajectory_v.csv, and trajectory_u.csv")
         logger.info("\nTest passed: CasADi + Pinocchio integration is working.")
 
     except (RuntimeError, ValueError, ArithmeticError) as e:
@@ -118,9 +119,7 @@ def main() -> None:
     Objective: Swing from hanging down (0,0) to upright (pi, 0) with minimum effort.
     """
     if not DEPENDENCIES_AVAILABLE:
-        logger.error(
-            f"Skipping optimize_arm.py due to missing dependencies: {MISSING_DEP_ERROR}"
-        )
+        logger.error(f"Skipping optimize_arm.py due to missing dependencies: {MISSING_DEP_ERROR}")
         logger.info("Please install casadi and pinocchio:")
         logger.info("  pip install casadi")
         logger.info("  conda install pinocchio -c conda-forge")

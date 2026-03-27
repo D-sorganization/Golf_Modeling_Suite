@@ -1,3 +1,5 @@
+from numba import jit
+
 """Signal limiting and saturation with smoothing.
 
 This module provides functions for applying limits, saturation, rate limiting,
@@ -135,6 +137,7 @@ def _apply_saturation_values(
     return result * half_range + center
 
 
+@jit(nopython=True, fastmath=True)
 def _soft_clip(x: np.ndarray, k: float = 1.0) -> np.ndarray:
     """Soft clipping with smooth polynomial transition.
 
@@ -229,6 +232,7 @@ def _exponential_clip(x: np.ndarray, k: float = 1.0) -> np.ndarray:
     return np.clip(result, -1, 1)
 
 
+@jit(nopython=True, fastmath=True)
 def apply_rate_limiter(
     signal: Signal,
     max_rate: float,
@@ -414,6 +418,8 @@ def apply_hysteresis(
     )
 
 
+@jit(nopython=True, fastmath=True)
+@jit(nopython=True, fastmath=True)
 def apply_backlash(
     signal: Signal,
     backlash_width: float,

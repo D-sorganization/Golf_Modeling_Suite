@@ -1,3 +1,5 @@
+from numba import jit
+
 """Geometric primitives for collision detection.
 
 This module provides basic geometric shapes and collision algorithms:
@@ -197,9 +199,7 @@ class Box(GeometricPrimitive):
         # Support in local frame
         local_support = np.sign(local_dir) * self.half_extents
         # Handle zero components
-        local_support = np.where(
-            np.abs(local_dir) < 1e-10, self.half_extents, local_support
-        )
+        local_support = np.where(np.abs(local_dir) < 1e-10, self.half_extents, local_support)
         # Transform back to world
         return self.rotation @ local_support + self.center
 
@@ -663,6 +663,7 @@ def _closest_points_segments(
     return a0 + s * d1, b0 + t * d2
 
 
+@jit(nopython=True, fastmath=True)
 def _gjk_distance(
     prim_a: GeometricPrimitive,
     prim_b: GeometricPrimitive,

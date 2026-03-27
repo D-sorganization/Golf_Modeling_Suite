@@ -1,3 +1,5 @@
+from numba import jit
+
 """Pinocchio interface for advanced dynamics algorithms.
 
 This module provides a bridge between MuJoCo and Pinocchio, enabling:
@@ -75,9 +77,7 @@ class PinocchioWrapper:
             ImportError: If Pinocchio is not installed
         """
         if not PINOCCHIO_AVAILABLE:
-            msg = (
-                "Pinocchio is required but not installed. Install with: pip install pin"
-            )
+            msg = "Pinocchio is required but not installed. Install with: pip install pin"
             raise ImportError(msg)
 
         self.model = model
@@ -164,6 +164,7 @@ class PinocchioWrapper:
         # The configuration should already be synchronized via sync_mujoco_to_pinocchio
         # This method exists for API completeness but is a no-op
 
+    @jit(nopython=True, fastmath=True)
     def _mujoco_q_to_pinocchio_q(self, q_mj: np.ndarray) -> np.ndarray:
         """Convert MuJoCo configuration to Pinocchio format.
 
@@ -199,6 +200,7 @@ class PinocchioWrapper:
 
         return q_pin
 
+    @jit(nopython=True, fastmath=True)
     def _pinocchio_q_to_mujoco_q(self, q_pin: np.ndarray) -> np.ndarray:
         """Convert Pinocchio configuration to MuJoCo format.
 

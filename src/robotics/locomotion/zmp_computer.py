@@ -1,3 +1,5 @@
+from numba import jit
+
 """Zero Moment Point (ZMP) computation.
 
 This module provides ZMP computation for bipedal balance analysis.
@@ -356,6 +358,7 @@ class ZMPComputer(ContractChecker):
 
         return is_inside, margin
 
+    @jit(nopython=True, fastmath=True)
     def _point_in_polygon(
         self,
         point: NDArray[np.float64],

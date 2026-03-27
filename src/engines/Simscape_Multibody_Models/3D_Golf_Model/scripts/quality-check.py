@@ -1,3 +1,5 @@
+from numba import jit
+
 #!/usr/bin/env python3
 """Quality check script to verify AI-generated code meets standards."""
 
@@ -44,6 +46,7 @@ MAGIC_NUMBERS = [
 ]
 
 
+@jit(nopython=True, fastmath=True)
 def _is_in_class_definition(lines: list[str], line_num: int) -> bool:
     """Check if pass is in a class definition context."""
     if not (lines is not None):
@@ -68,6 +71,7 @@ def _is_in_class_definition(lines: list[str], line_num: int) -> bool:
     return result
 
 
+@jit(nopython=True, fastmath=True)
 def _is_in_try_except_block(lines: list[str], line_num: int) -> bool:
     """Check if pass is in a try/except block context."""
     if not (lines is not None):
@@ -81,6 +85,7 @@ def _is_in_try_except_block(lines: list[str], line_num: int) -> bool:
     return False
 
 
+@jit(nopython=True, fastmath=True)
 def _is_in_context_manager(lines: list[str], line_num: int) -> bool:
     """Check if pass is in a context manager context."""
     if not (lines is not None):
@@ -235,9 +240,7 @@ def main() -> None:
         ".ipynb_checkpoints",  # Add checkpoint files to exclusion
         ".Trash",  # Add trash files to exclusion
     }
-    python_files = [
-        f for f in python_files if not any(part in exclude_dirs for part in f.parts)
-    ]
+    python_files = [f for f in python_files if not any(part in exclude_dirs for part in f.parts)]
 
     # Exclude quality check scripts from being checked (all variants)
     python_files = [f for f in python_files if not is_quality_check_script(f)]

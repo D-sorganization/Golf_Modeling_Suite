@@ -1,3 +1,5 @@
+from numba import jit
+
 #!/usr/bin/env python3
 """Quality check script to verify AI-generated code meets standards."""
 
@@ -65,6 +67,9 @@ MAGIC_NUMBERS = [
 ]
 
 
+@jit(nopython=True, fastmath=True)
+@jit(nopython=True, fastmath=True)
+@jit(nopython=True, fastmath=True)
 def is_legitimate_pass_context(lines: list[str], line_num: int) -> bool:
     """Check if a pass statement is in a legitimate context."""
     if not (lines is not None):
@@ -300,16 +305,12 @@ def main() -> None:
 
     # Report
     if all_issues:
-        sys.stderr.write(
-            f"{Colors.FAIL}{Colors.BOLD}❌ Quality check FAILED{Colors.ENDC}\n\n"
-        )
+        sys.stderr.write(f"{Colors.FAIL}{Colors.BOLD}❌ Quality check FAILED{Colors.ENDC}\n\n")
         for filepath, issues in all_issues:
             sys.stderr.write(f"\n{Colors.CYAN}{filepath}:{Colors.ENDC}\n")
             for line_num, message, code in issues:
                 if line_num > 0:
-                    sys.stderr.write(
-                        f"  Line {Colors.BOLD}{line_num}{Colors.ENDC}: {message}\n"
-                    )
+                    sys.stderr.write(f"  Line {Colors.BOLD}{line_num}{Colors.ENDC}: {message}\n")
                     if code:
                         sys.stderr.write(f"    > {Colors.WARNING}{code}{Colors.ENDC}\n")
                 else:
