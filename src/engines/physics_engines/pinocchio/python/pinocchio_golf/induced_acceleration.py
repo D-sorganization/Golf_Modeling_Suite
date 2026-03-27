@@ -34,7 +34,7 @@ class InducedAccelerationAnalyzer:
         self._temp_data = model.createData()
 
     def compute_components(
-        self, q: np.ndarray, v: np.ndarray, tau: np.ndarray
+        self, q: np.ndarray, v: np.ndarray, tau: np.ndarray, f_ext: dict | None = None
     ) -> dict[str, np.ndarray]:
         """
         Compute induced acceleration components.
@@ -96,13 +96,30 @@ class InducedAccelerationAnalyzer:
         # q_ddot_t = q_ddot_total - q_ddot_gv
         q_ddot_t = q_ddot_total - q_ddot_gv
 
+        q_ddot_ext = np.zeros(self.nv)
+        if f_ext is not None:
+            q_ddot_ext = self.compute_external_acceleration(q, v, f_ext)
+            q_ddot_total += q_ddot_ext
+
         return {
             "gravity": q_ddot_g,
             "velocity": q_ddot_v,
             "control": q_ddot_t,
+            "external": q_ddot_ext,
             "total": q_ddot_total,
         }
 
+    def compute_external_acceleration(self, q: np.ndarray, v: np.ndarray, f_ext: dict) -> np.ndarray:
+        """Compute acceleration due to external forces only."""
+        # a_ext = M^{-1} @ sum(J_i^T @ f_ext_i)
+        pin.computeAllTerms(self.model, self.data, q, v)
+        M = self.data.M
+        tau_ext = np.zeros(self.model.nv)
+        for frame_id, wrench in f_ext.items():
+            # some versions require reference_frame, let's use pin.LOCAL if needed, but try default first
+            J = pin.computeFrameJacobian(self.model, self.data, q, frame_id)
+            tau_ext += J.T @ wrench
+        return np.linalg.solve(M, tau_ext)
     def compute_specific_control(
         self, q: np.ndarray, specific_tau: np.ndarray
     ) -> np.ndarray:  # noqa: E501
