@@ -289,8 +289,8 @@ class MuJoCoPerturbationAnalyzer:
         """
         if not (self._base_coeffs is not None):
             raise ValueError(
-            "set_base_torque_profile() must be called before perturb_torque()"
-        )
+                "set_base_torque_profile() must be called before perturb_torque()"
+            )
         perturbed = perturb_torque_coeffs(
             self._base_coeffs,
             noise_amplitude=config.noise_amplitude,
@@ -317,7 +317,9 @@ class MuJoCoPerturbationAnalyzer:
         Post: all MANDATORY_METRICS present; all values finite.
         """
         if not isinstance(sim_result, MuJoCoSimResult):
-            raise ValueError(f"sim_result must be MuJoCoSimResult, got {type(sim_result)}")  # noqa: E501
+            raise ValueError(
+                f"sim_result must be MuJoCoSimResult, got {type(sim_result)}"
+            )  # noqa: E501
         if not (sim_result.n_steps >= 2):
             raise ValueError("Simulation must have >= 2 steps")
 
@@ -374,8 +376,8 @@ class MuJoCoPerturbationAnalyzer:
         """
         if not (self._base_coeffs is not None):
             raise ValueError(
-            "set_base_torque_profile() must be called before run_batch()"
-        )
+                "set_base_torque_profile() must be called before run_batch()"
+            )
 
         t_start = time.monotonic()
         base_seed = config.seed if config.seed is not None else 0
