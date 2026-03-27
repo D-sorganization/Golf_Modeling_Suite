@@ -25,8 +25,6 @@ class MJCFExporter:
         """
         if not (yaml_path is not None):
             raise ValueError("yaml_path must be provided")
-        if not (yaml_path is not None):
-            raise ValueError("yaml_path must be provided")
         self.yaml_path = Path(yaml_path)
         with self.yaml_path.open() as f:
             self.spec = yaml.safe_load(f)
@@ -46,8 +44,6 @@ class MJCFExporter:
         Args:
             output_path: Path to output MJCF file
         """
-        if not (output_path is not None):
-            raise ValueError("output_path must be provided")
         if not (output_path is not None):
             raise ValueError("output_path must be provided")
         output = Path(output_path)
@@ -110,8 +106,6 @@ class MJCFExporter:
         """
         if not (parent_name is not None):
             raise ValueError("parent_name must be provided")
-        if not (parent_name is not None):
-            raise ValueError("parent_name must be provided")
         lines = []
         indent = "  " * (depth + 1)
 
@@ -162,8 +156,6 @@ class MJCFExporter:
         Returns:
             List of MJCF lines
         """
-        if not (body is not None):
-            raise ValueError("body must be provided")
         if not (body is not None):
             raise ValueError("body must be provided")
         lines = []
