@@ -153,7 +153,9 @@ class PSAModel:
     total_feed_scfm: float = 1100.0
     s2_tail_recycle_frac: float = 1.0
     product_recycle_frac: float = 0.0
-    components: list[ComponentData] = field(default_factory=lambda: list(DEFAULT_COMPONENTS))
+    components: list[ComponentData] = field(
+        default_factory=lambda: list(DEFAULT_COMPONENTS)
+    )
 
     def _compute_stream_flows(
         self,
@@ -164,8 +166,12 @@ class PSAModel:
             StreamFlows with computed flow arrays for each stream.
         """
         feed_pct = np.array([c["feed_pct"] for c in self.components], dtype=np.float64)
-        r1 = np.array([c["stage1_removal_pct"] / 100.0 for c in self.components], dtype=np.float64)
-        r2 = np.array([c["stage2_removal_pct"] / 100.0 for c in self.components], dtype=np.float64)
+        r1 = np.array(
+            [c["stage1_removal_pct"] / 100.0 for c in self.components], dtype=np.float64
+        )
+        r2 = np.array(
+            [c["stage2_removal_pct"] / 100.0 for c in self.components], dtype=np.float64
+        )
 
         r_tail = self.s2_tail_recycle_frac
         r_prod = self.product_recycle_frac
@@ -201,7 +207,9 @@ class PSAModel:
         component_names: list[str],
         flows: StreamFlows,
         n_components: int,
-    ) -> tuple[StreamCompositions, float, float, float, float, float, float, float, float]:
+    ) -> tuple[
+        StreamCompositions, float, float, float, float, float, float, float, float
+    ]:
         """Compute compositions and key performance metrics from stream flows.
 
         Returns:
@@ -246,7 +254,9 @@ class PSAModel:
         )
 
         h2_idx = component_names.index("H2")
-        h2_recovery_pct = float(flows.net_product[h2_idx] / flows.fresh_feed[h2_idx] * 100.0)
+        h2_recovery_pct = float(
+            flows.net_product[h2_idx] / flows.fresh_feed[h2_idx] * 100.0
+        )
         h2_purity_pct = float(compositions.net_product[h2_idx])
 
         s2_tail_h2_pct = float(compositions.s2_tail[h2_idx])
