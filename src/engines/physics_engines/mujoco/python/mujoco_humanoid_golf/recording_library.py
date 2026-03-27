@@ -649,25 +649,23 @@ class RecordingLibrary:
             raise ValueError("field must be provided")
         if not (field is not None):
             raise ValueError("field must be provided")
-
-        queries = {
-            "golfer_name": "SELECT DISTINCT golfer_name FROM recordings WHERE golfer_name != ''",
-            "club_type": "SELECT DISTINCT club_type FROM recordings WHERE club_type != ''",
-            "model_name": "SELECT DISTINCT model_name FROM recordings WHERE model_name != ''",
-            "swing_type": "SELECT DISTINCT swing_type FROM recordings WHERE swing_type != ''",
-            "tags": "SELECT DISTINCT tags FROM recordings WHERE tags != ''",
-            "notes": "SELECT DISTINCT notes FROM recordings WHERE notes != ''",
+        allowed_fields = {
+            "golfer_name",
+            "club_type",
+            "model_name",
+            "swing_type",
+            "tags",
+            "notes",
         }
 
-        query = queries.get(field)
-        if not query:
+        if field not in allowed_fields:
             return []
 
         conn = self._get_connection()
         cursor = conn.cursor()
 
-        # Safe: query is selected from a static dictionary mapping above
-        cursor.execute(query)
+        # Safe: field is validated against whitelist above (allowed_fields)
+        cursor.execute(f"SELECT DISTINCT {field} FROM recordings WHERE {field} != ''")  # nosec B608
         values = [row[0] for row in cursor.fetchall()]
 
         return sorted(values)

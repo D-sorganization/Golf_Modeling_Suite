@@ -17,9 +17,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 
-def validate_path(
-    path: str | Path, allowed_roots: list[Path], strict: bool = True
-) -> Path:
+def validate_path(path: str | Path, allowed_roots: list[Path], strict: bool = True) -> Path:
     """Validate that a path is within allowed root directories.
 
     Args:
@@ -35,10 +33,7 @@ def validate_path(
     """
     try:
         resolved_path = Path(path).resolve()
-    except (
-        OSError,
-        ValueError,
-    ) as e:  # path resolution can raise OSError or ValueError
+    except Exception as e:  # noqa: BLE001 — catch any resolve() failure
         if strict:
             raise ValueError(f"Invalid path format: {path}") from e
         return Path(path)

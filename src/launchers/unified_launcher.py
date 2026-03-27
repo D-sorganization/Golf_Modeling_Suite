@@ -50,18 +50,14 @@ def _get_golf_main(*, prefer_legacy: bool = False):
 
         return golf_main
     except ImportError:
-        logger.debug(
-            "Could not import golf_launcher via relative import, trying absolute"
-        )
+        logger.debug("Could not import golf_launcher via relative import, trying absolute")
 
     try:
         module = importlib.import_module("launchers.golf_launcher")
         if hasattr(module, "main"):
             return module.main
     except ImportError:
-        logger.debug(
-            "Could not import launchers.golf_launcher, falling back to direct import"
-        )
+        logger.debug("Could not import launchers.golf_launcher, falling back to direct import")
 
     from .golf_launcher import main as golf_main
 
@@ -190,7 +186,7 @@ class UnifiedLauncher:
             v = getattr(_shared, "__version__", None)
             if v and not callable(v):
                 return str(v)
-        except (ImportError, AttributeError, TypeError) as e:
+        except Exception as e:  # noqa: BLE001
             logger.debug("Could not read version from shared.python: %s", e)
 
         # 3. Read directly from pyproject.toml (development / editable installs)
@@ -206,9 +202,7 @@ class UnifiedLauncher:
 
             if tomllib is not None:
                 try:
-                    pyproject_path = (
-                        Path(__file__).parent.parent.parent / "pyproject.toml"
-                    )
+                    pyproject_path = Path(__file__).parent.parent.parent / "pyproject.toml"
                     with pyproject_path.open("rb") as fh:
                         data = tomllib.load(fh)
                     return str(data["project"]["version"])

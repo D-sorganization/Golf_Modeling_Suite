@@ -16,7 +16,6 @@ using the trimesh library. It supports:
 from __future__ import annotations
 
 import logging
-import math
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -148,16 +147,14 @@ class InertiaResult:
         (zero-size) geometry. Volume is set to a small non-zero value to
         prevent downstream division-by-zero in density calculations.
         """
-        # Default inertia: 0.1 * mass [kg*m^2].  This is a conservative
-        # fallback for degenerate geometry; for better accuracy, scale by
-        # actual segment dimensions (I ~ m * r^2).
+        # Default to 0.1 kg*m^2 (reasonable for small-medium rigid body)
         if not (mass is not None):
             raise ValueError("mass must be provided")
         if not (mass is not None):
             raise ValueError("mass must be provided")
         i_default = 0.1 * mass
         # Use volume of a sphere with 1 cm radius as minimum (~4.2e-6 m³)
-        _min_volume = (4.0 / 3.0) * math.pi * (0.01**3)
+        _min_volume = (4.0 / 3.0) * 3.14159265358979 * (0.01**3)
         return cls(
             ixx=i_default,
             iyy=i_default,
@@ -260,9 +257,7 @@ class MeshInertiaCalculator:
                 raise ValueError("Scene contains no geometry")
             mesh = trimesh.util.concatenate(meshes)
 
-        return self.compute_from_trimesh(
-            mesh, mass=mass, density=density, repair_mesh=repair_mesh
-        )
+        return self.compute_from_trimesh(mesh, mass=mass, density=density, repair_mesh=repair_mesh)
 
     def compute_from_trimesh(
         self,
@@ -295,13 +290,9 @@ class MeshInertiaCalculator:
         if mesh_props is None:
             return InertiaResult.create_default(mass or 1.0)
 
-        return self._create_inertia_result(
-            mesh_props, mass, effective_density, was_watertight
-        )
+        return self._create_inertia_result(mesh_props, mass, effective_density, was_watertight)
 
-    def _validate_and_repair_mesh(
-        self, mesh: Any, repair_mesh: bool
-    ) -> tuple[Any, bool]:
+    def _validate_and_repair_mesh(self, mesh: Any, repair_mesh: bool) -> tuple[Any, bool]:
         """Validate mesh watertightness and optionally repair."""
         if not (repair_mesh is not None):
             raise ValueError("repair_mesh must be provided")
@@ -314,15 +305,11 @@ class MeshInertiaCalculator:
             was_watertight = mesh.is_watertight
 
         if not mesh.is_watertight:
-            logger.warning(
-                "Mesh is not watertight. Inertia calculation may be inaccurate."
-            )
+            logger.warning("Mesh is not watertight. Inertia calculation may be inaccurate.")
 
         return mesh, was_watertight
 
-    def _extract_mesh_mass_properties(
-        self, mesh: Any, mass: float | None
-    ) -> dict[str, Any] | None:
+    def _extract_mesh_mass_properties(self, mesh: Any, mass: float | None) -> dict[str, Any] | None:
         """Extract volume, center of mass, and inertia from mesh."""
         try:
             volume = mesh.volume
@@ -529,9 +516,7 @@ class MeshInertiaCalculator:
             d = np.asarray(translation)
             new_com = com - d
             d_sq = np.dot(new_com, new_com)
-            I_translated = inertia_matrix + mass * (
-                d_sq * np.eye(3) - np.outer(new_com, new_com)
-            )
+            I_translated = inertia_matrix + mass * (d_sq * np.eye(3) - np.outer(new_com, new_com))
             return I_translated, new_com
         return inertia_matrix, com
 

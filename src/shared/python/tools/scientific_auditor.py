@@ -34,9 +34,7 @@ class ScienceAuditor(ast.NodeVisitor):
             raise ValueError("node must be provided")
         if isinstance(node.op, ast.Div):
             # Check if denominator is a variable or a zero constant
-            is_constant_nonzero = (
-                isinstance(node.right, ast.Constant) and node.right.value != 0
-            )
+            is_constant_nonzero = isinstance(node.right, ast.Constant) and node.right.value != 0
             if not is_constant_nonzero:
                 self.risks.append(
                     {
@@ -62,7 +60,7 @@ class ScienceAuditor(ast.NodeVisitor):
             func_name = node.func.attr
 
         if func_name in trig_functions and any(
-            isinstance(arg, ast.Constant) and isinstance(arg.value, int | float)
+            isinstance(arg, ast.Constant) and isinstance(arg.value, (int, float))
             for arg in node.args
         ):
             self.risks.append(

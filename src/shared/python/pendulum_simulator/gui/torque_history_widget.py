@@ -153,9 +153,7 @@ class TorqueHistoryWidget(QWidget):
         self._outer_layout.addWidget(title)
 
         if not _HAS_PYQTGRAPH:
-            fallback = QLabel(
-                "Install pyqtgraph for torque plots:\n  pip install pyqtgraph"
-            )
+            fallback = QLabel("Install pyqtgraph for torque plots:\n  pip install pyqtgraph")
             fallback.setAlignment(Qt.AlignmentFlag.AlignCenter)
             fallback.setStyleSheet("color: #808090; font-size: 11px;")
             self._outer_layout.addWidget(fallback)
@@ -259,7 +257,7 @@ class TorqueHistoryWidget(QWidget):
 
         # Detect DOF count from first sample
         sample = result.torques_at(0)
-        if isinstance(sample, tuple | list):
+        if isinstance(sample, (tuple, list)):
             n_joints = len(sample)
         elif isinstance(sample, np.ndarray):
             n_joints = sample.shape[0]

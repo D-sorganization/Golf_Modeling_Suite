@@ -100,7 +100,7 @@ _DEFAULT_GOLF_PARAMS: dict[str, float] = {
     "L1": 0.65,  # arm length (m)
     "L2": 1.10,  # shaft length (m)
     "mClub": 0.20,  # clubhead mass (kg)
-    "g": 9.80665,  # gravity (m/s²) — NIST standard
+    "g": 9.81,  # gravity (m/s²)
     "b1": 0.4,  # shoulder damping (N·m·s/rad)
     "b2": 0.05,  # wrist damping (N·m·s/rad)
     "mu1": 0.0,  # Coulomb friction shoulder
@@ -234,9 +234,7 @@ class GolfSwingPendulumEngine(BasePhysicsEngine):
         def torque_func(t: float) -> tuple[float, float]:  # noqa: ARG001
             return float(self._tau[0]), float(self._tau[1])
 
-        deriv = equations_of_motion(
-            self._state, self.time, self._pendulum_params, torque_func
-        )
+        deriv = equations_of_motion(self._state, self.time, self._pendulum_params, torque_func)
 
         # RK4 integration
         k1 = deriv

@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Any
 from fastapi import APIRouter, Depends
 
 from src.api.middleware.error_handler import handle_api_errors
-from src.shared.python.core.constants import GRAVITY_FLOAT
+from src.shared.python.core.constants import GRAVITY
 from src.shared.python.core.contracts import precondition
 
 from ..dependencies import get_engine_manager, get_logger
@@ -233,7 +233,7 @@ def _build_gravity_vectors(
             continue
 
         y_pos = 0.5 + i * 0.3
-        gravity_mag = GRAVITY_FLOAT * (0.5 + 0.1 * i)
+        gravity_mag = GRAVITY * (0.5 + 0.1 * i)
         vectors.append(
             ForceVector3D(
                 body_name=body_name,
@@ -294,9 +294,7 @@ def _build_force_vectors(
     joint_names = _resolve_joint_names(engine, n_joints)
 
     vectors: list[ForceVector3D] = []
-    vectors.extend(
-        _build_applied_torque_vectors(config, torques, joint_names, n_joints)
-    )
+    vectors.extend(_build_applied_torque_vectors(config, torques, joint_names, n_joints))
     vectors.extend(_build_gravity_vectors(config, joint_names, n_joints))
 
     if config.color_by_magnitude:
@@ -338,7 +336,7 @@ def _build_demo_vectors(config: ForceOverlayRequest) -> list[ForceVector3D]:
             )
 
         if "gravity" in config.force_types or "all" in config.force_types:
-            grav_mag = GRAVITY_FLOAT * (1.0 + 0.2 * i)
+            grav_mag = GRAVITY * (1.0 + 0.2 * i)
             vectors.append(
                 ForceVector3D(
                     body_name=body,
@@ -381,13 +379,9 @@ def _get_sim_time(engine_manager: EngineManager) -> float:
     response_model=ForceOverlayResponse,
 )
 @precondition(
-    lambda force_types="applied",
-    color_by_magnitude=True,
-    body_filter=None,
-    show_labels=False,
-    scale_factor=0.01,
-    engine_manager=None,
-    logger=None: (scale_factor > 0 and len(force_types.strip()) > 0),
+    lambda force_types="applied", color_by_magnitude=True, body_filter=None, show_labels=False, scale_factor=0.01, engine_manager=None, logger=None: (
+        scale_factor > 0 and len(force_types.strip()) > 0
+    ),
     "Scale factor must be positive and force_types must be non-empty",
 )
 @handle_api_errors

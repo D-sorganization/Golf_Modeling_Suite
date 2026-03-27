@@ -22,7 +22,7 @@ from src.robotics.sensing.noise_models import (
     CompositeNoise,
     GaussianNoise,
 )
-from src.shared.python.core.constants import GRAVITY_FLOAT
+from src.shared.python.core.constants import GRAVITY
 
 
 @dataclass
@@ -50,9 +50,7 @@ class IMUSensorConfig:
     gyro_noise_std: float = 0.001
     accel_bias_drift: float = 0.0001
     gyro_bias_drift: float = 0.00001
-    gravity: NDArray[np.float64] = field(
-        default_factory=lambda: np.array([0.0, 0.0, -GRAVITY_FLOAT])
-    )
+    gravity: NDArray[np.float64] = field(default_factory=lambda: np.array([0.0, 0.0, -GRAVITY]))
     cutoff_frequency: float = 200.0
     sample_rate: float = 1000.0
     seed: int | None = None

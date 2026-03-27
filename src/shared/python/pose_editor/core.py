@@ -12,7 +12,7 @@ from typing import Any, Protocol, runtime_checkable
 
 import numpy as np
 
-from src.shared.python.core.constants import GRAVITY_FLOAT
+from src.shared.python.core.constants import GRAVITY
 from src.shared.python.logging_pkg.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -112,9 +112,7 @@ class PoseEditorState:
             selected_body_name=self.selected_body_name,
             ik_enabled=self.ik_enabled,
             ik_target_position=(
-                self.ik_target_position.copy()
-                if self.ik_target_position is not None
-                else None
+                self.ik_target_position.copy() if self.ik_target_position is not None else None
             ),
             ik_target_body=self.ik_target_body,
             constrained_bodies=self.constrained_bodies.copy(),
@@ -240,7 +238,7 @@ class BasePoseEditor(ABC):
         """Initialize the pose editor."""
         self._state = PoseEditorState()
         self._joint_info: list[JointInfo] = []
-        self._original_gravity: float = GRAVITY_FLOAT
+        self._original_gravity: float = GRAVITY
         self._callbacks: dict[str, list[Any]] = {
             "pose_changed": [],
             "gravity_changed": [],

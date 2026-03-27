@@ -22,9 +22,7 @@ class TestCategories:
         assert len(CATEGORIES) > 0
 
     def test_keys_are_uppercase_letters(self) -> None:
-        assert all(
-            isinstance(k, str) and len(k) == 1 and k.isupper() for k in CATEGORIES
-        )
+        assert all(isinstance(k, str) and len(k) == 1 and k.isupper() for k in CATEGORIES)
 
     def test_values_are_strings(self) -> None:
         assert all(isinstance(v, str) for v in CATEGORIES.values())
@@ -54,7 +52,7 @@ class TestGroupWeights:
         assert all(w > 0 for w in GROUP_WEIGHTS.values())
 
     def test_all_weights_are_floats(self) -> None:
-        assert all(isinstance(w, int | float) for w in GROUP_WEIGHTS.values())
+        assert all(isinstance(w, (int, float)) for w in GROUP_WEIGHTS.values())
 
 
 # ---------------------------------------------------------------------------

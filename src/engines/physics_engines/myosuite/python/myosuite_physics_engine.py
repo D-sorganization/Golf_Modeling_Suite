@@ -93,9 +93,7 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
             if sim is not None:
                 return sim
 
-        raise RuntimeError(
-            "Could not extract underlying MuJoCo sim object from MyoSuite env"
-        )
+        raise RuntimeError("Could not extract underlying MuJoCo sim object from MyoSuite env")
 
     @property
     def model_name(self) -> str:
@@ -158,9 +156,7 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
     def load_from_string(self, content: str, extension: str | None = None) -> None:
         """Loading from string is not supported for Gym environments."""
 
-        logger.error(
-            "MyoSuite does not support loading from string (requires Env ID registration)"
-        )
+        logger.error("MyoSuite does not support loading from string (requires Env ID registration)")
 
         raise RuntimeError(
             "MyoSuite does not support loading from string (requires Env ID registration)"
@@ -173,9 +169,7 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
         if self.env:
             self.env.reset()
 
-    @precondition(
-        lambda self, dt=None: self.env is not None, "Environment must be loaded"
-    )
+    @precondition(lambda self, dt=None: self.env is not None, "Environment must be loaded")
     def step(self, dt: float | None = None) -> None:
         """Step simulation.
 
@@ -414,9 +408,7 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
         try:
             import mujoco
 
-            body_id = mujoco.mj_name2id(
-                self.sim.model, mujoco.mjtObj.mjOBJ_BODY, body_name
-            )
+            body_id = mujoco.mj_name2id(self.sim.model, mujoco.mjtObj.mjOBJ_BODY, body_name)
 
             if body_id == -1:
                 return None

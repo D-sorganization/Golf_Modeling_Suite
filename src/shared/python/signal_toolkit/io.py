@@ -86,7 +86,7 @@ class SignalImporter:
             # Import all columns except time
             value_indices = [i for i in range(len(header)) if i != time_idx]
             value_names = [header[i] for i in value_indices]
-        elif isinstance(value_columns, str | int):
+        elif isinstance(value_columns, (str, int)):
             value_indices = [resolve_column(value_columns)]
             value_names = [header[value_indices[0]]]
         else:
@@ -231,9 +231,7 @@ class SignalImporter:
         metadata = data.get("metadata", {})
         metadata["source_file"] = str(file_path)
 
-        return Signal(
-            time=time, values=values, name=name, units=units, metadata=metadata
-        )
+        return Signal(time=time, values=values, name=name, units=units, metadata=metadata)
 
     @staticmethod
     def from_dict(

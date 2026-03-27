@@ -81,7 +81,7 @@ MANDATORY_METRICS: tuple[str, ...] = (
 # ---------------------------------------------------------------------------
 
 _MINIMAL_MJCF: str = """<mujoco model="minimal_myo_arm">
-  <option timestep="0.005" gravity="0 0 -9.80665"/>
+  <option timestep="0.005" gravity="0 0 -9.81"/>
   <worldbody>
     <body name="upper_arm" pos="0 0 1">
       <joint name="shoulder" type="hinge" axis="0 1 0"/>
@@ -277,7 +277,7 @@ class MyoSuitePerturbationAnalyzer:
                 self._nq = self._nu
                 self._nv = self._nu
             self._use_gym = True
-        except (ImportError, RuntimeError, ValueError, OSError) as exc:
+        except Exception as exc:  # noqa: BLE001
             logger.warning("MyoSuite init failed (%s), falling back to MuJoCo", exc)
             self._init_mujoco_fallback(None, None)
 
@@ -331,7 +331,7 @@ class MyoSuitePerturbationAnalyzer:
         if "coeffs" not in profile:
             raise ValueError("'coeffs' key missing from profile")
         coeffs = profile["coeffs"]
-        if not isinstance(coeffs, list) or len(coeffs) == 0:
+        if not (isinstance(coeffs, list) and len(coeffs) > 0):
             raise ValueError("profile['coeffs'] must be a non-empty list")
         self._base_coeffs = coeffs
         self._nominal_result = self._simulate(coeffs)
@@ -346,8 +346,8 @@ class MyoSuitePerturbationAnalyzer:
         """
         if not (self._base_coeffs is not None):
             raise ValueError(
-                "set_base_torque_profile() must be called before perturb_torque()"
-            )
+            "set_base_torque_profile() must be called before perturb_torque()"
+        )
         perturbed = perturb_torque_coeffs(
             self._base_coeffs,
             noise_amplitude=config.noise_amplitude,
@@ -366,9 +366,7 @@ class MyoSuitePerturbationAnalyzer:
         Post: all MANDATORY_METRICS present; all values finite.
         """
         if not isinstance(sim_result, MyoSuiteSimResult):
-            raise ValueError(
-                f"sim_result must be MyoSuiteSimResult, got {type(sim_result)}"
-            )
+            raise ValueError(f"sim_result must be MyoSuiteSimResult, got {type(sim_result)}")
         if not (sim_result.n_steps >= 2):
             raise ValueError("Simulation must have >= 2 steps")
 
@@ -425,8 +423,8 @@ class MyoSuitePerturbationAnalyzer:
         """
         if not (self._base_coeffs is not None):
             raise ValueError(
-                "set_base_torque_profile() must be called before run_batch()"
-            )
+            "set_base_torque_profile() must be called before run_batch()"
+        )
         t_start = time.monotonic()
         base_seed = config.seed if config.seed is not None else 0
 
@@ -462,7 +460,7 @@ class MyoSuitePerturbationAnalyzer:
                         v = float(np.linalg.norm(v))
                     metric_lists[m].append(float(v))
                 n_success += 1
-            except (RuntimeError, ValueError, TypeError, ArithmeticError):
+            except Exception:  # noqa: BLE001
                 logger.debug("Trial %d failed", i, exc_info=True)
 
         success_rate = n_success / config.n_trials if config.n_trials > 0 else 0.0
@@ -556,7 +554,7 @@ class MyoSuitePerturbationAnalyzer:
                     if isinstance(v, np.ndarray):
                         v = float(np.linalg.norm(v))
                     values.append(float(v))
-                except (RuntimeError, ValueError, TypeError, ArithmeticError):
+                except Exception:  # noqa: BLE001
                     pass
             return np.array(values) if values else np.array([0.0])
 
@@ -676,13 +674,7 @@ class MyoSuitePerturbationAnalyzer:
                         mujoco.mj_energyVel(mj_model, mj_data)
                         pe = float(mj_data.energy[0])
                         ke = float(mj_data.energy[1])
-                    except (
-                        ImportError,
-                        RuntimeError,
-                        ValueError,
-                        TypeError,
-                        AttributeError,
-                    ):
+                    except Exception:  # noqa: BLE001
                         pass
 
             t_list.append(t)

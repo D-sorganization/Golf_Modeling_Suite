@@ -131,8 +131,7 @@ class OllamaAdapter(BaseAgentAdapter):
                 self._client = httpx.Client(timeout=self._timeout)
             except ImportError as e:
                 raise AIProviderError(
-                    "httpx package required for OllamaAdapter. "
-                    "Install with: pip install httpx",
+                    "httpx package required for OllamaAdapter. " "Install with: pip install httpx",
                     provider="ollama",
                 ) from e
         return self._client
@@ -182,7 +181,7 @@ class OllamaAdapter(BaseAgentAdapter):
             )
             response.raise_for_status()
 
-        except (OSError, RuntimeError, ValueError) as e:
+        except Exception as e:  # noqa: BLE001
             # httpx is a lazy import; ConnectError and TimeoutException cannot be
             # named in the except clause until the module is imported.
             import httpx
@@ -323,19 +322,16 @@ class OllamaAdapter(BaseAgentAdapter):
 
             if not available:
                 if not model_names:
-                    return False, (
-                        f"No models installed. Pull one with: ollama pull {self._model}"
-                    )
+                    return False, (f"No models installed. Pull one with: ollama pull {self._model}")
                 return False, (
-                    f"Model '{self._model}' not found. "
-                    f"Available: {', '.join(model_names[:5])}"
+                    f"Model '{self._model}' not found. " f"Available: {', '.join(model_names[:5])}"
                 )
 
             return True, f"Connected to Ollama with {self._model}"
 
         except AIProviderError:
             return False, ("httpx not installed. Install with: pip install httpx")
-        except (OSError, RuntimeError, ValueError) as e:
+        except Exception as e:  # noqa: BLE001
             # httpx is lazily imported; ConnectError cannot be listed statically.
             import httpx
 
@@ -463,7 +459,7 @@ class OllamaAdapter(BaseAgentAdapter):
             data = response.json()
             return [m.get("name", "") for m in data.get("models", [])]
 
-        except (OSError, RuntimeError, ValueError) as e:
+        except Exception as e:  # noqa: BLE001
             # httpx errors (ConnectError, TimeoutException, HTTPStatusError, etc.)
             # are all subclasses of httpx.HTTPError or OSError; broad catch is
             # intentional here to convert any transport failure to AIConnectionError.

@@ -29,7 +29,7 @@ def _validate_number(value: object, name: str) -> float:
     Raises:
         TypeError: If value is not int or float.
     """
-    if not isinstance(value, int | float):
+    if not isinstance(value, (int, float)):
         raise TypeError(f"{name} must be a number, got {type(value).__name__}")
     return float(value)
 
@@ -53,7 +53,7 @@ def is_finite(value: object) -> bool:
         >>> is_finite("hello")
         False
     """
-    if not isinstance(value, int | float):
+    if not isinstance(value, (int, float)):
         return False
     return math.isfinite(value)
 
@@ -168,9 +168,7 @@ def assert_monotonic(
         raise TypeError(f"values must be a sequence, got {type(values).__name__}")
 
     if len(values) < 2:
-        raise ValueError(
-            f"Need at least 2 values to check monotonicity, got {len(values)}"
-        )
+        raise ValueError(f"Need at least 2 values to check monotonicity, got {len(values)}")
 
     for i, v in enumerate(values):
         _validate_number(v, f"values[{i}]")

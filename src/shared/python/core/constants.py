@@ -54,7 +54,7 @@ globals().update({name: getattr(_physics_constants, name) for name in __all__})
 # Pre-computed float values for commonly used constants
 # (Avoids repeated float() conversions from PhysicalConstant in multiple modules)
 GRAVITY_FLOAT: float = float(GRAVITY_M_S2)
-GRAVITY: float = float(GRAVITY_M_S2)  # Standard gravity (9.80665 m/s^2)
+GRAVITY: float = 9.81  # Approximate gravity for general simulation use
 GOLF_BALL_MASS_FLOAT: float = float(GOLF_BALL_MASS_KG)
 GOLF_BALL_RADIUS_FLOAT: float = float(GOLF_BALL_RADIUS_M)
 GOLF_BALL_DIAMETER_FLOAT: float = float(GOLF_BALL_DIAMETER_M)
@@ -114,9 +114,7 @@ DEFAULT_RANDOM_SEED: int = 42
 MUJOCO_LAUNCHER_SCRIPT: Path = Path(
     "engines/physics_engines/mujoco/python/mujoco_humanoid_golf/advanced_gui.py"
 )
-DRAKE_LAUNCHER_SCRIPT: Path = Path(
-    "engines/physics_engines/drake/python/src/golf_gui.py"
-)
+DRAKE_LAUNCHER_SCRIPT: Path = Path("engines/physics_engines/drake/python/src/golf_gui.py")
 PINOCCHIO_LAUNCHER_SCRIPT: Path = Path(
     "engines/physics_engines/pinocchio/python/pinocchio_golf/gui.py"
 )
