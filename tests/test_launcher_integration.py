@@ -56,7 +56,9 @@ class TestLauncherIntegration(unittest.TestCase):
             from src.shared.python.config.configuration_manager import (
                 ConfigurationManager,
             )
-            from src.shared.python.engine_core.engine_manager import EngineManager
+            from src.shared.python.engine_core.engine_manager import (
+                EngineManager,
+            )
             from src.shared.python.process_worker import ProcessWorker
 
             # Test basic instantiation with required arguments
