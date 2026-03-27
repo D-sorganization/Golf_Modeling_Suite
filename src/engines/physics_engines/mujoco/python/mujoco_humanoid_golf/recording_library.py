@@ -634,29 +634,19 @@ class RecordingLibrary:
 
         queries = {
             "golfer_name": (
-                "SELECT DISTINCT golfer_name "
-                "FROM recordings WHERE golfer_name != ''"
+                "SELECT DISTINCT golfer_name FROM recordings WHERE golfer_name != ''"
             ),
             "club_type": (
-                "SELECT DISTINCT club_type "
-                "FROM recordings WHERE club_type != ''"
+                "SELECT DISTINCT club_type FROM recordings WHERE club_type != ''"
             ),
             "model_name": (
-                "SELECT DISTINCT model_name "
-                "FROM recordings WHERE model_name != ''"
+                "SELECT DISTINCT model_name FROM recordings WHERE model_name != ''"
             ),
             "swing_type": (
-                "SELECT DISTINCT swing_type "
-                "FROM recordings WHERE swing_type != ''"
+                "SELECT DISTINCT swing_type FROM recordings WHERE swing_type != ''"
             ),
-            "tags": (
-                "SELECT DISTINCT tags "
-                "FROM recordings WHERE tags != ''"
-            ),
-            "notes": (
-                "SELECT DISTINCT notes "
-                "FROM recordings WHERE notes != ''"
-            ),
+            "tags": ("SELECT DISTINCT tags FROM recordings WHERE tags != ''"),
+            "notes": ("SELECT DISTINCT notes FROM recordings WHERE notes != ''"),
         }
 
         query = queries.get(field)
