@@ -71,7 +71,7 @@ class TestBaghouseCalculator:
 
     def test_efficiency_above_one_raises(self) -> None:
         kwargs = {**_BASE_KWARGS, "carbon_removal_efficiency": 1.5}
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             self._CALC.calculate(**kwargs)
 
     def test_zero_efficiency_no_removal(self) -> None:
