@@ -47,8 +47,10 @@ except ImportError:
     LivePlotWidget = None  # type: ignore[misc, assignment]
 
 # Constants
-JOINT_ANGLE_MIN_RAD = -3.141592653589793
-JOINT_ANGLE_MAX_RAD = 3.141592653589793
+import math
+
+JOINT_ANGLE_MIN_RAD = -math.pi
+JOINT_ANGLE_MAX_RAD = math.pi
 SPINBOX_STEP_RAD = 0.01
 SLIDER_TO_RADIAN = 0.01
 SLIDER_RANGE_MIN = -314

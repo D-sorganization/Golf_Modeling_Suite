@@ -194,13 +194,17 @@ class BandwidthLimitedNoise(NoiseModel):
 
     def __post_init__(self) -> None:
         """Initialize filter coefficient."""
-        # Simple first-order IIR approximation
+        if self.order < 1:
+            raise ValueError("Filter order must be >= 1")
         dt = 1.0 / self.sample_rate
         tau = 1.0 / (2 * np.pi * self.cutoff_frequency)
         self._alpha = dt / (tau + dt)
 
     def apply(self, signal: NDArray[np.float64]) -> NDArray[np.float64]:
         """Apply low-pass filter to signal.
+
+        The filter is applied ``self.order`` times in cascade to achieve
+        a higher-order roll-off.
 
         Args:
             signal: Input signal.
@@ -214,10 +218,13 @@ class BandwidthLimitedNoise(NoiseModel):
             self._filter_state = signal.copy()
             return signal.copy()
 
-        # First-order IIR filter: y = alpha * x + (1-alpha) * y_prev
-        self._filter_state = (
-            self._alpha * signal + (1 - self._alpha) * self._filter_state
-        )
+        # Apply first-order IIR filter ``order`` times for higher-order roll-off
+        result = signal
+        for _ in range(self.order):
+            self._filter_state = (
+                self._alpha * result + (1 - self._alpha) * self._filter_state
+            )
+            result = self._filter_state
         return self._filter_state.copy()
 
     def reset(self) -> None:
