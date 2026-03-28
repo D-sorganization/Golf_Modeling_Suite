@@ -148,9 +148,11 @@ class SecurityManager:
             True if password matches, False otherwise
         """
         try:
-            return bool(bcrypt.checkpw(
-                plain_password.encode("utf-8"), hashed_password.encode("utf-8")
-            ))
+            return bool(
+                bcrypt.checkpw(
+                    plain_password.encode("utf-8"), hashed_password.encode("utf-8")
+                )
+            )
         except (ValueError, TypeError):
             return False
 
@@ -288,9 +290,9 @@ class SecurityManager:
             True if key matches, False otherwise
         """
         try:
-            return bool(bcrypt.checkpw(
-                api_key.encode("utf-8"), hashed_key.encode("utf-8")
-            ))
+            return bool(
+                bcrypt.checkpw(api_key.encode("utf-8"), hashed_key.encode("utf-8"))
+            )
         except (ValueError, TypeError):
             return False
 
