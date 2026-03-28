@@ -123,7 +123,7 @@ class SecurityManager:
             raise ValueError("password must be provided")
         salt = bcrypt.gensalt(rounds=BCRYPT_ROUNDS)
         hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
-        return hashed.decode("utf-8")  # type: ignore[no-any-return]
+        return str(hashed.decode("utf-8"))
 
     @precondition(
         lambda self, plain_password, hashed_password: (
@@ -148,9 +148,9 @@ class SecurityManager:
             True if password matches, False otherwise
         """
         try:
-            return bcrypt.checkpw(  # type: ignore[no-any-return]
+            return bool(bcrypt.checkpw(
                 plain_password.encode("utf-8"), hashed_password.encode("utf-8")
-            )
+            ))
         except (ValueError, TypeError):
             return False
 
@@ -275,7 +275,7 @@ class SecurityManager:
             raise ValueError("api_key must be provided")
         salt = bcrypt.gensalt(rounds=BCRYPT_ROUNDS)
         hashed = bcrypt.hashpw(api_key.encode("utf-8"), salt)
-        return hashed.decode("utf-8")  # type: ignore[no-any-return]
+        return str(hashed.decode("utf-8"))
 
     def verify_api_key(self, api_key: str, hashed_key: str) -> bool:
         """Verify an API key against its hash.
@@ -288,9 +288,9 @@ class SecurityManager:
             True if key matches, False otherwise
         """
         try:
-            return bcrypt.checkpw(  # type: ignore[no-any-return]
+            return bool(bcrypt.checkpw(
                 api_key.encode("utf-8"), hashed_key.encode("utf-8")
-            )
+            ))
         except (ValueError, TypeError):
             return False
 
@@ -377,11 +377,11 @@ class UsageTracker:
             resource_type: Type of resource used
         """
         if resource_type == "api_calls":
-            user.api_calls_this_month = int(user.api_calls_this_month) + 1  # type: ignore[assignment]
+            user.api_calls_this_month = int(user.api_calls_this_month) + 1
         elif resource_type == "video_analyses":
-            user.video_analyses_this_month = int(user.video_analyses_this_month) + 1  # type: ignore[assignment]
+            user.video_analyses_this_month = int(user.video_analyses_this_month) + 1
         elif resource_type == "simulations":
-            user.simulations_this_month = int(user.simulations_this_month) + 1  # type: ignore[assignment]
+            user.simulations_this_month = int(user.simulations_this_month) + 1
 
     def get_usage_summary(self, user: User) -> dict[str, Any]:
         """Get usage summary for a user.
