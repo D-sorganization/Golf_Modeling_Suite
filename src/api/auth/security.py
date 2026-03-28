@@ -379,11 +379,11 @@ class UsageTracker:
             resource_type: Type of resource used
         """
         if resource_type == "api_calls":
-            setattr(user, "api_calls_this_month", int(user.api_calls_this_month) + 1)
+            user.api_calls_this_month = int(user.api_calls_this_month) + 1
         elif resource_type == "video_analyses":
-            setattr(user, "video_analyses_this_month", int(user.video_analyses_this_month) + 1)
+            user.video_analyses_this_month = int(user.video_analyses_this_month) + 1
         elif resource_type == "simulations":
-            setattr(user, "simulations_this_month", int(user.simulations_this_month) + 1)
+            user.simulations_this_month = int(user.simulations_this_month) + 1
 
     def get_usage_summary(self, user: User) -> dict[str, Any]:
         """Get usage summary for a user.
