@@ -334,7 +334,10 @@ class TestRunBatch:
             OpenSimPerturbationAnalyzer,
         )
 
-        fresh = OpenSimPerturbationAnalyzer(t_end=0.1, dt=0.01)
+        try:
+            fresh = OpenSimPerturbationAnalyzer(t_end=0.1, dt=0.01)
+        except ImportError:
+            pytest.skip("opensim not available")
         with pytest.raises((AssertionError, AttributeError)):
             fresh.run_batch(_SMALL_CONFIG)
 
