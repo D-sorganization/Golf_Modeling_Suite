@@ -220,8 +220,6 @@ class PSAModel:
 
         if not (component_names is not None):
             raise ValueError("component_names must be provided")
-        if not (component_names is not None):
-            raise ValueError("component_names must be provided")
 
         def calc_composition(flow_array: NDArray[np.float64]) -> NDArray[np.float64]:
             total = np.sum(flow_array)
@@ -334,8 +332,6 @@ def calculate_sensitivity(
     """
     if not (total_feed is not None):
         raise ValueError("total_feed must be provided")
-    if not (total_feed is not None):
-        raise ValueError("total_feed must be provided")
     if s2_tail_recycle_range is None:
         s2_tail_recycle_range = np.linspace(0, 1, 11)
     if product_recycle_range is None:
@@ -393,8 +389,6 @@ def calculate_o2_safety_analysis(
     Returns:
         Dictionary with S2 Tail O2% for each inlet O2% and S1 removal%
     """
-    if not (total_feed is not None):
-        raise ValueError("total_feed must be provided")
     if not (total_feed is not None):
         raise ValueError("total_feed must be provided")
     if inlet_o2_pcts is None:
@@ -460,8 +454,6 @@ def get_flammability_status(h2_pct: float, o2_pct: float) -> str:
     Returns:
         Status string indicating safety level
     """
-    if not (h2_pct is not None):
-        raise ValueError("h2_pct must be provided")
     if not (h2_pct is not None):
         raise ValueError("h2_pct must be provided")
     if o2_pct < 0.1:
