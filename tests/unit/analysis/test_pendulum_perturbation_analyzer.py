@@ -360,7 +360,7 @@ def test_run_batch_metric_statistics_type(
 def test_run_batch_requires_profile_set(
     analyzer: PendulumPerturbationAnalyzer,
 ) -> None:
-    with pytest.raises((AssertionError, AttributeError, TypeError)):
+    with pytest.raises(ValueError):
         analyzer.run_batch(_SMALL_CONFIG)
 
 
