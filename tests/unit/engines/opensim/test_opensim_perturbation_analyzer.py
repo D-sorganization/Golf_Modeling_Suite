@@ -31,12 +31,18 @@ from src.shared.python.perturbation.config import PerturbationConfig
 try:
     import opensim as _opensim  # noqa: F401
 
-    _OPENSIM_AVAILABLE = True
+    _OPENSIM_IMPORT_OK = True
 except ImportError:
-    _OPENSIM_AVAILABLE = False
+    _OPENSIM_IMPORT_OK = False
+
+# Use the shared engine availability check (consistent with production code).
+# opensim may be importable but still broken (e.g., missing shared libs in CI).
+from src.shared.python.engine_core.engine_availability import (
+    OPENSIM_AVAILABLE as _OPENSIM_AVAILABLE,
+)
 
 _skip_no_opensim = pytest.mark.skipif(
-    not _OPENSIM_AVAILABLE, reason="opensim not installed"
+    not _OPENSIM_AVAILABLE, reason="opensim not available (import or init failed)"
 )
 
 # ---------------------------------------------------------------------------
