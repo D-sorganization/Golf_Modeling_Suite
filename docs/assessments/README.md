@@ -97,6 +97,7 @@ In addition to the standard framework, specialized audits monitor specific quali
 | `docs/assessments/completist/Completist_Report_2026-03-24.md`       | 2026-03-24 | Completist Audit Report                                                        |
 | `docs/assessments/completist/Completist_Report_2026-03-26.md`       | 2026-03-26 | Completist Audit Report                                                        |
 | `docs/assessments/completist/Completist_Report_2026-03-27.md`       | 2026-03-27 | Completist Audit Report                                                        |
+| `docs/assessments/completist/Completist_Report_2026-03-28.md`       | 2026-03-28 | Completist Audit Report                                                        |
 
 ---
 
@@ -173,6 +174,7 @@ In addition to the standard framework, specialized audits monitor specific quali
 | 2026-03-24 | Completist Audit Report                  | `docs/assessments/completist/Completist_Report_2026-03-24.md`                 |
 | 2026-03-26 | Completist Audit Report                  | `docs/assessments/completist/Completist_Report_2026-03-26.md`                 |
 | 2026-03-27 | Completist Audit Report                  | `docs/assessments/completist/Completist_Report_2026-03-27.md`                 |
+| 2026-03-28 | Completist Audit Report                  | `docs/assessments/completist/Completist_Report_2026-03-28.md`                 |
 
 ---
 
@@ -254,6 +256,7 @@ In addition to the standard framework, specialized audits monitor specific quali
 | 3.2     | 2026-03 | Removed duplicate `Assessment_H_CICD.md` (superseded by CI/CD results)             |
 | 3.3     | 2026-03 | Populated empty `Assessment_H_CI_CD.md` with content from archived version (#1962) |
 | 3.4     | 2026-03 | Added Completist Report 2026-03-26                                                 |
+| 3.5     | 2026-03 | Added Completist Report 2026-03-28                                                 |
 
 ---
 
