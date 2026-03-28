@@ -199,6 +199,8 @@ class TestComparisonReport:
 
 @pytest.fixture(scope="module")
 def analyzer():  # type: ignore[no-untyped-def]
+    if not _OPENSIM_AVAILABLE:
+        pytest.skip("opensim not installed")
     from src.engines.physics_engines.opensim.python.perturbation.analyzer import (
         OpenSimPerturbationAnalyzer,
     )
