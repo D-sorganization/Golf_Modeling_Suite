@@ -92,6 +92,27 @@ class OpenSimMuscleAnalyzer:
 
         return forces
 
+    def get_passive_muscle_forces(self) -> dict[str, float]:
+        """Compute current passive muscle forces for all muscles.
+
+        Returns:
+            Dictionary mapping muscle names to passive forces [N]
+        """
+        if opensim is None:
+            return {}
+
+        forces = {}
+        self.model.realizeDynamics(self.state)
+
+        for i in range(self.n_muscles):
+            muscle = opensim.Muscle.safeDownCast(self.muscle_set.get(i))
+            if muscle:
+                name = muscle.getName()
+                force = muscle.getPassiveFiberForce(self.state)
+                forces[name] = float(force)
+
+        return forces
+
     def get_moment_arms(
         self, coordinate_name: str | None = None
     ) -> dict[str, dict[str, float]]:
@@ -237,6 +258,17 @@ class OpenSimMuscleAnalyzer:
         # Get muscle torques
         muscle_torques = self.compute_muscle_joint_torques()
 
+        # Check conditioning once before loop
+        cond = np.linalg.cond(M)
+        if cond > 1e8:
+            logger.warning(
+                f"Mass matrix ill-conditioned (cond={cond:.2e}), using regularized solve"
+            )
+            lambda_reg = 1e-6 * np.trace(M) / M.shape[0]
+            M_solve = M + lambda_reg * np.eye(M.shape[0])
+        else:
+            M_solve = M
+
         # Compute induced acceleration: a = M^-1 * tau
         induced_accelerations = {}
         for muscle_name, tau in muscle_torques.items():
@@ -244,7 +276,7 @@ class OpenSimMuscleAnalyzer:
             tau_full = np.zeros(n_u)
             tau_full[: min(len(tau), n_u)] = tau[: min(len(tau), n_u)]
 
-            a_induced = np.linalg.solve(M, tau_full)
+            a_induced = np.linalg.solve(M_solve, tau_full)
             induced_accelerations[muscle_name] = a_induced
 
         return induced_accelerations

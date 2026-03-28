@@ -135,7 +135,7 @@ class GolfSwingModel:
                 # Some versions might need setInitialTime
 
             logger.info(f"Loaded OpenSim model from {self.model_path}")
-        except (OSError, RuntimeError, ValueError, ImportError, AttributeError) as e:
+        except Exception as e:  # noqa: BLE001 — convert any error to OpenSimModelLoadError
             raise OpenSimModelLoadError(
                 f"Failed to load OpenSim model: {self.model_path}\n"
                 f"Error: {e}\n"
@@ -219,7 +219,9 @@ class GolfSwingModel:
             # We need to realize Dynamics to get muscle forces
             self._opensim_model.realizeDynamics(self._state)
             for j in range(n_muscles):
-                muscle_forces_arr[i, j] = muscles.get(j).getFiberForce(self._state)
+                muscle_forces_arr[i, j] = muscles.get(j).getActiveFiberForce(
+                    self._state
+                )
 
             # Record Marker Positions
             self._opensim_model.realizePosition(self._state)

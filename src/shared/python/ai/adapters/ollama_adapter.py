@@ -180,7 +180,7 @@ class OllamaAdapter(BaseAgentAdapter):
             )
             response.raise_for_status()
 
-        except (OSError, RuntimeError, ValueError) as e:
+        except Exception as e:  # noqa: BLE001
             # httpx is a lazy import; ConnectError and TimeoutException cannot be
             # named in the except clause until the module is imported.
             import httpx
@@ -331,7 +331,7 @@ class OllamaAdapter(BaseAgentAdapter):
 
         except AIProviderError:
             return False, ("httpx not installed. Install with: pip install httpx")
-        except (OSError, RuntimeError, ValueError) as e:
+        except Exception as e:  # noqa: BLE001
             # httpx is lazily imported; ConnectError cannot be listed statically.
             import httpx
 
@@ -459,7 +459,7 @@ class OllamaAdapter(BaseAgentAdapter):
             data = response.json()
             return [m.get("name", "") for m in data.get("models", [])]
 
-        except (OSError, RuntimeError, ValueError) as e:
+        except Exception as e:  # noqa: BLE001
             # httpx errors (ConnectError, TimeoutException, HTTPStatusError, etc.)
             # are all subclasses of httpx.HTTPError or OSError; broad catch is
             # intentional here to convert any transport failure to AIConnectionError.

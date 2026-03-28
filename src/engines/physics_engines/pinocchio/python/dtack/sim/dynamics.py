@@ -66,7 +66,7 @@ class DynamicsEngine:
         return np.array(result, dtype=np.float64)
 
     def compute_ztcf(
-        self, q: np.ndarray, v: np.ndarray, dt: float
+        self, q: np.ndarray, v: np.ndarray, dt: float, f_ext: list | None = None
     ) -> tuple[np.ndarray, np.ndarray]:
         """Compute Zero Torque Counterfactual (ZTCF).
 
@@ -79,7 +79,7 @@ class DynamicsEngine:
         if not (q is not None):
             raise ValueError("q must be provided")
         tau_zero = np.zeros(self.model.nv)
-        a = self.forward_dynamics(q, v, tau_zero)
+        a = self.forward_dynamics(q, v, tau_zero, f_ext=f_ext)
 
         # Semi-implicit Euler
         v_next = v + a * dt
@@ -87,7 +87,7 @@ class DynamicsEngine:
         return q_next, v_next
 
     def compute_zvcf(
-        self, q: np.ndarray, tau: np.ndarray, dt: float
+        self, q: np.ndarray, tau: np.ndarray, dt: float, f_ext: list | None = None
     ) -> tuple[np.ndarray, np.ndarray]:
         """Compute Zero Velocity Counterfactual (ZVCF).
 
@@ -100,7 +100,7 @@ class DynamicsEngine:
         if not (q is not None):
             raise ValueError("q must be provided")
         v_zero = np.zeros(self.model.nv)
-        a = self.forward_dynamics(q, v_zero, tau)
+        a = self.forward_dynamics(q, v_zero, tau, f_ext=f_ext)
 
         v_next = v_zero + a * dt
         q_next = pin.integrate(self.model, q, v_next * dt)
