@@ -223,11 +223,12 @@ class BandwidthLimitedNoise(NoiseModel):
                 self._filter_states[stage] = result.copy()
             else:
                 # First-order IIR filter: y = alpha * x + (1-alpha) * y_prev
+                prev = self._filter_states[stage]
+                assert prev is not None  # guarded by if-else above
                 self._filter_states[stage] = (
-                    self._alpha * result
-                    + (1 - self._alpha) * self._filter_states[stage]
+                    self._alpha * result + (1 - self._alpha) * prev
                 )
-                result = self._filter_states[stage].copy()
+                result = self._filter_states[stage].copy()  # type: ignore[union-attr]
         return result
 
     def reset(self) -> None:
