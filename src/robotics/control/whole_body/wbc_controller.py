@@ -469,7 +469,7 @@ class WholeBodyController:
         M: np.ndarray,
         nle: np.ndarray,
         qd: np.ndarray,
-    ) -> "QPProblem":
+    ) -> QPProblem:
         if not (H is not None):
             raise ValueError("H must be provided")
         A_eq, b_eq = self._build_dynamics_constraint(n_v, n_contact_vars, M, nle)

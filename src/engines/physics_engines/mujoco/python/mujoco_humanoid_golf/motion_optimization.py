@@ -626,7 +626,8 @@ class SwingOptimizer:
             base_pos = np.array([2.0, 0.0, 0.0])
             return [
                 self.optimize_swing_for_accuracy(
-                    target_position=base_pos + np.array([0, (i - num_swings / 2) * 0.2, 0])
+                    target_position=base_pos
+                    + np.array([0, (i - num_swings / 2) * 0.2, 0])
                 )
                 for i in range(num_swings)
             ]

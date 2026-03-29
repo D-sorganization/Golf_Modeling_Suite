@@ -312,10 +312,7 @@ class CounterfactualAnalyzer:
         """
         if not (qpos_traj is not None):
             raise ValueError("qpos_traj must be provided")
-        return [
-            self.zvcf(qpos_traj[i], qvel_traj[i])
-            for i in range(len(qpos_traj))
-        ]
+        return [self.zvcf(qpos_traj[i], qvel_traj[i]) for i in range(len(qpos_traj))]
 
     def plot_counterfactual_comparison(
         self,

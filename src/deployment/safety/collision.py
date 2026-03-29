@@ -100,12 +100,12 @@ class Obstacle:
         eps = 1e-6
         # Vectorized finite-difference gradient: perturb each axis simultaneously
         perturbations = np.eye(3) * eps
-        dist_plus = np.array([
-            self.get_distance(point + perturbations[i]) for i in range(3)
-        ])
-        dist_minus = np.array([
-            self.get_distance(point - perturbations[i]) for i in range(3)
-        ])
+        dist_plus = np.array(
+            [self.get_distance(point + perturbations[i]) for i in range(3)]
+        )
+        dist_minus = np.array(
+            [self.get_distance(point - perturbations[i]) for i in range(3)]
+        )
         gradient = (dist_plus - dist_minus) / (2 * eps)
 
         norm = np.linalg.norm(gradient)

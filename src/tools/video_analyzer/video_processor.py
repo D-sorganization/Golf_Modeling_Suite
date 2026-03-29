@@ -349,7 +349,7 @@ class VideoProcessor:
             self._cap = None
             self.video_path = None
 
-    def __enter__(self) -> "VideoProcessor":
+    def __enter__(self) -> VideoProcessor:
         """Context manager entry."""
         return self
 
