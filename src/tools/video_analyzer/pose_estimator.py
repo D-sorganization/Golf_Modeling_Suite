@@ -307,11 +307,16 @@ class PoseEstimator:
             self._pose = None
             self._initialized = False
 
-    def __enter__(self):
+    def __enter__(self) -> PoseEstimator:
         """Context manager entry."""
         self.initialize()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: object,
+    ) -> None:
         """Context manager exit."""
         self.close()

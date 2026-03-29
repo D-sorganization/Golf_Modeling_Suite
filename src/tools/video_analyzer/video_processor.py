@@ -349,11 +349,16 @@ class VideoProcessor:
             self._cap = None
             self.video_path = None
 
-    def __enter__(self):
+    def __enter__(self) -> VideoProcessor:
         """Context manager entry."""
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: object,
+    ) -> None:
         """Context manager exit."""
         self.close()
 
