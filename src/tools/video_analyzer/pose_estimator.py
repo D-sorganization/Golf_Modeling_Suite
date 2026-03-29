@@ -312,9 +312,6 @@ class PoseEstimator:
         self.initialize()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         """Context manager exit."""
-        if not (exc_type is not None):
-            raise ValueError("exc_type must be provided")
         self.close()
-        return False
