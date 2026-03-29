@@ -97,6 +97,23 @@ In addition to the standard framework, specialized audits monitor specific quali
 | `docs/assessments/completist/Completist_Report_2026-03-24.md`       | 2026-03-24 | Completist Audit Report                                                        |
 | `docs/assessments/completist/Completist_Report_2026-03-26.md`       | 2026-03-26 | Completist Audit Report                                                        |
 | `docs/assessments/completist/Completist_Report_2026-03-27.md`       | 2026-03-27 | Completist Audit Report                                                        |
+| 2026-03-29 | Completist Audit Report                  | `docs/assessments/completist/Completist_Report_2026-03-29.md`                 |
+| 2026-03-29 | Comprehensive Assessment Report          | `docs/assessments/COMPREHENSIVE_REPORT_2026-03-29.md`                 |
+| 2026-03-29 | Assessment A Results                     | `docs/assessments/Assessment_A_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment B Results                     | `docs/assessments/Assessment_B_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment C Results                     | `docs/assessments/Assessment_C_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment D Results                     | `docs/assessments/Assessment_D_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment E Results                     | `docs/assessments/Assessment_E_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment F Results                     | `docs/assessments/Assessment_F_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment G Results                     | `docs/assessments/Assessment_G_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment H Results                     | `docs/assessments/Assessment_H_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment I Results                     | `docs/assessments/Assessment_I_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment J Results                     | `docs/assessments/Assessment_J_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment K Results                     | `docs/assessments/Assessment_K_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment L Results                     | `docs/assessments/Assessment_L_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment M Results                     | `docs/assessments/Assessment_M_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment N Results                     | `docs/assessments/Assessment_N_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment O Results                     | `docs/assessments/Assessment_O_Results_2026-03-29.md`                 |
 
 ---
 
@@ -173,6 +190,23 @@ In addition to the standard framework, specialized audits monitor specific quali
 | 2026-03-24 | Completist Audit Report                  | `docs/assessments/completist/Completist_Report_2026-03-24.md`                 |
 | 2026-03-26 | Completist Audit Report                  | `docs/assessments/completist/Completist_Report_2026-03-26.md`                 |
 | 2026-03-27 | Completist Audit Report                  | `docs/assessments/completist/Completist_Report_2026-03-27.md`                 |
+| 2026-03-29 | Completist Audit Report                  | `docs/assessments/completist/Completist_Report_2026-03-29.md`                 |
+| 2026-03-29 | Comprehensive Assessment Report          | `docs/assessments/COMPREHENSIVE_REPORT_2026-03-29.md`                 |
+| 2026-03-29 | Assessment A Results                     | `docs/assessments/Assessment_A_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment B Results                     | `docs/assessments/Assessment_B_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment C Results                     | `docs/assessments/Assessment_C_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment D Results                     | `docs/assessments/Assessment_D_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment E Results                     | `docs/assessments/Assessment_E_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment F Results                     | `docs/assessments/Assessment_F_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment G Results                     | `docs/assessments/Assessment_G_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment H Results                     | `docs/assessments/Assessment_H_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment I Results                     | `docs/assessments/Assessment_I_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment J Results                     | `docs/assessments/Assessment_J_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment K Results                     | `docs/assessments/Assessment_K_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment L Results                     | `docs/assessments/Assessment_L_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment M Results                     | `docs/assessments/Assessment_M_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment N Results                     | `docs/assessments/Assessment_N_Results_2026-03-29.md`                 |
+| 2026-03-29 | Assessment O Results                     | `docs/assessments/Assessment_O_Results_2026-03-29.md`                 |
 
 ---
 
