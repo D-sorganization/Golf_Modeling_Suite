@@ -948,8 +948,43 @@ class A3FittingPipeline:
                 )
                 segment_params.append(params)
 
-        # Sensitivity analysis (placeholder - requires model function)
+        # Sensitivity analysis via parameter perturbation.
+        # For each fitted parameter, perturb it by ±1% and re-evaluate the
+        # forward-kinematics residual to measure how the RMS error responds.
         sensitivities: list[SensitivityResult] = []
+        if fit_result.success and fit_result.parameters:
+            # Build a model function that returns RMS error given parameter overrides
+            def _model_func(param_overrides: dict[str, float]) -> dict[str, float]:
+                """Evaluate RMS error with perturbed parameters."""
+                merged = dict(fit_result.parameters)
+                merged.update(param_overrides)
+                angles = np.array(
+                    [merged[k] for k in fit_result.parameters], dtype=float
+                )
+                # Reconstruct kinematic states for the IK solver
+                ik_solver = InverseKinematicsSolver(
+                    joint_names=list(fit_result.parameters.keys()),
+                )
+                ik_solver.segment_lengths = self.param_estimator.segment_lengths
+                positions = ik_solver._forward_kinematics(angles)
+                # Use the first frame of marker data as the target
+                if len(marker_positions) > 0:
+                    target = marker_positions[0]
+                    n_pts = min(len(positions), len(target))
+                    residual = (positions[:n_pts] - target[:n_pts]).flatten()
+                    rms = float(np.sqrt(np.mean(residual**2)))
+                else:
+                    rms = 0.0
+                return {"rms_error": rms}
+
+            for param_name, nominal_val in fit_result.parameters.items():
+                sens = self.sensitivity_analyzer.compute_sensitivity(
+                    model_func=_model_func,
+                    parameter_name=param_name,
+                    nominal_value=nominal_val,
+                    output_metric="rms_error",
+                )
+                sensitivities.append(sens)
 
         # Quality metrics
         quality_metrics = {

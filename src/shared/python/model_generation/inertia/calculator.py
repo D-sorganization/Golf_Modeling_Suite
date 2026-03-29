@@ -18,7 +18,11 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-from model_generation.core.constants import DEFAULT_DENSITY_KG_M3, DEFAULT_INERTIA_KG_M2
+from model_generation.core.constants import (
+    DEFAULT_DENSITY_KG_M3,
+    DEFAULT_INERTIA_KG_M2,
+    estimate_default_inertia,
+)
 from model_generation.core.contracts import precondition
 from model_generation.core.types import Geometry, GeometryType, Inertia
 from model_generation.inertia.primitives import (
@@ -539,11 +543,17 @@ class InertiaCalculator:
     def _create_default_inertia_result(
         self, mass: float | None, mode: InertiaMode, source_path: str
     ) -> InertiaResult:
-        """Create a default inertia result for fallback cases."""
+        """Create a default inertia result for fallback cases.
+
+        Uses mass-scaled inertia estimation (uniform sphere model) so that
+        small bodies get appropriately small inertia values instead of
+        the fixed 0.1 kg*m^2 fallback.
+        """
+        default_i = estimate_default_inertia(mass)
         return InertiaResult(
-            ixx=DEFAULT_INERTIA_KG_M2,
-            iyy=DEFAULT_INERTIA_KG_M2,
-            izz=DEFAULT_INERTIA_KG_M2,
+            ixx=default_i,
+            iyy=default_i,
+            izz=default_i,
             mass=mass or 1.0,
             mode=mode,
             source=source_path,

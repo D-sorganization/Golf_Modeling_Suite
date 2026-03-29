@@ -504,7 +504,15 @@ class ModalShaftModel(ShaftModel):
             # Modal force = physical force projected onto mode
             # (simplified: only using first component of force)
             modal_force = phi_at_load * np.linalg.norm(force)
-            self.modal_coords[i] += modal_force * 1e-6  # Scale factor
+
+            # Scale modal force by 1/(modal_mass * omega^2) to convert physical
+            # force to modal displacement increment.  For a unit-mass-normalized
+            # mode shape the modal stiffness is omega^2.  This ensures the modal
+            # coordinate has correct physical units [m] and scales properly with
+            # shaft stiffness and frequency.
+            omega = 2.0 * np.pi * mode.frequency
+            modal_stiffness = omega**2 if omega > 0 else 1.0
+            self.modal_coords[i] += modal_force / modal_stiffness
 
     def step(self, dt: float) -> ShaftState:
         """Advance modal coordinates by dt."""
@@ -719,9 +727,28 @@ class FiniteElementShaftModel(ShaftModel):
                     self.M[i, j] += m_e[ii, jj]
 
         # Rayleigh damping: C = α*M + β*K
-        # Using typical values for structural damping
-        alpha = 0.1  # Mass proportional
-        beta = 0.0001  # Stiffness proportional
+        # Coefficients derived from target damping ratios at two frequencies:
+        #   ζ₁ = 0.02 at f₁ = 5 Hz  (fundamental bending mode of typical golf shaft)
+        #   ζ₂ = 0.02 at f₂ = 50 Hz (higher-order mode)
+        # Using the standard Rayleigh relation:
+        #   α = 2*ζ*ω₁*ω₂ / (ω₁ + ω₂)
+        #   β = 2*ζ / (ω₁ + ω₂)
+        # where ω = 2π*f.
+        # Reference: Clough & Penzien, "Dynamics of Structures", 3rd ed.,
+        # Section 12.4 — Rayleigh damping for structural systems.
+        # ζ = 0.02 is typical for graphite/composite shafts per
+        # Braunwart & Koenig, "Golf Shaft Dynamics", ASME J. Sports Eng., 2005.
+        omega_1 = 2.0 * np.pi * 5.0  # rad/s — fundamental bending mode
+        omega_2 = 2.0 * np.pi * 50.0  # rad/s — higher-order mode
+        zeta_target = (
+            0.02  # target damping ratio (matches ShaftProperties.damping_ratio)
+        )
+        if self.properties is not None:
+            zeta_target = self.properties.damping_ratio
+        alpha = (
+            2.0 * zeta_target * omega_1 * omega_2 / (omega_1 + omega_2)
+        )  # mass-proportional
+        beta = 2.0 * zeta_target / (omega_1 + omega_2)  # stiffness-proportional
         self.C = alpha * self.M + beta * self.K
 
     def _apply_boundary_conditions(self) -> None:

@@ -61,6 +61,9 @@ from model_generation.core.constants import (  # noqa: E402
     DEFAULT_INERTIA_KG_M2,
     DEFAULT_MASS_KG,
     GRAVITY_M_S2,
+    JOINT_DAMPING_TABLE,
+    estimate_default_inertia,
+    get_joint_damping,
 )
 
 __all__ = [
@@ -86,8 +89,11 @@ __all__ = [
     "GRAVITY_M_S2",
     "DEFAULT_DENSITY_KG_M3",
     "DEFAULT_INERTIA_KG_M2",
+    "estimate_default_inertia",
     "DEFAULT_HEIGHT_M",
     "DEFAULT_MASS_KG",
+    "JOINT_DAMPING_TABLE",
+    "get_joint_damping",
     # Inertia
     "InertiaCalculator",
     "InertiaMode",

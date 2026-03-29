@@ -14,6 +14,8 @@ from model_generation.core.constants import (
     DEFAULT_JOINT_VELOCITY,
     GRAVITY_M_S2,
     INTERMEDIATE_LINK_MASS,
+    JOINT_DAMPING_TABLE,
+    get_joint_damping,
 )
 from model_generation.core.types import (
     Geometry,
@@ -56,6 +58,8 @@ __all__ = [
     "DEFAULT_DENSITY_KG_M3",
     "DEFAULT_INERTIA_KG_M2",
     "DEFAULT_JOINT_DAMPING",
+    "JOINT_DAMPING_TABLE",
+    "get_joint_damping",
     "DEFAULT_JOINT_FRICTION",
     "DEFAULT_JOINT_EFFORT",
     "DEFAULT_JOINT_VELOCITY",
