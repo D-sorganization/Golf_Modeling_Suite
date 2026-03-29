@@ -440,6 +440,7 @@ export function DataExplorerPage() {
             <select
               value={filterColumn}
               onChange={(e) => setFilterColumn(e.target.value)}
+              aria-label="Filter column"
               className="w-full bg-gray-700 text-gray-200 rounded px-2 py-1 text-xs border-none"
             >
               <option value="">Select column...</option>
@@ -453,6 +454,7 @@ export function DataExplorerPage() {
               <select
                 value={filterOperator}
                 onChange={(e) => setFilterOperator(e.target.value)}
+                aria-label="Filter operator"
                 className="bg-gray-700 text-gray-200 rounded px-2 py-1 text-xs border-none"
               >
                 <option value="eq">=</option>
@@ -467,6 +469,7 @@ export function DataExplorerPage() {
                 type="text"
                 value={filterValue}
                 onChange={(e) => setFilterValue(e.target.value)}
+                aria-label="Filter value"
                 placeholder="Value..."
                 className="flex-1 bg-gray-700 text-gray-200 rounded px-2 py-1 text-xs border-none"
               />

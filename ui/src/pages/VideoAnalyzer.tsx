@@ -251,10 +251,11 @@ export function VideoAnalyzerPage() {
           </h3>
 
           <div>
-            <label className="text-xs text-gray-400 block mb-1">
+            <label htmlFor="pose-estimator" className="text-xs text-gray-400 block mb-1">
               Pose Estimator
             </label>
             <select
+              id="pose-estimator"
               value={estimatorType}
               onChange={(e) => setEstimatorType(e.target.value)}
               className="w-full bg-gray-700 text-gray-200 rounded px-2 py-1.5 text-sm border-none focus:ring-1 focus:ring-blue-400"
@@ -266,10 +267,11 @@ export function VideoAnalyzerPage() {
           </div>
 
           <div>
-            <label className="text-xs text-gray-400 block mb-1">
+            <label htmlFor="min-confidence" className="text-xs text-gray-400 block mb-1">
               Min Confidence: {minConfidence.toFixed(2)}
             </label>
             <input
+              id="min-confidence"
               type="range"
               min={0.1}
               max={0.95}
