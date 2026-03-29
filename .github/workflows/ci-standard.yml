@@ -278,11 +278,13 @@ jobs:
         working-directory: ./ui
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v4
         with:
           node-version: "24"
           cache: "npm"
           cache-dependency-path: ui/package-lock.json
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: Install Dependencies
         run: npm ci
@@ -405,7 +407,9 @@ jobs:
 
       - name: Symlink Tools for Cargo path resolution
         if: steps.rust-changes.outputs.has_changes == 'true'
-        run: ln -sfn "$GITHUB_WORKSPACE/_tools_dep" "$GITHUB_WORKSPACE/../Tools"
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/../"
+          ln -sfn "$GITHUB_WORKSPACE/_tools_dep" "$GITHUB_WORKSPACE/../Tools"
 
       - name: Cache Cargo registry and build
         if: steps.rust-changes.outputs.has_changes == 'true'
