@@ -311,7 +311,8 @@ def compute_cop_trajectory_length(cops: np.ndarray) -> float:
     diffs = np.diff(cops, axis=0)
 
     # Euclidean distance for each segment
-    distances = np.linalg.norm(diffs, axis=1)
+    # Optimization: explicitly calculate norm to avoid np.linalg.norm reduction overhead on small inner dimensions
+    distances = np.sqrt(diffs[:, 0] ** 2 + diffs[:, 1] ** 2 + diffs[:, 2] ** 2)
 
     return float(np.sum(distances))
 
@@ -439,7 +440,8 @@ class GRFAnalyzer:
 
         # Peak forces
         vertical_forces = forces[:, 2]
-        horizontal_forces = np.linalg.norm(forces[:, :2], axis=1)
+        # Optimization: use np.hypot instead of np.linalg.norm for 2D vectors
+        horizontal_forces = np.hypot(forces[:, 0], forces[:, 1])
 
         peak_vertical = float(np.max(vertical_forces))
         peak_horizontal = float(np.max(horizontal_forces))
@@ -587,8 +589,11 @@ def validate_grf_cross_engine(
     results = {}
 
     # Force magnitude comparison
-    forces_a = np.linalg.norm(grf_a.forces, axis=1)
-    forces_b = np.linalg.norm(grf_b.forces, axis=1)
+    # Optimization: explicitly calculate norm to avoid np.linalg.norm reduction overhead
+    f_a = grf_a.forces
+    f_b = grf_b.forces
+    forces_a = np.sqrt(f_a[:, 0] ** 2 + f_a[:, 1] ** 2 + f_a[:, 2] ** 2)
+    forces_b = np.sqrt(f_b[:, 0] ** 2 + f_b[:, 1] ** 2 + f_b[:, 2] ** 2)
 
     if len(forces_a) == len(forces_b):
         force_diff = np.abs(forces_a - forces_b)
@@ -602,7 +607,11 @@ def validate_grf_cross_engine(
 
     # COP position comparison
     if len(grf_a.cops) == len(grf_b.cops):
-        cop_diff_mm = np.linalg.norm(grf_a.cops - grf_b.cops, axis=1) * 1000
+        # Optimization: explicitly calculate norm to avoid np.linalg.norm reduction overhead
+        diff = grf_a.cops - grf_b.cops
+        cop_diff_mm = (
+            np.sqrt(diff[:, 0] ** 2 + diff[:, 1] ** 2 + diff[:, 2] ** 2) * 1000
+        )
         results["cop_position"] = bool(np.all(cop_diff_mm < COP_POSITION_TOLERANCE_MM))
     else:
         results["cop_position"] = False
