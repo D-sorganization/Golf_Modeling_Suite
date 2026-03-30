@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Green Surface Model for Putting Simulation.
 
 This module defines the putting green surface including slopes,
@@ -77,15 +81,11 @@ class SlopeRegion:
         """Check if position is within region."""
         if not (position is not None):
             raise ValueError("position must be provided")
-        if not (position is not None):
-            raise ValueError("position must be provided")
         distance = np.linalg.norm(position[:2] - self.center[:2])
         return bool(distance <= self.radius)
 
     def get_weight(self, position: np.ndarray) -> float:
         """Get influence weight at position (0-1)."""
-        if not (position is not None):
-            raise ValueError("position must be provided")
         if not (position is not None):
             raise ValueError("position must be provided")
         distance = np.linalg.norm(position[:2] - self.center[:2])
@@ -131,8 +131,6 @@ class GreenSurface:
         """
         if not (width is not None):
             raise ValueError("width must be provided")
-        if not (width is not None):
-            raise ValueError("width must be provided")
         self.width = width
         self.height = height
         self.turf = turf or TurfProperties()
@@ -172,8 +170,6 @@ class GreenSurface:
         Args:
             points: List of ContourPoint objects
         """
-        if not (points is not None):
-            raise ValueError("points must be provided")
         if not (points is not None):
             raise ValueError("points must be provided")
         self._contour_points = points
@@ -217,8 +213,6 @@ class GreenSurface:
         """
         if not (heightmap is not None):
             raise ValueError("heightmap must be provided")
-        if not (heightmap is not None):
-            raise ValueError("heightmap must be provided")
         if smooth:
             heightmap = ndimage.gaussian_filter(heightmap, sigma=smooth_sigma)
 
@@ -246,8 +240,6 @@ class GreenSurface:
         Returns:
             Elevation at position [m]
         """
-        if not (position is not None):
-            raise ValueError("position must be provided")
         if not (position is not None):
             raise ValueError("position must be provided")
         pos = np.clip(position[:2], [0, 0], [self.width, self.height])
@@ -287,8 +279,6 @@ class GreenSurface:
         """
         if not (position is not None):
             raise ValueError("position must be provided")
-        if not (position is not None):
-            raise ValueError("position must be provided")
         pos = position[:2]
 
         # Central difference
@@ -315,8 +305,6 @@ class GreenSurface:
         Returns:
             [slope_x, slope_y] slope vector (gradient)
         """
-        if not (position is not None):
-            raise ValueError("position must be provided")
         if not (position is not None):
             raise ValueError("position must be provided")
         pos = position[:2]
@@ -349,8 +337,6 @@ class GreenSurface:
         """
         if not (position is not None):
             raise ValueError("position must be provided")
-        if not (position is not None):
-            raise ValueError("position must be provided")
         slope = self.get_slope_at(position)
         # Acceleration is proportional to slope and points downhill
         # a = g * sin(theta) ≈ g * slope for small slopes
@@ -374,8 +360,6 @@ class GreenSurface:
         """
         if not (position is not None):
             raise ValueError("position must be provided")
-        if not (position is not None):
-            raise ValueError("position must be provided")
         distance = np.linalg.norm(position[:2] - self._hole_position)
 
         if distance > self.hole_radius:
@@ -393,8 +377,6 @@ class GreenSurface:
 
     def is_on_green(self, position: np.ndarray) -> bool:
         """Check if position is on the green surface."""
-        if not (position is not None):
-            raise ValueError("position must be provided")
         if not (position is not None):
             raise ValueError("position must be provided")
         x, y = position[:2]
@@ -449,8 +431,6 @@ class GreenSurface:
         """Compute elevation contribution from a ridge."""
         if not (position is not None):
             raise ValueError("position must be provided")
-        if not (position is not None):
-            raise ValueError("position must be provided")
         start = ridge["start"]
         end = ridge["end"]
         height = ridge["height"]
@@ -487,8 +467,6 @@ class GreenSurface:
         """Compute elevation contribution from a depression."""
         if not (position is not None):
             raise ValueError("position must be provided")
-        if not (position is not None):
-            raise ValueError("position must be provided")
         center = depression["center"]
         radius = depression["radius"]
         depth = depression["depth"]
@@ -520,8 +498,6 @@ class GreenSurface:
             Dictionary with break analysis
         """
         # Sample points along intended line
-        if not (start is not None):
-            raise ValueError("start must be provided")
         if not (start is not None):
             raise ValueError("start must be provided")
         t_values = np.linspace(0, 1, num_samples)
@@ -580,8 +556,6 @@ class GreenSurface:
         """
         if not (start is not None):
             raise ValueError("start must be provided")
-        if not (start is not None):
-            raise ValueError("start must be provided")
         t_values = np.linspace(0, 1, num_samples)
         positions = [start + t * (end - start) for t in t_values]
 
@@ -601,8 +575,6 @@ class GreenSurface:
         Returns:
             2D array of elevations [resolution x resolution]
         """
-        if not (resolution is not None):
-            raise ValueError("resolution must be provided")
         if not (resolution is not None):
             raise ValueError("resolution must be provided")
         x = np.linspace(0, self.width, resolution)
@@ -635,8 +607,6 @@ class GreenSurface:
         Returns:
             GreenSurface instance
         """
-        if not (heightmap is not None):
-            raise ValueError("heightmap must be provided")
         if not (heightmap is not None):
             raise ValueError("heightmap must be provided")
         green = cls(width=width, height=height, turf=turf)
@@ -756,8 +726,6 @@ class GreenSurface:
         """
         if not (filepath is not None):
             raise ValueError("filepath must be provided")
-        if not (filepath is not None):
-            raise ValueError("filepath must be provided")
         filepath = Path(filepath)
         suffix = filepath.suffix.lower()
 
@@ -781,8 +749,6 @@ class GreenSurface:
         """Load topography from CSV file."""
         if not (filepath is not None):
             raise ValueError("filepath must be provided")
-        if not (filepath is not None):
-            raise ValueError("filepath must be provided")
         import csv
 
         points = []
@@ -803,8 +769,6 @@ class GreenSurface:
 
     def _load_json_topography(self, filepath: Path) -> None:
         """Load topography from JSON file."""
-        if not (filepath is not None):
-            raise ValueError("filepath must be provided")
         if not (filepath is not None):
             raise ValueError("filepath must be provided")
         import json
@@ -838,8 +802,6 @@ class GreenSurface:
 
     def _load_geotiff_topography(self, filepath: Path) -> None:
         """Load topography from GeoTIFF file."""
-        if not (filepath is not None):
-            raise ValueError("filepath must be provided")
         if not (filepath is not None):
             raise ValueError("filepath must be provided")
         try:

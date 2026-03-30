@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
+
 """MuJoCo Perturbation Analyzer — PerturbationAnalyzer protocol for MuJoCo (#1980).
 
 Implements the ``PerturbationAnalyzer`` protocol for the MuJoCo physics
@@ -315,7 +319,7 @@ class MuJoCoPerturbationAnalyzer:
         if not isinstance(sim_result, MuJoCoSimResult):
             raise ValueError(
                 f"sim_result must be MuJoCoSimResult, got {type(sim_result)}"
-            )
+            )  # noqa: E501
         if not (sim_result.n_steps >= 2):
             raise ValueError("Simulation must have >= 2 steps")
 

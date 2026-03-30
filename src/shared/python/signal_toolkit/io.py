@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Signal import and export utilities.
 
 This module provides functionality for importing signals from various
@@ -179,8 +183,6 @@ class SignalImporter:
         """
         if not (file_path is not None):
             raise ValueError("file_path must be provided")
-        if not (file_path is not None):
-            raise ValueError("file_path must be provided")
         file_path = Path(file_path)
         data = np.load(file_path)
 
@@ -210,8 +212,6 @@ class SignalImporter:
         Returns:
             Signal object.
         """
-        if not (file_path is not None):
-            raise ValueError("file_path must be provided")
         if not (file_path is not None):
             raise ValueError("file_path must be provided")
         file_path = Path(file_path)
@@ -249,8 +249,6 @@ class SignalImporter:
         """
         if not (data is not None):
             raise ValueError("data must be provided")
-        if not (data is not None):
-            raise ValueError("data must be provided")
         time = np.array(data[time_key])
         values = np.array(data[value_key])
 
@@ -280,8 +278,6 @@ class SignalImporter:
         Returns:
             Signal object.
         """
-        if not (file_path is not None):
-            raise ValueError("file_path must be provided")
         if not (file_path is not None):
             raise ValueError("file_path must be provided")
         from scipy.io import loadmat
@@ -322,8 +318,6 @@ class SignalExporter:
             include_header: Whether to include header row.
             precision: Number of decimal places.
         """
-        if not (signal is not None):
-            raise ValueError("signal must be provided")
         if not (signal is not None):
             raise ValueError("signal must be provided")
         file_path = Path(file_path)
@@ -375,8 +369,6 @@ class SignalExporter:
         """
         if not (signal is not None):
             raise ValueError("signal must be provided")
-        if not (signal is not None):
-            raise ValueError("signal must be provided")
         file_path = Path(file_path)
 
         signals = [signal] if isinstance(signal, Signal) else signal
@@ -405,8 +397,6 @@ class SignalExporter:
             precision: Number of decimal places.
             indent: JSON indentation.
         """
-        if not (signal is not None):
-            raise ValueError("signal must be provided")
         if not (signal is not None):
             raise ValueError("signal must be provided")
         file_path = Path(file_path)
@@ -455,8 +445,6 @@ class SignalExporter:
             file_path: Output file path.
             time_var: Variable name for time.
         """
-        if not (signal is not None):
-            raise ValueError("signal must be provided")
         if not (signal is not None):
             raise ValueError("signal must be provided")
         from scipy.io import savemat
@@ -661,8 +649,6 @@ class BatchProcessor:
         """
         if not (pattern is not None):
             raise ValueError("pattern must be provided")
-        if not (pattern is not None):
-            raise ValueError("pattern must be provided")
         files = self.find_files(pattern)
         signals = {}
 
@@ -694,8 +680,6 @@ class BatchProcessor:
         Returns:
             Dictionary mapping file names to processed signals.
         """
-        if not (processor is not None):
-            raise ValueError("processor must be provided")
         if not (processor is not None):
             raise ValueError("processor must be provided")
         files = self.find_files(pattern)

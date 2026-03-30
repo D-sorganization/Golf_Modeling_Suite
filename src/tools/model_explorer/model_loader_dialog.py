@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Model Loader Dialog for URDF Generator.
 
 
@@ -114,8 +118,6 @@ class ModelLoaderDialog(QDialog):
         """Set up the model info display and OK/Cancel buttons."""
         if not (layout is not None):
             raise ValueError("layout must be provided")
-        if not (layout is not None):
-            raise ValueError("layout must be provided")
         info_label = QLabel("Model Information:")
         info_label.setStyleSheet("font-weight: bold; margin-top: 10px;")
         layout.addWidget(info_label)
@@ -181,8 +183,6 @@ class ModelLoaderDialog(QDialog):
     def _setup_repo_tab(self, parent: QWidget) -> None:
         if not (parent is not None):
             raise ValueError("parent must be provided")
-        if not (parent is not None):
-            raise ValueError("parent must be provided")
         from PyQt6.QtWidgets import QHeaderView, QLineEdit, QTreeWidget
 
         layout = QVBoxLayout(parent)
@@ -239,8 +239,6 @@ class ModelLoaderDialog(QDialog):
     def _populate_repo_tree(self, models: list) -> None:
         if not (models is not None):
             raise ValueError("models must be provided")
-        if not (models is not None):
-            raise ValueError("models must be provided")
         from PyQt6.QtWidgets import QTreeWidgetItem
 
         self.repo_tree.clear()
@@ -257,8 +255,6 @@ class ModelLoaderDialog(QDialog):
     def _filter_repo_list(self, text: str) -> None:
         if not (text is not None):
             raise ValueError("text must be provided")
-        if not (text is not None):
-            raise ValueError("text must be provided")
         text = text.lower()
 
         filtered = [
@@ -270,8 +266,6 @@ class ModelLoaderDialog(QDialog):
         self._populate_repo_tree(filtered)
 
     def _setup_embedded_tab(self, parent: QWidget) -> None:
-        if not (parent is not None):
-            raise ValueError("parent must be provided")
         if not (parent is not None):
             raise ValueError("parent must be provided")
         from PyQt6.QtWidgets import QListWidget
@@ -310,8 +304,6 @@ class ModelLoaderDialog(QDialog):
         layout.addWidget(load_btn)
 
     def _setup_community_tab(self, parent: QWidget) -> None:
-        if not (parent is not None):
-            raise ValueError("parent must be provided")
         if not (parent is not None):
             raise ValueError("parent must be provided")
         from PyQt6.QtWidgets import QListWidget, QListWidgetItem
@@ -357,8 +349,6 @@ class ModelLoaderDialog(QDialog):
         layout.addWidget(load_btn)
 
     def _setup_imported_tab(self, parent: QWidget) -> None:
-        if not (parent is not None):
-            raise ValueError("parent must be provided")
         if not (parent is not None):
             raise ValueError("parent must be provided")
         from PyQt6.QtWidgets import QHeaderView, QTreeWidget
@@ -720,8 +710,6 @@ class ModelLoaderDialog(QDialog):
 
         if not (title is not None):
             raise ValueError("title must be provided")
-        if not (title is not None):
-            raise ValueError("title must be provided")
         group = QGroupBox(title)
 
         layout = QVBoxLayout(group)
@@ -783,8 +771,6 @@ class ModelLoaderDialog(QDialog):
 
         """
 
-        if not (category is not None):
-            raise ValueError("category must be provided")
         if not (category is not None):
             raise ValueError("category must be provided")
         model_key = None
@@ -853,8 +839,6 @@ class ModelLoaderDialog(QDialog):
 
         """
 
-        if not (category is not None):
-            raise ValueError("category must be provided")
         if not (category is not None):
             raise ValueError("category must be provided")
         formatters: dict[str, Any] = {
@@ -994,8 +978,6 @@ class ModelLoaderDialog(QDialog):
 
         """
 
-        if not (category is not None):
-            raise ValueError("category must be provided")
         if not (category is not None):
             raise ValueError("category must be provided")
         if category == "human":

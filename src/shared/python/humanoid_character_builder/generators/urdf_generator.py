@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """
 Standalone URDF generator for humanoid characters.
 
@@ -149,8 +153,6 @@ class HumanoidURDFGenerator:
         # Validate parameters
         if not (params is not None):
             raise ValueError("params must be provided")
-        if not (params is not None):
-            raise ValueError("params must be provided")
         errors = params.validate()
         if errors:
             logger.warning(f"Parameter validation warnings: {errors}")
@@ -226,8 +228,6 @@ class HumanoidURDFGenerator:
         """
         if not (params is not None):
             raise ValueError("params must be provided")
-        if not (params is not None):
-            raise ValueError("params must be provided")
         self.build_model(params, mesh_dir)
 
         # Build URDF XML
@@ -248,8 +248,6 @@ class HumanoidURDFGenerator:
         params: BodyParameters,
     ) -> dict[str, dict[str, float]]:
         """Apply proportion factors to segment dimensions."""
-        if not (dimensions is not None):
-            raise ValueError("dimensions must be provided")
         if not (dimensions is not None):
             raise ValueError("dimensions must be provided")
         scaled = {}
@@ -296,8 +294,6 @@ class HumanoidURDFGenerator:
         # Skin material
         if not (params is not None):
             raise ValueError("params must be provided")
-        if not (params is not None):
-            raise ValueError("params must be provided")
         skin = params.appearance.skin_tone
         self._materials["skin"] = skin.as_tuple()
 
@@ -315,8 +311,6 @@ class HumanoidURDFGenerator:
         mesh_dir: Path | str | None,
     ) -> None:
         """Generate a single URDF link."""
-        if not (segment_name is not None):
-            raise ValueError("segment_name must be provided")
         if not (segment_name is not None):
             raise ValueError("segment_name must be provided")
         seg_params = params.get_segment_params(segment_name)
@@ -373,8 +367,6 @@ class HumanoidURDFGenerator:
         # Check for manual override
         if not (segment_name is not None):
             raise ValueError("segment_name must be provided")
-        if not (segment_name is not None):
-            raise ValueError("segment_name must be provided")
         if seg_params.has_inertia_override():
             override = seg_params.inertia_override
             return MeshInertiaCalculator.create_manual_inertia(
@@ -423,8 +415,6 @@ class HumanoidURDFGenerator:
         is_collision: bool,
     ) -> dict[str, Any]:
         """Create geometry specification dictionary."""
-        if not (segment_def is not None):
-            raise ValueError("segment_def must be provided")
         if not (segment_def is not None):
             raise ValueError("segment_def must be provided")
         geom_spec = (
@@ -497,8 +487,6 @@ class HumanoidURDFGenerator:
         # Map joint type
         if not (joint_name is not None):
             raise ValueError("joint_name must be provided")
-        if not (joint_name is not None):
-            raise ValueError("joint_name must be provided")
         urdf_type = self._map_joint_type(joint_def.joint_type)
 
         # Get limits for non-fixed joints
@@ -530,8 +518,6 @@ class HumanoidURDFGenerator:
         dimensions: dict[str, dict[str, float]],
     ) -> None:
         """Expand composite joint into multiple revolute joints."""
-        if not (joint_name is not None):
-            raise ValueError("joint_name must be provided")
         if not (joint_name is not None):
             raise ValueError("joint_name must be provided")
         if joint_def.joint_type == JointType.GIMBAL:
@@ -598,8 +584,6 @@ class HumanoidURDFGenerator:
         """Map internal joint type to URDF joint type string."""
         if not (joint_type is not None):
             raise ValueError("joint_type must be provided")
-        if not (joint_type is not None):
-            raise ValueError("joint_type must be provided")
         mapping = {
             JointType.FIXED: "fixed",
             JointType.REVOLUTE: "revolute",
@@ -615,8 +599,6 @@ class HumanoidURDFGenerator:
 
     def _build_urdf_xml(self, robot_name: str) -> str:
         """Build the complete URDF XML."""
-        if not (robot_name is not None):
-            raise ValueError("robot_name must be provided")
         if not (robot_name is not None):
             raise ValueError("robot_name must be provided")
         root = ET.Element("robot", name=robot_name)
@@ -646,8 +628,6 @@ class HumanoidURDFGenerator:
 
     def _add_link_element(self, root: ET.Element, link: GeneratedLink) -> None:
         """Add a link element to the URDF."""
-        if not (root is not None):
-            raise ValueError("root must be provided")
         if not (root is not None):
             raise ValueError("root must be provided")
         link_elem = ET.SubElement(root, "link", name=link.name)
@@ -690,8 +670,6 @@ class HumanoidURDFGenerator:
         """Add geometry element."""
         if not (parent is not None):
             raise ValueError("parent must be provided")
-        if not (parent is not None):
-            raise ValueError("parent must be provided")
         geometry = ET.SubElement(parent, "geometry")
 
         geom_type = geom["type"]
@@ -720,8 +698,6 @@ class HumanoidURDFGenerator:
 
     def _add_joint_element(self, root: ET.Element, joint: GeneratedJoint) -> None:
         """Add a joint element to the URDF."""
-        if not (root is not None):
-            raise ValueError("root must be provided")
         if not (root is not None):
             raise ValueError("root must be provided")
         joint_elem = ET.SubElement(
@@ -779,8 +755,6 @@ def generate_humanoid_urdf(
     Returns:
         URDF XML string
     """
-    if not (params is not None):
-        raise ValueError("params must be provided")
     if not (params is not None):
         raise ValueError("params must be provided")
     generator = HumanoidURDFGenerator(config)

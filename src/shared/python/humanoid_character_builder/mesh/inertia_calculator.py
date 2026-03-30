@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """
 Mesh-based inertia calculation for humanoid character builder.
 
@@ -12,6 +16,7 @@ using the trimesh library. It supports:
 from __future__ import annotations
 
 import logging
+import math
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -146,11 +151,9 @@ class InertiaResult:
         # Default to 0.1 kg*m^2 (reasonable for small-medium rigid body)
         if not (mass is not None):
             raise ValueError("mass must be provided")
-        if not (mass is not None):
-            raise ValueError("mass must be provided")
         i_default = 0.1 * mass
         # Use volume of a sphere with 1 cm radius as minimum (~4.2e-6 m³)
-        _min_volume = (4.0 / 3.0) * 3.14159265358979 * (0.01**3)
+        _min_volume = (4.0 / 3.0) * math.pi * (0.01**3)
         return cls(
             ixx=i_default,
             iyy=i_default,
@@ -183,8 +186,6 @@ class MeshInertiaCalculator:
         Args:
             default_density: Default density in kg/m^3 for uniform density mode
         """
-        if not (default_density is not None):
-            raise ValueError("default_density must be provided")
         if not (default_density is not None):
             raise ValueError("default_density must be provided")
         self.default_density = default_density
@@ -298,8 +299,6 @@ class MeshInertiaCalculator:
         """Validate mesh watertightness and optionally repair."""
         if not (repair_mesh is not None):
             raise ValueError("repair_mesh must be provided")
-        if not (repair_mesh is not None):
-            raise ValueError("repair_mesh must be provided")
         was_watertight = mesh.is_watertight
 
         if not was_watertight and repair_mesh:
@@ -345,8 +344,6 @@ class MeshInertiaCalculator:
         """Create InertiaResult from mesh properties."""
         if not (mesh_props is not None):
             raise ValueError("mesh_props must be provided")
-        if not (mesh_props is not None):
-            raise ValueError("mesh_props must be provided")
         volume = mesh_props["volume"]
         center_mass = mesh_props["center_mass"]
         inertia_unit = mesh_props["inertia_unit"]
@@ -381,8 +378,6 @@ class MeshInertiaCalculator:
         effective_density: float,
     ) -> tuple[np.ndarray, float, InertiaMode]:
         """Scale inertia based on mass or density."""
-        if not (inertia_unit is not None):
-            raise ValueError("inertia_unit must be provided")
         if not (inertia_unit is not None):
             raise ValueError("inertia_unit must be provided")
         if mass is not None:
@@ -479,8 +474,6 @@ class MeshInertiaCalculator:
         """
         if not (inertia is not None):
             raise ValueError("inertia must be provided")
-        if not (inertia is not None):
-            raise ValueError("inertia must be provided")
         I_original = inertia.as_matrix()
         mass = inertia.mass
         com = np.array(inertia.center_of_mass)
@@ -499,8 +492,6 @@ class MeshInertiaCalculator:
         """Apply rotation transformation to inertia matrix and COM."""
         if not (inertia_matrix is not None):
             raise ValueError("inertia_matrix must be provided")
-        if not (inertia_matrix is not None):
-            raise ValueError("inertia_matrix must be provided")
         if rotation is not None:
             R = np.asarray(rotation)
             return R @ inertia_matrix @ R.T, R @ com
@@ -514,8 +505,6 @@ class MeshInertiaCalculator:
         translation: NDArray[np.float64] | None,
     ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
         """Apply parallel axis theorem for translation."""
-        if not (inertia_matrix is not None):
-            raise ValueError("inertia_matrix must be provided")
         if not (inertia_matrix is not None):
             raise ValueError("inertia_matrix must be provided")
         if translation is not None:

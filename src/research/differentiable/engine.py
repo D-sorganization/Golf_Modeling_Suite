@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Differentiable physics simulation engines."""
 
 from __future__ import annotations
@@ -69,8 +73,6 @@ class DifferentiableEngine:
         """
         if not (engine is not None):
             raise ValueError("engine must be provided")
-        if not (engine is not None):
-            raise ValueError("engine must be provided")
         self.engine = engine
         self._backend = AutodiffBackend(backend)
 
@@ -104,8 +106,6 @@ class DifferentiableEngine:
         Returns:
             State trajectory (T+1, n_x).
         """
-        if not (initial_state is not None):
-            raise ValueError("initial_state must be provided")
         if not (initial_state is not None):
             raise ValueError("initial_state must be provided")
         T = len(controls)
@@ -167,8 +167,6 @@ class DifferentiableEngine:
         """
         if not (initial_state is not None):
             raise ValueError("initial_state must be provided")
-        if not (initial_state is not None):
-            raise ValueError("initial_state must be provided")
         eps = 1e-5
         T, n_u = controls.shape
         gradient = np.zeros_like(controls)
@@ -198,8 +196,6 @@ class DifferentiableEngine:
     ) -> None:
         if not (q is not None):
             raise ValueError("q must be provided")
-        if not (q is not None):
-            raise ValueError("q must be provided")
         if hasattr(self.engine, "set_joint_positions"):
             self.engine.set_joint_positions(q)
         if hasattr(self.engine, "set_joint_velocities"):
@@ -213,8 +209,6 @@ class DifferentiableEngine:
         v: NDArray[np.floating],
         dt: float,
     ) -> NDArray[np.floating]:
-        if not (q is not None):
-            raise ValueError("q must be provided")
         if not (q is not None):
             raise ValueError("q must be provided")
         if hasattr(self.engine, "step"):
@@ -240,8 +234,6 @@ class DifferentiableEngine:
     ) -> NDArray[np.floating]:
         if not (state is not None):
             raise ValueError("state must be provided")
-        if not (state is not None):
-            raise ValueError("state must be provided")
         q = state[: self._n_q]
         v = state[self._n_q :]
         self._set_engine_state(q, v, control)
@@ -255,8 +247,6 @@ class DifferentiableEngine:
         dt: float,
         eps: float,
     ) -> NDArray[np.floating]:
-        if not (state is not None):
-            raise ValueError("state must be provided")
         if not (state is not None):
             raise ValueError("state must be provided")
         A = np.zeros((self._n_x, self._n_x))
@@ -281,8 +271,6 @@ class DifferentiableEngine:
         dt: float,
         eps: float,
     ) -> NDArray[np.floating]:
-        if not (state is not None):
-            raise ValueError("state must be provided")
         if not (state is not None):
             raise ValueError("state must be provided")
         q = state[: self._n_q]
@@ -316,8 +304,6 @@ class DifferentiableEngine:
         """
         if not (state is not None):
             raise ValueError("state must be provided")
-        if not (state is not None):
-            raise ValueError("state must be provided")
         eps = 1e-5
         x_next = self._compute_nominal_next_state(state, control, dt)
         A = self._compute_state_jacobian(state, control, x_next, dt, eps)
@@ -349,8 +335,6 @@ class DifferentiableEngine:
             Optimization result.
         """
         # Initialize controls
-        if not (initial_state is not None):
-            raise ValueError("initial_state must be provided")
         if not (initial_state is not None):
             raise ValueError("initial_state must be provided")
         controls = np.zeros((horizon, self._n_u))
@@ -439,8 +423,6 @@ class ContactDifferentiableEngine(DifferentiableEngine):
         """
         if not (engine is not None):
             raise ValueError("engine must be provided")
-        if not (engine is not None):
-            raise ValueError("engine must be provided")
         super().__init__(engine)
         self.contact_method = contact_method
         self.smoothing_factor = smoothing_factor
@@ -463,8 +445,6 @@ class ContactDifferentiableEngine(DifferentiableEngine):
         Returns:
             Smoothed gradient.
         """
-        if not (initial_state is not None):
-            raise ValueError("initial_state must be provided")
         if not (initial_state is not None):
             raise ValueError("initial_state must be provided")
         if self.contact_method == "randomized":
@@ -531,8 +511,6 @@ class ContactDifferentiableEngine(DifferentiableEngine):
         Returns:
             Optimization result.
         """
-        if not (initial_state is not None):
-            raise ValueError("initial_state must be provided")
         if not (initial_state is not None):
             raise ValueError("initial_state must be provided")
         original_smoothing = self.smoothing_factor
@@ -604,8 +582,6 @@ class ContactDifferentiableEngine(DifferentiableEngine):
         original_smoothing: float,
         contact_smoothing_multiplier: float,
     ) -> tuple[NDArray[np.floating], float, float, int]:
-        if not (initial_state is not None):
-            raise ValueError("initial_state must be provided")
         if not (initial_state is not None):
             raise ValueError("initial_state must be provided")
         m = np.zeros_like(controls)

@@ -92,8 +92,6 @@ class CounterfactualAnalyzer:
         """
         if not (model is not None):
             raise ValueError("model must be provided")
-        if not (model is not None):
-            raise ValueError("model must be provided")
         self.model = model
 
         # Thread-safe data structures
@@ -130,8 +128,6 @@ class CounterfactualAnalyzer:
             CounterfactualResult with torque attribution
         """
         # 1. Compute OBSERVED acceleration (with control)
-        if not (qpos is not None):
-            raise ValueError("qpos must be provided")
         if not (qpos is not None):
             raise ValueError("qpos must be provided")
         self._data_observed.qpos[:] = qpos
@@ -220,8 +216,6 @@ class CounterfactualAnalyzer:
         # 1. Compute OBSERVED acceleration (with velocity)
         if not (qpos is not None):
             raise ValueError("qpos must be provided")
-        if not (qpos is not None):
-            raise ValueError("qpos must be provided")
         self._data_observed.qpos[:] = qpos
         self._data_observed.qvel[:] = qvel
         self._data_observed.ctrl[:] = 0  # No control for clean comparison
@@ -297,15 +291,10 @@ class CounterfactualAnalyzer:
         """
         if not (qpos_traj is not None):
             raise ValueError("qpos_traj must be provided")
-        if not (qpos_traj is not None):
-            raise ValueError("qpos_traj must be provided")
-        results = []
-
-        for i in range(len(qpos_traj)):
-            result = self.ztcf(qpos_traj[i], qvel_traj[i], ctrl_traj[i])
-            results.append(result)
-
-        return results
+        return [
+            self.ztcf(qpos_traj[i], qvel_traj[i], ctrl_traj[i])
+            for i in range(len(qpos_traj))
+        ]
 
     def analyze_trajectory_zvcf(
         self,
@@ -323,15 +312,7 @@ class CounterfactualAnalyzer:
         """
         if not (qpos_traj is not None):
             raise ValueError("qpos_traj must be provided")
-        if not (qpos_traj is not None):
-            raise ValueError("qpos_traj must be provided")
-        results = []
-
-        for i in range(len(qpos_traj)):
-            result = self.zvcf(qpos_traj[i], qvel_traj[i])
-            results.append(result)
-
-        return results
+        return [self.zvcf(qpos_traj[i], qvel_traj[i]) for i in range(len(qpos_traj))]
 
     def plot_counterfactual_comparison(
         self,
@@ -353,8 +334,6 @@ class CounterfactualAnalyzer:
         """
         if not (times is not None):
             raise ValueError("times must be provided")
-        if not (times is not None):
-            raise ValueError("times must be provided")
         try:
             import matplotlib.pyplot as plt
         except ImportError:
@@ -367,7 +346,7 @@ class CounterfactualAnalyzer:
         observed = np.array([r.observed_acceleration[joint_idx] for r in results])
         counterfactual = np.array(
             [r.counterfactual_acceleration[joint_idx] for r in results]
-        )
+        )  # noqa: E501
         delta = np.array([r.delta_acceleration[joint_idx] for r in results])
 
         fig, axes = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
@@ -396,7 +375,7 @@ class CounterfactualAnalyzer:
             "ZTCF: Torque Attribution"
             if cf_type == "ztcf"
             else "ZVCF: Velocity Attribution"
-        )
+        )  # noqa: E501
         plt.suptitle(f"{title} (Joint {joint_idx})")
         plt.tight_layout()
         plt.show()

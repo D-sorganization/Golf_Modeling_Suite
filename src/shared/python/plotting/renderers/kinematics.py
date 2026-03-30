@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Kinematics plotting renderer."""
 
 from __future__ import annotations
@@ -23,8 +27,6 @@ class KinematicsRenderer(BaseRenderer):
             fig: Matplotlib figure to plot on
             joint_indices: List of joint indices to plot (None = all)
         """
-        if not (fig is not None):
-            raise ValueError("fig must be provided")
         if not (fig is not None):
             raise ValueError("fig must be provided")
         times, positions = self.data.get_series("joint_positions")
@@ -69,8 +71,6 @@ class KinematicsRenderer(BaseRenderer):
         """
         if not (fig is not None):
             raise ValueError("fig must be provided")
-        if not (fig is not None):
-            raise ValueError("fig must be provided")
         times, velocities = self.data.get_series("joint_velocities")
 
         if len(times) == 0 or len(velocities) == 0:
@@ -109,8 +109,6 @@ class KinematicsRenderer(BaseRenderer):
         ax: Axes | None = None,
     ) -> None:
         """Plot Angle-Angle diagram (Cyclogram) for two joints."""
-        if not (fig is not None):
-            raise ValueError("fig must be provided")
         if not (fig is not None):
             raise ValueError("fig must be provided")
         times, positions = self.data.get_series("joint_positions")
@@ -170,8 +168,6 @@ class KinematicsRenderer(BaseRenderer):
 
     def plot_phase_diagram(self, fig: Figure, joint_idx: int = 0) -> None:
         """Plot phase diagram (angle vs angular velocity) for a joint."""
-        if not (fig is not None):
-            raise ValueError("fig must be provided")
         if not (fig is not None):
             raise ValueError("fig must be provided")
         times, positions = self.data.get_series("joint_positions")
@@ -234,8 +230,6 @@ class KinematicsRenderer(BaseRenderer):
         """Plot 3D phase space (Position vs Velocity vs Acceleration)."""
         if not (fig is not None):
             raise ValueError("fig must be provided")
-        if not (fig is not None):
-            raise ValueError("fig must be provided")
         times, positions = self.data.get_series("joint_positions")
         _, velocities = self.data.get_series("joint_velocities")
         _, accelerations = self.data.get_series("joint_accelerations")
@@ -294,8 +288,6 @@ class KinematicsRenderer(BaseRenderer):
         """Plot 3D Poincaré Map (Poincaré Section)."""
         if not (fig is not None):
             raise ValueError("fig must be provided")
-        if not (fig is not None):
-            raise ValueError("fig must be provided")
         if len(dimensions) != 3:
             ax = fig.add_subplot(111)
             ax.text(
@@ -344,8 +336,6 @@ class KinematicsRenderer(BaseRenderer):
         """Retrieve a single data column for Poincare section computation."""
         if not (dtype is not None):
             raise ValueError("dtype must be provided")
-        if not (dtype is not None):
-            raise ValueError("dtype must be provided")
         series_map = {
             "position": "joint_positions",
             "velocity": "joint_velocities",
@@ -366,8 +356,6 @@ class KinematicsRenderer(BaseRenderer):
         cond_data: np.ndarray, cond_val: float, direction: str
     ) -> list[int]:
         """Find zero-crossing indices in (cond_data - cond_val)."""
-        if not (cond_data is not None):
-            raise ValueError("cond_data must be provided")
         if not (cond_data is not None):
             raise ValueError("cond_data must be provided")
         diff = cond_data - cond_val
@@ -391,8 +379,6 @@ class KinematicsRenderer(BaseRenderer):
         dimensions: list[tuple[str, int]],
     ) -> tuple[np.ndarray, list[float]]:
         """Interpolate crossing points in the requested dimensions."""
-        if not (crossings is not None):
-            raise ValueError("crossings must be provided")
         if not (crossings is not None):
             raise ValueError("crossings must be provided")
         diff = cond_data - cond_val
@@ -432,8 +418,6 @@ class KinematicsRenderer(BaseRenderer):
         title: str | None,
     ) -> None:
         """Render the 3D scatter plot for the Poincare section."""
-        if not (fig is not None):
-            raise ValueError("fig must be provided")
         if not (fig is not None):
             raise ValueError("fig must be provided")
         ax = fig.add_subplot(111, projection="3d")
@@ -487,8 +471,6 @@ class KinematicsRenderer(BaseRenderer):
         """
         if not (data is not None):
             raise ValueError("data must be provided")
-        if not (data is not None):
-            raise ValueError("data must be provided")
         if signal_type == "position":
             times, data_full = data.get_series("joint_positions")
             return times, np.rad2deg(np.asarray(data_full))
@@ -514,8 +496,6 @@ class KinematicsRenderer(BaseRenderer):
         """
         if not (x is not None):
             raise ValueError("x must be provided")
-        if not (x is not None):
-            raise ValueError("x must be provided")
         valid_len = len(x) - delay * (embedding_dim - 1)
         vectors = np.zeros((valid_len, embedding_dim))
         for d in range(embedding_dim):
@@ -532,8 +512,6 @@ class KinematicsRenderer(BaseRenderer):
         signal_type: str = "position",
     ) -> None:
         """Plot Phase Space Reconstruction using Time-Delay Embedding."""
-        if not (fig is not None):
-            raise ValueError("fig must be provided")
         if not (fig is not None):
             raise ValueError("fig must be provided")
         times, data_full = self._get_embedding_signal(self.data, signal_type)
@@ -612,8 +590,6 @@ class KinematicsRenderer(BaseRenderer):
         bins: int = 50,
     ) -> None:
         """Plot 2D Phase Space Density (Histogram)."""
-        if not (fig is not None):
-            raise ValueError("fig must be provided")
         if not (fig is not None):
             raise ValueError("fig must be provided")
         times, positions = self.data.get_series("joint_positions")

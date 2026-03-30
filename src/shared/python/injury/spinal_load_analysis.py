@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """
 Spinal Load Analysis Module
 
@@ -174,8 +178,6 @@ class SpinalLoadAnalyzer:
         """
         if not (body_weight is not None):
             raise ValueError("body_weight must be provided")
-        if not (body_weight is not None):
-            raise ValueError("body_weight must be provided")
         self.body_weight = body_weight
         self.body_weight_N = body_weight * GRAVITY_M_S2  # Convert to Newtons
 
@@ -216,8 +218,6 @@ class SpinalLoadAnalyzer:
         Returns:
             SpinalLoadResult containing all computed metrics and risk assessments
         """
-        if not (joint_angles is not None):
-            raise ValueError("joint_angles must be provided")
         if not (joint_angles is not None):
             raise ValueError("joint_angles must be provided")
         result = SpinalLoadResult(time=time)
@@ -280,8 +280,6 @@ class SpinalLoadAnalyzer:
         time: np.ndarray,
     ) -> SpinalSegment:
         """Compute forces on a single spinal segment."""
-        if not (segment_name is not None):
-            raise ValueError("segment_name must be provided")
         if not (segment_name is not None):
             raise ValueError("segment_name must be provided")
         segment = SpinalSegment(name=segment_name)
@@ -368,8 +366,6 @@ class SpinalLoadAnalyzer:
         # Assuming angles are [roll, pitch, yaw] where yaw is rotation
         if not (pelvis_angles is not None):
             raise ValueError("pelvis_angles must be provided")
-        if not (pelvis_angles is not None):
-            raise ValueError("pelvis_angles must be provided")
         pelvis_rotation = (
             pelvis_angles[:, 2] if pelvis_angles.ndim > 1 else pelvis_angles
         )
@@ -420,8 +416,6 @@ class SpinalLoadAnalyzer:
         """
         if not (lateral_bend is not None):
             raise ValueError("lateral_bend must be provided")
-        if not (lateral_bend is not None):
-            raise ValueError("lateral_bend must be provided")
         lateral_deg = np.degrees(lateral_bend)
         rotation_deg = np.degrees(rotation)
 
@@ -452,8 +446,6 @@ class SpinalLoadAnalyzer:
         """Extract peak values normalized to body weight."""
         if not (result is not None):
             raise ValueError("result must be provided")
-        if not (result is not None):
-            raise ValueError("result must be provided")
         max_compression = 0.0
         max_ap_shear = 0.0
         max_lateral_shear = 0.0
@@ -481,8 +473,6 @@ class SpinalLoadAnalyzer:
     def _assess_risk(self, result: SpinalLoadResult) -> SpinalLoadResult:
         """Assess risk levels based on computed values."""
         # Compression risk
-        if not (result is not None):
-            raise ValueError("result must be provided")
         if not (result is not None):
             raise ValueError("result must be provided")
         if result.peak_compression_bw >= self.COMPRESSION_HIGH:
@@ -545,8 +535,6 @@ class SpinalLoadAnalyzer:
         """Compute cumulative load impulses for tracking over time."""
         if not (result is not None):
             raise ValueError("result must be provided")
-        if not (result is not None):
-            raise ValueError("result must be provided")
         dt = np.mean(np.diff(time)) if len(time) > 1 else 0.001
 
         total_compression_impulse = 0.0
@@ -591,8 +579,6 @@ class SpinalLoadAnalyzer:
         Returns:
             List of recommendation strings
         """
-        if not (result is not None):
-            raise ValueError("result must be provided")
         if not (result is not None):
             raise ValueError("result must be provided")
         recommendations = []

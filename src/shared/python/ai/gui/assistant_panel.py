@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """AI Assistant Panel for Golf Modeling Suite.
 
 This module provides the main AI assistant conversation panel,
@@ -66,8 +70,6 @@ class MessageWidget(QFrame):
             timestamp: When the message was created.
             parent: Parent widget.
         """
-        if not (role is not None):
-            raise ValueError("role must be provided")
         if not (role is not None):
             raise ValueError("role must be provided")
         super().__init__(parent)
@@ -164,8 +166,6 @@ class MessageWidget(QFrame):
         """
         if not (text is not None):
             raise ValueError("text must be provided")
-        if not (text is not None):
-            raise ValueError("text must be provided")
         self._content += text
         self._content_label.setMarkdown(self._content)
 
@@ -175,8 +175,6 @@ class MessageWidget(QFrame):
         Args:
             text: New content.
         """
-        if not (text is not None):
-            raise ValueError("text must be provided")
         if not (text is not None):
             raise ValueError("text must be provided")
         self._content = text
@@ -209,8 +207,6 @@ class StreamWorker(QThread):
             context: Conversation context.
             tools: Available tools.
         """
-        if not (adapter is not None):
-            raise ValueError("adapter must be provided")
         if not (adapter is not None):
             raise ValueError("adapter must be provided")
         super().__init__()
@@ -437,8 +433,6 @@ class AIAssistantPanel(QWidget):
     def _add_header_title_widgets(self, layout) -> None:
         if not (layout is not None):
             raise ValueError("layout must be provided")
-        if not (layout is not None):
-            raise ValueError("layout must be provided")
         self._provider_icon = QLabel("\U0001f916")
         self._provider_icon.setStyleSheet(
             "font-size: 18px; color: black; background: transparent;"
@@ -454,8 +448,6 @@ class AIAssistantPanel(QWidget):
         layout.addSpacing(10)
 
     def _add_header_mode_and_status(self, layout) -> None:
-        if not (layout is not None):
-            raise ValueError("layout must be provided")
         if not (layout is not None):
             raise ValueError("layout must be provided")
         self._mode_combo = QComboBox()
@@ -484,8 +476,6 @@ class AIAssistantPanel(QWidget):
         layout.addWidget(self._status_label)
 
     def _add_header_action_buttons(self, layout) -> None:
-        if not (layout is not None):
-            raise ValueError("layout must be provided")
         if not (layout is not None):
             raise ValueError("layout must be provided")
         new_chat_btn = QPushButton("New Chat")
@@ -684,8 +674,6 @@ class AIAssistantPanel(QWidget):
         """
         if not (message is not None):
             raise ValueError("message must be provided")
-        if not (message is not None):
-            raise ValueError("message must be provided")
         if not self._adapter:
             self._add_system_message(
                 "⚠️ No AI provider configured. Click ⚙️ to set up a provider."
@@ -763,8 +751,6 @@ class AIAssistantPanel(QWidget):
         """
         if not (error is not None):
             raise ValueError("error must be provided")
-        if not (error is not None):
-            raise ValueError("error must be provided")
         self._set_status("Error")
         self._send_btn.setEnabled(True)
 
@@ -809,8 +795,6 @@ class AIAssistantPanel(QWidget):
             The created MessageWidget.
         """
         # Insert before the stretch
-        if not (role is not None):
-            raise ValueError("role must be provided")
         if not (role is not None):
             raise ValueError("role must be provided")
         idx = self._message_layout.count() - 1
@@ -886,8 +870,6 @@ class AIAssistantPanel(QWidget):
         """
         if not (adapter is not None):
             raise ValueError("adapter must be provided")
-        if not (adapter is not None):
-            raise ValueError("adapter must be provided")
         self._adapter = adapter
         self._set_status("Ready")
 
@@ -897,8 +879,6 @@ class AIAssistantPanel(QWidget):
         Args:
             level: Expertise level.
         """
-        if not (level is not None):
-            raise ValueError("level must be provided")
         if not (level is not None):
             raise ValueError("level must be provided")
         self._context.user_expertise = level
@@ -916,8 +896,6 @@ class AIAssistantPanel(QWidget):
         Args:
             settings: Settings to apply.
         """
-        if not (settings is not None):
-            raise ValueError("settings must be provided")
         if not (settings is not None):
             raise ValueError("settings must be provided")
         from src.shared.python.ai.gui.settings_dialog import AIProvider, get_api_key

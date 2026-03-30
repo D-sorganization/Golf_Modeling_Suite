@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Mesh Browser - Browse and copy mesh/STL components between URDFs.
 
 Provides a side-by-side interface for browsing mesh files referenced
@@ -73,8 +77,6 @@ class MeshReference:
             context: 'visual' or 'collision'
             urdf_dir: Directory containing the URDF file
         """
-        if not (mesh_elem is not None):
-            raise ValueError("mesh_elem must be provided")
         if not (mesh_elem is not None):
             raise ValueError("mesh_elem must be provided")
         filename = mesh_elem.get("filename", "")
@@ -166,8 +168,6 @@ class MeshExtractor:
         """
         if not (urdf_content is not None):
             raise ValueError("urdf_content must be provided")
-        if not (urdf_content is not None):
-            raise ValueError("urdf_content must be provided")
         try:
             root = DefusedET.fromstring(urdf_content)
         except ET.ParseError:
@@ -223,8 +223,6 @@ class MeshBrowserPanel(QWidget):
 
     def __init__(self, title: str, parent: QWidget | None = None) -> None:
         """Initialize the mesh browser panel."""
-        if not (title is not None):
-            raise ValueError("title must be provided")
         if not (title is not None):
             raise ValueError("title must be provided")
         super().__init__(parent)
@@ -316,8 +314,6 @@ class MeshBrowserPanel(QWidget):
 
     def load_content(self, content: str, file_path: Path | None = None) -> None:
         """Load URDF content directly."""
-        if not (content is not None):
-            raise ValueError("content must be provided")
         if not (content is not None):
             raise ValueError("content must be provided")
         self.urdf_content = content
@@ -419,8 +415,6 @@ class CopyMeshDialog(QDialog):
         parent: QWidget | None = None,
     ) -> None:
         """Initialize the dialog."""
-        if not (mesh is not None):
-            raise ValueError("mesh must be provided")
         if not (mesh is not None):
             raise ValueError("mesh must be provided")
         super().__init__(parent)
@@ -579,8 +573,6 @@ class MeshBrowserWidget(QWidget):
         """Handle mesh selection."""
         if not (mesh is not None):
             raise ValueError("mesh must be provided")
-        if not (mesh is not None):
-            raise ValueError("mesh must be provided")
         details = f"File: {mesh.filename}\n"
         details += f"Link: {mesh.link_name}\n"
         details += f"Type: {mesh.context}\n"
@@ -603,8 +595,6 @@ class MeshBrowserWidget(QWidget):
 
     def _on_copy_mesh(self, mesh: MeshReference) -> None:
         """Copy a mesh reference to the target URDF."""
-        if not (mesh is not None):
-            raise ValueError("mesh must be provided")
         if not (mesh is not None):
             raise ValueError("mesh must be provided")
         target_content = self.right_panel.get_urdf_content()
@@ -637,8 +627,6 @@ class MeshBrowserWidget(QWidget):
 
     def _apply_mesh_copy(self, mesh: MeshReference, config: dict[str, Any]) -> None:
         """Apply the mesh copy to the target URDF."""
-        if not (mesh is not None):
-            raise ValueError("mesh must be provided")
         if not (mesh is not None):
             raise ValueError("mesh must be provided")
         target_content = self.right_panel.get_urdf_content()

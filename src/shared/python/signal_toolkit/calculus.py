@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Differentiation and integration utilities for signals.
 
 This module provides tools for computing derivatives, integrals,
@@ -100,8 +104,6 @@ class Differentiator:
         """
         if not (method is not None):
             raise ValueError("method must be provided")
-        if not (method is not None):
-            raise ValueError("method must be provided")
         self.method = method
         self.window_length = window_length
         self.polyorder = polyorder
@@ -151,8 +153,6 @@ class Differentiator:
         Returns:
             Array of derivative values.
         """
-        if not (signal is not None):
-            raise ValueError("signal must be provided")
         if not (signal is not None):
             raise ValueError("signal must be provided")
         t = signal.time
@@ -234,8 +234,6 @@ class Differentiator:
         """
         if not (signal is not None):
             raise ValueError("signal must be provided")
-        if not (signal is not None):
-            raise ValueError("signal must be provided")
         derivative_signal = self.differentiate(signal, order)
 
         # Interpolate to exact point
@@ -266,8 +264,6 @@ class Integrator:
         """
         if not (method is not None):
             raise ValueError("method must be provided")
-        if not (method is not None):
-            raise ValueError("method must be provided")
         self.method = method
 
     def integrate(
@@ -288,8 +284,6 @@ class Integrator:
         Returns:
             IntegralResult with integral value and related data.
         """
-        if not (signal is not None):
-            raise ValueError("signal must be provided")
         if not (signal is not None):
             raise ValueError("signal must be provided")
         t = signal.time
@@ -361,8 +355,6 @@ class Integrator:
         """
         if not (signal is not None):
             raise ValueError("signal must be provided")
-        if not (signal is not None):
-            raise ValueError("signal must be provided")
         cumulative = integrate.cumulative_trapezoid(
             signal.values,
             signal.time,
@@ -397,8 +389,6 @@ def compute_derivative(
     """
     if not (signal is not None):
         raise ValueError("signal must be provided")
-    if not (signal is not None):
-        raise ValueError("signal must be provided")
     diff = Differentiator(method=method, **kwargs)
     return diff.differentiate(signal, order)
 
@@ -420,8 +410,6 @@ def compute_integral(
     Returns:
         IntegralResult with integral value and data.
     """
-    if not (signal is not None):
-        raise ValueError("signal must be provided")
     if not (signal is not None):
         raise ValueError("signal must be provided")
     integrator = Integrator(method=method)
@@ -446,8 +434,6 @@ def compute_tangent_line(
         TangentLine object with tangent information.
     """
     # Clamp t_point to signal range
-    if not (signal is not None):
-        raise ValueError("signal must be provided")
     if not (signal is not None):
         raise ValueError("signal must be provided")
     t_point = np.clip(t_point, signal.time[0], signal.time[-1])
@@ -509,8 +495,6 @@ def compute_all_tangent_lines(
     """
     if not (signal is not None):
         raise ValueError("signal must be provided")
-    if not (signal is not None):
-        raise ValueError("signal must be provided")
     t_points = np.linspace(signal.time[0], signal.time[-1], num_points + 2)[1:-1]
     line_width = signal.duration / (num_points + 1) * 0.8
 
@@ -537,8 +521,6 @@ def compute_curvature(
     Returns:
         Signal containing curvature values.
     """
-    if not (signal is not None):
-        raise ValueError("signal must be provided")
     if not (signal is not None):
         raise ValueError("signal must be provided")
     diff = Differentiator(method=method)
@@ -575,8 +557,6 @@ def compute_arc_length(
     """
     if not (signal is not None):
         raise ValueError("signal must be provided")
-    if not (signal is not None):
-        raise ValueError("signal must be provided")
     diff = Differentiator(method=method)
     y_prime = diff.differentiate(signal, order=1).values
 
@@ -599,8 +579,6 @@ def find_extrema(
     Returns:
         Tuple of (maxima, minima) where each is a list of (time, value) tuples.
     """
-    if not (signal is not None):
-        raise ValueError("signal must be provided")
     if not (signal is not None):
         raise ValueError("signal must be provided")
     diff = Differentiator(method=method)
@@ -638,8 +616,6 @@ def find_inflection_points(
     Returns:
         List of (time, value) tuples for inflection points.
     """
-    if not (signal is not None):
-        raise ValueError("signal must be provided")
     if not (signal is not None):
         raise ValueError("signal must be provided")
     diff = Differentiator(method=method)

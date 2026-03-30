@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Core Data Processing Engine.
 
 Provides headless data manipulation, filtering, and analysis capabilities.
@@ -289,8 +293,6 @@ class DataProcessorEngine(BaseCalculationEngine):
 
     def load_dataframe(self, df: pd.DataFrame) -> ProcessingResult:
         """Load data from an existing DataFrame."""
-        if not (df is not None):
-            raise ValueError("df must be provided")
         if not (df is not None):
             raise ValueError("df must be provided")
         self._save_undo_state()

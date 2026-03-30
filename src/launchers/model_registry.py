@@ -28,8 +28,6 @@ class ModelRegistry:
     def __init__(self, config_path: str = "config/models.yaml") -> None:
         if not (config_path is not None):
             raise ValueError("config_path must be provided")
-        if not (config_path is not None):
-            raise ValueError("config_path must be provided")
         self.config_path = Path(config_path)
         self.models: list[ModelSpec] = []
         self._loaded = False
@@ -42,8 +40,6 @@ class ModelRegistry:
         """
         if not (root_path is not None):
             raise ValueError("root_path must be provided")
-        if not (root_path is not None):
-            raise ValueError("root_path must be provided")
         full_config_path = root_path / self.config_path
         if not full_config_path.exists():
             logger.warning(f"Model config not found at {full_config_path}")
@@ -53,8 +49,7 @@ class ModelRegistry:
             with open(full_config_path) as f:
                 data = yaml.safe_load(f)
 
-            for item in data.get("models", []):
-                self.models.append(ModelSpec(**item))
+            self.models.extend([ModelSpec(**item) for item in data.get("models", [])])
 
             self._loaded = True
             logger.info(f"Loaded {len(self.models)} models from registry")
@@ -75,8 +70,6 @@ class ModelRegistry:
 
     def get_model_by_id(self, model_id: str) -> ModelSpec | None:
         """Get a specific model by ID."""
-        if not (model_id is not None):
-            raise ValueError("model_id must be provided")
         if not (model_id is not None):
             raise ValueError("model_id must be provided")
         for model in self.models:

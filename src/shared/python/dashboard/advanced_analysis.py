@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Advanced Analysis Dialog for the Unified Dashboard.
 
 Contains widgets and a dialog for advanced signal processing analysis:
@@ -59,8 +63,6 @@ class SpectrogramTab(QtWidgets.QWidget):
     def __init__(
         self, recorder: RecorderInterface, initial_key: str = "joint_positions"
     ) -> None:
-        if not (recorder is not None):
-            raise ValueError("recorder must be provided")
         if not (recorder is not None):
             raise ValueError("recorder must be provided")
         super().__init__()
@@ -166,8 +168,6 @@ class WaveletTab(QtWidgets.QWidget):
     ) -> None:
         if not (recorder is not None):
             raise ValueError("recorder must be provided")
-        if not (recorder is not None):
-            raise ValueError("recorder must be provided")
         super().__init__()
         self.recorder = recorder
         self.current_key = initial_key
@@ -268,8 +268,6 @@ class SwingPlaneTab(QtWidgets.QWidget):
     """Tab for Swing Plane Analysis (3D)."""
 
     def __init__(self, recorder: RecorderInterface) -> None:
-        if not (recorder is not None):
-            raise ValueError("recorder must be provided")
         if not (recorder is not None):
             raise ValueError("recorder must be provided")
         super().__init__()
@@ -376,8 +374,6 @@ class CorrelationTab(QtWidgets.QWidget):
     def __init__(self, recorder: RecorderInterface) -> None:
         if not (recorder is not None):
             raise ValueError("recorder must be provided")
-        if not (recorder is not None):
-            raise ValueError("recorder must be provided")
         super().__init__()
         self.recorder = recorder
 
@@ -436,8 +432,7 @@ class CorrelationTab(QtWidgets.QWidget):
         # Stack into matrix (N_samples, N_features)
         feature_names = list(data_dict.keys())
         matrix_list = []
-        for name in feature_names:
-            matrix_list.append(data_dict[name][: int(min_len)])
+        matrix_list.extend([data_dict[name][: int(min_len)] for name in feature_names])
 
         X = np.column_stack(matrix_list)  # (N, F)
 
@@ -481,8 +476,6 @@ class PhasePlaneTab(QtWidgets.QWidget):
     """Tab for Phase Plane Analysis (Position vs Velocity)."""
 
     def __init__(self, recorder: RecorderInterface) -> None:
-        if not (recorder is not None):
-            raise ValueError("recorder must be provided")
         if not (recorder is not None):
             raise ValueError("recorder must be provided")
         super().__init__()
@@ -577,8 +570,6 @@ class CoherenceTab(QtWidgets.QWidget):
         key1: str = "joint_positions",
         key2: str = "joint_torques",
     ) -> None:
-        if not (recorder is not None):
-            raise ValueError("recorder must be provided")
         if not (recorder is not None):
             raise ValueError("recorder must be provided")
         super().__init__()
@@ -700,8 +691,6 @@ class AdvancedAnalysisDialog(QtWidgets.QDialog):
         current_key: str = "joint_positions",
         comparison_key: str | None = None,
     ) -> None:
-        if not (recorder is not None):
-            raise ValueError("recorder must be provided")
         if not (recorder is not None):
             raise ValueError("recorder must be provided")
         super().__init__(parent)

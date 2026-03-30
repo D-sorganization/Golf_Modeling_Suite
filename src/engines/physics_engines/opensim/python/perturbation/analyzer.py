@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """OpenSim Perturbation Analyzer — PerturbationAnalyzer protocol for OpenSim (#1981).
 
 Implements the ``PerturbationAnalyzer`` protocol for the OpenSim physics

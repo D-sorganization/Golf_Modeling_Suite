@@ -50,8 +50,6 @@ class UISetupMixin:
         """Build the top bar with model selector, load button, and mode selector."""
         if not (layout is not None):
             raise ValueError("layout must be provided")
-        if not (layout is not None):
-            raise ValueError("layout must be provided")
         top_layout = QtWidgets.QHBoxLayout()
 
         self.model_combo = QtWidgets.QComboBox()
@@ -98,10 +96,8 @@ class UISetupMixin:
 
     def _setup_visualization_panel(
         self: PinocchioGUI, sim_layout: QtWidgets.QVBoxLayout
-    ) -> None:
+    ) -> None:  # noqa: E501
         """Build the visualization group box."""
-        if not (sim_layout is not None):
-            raise ValueError("sim_layout must be provided")
         if not (sim_layout is not None):
             raise ValueError("sim_layout must be provided")
         vis_group = QtWidgets.QGroupBox("Visualization")
@@ -123,7 +119,7 @@ class UISetupMixin:
         self.chk_live_analysis = QtWidgets.QCheckBox("Live Analysis (Induced/CF)")
         self.chk_live_analysis.setToolTip(
             "Compute Induced Accelerations and Counterfactuals in real-time "
-            "(Can slow down sim)"
+            "(Can slow down sim)"  # noqa: E501
         )
         self.chk_live_analysis.toggled.connect(self.on_live_analysis_toggled)
         vis_layout.addWidget(self.chk_live_analysis)
@@ -132,8 +128,6 @@ class UISetupMixin:
         sim_layout.addWidget(vis_group)
 
     def _setup_overlay_checkboxes(self, vis_layout: QtWidgets.QVBoxLayout) -> None:
-        if not (vis_layout is not None):
-            raise ValueError("vis_layout must be provided")
         if not (vis_layout is not None):
             raise ValueError("vis_layout must be provided")
         chk_layout = QtWidgets.QHBoxLayout()
@@ -158,8 +152,6 @@ class UISetupMixin:
     def _setup_ellipsoid_controls(self, vis_layout: QtWidgets.QVBoxLayout) -> None:
         if not (vis_layout is not None):
             raise ValueError("vis_layout must be provided")
-        if not (vis_layout is not None):
-            raise ValueError("vis_layout must be provided")
         ellip_layout = QtWidgets.QHBoxLayout()
         self.chk_mobility = QtWidgets.QCheckBox("Show Mobility Ellipsoid (Green)")
         self.chk_mobility.toggled.connect(self._update_viewer)
@@ -176,8 +168,6 @@ class UISetupMixin:
         vis_layout.addWidget(self.manip_body_group)
 
     def _setup_advanced_vectors(self, vis_layout: QtWidgets.QVBoxLayout) -> None:
-        if not (vis_layout is not None):
-            raise ValueError("vis_layout must be provided")
         if not (vis_layout is not None):
             raise ValueError("vis_layout must be provided")
         vec_grid = QtWidgets.QGridLayout()
@@ -204,8 +194,6 @@ class UISetupMixin:
     def _setup_vector_scales(self, vis_layout: QtWidgets.QVBoxLayout) -> None:
         if not (vis_layout is not None):
             raise ValueError("vis_layout must be provided")
-        if not (vis_layout is not None):
-            raise ValueError("vis_layout must be provided")
         scale_layout = QtWidgets.QHBoxLayout()
         scale_layout.addWidget(QtWidgets.QLabel("Force Scale:"))
         self.spn_f_scale = QtWidgets.QDoubleSpinBox()
@@ -224,8 +212,6 @@ class UISetupMixin:
         vis_layout.addLayout(scale_layout)
 
     def _setup_matrix_analysis_panel(self, sim_layout: QtWidgets.QVBoxLayout) -> None:
-        if not (sim_layout is not None):
-            raise ValueError("sim_layout must be provided")
         if not (sim_layout is not None):
             raise ValueError("sim_layout must be provided")
         matrix_group = QtWidgets.QGroupBox("Matrix Analysis")
@@ -257,7 +243,7 @@ class UISetupMixin:
         self.btn_record.setCheckable(True)
         self.btn_record.setStyleSheet(
             "QPushButton:checked { background-color: #ffcccc; }"
-        )
+        )  # noqa: E501
         self.btn_record.clicked.connect(self._toggle_recording)
         rec_layout.addWidget(self.btn_record)
 

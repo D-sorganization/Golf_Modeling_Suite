@@ -82,7 +82,7 @@ class AdvancedGolfAnalysisWindow(SimulationGUIBase, AdvancedGuiMethodsMixin):
             else:
                 logger.warning(
                     "Stylesheet not found: %s; using default Qt styling", style_path
-                )
+                )  # noqa: E501
         except ImportError:
             logger.exception("Failed to load stylesheet, using default Qt styling")
 
@@ -183,8 +183,6 @@ class AdvancedGolfAnalysisWindow(SimulationGUIBase, AdvancedGuiMethodsMixin):
     def on_model_changed_signal(self, model_name: str, config: dict) -> None:
         """Handle model change signal from PhysicsTab."""
         # Update body lists for interactive manipulation
-        if not (model_name is not None):
-            raise ValueError("model_name must be provided")
         if not (model_name is not None):
             raise ValueError("model_name must be provided")
         self.update_body_lists()
@@ -419,8 +417,6 @@ class AdvancedGolfAnalysisWindow(SimulationGUIBase, AdvancedGuiMethodsMixin):
         """Handle live analysis toggle."""
         if not (checked is not None):
             raise ValueError("checked must be provided")
-        if not (checked is not None):
-            raise ValueError("checked must be provided")
         self.sim_widget.enable_live_analysis = checked
         status_bar = self.statusBar()
         if checked:
@@ -443,8 +439,6 @@ class AdvancedGolfAnalysisWindow(SimulationGUIBase, AdvancedGuiMethodsMixin):
 
     def _on_overlay_rec_toggled(self, checked: bool) -> None:
         """Handle overlay REC button toggle."""
-        if not (checked is not None):
-            raise ValueError("checked must be provided")
         if not (checked is not None):
             raise ValueError("checked must be provided")
         recorder = self.sim_widget.get_recorder()
@@ -523,8 +517,6 @@ class AdvancedGolfAnalysisWindow(SimulationGUIBase, AdvancedGuiMethodsMixin):
         """Export recorded data to the given filename."""
         if not (filename is not None):
             raise ValueError("filename must be provided")
-        if not (filename is not None):
-            raise ValueError("filename must be provided")
         recorder = self.sim_widget.get_recorder()
         data_dict = recorder.export_to_dict()
         try:
@@ -539,6 +531,6 @@ class AdvancedGolfAnalysisWindow(SimulationGUIBase, AdvancedGuiMethodsMixin):
         if self.sim_widget.model is not None:
             return [
                 self.sim_widget.get_joint_name(i)
-                for i in range(self.sim_widget.get_num_joints())
+                for i in range(self.sim_widget.get_num_joints())  # noqa: E501
             ]
         return []

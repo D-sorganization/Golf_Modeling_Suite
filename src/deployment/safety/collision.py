@@ -56,8 +56,6 @@ class Obstacle:
         """
         if not (point is not None):
             raise ValueError("point must be provided")
-        if not (point is not None):
-            raise ValueError("point must be provided")
         if self.obstacle_type == ObstacleType.SPHERE:
             return float(
                 np.linalg.norm(point - self.position)
@@ -99,20 +97,16 @@ class Obstacle:
         """
         if not (point is not None):
             raise ValueError("point must be provided")
-        if not (point is not None):
-            raise ValueError("point must be provided")
         eps = 1e-6
-        gradient = np.zeros(3)
-
-        for i in range(3):
-            point_plus = point.copy()
-            point_plus[i] += eps
-            point_minus = point.copy()
-            point_minus[i] -= eps
-
-            gradient[i] = (
-                self.get_distance(point_plus) - self.get_distance(point_minus)
-            ) / (2 * eps)
+        # Vectorized finite-difference gradient: perturb each axis simultaneously
+        perturbations = np.eye(3) * eps
+        dist_plus = np.array(
+            [self.get_distance(point + perturbations[i]) for i in range(3)]
+        )
+        dist_minus = np.array(
+            [self.get_distance(point - perturbations[i]) for i in range(3)]
+        )
+        gradient = (dist_plus - dist_minus) / (2 * eps)
 
         norm = np.linalg.norm(gradient)
         if norm > eps:
@@ -184,8 +178,6 @@ class CollisionAvoidance:
         """
         if not (robot_model is not None):
             raise ValueError("robot_model must be provided")
-        if not (robot_model is not None):
-            raise ValueError("robot_model must be provided")
         self.model = robot_model
         self.safety_distance = safety_distance
         self._obstacles: list[Obstacle] = []
@@ -213,8 +205,6 @@ class CollisionAvoidance:
         Returns:
             True if obstacle was found and removed.
         """
-        if not (name is not None):
-            raise ValueError("name must be provided")
         if not (name is not None):
             raise ValueError("name must be provided")
         for i, obs in enumerate(self._obstacles):
@@ -249,8 +239,6 @@ class CollisionAvoidance:
         """
         if not (state is not None):
             raise ValueError("state must be provided")
-        if not (state is not None):
-            raise ValueError("state must be provided")
         positions = {}
 
         # Set robot state
@@ -283,8 +271,6 @@ class CollisionAvoidance:
         Returns:
             Repulsive force in joint space (n_joints,).
         """
-        if not (state is not None):
-            raise ValueError("state must be provided")
         if not (state is not None):
             raise ValueError("state must be provided")
         n_joints = len(state.joint_positions)
@@ -351,8 +337,6 @@ class CollisionAvoidance:
         """
         if not (trajectory is not None):
             raise ValueError("trajectory must be provided")
-        if not (trajectory is not None):
-            raise ValueError("trajectory must be provided")
         if min_distance is None:
             min_distance = self.safety_distance
 
@@ -404,8 +388,6 @@ class CollisionAvoidance:
         """
         if not (state is not None):
             raise ValueError("state must be provided")
-        if not (state is not None):
-            raise ValueError("state must be provided")
         link_positions = self.get_link_positions(state)
 
         # Get all obstacles including human
@@ -444,8 +426,6 @@ class CollisionAvoidance:
         Returns:
             Minimum distance in meters.
         """
-        if not (state is not None):
-            raise ValueError("state must be provided")
         if not (state is not None):
             raise ValueError("state must be provided")
         link_positions = self.get_link_positions(state)

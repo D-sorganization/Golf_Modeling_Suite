@@ -69,8 +69,6 @@ class VideoProcessor:
         """
         if not (video_path is not None):
             raise ValueError("video_path must be provided")
-        if not (video_path is not None):
-            raise ValueError("video_path must be provided")
         path = Path(video_path)
 
         if not path.exists():
@@ -149,8 +147,6 @@ class VideoProcessor:
         """
         if not (frame_number is not None):
             raise ValueError("frame_number must be provided")
-        if not (frame_number is not None):
-            raise ValueError("frame_number must be provided")
         if not self.is_loaded:
             return None
 
@@ -174,8 +170,6 @@ class VideoProcessor:
         """
         if not (time_ms is not None):
             raise ValueError("time_ms must be provided")
-        if not (time_ms is not None):
-            raise ValueError("time_ms must be provided")
         frame_number = int((time_ms / 1000) * self._fps)
         return self.get_frame(frame_number)
 
@@ -196,8 +190,6 @@ class VideoProcessor:
         Yields:
             Tuple of (frame, frame_number, timestamp_ms)
         """
-        if not (start_frame is not None):
-            raise ValueError("start_frame must be provided")
         if not (start_frame is not None):
             raise ValueError("start_frame must be provided")
         if not self.is_loaded:
@@ -241,8 +233,6 @@ class VideoProcessor:
         Returns:
             List of PoseFrame objects with valid poses.
         """
-        if not (start_frame is not None):
-            raise ValueError("start_frame must be provided")
         if not (start_frame is not None):
             raise ValueError("start_frame must be provided")
         if not self.is_loaded:
@@ -294,8 +284,6 @@ class VideoProcessor:
         """
         if not (frame_number is not None):
             raise ValueError("frame_number must be provided")
-        if not (frame_number is not None):
-            raise ValueError("frame_number must be provided")
         frame = self.get_frame(frame_number)
         if frame is None:
             return False
@@ -331,8 +319,6 @@ class VideoProcessor:
         """
         if not (output_path is not None):
             raise ValueError("output_path must be provided")
-        if not (output_path is not None):
-            raise ValueError("output_path must be provided")
         if not self.is_loaded:
             return False
 
@@ -363,18 +349,18 @@ class VideoProcessor:
             self._cap = None
             self.video_path = None
 
-    def __enter__(self):
+    def __enter__(self) -> VideoProcessor:
         """Context manager entry."""
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: object,
+    ) -> None:
         """Context manager exit."""
-        if not (exc_type is not None):
-            raise ValueError("exc_type must be provided")
-        if not (exc_type is not None):
-            raise ValueError("exc_type must be provided")
         self.close()
-        return False
 
     def __len__(self) -> int:
         """Return frame count."""

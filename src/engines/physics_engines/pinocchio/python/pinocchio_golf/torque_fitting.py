@@ -34,8 +34,6 @@ def evaluate_torque_poly(
     """Evaluate a fitted torque polynomial at the given times."""
     if not (coeffs is not None):
         raise ValueError("coeffs must be provided")
-    if not (coeffs is not None):
-        raise ValueError("coeffs must be provided")
     t_arr = np.asarray(t, dtype=np.float64)
     result = np.polyval(coeffs, t_arr)
     return np.asarray(result, dtype=np.float64)
@@ -45,7 +43,7 @@ def main() -> None:
     """Fit a polynomial to torque-time CSV data and plot results."""
     parser = argparse.ArgumentParser(
         description="Fit polynomial to torque vs time data."
-    )
+    )  # noqa: E501
     parser.add_argument("csv", help="CSV file with columns t, tau")
     parser.add_argument(
         "-d", "--degree", type=int, default=6, help="Polynomial degree (default: 6)"

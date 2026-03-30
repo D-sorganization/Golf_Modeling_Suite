@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """
 URDF Text Editor with diff view support.
 
@@ -132,8 +136,6 @@ class URDFTextEditor(TextEditorDiffMixin):
         """
         if not (max_history is not None):
             raise ValueError("max_history must be provided")
-        if not (max_history is not None):
-            raise ValueError("max_history must be provided")
         self._content: str = ""
         self._original_content: str = ""
         self._file_path: Path | None = None
@@ -180,8 +182,6 @@ class URDFTextEditor(TextEditorDiffMixin):
             content: URDF XML content
             description: Description for history
         """
-        if not (content is not None):
-            raise ValueError("content must be provided")
         if not (content is not None):
             raise ValueError("content must be provided")
         self._content = content
@@ -247,8 +247,6 @@ class URDFTextEditor(TextEditorDiffMixin):
         """
         if not (content is not None):
             raise ValueError("content must be provided")
-        if not (content is not None):
-            raise ValueError("content must be provided")
         if content == self._content:
             return []
 
@@ -286,8 +284,6 @@ class URDFTextEditor(TextEditorDiffMixin):
         """
         if not (position is not None):
             raise ValueError("position must be provided")
-        if not (position is not None):
-            raise ValueError("position must be provided")
         new_content = self._content[:position] + text + self._content[position:]
         return self.set_content(new_content, description)
 
@@ -308,8 +304,6 @@ class URDFTextEditor(TextEditorDiffMixin):
         Returns:
             Validation messages
         """
-        if not (start is not None):
-            raise ValueError("start must be provided")
         if not (start is not None):
             raise ValueError("start must be provided")
         new_content = self._content[:start] + self._content[end:]
@@ -336,8 +330,6 @@ class URDFTextEditor(TextEditorDiffMixin):
         """
         if not (start is not None):
             raise ValueError("start must be provided")
-        if not (start is not None):
-            raise ValueError("start must be provided")
         new_content = self._content[:start] + text + self._content[end:]
         return self.set_content(new_content, description)
 
@@ -358,8 +350,6 @@ class URDFTextEditor(TextEditorDiffMixin):
         Returns:
             Validation messages
         """
-        if not (element_name is not None):
-            raise ValueError("element_name must be provided")
         if not (element_name is not None):
             raise ValueError("element_name must be provided")
         if old_content not in self._content:
@@ -447,8 +437,6 @@ class URDFTextEditor(TextEditorDiffMixin):
         """Check root is <robot> with a name. Return False to abort."""
         if not (root is not None):
             raise ValueError("root must be provided")
-        if not (root is not None):
-            raise ValueError("root must be provided")
         if root.tag != "robot":
             messages.append(
                 ValidationMessage(
@@ -478,8 +466,6 @@ class URDFTextEditor(TextEditorDiffMixin):
         messages: list[ValidationMessage],
     ) -> dict[str, ET.Element]:
         """Validate link elements and return name→element map."""
-        if not (root is not None):
-            raise ValueError("root must be provided")
         if not (root is not None):
             raise ValueError("root must be provided")
         links: dict[str, ET.Element] = {}
@@ -524,8 +510,6 @@ class URDFTextEditor(TextEditorDiffMixin):
         messages: list[ValidationMessage],
     ) -> None:
         """Validate inertial/mass properties of a link."""
-        if not (link_elem is not None):
-            raise ValueError("link_elem must be provided")
         if not (link_elem is not None):
             raise ValueError("link_elem must be provided")
         inertial = link_elem.find("inertial")
@@ -591,8 +575,6 @@ class URDFTextEditor(TextEditorDiffMixin):
         messages: list[ValidationMessage],
     ) -> None:
         """Validate joint elements (type, parent/child, limits)."""
-        if not (root is not None):
-            raise ValueError("root must be provided")
         if not (root is not None):
             raise ValueError("root must be provided")
         seen: dict[str, ET.Element] = {}
@@ -697,8 +679,6 @@ class URDFTextEditor(TextEditorDiffMixin):
         """Detect links that are not connected to any joint."""
         if not (root is not None):
             raise ValueError("root must be provided")
-        if not (root is not None):
-            raise ValueError("root must be provided")
         child_links = set()
         for joint_elem in root.findall("joint"):
             child_elem = joint_elem.find("child")
@@ -727,8 +707,6 @@ class URDFTextEditor(TextEditorDiffMixin):
     def _find_element_line(self, elem: ET.Element) -> int:
         """Find the line number of an element (approximate)."""
         # This is a simple heuristic - search for element in content
-        if not (elem is not None):
-            raise ValueError("elem must be provided")
         if not (elem is not None):
             raise ValueError("elem must be provided")
         ET.tostring(elem, encoding="unicode")
@@ -821,8 +799,6 @@ class URDFTextEditor(TextEditorDiffMixin):
         """
         if not (index is not None):
             raise ValueError("index must be provided")
-        if not (index is not None):
-            raise ValueError("index must be provided")
         if index < 0 or index >= len(self._history):
             logger.error(f"Invalid version index: {index}")
             return False
@@ -834,8 +810,6 @@ class URDFTextEditor(TextEditorDiffMixin):
 
     def _add_to_history(self, description: str) -> None:
         """Add current content to history."""
-        if not (description is not None):
-            raise ValueError("description must be provided")
         if not (description is not None):
             raise ValueError("description must be provided")
         checksum = hashlib.md5(
@@ -899,8 +873,6 @@ class URDFTextEditor(TextEditorDiffMixin):
         """
         if not (line_number is not None):
             raise ValueError("line_number must be provided")
-        if not (line_number is not None):
-            raise ValueError("line_number must be provided")
         lines = self._content.splitlines()
         if 1 <= line_number <= len(lines):
             return lines[line_number - 1]
@@ -921,15 +893,17 @@ class URDFTextEditor(TextEditorDiffMixin):
         """
         if not (pattern is not None):
             raise ValueError("pattern must be provided")
-        if not (pattern is not None):
-            raise ValueError("pattern must be provided")
         results = []
         lines = self._content.splitlines()
 
         for line_idx, line in enumerate(lines, 1):
             if regex:
-                for match in re.finditer(pattern, line):
-                    results.append((line_idx, match.start(), match.group()))
+                results.extend(
+                    [
+                        (line_idx, match.start(), match.group())
+                        for match in re.finditer(pattern, line)
+                    ]
+                )
             else:
                 start = 0
                 while True:
@@ -958,8 +932,6 @@ class URDFTextEditor(TextEditorDiffMixin):
         Returns:
             Number of replacements made
         """
-        if not (search is not None):
-            raise ValueError("search must be provided")
         if not (search is not None):
             raise ValueError("search must be provided")
         if regex:
@@ -1011,8 +983,6 @@ class URDFTextEditor(TextEditorDiffMixin):
         """Recursively add indentation to XML element."""
         if not (elem is not None):
             raise ValueError("elem must be provided")
-        if not (elem is not None):
-            raise ValueError("elem must be provided")
         i = "\n" + level * indent
         if len(elem):
             if not elem.text or not elem.text.strip():
@@ -1038,8 +1008,6 @@ class URDFTextEditor(TextEditorDiffMixin):
         Returns:
             Dict with element info or None
         """
-        if not (line is not None):
-            raise ValueError("line must be provided")
         if not (line is not None):
             raise ValueError("line must be provided")
         lines = self._content.splitlines()

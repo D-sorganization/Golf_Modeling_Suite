@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Terrain modeling system for golf simulation.
 
 Provides comprehensive terrain features including:
@@ -436,8 +440,6 @@ class ElevationMap:
         """Convert world coordinates to grid coordinates."""
         if not (x is not None):
             raise ValueError("x must be provided")
-        if not (x is not None):
-            raise ValueError("x must be provided")
         gx = (x - self.origin_x) / self.resolution
         gy = (y - self.origin_y) / self.resolution
         return gx, gy
@@ -463,8 +465,6 @@ class ElevationMap:
         Returns:
             Elevation at the point (meters)
         """
-        if not (x is not None):
-            raise ValueError("x must be provided")
         if not (x is not None):
             raise ValueError("x must be provided")
         self._check_bounds(x, y)
@@ -512,8 +512,6 @@ class ElevationMap:
         """
         if not (x is not None):
             raise ValueError("x must be provided")
-        if not (x is not None):
-            raise ValueError("x must be provided")
         self._check_bounds(x, y)
 
         gx, gy = self._to_grid_coords(x, y)
@@ -555,8 +553,6 @@ class ElevationMap:
         """
         if not (x is not None):
             raise ValueError("x must be provided")
-        if not (x is not None):
-            raise ValueError("x must be provided")
         dzdx, dzdy = self.get_gradient(x, y)
 
         # Normal from gradient: n = (-dz/dx, -dz/dy, 1) normalized
@@ -577,8 +573,6 @@ class ElevationMap:
         """
         if not (x is not None):
             raise ValueError("x must be provided")
-        if not (x is not None):
-            raise ValueError("x must be provided")
         dzdx, dzdy = self.get_gradient(x, y)
         slope_magnitude = math.sqrt(dzdx**2 + dzdy**2)
         return math.degrees(math.atan(slope_magnitude))
@@ -597,8 +591,6 @@ class ElevationMap:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> ElevationMap:
         """Create elevation map from dictionary."""
-        if not (data is not None):
-            raise ValueError("data must be provided")
         if not (data is not None):
             raise ValueError("data must be provided")
         return cls(
@@ -635,8 +627,6 @@ class TerrainPatch:
         """Check if a point is within this patch."""
         if not (x is not None):
             raise ValueError("x must be provided")
-        if not (x is not None):
-            raise ValueError("x must be provided")
         return self.x_min <= x <= self.x_max and self.y_min <= y <= self.y_max
 
     def get_material(self) -> SurfaceMaterial:
@@ -669,8 +659,6 @@ class TerrainPatch:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> TerrainPatch:
         """Create patch from dictionary."""
-        if not (data is not None):
-            raise ValueError("data must be provided")
         if not (data is not None):
             raise ValueError("data must be provided")
         terrain_type = TerrainType[data["terrain_type"].upper()]
@@ -739,8 +727,6 @@ class TerrainRegion:
         """Check if a point is within this region."""
         if not (x is not None):
             raise ValueError("x must be provided")
-        if not (x is not None):
-            raise ValueError("x must be provided")
         if self.shape_type == "circle":
             cx = self.shape_data["center_x"]
             cy = self.shape_data["center_y"]
@@ -758,8 +744,6 @@ class TerrainRegion:
         x: float, y: float, vertices: list[tuple[float, float]]
     ) -> bool:
         """Ray casting algorithm for point-in-polygon test."""
-        if not (x is not None):
-            raise ValueError("x must be provided")
         if not (x is not None):
             raise ValueError("x must be provided")
         n = len(vertices)
@@ -803,8 +787,6 @@ class TerrainRegion:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> TerrainRegion:
         """Deserialize region from dictionary."""
-        if not (data is not None):
-            raise ValueError("data must be provided")
         if not (data is not None):
             raise ValueError("data must be provided")
         material = None
@@ -856,8 +838,6 @@ class Terrain:
         """
         if not (x is not None):
             raise ValueError("x must be provided")
-        if not (x is not None):
-            raise ValueError("x must be provided")
         return self.elevation.get_elevation(x, y)
 
     def get_normal(self, x: float, y: float) -> np.ndarray:
@@ -870,8 +850,6 @@ class Terrain:
         Returns:
             Unit normal vector (3,)
         """
-        if not (x is not None):
-            raise ValueError("x must be provided")
         if not (x is not None):
             raise ValueError("x must be provided")
         return self.elevation.get_normal(x, y)
@@ -888,8 +866,6 @@ class Terrain:
         Returns:
             Terrain type at the position
         """
-        if not (x is not None):
-            raise ValueError("x must be provided")
         if not (x is not None):
             raise ValueError("x must be provided")
         result = self.default_type
@@ -909,8 +885,6 @@ class Terrain:
     def get_material(self, x: float, y: float) -> SurfaceMaterial:
         """Get surface material at a position."""
         # Check regions first (they override patches)
-        if not (x is not None):
-            raise ValueError("x must be provided")
         if not (x is not None):
             raise ValueError("x must be provided")
         for region in reversed(self.regions):
@@ -955,8 +929,6 @@ class Terrain:
         Returns:
             Dictionary with friction, restitution, stiffness, damping
         """
-        if not (x is not None):
-            raise ValueError("x must be provided")
         if not (x is not None):
             raise ValueError("x must be provided")
         material = self.get_material(x, y)
@@ -1027,8 +999,6 @@ class TerrainConfig:
         """Create config from dictionary."""
         if not (data is not None):
             raise ValueError("data must be provided")
-        if not (data is not None):
-            raise ValueError("data must be provided")
         return cls(
             name=data["name"],
             elevation_config=data["elevation"],
@@ -1045,8 +1015,6 @@ class TerrainConfig:
     @classmethod
     def load(cls, path: Path | str) -> TerrainConfig:
         """Load config from JSON file."""
-        if not (path is not None):
-            raise ValueError("path must be provided")
         if not (path is not None):
             raise ValueError("path must be provided")
         with open(path) as f:
@@ -1102,8 +1070,6 @@ def create_flat_terrain(
     """
     if not (name is not None):
         raise ValueError("name must be provided")
-    if not (name is not None):
-        raise ValueError("name must be provided")
     elevation = ElevationMap.flat(width=width, length=length, resolution=resolution)
     patches = [TerrainPatch(terrain_type, 0.0, width, 0.0, length)]
 
@@ -1133,8 +1099,6 @@ def create_sloped_terrain(
     Returns:
         Sloped terrain
     """
-    if not (name is not None):
-        raise ValueError("name must be provided")
     if not (name is not None):
         raise ValueError("name must be provided")
     elevation = ElevationMap.sloped(
@@ -1181,8 +1145,6 @@ def compute_gravity_on_slope(
     """
     if not (slope_angle_deg is not None):
         raise ValueError("slope_angle_deg must be provided")
-    if not (slope_angle_deg is not None):
-        raise ValueError("slope_angle_deg must be provided")
     slope_rad = math.radians(slope_angle_deg)
     g_parallel = gravity * math.sin(slope_rad)
     g_perpendicular = gravity * math.cos(slope_rad)
@@ -1205,8 +1167,6 @@ def compute_roll_direction(
     Returns:
         Unit vector in roll direction (2D: x, y)
     """
-    if not (elevation is not None):
-        raise ValueError("elevation must be provided")
     if not (elevation is not None):
         raise ValueError("elevation must be provided")
     dzdx, dzdy = elevation.get_gradient(x, y)

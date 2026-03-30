@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Signal Toolkit Widget – signal processing mixin.
 
 Extracts all methods that *operate* on signals (generate, fit, filter,
@@ -108,8 +112,6 @@ class SignalToolkitProcessingMixin:
         """Generate a polynomial signal from current UI parameters."""
         if not (t is not None):
             raise ValueError("t must be provided")
-        if not (t is not None):
-            raise ValueError("t must be provided")
         coeffs_str = self.poly_coeffs_input.text()
         coeffs = [float(c.strip()) for c in coeffs_str.split(",")]
         return SignalGenerator.polynomial(t, coeffs)
@@ -168,8 +170,6 @@ class SignalToolkitProcessingMixin:
 
     def _generate_custom(self: Any, t: np.ndarray) -> Signal | None:
         """Generate a custom expression signal from current UI parameters."""
-        if not (t is not None):
-            raise ValueError("t must be provided")
         if not (t is not None):
             raise ValueError("t must be provided")
         expr = self.custom_expr.text()
@@ -402,8 +402,6 @@ class SignalToolkitProcessingMixin:
 
     def _update_tangent_position(self: Any, value: int) -> None:
         """Update tangent line position from slider."""
-        if not (value is not None):
-            raise ValueError("value must be provided")
         if not (value is not None):
             raise ValueError("value must be provided")
         if self.current_signal is None:
@@ -773,8 +771,6 @@ class SignalToolkitProcessingMixin:
         """Update the secondary plot."""
         if not (signal is not None):
             raise ValueError("signal must be provided")
-        if not (signal is not None):
-            raise ValueError("signal must be provided")
         self.canvas2.axes.clear()
         self.canvas2.setup_dark_theme()
 
@@ -796,8 +792,6 @@ class SignalToolkitProcessingMixin:
 
     def set_joints(self: Any, joints: list[str]) -> None:
         """Set the list of available joints."""
-        if not (joints is not None):
-            raise ValueError("joints must be provided")
         if not (joints is not None):
             raise ValueError("joints must be provided")
         self.joint_names = joints

@@ -210,7 +210,7 @@ class GolfVisualizerMainWindow(QMainWindow):
 
         dialog = VideoExportDialog(
             self, tab.opengl_widget.renderer, tab.frame_processor
-        )
+        )  # noqa: E501
         dialog.exec()
 
     def _reset_camera(self) -> None:
@@ -245,7 +245,7 @@ class GolfVisualizerMainWindow(QMainWindow):
             hasattr(self, "gl_widget")
             and self.gl_widget
             and self.gl_widget.current_render_config
-        ):
+        ):  # noqa: E501
             self.gl_widget.current_render_config.show_face_normal = bool(state)
             self.gl_widget.update()
 
@@ -255,7 +255,7 @@ class GolfVisualizerMainWindow(QMainWindow):
             hasattr(self, "gl_widget")
             and self.gl_widget
             and self.gl_widget.current_render_config
-        ):
+        ):  # noqa: E501
             self.gl_widget.current_render_config.show_ball = bool(state)
             self.gl_widget.update()
 

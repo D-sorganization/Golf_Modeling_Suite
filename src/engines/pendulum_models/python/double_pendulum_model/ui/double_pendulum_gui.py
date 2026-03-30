@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """
 Interactive driven double pendulum GUI with 3D visualization and advanced features.
 
@@ -96,8 +100,6 @@ class DoublePendulumApp(PendulumRendererMixin):
     def __init__(self, root: tk.Tk) -> None:
         if not (root is not None):
             raise ValueError("root must be provided")
-        if not (root is not None):
-            raise ValueError("root must be provided")
         self.root = root
         self.root.title("Driven Double Pendulum — 3D Control Affine Model")
         self.root.geometry("1400x900")
@@ -135,8 +137,6 @@ class DoublePendulumApp(PendulumRendererMixin):
         """Setup 3D visualization area."""
         if not (parent is not None):
             raise ValueError("parent must be provided")
-        if not (parent is not None):
-            raise ValueError("parent must be provided")
         self.fig = Figure(figsize=(9, 9), dpi=100, facecolor="white")
         self.ax: Axes3D = typing.cast(
             Axes3D, self.fig.add_subplot(111, projection="3d")
@@ -158,8 +158,6 @@ class DoublePendulumApp(PendulumRendererMixin):
 
     def _setup_controls(self, parent: tk.Widget) -> None:
         """Setup control panel."""
-        if not (parent is not None):
-            raise ValueError("parent must be provided")
         if not (parent is not None):
             raise ValueError("parent must be provided")
         panel_frame = tk.Frame(parent, bg="#f0f0f0", width=350)
@@ -212,8 +210,6 @@ class DoublePendulumApp(PendulumRendererMixin):
         """Add a labeled entry row to the control panel."""
         if not (parent is not None):
             raise ValueError("parent must be provided")
-        if not (parent is not None):
-            raise ValueError("parent must be provided")
         frame = tk.Frame(parent, bg="white")
         frame.grid(row=row, column=0, columnspan=2, sticky="ew", pady=2)
 
@@ -234,8 +230,6 @@ class DoublePendulumApp(PendulumRendererMixin):
         return entry
 
     def _setup_initial_conditions(self, parent: tk.Widget, row: int) -> int:
-        if not (parent is not None):
-            raise ValueError("parent must be provided")
         if not (parent is not None):
             raise ValueError("parent must be provided")
         self._create_section_header(parent, "Initial Conditions", row)
@@ -273,8 +267,6 @@ class DoublePendulumApp(PendulumRendererMixin):
         return row
 
     def _setup_physical_parameters(self, parent: tk.Widget, row: int) -> int:
-        if not (parent is not None):
-            raise ValueError("parent must be provided")
         if not (parent is not None):
             raise ValueError("parent must be provided")
         self._create_section_header(parent, "Physical Parameters", row)
@@ -334,8 +326,6 @@ class DoublePendulumApp(PendulumRendererMixin):
     def _setup_damping_parameters(self, parent: tk.Widget, row: int) -> int:
         if not (parent is not None):
             raise ValueError("parent must be provided")
-        if not (parent is not None):
-            raise ValueError("parent must be provided")
         self._create_section_header(parent, "Damping Parameters", row)
         row += 1
         self._add_labeled_row(
@@ -363,8 +353,6 @@ class DoublePendulumApp(PendulumRendererMixin):
     def _setup_control_inputs(self, parent: tk.Widget, row: int) -> int:
         if not (parent is not None):
             raise ValueError("parent must be provided")
-        if not (parent is not None):
-            raise ValueError("parent must be provided")
         self._create_section_header(parent, "Control Inputs", row)
         row += 1
         self._add_labeled_row(
@@ -382,8 +370,6 @@ class DoublePendulumApp(PendulumRendererMixin):
         return row
 
     def _setup_simulation_options(self, parent: tk.Widget, row: int) -> int:
-        if not (parent is not None):
-            raise ValueError("parent must be provided")
         if not (parent is not None):
             raise ValueError("parent must be provided")
         self._create_section_header(parent, "Simulation Options", row)
@@ -460,8 +446,6 @@ class DoublePendulumApp(PendulumRendererMixin):
     def _setup_data_logging(self, parent: tk.Widget, row: int) -> int:
         if not (parent is not None):
             raise ValueError("parent must be provided")
-        if not (parent is not None):
-            raise ValueError("parent must be provided")
         self._create_section_header(parent, "Data Logging", row)
         row += 1
 
@@ -497,8 +481,6 @@ class DoublePendulumApp(PendulumRendererMixin):
     def _setup_status(self, parent: tk.Widget, row: int) -> int:
         if not (parent is not None):
             raise ValueError("parent must be provided")
-        if not (parent is not None):
-            raise ValueError("parent must be provided")
         self._create_section_header(parent, "Status", row)
         row += 1
 
@@ -522,8 +504,6 @@ class DoublePendulumApp(PendulumRendererMixin):
         """Create a styled section header."""
         if not (parent is not None):
             raise ValueError("parent must be provided")
-        if not (parent is not None):
-            raise ValueError("parent must be provided")
         header_frame = tk.Frame(parent, bg="#e0e0e0", height=30)
         header_frame.grid(row=row, column=0, columnspan=2, sticky="ew", pady=(10, 5))
         header_frame.grid_propagate(False)  # noqa: FBT003
@@ -540,8 +520,6 @@ class DoublePendulumApp(PendulumRendererMixin):
     def _create_tooltip(self, widget: tk.Widget, text: str) -> None:
         """Create a simple tooltip."""
 
-        if not (widget is not None):
-            raise ValueError("widget must be provided")
         if not (widget is not None):
             raise ValueError("widget must be provided")
 
@@ -712,8 +690,6 @@ class DoublePendulumApp(PendulumRendererMixin):
 
     def _calculate_upper_inertia(self, user_inputs: UserInputs) -> float:
         """Calculate inertia of upper segment."""
-        if not (user_inputs is not None):
-            raise ValueError("user_inputs must be provided")
         if not (user_inputs is not None):
             raise ValueError("user_inputs must be provided")
         com_ratio = user_inputs.upper_com_ratio

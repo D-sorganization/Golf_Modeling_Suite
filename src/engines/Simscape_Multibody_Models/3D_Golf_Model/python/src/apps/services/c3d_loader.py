@@ -21,8 +21,6 @@ def _build_markers(df_points, marker_names: list[str]) -> dict[str, MarkerData]:
     """
     if not (df_points is not None):
         raise ValueError("df_points must be provided")
-    if not (df_points is not None):
-        raise ValueError("df_points must be provided")
     markers: dict[str, MarkerData] = {}
     if not df_points.empty:
         grouped = df_points.groupby("marker")
@@ -51,12 +49,10 @@ def _build_analog(df_analog, metadata_obj) -> dict[str, AnalogData]:
     """
     if not (df_analog is not None):
         raise ValueError("df_analog must be provided")
-    if not (df_analog is not None):
-        raise ValueError("df_analog must be provided")
     analog: dict[str, AnalogData] = {}
     units_map = dict(
         zip(metadata_obj.analog_labels, metadata_obj.analog_units, strict=False)
-    )
+    )  # noqa: E501
     if not df_analog.empty and "channel" in df_analog.columns:
         for name in df_analog["channel"].unique():
             mask = df_analog["channel"] == name
@@ -78,8 +74,6 @@ def _build_metadata_ui(filepath: str, metadata_obj) -> dict[str, str]:
     """
     if not (filepath is not None):
         raise ValueError("filepath must be provided")
-    if not (filepath is not None):
-        raise ValueError("filepath must be provided")
     metadata_ui = {
         "File": os.path.basename(filepath),
         "Path": filepath,
@@ -94,7 +88,7 @@ def _build_metadata_ui(filepath: str, metadata_obj) -> dict[str, str]:
     if metadata_obj.events:
         events_str = ", ".join(
             [f"{e.label} ({e.time:.2f}s)" for e in metadata_obj.events]
-        )
+        )  # noqa: E501
         metadata_ui["Events"] = events_str
     return metadata_ui
 

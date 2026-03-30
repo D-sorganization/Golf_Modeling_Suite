@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """MyoSuite Physics Engine Implementation.
 
 
@@ -211,8 +215,6 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
         """Set joint positions and velocities on the simulation."""
         if not (q is not None):
             raise ValueError("q must be provided")
-        if not (q is not None):
-            raise ValueError("q must be provided")
         if not self.sim:
             return
 
@@ -272,8 +274,6 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
     def set_control(self, u: np.ndarray) -> None:
         """Set control (ctrl)."""
-        if not (u is not None):
-            raise ValueError("u must be provided")
         if not (u is not None):
             raise ValueError("u must be provided")
         self._last_action = np.array(u, copy=True)
@@ -379,8 +379,6 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
         if not (qacc is not None):
             raise ValueError("qacc must be provided")
-        if not (qacc is not None):
-            raise ValueError("qacc must be provided")
         if not self.sim:
             return np.array([])
 
@@ -400,8 +398,6 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
     def compute_jacobian(self, body_name: str) -> dict[str, np.ndarray] | None:
         """Compute linear and angular Jacobian for a named body."""
-        if not (body_name is not None):
-            raise ValueError("body_name must be provided")
         if not (body_name is not None):
             raise ValueError("body_name must be provided")
         if not self.sim:
@@ -513,8 +509,6 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
         if not (tau is not None):
             raise ValueError("tau must be provided")
-        if not (tau is not None):
-            raise ValueError("tau must be provided")
         if not self.sim:
             logger.warning("Simulation not initialized")
 
@@ -618,8 +612,6 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
         """
 
-        if not (activations is not None):
-            raise ValueError("activations must be provided")
         if not (activations is not None):
             raise ValueError("activations must be provided")
         analyzer = self.get_muscle_analyzer()
@@ -768,8 +760,6 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
         if not (q is not None):
             raise ValueError("q must be provided")
-        if not (q is not None):
-            raise ValueError("q must be provided")
         if not self.sim:
             return np.array([])
 
@@ -831,8 +821,6 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
         """
 
-        if not (q is not None):
-            raise ValueError("q must be provided")
         if not (q is not None):
             raise ValueError("q must be provided")
         if not self.sim:

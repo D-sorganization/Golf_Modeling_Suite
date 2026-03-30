@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """
 Mesh processing utilities for humanoid character builder.
 
@@ -181,8 +185,6 @@ class MeshProcessor:
         """Process and export a single mesh segment."""
         if not (segment_name is not None):
             raise ValueError("segment_name must be provided")
-        if not (segment_name is not None):
-            raise ValueError("segment_name must be provided")
         import trimesh
 
         vertex_set = set(vertex_indices)
@@ -351,8 +353,6 @@ class MeshProcessor:
         """Internal mesh simplification."""
         if not (target_faces is not None):
             raise ValueError("target_faces must be provided")
-        if not (target_faces is not None):
-            raise ValueError("target_faces must be provided")
         import trimesh
 
         # Try quadric decimation if available
@@ -417,8 +417,6 @@ class MeshProcessor:
         Returns:
             Path to exported file
         """
-        if not (output_path is not None):
-            raise ValueError("output_path must be provided")
         if not (output_path is not None):
             raise ValueError("output_path must be provided")
         config = config or MeshExportConfig()
@@ -582,8 +580,6 @@ class LODGenerator:
         """
         if not (mesh_path is not None):
             raise ValueError("mesh_path must be provided")
-        if not (mesh_path is not None):
-            raise ValueError("mesh_path must be provided")
         if not self._processor._trimesh_available:
             return LODGenerationResult(
                 success=False,
@@ -682,8 +678,6 @@ class LODGenerator:
         """
         if not (mesh_path is not None):
             raise ValueError("mesh_path must be provided")
-        if not (mesh_path is not None):
-            raise ValueError("mesh_path must be provided")
         if not self._processor._trimesh_available:
             return LODGenerationResult(
                 success=False,
@@ -772,8 +766,6 @@ class LODGenerator:
         Returns:
             Dict with memory estimation details
         """
-        if not (lod_result is not None):
-            raise ValueError("lod_result must be provided")
         if not (lod_result is not None):
             raise ValueError("lod_result must be provided")
         if not lod_result.success or not lod_result.levels:
