@@ -435,7 +435,7 @@ class BehaviorCloning(ImitationLearner):
             data[f"policy_{i}_W"] = layer["W"]
             data[f"policy_{i}_b"] = layer["b"]
 
-        np.savez(path, **data)
+        np.savez(path, **data)  # type: ignore[arg-type]
 
     def load(self, path: str | Path) -> None:
         """Load policy from disk.
@@ -876,7 +876,7 @@ class GAIL(ImitationLearner):
             data[f"disc_{i}_W"] = layer["W"]
             data[f"disc_{i}_b"] = layer["b"]
 
-        np.savez(path, **data)
+        np.savez(path, **data)  # type: ignore[arg-type]
 
     def load(self, path: str | Path) -> None:
         """Load GAIL networks."""
