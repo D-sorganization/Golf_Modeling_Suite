@@ -6,13 +6,13 @@
 
 from __future__ import annotations
 
+import json
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import json
 import numpy as np
 
 if TYPE_CHECKING:
@@ -418,13 +418,17 @@ class BehaviorCloning(ImitationLearner):
         data = {
             "observation_dim": np.array(self.observation_dim),
             "action_dim": np.array(self.action_dim),
-            "config": np.array(json.dumps({
-                "epochs": self.config.epochs,
-                "batch_size": self.config.batch_size,
-                "learning_rate": self.config.learning_rate,
-                "weight_decay": self.config.weight_decay,
-                "hidden_sizes": self.config.hidden_sizes,
-            })),
+            "config": np.array(
+                json.dumps(
+                    {
+                        "epochs": self.config.epochs,
+                        "batch_size": self.config.batch_size,
+                        "learning_rate": self.config.learning_rate,
+                        "weight_decay": self.config.weight_decay,
+                        "hidden_sizes": self.config.hidden_sizes,
+                    }
+                )
+            ),
             "num_layers": np.array(len(self._policy)),
         }
         for i, layer in enumerate(self._policy):
@@ -451,10 +455,12 @@ class BehaviorCloning(ImitationLearner):
         num_layers = int(data["num_layers"])
         self._policy = []
         for i in range(num_layers):
-            self._policy.append({
-                "W": data[f"policy_{i}_W"],
-                "b": data[f"policy_{i}_b"],
-            })
+            self._policy.append(
+                {
+                    "W": data[f"policy_{i}_W"],
+                    "b": data[f"policy_{i}_b"],
+                }
+            )
 
 
 class DAgger(ImitationLearner):
@@ -886,15 +892,19 @@ class GAIL(ImitationLearner):
         num_policy_layers = int(data["num_policy_layers"])
         self._policy = []
         for i in range(num_policy_layers):
-            self._policy.append({
-                "W": data[f"policy_{i}_W"],
-                "b": data[f"policy_{i}_b"],
-            })
+            self._policy.append(
+                {
+                    "W": data[f"policy_{i}_W"],
+                    "b": data[f"policy_{i}_b"],
+                }
+            )
 
         num_disc_layers = int(data["num_disc_layers"])
         self._discriminator = []
         for i in range(num_disc_layers):
-            self._discriminator.append({
-                "W": data[f"disc_{i}_W"],
-                "b": data[f"disc_{i}_b"],
-            })
+            self._discriminator.append(
+                {
+                    "W": data[f"disc_{i}_W"],
+                    "b": data[f"disc_{i}_b"],
+                }
+            )
