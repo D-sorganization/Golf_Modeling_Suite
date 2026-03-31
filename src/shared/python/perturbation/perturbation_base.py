@@ -264,27 +264,27 @@ class PerturbationAnalyzerBase(ABC):
         Post: all ``MANDATORY_METRICS`` present; all values finite.
         """
         self._validate_sim_result_type(sim_result)
-        if not (sim_result.n_steps >= 2):  # type: ignore[union-attr]
+        if not (sim_result.n_steps >= 2):  # type: ignore[union-attr,attr-defined]
             raise ValueError("Simulation must have >= 2 steps")
 
         r = sim_result
-        last = r.n_steps - 1  # type: ignore[union-attr]
+        last = r.n_steps - 1  # type: ignore[union-attr,attr-defined]
 
         q_traj = self._get_q_traj(r)
         v_traj = self._get_v_traj(r)
 
         joint_angles_final = q_traj[last].copy()
         joint_velocities_final = v_traj[last].copy()
-        ee_pos_final = r.ee_pos_traj[last].copy()  # type: ignore[union-attr]
-        ee_vel_final = r.ee_vel_traj[last].copy()  # type: ignore[union-attr]
+        ee_pos_final = r.ee_pos_traj[last].copy()  # type: ignore[union-attr,attr-defined]
+        ee_vel_final = r.ee_vel_traj[last].copy()  # type: ignore[union-attr,attr-defined]
         ee_speed_final = float(np.linalg.norm(ee_vel_final))
 
-        speeds = np.linalg.norm(r.ee_vel_traj, axis=1)  # type: ignore[union-attr]
+        speeds = np.linalg.norm(r.ee_vel_traj, axis=1)  # type: ignore[union-attr,attr-defined]
         peak_speed = float(np.max(speeds))
 
         total_energy_final = float(
-            r.kinetic_energy_traj[last]  # type: ignore[union-attr]
-            + r.potential_energy_traj[last]  # type: ignore[union-attr]
+            r.kinetic_energy_traj[last]  # type: ignore[union-attr,attr-defined]
+            + r.potential_energy_traj[last]  # type: ignore[union-attr,attr-defined]
         )
 
         trajectory_rmse = 0.0
@@ -297,7 +297,7 @@ class PerturbationAnalyzerBase(ABC):
             trajectory_max_deviation = float(np.max(deviations))
 
         motion_duration = float(
-            r.t[last] - r.t[0]  # type: ignore[union-attr]
+            r.t[last] - r.t[0]  # type: ignore[union-attr,attr-defined]
         )
 
         return {
