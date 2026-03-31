@@ -59,7 +59,10 @@ def test_mainloop(mock_qapp, mock_golf_launcher, mock_golf_launcher_module) -> N
     launcher = UnifiedLauncher()
     mock_qapp.exec.return_value = 0
 
-    with patch("src.launchers.unified_launcher._get_golf_main", return_value=mock_golf_launcher_module.main):
+    with patch(
+        "src.launchers.unified_launcher._get_golf_main",
+        return_value=mock_golf_launcher_module.main,
+    ):
         launcher.mainloop()
 
     # mainloop now delegates to golf_launcher.main which calls sys.exit
@@ -91,9 +94,14 @@ def test_show_status() -> None:
         engine_mock.value = "TEST_ENGINE"
         mock_mgr_instance.get_available_engines.return_value = [engine_mock]
 
-        with patch.dict(sys.modules, {
-            "src.shared.python.engine_core.engine_manager": MagicMock(EngineManager=MagicMock(return_value=mock_mgr_instance))
-        }):
+        with patch.dict(
+            sys.modules,
+            {
+                "src.shared.python.engine_core.engine_manager": MagicMock(
+                    EngineManager=MagicMock(return_value=mock_mgr_instance)
+                )
+            },
+        ):
             launcher.show_status()
 
             # Check if print was called with engine name
@@ -128,17 +136,27 @@ def test_get_version() -> None:
         ):
             # Patch tomllib conditionally depending on whether it exists in unified_launcher
             import importlib
+
             unified = importlib.import_module("src.launchers.unified_launcher")
             if hasattr(unified, "tomllib"):
-                with patch("src.launchers.unified_launcher.tomllib.load", return_value={"project": {"version": "3.4.5"}}):
+                with patch(
+                    "src.launchers.unified_launcher.tomllib.load",
+                    return_value={"project": {"version": "3.4.5"}},
+                ):
                     assert launcher.get_version() == "3.4.5"
             else:
                 # If tomllib is not imported there, we might need to patch tomli
                 if hasattr(unified, "tomli"):
-                    with patch("src.launchers.unified_launcher.tomli.load", return_value={"project": {"version": "3.4.5"}}):
+                    with patch(
+                        "src.launchers.unified_launcher.tomli.load",
+                        return_value={"project": {"version": "3.4.5"}},
+                    ):
                         assert launcher.get_version() == "3.4.5"
                 elif hasattr(unified, "toml"):
-                    with patch("src.launchers.unified_launcher.toml.load", return_value={"project": {"version": "3.4.5"}}):
+                    with patch(
+                        "src.launchers.unified_launcher.toml.load",
+                        return_value={"project": {"version": "3.4.5"}},
+                    ):
                         assert launcher.get_version() == "3.4.5"
                 else:
                     # just mock it by replacing the whole method or setting __version__ to skip TOML logic
