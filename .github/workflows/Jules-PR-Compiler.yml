@@ -28,7 +28,7 @@ jobs:
       - name: Check for self-hosted runner
         id: check
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
           ONLINE=$(gh api /orgs/${{ github.repository_owner }}/actions/runners \
             --jq '[.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length' \
@@ -51,7 +51,7 @@ jobs:
       - name: Analyze Open PRs
         id: analyze
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
           mkdir -p .jules/pr_compiler
 
@@ -122,7 +122,7 @@ jobs:
       - name: Compile PRs
         if: steps.analyze.outputs.skip != 'true' && steps.groups.outputs.has_compilable == 'true' && inputs.dry_run != true
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
           # Process each compilable group
           python3 << 'PYEOF'
@@ -263,7 +263,7 @@ jobs:
       - name: Cleanup Merged PR Branches
         if: steps.analyze.outputs.skip != 'true' && steps.groups.outputs.has_compilable == 'true' && inputs.dry_run != true
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
           # Note: Individual PRs are closed via "Closes #N" in the compiled PR body
           # This step just cleans up tracking

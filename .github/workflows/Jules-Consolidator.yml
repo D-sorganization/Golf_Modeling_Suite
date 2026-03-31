@@ -37,7 +37,7 @@ jobs:
       - name: Check for self-hosted runner
         id: check
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
           ONLINE=$(gh api /orgs/${{ github.repository_owner }}/actions/runners \
             --jq '[.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length' \
@@ -64,7 +64,7 @@ jobs:
       - name: List Consolidatable PRs
         id: list
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
           EXCLUDE_PRS: ${{ inputs.exclude_prs }}
         run: |
           prs=$(gh pr list --base main --state open --json number,title,author,labels,mergeable \
@@ -95,7 +95,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RUNNER_CHECK_TOKEN }}
 
       - name: Configure Git
         run: |
@@ -104,7 +104,7 @@ jobs:
 
       - name: Create and Merge PRs
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
           PR_LIST: ${{ needs.discover.outputs.pr_list }}
         run: |
           BRANCH_NAME="consolidated-prs-$(date +%Y-%m-%d)"
