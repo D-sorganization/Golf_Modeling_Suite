@@ -164,9 +164,10 @@ def compute_marker_rmse(
     ref = reference[:n]
 
     # Per-marker RMSE
-    errors = np.linalg.norm(pred - ref, axis=2)  # [frames x markers]
-    per_marker_rmse = np.sqrt(np.mean(errors**2, axis=0))  # [markers]
-    aggregate_rmse = float(np.sqrt(np.mean(errors**2)))
+    # ⚡ Bolt: Explicit element-wise squaring avoids np.linalg.norm reduction overhead
+    squared_errors = np.sum((pred - ref) ** 2, axis=-1)  # [frames x markers]
+    per_marker_rmse = np.sqrt(np.mean(squared_errors, axis=0))  # [markers]
+    aggregate_rmse = float(np.sqrt(np.mean(squared_errors)))
 
     return {
         "per_marker_rmse_m": per_marker_rmse.tolist(),
