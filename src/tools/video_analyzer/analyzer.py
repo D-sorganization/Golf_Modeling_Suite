@@ -91,11 +91,12 @@ class SwingAnalyzer:
         self.smoothing_window = smoothing_window
 
     @precondition(
-        lambda self, video_path, stance=StanceDirection.UNKNOWN, progress_callback=None: (  # fmt: skip
-            video_path is not None and len(video_path) > 0
-        ),
+        lambda self,
+        video_path,
+        stance=StanceDirection.UNKNOWN,
+        progress_callback=None: (video_path is not None and len(video_path) > 0),
         "Video path must be a non-empty string",
-    )
+    )  # fmt: skip
     def analyze_video(
         self,
         video_path: str,

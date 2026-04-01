@@ -164,17 +164,27 @@ class OutputManager:
         logger.info("Output directory structure created successfully")
 
     @precondition(
-        lambda self, results, filename, format_type=OutputFormat.CSV, engine="mujoco", metadata=None, model_path=None, parameters=None: (  # fmt: skip
-            results is not None
-        ),
+        lambda self,
+        results,
+        filename,
+        format_type=OutputFormat.CSV,
+        engine="mujoco",
+        metadata=None,
+        model_path=None,
+        parameters=None: (results is not None),
         "Simulation results must not be None",
-    )
+    )  # fmt: skip
     @precondition(
-        lambda self, results, filename, format_type=OutputFormat.CSV, engine="mujoco", metadata=None, model_path=None, parameters=None: (  # fmt: skip
-            filename is not None and len(filename) > 0
-        ),
+        lambda self,
+        results,
+        filename,
+        format_type=OutputFormat.CSV,
+        engine="mujoco",
+        metadata=None,
+        model_path=None,
+        parameters=None: (filename is not None and len(filename) > 0),
         "Filename must be a non-empty string",
-    )
+    )  # fmt: skip
     def save_simulation_results(
         self,
         results: pd.DataFrame | dict[str, Any] | list[dict[str, Any]] | np.ndarray,

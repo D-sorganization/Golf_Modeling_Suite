@@ -312,17 +312,23 @@ class FootstepPlanner(ContractChecker):
         )
 
     @precondition(
-        lambda self, current_position, current_yaw, velocity_command, n_steps=4, start_foot="left": (  # fmt: skip
-            n_steps > 0
-        ),
+        lambda self,
+        current_position,
+        current_yaw,
+        velocity_command,
+        n_steps=4,
+        start_foot="left": (n_steps > 0),
         "Number of steps must be positive",
-    )
+    )  # fmt: skip
     @precondition(
-        lambda self, current_position, current_yaw, velocity_command, n_steps=4, start_foot="left": (  # fmt: skip
-            start_foot in ("left", "right")
-        ),
+        lambda self,
+        current_position,
+        current_yaw,
+        velocity_command,
+        n_steps=4,
+        start_foot="left": (start_foot in ("left", "right")),
         "start_foot must be 'left' or 'right'",
-    )
+    )  # fmt: skip
     def plan_from_velocity(
         self,
         current_position: NDArray[np.float64],
