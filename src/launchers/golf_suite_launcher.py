@@ -39,7 +39,10 @@ LAUNCH_FEEDBACK_DURATION_MS = (
 )
 
 
-class GolfLauncher(QtWidgets.QMainWindow if PYQT6_AVAILABLE else object):  # type: ignore[misc]
+# Use a dynamic base class if PyQt6 is not available
+_BaseClass = QtWidgets.QMainWindow if PYQT6_AVAILABLE else object
+
+class GolfLauncher(_BaseClass):  # type: ignore[misc]
     def __init__(self) -> None:
         if not PYQT6_AVAILABLE:
             raise ImportError("PyQt6 is required to run this launcher.")
