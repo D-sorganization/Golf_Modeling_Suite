@@ -48,7 +48,7 @@ class TrajectoryFunnelBenchmark:
         # ⚡ Bolt: Using explicit sum of squares is faster than np.linalg.norm(..., axis=1)
         # especially since we ultimately use transverse_distance**2.
         # We can also find argmin directly on the squared distances.
-        squared_distances = np.sum((reference_trajectory - current_state)**2, axis=1)
+        squared_distances = np.sum((reference_trajectory - current_state) ** 2, axis=1)
         transverse_distance_sq = np.min(squared_distances)
         projected_phase_idx = np.argmin(squared_distances)
 
