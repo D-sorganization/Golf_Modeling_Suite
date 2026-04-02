@@ -38,13 +38,25 @@ def launcher(mock_pyqt):
 
 
 def test_init_raises_without_pyqt():
+    # If the real PyQt6 was imported during module initialization, the class inherits from QMainWindow.
+    # Calling super().__init__() when we've artificially mocked PYQT6_AVAILABLE=False
+    # but the class definition already evaluated to QMainWindow causes C++ segfaults / aborts.
+    # We must patch the class definition itself or mock it appropriately to avoid Qt aborts.
     with patch("src.launchers.golf_suite_launcher.PYQT6_AVAILABLE", False):
         import src.launchers.golf_suite_launcher as gsl
 
-        importlib.reload(gsl)
+        # Since we just want to test that the __init__ raises the correct error
+        # we can patch out the __init__ behavior on the actual QMainWindow via super
+        # or we can test a custom mock instance
+
+        # A simpler way is to just call the class method directly on a dummy object
+        class Dummy:
+            pass
+
+        dummy = Dummy()
 
         with pytest.raises(ImportError, match="PyQt6 is required"):
-            gsl.GolfLauncher()
+            gsl.GolfLauncher.__init__(dummy)
 
 
 def test_imports_without_pyqt():
