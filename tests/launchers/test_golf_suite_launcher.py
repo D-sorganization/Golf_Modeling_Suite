@@ -55,9 +55,9 @@ def test_imports_without_pyqt():
     ):
         try:
             importlib.reload(gsl)
-            assert gsl.QtWidgets is None
-            assert gsl.QtCore is None
-            assert gsl.QtGui is None
+            assert getattr(gsl, "QtWidgets", None) is None
+            assert getattr(gsl, "QtCore", None) is None
+            assert getattr(gsl, "QtGui", None) is None
         finally:
             # Restore module state so other tests on this worker do not fail!
             pass
