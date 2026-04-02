@@ -27,8 +27,8 @@
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript |
 | **License** | MIT |
 | **Current Version** | 2.1.0 |
-| **Spec Version** | 1.0.10 |
-| **Last Spec Update** | 2026-04-01 |
+| **Spec Version** | 1.0.11 |
+| **Last Spec Update** | 2026-04-02 |
 
 ## 2. Purpose & Mission
 
@@ -470,6 +470,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 | 2026-03-30 | 1.0.2 | Performance optimization in SwingOptimizer: explicitly computing clubhead velocity magnitude via `np.sqrt` to avoid `np.linalg.norm(..., axis=1)` overhead. |
 | 2026-03-29 | 1.0.1 | Performance optimization in validation package: explicitly computing magnitudes instead of using `np.linalg.norm` to avoid NumPy reduction overhead on small axes. |
 | 2026-03-29 | 1.0.1 | Performance optimization: Replaced `np.linalg.norm(..., axis=1)` with explicit element-wise arithmetic (`np.sqrt` and `np.hypot`) in physics ground reaction forces calculations for a ~5-10x speedup |
+| 2026-04-02 | 1.0.11 | Bolt: Optimized `np.linalg.norm` to explicit element-wise calculation for trajectory funnel reward in RL benchmark |
 | 2026-03-28 | 1.0.0 | Initial specification for UpstreamDrift v2.1.0; documented all 14 features, architecture, testing strategy, and CI/CD pipeline |
 
 ---
