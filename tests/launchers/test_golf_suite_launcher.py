@@ -38,7 +38,9 @@ def launcher(mock_pyqt):
 
 
 def test_init_raises_without_pyqt():
-    with patch("src.shared.python.engine_core.engine_availability.PYQT6_AVAILABLE", False):
+    with patch(
+        "src.shared.python.engine_core.engine_availability.PYQT6_AVAILABLE", False
+    ):
         import src.launchers.golf_suite_launcher as gsl
 
         try:
