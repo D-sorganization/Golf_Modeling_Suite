@@ -2,7 +2,7 @@
 
 <!--
   TEMPLATE VERSION: 1.0.0
-  LAST UPDATED: 2026-03-28
+  LAST UPDATED: 2026-04-03
 
   This is the canonical specification template for all repositories in the
   D-sorganization fleet. Every repo MUST have a SPEC.md at its root.
@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript |
 | **License** | MIT |
 | **Current Version** | 2.1.0 |
-| **Spec Version** | 1.0.11 |
+| **Spec Version** | 1.0.12 |
 | **Last Spec Update** | 2026-04-03 |
 
 ## 2. Purpose & Mission
@@ -454,9 +454,9 @@ pytest tests/ --cov=src --cov-fail-under=70
 - Performance scaling beyond 100-muscle models not yet tested
 
 ## 12. Change Log
-
 | Date | Version | Changes |
 |------|---------|---------|
+| 2026-04-03 | 1.0.12 | Bolt: Performance optimization in `collision_generator.py`: optimized sphere radius calculation by replacing `np.linalg.norm(..., axis=1)` with delayed square root sum of squares. |
 | 2026-04-03 | 1.0.11 | Bolt: Optimized `np.linalg.norm(..., axis=1)` to explicit element-wise sum of squares calculation in `trajectory_funnel_benchmark.py` for performance gain. |
 | 2026-04-01 | 1.0.8 | Sentinel: restricted legacy `np.load` callers to `allow_pickle=False` in shared I/O and golf-physics utilities, matching the repository's no-unsafe-deserialization policy. |
 | 2026-04-01 | 1.0.7 | Bolt: Optimized `np.linalg.norm` to explicit element-wise calculation for camera framing in GUI |
