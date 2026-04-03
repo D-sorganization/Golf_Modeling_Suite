@@ -51,9 +51,9 @@ def test_init_raises_without_pyqt():
             # But the underlying QMainWindow constructor might get mad if it's not a QObject.
             # However, the code raises the ImportError *before* calling `super().__init__()`
             with pytest.raises(ImportError, match="PyQt6 is required"):
-                gsl.GolfLauncher.__init__(None) # type: ignore
+                gsl.GolfLauncher.__init__(None)  # type: ignore
         except TypeError:
-            pass # Just in case passing None fails in a weird way, we can ignore
+            pass  # Just in case passing None fails in a weird way, we can ignore
 
 
 def test_imports_without_pyqt():
