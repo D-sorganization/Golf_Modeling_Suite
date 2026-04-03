@@ -1,15 +1,11 @@
-# Assessment L: Logging
+# Assessment: Logging
 
-**Date**: 2026-03-29
-**Score**: 8.0/10
+**Date**: 2026-02-27
+**Grade**: 7.0/10
 
-## Findings
-
-- - 'import logging': 242
-- - 'print(' statements: 93
-- ✗ Excessive use of 'print()' statements (should use logging).
+## Details
+Found 6664 logging calls and 618 print calls.
 
 ## Recommendations
-
-- Address any ✗ items.
-- Review manual findings.
+1. Replace print statements with structured logging.
+2. Configure log levels.

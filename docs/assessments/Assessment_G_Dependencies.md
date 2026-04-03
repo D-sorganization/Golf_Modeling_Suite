@@ -1,13 +1,11 @@
-# Assessment G: Dependencies
+# Assessment: Dependencies
 
-**Date**: 2026-03-29
-**Score**: 5.0/10
+**Date**: 2026-02-27
+**Grade**: 8.5/10
 
-## Findings
-
-- ✗ requirements.txt missing.
+## Details
+Dependency definition files found.
 
 ## Recommendations
-
-- Address any ✗ items.
-- Review manual findings.
+1. Pin dependency versions.
+2. Audit dependencies for vulnerabilities.

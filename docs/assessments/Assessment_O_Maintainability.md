@@ -1,15 +1,11 @@
-# Assessment O: Maintainability
+# Assessment: Maintainability
 
-**Date**: 2026-03-29
-**Score**: 0.0/10
+**Date**: 2026-02-27
+**Grade**: 7.5/10
 
-## Findings
-
-- - Large files (>20KB): 206
-- ✗ Found 206 large source files.
-- ✗ Failed to run radon.
+## Details
+Average complexity (branches/func): 0.98
 
 ## Recommendations
-
-- Address any ✗ items.
-- Review manual findings.
+1. Refactor large functions.
+2. Keep dependencies updated.

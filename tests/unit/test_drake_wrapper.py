@@ -43,11 +43,10 @@ _PYDRAKE_KEYS = [
 
 _ENGINE_MOD_NAME = "src.engines.physics_engines.drake.python.drake_physics_engine"
 
-# Drake-specific packages that may be polluted by other tests.
-# Only Drake subtree entries are listed here; removing the shared parent
-# packages (src.engines, src.engines.physics_engines) would wipe subpackage
-# attributes for non-Drake engines (e.g. pinocchio) on reimport.
+# Drake engine parent packages that may be polluted by other tests
 _DRAKE_PARENT_PACKAGES = [
+    "src.engines",
+    "src.engines.physics_engines",
     "src.engines.physics_engines.drake",
     "src.engines.physics_engines.drake.python",
     "src.engines.physics_engines.drake.python.src",
