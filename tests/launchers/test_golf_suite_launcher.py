@@ -42,9 +42,11 @@ def test_init_raises_without_pyqt():
 
     # Patching the module-level attribute is sufficient: GolfLauncher.__init__
     # reads PYQT6_AVAILABLE as a module global, so no reload is needed.
-    with patch("src.launchers.golf_suite_launcher.PYQT6_AVAILABLE", False):
-        with pytest.raises(ImportError, match="PyQt6 is required"):
-            gsl.GolfLauncher()
+    with (
+        patch("src.launchers.golf_suite_launcher.PYQT6_AVAILABLE", False),
+        pytest.raises(ImportError, match="PyQt6 is required"),
+    ):
+        gsl.GolfLauncher()
 
 
 def test_imports_without_pyqt():
