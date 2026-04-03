@@ -38,30 +38,13 @@ def launcher(mock_pyqt):
 
 
 def test_init_raises_without_pyqt():
-    # Use a clean test runner pattern - isolate the import context
-    # so Qt isn't already bound in memory causing a crash.
+    import src.launchers.golf_suite_launcher as gsl
 
+    # Patching the module-level attribute is sufficient: GolfLauncher.__init__
+    # reads PYQT6_AVAILABLE as a module global, so no reload is needed.
     with patch("src.launchers.golf_suite_launcher.PYQT6_AVAILABLE", False):
-        with patch.dict(
-            "sys.modules",
-            {
-                "PyQt6": None,
-                "PyQt6.QtWidgets": None,
-                "PyQt6.QtCore": None,
-                "PyQt6.QtGui": None,
-            },
-        ):
-            import src.launchers.golf_suite_launcher as gsl
-
-            # Must reload to pick up the False value
-            importlib.reload(gsl)
-
-            with pytest.raises(ImportError, match="PyQt6 is required"):
-                gsl.GolfLauncher()
-
-        # Clean up module state so later tests aren't broken by our mocked reload
-        with patch("src.launchers.golf_suite_launcher.PYQT6_AVAILABLE", True):
-            importlib.reload(gsl)
+        with pytest.raises(ImportError, match="PyQt6 is required"):
+            gsl.GolfLauncher()
 
 
 def test_imports_without_pyqt():
