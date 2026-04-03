@@ -43,7 +43,9 @@ def test_init_raises_without_pyqt():
 
         importlib.reload(gsl)
 
-        with pytest.raises(ImportError, match="PyQt6 is required to run this launcher."):
+        with pytest.raises(
+            ImportError, match="PyQt6 is required to run this launcher."
+        ):
             gsl.GolfLauncher()
 
     # Always reload after the patch has ended to restore true state
