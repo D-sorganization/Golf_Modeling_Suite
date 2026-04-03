@@ -47,7 +47,7 @@ class TrajectoryFunnelBenchmark:
         assert current_state is not None, "current_state must be provided"
         # ⚡ Bolt: Explicit squared sum is ~15-20% faster than np.linalg.norm(..., axis=1)
         # by avoiding square roots and reduction overhead since we only need the squared distance.
-        distances_sq = np.sum((reference_trajectory - current_state)**2, axis=1)
+        distances_sq = np.sum((reference_trajectory - current_state) ** 2, axis=1)
         transverse_distance_sq = np.min(distances_sq)
         projected_phase_idx = int(np.argmin(distances_sq))
 
