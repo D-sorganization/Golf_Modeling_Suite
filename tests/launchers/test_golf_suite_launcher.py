@@ -42,8 +42,17 @@ def test_init_raises_without_pyqt():
     # so Qt isn't already bound in memory causing a crash.
 
     with patch("src.launchers.golf_suite_launcher.PYQT6_AVAILABLE", False):
-        with patch.dict('sys.modules', {'PyQt6': None, 'PyQt6.QtWidgets': None, 'PyQt6.QtCore': None, 'PyQt6.QtGui': None}):
+        with patch.dict(
+            "sys.modules",
+            {
+                "PyQt6": None,
+                "PyQt6.QtWidgets": None,
+                "PyQt6.QtCore": None,
+                "PyQt6.QtGui": None,
+            },
+        ):
             import src.launchers.golf_suite_launcher as gsl
+
             # Must reload to pick up the False value
             importlib.reload(gsl)
 
