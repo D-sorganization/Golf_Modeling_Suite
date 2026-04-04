@@ -64,7 +64,11 @@ def assess_logging_content(content: str) -> dict[str, int]:
     try:
         tree = ast.parse(content)
         for node in ast.walk(tree):
-            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "print":
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Name)
+                and node.func.id == "print"
+            ):
                 print_usage += 1
     except SyntaxError:
         print_usage = len(re.findall(r"(?<!\w)print\s*\(", content))
