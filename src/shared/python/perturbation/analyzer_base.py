@@ -36,17 +36,20 @@ MANDATORY_METRICS: tuple[str, ...] = (
     "motion_duration",
 )
 
+
 @dataclass
 class ComparisonReport:
     """Statistical comparison of two torque profiles."""
+
     winner: str
     confidence: float
     metric_comparisons: dict[str, Any] = field(default_factory=dict)
     pvalues: dict[str, float] = field(default_factory=dict)
 
+
 class PerturbationAnalyzerBase(ABC):
     """Abstract base class for perturbation analyzers implementing common logic."""
-    
+
     ENGINE_NAME: str = "base"
     _base_coeffs: list[list[float]] | None = None
 
@@ -62,9 +65,13 @@ class PerturbationAnalyzerBase(ABC):
     def set_base_torque_profile(self, profile: object) -> None:
         pass
 
-    def perturb_torque(self, config: PerturbationConfig, seed: int) -> dict[str, list[list[float]]]:
+    def perturb_torque(
+        self, config: PerturbationConfig, seed: int
+    ) -> dict[str, list[list[float]]]:
         if not (self._base_coeffs is not None):
-            raise ValueError("set_base_torque_profile() must be called before perturb_torque()")
+            raise ValueError(
+                "set_base_torque_profile() must be called before perturb_torque()"
+            )
         perturbed = perturb_torque_coeffs(
             self._base_coeffs,
             noise_amplitude=config.noise_amplitude,
@@ -76,14 +83,18 @@ class PerturbationAnalyzerBase(ABC):
 
     def run_batch(self, config: PerturbationConfig) -> PerturbationSummary:
         if not (self._base_coeffs is not None):
-            raise ValueError("set_base_torque_profile() must be called before run_batch()")
+            raise ValueError(
+                "set_base_torque_profile() must be called before run_batch()"
+            )
 
         t_start = time.monotonic()
         base_seed = config.seed if config.seed is not None else 0
 
         scalar_metric_names = [
-            m for m in MANDATORY_METRICS
-            if m not in (
+            m
+            for m in MANDATORY_METRICS
+            if m
+            not in (
                 "end_effector_position_final",
                 "end_effector_velocity_final",
                 "joint_angles_final",
@@ -136,7 +147,9 @@ class PerturbationAnalyzerBase(ABC):
         cv_values = []
         for stats in metric_stats.values():
             _std = float(stats.std) if not isinstance(stats.std, float) else stats.std
-            _mean = float(stats.mean) if not isinstance(stats.mean, float) else stats.mean
+            _mean = (
+                float(stats.mean) if not isinstance(stats.mean, float) else stats.mean
+            )
             if _std > 0 and abs(_mean) > 1e-12:
                 cv_values.append(_std / abs(_mean))
             else:
@@ -183,7 +196,7 @@ class PerturbationAnalyzerBase(ABC):
             values = []
             for i in range(config.n_trials):
                 perturbed = perturb_torque_coeffs(
-                    self._base_coeffs, # type: ignore[arg-type]
+                    self._base_coeffs,  # type: ignore[arg-type]
                     noise_amplitude=config.noise_amplitude,
                     noise_type=config.noise_type,
                     seed=base_seed + i,
@@ -205,7 +218,9 @@ class PerturbationAnalyzerBase(ABC):
             vals_b = _collect_scalar(profile_b, metric)
 
             try:
-                _stat, pval = _stats.mannwhitneyu(vals_a, vals_b, alternative="two-sided")
+                _stat, pval = _stats.mannwhitneyu(
+                    vals_a, vals_b, alternative="two-sided"
+                )
             except ValueError:
                 pval = 1.0
 
