@@ -182,4 +182,3 @@ pkg/
 
 # Rust build artifacts
 target/
-testenv/
