@@ -74,8 +74,6 @@ def test_load_drake_missing(tmp_path: object) -> None:
                             return None
                     # Python 3.12+ extension loading race condition with mocked __import__
                     import importlib
-
-
                     return importlib.import_module(name)
                 raise
 
