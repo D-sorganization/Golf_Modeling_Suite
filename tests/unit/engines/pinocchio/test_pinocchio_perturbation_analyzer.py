@@ -22,7 +22,6 @@ from src.engines.physics_engines.pinocchio.python.perturbation.analyzer import (
     MANDATORY_METRICS,
     PinocchioSimResult,
 )
-from src.shared.python.perturbation.analyzer_base import ComparisonReport
 from src.shared.python.pendulum_simulator.perturbation_analysis import (
     perturb_torque_coeffs,
 )
