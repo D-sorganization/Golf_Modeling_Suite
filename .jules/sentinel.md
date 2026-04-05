@@ -44,3 +44,8 @@
 **Vulnerability:** Found arbitrary code execution vulnerability in `DataProcessorEngine.query()` because user input was passed directly to `pandas.DataFrame.query()` without validation. `DataFrame.query()` effectively uses `pd.eval()` under the hood, which is prone to executing arbitrary code.
 **Learning:** `DataFrame.query()` carries the exact same security risks as `DataFrame.eval()`. While previous fixes addressed `add_calculated_column` which uses `eval()`, the `query()` method was missed, showing that developers must audit *all* pandas methods that parse string expressions (`eval`, `query`).
 **Prevention:** Always validate expressions passed to `pd.DataFrame.query()` or `pd.DataFrame.eval()` using an AST-based validator to ensure they only contain safe operations.
+
+## 2026-04-05 - [Insecure Deserialization via pandas read_pickle]
+**Vulnerability:** Found arbitrary code execution vulnerability via pickle deserialization in `src/shared/python/upstream_drift_tools/data_processing/io.py` where `pd.read_pickle` was being called for files with the `.pkl` or `.pickle` extension.
+**Learning:** Even though the function caller is assumed to provide trusted data, `pd.read_pickle` allows for extremely dangerous code execution. We cannot rely on caller context for safety.
+**Prevention:** Explicitly raise a `ValueError` when attempting to read or write pickle formats, forcing the use of safer serialization formats like JSON, Parquet, or CSV.
