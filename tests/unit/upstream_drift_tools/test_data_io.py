@@ -94,7 +94,9 @@ class TestDataReaderCSV:
     def test_read_pickle_raises(self, tmp_path: Path) -> None:
         p = tmp_path / "data.pkl"
         p.write_text("dummy")
-        with pytest.raises(ValueError, match="Pickle format is disabled for security reasons"):
+        with pytest.raises(
+            ValueError, match="Pickle format is disabled for security reasons"
+        ):
             DataReader.read_file(p)
 
     def test_unsupported_format_raises(self, tmp_path: Path) -> None:
@@ -146,7 +148,9 @@ class TestDataWriterCSV:
     def test_write_pickle_raises(self, tmp_path: Path) -> None:
         p = tmp_path / "data.pkl"
         df = pd.DataFrame({"a": [1]})
-        with pytest.raises(ValueError, match="Pickle format is disabled for security reasons"):
+        with pytest.raises(
+            ValueError, match="Pickle format is disabled for security reasons"
+        ):
             DataWriter.write_file(df, p)
 
     def test_unsupported_format_raises(self, tmp_path: Path) -> None:
