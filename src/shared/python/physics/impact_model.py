@@ -271,7 +271,7 @@ class RigidBodyImpactModel(ImpactModel):
         require_finite(pre_state.ball_velocity, "ball_velocity")
         require_finite(pre_state.clubhead_orientation, "clubhead_orientation")
         require(
-            np.linalg.norm(pre_state.clubhead_orientation) > 1e-10,
+            bool(np.linalg.norm(pre_state.clubhead_orientation) > 1e-10),
             "clubhead_orientation must be non-zero",
         )
         m_club_effective = self._compute_effective_club_mass(pre_state)
