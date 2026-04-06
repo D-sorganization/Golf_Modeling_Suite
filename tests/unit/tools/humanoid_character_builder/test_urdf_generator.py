@@ -1,11 +1,11 @@
-"""
-Unit tests for URDF generator module.
-"""
+"""Unit tests for URDF generator module."""
 
 import tempfile
 from pathlib import Path
 
 import defusedxml.ElementTree as ET
+import pytest
+from humanoid_character_builder.contracts import ContractViolationError
 from humanoid_character_builder.core.body_parameters import BodyParameters
 from humanoid_character_builder.generators.urdf_generator import (
     HumanoidURDFGenerator,
@@ -250,6 +250,29 @@ class TestHumanoidURDFGenerator:
                 assert "damping" in dynamics.attrib
 
         assert dynamics_count > 0
+
+    def test_build_model_requires_params(self) -> None:
+        """DbC: build_model should reject missing parameters via precondition."""
+        generator = HumanoidURDFGenerator()
+
+        with pytest.raises(ContractViolationError, match="params must not be None"):
+            generator.build_model(None)  # type: ignore[arg-type]
+
+    def test_generate_requires_positive_height(self) -> None:
+        """DbC: generate should reject non-positive heights via precondition."""
+        generator = HumanoidURDFGenerator()
+        params = BodyParameters(height_m=0.0, mass_kg=70.0)
+
+        with pytest.raises(ContractViolationError, match="Height must be positive"):
+            generator.generate(params)
+
+    def test_generate_requires_positive_mass(self) -> None:
+        """DbC: generate should reject non-positive masses via precondition."""
+        generator = HumanoidURDFGenerator()
+        params = BodyParameters(height_m=1.75, mass_kg=0.0)
+
+        with pytest.raises(ContractViolationError, match="Mass must be positive"):
+            generator.generate(params)
 
 
 class TestGenerateHumanoidURDF:

@@ -109,8 +109,6 @@ class HumanoidURDFGenerator:
         self, params: BodyParameters, mesh_dir: Path | str | None = None
     ) -> HumanoidModel:
         """Build HumanoidModel from body parameters."""
-        if not (params is not None):
-            raise ValueError("params must be provided")
         errors = params.validate()
         if errors:
             logger.warning(f"Parameter validation warnings: {errors}")
@@ -152,8 +150,6 @@ class HumanoidURDFGenerator:
         mesh_dir: Path | str | None = None,
     ) -> str:
         """Generate URDF from body parameters."""
-        if not (params is not None):
-            raise ValueError("params must be provided")
         self.build_model(params, mesh_dir)
         urdf_xml = build_urdf_xml(
             robot_name=params.name,
