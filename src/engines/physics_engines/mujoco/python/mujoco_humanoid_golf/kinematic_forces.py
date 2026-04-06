@@ -144,7 +144,6 @@ REFERENCES
 from __future__ import annotations
 
 import csv
-import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -152,60 +151,28 @@ import mujoco
 import numpy as np
 
 # Import numerical constants (Assessment B-004, B-007)
-from src.shared.python.core.numerical_constants import (
-    EPSILON_FINITE_DIFF_JACOBIAN,
-    EPSILON_SINGULARITY_DETECTION,
+from src.shared.python.core.numerical_constants import EPSILON_FINITE_DIFF_JACOBIAN
+
+from .kinematic_force_jacobian import (
+    JacobianBuffers,
+    compute_body_jacobian,
+    compute_jacobian_central_difference,
+    initialize_jacobian_buffers,
 )
+from .kinematic_force_math import (
+    check_jacobian_rank,
+    check_mass_matrix_conditioning,
+    compute_effective_mass_value,
+    decompose_apparent_force,
+    normalize_effective_mass_direction,
+)
+from .kinematic_force_versioning import validate_mujoco_version
 
 if TYPE_CHECKING:
     from types import TracebackType
 
-
-def _check_mujoco_version() -> None:
-    """Validate MuJoCo version meets minimum requirements.
-
-    Addresses Issue F-003: Prevents API signature mismatches by enforcing
-    minimum version at runtime.
-
-    Raises:
-        ImportError: If MuJoCo version is too old
-    """
-    try:
-        # MuJoCo version format: "3.3.0" or similar
-        version_str = mujoco.__version__
-        major, minor, *_ = map(int, version_str.split("."))
-
-        # Require MuJoCo 3.3+ for reshaped Jacobian API
-        if (major, minor) < (3, 3):
-            msg = (
-                f"MuJoCo {version_str} detected, but 3.3.0+ is required.\n"
-                f"The reshaped Jacobian API (mj_jacBody with 2D arrays) was "
-                f"introduced in MuJoCo 3.3. Earlier versions use flat arrays "
-                f"which can cause dimension alignment errors.\n"
-                f"Please upgrade: pip install 'mujoco>=3.3.0,<4.0.0'\n"
-                f"See Issue F-003 in Assessment C for details."
-            )
-            raise ImportError(msg)
-
-        # Success - log version
-        # Success - log version
-        import logging
-
-        logger = logging.getLogger(__name__)
-        logger.info(f"MuJoCo version {version_str} validated successfully")
-
-    except (AttributeError, ValueError) as e:
-        # Could not parse version
-        warnings.warn(
-            f"Could not validate MuJoCo version: {e}. "
-            f"Proceeding with fallback Jacobian handling.",
-            category=UserWarning,
-            stacklevel=2,
-        )
-
-
 # Validate MuJoCo version on module import (Issue F-003)
-_check_mujoco_version()
+validate_mujoco_version(mujoco)
 
 
 class MjDataContext:
@@ -364,22 +331,10 @@ class KinematicForceAnalyzer:
         # See Issue A-004 for detailed analysis
         self._perturb_data = mujoco.MjData(model)
 
-        # Pre-allocate Jacobian buffers to avoid repeated allocation
-        # Detect API version to use correct array shape
         self.nv = model.nv
-        try:
-            # Try reshaped API (MuJoCo 3.3+ preferred)
-            jacp_test = np.zeros((3, self.nv))
-            jacr_test = np.zeros((3, self.nv))
-            mujoco.mj_jacBody(model, data, jacp_test, jacr_test, 0)
-            self._use_reshaped_arrays = True
-            self._jacp = np.zeros((3, self.nv))
-            self._jacr = np.zeros((3, self.nv))
-        except TypeError:
-            # Fallback to flat API
-            self._use_reshaped_arrays = False
-            self._jacp = np.zeros(3 * self.nv)
-            self._jacr = np.zeros(3 * self.nv)
+        self._jacobian_buffers: JacobianBuffers = initialize_jacobian_buffers(
+            model, data
+        )
 
     def _find_body_id(self, name_pattern: str) -> int | None:
         """Find body ID by name pattern."""
@@ -409,15 +364,12 @@ class KinematicForceAnalyzer:
         if data is None:
             data = self.data
 
-        if self._use_reshaped_arrays:
-            mujoco.mj_jacBody(self.model, data, self._jacp, self._jacr, body_id)
-            return self._jacp, self._jacr
-        else:
-            mujoco.mj_jacBody(self.model, data, self._jacp, self._jacr, body_id)
-            return (
-                self._jacp.reshape(3, self.nv),
-                self._jacr.reshape(3, self.nv),
-            )
+        return compute_body_jacobian(
+            self.model,
+            data,
+            body_id,
+            self._jacobian_buffers,
+        )
 
     def compute_coriolis_forces(self, qpos: np.ndarray, qvel: np.ndarray) -> np.ndarray:
         """Compute Coriolis and centrifugal forces.
@@ -647,46 +599,15 @@ class KinematicForceAnalyzer:
         if self.club_head_id is None:
             return np.zeros(3), np.zeros(3), np.zeros(3)
 
-        # FIXED: Use private data structure for current state
-        self._perturb_data.qpos[:] = qpos
-        self._perturb_data.qvel[:] = qvel
-        mujoco.mj_forward(self.model, self._perturb_data)
-
-        # Compute club head Jacobian
-        jacp, _ = self._compute_jacobian(self.club_head_id, data=self._perturb_data)
-        jacp_curr = jacp.copy()  # Save copy as _compute_jacobian reuses buffer
-
-        # Store club position before perturbing state
-        club_pos = self._perturb_data.xpos[self.club_head_id].copy()
-
-        # Jacobian time derivative (approximate)
-        # ASSESSMENT B-009: Use second-order central difference for improved accuracy
-        # Central difference: J̇ ≈ (J(q+εq̇) - J(q-εq̇)) / (2ε)
-        # Error: O(ε²) vs O(ε) for forward difference
-        epsilon = EPSILON_FINITE_DIFF_JACOBIAN
-
-        # Compute Jacobian at forward-perturbed state
-        self._perturb_data.qpos[:] = qpos + epsilon * qvel
-        self._perturb_data.qvel[:] = qvel
-        mujoco.mj_forward(self.model, self._perturb_data)
-
-        jacp_forward, _ = self._compute_jacobian(
-            self.club_head_id, data=self._perturb_data
+        jacp_curr, jacp_dot, club_pos = compute_jacobian_central_difference(
+            self.model,
+            self._perturb_data,
+            self.club_head_id,
+            qpos,
+            qvel,
+            EPSILON_FINITE_DIFF_JACOBIAN,
+            self._jacobian_buffers,
         )
-        jacp_forward = jacp_forward.copy()  # Save copy before buffer reuse
-
-        # Compute Jacobian at backward-perturbed state
-        self._perturb_data.qpos[:] = qpos - epsilon * qvel
-        self._perturb_data.qvel[:] = qvel
-        mujoco.mj_forward(self.model, self._perturb_data)
-
-        jacp_backward, _ = self._compute_jacobian(
-            self.club_head_id, data=self._perturb_data
-        )
-
-        # Second-order central difference
-        # Accuracy: O(ε²) - much better than O(ε) forward difference
-        jacp_dot = (jacp_forward - jacp_backward) / (2.0 * epsilon)
 
         # Coriolis force: -2m(Ω × v)
         # In our case: Coriolis contribution to acceleration
@@ -706,11 +627,7 @@ class KinematicForceAnalyzer:
 
         # Approximate centrifugal as component aligned with position
         # Singularity protection when near origin
-        centrifugal_direction = club_pos / (
-            np.linalg.norm(club_pos) + EPSILON_SINGULARITY_DETECTION
-        )
-        centrifugal_magnitude = np.dot(apparent_force, centrifugal_direction)
-        centrifugal_force = centrifugal_magnitude * centrifugal_direction
+        centrifugal_force = decompose_apparent_force(apparent_force, club_pos)
 
         return coriolis_force, centrifugal_force, apparent_force
 
@@ -867,79 +784,18 @@ class KinematicForceAnalyzer:
         return results
 
     def _validate_effective_mass_direction(self, direction: np.ndarray) -> np.ndarray:
-        direction_norm = np.linalg.norm(direction)
-        if direction_norm < EPSILON_SINGULARITY_DETECTION:
-            raise ValueError(
-                f"Direction vector has near-zero magnitude: {direction_norm:.2e}. "
-                "Cannot compute effective mass for zero-length direction."
-            )
-        return direction / direction_norm
+        return normalize_effective_mass_direction(direction)
 
     def _check_mass_matrix_conditioning(self, M: np.ndarray) -> None:
-        M_cond = np.linalg.cond(M)
-        if M_cond > 1e6:
-            warnings.warn(
-                f"Mass matrix is ill-conditioned: κ(M) = {M_cond:.2e} > 1e6. "
-                "Effective mass computation may be numerically unstable. "
-                "This often indicates the robot is near a kinematic singularity.",
-                category=UserWarning,
-                stacklevel=2,
-            )
-
-        eigenvalues = np.linalg.eigvalsh(M)
-        if np.any(eigenvalues <= 0):
-            raise ValueError(
-                f"Mass matrix is not positive definite. "
-                f"Minimum eigenvalue: {eigenvalues.min():.2e}. "
-                "This indicates a modeling error or numerical instability."
-            )
+        check_mass_matrix_conditioning(M)
 
     def _check_jacobian_rank(self, jacp: np.ndarray) -> None:
-        J_rank = np.linalg.matrix_rank(jacp)
-        if J_rank < 3:
-            warnings.warn(
-                f"Jacobian is rank deficient: rank={J_rank} < 3. "
-                "Robot has lost mobility in some directions. "
-                "Effective mass may not be well-defined.",
-                category=RuntimeWarning,
-                stacklevel=2,
-            )
+        check_jacobian_rank(jacp)
 
     def _compute_effective_mass_value(
         self, direction: np.ndarray, jacp: np.ndarray, M: np.ndarray
     ) -> float:
-        J_dir = direction @ jacp
-        M_inv = np.linalg.inv(M)
-        denominator = J_dir @ M_inv @ J_dir.T + EPSILON_SINGULARITY_DETECTION
-
-        if abs(denominator) < 1e-8:
-            warnings.warn(
-                f"Effective mass denominator near zero: {denominator:.2e}. "
-                "Robot is at or very close to a kinematic singularity in the "
-                f"specified direction {direction}. Effective mass is extremely large.",
-                category=UserWarning,
-                stacklevel=2,
-            )
-
-        m_eff = 1.0 / denominator
-
-        if m_eff < 0:
-            raise ValueError(
-                f"Computed negative effective mass: {m_eff:.2e} kg. "
-                "This indicates a numerical error or modeling issue."
-            )
-
-        if not np.isfinite(m_eff):
-            warnings.warn(
-                f"Effective mass is non-finite: {m_eff}. "
-                "Robot is at a kinematic singularity. "
-                "Returning large finite value instead.",
-                category=UserWarning,
-                stacklevel=2,
-            )
-            m_eff = 1e10
-
-        return float(m_eff)
+        return compute_effective_mass_value(direction, jacp, M)
 
     def compute_effective_mass(
         self,

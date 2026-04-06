@@ -5,6 +5,10 @@ import warnings
 import mujoco
 import numpy as np
 import pytest
+from mujoco_humanoid_golf.kinematic_force_jacobian import (
+    initialize_jacobian_buffers,
+)
+from mujoco_humanoid_golf.kinematic_force_versioning import validate_mujoco_version
 from mujoco_humanoid_golf.kinematic_forces import (
     KinematicForceAnalyzer,
     KinematicForceData,
@@ -212,3 +216,38 @@ class TestKinematicForceAnalyzer:
         assert "coriolis_power" in power_data
         assert "centrifugal_power" in power_data
         assert all(isinstance(v, float) for v in power_data.values())
+
+
+class TestKinematicForceHelpers:
+    """Tests for extracted helper modules."""
+
+    @pytest.fixture()
+    def model_and_data(self) -> tuple[mujoco.MjModel, mujoco.MjData]:
+        model = mujoco.MjModel.from_xml_string(DOUBLE_PENDULUM_XML)
+        data = mujoco.MjData(model)
+        mujoco.mj_forward(model, data)
+        return model, data
+
+    def test_validate_mujoco_version_accepts_supported_versions(self) -> None:
+        class FakeMujoco:
+            __version__ = "3.3.1"
+
+        validate_mujoco_version(FakeMujoco)
+
+    def test_validate_mujoco_version_rejects_older_versions(self) -> None:
+        class FakeMujoco:
+            __version__ = "3.2.9"
+
+        with pytest.raises(ImportError, match="3.3.0\\+ is required"):
+            validate_mujoco_version(FakeMujoco)
+
+    def test_initialize_jacobian_buffers_matches_model_dofs(
+        self,
+        model_and_data,
+    ) -> None:
+        model, data = model_and_data
+        buffers = initialize_jacobian_buffers(model, data)
+
+        assert buffers.nv == model.nv
+        assert buffers.jacp.size == 3 * model.nv
+        assert buffers.jacr.size == 3 * model.nv
