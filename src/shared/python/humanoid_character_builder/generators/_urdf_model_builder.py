@@ -203,7 +203,9 @@ class URDFModelBuilder:
         length = dimensions.get("length", 0.1)
         width = dimensions.get("width", 0.05)
         depth = dimensions.get("depth", 0.05)
-        shape, shape_dims = estimate_segment_primitive(segment_name, length, width, depth)
+        shape, shape_dims = estimate_segment_primitive(
+            segment_name, length, width, depth
+        )
         return self.primitive_inertia_calc.compute(shape, mass, shape_dims)
 
     def create_geometry_dict(

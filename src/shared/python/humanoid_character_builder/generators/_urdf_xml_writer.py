@@ -118,7 +118,9 @@ class URDFXMLWriter:
         """Append a URDF joint element."""
         if not (root is not None):
             raise ValueError("root must be provided")
-        joint_elem = ET.SubElement(root, "joint", name=joint.name, type=joint.joint_type)
+        joint_elem = ET.SubElement(
+            root, "joint", name=joint.name, type=joint.joint_type
+        )
         ET.SubElement(joint_elem, "parent", link=joint.parent)
         ET.SubElement(joint_elem, "child", link=joint.child)
         ET.SubElement(
