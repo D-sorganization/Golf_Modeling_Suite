@@ -13,6 +13,7 @@ and does not depend on other Golf Modeling Suite modules.
 from __future__ import annotations
 
 import logging
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
