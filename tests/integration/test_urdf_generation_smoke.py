@@ -95,9 +95,7 @@ class TestURDFStructuralValidity:
         self, default_urdf_root: ET.Element
     ) -> None:
         """Every joint parent and child must reference an existing link."""
-        link_names = {
-            link.get("name") for link in default_urdf_root.findall("link")
-        }
+        link_names = {link.get("name") for link in default_urdf_root.findall("link")}
         for joint in default_urdf_root.findall("joint"):
             joint_name = joint.get("name")
             parent = joint.find("parent")
@@ -237,9 +235,7 @@ class TestURDFPinocchioLoad:
                 "pinocchio appears to be a stub/mock -- skipping Pinocchio URDF load smoke test"
             )
         if not hasattr(pin, "buildModelFromUrdf"):
-            pytest.skip(
-                "pinocchio buildModelFromUrdf not available in this build"
-            )
+            pytest.skip("pinocchio buildModelFromUrdf not available in this build")
         try:
             model = pin.buildModelFromUrdf(str(default_urdf_path))
             assert model is not None
