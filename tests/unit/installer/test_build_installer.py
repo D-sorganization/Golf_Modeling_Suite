@@ -1,3 +1,4 @@
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -5,7 +6,7 @@ import pytest
 import installer.windows.build_installer as bi
 
 
-def test_check_prerequisites(monkeypatch):
+def test_check_prerequisites(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
     original_import = __import__
 
     # Test failure
@@ -29,9 +30,10 @@ def test_check_prerequisites(monkeypatch):
 
     monkeypatch.setattr("builtins.__import__", mock_import_success)
     assert bi.check_prerequisites() is True
+    assert "cx_Freeze 1.0.0" in capsys.readouterr().out
 
 
-def test_clean_build_dirs(tmp_path, monkeypatch):
+def test_clean_build_dirs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     build_dir = tmp_path / "build"
     dist_dir = tmp_path / "dist"
 
@@ -62,7 +64,7 @@ def test_install_dependencies_fail(mock_run):
     assert bi.install_dependencies() is False
 
 
-def test_detect_physics_engines(monkeypatch):
+def test_detect_physics_engines(monkeypatch: pytest.MonkeyPatch) -> None:
     def mock_import(name, *args, **kwargs):
         if name in ("mujoco", "pinocchio"):
             return MagicMock()
@@ -115,6 +117,11 @@ def test_create_installer_info(tmp_path, monkeypatch):
     assert "version" in data
 
 
+def test_emit_stdout_writes_single_line(capsys: pytest.CaptureFixture[str]) -> None:
+    bi._emit_stdout("installer ready")
+    assert capsys.readouterr().out == "installer ready\n"
+
+
 @patch("installer.windows.build_installer.check_prerequisites", return_value=True)
 @patch("installer.windows.build_installer.clean_build_dirs")
 @patch("installer.windows.build_installer.install_dependencies", return_value=True)
@@ -150,3 +157,33 @@ def test_main(
     mock_exe.assert_called_once()
     mock_msi.assert_called_once()
     mock_info.assert_called_once()
+
+
+@patch("installer.windows.build_installer.check_prerequisites", return_value=True)
+@patch("installer.windows.build_installer.install_dependencies", return_value=True)
+@patch(
+    "installer.windows.build_installer.detect_physics_engines", return_value=["mujoco"]
+)
+@patch("installer.windows.build_installer.build_executable", return_value=True)
+def test_main_reports_generated_files(
+    mock_exe,
+    mock_detect,
+    mock_deps,
+    mock_prereq,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr(bi, "DIST_DIR", tmp_path)
+    monkeypatch.setattr("sys.argv", ["build_installer.py", "--exe-only"])
+    output_file = tmp_path / "artifact.txt"
+    output_file.write_text("artifact", encoding="utf-8")
+
+    bi.main()
+
+    output = capsys.readouterr().out
+    assert "Generated artifact.txt" in output
+    mock_prereq.assert_called_once()
+    mock_deps.assert_called_once()
+    mock_detect.assert_called_once()
+    mock_exe.assert_called_once()
