@@ -8,6 +8,7 @@ from pathlib import Path
 
 import yaml  # type: ignore[import-untyped]
 
+from src.shared.python.config.model_pack_manifest import ModelPackEntry
 from src.shared.python.core.contracts import ContractChecker
 
 
@@ -98,10 +99,18 @@ class ModelRegistry(ContractChecker):
 
             for model_data in data["models"]:
                 try:
-                    model = ModelConfig(**model_data)
+                    entry = ModelPackEntry.from_dict(model_data)
+                    model = ModelConfig(
+                        id=entry.id,
+                        name=entry.name,
+                        description=entry.description,
+                        type=entry.type,
+                        path=entry.path,
+                        engine_type=entry.engine_type,
+                    )
                     self.models[model.id] = model
                     logger.debug(f"Loaded model: {model.id}")
-                except TypeError as e:
+                except (TypeError, ValueError) as e:
                     logger.error(f"Invalid model configuration: {model_data} - {e}")
 
             logger.info(f"Loaded {len(self.models)} models from {self.config_path}")
