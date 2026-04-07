@@ -12,6 +12,20 @@ from src.shared.python.config.model_pack_manifest import ModelPackEntry
 from src.shared.python.core.contracts import ContractChecker
 
 
+def _normalize_legacy_model_entry(model_data: object) -> object:
+    """Coerce legacy registry entries into the stricter manifest contract shape."""
+    if not isinstance(model_data, dict):
+        return model_data
+
+    normalized = dict(model_data)
+    description = normalized.get("description")
+    if isinstance(description, str) and description.strip() == "":
+        fallback_name = normalized.get("name")
+        if isinstance(fallback_name, str) and fallback_name.strip():
+            normalized["description"] = fallback_name.strip()
+    return normalized
+
+
 @dataclass
 class ModelConfig:
     """Configuration for a physics model."""
@@ -103,7 +117,9 @@ class ModelRegistry(ContractChecker):
 
             for model_data in data["models"]:
                 try:
-                    entry = ModelPackEntry.from_dict(model_data)
+                    entry = ModelPackEntry.from_dict(
+                        _normalize_legacy_model_entry(model_data)
+                    )
                     model = ModelConfig(
                         id=entry.id,
                         name=entry.name,
