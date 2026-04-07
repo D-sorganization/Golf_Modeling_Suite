@@ -22,6 +22,10 @@ class ModelConfig:
     type: str  # 'mjcf', 'urdf', 'matlab'
     path: str
     engine_type: str | None = None
+    provider: str | None = None
+    source_root: str | None = None
+    working_dir: str | None = None
+    python_paths: tuple[str, ...] = ()
 
 
 class ModelRegistry(ContractChecker):
@@ -107,6 +111,10 @@ class ModelRegistry(ContractChecker):
                         type=entry.type,
                         path=entry.path,
                         engine_type=entry.engine_type,
+                        provider=entry.provider,
+                        source_root=entry.source_root,
+                        working_dir=entry.working_dir,
+                        python_paths=entry.python_paths,
                     )
                     self.models[model.id] = model
                     logger.debug(f"Loaded model: {model.id}")

@@ -7,6 +7,7 @@ and future external provider repositories without changing launcher callers.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -16,7 +17,9 @@ import yaml  # type: ignore[import-untyped]
 from src.shared.python.contracts import ContractChecker, ensure, require
 
 
-def _normalize_string_sequence(values: list[Any] | tuple[Any, ...] | None) -> tuple[str, ...]:
+def _normalize_string_sequence(
+    values: list[Any] | tuple[Any, ...] | None,
+) -> tuple[str, ...]:
     """Normalize a sequence of strings into a unique, deterministic tuple."""
     if values is None:
         return ()
@@ -28,6 +31,25 @@ def _normalize_string_sequence(values: list[Any] | tuple[Any, ...] | None) -> tu
     for value in values:
         require(isinstance(value, str), "sequence entries must be strings", value)
         item = value.strip().lower()
+        if not item or item in seen:
+            continue
+        seen.add(item)
+        normalized.append(item)
+    return tuple(normalized)
+
+
+def _normalize_path_sequence(values: list[Any] | tuple[Any, ...] | None) -> tuple[str, ...]:
+    """Normalize path-like strings into a unique, deterministic tuple."""
+    if values is None:
+        return ()
+
+    require(isinstance(values, (list, tuple)), "path fields must be lists or tuples")
+
+    normalized: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        require(isinstance(value, str), "path entries must be strings", value)
+        item = value.strip()
         if not item or item in seen:
             continue
         seen.add(item)
@@ -47,6 +69,10 @@ class ModelPackEntry:
     engine_type: str | None = None
     capabilities: tuple[str, ...] = ()
     tags: tuple[str, ...] = ()
+    provider: str | None = None
+    source_root: str | None = None
+    working_dir: str | None = None
+    python_paths: tuple[str, ...] = ()
     order: int = 99
 
     @classmethod
@@ -72,6 +98,30 @@ class ModelPackEntry:
                 engine_type,
             )
 
+        provider = data.get("provider")
+        if provider is not None:
+            require(
+                isinstance(provider, str) and provider.strip() != "",
+                "provider must be a non-empty string when provided",
+                provider,
+            )
+
+        source_root = data.get("source_root")
+        if source_root is not None:
+            require(
+                isinstance(source_root, str) and source_root.strip() != "",
+                "source_root must be a non-empty string when provided",
+                source_root,
+            )
+
+        working_dir = data.get("working_dir")
+        if working_dir is not None:
+            require(
+                isinstance(working_dir, str) and working_dir.strip() != "",
+                "working_dir must be a non-empty string when provided",
+                working_dir,
+            )
+
         order = data.get("order", 99)
         require(isinstance(order, int), "order must be an integer", order)
         require(order >= 0, "order must be non-negative", order)
@@ -85,6 +135,10 @@ class ModelPackEntry:
             engine_type=engine_type.strip() if isinstance(engine_type, str) else None,
             capabilities=_normalize_string_sequence(data.get("capabilities")),
             tags=_normalize_string_sequence(data.get("tags")),
+            provider=provider.strip() if isinstance(provider, str) else None,
+            source_root=source_root.strip() if isinstance(source_root, str) else None,
+            working_dir=working_dir.strip() if isinstance(working_dir, str) else None,
+            python_paths=_normalize_path_sequence(data.get("python_paths")),
             order=order,
         )
 
@@ -102,6 +156,14 @@ class ModelPackEntry:
         }
         if self.engine_type:
             data["engine_type"] = self.engine_type
+        if self.provider:
+            data["provider"] = self.provider
+        if self.source_root:
+            data["source_root"] = self.source_root
+        if self.working_dir:
+            data["working_dir"] = self.working_dir
+        if self.python_paths:
+            data["python_paths"] = list(self.python_paths)
         return data
 
 
@@ -218,7 +280,7 @@ class ModelPackManifest(ContractChecker):
             data["source_repo"] = self.source_repo
         return data
 
-    def _get_invariants(self) -> list[tuple[callable, str]]:  # type: ignore[valid-type]
+    def _get_invariants(self) -> list[tuple[Callable[[], bool], str]]:
         """Define class invariants for strict model-pack manifests."""
         return [
             (

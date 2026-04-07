@@ -37,6 +37,26 @@ class TestModelPackEntry:
         assert entry.capabilities == ("ik", "dynamics")
         assert entry.tags == ("lowerbody", "golf")
 
+    def test_from_dict_preserves_source_metadata(self) -> None:
+        entry = ModelPackEntry.from_dict(
+            {
+                "id": "drake_humanoid",
+                "name": "Drake Humanoid",
+                "description": "Provider-backed humanoid model",
+                "type": "urdf",
+                "path": "models/drake/humanoid.urdf",
+                "provider": "drake_models",
+                "source_root": "../Drake_Models",
+                "working_dir": "python",
+                "python_paths": ["src", "src", "bindings"],
+            }
+        )
+
+        assert entry.provider == "drake_models"
+        assert entry.source_root == "../Drake_Models"
+        assert entry.working_dir == "python"
+        assert entry.python_paths == ("src", "bindings")
+
     def test_from_dict_missing_required_field_raises(self) -> None:
         with pytest.raises(ValueError, match="missing required fields"):
             ModelPackEntry.from_dict(
@@ -163,3 +183,6 @@ class TestModelPackManifest:
         assert manifest.pack_id == "upstreamdrift-core"
         assert manifest.manifest_version == "1.0.0"
         assert manifest.model_ids == ["legacy_model"]
+        legacy_model = manifest.models[0]
+        assert legacy_model.source_root is None
+        assert legacy_model.python_paths == ()
