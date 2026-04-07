@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from humanoid_character_builder.core.body_parameters import BodyParameters
 
@@ -39,8 +39,8 @@ class _RuntimeProxy:
         return getattr(self._value(), item)
 
 
-logger = _RuntimeProxy("logger", get_logger(__name__))
-TRIMESH_AVAILABLE = _RuntimeProxy("TRIMESH_AVAILABLE", False)
+logger: Any = _RuntimeProxy("logger", get_logger(__name__))
+TRIMESH_AVAILABLE = cast(bool, _RuntimeProxy("TRIMESH_AVAILABLE", False))
 
 
 class PrimitiveMeshGenerator(MeshGeneratorInterface):

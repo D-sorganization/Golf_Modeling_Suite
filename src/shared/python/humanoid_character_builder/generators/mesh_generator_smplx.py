@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 from humanoid_character_builder.core.body_parameters import BodyParameters, GenderModel
@@ -40,11 +40,11 @@ class _RuntimeProxy:
         return getattr(self._value(), item)
 
 
-logger = _RuntimeProxy("logger", get_logger(__name__))
-SMPLX_AVAILABLE = _RuntimeProxy("SMPLX_AVAILABLE", False)
-TRIMESH_AVAILABLE = _RuntimeProxy("TRIMESH_AVAILABLE", False)
-_smplx_module = _RuntimeProxy("_smplx_module", None)
-_trimesh_module = _RuntimeProxy("_trimesh_module", None)
+logger: Any = _RuntimeProxy("logger", get_logger(__name__))
+SMPLX_AVAILABLE = cast(bool, _RuntimeProxy("SMPLX_AVAILABLE", False))
+TRIMESH_AVAILABLE = cast(bool, _RuntimeProxy("TRIMESH_AVAILABLE", False))
+_smplx_module: Any = _RuntimeProxy("_smplx_module", None)
+_trimesh_module: Any = _RuntimeProxy("_trimesh_module", None)
 
 
 class SMPLXMeshGenerator(MeshGeneratorInterface):
