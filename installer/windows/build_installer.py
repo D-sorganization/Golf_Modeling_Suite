@@ -20,6 +20,11 @@ BUILD_DIR = INSTALLER_DIR / "build"
 DIST_DIR = INSTALLER_DIR / "dist"
 
 
+def _emit_stdout(message: str) -> None:
+    """Write a single line to standard output."""
+    sys.stdout.write(f"{message}\n")
+
+
 def check_prerequisites() -> bool:
     """Check that all required tools are available."""
 
@@ -29,7 +34,7 @@ def check_prerequisites() -> bool:
     try:
         import cx_Freeze  # type: ignore[import-not-found]
 
-        print(f"✓ cx_Freeze {cx_Freeze.version}")  # noqa: T201
+        _emit_stdout(f"✓ cx_Freeze {cx_Freeze.version}")
     except ImportError:
         return False
 
@@ -209,7 +214,7 @@ def main() -> None:
     if output_files:
         for file_path in output_files:
             size_mb = os.path.getsize(file_path) / (1024 * 1024)
-            print(f"Generated {file_path.name} ({size_mb:.2f} MB)")  # noqa: T201
+            _emit_stdout(f"Generated {file_path.name} ({size_mb:.2f} MB)")
 
 
 if __name__ == "__main__":

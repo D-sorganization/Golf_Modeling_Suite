@@ -5,7 +5,7 @@ import pytest
 import installer.windows.build_installer as bi
 
 
-def test_check_prerequisites(monkeypatch):
+def test_check_prerequisites(monkeypatch, capsys):
     original_import = __import__
 
     # Test failure
@@ -16,6 +16,8 @@ def test_check_prerequisites(monkeypatch):
 
     monkeypatch.setattr("builtins.__import__", mock_import_fail)
     assert bi.check_prerequisites() is False
+    captured = capsys.readouterr()
+    assert captured.out == ""
 
     # Test success
     # Need to simulate cx_Freeze existing
@@ -29,6 +31,8 @@ def test_check_prerequisites(monkeypatch):
 
     monkeypatch.setattr("builtins.__import__", mock_import_success)
     assert bi.check_prerequisites() is True
+    captured = capsys.readouterr()
+    assert "✓ cx_Freeze 1.0.0" in captured.out
 
 
 def test_clean_build_dirs(tmp_path, monkeypatch):
@@ -134,8 +138,11 @@ def test_main(
     mock_prereq,
     monkeypatch,
     tmp_path,
+    capsys,
 ):
     monkeypatch.setattr(bi, "DIST_DIR", tmp_path)
+    artifact = tmp_path / "artifact.msi"
+    artifact.write_bytes(b"abc")
     monkeypatch.setattr("sys.argv", ["build_installer.py", "--clean"])
 
     try:
@@ -150,3 +157,6 @@ def test_main(
     mock_exe.assert_called_once()
     mock_msi.assert_called_once()
     mock_info.assert_called_once()
+
+    captured = capsys.readouterr()
+    assert "Generated artifact.msi" in captured.out
