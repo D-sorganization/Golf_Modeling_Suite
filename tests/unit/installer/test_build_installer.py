@@ -5,7 +5,7 @@ import pytest
 import installer.windows.build_installer as bi
 
 
-def test_check_prerequisites(monkeypatch, capsys):
+def test_check_prerequisites(monkeypatch):
     original_import = __import__
 
     # Test failure
@@ -16,8 +16,6 @@ def test_check_prerequisites(monkeypatch, capsys):
 
     monkeypatch.setattr("builtins.__import__", mock_import_fail)
     assert bi.check_prerequisites() is False
-    captured = capsys.readouterr()
-    assert captured.out == ""
 
     # Test success
     # Need to simulate cx_Freeze existing
@@ -31,8 +29,24 @@ def test_check_prerequisites(monkeypatch, capsys):
 
     monkeypatch.setattr("builtins.__import__", mock_import_success)
     assert bi.check_prerequisites() is True
-    captured = capsys.readouterr()
-    assert "✓ cx_Freeze 1.0.0" in captured.out
+
+
+def test_check_prerequisites_logs_cx_freeze_version(monkeypatch, caplog):
+    original_import = __import__
+    mock_cx = MagicMock()
+    mock_cx.version = "9.9.9"
+
+    def mock_import_success(name, *args, **kwargs):
+        if name == "cx_Freeze":
+            return mock_cx
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr("builtins.__import__", mock_import_success)
+
+    with caplog.at_level("INFO"):
+        assert bi.check_prerequisites() is True
+
+    assert "cx_Freeze 9.9.9" in caplog.text
 
 
 def test_clean_build_dirs(tmp_path, monkeypatch):
@@ -119,6 +133,16 @@ def test_create_installer_info(tmp_path, monkeypatch):
     assert "version" in data
 
 
+def test_log_generated_outputs(caplog, tmp_path):
+    artifact = tmp_path / "installer.msi"
+    artifact.write_text("artifact")
+
+    with caplog.at_level("INFO"):
+        bi._log_generated_outputs([artifact])
+
+    assert "Generated installer.msi" in caplog.text
+
+
 @patch("installer.windows.build_installer.check_prerequisites", return_value=True)
 @patch("installer.windows.build_installer.clean_build_dirs")
 @patch("installer.windows.build_installer.install_dependencies", return_value=True)
@@ -128,7 +152,9 @@ def test_create_installer_info(tmp_path, monkeypatch):
 @patch("installer.windows.build_installer.build_executable", return_value=True)
 @patch("installer.windows.build_installer.build_msi", return_value=True)
 @patch("installer.windows.build_installer.create_installer_info")
+@patch("installer.windows.build_installer._log_generated_outputs")
 def test_main(
+    mock_log_outputs,
     mock_info,
     mock_msi,
     mock_exe,
@@ -138,12 +164,12 @@ def test_main(
     mock_prereq,
     monkeypatch,
     tmp_path,
-    capsys,
 ):
     monkeypatch.setattr(bi, "DIST_DIR", tmp_path)
     artifact = tmp_path / "artifact.msi"
     artifact.write_bytes(b"abc")
     monkeypatch.setattr("sys.argv", ["build_installer.py", "--clean"])
+    (tmp_path / "installer.msi").write_text("artifact")
 
     try:
         bi.main()
@@ -157,6 +183,4 @@ def test_main(
     mock_exe.assert_called_once()
     mock_msi.assert_called_once()
     mock_info.assert_called_once()
-
-    captured = capsys.readouterr()
-    assert "Generated artifact.msi" in captured.out
+    mock_log_outputs.assert_called_once()
