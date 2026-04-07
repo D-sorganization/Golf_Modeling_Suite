@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.39                                             |
+| **Spec Version**        | 1.0.40                                             |
 | **Last Spec Update**    | 2026-04-07                                         |
 
 ## 2. Purpose & Mission
@@ -308,6 +308,7 @@ UpstreamDrift employs a comprehensive test pyramid with multiple specialized cat
 - [ ] Muscle dynamics simulation produces realistic activation patterns
 - [ ] Cross-platform build (Windows, macOS, Linux) produces functional binaries
 - [x] Integration: URDF smoke tests reuse a shared parsed fixture for structural assertions and skip Pinocchio loading cleanly when `buildModelFromUrdf` is unavailable
+- [x] Unit: `src/shared/python/model_generation/tests/` is covered by an AST-based regression check so pytest fixtures and shared loader helpers keep explicit return annotations
 
 ## 8. Quality Standards
 
