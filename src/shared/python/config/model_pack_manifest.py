@@ -24,7 +24,7 @@ def _normalize_string_sequence(
     if values is None:
         return ()
 
-    require(isinstance(values, (list, tuple)), "sequence fields must be lists or tuples")
+    require(isinstance(values, list | tuple), "sequence fields must be lists or tuples")
 
     normalized: list[str] = []
     seen: set[str] = set()
@@ -38,12 +38,14 @@ def _normalize_string_sequence(
     return tuple(normalized)
 
 
-def _normalize_path_sequence(values: list[Any] | tuple[Any, ...] | None) -> tuple[str, ...]:
+def _normalize_path_sequence(
+    values: list[Any] | tuple[Any, ...] | None,
+) -> tuple[str, ...]:
     """Normalize path-like strings into a unique, deterministic tuple."""
     if values is None:
         return ()
 
-    require(isinstance(values, (list, tuple)), "path fields must be lists or tuples")
+    require(isinstance(values, list | tuple), "path fields must be lists or tuples")
 
     normalized: list[str] = []
     seen: set[str] = set()
@@ -83,7 +85,9 @@ class ModelPackEntry:
         required = {"id", "name", "description", "type", "path"}
         missing = required - set(data.keys())
         if missing:
-            raise ValueError(f"Model pack entry missing required fields: {sorted(missing)}")
+            raise ValueError(
+                f"Model pack entry missing required fields: {sorted(missing)}"
+            )
 
         for field_name in required:
             value = data[field_name]
@@ -187,7 +191,9 @@ class ModelPackManifest(ContractChecker):
         required = {"manifest_version", "pack_id", "pack_name", "provider", "models"}
         missing = required - set(data.keys())
         if missing:
-            raise ValueError(f"Model pack manifest missing required fields: {sorted(missing)}")
+            raise ValueError(
+                f"Model pack manifest missing required fields: {sorted(missing)}"
+            )
 
         models_raw = data["models"]
         require(isinstance(models_raw, list), "models must be a list", models_raw)
@@ -217,9 +223,13 @@ class ModelPackManifest(ContractChecker):
         ids = manifest.model_ids
         duplicates = [model_id for model_id in ids if ids.count(model_id) > 1]
         if duplicates:
-            raise ValueError(f"Duplicate model IDs in manifest: {sorted(set(duplicates))}")
+            raise ValueError(
+                f"Duplicate model IDs in manifest: {sorted(set(duplicates))}"
+            )
 
-        ensure(manifest.models == entries, "models must remain sorted deterministically")
+        ensure(
+            manifest.models == entries, "models must remain sorted deterministically"
+        )
         return manifest
 
     @classmethod
@@ -249,7 +259,9 @@ class ModelPackManifest(ContractChecker):
         """Wrap a legacy ``models.yaml`` registry in the versioned manifest shape."""
         require(isinstance(data, dict), "legacy registry must be a mapping", data)
         models_raw = data.get("models", [])
-        require(isinstance(models_raw, list), "legacy models must be a list", models_raw)
+        require(
+            isinstance(models_raw, list), "legacy models must be a list", models_raw
+        )
         return cls.from_dict(
             {
                 "manifest_version": "1.0.0",
@@ -293,7 +305,8 @@ class ModelPackManifest(ContractChecker):
                 "pack_id must be a non-empty string",
             ),
             (
-                lambda: isinstance(self.pack_name, str) and self.pack_name.strip() != "",
+                lambda: isinstance(self.pack_name, str)
+                and self.pack_name.strip() != "",
                 "pack_name must be a non-empty string",
             ),
             (
