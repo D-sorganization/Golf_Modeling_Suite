@@ -384,7 +384,9 @@ class TestDbMigrateFunctions:
             result = db_migrate.cmd_check(args)
         assert result == 0
         captured = capsys.readouterr()
-        assert "Migration check passed: models and migrations are in sync." in captured.out
+        assert (
+            "Migration check passed: models and migrations are in sync." in captured.out
+        )
 
     def test_cmd_check_writes_failure_to_stderr(self, db_migrate, capsys):
         """cmd_check reports failures on stderr and returns 1."""
@@ -400,7 +402,9 @@ class TestDbMigrateFunctions:
         assert result == 1
         captured = capsys.readouterr()
         assert "Migration check FAILED: boom" in captured.err
-        assert "Run: python3 scripts/db_migrate.py revision --autogenerate" in captured.err
+        assert (
+            "Run: python3 scripts/db_migrate.py revision --autogenerate" in captured.err
+        )
 
     def test_cmd_upgrade_calls_alembic_upgrade(self, db_migrate, tmp_path):
         """cmd_upgrade calls alembic.command.upgrade with correct args."""
