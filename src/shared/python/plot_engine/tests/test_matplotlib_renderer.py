@@ -7,6 +7,8 @@ and theme integration.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+
 import matplotlib
 
 matplotlib.use("Agg")  # Non-interactive backend for testing
@@ -31,12 +33,12 @@ from plot_engine.specs import (
 
 
 @pytest.fixture()
-def renderer():
+def renderer() -> MatplotlibRenderer:
     return MatplotlibRenderer()
 
 
 @pytest.fixture(autouse=True)
-def _close_figs():
+def _close_figs() -> Iterator[None]:
     """Close all matplotlib figures after each test."""
     yield
     plt.close("all")
