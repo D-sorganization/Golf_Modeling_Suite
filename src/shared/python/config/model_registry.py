@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, cast
 
 import yaml  # type: ignore[import-untyped]
 
@@ -12,11 +13,8 @@ from src.shared.python.config.model_pack_manifest import ModelPackEntry
 from src.shared.python.core.contracts import ContractChecker
 
 
-def _normalize_legacy_model_entry(model_data: object) -> object:
+def _normalize_legacy_model_entry(model_data: dict[str, Any]) -> dict[str, Any]:
     """Coerce legacy registry entries into the stricter manifest contract shape."""
-    if not isinstance(model_data, dict):
-        return model_data
-
     normalized = dict(model_data)
     description = normalized.get("description")
     if isinstance(description, str) and description.strip() == "":
@@ -117,8 +115,11 @@ class ModelRegistry(ContractChecker):
 
             for model_data in data["models"]:
                 try:
+                    if not isinstance(model_data, dict):
+                        raise ValueError("legacy model entries must be mappings")
+                    legacy_model_data = cast(dict[str, Any], model_data)
                     entry = ModelPackEntry.from_dict(
-                        _normalize_legacy_model_entry(model_data)
+                        _normalize_legacy_model_entry(legacy_model_data)
                     )
                     model = ModelConfig(
                         id=entry.id,

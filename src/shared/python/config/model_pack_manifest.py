@@ -296,8 +296,10 @@ class ModelPackManifest(ContractChecker):
         """Define class invariants for strict model-pack manifests."""
         return [
             (
-                lambda: isinstance(self.manifest_version, str)
-                and self.manifest_version.strip() != "",
+                lambda: (
+                    isinstance(self.manifest_version, str)
+                    and self.manifest_version.strip() != ""
+                ),
                 "manifest_version must be a non-empty string",
             ),
             (
@@ -305,8 +307,9 @@ class ModelPackManifest(ContractChecker):
                 "pack_id must be a non-empty string",
             ),
             (
-                lambda: isinstance(self.pack_name, str)
-                and self.pack_name.strip() != "",
+                lambda: (
+                    isinstance(self.pack_name, str) and self.pack_name.strip() != ""
+                ),
                 "pack_name must be a non-empty string",
             ),
             (
