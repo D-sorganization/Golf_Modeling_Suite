@@ -256,16 +256,16 @@ class LauncherManifest:
         if not isinstance(tiles_raw, list):
             raise ValueError("Manifest 'tiles' must be a list")
 
-        tiles = [LauncherTile.from_dict(t) for t in tiles_raw]
+        tile_list = [LauncherTile.from_dict(t) for t in tiles_raw]
         if include_provider_tiles:
-            tiles.extend(
+            tile_list.extend(
                 cls._load_provider_tiles(
                     registry_path=registry_path or REGISTRY_PATH,
-                    existing_ids={tile.id for tile in tiles},
+                    existing_ids={tile.id for tile in tile_list},
                 )
             )
 
-        tiles = tuple(sorted(tiles, key=lambda t: (t.order, t.id)))
+        tiles = tuple(sorted(tile_list, key=lambda t: (t.order, t.id)))
 
         manifest = cls(
             version=raw.get("version", "0.0.0"),
