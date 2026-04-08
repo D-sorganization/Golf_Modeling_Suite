@@ -383,11 +383,11 @@ def validate_mirror_trajectory(
     all_valid = y_flipped and x_preserved and z_preserved and path_length_preserved
 
     return {
-        "valid": all_valid,
+        "valid": bool(all_valid),
         "y_flipped": y_flipped,
         "x_preserved": x_preserved,
         "z_preserved": z_preserved,
-        "path_length_preserved": path_length_preserved,
+        "path_length_preserved": bool(path_length_preserved),
         "original_path_length": float(original_path_length),
         "mirrored_path_length": float(mirrored_path_length),
     }
@@ -424,7 +424,7 @@ def validate_energy_conservation(
     energy_preserved = np.isclose(total_original, total_mirrored, rtol=1e-10)
 
     return {
-        "valid": energy_preserved,
+        "valid": bool(energy_preserved),
         "original_total_ke": float(total_original),
         "mirrored_total_ke": float(total_mirrored),
         "max_difference": float(np.max(np.abs(original_ke - mirrored_ke))),
