@@ -256,32 +256,34 @@ class LauncherManifest:
         if not isinstance(tiles_raw, list):
             raise ValueError("Manifest 'tiles' must be a list")
 
-        tile_list = [LauncherTile.from_dict(t) for t in tiles_raw]
+        tiles = [LauncherTile.from_dict(t) for t in tiles_raw]
         if include_provider_tiles:
-            tile_list.extend(
+            tiles.extend(
                 cls._load_provider_tiles(
                     registry_path=registry_path or REGISTRY_PATH,
-                    existing_ids={tile.id for tile in tile_list},
+                    existing_ids={tile.id for tile in tiles},
                 )
             )
 
-        tiles = tuple(sorted(tile_list, key=lambda t: (t.order, t.id)))
+        sorted_tiles: tuple[LauncherTile, ...] = tuple(
+            sorted(tiles, key=lambda t: (t.order, t.id))
+        )
 
         manifest = cls(
             version=raw.get("version", "0.0.0"),
-            tiles=tiles,
+            tiles=sorted_tiles,
             description=raw.get("description", ""),
         )
 
         # DBC Postcondition: verify all tiles have unique IDs
-        ids = [t.id for t in tiles]
+        ids = [t.id for t in sorted_tiles]
         duplicates = [tid for tid in ids if ids.count(tid) > 1]
         if duplicates:
             raise ValueError(f"Duplicate tile IDs in manifest: {set(duplicates)}")
 
         logger.info(
             "Loaded %d tiles (v%s): %s",
-            len(tiles),
+            len(sorted_tiles),
             manifest.version,
             ", ".join(t.id for t in tiles),
         )
