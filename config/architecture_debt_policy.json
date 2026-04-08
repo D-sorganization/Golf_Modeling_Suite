@@ -12,12 +12,13 @@
       ]
     },
     {
-      "path": "src/shared/python/physics/terrain.py",
+      "path": "src/shared/python/physics/terrain/__init__.py",
       "max_lines": 120,
       "required_modules": [
-        "terrain_representation",
-        "terrain_loading",
-        "terrain_physics"
+        "elevation",
+        "materials",
+        "regions",
+        "terrain_base"
       ]
     },
     {
