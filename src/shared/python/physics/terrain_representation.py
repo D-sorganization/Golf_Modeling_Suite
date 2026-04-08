@@ -28,7 +28,6 @@ Design by Contract:
 
 from __future__ import annotations
 
-import functools
 import json
 import math
 from dataclasses import dataclass, field
@@ -39,7 +38,6 @@ from typing import Any
 import numpy as np
 
 from src.shared.python.contracts import require
-from src.shared.python.core.physics_constants import GRAVITY_M_S2
 from src.shared.python.logging_pkg.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -1045,156 +1043,3 @@ class TerrainConfig:
             data["elevation"] = elev_map.to_dict()
 
         return cls.from_dict(data)
-
-
-# Factory functions
-
-
-def create_flat_terrain(
-    name: str,
-    width: float,
-    length: float,
-    terrain_type: TerrainType = TerrainType.FAIRWAY,
-    resolution: float = 1.0,
-) -> Terrain:
-    """Create a simple flat terrain.
-
-    Args:
-        name: Terrain identifier
-        width: Width in X direction (meters)
-        length: Length in Y direction (meters)
-        terrain_type: Terrain type for the entire surface
-        resolution: Grid resolution (meters)
-
-    Returns:
-        Flat terrain
-    """
-    if not (name is not None):
-        raise ValueError("name must be provided")
-    elevation = ElevationMap.flat(width=width, length=length, resolution=resolution)
-    patches = [TerrainPatch(terrain_type, 0.0, width, 0.0, length)]
-
-    return Terrain(name=name, elevation=elevation, patches=patches)
-
-
-def create_sloped_terrain(
-    name: str,
-    width: float,
-    length: float,
-    slope_angle_deg: float,
-    slope_direction_deg: float,
-    terrain_type: TerrainType = TerrainType.FAIRWAY,
-    resolution: float = 1.0,
-) -> Terrain:
-    """Create a uniformly sloped terrain.
-
-    Args:
-        name: Terrain identifier
-        width: Width in X direction (meters)
-        length: Length in Y direction (meters)
-        slope_angle_deg: Slope angle in degrees
-        slope_direction_deg: Direction of uphill slope (0=+X, 90=+Y)
-        terrain_type: Terrain type for the entire surface
-        resolution: Grid resolution (meters)
-
-    Returns:
-        Sloped terrain
-    """
-    if not (name is not None):
-        raise ValueError("name must be provided")
-    elevation = ElevationMap.sloped(
-        width=width,
-        length=length,
-        resolution=resolution,
-        slope_angle_deg=slope_angle_deg,
-        slope_direction_deg=slope_direction_deg,
-    )
-    patches = [TerrainPatch(terrain_type, 0.0, width, 0.0, length)]
-
-    return Terrain(name=name, elevation=elevation, patches=patches)
-
-
-def create_terrain_from_config(config_path: Path | str) -> Terrain:
-    """Create terrain from configuration file.
-
-    Args:
-        config_path: Path to JSON configuration file
-
-    Returns:
-        Configured terrain
-    """
-    config = TerrainConfig.load(config_path)
-    return config.to_terrain()
-
-
-# Physics integration functions
-
-
-@functools.lru_cache(maxsize=256)
-def compute_gravity_on_slope(
-    slope_angle_deg: float,
-    gravity: float = float(GRAVITY_M_S2),
-) -> tuple[float, float]:
-    """Compute gravity components on a slope. Cached for performance.
-
-    Args:
-        slope_angle_deg: Slope angle in degrees
-        gravity: Gravitational acceleration (m/s^2)
-
-    Returns:
-        Tuple of (g_parallel, g_perpendicular) components
-    """
-    if not (slope_angle_deg is not None):
-        raise ValueError("slope_angle_deg must be provided")
-    slope_rad = math.radians(slope_angle_deg)
-    g_parallel = gravity * math.sin(slope_rad)
-    g_perpendicular = gravity * math.cos(slope_rad)
-
-    return g_parallel, g_perpendicular
-
-
-def compute_roll_direction(
-    elevation: ElevationMap,
-    x: float,
-    y: float,
-) -> np.ndarray:
-    """Compute ball roll direction on terrain (downhill).
-
-    Args:
-        elevation: Elevation map
-        x: X coordinate (meters)
-        y: Y coordinate (meters)
-
-    Returns:
-        Unit vector in roll direction (2D: x, y)
-    """
-    if not (elevation is not None):
-        raise ValueError("elevation must be provided")
-    dzdx, dzdy = elevation.get_gradient(x, y)
-
-    # Roll direction is opposite to gradient (downhill)
-    roll_dir = np.array([-dzdx, -dzdy])
-    magnitude = np.linalg.norm(roll_dir)
-
-    if magnitude < 1e-10:
-        return np.zeros(2)
-
-    return roll_dir / magnitude
-
-
-def get_contact_normal(
-    elevation: ElevationMap,
-    x: float,
-    y: float,
-) -> np.ndarray:
-    """Get contact normal for physics engine.
-
-    Args:
-        elevation: Elevation map
-        x: X coordinate (meters)
-        y: Y coordinate (meters)
-
-    Returns:
-        Unit normal vector (3,)
-    """
-    return elevation.get_normal(x, y)
