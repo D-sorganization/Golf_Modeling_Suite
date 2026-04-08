@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -9,7 +10,10 @@ from typing import Any
 
 import yaml  # type: ignore[import-untyped]
 
-from src.shared.python.config.model_pack_manifest import ModelPackEntry
+from src.shared.python.config.model_pack_manifest import (
+    ModelPackEntry,
+    ModelPackManifest,
+)
 from src.shared.python.core.contracts import ContractChecker
 
 
@@ -118,23 +122,13 @@ class ModelRegistry(ContractChecker):
                     entry = ModelPackEntry.from_dict(
                         _normalize_legacy_model_entry(model_data)
                     )
-                    model = ModelConfig(
-                        id=entry.id,
-                        name=entry.name,
-                        description=entry.description,
-                        type=entry.type,
-                        path=entry.path,
-                        engine_type=entry.engine_type,
-                        provider=entry.provider,
-                        source_root=entry.source_root,
-                        working_dir=entry.working_dir,
-                        python_paths=entry.python_paths,
-                    )
+                    model = self._build_model_config(entry)
                     self.models[model.id] = model
                     logger.debug(f"Loaded model: {model.id}")
                 except (TypeError, ValueError) as e:
                     logger.error(f"Invalid model configuration: {model_data} - {e}")
 
+            self._load_provider_manifests()
             logger.info(f"Loaded {len(self.models)} models from {self.config_path}")
 
         except yaml.YAMLError as e:
@@ -176,3 +170,91 @@ class ModelRegistry(ContractChecker):
             A list of ModelConfig objects matching the specified type.
         """
         return [m for m in self.models.values() if m.type == model_type]
+
+    def _build_model_config(
+        self,
+        entry: ModelPackEntry,
+        *,
+        provider: str | None = None,
+        source_root: str | None = None,
+    ) -> ModelConfig:
+        """Convert a strict model-pack entry into the runtime config shape."""
+        return ModelConfig(
+            id=entry.id,
+            name=entry.name,
+            description=entry.description,
+            type=entry.type,
+            path=entry.path,
+            engine_type=entry.engine_type,
+            provider=entry.provider or provider,
+            source_root=entry.source_root or source_root,
+            working_dir=entry.working_dir,
+            python_paths=entry.python_paths,
+        )
+
+    def _iter_provider_manifest_paths(self) -> list[Path]:
+        """Discover external provider manifests from configured provider roots."""
+        env_value = os.environ.get("UPSTREAM_DRIFT_PROVIDER_ROOTS", "").strip()
+        if not env_value:
+            return []
+
+        config_root = self.config_path.parent
+        manifest_paths: list[Path] = []
+        seen: set[Path] = set()
+
+        for raw_root in env_value.split(os.pathsep):
+            root_value = raw_root.strip()
+            if not root_value:
+                continue
+
+            root_path = Path(root_value)
+            if not root_path.is_absolute():
+                root_path = (config_root / root_path).resolve()
+
+            candidates = [
+                root_path / "model_pack.yaml",
+                root_path / "model_pack.yml",
+                root_path / ".upstreamdrift" / "model_pack.yaml",
+                root_path / ".upstreamdrift" / "model_pack.yml",
+            ]
+            for candidate in candidates:
+                if candidate in seen or not candidate.exists():
+                    continue
+                seen.add(candidate)
+                manifest_paths.append(candidate)
+
+        return manifest_paths
+
+    def _load_provider_manifests(self) -> None:
+        """Load external provider manifests configured for the launcher migration."""
+        from ..core import setup_logging
+
+        logger = setup_logging(__name__)
+
+        for manifest_path in self._iter_provider_manifest_paths():
+            try:
+                manifest = ModelPackManifest.load(manifest_path)
+                for entry in manifest.models:
+                    if entry.id in self.models:
+                        logger.warning(
+                            "Skipping duplicate provider model id '%s' from %s",
+                            entry.id,
+                            manifest_path,
+                        )
+                        continue
+                    self.models[entry.id] = self._build_model_config(
+                        entry,
+                        provider=manifest.provider,
+                        source_root=str(manifest_path.parent),
+                    )
+                logger.info(
+                    "Loaded %d provider models from %s",
+                    len(manifest.models),
+                    manifest_path,
+                )
+            except (OSError, ValueError, yaml.YAMLError) as e:
+                logger.warning(
+                    "Skipping provider manifest %s due to load failure: %s",
+                    manifest_path,
+                    e,
+                )
