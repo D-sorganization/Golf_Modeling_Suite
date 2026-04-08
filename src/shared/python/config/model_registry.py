@@ -6,7 +6,7 @@ import os
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import yaml  # type: ignore[import-untyped]
 
@@ -121,8 +121,11 @@ class ModelRegistry(ContractChecker):
 
             for model_data in data["models"]:
                 try:
+                    if not isinstance(model_data, dict):
+                        raise ValueError("legacy model entries must be mappings")
+                    legacy_model_data = cast(dict[str, Any], model_data)
                     entry = ModelPackEntry.from_dict(
-                        _normalize_legacy_model_entry(model_data)
+                        _normalize_legacy_model_entry(legacy_model_data)
                     )
                     model = self._build_model_config(entry)
                     self.models[model.id] = model
