@@ -265,16 +265,18 @@ class LauncherManifest:
                 )
             )
 
-        tiles = tuple(sorted(tiles, key=lambda t: (t.order, t.id)))
+        sorted_tiles: tuple[LauncherTile, ...] = tuple(
+            sorted(tiles, key=lambda t: (t.order, t.id))
+        )
 
         manifest = cls(
             version=raw.get("version", "0.0.0"),
-            tiles=tiles,
+            tiles=sorted_tiles,
             description=raw.get("description", ""),
         )
 
         # DBC Postcondition: verify all tiles have unique IDs
-        ids = [t.id for t in tiles]
+        ids = [t.id for t in sorted_tiles]
         duplicates = [tid for tid in ids if ids.count(tid) > 1]
         if duplicates:
             raise ValueError(f"Duplicate tile IDs in manifest: {set(duplicates)}")
