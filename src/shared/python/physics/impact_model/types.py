@@ -3,7 +3,7 @@ from enum import Enum, auto
 
 import numpy as np
 
-from src.shared.python.physics.core.physics_constants import (
+from src.shared.python.core.physics_constants import (
     DRIVER_COR,
     DRIVER_MOI_KG_M2,
     TYPICAL_CONTACT_DURATION_S,

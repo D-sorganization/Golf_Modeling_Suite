@@ -1,7 +1,7 @@
 import numpy as np
 
 from src.shared.python.core.contracts import precondition
-from src.shared.python.physics.core.physics_constants import (
+from src.shared.python.core.physics_constants import (
     GOLF_BALL_MASS_KG,
     GOLF_BALL_MOMENT_OF_INERTIA_KG_M2,
 )
