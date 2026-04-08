@@ -11,6 +11,7 @@ from numpy.testing import assert_allclose
 
 from .psa_model import (
     PSAModel,
+    PSAResults,
     calculate_o2_safety_analysis,
     calculate_sensitivity,
     get_flammability_status,
@@ -55,7 +56,7 @@ class TestPSAModelBaseCase:
         )
 
     @pytest.fixture
-    def base_results(self, base_model: PSAModel):
+    def base_results(self, base_model: PSAModel) -> PSAResults:
         """Calculate base case results."""
         return base_model.calculate()
 
@@ -133,7 +134,7 @@ class TestPSAModelH2Flows:
     """Test H2 component flows against Excel."""
 
     @pytest.fixture
-    def base_results(self):
+    def base_results(self) -> PSAResults:
         """Calculate base case results."""
         model = PSAModel()
         return model.calculate()
@@ -191,7 +192,7 @@ class TestPSAModelO2Flows:
     """Test O2 component flows against Excel."""
 
     @pytest.fixture
-    def base_results(self):
+    def base_results(self) -> PSAResults:
         """Calculate base case results."""
         model = PSAModel()
         return model.calculate()
@@ -274,8 +275,8 @@ class TestPSAModelSensitivity:
 
     def test_sensitivity_output_shapes(self) -> None:
         """Test that sensitivity output arrays have correct shapes."""
-        s2_range = np.linspace(0, 1, 11)
-        prod_range = np.array([0.0, 0.1, 0.2])
+        s2_range = np.linspace(0.0, 1.0, 11, dtype=np.float64)
+        prod_range = np.array([0.0, 0.1, 0.2], dtype=np.float64)
 
         sensitivity = calculate_sensitivity(
             s2_tail_recycle_range=s2_range,
