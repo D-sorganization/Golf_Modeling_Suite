@@ -383,8 +383,13 @@ class CollisionChecker:
                     closest_pair = pair
                     point_a = pa
                     point_b = pb
-                    if np.linalg.norm(pb - pa) > 1e-10:
-                        normal = (pb - pa) / np.linalg.norm(pb - pa)
+
+                    # ⚡ Bolt: Cache distance difference and its norm to avoid
+                    # calculating them twice. Reduces Python-to-C overhead.
+                    diff = pb - pa
+                    norm = np.linalg.norm(diff)
+                    if norm > 1e-10:
+                        normal = diff / norm
 
                     # Early exit if max_distance exceeded
                     if min_distance > query.max_distance:
@@ -406,8 +411,13 @@ class CollisionChecker:
                         closest_pair = env_pair
                         point_a = pa
                         point_b = pb
-                        if np.linalg.norm(pb - pa) > 1e-10:
-                            normal = (pb - pa) / np.linalg.norm(pb - pa)
+
+                        # ⚡ Bolt: Cache distance difference and its norm to avoid
+                        # calculating them twice. Reduces Python-to-C overhead.
+                        diff = pb - pa
+                        norm = np.linalg.norm(diff)
+                        if norm > 1e-10:
+                            normal = diff / norm
 
             computation_time = time.perf_counter() - start_time
 
