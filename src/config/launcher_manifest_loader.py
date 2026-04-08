@@ -283,7 +283,7 @@ class LauncherManifest:
 
         logger.info(
             "Loaded %d tiles (v%s): %s",
-            len(tiles),
+            len(sorted_tiles),
             manifest.version,
             ", ".join(t.id for t in tiles),
         )

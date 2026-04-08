@@ -379,7 +379,7 @@ PHYSICS_MODULES = [
     "src/shared/python/physics/physics_parameters.py",
     "src/shared/python/physics/physics_validation.py",
     "src/shared/python/physics/rust_kernel.py",
-    "src/shared/python/physics/terrain.py",
+    "src/shared/python/physics/terrain_physics.py",
     "src/shared/python/physics/terrain_engine.py",
     "src/shared/python/physics/terrain_mixin.py",
     "src/shared/python/physics/topography.py",
