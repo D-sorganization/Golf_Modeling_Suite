@@ -1,9 +1,9 @@
 from __future__ import annotations
-import pytest
 
 import json
 from pathlib import Path
 
+import pytest
 import yaml
 
 from scripts.check_provider_compatibility import main
