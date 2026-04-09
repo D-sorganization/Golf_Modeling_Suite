@@ -209,7 +209,9 @@ class ModelRegistry(ContractChecker):
     ) -> ResolvedModelSource:
         """Resolve canonical source paths for a registered model."""
         require(
-            isinstance(model_id, str) and model_id.strip(), "invalid model id", model_id
+            isinstance(model_id, str) and bool(model_id.strip()),
+            "invalid model id",
+            model_id,
         )
         model = self.get_model(model_id)
         require(model is not None, "model id not found", model_id)

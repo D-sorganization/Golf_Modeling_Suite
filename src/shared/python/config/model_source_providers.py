@@ -26,6 +26,28 @@ def _get_optional_string_attr(model: Any, attr_name: str) -> str | None:
     return None
 
 
+def _require_non_empty_string(value: str | None, *, field_name: str) -> str:
+    """Return a non-empty string after enforcing the contract boundary."""
+    require(
+        value is not None and value.strip() != "",
+        f"{field_name} must be a non-empty string",
+        value,
+    )
+    assert value is not None
+    return value
+
+
+def _require_module_spec(
+    spec: importlib.machinery.ModuleSpec | None,
+    *,
+    package_name: str,
+) -> importlib.machinery.ModuleSpec:
+    """Return an importlib spec after enforcing package discovery."""
+    require(spec is not None, "installed package provider not found", package_name)
+    assert spec is not None
+    return spec
+
+
 @dataclass(frozen=True)
 class ResolvedModelSource:
     """Canonical source locations for a provider-backed model."""
@@ -97,12 +119,7 @@ class ModelSourcePathPolicy:
         field_name: str,
     ) -> Path:
         """Resolve an artifact, working directory, or python path entry."""
-        require(
-            declared_path is not None and declared_path.strip() != "",
-            f"{field_name} must be a non-empty string",
-            declared_path,
-        )
-        raw_path = Path(declared_path)
+        raw_path = Path(_require_non_empty_string(declared_path, field_name=field_name))
         candidate = raw_path if raw_path.is_absolute() else source_root / raw_path
         return self._canonicalize(candidate, field_name=field_name)
 
@@ -249,11 +266,14 @@ class InstalledPackageModelSourceProvider:
         path_policy: ModelSourcePathPolicy,
         fallback_relative: str | Path | None = None,
     ) -> ResolvedModelSource:
-        package_name = _get_optional_string_attr(model, "package_name")
-        require(package_name is not None, "package_name must be provided", package_name)
-
-        spec = importlib.util.find_spec(package_name)
-        require(spec is not None, "installed package provider not found", package_name)
+        package_name = _require_non_empty_string(
+            _get_optional_string_attr(model, "package_name"),
+            field_name="package_name",
+        )
+        spec = _require_module_spec(
+            importlib.util.find_spec(package_name),
+            package_name=package_name,
+        )
 
         source_root = _resolve_package_root(spec, package_name)
         return ResolvedModelSource(
@@ -294,17 +314,13 @@ def resolve_model_source_root(
     path_policy = ModelSourcePathPolicy(default_root, approved_roots=approved_roots)
     provider = _select_provider(model)
     if isinstance(provider, InstalledPackageModelSourceProvider):
-        package_name = _get_optional_string_attr(model, "package_name")
-        require(
-            package_name is not None,
-            "package_name must be provided",
-            package_name,
+        package_name = _require_non_empty_string(
+            _get_optional_string_attr(model, "package_name"),
+            field_name="package_name",
         )
-        spec = importlib.util.find_spec(package_name)
-        require(
-            spec is not None,
-            "installed package provider not found",
-            package_name,
+        spec = _require_module_spec(
+            importlib.util.find_spec(package_name),
+            package_name=package_name,
         )
         return _resolve_package_root(spec, package_name)
     return path_policy.resolve_source_root(
@@ -458,15 +474,16 @@ def _resolve_package_root(
 ) -> Path:
     if spec.submodule_search_locations:
         search_location = next(iter(spec.submodule_search_locations), None)
-        require(
-            search_location is not None,
-            "installed package must expose a search location",
-            package_name,
+        resolved_location = _require_non_empty_string(
+            search_location,
+            field_name="installed package search location",
         )
-        return Path(search_location).resolve(strict=False)
+        return Path(resolved_location).resolve(strict=False)
 
-    origin = spec.origin
-    require(origin is not None, "installed package must expose an origin", package_name)
+    origin = _require_non_empty_string(
+        spec.origin,
+        field_name=f"installed package origin for {package_name}",
+    )
     return Path(origin).resolve(strict=False).parent
 
 
