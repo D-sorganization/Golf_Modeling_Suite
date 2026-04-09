@@ -97,13 +97,18 @@ def test_assert_launcher_provider_compatibility_raises_on_failures(
 
 
 def test_evaluate_launcher_model_compatibility_preserves_canonical_identity(
-    tmp_path: Path,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     mujoco_file = tmp_path / "models" / "swing.xml"
     drake_file = tmp_path / "models" / "swing.urdf"
     mujoco_file.parent.mkdir(parents=True)
     mujoco_file.write_text("<mujoco />", encoding="utf-8")
     drake_file.write_text("<robot />", encoding="utf-8")
+
+    monkeypatch.setattr(
+        "src.launchers.launcher_provider_compatibility.is_engine_runtime_available",
+        lambda engine_type: True,
+    )
 
     results = evaluate_launcher_model_compatibility(
         [CrossEngineModelA(), CrossEngineModelB()],
@@ -145,8 +150,12 @@ def test_is_engine_runtime_available_accepts_stubbed_module_without_spec(
 
 
 def test_validate_provider_manifest_reports_machine_readable_diagnostics(
-    tmp_path: Path,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    monkeypatch.setattr(
+        "src.launchers.launcher_provider_compatibility.is_engine_runtime_available",
+        lambda engine_type: True,
+    )
     provider_root = tmp_path / "provider"
     provider_root.mkdir()
     manifest_path = provider_root / "model_pack.yaml"
@@ -182,8 +191,12 @@ def test_validate_provider_manifest_reports_machine_readable_diagnostics(
 
 
 def test_assert_provider_manifest_compatibility_raises_with_model_and_issue_codes(
-    tmp_path: Path,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    monkeypatch.setattr(
+        "src.launchers.launcher_provider_compatibility.is_engine_runtime_available",
+        lambda engine_type: True,
+    )
     provider_root = tmp_path / "provider"
     provider_root.mkdir()
     manifest_path = provider_root / "model_pack.yaml"

@@ -3,14 +3,19 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
 import yaml
 
 from scripts.check_provider_compatibility import main
 
 
 def test_main_reports_success_for_compatible_provider_manifest(
-    tmp_path: Path, capsys
+    tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    monkeypatch.setattr(
+        "src.launchers.launcher_provider_compatibility.is_engine_runtime_available",
+        lambda engine_type: True,
+    )
     provider_root = tmp_path / "provider"
     models_dir = provider_root / "models"
     models_dir.mkdir(parents=True)
