@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.65                                             |
+| **Spec Version**        | 1.0.66                                             |
 | **Last Spec Update**    | 2026-04-08                                         |
 
 ## 2. Purpose & Mission
@@ -573,3 +573,4 @@ pytest tests/ --cov=src --cov-fail-under=70
   5. VERSION: Bump the Spec Version field when making substantive changes.
      Use semver: major (structure change), minor (new features), patch (corrections).
 -->
+| 2026-04-09 | 1.0.66  | Perf(electrical_model): Optimized distance calculation by replacing `np.linalg.norm(..., axis=1)` with explicit element-wise computation.                                                                                                                                                                                                                                                                                                                                                                                    |
