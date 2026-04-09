@@ -102,15 +102,17 @@ jobs:
       - name: Analyze Comment
         id: analyze
         if: steps.filter.outputs.is_bot != 'true' && steps.pr_state.outputs.should_skip != 'true'
+        env:
+          COMMENT_BODY_ENV: ${{ github.event.comment.body }}
         run: |
           # Get comment body
           if [ "${{ github.event_name }}" = "pull_request_review_comment" ]; then
-            COMMENT_BODY="${{ github.event.comment.body }}"
+            COMMENT_BODY="${COMMENT_BODY_ENV}"
             COMMENT_PATH="${{ github.event.comment.path }}"
             COMMENT_LINE="${{ github.event.comment.line }}"
             COMMENT_TYPE="review"
           else
-            COMMENT_BODY="${{ github.event.comment.body }}"
+            COMMENT_BODY="${COMMENT_BODY_ENV}"
             COMMENT_PATH=""
             COMMENT_LINE=""
             COMMENT_TYPE="pr"
