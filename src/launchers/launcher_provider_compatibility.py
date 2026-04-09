@@ -106,6 +106,17 @@ def _make_issue(
     )
 
 
+def _requires_canonical_identity(model: Any) -> bool:
+    """Return whether a provider model should expose cross-engine identity."""
+    launcher = getattr(model, "launcher", None)
+    launcher_category = getattr(launcher, "category", None)
+    if isinstance(launcher_category, str) and launcher_category == "tool":
+        return False
+
+    engine_type = getattr(model, "engine_type", None)
+    return isinstance(engine_type, str) and engine_type.strip() != ""
+
+
 def evaluate_launcher_model_compatibility(
     models: Iterable[Any],
     repo_root: Path,
@@ -253,7 +264,14 @@ def validate_provider_manifest(
     aggregated_issues: list[CompatibilityIssue] = []
     for result in results:
         aggregated_issues.extend(result.issues)
-        if result.canonical_id is None:
+        model = next(
+            (entry for entry in manifest.models if entry.id == result.model_id), None
+        )
+        if (
+            model is not None
+            and _requires_canonical_identity(model)
+            and result.canonical_id is None
+        ):
             aggregated_issues.append(
                 _make_issue(
                     "missing_canonical_identity",
@@ -263,9 +281,6 @@ def validate_provider_manifest(
                     provider=result.provider,
                 )
             )
-        model = next(
-            (entry for entry in manifest.models if entry.id == result.model_id), None
-        )
         if model is not None and len(model.capabilities) == 0:
             aggregated_issues.append(
                 _make_issue(

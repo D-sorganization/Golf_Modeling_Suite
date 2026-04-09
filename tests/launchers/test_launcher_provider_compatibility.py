@@ -203,3 +203,51 @@ def test_assert_provider_manifest_compatibility_raises_with_model_and_issue_code
         assert_provider_manifest_compatibility(manifest_path, provider_root)
 
     assert "missing_artifact_path" in str(exc_info.value)
+
+
+def test_validate_provider_manifest_allows_tool_provider_without_canonical_identity(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    provider_root = tmp_path / "Tools"
+    utility_file = provider_root / "src" / "pendulum_launcher.py"
+    utility_file.parent.mkdir(parents=True)
+    utility_file.write_text("print('pendulum')\n", encoding="utf-8")
+    manifest_path = provider_root / "model_pack.yaml"
+    manifest_path.write_text(
+        yaml.safe_dump(
+            {
+                "manifest_version": "1.0.0",
+                "pack_id": "tools-pack",
+                "pack_name": "Tools",
+                "provider": "tools",
+                "models": [
+                    {
+                        "id": "pendulum_suite",
+                        "name": "Pendulum Suite",
+                        "description": "Utility pendulum workflows",
+                        "type": "special_app",
+                        "path": "src/pendulum_launcher.py",
+                        "capabilities": ["pendulum", "simulation"],
+                        "launcher": {
+                            "category": "tool",
+                            "logo": "golf_logo.svg",
+                            "status": "utility",
+                        },
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(
+        "src.launchers.launcher_provider_compatibility.is_engine_runtime_available",
+        lambda engine_type: True,
+    )
+
+    report = validate_provider_manifest(manifest_path, provider_root)
+
+    assert report.is_compatible
+    assert report.results[0].is_compatible
+    assert report.results[0].canonical_id is None
