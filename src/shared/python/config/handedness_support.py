@@ -368,13 +368,9 @@ def validate_mirror_trajectory(
     # Check path length preservation
     # ⚡ Bolt: Element-wise sum of squares is ~5-10x faster than np.linalg.norm(..., axis=1)
     original_diff = np.diff(original_positions, axis=0)
-    original_path_length = np.sum(
-        np.sqrt(np.sum(np.square(original_diff, dtype=float), axis=1))
-    )
+    original_path_length = np.sum(np.sqrt(np.sum(np.square(original_diff), axis=1)))
     mirrored_diff = np.diff(mirrored_positions, axis=0)
-    mirrored_path_length = np.sum(
-        np.sqrt(np.sum(np.square(mirrored_diff, dtype=float), axis=1))
-    )
+    mirrored_path_length = np.sum(np.sqrt(np.sum(np.square(mirrored_diff), axis=1)))
     path_length_preserved = np.isclose(
         original_path_length, mirrored_path_length, rtol=1e-10
     )

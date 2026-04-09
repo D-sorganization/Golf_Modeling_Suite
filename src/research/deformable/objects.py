@@ -368,7 +368,7 @@ class Cable(DeformableObject):
             # Compute from initial mesh
             # ⚡ Bolt: Element-wise sum of squares is ~5-10x faster than np.linalg.norm(..., axis=1)
             diff = np.diff(mesh, axis=0)
-            self._rest_lengths = np.sqrt(np.sum(np.square(diff, dtype=float), axis=1))
+            self._rest_lengths = np.sqrt(np.sum(np.square(diff), axis=1))
         else:
             self._rest_lengths = rest_lengths
 
@@ -387,7 +387,7 @@ class Cable(DeformableObject):
         """
         segments = np.diff(self._mesh, axis=0)
         # ⚡ Bolt: Element-wise sum of squares is ~5-10x faster than np.linalg.norm(..., axis=1)
-        return float(np.sum(np.sqrt(np.sum(np.square(segments, dtype=float), axis=1))))
+        return float(np.sum(np.sqrt(np.sum(np.square(segments), axis=1))))
 
     def get_tension(self) -> float:
         """Get average cable tension.
@@ -398,7 +398,7 @@ class Cable(DeformableObject):
         forces = self.compute_internal_forces()
         # Average force magnitude
         # ⚡ Bolt: Element-wise sum of squares is ~5-10x faster than np.linalg.norm(..., axis=1)
-        return float(np.mean(np.sqrt(np.sum(np.square(forces, dtype=float), axis=1))))
+        return float(np.mean(np.sqrt(np.sum(np.square(forces), axis=1))))
 
     def compute_internal_forces(self) -> NDArray[np.floating]:
         """Compute spring and bending forces.
