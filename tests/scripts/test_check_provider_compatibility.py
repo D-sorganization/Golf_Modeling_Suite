@@ -2,14 +2,19 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from unittest.mock import patch
 
 import yaml
 
 from scripts.check_provider_compatibility import main
 
 
+@patch(
+    "src.launchers.launcher_provider_compatibility.is_engine_runtime_available",
+    return_value=True,
+)
 def test_main_reports_success_for_compatible_provider_manifest(
-    tmp_path: Path, capsys
+    mock_is_engine_runtime_available, tmp_path: Path, capsys
 ) -> None:
     provider_root = tmp_path / "provider"
     models_dir = provider_root / "models"

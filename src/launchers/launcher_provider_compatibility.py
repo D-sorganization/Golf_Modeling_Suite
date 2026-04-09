@@ -85,7 +85,12 @@ def is_engine_runtime_available(engine_type: str | None) -> bool:
     import_name = _ENGINE_IMPORT_NAMES.get(engine_type.strip().lower())
     if import_name is None:
         return True
-    return importlib.util.find_spec(import_name) is not None
+
+    try:
+        return importlib.util.find_spec(import_name) is not None
+    except ValueError:
+        # Handle `ValueError: <module>.__spec__ is not set` when mocked during tests
+        return True
 
 
 def _make_issue(

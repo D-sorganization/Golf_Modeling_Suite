@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 import yaml
@@ -94,7 +95,12 @@ def test_assert_launcher_provider_compatibility_raises_on_failures(
         assert_launcher_provider_compatibility([ExternalModel()], tmp_path)
 
 
+@patch(
+    "src.launchers.launcher_provider_compatibility.is_engine_runtime_available",
+    return_value=True,
+)
 def test_evaluate_launcher_model_compatibility_preserves_canonical_identity(
+    mock_is_engine_runtime_available,
     tmp_path: Path,
 ) -> None:
     mujoco_file = tmp_path / "models" / "swing.xml"
