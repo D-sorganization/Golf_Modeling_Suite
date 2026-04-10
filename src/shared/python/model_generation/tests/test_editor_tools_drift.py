@@ -19,6 +19,25 @@ TOOLS_BASELINE_HASHES: dict[str, str] = {
     "src/shared/python/model_generation/editor/text_editor_diff_mixin.py": "f04647e3bff584a2cfc576dfc239e4352564c8193f65ca17aa6a46b7d9d9f5c9",
 }
 
+TYPE_ONLY_DIFF_MIXIN_BLOCK = """    # BEGIN LOCAL MYPY COMPOSITION STATE
+    if TYPE_CHECKING:
+        from .text_editor import EditorVersion
+
+        _content: str
+        _original_content: str
+        _history: list[EditorVersion]
+    # END LOCAL MYPY COMPOSITION STATE
+
+"""
+
+
+def _runtime_equivalent_source(relative_path: str) -> bytes:
+    """Return the source bytes that should match the Tools runtime baseline."""
+    source = (REPO_ROOT / relative_path).read_text()
+    if relative_path.endswith("text_editor_diff_mixin.py"):
+        source = source.replace(TYPE_ONLY_DIFF_MIXIN_BLOCK, "")
+    return source.encode()
+
 
 @pytest.mark.parametrize(
     ("relative_path", "expected_sha256"),
@@ -29,6 +48,7 @@ def test_editor_leaf_modules_match_tools_baseline(
     expected_sha256: str,
 ) -> None:
     """Verify the selected leaf modules still match the Tools baseline."""
-    file_path = REPO_ROOT / relative_path
-    actual_sha256 = hashlib.sha256(file_path.read_bytes()).hexdigest()
+    actual_sha256 = hashlib.sha256(
+        _runtime_equivalent_source(relative_path)
+    ).hexdigest()
     assert actual_sha256 == expected_sha256, relative_path

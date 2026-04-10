@@ -17,6 +17,15 @@ if TYPE_CHECKING:
 class TextEditorDiffMixin:
     """Mixin providing diff computation for URDFTextEditor."""
 
+    # BEGIN LOCAL MYPY COMPOSITION STATE
+    if TYPE_CHECKING:
+        from .text_editor import EditorVersion
+
+        _content: str
+        _original_content: str
+        _history: list[EditorVersion]
+    # END LOCAL MYPY COMPOSITION STATE
+
     def get_diff_from_original(self) -> DiffResult:
         """Get diff between current content and original.
 
