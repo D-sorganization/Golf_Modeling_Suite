@@ -3,8 +3,6 @@
 Computes Force and Mobility ellipsoids/matrices using Drake's MultibodyPlant.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 
 import numpy as np
@@ -61,8 +59,6 @@ class DrakeManipulabilityAnalyzer:
         """Initialize with a Drake MultibodyPlant."""
         if not (plant is not None):
             raise ValueError("plant must be provided")
-        if not (plant is not None):
-            raise ValueError("plant must be provided")
         self.plant = plant
         if DRAKE_AVAILABLE:
             self.world_frame = plant.world_frame()
@@ -92,7 +88,7 @@ class DrakeManipulabilityAnalyzer:
 
         return sorted(bodies, key=sort_key)
 
-    def _compute_translational_jacobian(self, context: Context, body) -> np.ndarray:
+    def _compute_translational_jacobian(self, context: Context, body):
         return self.plant.CalcJacobianTranslationalVelocity(
             context,
             JacobianWrtVariable.kV,
@@ -102,11 +98,7 @@ class DrakeManipulabilityAnalyzer:
             self.world_frame,
         )
 
-    def _decompose_mobility_matrix(
-        self, mobility_matrix
-    ) -> tuple[np.ndarray, np.ndarray]:
-        if not (mobility_matrix is not None):
-            raise ValueError("mobility_matrix must be provided")
+    def _decompose_mobility_matrix(self, mobility_matrix):
         if not (mobility_matrix is not None):
             raise ValueError("mobility_matrix must be provided")
         eigvals_v, eigvecs_v = np.linalg.eigh(mobility_matrix)
@@ -116,9 +108,7 @@ class DrakeManipulabilityAnalyzer:
         radii_v = np.sqrt(np.maximum(eigvals_v, 1e-9))
         return radii_v, eigvecs_v
 
-    def _check_condition_number(self, name, cond) -> bool:
-        if not (name is not None):
-            raise ValueError("name must be provided")
+    def _check_condition_number(self, name, cond):
         if not (name is not None):
             raise ValueError("name must be provided")
         if cond > 1e6:
@@ -138,9 +128,7 @@ class DrakeManipulabilityAnalyzer:
 
     def _build_result_for_body(
         self, context: Context, name, body, radii_v, eigvecs_v, cond
-    ) -> ManipulabilityResult:
-        if not (context is not None):
-            raise ValueError("context must be provided")
+    ):  # noqa: E501
         if not (context is not None):
             raise ValueError("context must be provided")
         isotropy = 1.0 / cond if cond > 0 else 0.0
@@ -172,8 +160,6 @@ class DrakeManipulabilityAnalyzer:
         Returns:
             List of ManipulabilityResult.
         """
-        if not (context is not None):
-            raise ValueError("context must be provided")
         if not (context is not None):
             raise ValueError("context must be provided")
         if not DRAKE_AVAILABLE:

@@ -90,8 +90,6 @@ class DigitalTwin:
         """
         if not (sim_engine is not None):
             raise ValueError("sim_engine must be provided")
-        if not (sim_engine is not None):
-            raise ValueError("sim_engine must be provided")
         self.sim = sim_engine
         self.real = real_interface
         self._sync_error = 0.0
@@ -163,12 +161,10 @@ class DigitalTwin:
         """
         if not (horizon is not None):
             raise ValueError("horizon must be provided")
-        if not (horizon is not None):
-            raise ValueError("horizon must be provided")
         n_steps = int(horizon / dt)
         n_steps = min(n_steps, len(control_sequence))
 
-        # Save current state (positions, velocities, and torques)
+        # Save current state
         if hasattr(self.sim, "get_joint_positions"):
             initial_q = self.sim.get_joint_positions().copy()
         else:
@@ -179,47 +175,38 @@ class DigitalTwin:
         else:
             initial_v = np.zeros(7)
 
-        if hasattr(self.sim, "get_joint_torques"):
-            initial_tau = self.sim.get_joint_torques().copy()
-        else:
-            initial_tau = None
-
         n_dof = len(initial_q)
         trajectory = np.zeros((n_steps + 1, 2 * n_dof))
         trajectory[0] = np.concatenate([initial_q, initial_v])
 
-        try:
-            # Roll out simulation
-            for i in range(n_steps):
-                # Apply control
-                if hasattr(self.sim, "set_joint_torques"):
-                    self.sim.set_joint_torques(control_sequence[i])
+        # Roll out simulation
+        for i in range(n_steps):
+            # Apply control
+            if hasattr(self.sim, "set_joint_torques"):
+                self.sim.set_joint_torques(control_sequence[i])
 
-                # Step simulation
-                if hasattr(self.sim, "step"):
-                    self.sim.step(dt)
+            # Step simulation
+            if hasattr(self.sim, "step"):
+                self.sim.step(dt)
 
-                # Record state
-                if hasattr(self.sim, "get_joint_positions"):
-                    q = self.sim.get_joint_positions()
-                else:
-                    q = np.zeros(n_dof)
+            # Record state
+            if hasattr(self.sim, "get_joint_positions"):
+                q = self.sim.get_joint_positions()
+            else:
+                q = np.zeros(n_dof)
 
-                if hasattr(self.sim, "get_joint_velocities"):
-                    v = self.sim.get_joint_velocities()
-                else:
-                    v = np.zeros(n_dof)
+            if hasattr(self.sim, "get_joint_velocities"):
+                v = self.sim.get_joint_velocities()
+            else:
+                v = np.zeros(n_dof)
 
-                trajectory[i + 1] = np.concatenate([q, v])
+            trajectory[i + 1] = np.concatenate([q, v])
 
-        finally:
-            # Restore full simulator state including commanded torques
-            if hasattr(self.sim, "set_joint_positions"):
-                self.sim.set_joint_positions(initial_q)
-            if hasattr(self.sim, "set_joint_velocities"):
-                self.sim.set_joint_velocities(initial_v)
-            if initial_tau is not None and hasattr(self.sim, "set_joint_torques"):
-                self.sim.set_joint_torques(initial_tau)
+        # Restore initial state
+        if hasattr(self.sim, "set_joint_positions"):
+            self.sim.set_joint_positions(initial_q)
+        if hasattr(self.sim, "set_joint_velocities"):
+            self.sim.set_joint_velocities(initial_v)
 
         return trajectory
 

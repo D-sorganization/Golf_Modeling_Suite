@@ -56,7 +56,7 @@ class TestPSAModelBaseCase:
         )
 
     @pytest.fixture
-    def base_results(self, base_model: PSAModel) -> PSAResults:  # type: ignore[return]
+    def base_results(self, base_model: PSAModel) -> PSAResults:
         """Calculate base case results."""
         return base_model.calculate()
 
@@ -134,7 +134,7 @@ class TestPSAModelH2Flows:
     """Test H2 component flows against Excel."""
 
     @pytest.fixture
-    def base_results(self) -> PSAResults:  # type: ignore[return]
+    def base_results(self) -> PSAResults:
         """Calculate base case results."""
         model = PSAModel()
         return model.calculate()
@@ -192,7 +192,7 @@ class TestPSAModelO2Flows:
     """Test O2 component flows against Excel."""
 
     @pytest.fixture
-    def base_results(self) -> PSAResults:  # type: ignore[return]
+    def base_results(self) -> PSAResults:
         """Calculate base case results."""
         model = PSAModel()
         return model.calculate()

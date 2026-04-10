@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
+
 """Pinocchio Perturbation Analyzer — PerturbationAnalyzer protocol (#1978).
 
 Implements the ``PerturbationAnalyzer`` protocol for the Pinocchio rigid-body
@@ -5,14 +9,10 @@ dynamics engine.  Uses ``PinocchioPhysicsEngine`` for forward simulation with
 polynomial torque profiles, and exposes Jacobian-based sensitivity as an
 optional complement to Monte Carlo results.
 
-Inherits from ``PerturbationAnalyzerBase`` (see #2273) which provides the
-shared ``set_base_torque_profile``, ``perturb_torque``, ``extract_metrics``,
-``run_batch``, and ``compare_profiles`` implementations.
-
 Design by Contract
 ------------------
 - ``set_base_torque_profile()`` must be called before ``run_batch()`` or
-  ``perturb_torque()``.  Raises ``ValueError`` otherwise.
+  ``perturb_torque()``.  Raises ``AssertionError`` otherwise.
 - ``run_batch()`` returns a ``PerturbationSummary`` containing all
   ``MANDATORY_METRICS`` as keys (scalar metrics only; array metrics are
   summarised by norm).
@@ -37,20 +37,19 @@ from pathlib import Path
 import numpy as np
 
 from src.shared.python.engine_core.engine_availability import PINOCCHIO_AVAILABLE
-from src.shared.python.perturbation.perturbation_base import (
-    MANDATORY_METRICS,
-    ComparisonReport,
+
+# Shared noise / perturbation helpers
+from src.shared.python.perturbation.analyzer_base import (
+    MANDATORY_METRICS,  # noqa: F401  re-exported for test imports
+    ComparisonReport,  # noqa: F401
     PerturbationAnalyzerBase,
 )
 
 logger = logging.getLogger(__name__)
 
-__all__ = [
-    "PinocchioPerturbationAnalyzer",
-    "PinocchioSimResult",
-    "ComparisonReport",
-    "MANDATORY_METRICS",
-]
+# ---------------------------------------------------------------------------
+# Mandatory metric names (must match PendulumPerturbationAnalyzer.MANDATORY_METRICS)
+# ---------------------------------------------------------------------------
 
 
 # ---------------------------------------------------------------------------
@@ -91,6 +90,16 @@ class PinocchioSimResult:
     @property
     def n_steps(self) -> int:
         return len(self.t)
+
+
+# ---------------------------------------------------------------------------
+# Comparison report
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# Coefficient perturbation helper
+# ---------------------------------------------------------------------------
 
 
 # ---------------------------------------------------------------------------
@@ -143,8 +152,6 @@ class PinocchioPerturbationAnalyzer(PerturbationAnalyzerBase):
         ee_frame_name : str, optional
             Name of the end-effector frame in the URDF.  Defaults to last frame.
         """
-        super().__init__()
-
         if not PINOCCHIO_AVAILABLE:
             msg = "pinocchio is not installed.  Install it with: pip install pinocchio"
             raise ImportError(msg)
@@ -175,6 +182,9 @@ class PinocchioPerturbationAnalyzer(PerturbationAnalyzerBase):
         self._nq = self._model.nq
         self._nv = self._model.nv
 
+        self._base_coeffs: list[list[float]] | None = None
+        self._nominal_result: PinocchioSimResult | None = None
+
         logger.info(
             "PinocchioPerturbationAnalyzer: model=%s, nq=%d, nv=%d, t_end=%.2f",
             self._model.name,
@@ -184,24 +194,107 @@ class PinocchioPerturbationAnalyzer(PerturbationAnalyzerBase):
         )
 
     # ------------------------------------------------------------------
-    # Base-class abstract method implementations
+    # Protocol API
     # ------------------------------------------------------------------
 
-    def _get_q_traj(self, sim_result: PinocchioSimResult) -> np.ndarray:
-        return sim_result.q_traj
+    def set_base_torque_profile(self, profile: object) -> None:
+        """Set the nominal torque polynomial coefficients.
 
-    def _get_v_traj(self, sim_result: PinocchioSimResult) -> np.ndarray:
-        return sim_result.v_traj
+        Parameters
+        ----------
+        profile : dict with 'coeffs' key
+            ``profile["coeffs"]`` is a list of per-joint coefficient lists:
+            ``[[c0, c1, ...], [c0, c1, ...], ...]``.
+            The number of joint lists must equal ``nv`` or be broadcastable.
 
-    def _validate_sim_result_type(self, sim_result: object) -> None:
+        Design by Contract
+        ------------------
+        Pre: profile is a dict with 'coeffs' key.
+        Post: self._base_coeffs is set and self._nominal_result is cached.
+        """
+        if not isinstance(profile, dict):
+            raise ValueError(f"profile must be a dict, got {type(profile)}")
+        if "coeffs" not in profile:
+            raise ValueError("'coeffs' key missing from profile")
+        coeffs = profile["coeffs"]
+        if not (isinstance(coeffs, list) and len(coeffs) > 0):
+            raise ValueError("profile['coeffs'] must be a non-empty list")
+        self._base_coeffs = coeffs
+        self._nominal_result = self._simulate(coeffs)
+
+    def extract_metrics(self, sim_result: object) -> dict[str, float | np.ndarray]:
+        """Extract all MANDATORY_METRICS from a simulation result.
+
+        Parameters
+        ----------
+        sim_result : PinocchioSimResult
+
+        Returns
+        -------
+        dict mapping metric name → scalar float or ndarray.
+
+        Design by Contract
+        ------------------
+        Pre: sim_result is a PinocchioSimResult with n_steps >= 2.
+        Post: all MANDATORY_METRICS present; all values finite.
+        """
         if not isinstance(sim_result, PinocchioSimResult):
             raise ValueError(
                 f"sim_result must be PinocchioSimResult, got {type(sim_result)}"
-            )
+            )  # noqa: E501
+        if not (sim_result.n_steps >= 2):
+            raise ValueError("Simulation must have >= 2 steps")
 
-    # ------------------------------------------------------------------
-    # Internal helpers
-    # ------------------------------------------------------------------
+        r = sim_result
+        last = r.n_steps - 1
+
+        joint_angles_final = r.q_traj[last].copy()
+        joint_velocities_final = r.v_traj[last].copy()
+
+        # End-effector position at final step
+        ee_pos_final = r.ee_pos_traj[last].copy()
+
+        # End-effector velocity at final step
+        ee_vel_final = r.ee_vel_traj[last].copy()
+        ee_speed_final = float(np.linalg.norm(ee_vel_final))
+
+        # Peak end-effector speed
+        # ⚡ Bolt: Explicit element-wise sum of squares is faster than
+        # np.linalg.norm(..., axis=1) when finding max
+        sq_speeds = np.sum(r.ee_vel_traj**2, axis=1)
+        peak_speed = float(np.sqrt(np.max(sq_speeds)))
+
+        # Total energy (kinetic + potential) at final step
+        total_energy_final = float(
+            r.kinetic_energy_traj[last] + r.potential_energy_traj[last]
+        )
+
+        # Trajectory RMSE vs nominal
+        trajectory_rmse = 0.0
+        trajectory_max_deviation = 0.0
+        if self._nominal_result is not None:
+            nom = self._nominal_result
+            n_cmp = min(r.n_steps, nom.n_steps)
+            # ⚡ Bolt: Explicit element-wise sum of squares is faster than
+            # np.linalg.norm(..., axis=1)
+            sq_deviations = np.sum((r.q_traj[:n_cmp] - nom.q_traj[:n_cmp]) ** 2, axis=1)
+            trajectory_rmse = float(np.sqrt(np.mean(sq_deviations)))
+            trajectory_max_deviation = float(np.sqrt(np.max(sq_deviations)))
+
+        motion_duration = float(r.t[last] - r.t[0])
+
+        return {
+            "end_effector_position_final": ee_pos_final,
+            "end_effector_velocity_final": ee_vel_final,
+            "end_effector_speed_final": ee_speed_final,
+            "peak_end_effector_speed": peak_speed,
+            "total_energy_final": total_energy_final,
+            "joint_angles_final": joint_angles_final,
+            "joint_velocities_final": joint_velocities_final,
+            "trajectory_rmse": trajectory_rmse,
+            "trajectory_max_deviation": trajectory_max_deviation,
+            "motion_duration": motion_duration,
+        }
 
     def _simulate(self, coeffs: list[list[float]]) -> PinocchioSimResult:
         """Run a Pinocchio ABA forward simulation with polynomial torques.

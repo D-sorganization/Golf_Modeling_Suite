@@ -47,7 +47,7 @@ except ImportError:
     # humanoid_character_builder not available
     __all__ = []
 
-    def _not_available(*args, **kwargs) -> None:
+    def _not_available(*args, **kwargs):
         raise ImportError(
             "humanoid_character_builder not available. Ensure it is in the Python path."
         )

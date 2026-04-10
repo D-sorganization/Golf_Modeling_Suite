@@ -88,8 +88,6 @@ class MujocoUnifiedLauncher(BaseLauncher):
         """
         if not (relative_path is not None):
             raise ValueError("relative_path must be provided")
-        if not (relative_path is not None):
-            raise ValueError("relative_path must be provided")
         script_path = REPO_ROOT / relative_path
         if not script_path.exists():
             self.show_error("Script Not Found", f"Script not found:\n{script_path}")
@@ -97,8 +95,13 @@ class MujocoUnifiedLauncher(BaseLauncher):
 
         try:
             env = self._get_launch_env()
-            subprocess.Popen([sys.executable, str(script_path)], cwd=REPO_ROOT, env=env)
-        except (FileNotFoundError, PermissionError, OSError) as e:
+            _spawn_process([sys.executable, str(script_path)], cwd=REPO_ROOT, env=env)
+        except (
+            FileNotFoundError,
+            PermissionError,
+            OSError,
+            SecureSubprocessError,
+        ) as e:
             self.show_error("Launch Error", str(e))
 
     def _launch_python_module(
@@ -112,20 +115,19 @@ class MujocoUnifiedLauncher(BaseLauncher):
         """
         if not (module_name is not None):
             raise ValueError("module_name must be provided")
-        if not (module_name is not None):
-            raise ValueError("module_name must be provided")
         cwd = REPO_ROOT
         if cwd_suffix:
             cwd = REPO_ROOT / cwd_suffix
 
         try:
             env = self._get_launch_env()
-            subprocess.Popen(
-                [sys.executable, "-m", module_name],
-                cwd=cwd,
-                env=env,
-            )
-        except (FileNotFoundError, PermissionError, OSError) as e:
+            _spawn_process([sys.executable, "-m", module_name], cwd=cwd, env=env)
+        except (
+            FileNotFoundError,
+            PermissionError,
+            OSError,
+            SecureSubprocessError,
+        ) as e:
             self.show_error("Launch Error", str(e))
 
 

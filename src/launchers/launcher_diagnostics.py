@@ -173,8 +173,6 @@ class LauncherDiagnostics:
     ) -> DiagnosticResult | None:
         if not (details is not None):
             raise ValueError("details must be provided")
-        if not (details is not None):
-            raise ValueError("details must be provided")
         details["raw_content_preview"] = str(data)[:500] if data else "empty"
 
         if not data:
@@ -199,8 +197,6 @@ class LauncherDiagnostics:
     def _check_models_yaml_completeness(
         self, models: list, details: dict[str, Any]
     ) -> DiagnosticResult:
-        if not (models is not None):
-            raise ValueError("models must be provided")
         if not (models is not None):
             raise ValueError("models must be provided")
         details["model_count"] = len(models)

@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Pendulum Perturbation Analyzer — reference implementation of the unified protocol.
 
 Implements ``PerturbationAnalyzer`` (from ``src.shared.python.perturbation.config``)
@@ -518,7 +522,7 @@ class PendulumPerturbationAnalyzer:
                     if isinstance(v, np.ndarray):
                         v = float(np.linalg.norm(v))
                     values.append(float(v))
-                except Exception:  # noqa: BLE001
+                except Exception:  # noqa: BLE001  # noqa: BLE001
                     pass
             return np.array(values) if values else np.array([0.0])
 

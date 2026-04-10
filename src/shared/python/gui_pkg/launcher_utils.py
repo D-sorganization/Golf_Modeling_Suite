@@ -16,7 +16,6 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 
-from src.shared.python import SUITE_ROOT
 from src.shared.python.logging_pkg.logging_config import get_logger
 from src.shared.python.security.subprocess_utils import run_command
 
@@ -57,8 +56,6 @@ def check_python_dependencies(
     """
     if not (required_modules is not None):
         raise ValueError("required_modules must be provided")
-    if not (required_modules is not None):
-        raise ValueError("required_modules must be provided")
     missing = []
     for module in required_modules:
         if importlib.util.find_spec(module) is None:
@@ -94,7 +91,7 @@ def git_sync_repository(repo_path: Path | None = None) -> bool:
         True if sync succeeded, False otherwise.
     """
     if repo_path is None:
-        repo_path = SUITE_ROOT
+        repo_path = Path(__file__).parent.parent.parent.parent
 
     logger.info("Syncing repository with remote...")
     try:
@@ -121,7 +118,7 @@ def get_repo_root() -> Path:
     Returns:
         Path to the repository root directory.
     """
-    return SUITE_ROOT.resolve()
+    return Path(__file__).parent.parent.parent.parent.absolute()
 
 
 def ensure_environment_var(
@@ -137,8 +134,6 @@ def ensure_environment_var(
     Returns:
         The current or default value of the environment variable.
     """
-    if not (name is not None):
-        raise ValueError("name must be provided")
     if not (name is not None):
         raise ValueError("name must be provided")
     value = os.getenv(name)

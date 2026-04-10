@@ -53,7 +53,7 @@ __all__ = [
 ]
 
 
-def __getattr__(name: str) -> object:
+def __getattr__(name: str):
     """Lazy import for module components.
 
     Each group of names is loaded from its respective sub-module only when

@@ -90,8 +90,6 @@ def _dtw_core(series1: np.ndarray, series2: np.ndarray, window: int) -> float:
     """
     if not (series1 is not None):
         raise ValueError("series1 must be provided")
-    if not (series1 is not None):
-        raise ValueError("series1 must be provided")
     n = len(series1)
     m = len(series2)
 
@@ -165,8 +163,6 @@ def _dtw_path_core(
         tuple: (distance, path_i, path_j)
         path_i, path_j are arrays of indices (reversed order)
     """
-    if not (series1 is not None):
-        raise ValueError("series1 must be provided")
     if not (series1 is not None):
         raise ValueError("series1 must be provided")
     n = len(series1)
@@ -295,8 +291,6 @@ def compute_coherence(
     Returns:
         tuple: (frequencies, coherence_values)
     """
-    if not (x is not None):
-        raise ValueError("x must be provided")
     if not (x is not None):
         raise ValueError("x must be provided")
     require(fs > 0, "Sampling frequency must be positive", fs)
@@ -445,8 +439,6 @@ def _morlet2_impl(M: int, s: float, w: float = 5.0) -> np.ndarray:
     """
     if not (M is not None):
         raise ValueError("M must be provided")
-    if not (M is not None):
-        raise ValueError("M must be provided")
     x = np.arange(0, M) - (M - 1.0) / 2
     x = x / s
     output: np.ndarray = np.exp(1j * w * x) * np.exp(-0.5 * x**2) * np.pi ** (-0.25)
@@ -478,8 +470,6 @@ def _get_cached_wavelet(M: int, s_int: int, w0_int: int, n_fft: int) -> np.ndarr
     """
     if not (M is not None):
         raise ValueError("M must be provided")
-    if not (M is not None):
-        raise ValueError("M must be provided")
     s = s_int / 1000.0
     w0 = w0_int / 100.0
 
@@ -493,9 +483,7 @@ def _get_cached_wavelet(M: int, s_int: int, w0_int: int, n_fft: int) -> np.ndarr
     return np.asarray(fft.fft(wavelet, n=n_fft))
 
 
-def _validate_cwt_inputs(
-    fs: float, freq_range: tuple[float, float]
-) -> tuple[float, float]:
+def _validate_cwt_inputs(fs, freq_range):
     if fs <= 0:
         raise ValueError(f"Sampling frequency must be positive, got {fs}")
     min_freq, max_freq = freq_range
@@ -504,14 +492,7 @@ def _validate_cwt_inputs(
     return min_freq, max_freq
 
 
-def _prepare_cwt_fft(
-    data: np.ndarray,
-    freqs: np.ndarray,
-    w0: float,
-    fs: float,
-) -> tuple[int, int, np.ndarray]:
-    if not (data is not None):
-        raise ValueError("data must be provided")
+def _prepare_cwt_fft(data, freqs, w0, fs):
     if not (data is not None):
         raise ValueError("data must be provided")
     n_data = len(data)
@@ -532,15 +513,7 @@ def _prepare_cwt_fft(
     return n_data, n_fft, data_fft
 
 
-def _convolve_wavelet_at_scale(
-    data_fft: np.ndarray,
-    n_fft: int,
-    n_data: int,
-    s: float,
-    w0: float,
-) -> np.ndarray:
-    if not (data_fft is not None):
-        raise ValueError("data_fft must be provided")
+def _convolve_wavelet_at_scale(data_fft, n_fft, n_data, s, w0):
     if not (data_fft is not None):
         raise ValueError("data_fft must be provided")
     M = int(2 * 5 * s + 1)
@@ -607,8 +580,6 @@ def compute_cwt(
     """
     if not (data is not None):
         raise ValueError("data must be provided")
-    if not (data is not None):
-        raise ValueError("data must be provided")
     _validate_cwt_inputs(fs, freq_range)
 
     freqs = np.geomspace(freq_range[0], freq_range[1], num=num_freqs)
@@ -649,8 +620,6 @@ def compute_xwt(
         (freqs, times, xwt_matrix)
         xwt_matrix is complex. Magnitude is cross-power, Angle is relative phase.
     """
-    if not (data1 is not None):
-        raise ValueError("data1 must be provided")
     if not (data1 is not None):
         raise ValueError("data1 must be provided")
     f1, t1, w1 = compute_cwt(data1, fs, freq_range, num_freqs, w0)
@@ -801,8 +770,6 @@ def compute_dtw_distance(
     """
     if not (series1 is not None):
         raise ValueError("series1 must be provided")
-    if not (series1 is not None):
-        raise ValueError("series1 must be provided")
     n = len(series1)
     m = len(series2)
 
@@ -861,8 +828,6 @@ def compute_dtw_path(
         Tuple (distance, path). Path is list of (i, j) indices.
     """
     # Ensure inputs are float64 arrays for Numba
-    if not (series1 is not None):
-        raise ValueError("series1 must be provided")
     if not (series1 is not None):
         raise ValueError("series1 must be provided")
     s1 = np.asarray(series1, dtype=np.float64)
@@ -926,8 +891,6 @@ class KalmanFilter:
         """
         if not (dim_x is not None):
             raise ValueError("dim_x must be provided")
-        if not (dim_x is not None):
-            raise ValueError("dim_x must be provided")
         self.dim_x = dim_x
         self.dim_z = dim_z
 
@@ -961,8 +924,6 @@ class KalmanFilter:
             z: Measurement vector
         """
         # System uncertainty
-        if not (z is not None):
-            raise ValueError("z must be provided")
         if not (z is not None):
             raise ValueError("z must be provided")
         S = self.H @ self.P @ self.H.T + self.R

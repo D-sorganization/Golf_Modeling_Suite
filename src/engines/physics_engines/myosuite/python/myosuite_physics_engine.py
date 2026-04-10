@@ -73,8 +73,6 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
         self._dt = 0.002  # Default
 
-        self._terminated: bool = False  # True after episode termination or truncation
-
     def _reset_loaded_state(self) -> None:
         """Clear all engine state after a failed or closed load attempt."""
         self.env = None
@@ -188,7 +186,6 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
         if self.env:
             self.env.reset()
-            self._terminated = False
 
     @precondition(
         lambda self, dt=None: self.env is not None, "Environment must be loaded"
@@ -206,23 +203,12 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
                 "Runtime timestep modification is unsafe in MuJoCo. Ignoring dt override."
             )
 
-        if self._terminated:
-            logger.warning(
-                "step() called on a terminated MyoSuite environment; "
-                "call reset() before stepping again"
-            )
-            return
-
         action = getattr(self, "_last_action", None)
         if action is None:
             # Fallback to zero action
             action = self.env.action_space.sample() * 0.0
 
-        result = self.env.step(action)
-        # Gym step returns (obs, reward, terminated, truncated, info)
-        if len(result) >= 4:
-            _obs, _reward, terminated, truncated = result[:4]
-            self._terminated = bool(terminated or truncated)
+        self.env.step(action)
 
     @precondition(lambda self: self.is_initialized, "Engine must be initialized")
     def forward(self) -> None:
@@ -241,8 +227,6 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
     def set_state(self, q: np.ndarray, v: np.ndarray) -> None:
         """Set joint positions and velocities on the simulation."""
-        if not (q is not None):
-            raise ValueError("q must be provided")
         if not (q is not None):
             raise ValueError("q must be provided")
         if not self.sim:
@@ -304,8 +288,6 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
     def set_control(self, u: np.ndarray) -> None:
         """Set control (ctrl)."""
-        if not (u is not None):
-            raise ValueError("u must be provided")
         if not (u is not None):
             raise ValueError("u must be provided")
         self._last_action = np.array(u, copy=True)
@@ -411,8 +393,6 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
         if not (qacc is not None):
             raise ValueError("qacc must be provided")
-        if not (qacc is not None):
-            raise ValueError("qacc must be provided")
         if not self.sim:
             return np.array([])
 
@@ -432,8 +412,6 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
     def compute_jacobian(self, body_name: str) -> dict[str, np.ndarray] | None:
         """Compute linear and angular Jacobian for a named body."""
-        if not (body_name is not None):
-            raise ValueError("body_name must be provided")
         if not (body_name is not None):
             raise ValueError("body_name must be provided")
         if not self.sim:
@@ -545,8 +523,6 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
         if not (tau is not None):
             raise ValueError("tau must be provided")
-        if not (tau is not None):
-            raise ValueError("tau must be provided")
         if not self.sim:
             logger.warning("Simulation not initialized")
 
@@ -650,8 +626,6 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
         """
 
-        if not (activations is not None):
-            raise ValueError("activations must be provided")
         if not (activations is not None):
             raise ValueError("activations must be provided")
         analyzer = self.get_muscle_analyzer()
@@ -800,8 +774,6 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
         if not (q is not None):
             raise ValueError("q must be provided")
-        if not (q is not None):
-            raise ValueError("q must be provided")
         if not self.sim:
             return np.array([])
 
@@ -863,8 +835,6 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
         """
 
-        if not (q is not None):
-            raise ValueError("q must be provided")
         if not (q is not None):
             raise ValueError("q must be provided")
         if not self.sim:

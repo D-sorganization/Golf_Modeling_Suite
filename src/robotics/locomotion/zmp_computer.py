@@ -11,7 +11,6 @@ Design by Contract:
 
 from __future__ import annotations
 
-import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -21,9 +20,6 @@ from numpy.typing import NDArray
 from src.robotics.core.protocols import HumanoidCapable, RoboticsCapable
 from src.shared.python.core.constants import GRAVITY as _GRAVITY_CONST
 from src.shared.python.core.contracts import ContractChecker
-from src.shared.python.model_generation.core.constants import DEFAULT_MASS_KG
-
-logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -87,8 +83,6 @@ class ZMPComputer(ContractChecker):
             engine: Physics engine with CoM computation capabilities.
             ground_height: Height of ground plane [m].
         """
-        if not (engine is not None):
-            raise ValueError("engine must be provided")
         if not (engine is not None):
             raise ValueError("engine must be provided")
         self._engine = engine
@@ -273,8 +267,6 @@ class ZMPComputer(ContractChecker):
         """
         if not (zmp_position is not None):
             raise ValueError("zmp_position must be provided")
-        if not (zmp_position is not None):
-            raise ValueError("zmp_position must be provided")
         _, margin = self._check_support(zmp_position[:2], support_polygon)
         return margin
 
@@ -309,10 +301,6 @@ class ZMPComputer(ContractChecker):
         Simple estimation assuming quasi-static (zero acceleration).
         """
         # For now, assume quasi-static
-        logger.warning(
-            "Using quasi-static assumption (zero COM acceleration). "
-            "This is inaccurate for dynamic motions such as walking or running."
-        )
         return np.zeros(3)
 
     def _estimate_mass(self) -> float:
@@ -322,8 +310,8 @@ class ZMPComputer(ContractChecker):
             if isinstance(engine, HumanoidCapable):
                 return engine.get_total_mass()
 
-        # Default mass from humanoid model constants
-        return DEFAULT_MASS_KG
+        # Default mass
+        return 70.0
 
     def _check_support(
         self,
@@ -341,23 +329,15 @@ class ZMPComputer(ContractChecker):
         """
         if not (point is not None):
             raise ValueError("point must be provided")
-        if not (point is not None):
-            raise ValueError("point must be provided")
         if support_polygon is None:
-            # Default support polygon approximating foot dimensions
-            # (26cm x 15cm, approximate adult foot length x width)
-            logger.warning(
-                "Using default support polygon (0.26m x 0.15m). "
-                "Provide measured foot contact polygon for accurate results."
-            )
-            half_length = 0.13  # 26cm / 2
-            half_width = 0.075  # 15cm / 2
+            # Default support polygon: realistic human bipedal stance (~30cm x 45cm)
+            # Approximates foot-length (0.28m) x stance-width (0.25m per side)
             support_polygon = np.array(
                 [
-                    [-half_length, -half_width],
-                    [half_length, -half_width],
-                    [half_length, half_width],
-                    [-half_length, half_width],
+                    [-0.15, -0.25],
+                    [0.15, -0.25],
+                    [0.15, 0.25],
+                    [-0.15, 0.25],
                 ]
             )
 
@@ -380,8 +360,6 @@ class ZMPComputer(ContractChecker):
         polygon: NDArray[np.float64],
     ) -> bool:
         """Check if point is inside polygon using ray casting."""
-        if not (point is not None):
-            raise ValueError("point must be provided")
         if not (point is not None):
             raise ValueError("point must be provided")
         n = len(polygon)
@@ -408,8 +386,6 @@ class ZMPComputer(ContractChecker):
         """Compute minimum distance from point to polygon boundary."""
         if not (point is not None):
             raise ValueError("point must be provided")
-        if not (point is not None):
-            raise ValueError("point must be provided")
         n = len(polygon)
         min_dist = float("inf")
 
@@ -427,8 +403,6 @@ class ZMPComputer(ContractChecker):
         seg_b: NDArray[np.float64],
     ) -> float:
         """Compute distance from point to line segment."""
-        if not (point is not None):
-            raise ValueError("point must be provided")
         if not (point is not None):
             raise ValueError("point must be provided")
         v = seg_b - seg_a
