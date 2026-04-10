@@ -12,6 +12,7 @@ import yaml  # type: ignore[import-untyped]
 
 from src.shared.python.core.constants import DEG_TO_RAD
 from src.shared.python.data_io.common_utils import GolfModelingError
+from src.shared.python.data_io.path_utils import get_src_root
 from src.shared.python.data_io.io_utils import ensure_directory
 from src.shared.python.logging_pkg.logging_config import get_logger
 from src.shared.python.security.security_utils import validate_url_scheme
@@ -29,7 +30,7 @@ class StandardModelManager:
             suite_root: Root directory of Golf Modeling Suite
         """
         if suite_root is None:
-            suite_root = Path(__file__).parent.parent.parent
+            suite_root = get_src_root()
 
         self.suite_root = Path(suite_root)
         self.models_dir = self.suite_root / "shared" / "urdf"

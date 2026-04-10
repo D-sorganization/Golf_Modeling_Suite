@@ -25,6 +25,7 @@ from src.shared.python.config.model_source_providers import (
 )
 from src.shared.python.config.provider_catalog import iter_provider_manifest_specs
 from src.shared.python.core.contracts import ContractChecker, require
+from src.shared.python.data_io.path_utils import get_repo_root
 
 _DISCOVERY_MODES = {"local-only", "hybrid", "provider-first"}
 
@@ -82,14 +83,14 @@ class ModelRegistry(ContractChecker):
             - All model IDs in the registry are non-empty strings
     """
 
-    def __init__(self, config_path: str | Path = "config/models.yaml") -> None:
+    def __init__(self, config_path: str | Path | None = None) -> None:
         """Initialize registry.
 
         Args:
             config_path: Path to the YAML configuration file.
         """
         if not (config_path is not None):
-            raise ValueError("config_path must be provided")
+            config_path = get_repo_root() / "src" / "config" / "models.yaml"
         self.config_path = Path(config_path)
         self.models: dict[str, ModelConfig] = {}
         self.discovery_mode = _normalize_discovery_mode(
