@@ -150,6 +150,8 @@ exclude = [
     "shared/models/myosuite/**",
     "src/shared/models/myosuite/**",
     "vendor/**",
+    # Legacy MATLAB-adjacent GUI scripts with incomplete Python migration
+    "src/engines/Simscape_Multibody_Models/**",
 ]
 
 [tool.ruff.lint]
