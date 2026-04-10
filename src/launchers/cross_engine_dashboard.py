@@ -624,8 +624,6 @@ def _create_dashboard_window_class() -> type:
 # ---------------------------------------------------------------------------
 
 
-
-
 def _build_qt_window() -> object:
     """Build and return the QMainWindow instance (deferred Qt import)."""
     return _create_dashboard_window_class()()
@@ -634,6 +632,8 @@ def _build_qt_window() -> object:
 def _build_qt_window() -> object:
     """Build and return the QMainWindow instance (deferred Qt import)."""
     return _create_dashboard_window_class()()
+
+
 def _build_arg_parser() -> argparse.ArgumentParser:
     """Build and return the argument parser for the dashboard CLI."""
     parser = argparse.ArgumentParser(

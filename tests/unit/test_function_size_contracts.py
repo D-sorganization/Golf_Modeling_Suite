@@ -9,8 +9,9 @@ turns red immediately — before runtime or coverage issues surface.
 from __future__ import annotations
 
 import ast
-import pytest
 from pathlib import Path
+
+import pytest
 
 REPO = Path(__file__).parent.parent.parent
 
@@ -19,9 +20,11 @@ def _func_loc(filepath: Path, func_name: str) -> int | None:
     """Return the LOC of *func_name* in *filepath* via AST, or None if not found."""
     tree = ast.parse(filepath.read_text(encoding="utf-8"))
     for node in ast.walk(tree):
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            if node.name == func_name:
-                return node.end_lineno - node.lineno
+        if (
+            isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and node.name == func_name
+        ):
+            return node.end_lineno - node.lineno
     return None
 
 

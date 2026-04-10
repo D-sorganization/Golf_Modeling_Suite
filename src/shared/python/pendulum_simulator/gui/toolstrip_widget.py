@@ -489,8 +489,7 @@ class ToolStrip(QWidget):
 
         get_tracker().show_viewer(self)
 
-
-    def _overlay_build_frame_rows(self, overlay_layout: "QVBoxLayout") -> None:
+    def _overlay_build_frame_rows(self, overlay_layout: QVBoxLayout) -> None:
         """Build rows A-D: force/mobility/force-ellipsoid checkboxes and segment row."""
         # Row A: Force Vectors
         self.chk_forces = QCheckBox("Force Vectors")
@@ -566,7 +565,7 @@ class ToolStrip(QWidget):
         seg_row.addStretch()
         overlay_layout.addLayout(seg_row)
 
-    def _overlay_build_extra_col(self, layout: "QHBoxLayout") -> None:
+    def _overlay_build_extra_col(self, layout: QHBoxLayout) -> None:
         """Build the extra toggles column (right of the overlay frame)."""
         extra_col = QVBoxLayout()
         extra_col.setContentsMargins(0, 0, 0, 0)
@@ -666,8 +665,7 @@ class ToolStrip(QWidget):
         extra_col.addStretch()
         layout.addLayout(extra_col)
 
-
-    def _overlay_build_frame_rows(self, overlay_layout: "QVBoxLayout") -> None:
+    def _overlay_build_frame_rows(self, overlay_layout: QVBoxLayout) -> None:
         """Build rows A-D: force/mobility/force-ellipsoid checkboxes and segment row."""
         # Row A: Force Vectors
         self.chk_forces = QCheckBox("Force Vectors")
@@ -743,7 +741,7 @@ class ToolStrip(QWidget):
         seg_row.addStretch()
         overlay_layout.addLayout(seg_row)
 
-    def _overlay_build_extra_col(self, layout: "QHBoxLayout") -> None:
+    def _overlay_build_extra_col(self, layout: QHBoxLayout) -> None:
         """Build the extra toggles column (right of the overlay frame)."""
         extra_col = QVBoxLayout()
         extra_col.setContentsMargins(0, 0, 0, 0)
@@ -844,7 +842,7 @@ class ToolStrip(QWidget):
         extra_col.addStretch()
         layout.addLayout(extra_col)
 
-    def _build_overlay_section(self, layout: "QHBoxLayout") -> None:
+    def _build_overlay_section(self, layout: QHBoxLayout) -> None:
         """Build stacked overlay controls: three rows of [☑ checkbox] [slider] [value].
 
         All three overlay types (Force Vectors, Mobility Ellipsoids, Force Ellipsoids)
