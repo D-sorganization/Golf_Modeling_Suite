@@ -19,7 +19,7 @@ class DynamicsMixin:
             import mujoco
 
             if hasattr(self.sim.model, "nv") and not isinstance(  # type: ignore[attr-defined]
-                self.sim.model.nv,
+                self.sim.model.nv,  # type: ignore[attr-defined]
                 type(lambda: None),  # type: ignore[attr-defined]
             ):
                 nv = self.sim.model.nv  # type: ignore[attr-defined]
@@ -82,7 +82,7 @@ class DynamicsMixin:
             import mujoco
 
             body_id = mujoco.mj_name2id(
-                self.sim.model,
+                self.sim.model,  # type: ignore[attr-defined]
                 mujoco.mjtObj.mjOBJ_BODY,
                 body_name,  # type: ignore[attr-defined]
             )

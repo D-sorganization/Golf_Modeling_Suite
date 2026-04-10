@@ -41,9 +41,9 @@ class SurfacePresetsMixin:
             raise ValueError("heightmap must be provided")
         if not (heightmap is not None):
             raise ValueError("heightmap must be provided")
-        green = cls(width=width, height=height, turf=turf)
+        green = cls(width=width, height=height, turf=turf)  # type: ignore[call-arg]
         green.set_heightmap(heightmap)  # type: ignore[attr-defined]
-        return green
+        return green  # type: ignore[return-value]
 
     @classmethod
     def create_preset(cls, name: str) -> GreenSurface:
@@ -65,14 +65,14 @@ class SurfacePresetsMixin:
             ValueError: If preset unknown
         """
         if name == "flat_practice":
-            return cls(
+            return cls(  # type: ignore[call-arg,return-value]
                 width=15.0,
                 height=15.0,
                 turf=TurfProperties.create_preset("practice_green"),
             )
 
         if name == "undulating_championship":
-            green = cls(
+            green = cls(  # type: ignore[call-arg]
                 width=25.0,
                 height=25.0,
                 turf=TurfProperties.create_preset("tournament_fast"),
@@ -100,10 +100,10 @@ class SurfacePresetsMixin:
                 depth=0.02,
             )
             green.set_hole_position(np.array([15.0, 15.0]))  # type: ignore[attr-defined]
-            return green
+            return green  # type: ignore[return-value]
 
         if name == "severe_slopes":
-            green = cls(
+            green = cls(  # type: ignore[call-arg]
                 width=20.0,
                 height=20.0,
                 turf=TurfProperties.create_preset("augusta_like"),
@@ -124,10 +124,10 @@ class SurfacePresetsMixin:
                 width=2.0,
             )
             green.set_hole_position(np.array([15.0, 10.0]))  # type: ignore[attr-defined]
-            return green
+            return green  # type: ignore[return-value]
 
         if name == "tiered":
-            green = cls(
+            green = cls(  # type: ignore[call-arg]
                 width=20.0,
                 height=20.0,
                 turf=TurfProperties.create_preset("tournament_standard"),
@@ -140,6 +140,6 @@ class SurfacePresetsMixin:
                 width=3.0,
             )
             green.set_hole_position(np.array([15.0, 5.0]))  # type: ignore[attr-defined]
-            return green
+            return green  # type: ignore[return-value]
 
         raise ValueError(f"Unknown preset: {name}")
