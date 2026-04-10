@@ -23,7 +23,7 @@ Common panel setup logic is factored into _connect_common_signals().
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from typing import Any
 
 import numpy as np
@@ -177,7 +177,7 @@ def _triple_preset_coeffs(preset: object | None) -> list[list[float]]:
     ]
 
 
-def _golfer_preset_coeffs(preset: object | None) -> list[list[float]]:
+def _golfer_preset_coeffs(preset: Mapping[str, object] | None) -> list[list[float]]:
     if preset is None:
         return [[0.0]] * 7
     keys = [
@@ -189,7 +189,7 @@ def _golfer_preset_coeffs(preset: object | None) -> list[list[float]]:
         "tau_le",
         "tau_lh",
     ]
-    return [_parse_coefficients(preset.get(k, "0")) for k in keys]  # type: ignore[union-attr]
+    return [_parse_coefficients(preset.get(k, "0")) for k in keys]
 
 
 def build_double_panel(main_window: Any) -> SimulationPanel:
