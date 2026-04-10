@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import pytest
@@ -11,6 +12,7 @@ from src.launchers.launcher_provider_compatibility import (
     assert_launcher_provider_compatibility,
     assert_provider_manifest_compatibility,
     evaluate_launcher_model_compatibility,
+    is_engine_runtime_available,
     validate_provider_manifest,
 )
 
@@ -132,6 +134,14 @@ def test_evaluate_launcher_model_compatibility_distinguishes_runtime_unavailable
     assert len(results) == 1
     assert not results[0].is_compatible
     assert any(issue.category == "runtime_unavailable" for issue in results[0].issues)
+
+
+def test_is_engine_runtime_available_accepts_stubbed_module_without_spec(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setitem(sys.modules, "pydrake", object())
+
+    assert is_engine_runtime_available("drake") is True
 
 
 def test_validate_provider_manifest_reports_machine_readable_diagnostics(

@@ -8,6 +8,7 @@ without relying on hardcoded repo-local assumptions.
 from __future__ import annotations
 
 import importlib.util
+import sys
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
@@ -85,7 +86,12 @@ def is_engine_runtime_available(engine_type: str | None) -> bool:
     import_name = _ENGINE_IMPORT_NAMES.get(engine_type.strip().lower())
     if import_name is None:
         return True
-    return importlib.util.find_spec(import_name) is not None
+    if import_name in sys.modules:
+        return True
+    try:
+        return importlib.util.find_spec(import_name) is not None
+    except (ImportError, ValueError):
+        return False
 
 
 def _make_issue(
