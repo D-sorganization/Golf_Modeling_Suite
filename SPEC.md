@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.74                                             |
+| **Spec Version**        | 1.0.75                                             |
 | **Last Spec Update**    | 2026-04-10                                         |
 
 ## 2. Purpose & Mission
@@ -430,6 +430,8 @@ Beyond standard tools, CI enforces custom checks:
 git clone https://github.com/D-sorganization/UpstreamDrift.git
 cd UpstreamDrift
 python -m pip install -e ".[dev]"  # Include dev dependencies
+# One-line bootstrap from outside a checkout
+curl -fsSL https://raw.githubusercontent.com/D-sorganization/UpstreamDrift/main/install.sh | bash
 # For desktop app: cargo install tauri-cli
 
 # Running the FastAPI Server
@@ -450,6 +452,12 @@ pytest tests/unit/ -v
 pytest tests/integration/ -v
 pytest tests/ --cov=src --cov-fail-under=70
 ```
+
+### Packaging Notes
+
+- Python packaging expects a prebuilt frontend bundle under `ui/dist/`; CI packaging must provide that bundle or explicitly force a rebuild instead of silently shipping a package with no web UI.
+- The quick-install script supports both local checkout installs and remote `git+https://github.com/D-sorganization/UpstreamDrift.git` installs when run via `curl ... | bash`.
+- Windows setup and MSI packaging resolve launcher assets, config, and shared model data from the active `src/` layout (`src/launchers/assets`, `src/config`, `src/shared/urdf`, `src/shared/meshes`).
 
 ### Build Artifacts
 
@@ -493,6 +501,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-10 | 1.0.75  | Updated install and packaging behavior in the spec: documented one-line remote bootstrap support in `install.sh`, clarified that CI packaging must ship or rebuild `ui/dist` instead of skipping the frontend bundle, and recorded that Windows setup/MSI packaging resolve assets and manifests from the active `src/` tree.                                                                                                                                                                            |
 | 2026-04-10 | 1.0.74  | API/auth integrity: aligned API-key prefix lookup and API-key creation on the canonical `key_prefix` field, removed the stale auth integration xfail, and added a route-level regression test to ensure newly created API keys persist the hashed prefix used by the fast-path lookup dependency.                                                                                                                                                                                                        |
 | 2026-04-10 | 1.0.73  | Type hygiene(annotation-slice): added explicit return annotations for the JAX optimizer's nested `loss_fn` helpers in `pendulum_simulator/optimizer_gpu.py`, and extended the bounded AST regression test so this optimization source slice stays annotation-complete alongside the earlier explorer and output-manager waves.                                                                                                                                                                                  |
 | 2026-04-10 | 1.0.72  | Type hygiene(annotation-slice): added explicit return annotations for the shared output-manager filename sanitizer and save dispatcher helpers, and extended the bounded AST regression test to keep the source-level output-manager slice annotation-complete alongside the earlier explorer and shim updates.                                                                                                                                                                                                   |
