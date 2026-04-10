@@ -60,7 +60,7 @@ class TestPSAModelBaseCase:
         """Calculate base case results."""
         return base_model.calculate()
 
-    def test_h2_recovery(self, base_results) -> None:
+    def test_h2_recovery(self, base_results: PSAResults) -> None:
         """Test H2 recovery matches Excel."""
         assert_allclose(
             base_results.h2_recovery_pct,
@@ -69,7 +69,7 @@ class TestPSAModelBaseCase:
             err_msg="H2 recovery does not match Excel",
         )
 
-    def test_h2_purity(self, base_results) -> None:
+    def test_h2_purity(self, base_results: PSAResults) -> None:
         """Test H2 purity matches Excel."""
         assert_allclose(
             base_results.h2_purity_pct,
@@ -78,7 +78,7 @@ class TestPSAModelBaseCase:
             err_msg="H2 purity does not match Excel",
         )
 
-    def test_net_product_flow(self, base_results) -> None:
+    def test_net_product_flow(self, base_results: PSAResults) -> None:
         """Test net product flow matches Excel."""
         assert_allclose(
             base_results.total_net_product_scfm,
@@ -87,7 +87,7 @@ class TestPSAModelBaseCase:
             err_msg="Net product flow does not match Excel",
         )
 
-    def test_exhaust_flow(self, base_results) -> None:
+    def test_exhaust_flow(self, base_results: PSAResults) -> None:
         """Test exhaust flow matches Excel."""
         assert_allclose(
             base_results.total_exhaust_scfm,
@@ -96,7 +96,7 @@ class TestPSAModelBaseCase:
             err_msg="Exhaust flow does not match Excel",
         )
 
-    def test_s2_tail_vent_flow(self, base_results) -> None:
+    def test_s2_tail_vent_flow(self, base_results: PSAResults) -> None:
         """Test S2 tail vent flow (should be 0 at 100% recycle)."""
         assert_allclose(
             base_results.total_s2_tail_vent_scfm,
@@ -105,13 +105,13 @@ class TestPSAModelBaseCase:
             err_msg="S2 tail vent flow does not match Excel",
         )
 
-    def test_mass_balance(self, base_results) -> None:
+    def test_mass_balance(self, base_results: PSAResults) -> None:
         """Test mass balance closure."""
         assert abs(base_results.mass_balance_error) < 1e-10, (
             f"Mass balance error too large: {base_results.mass_balance_error}"
         )
 
-    def test_s2_tail_h2_pct(self, base_results) -> None:
+    def test_s2_tail_h2_pct(self, base_results: PSAResults) -> None:
         """Test S2 tail H2 percentage matches Excel."""
         assert_allclose(
             base_results.s2_tail_h2_pct,
@@ -120,7 +120,7 @@ class TestPSAModelBaseCase:
             err_msg="S2 tail H2% does not match Excel",
         )
 
-    def test_s2_tail_o2_pct(self, base_results) -> None:
+    def test_s2_tail_o2_pct(self, base_results: PSAResults) -> None:
         """Test S2 tail O2 percentage matches Excel."""
         assert_allclose(
             base_results.s2_tail_o2_pct,
@@ -139,7 +139,7 @@ class TestPSAModelH2Flows:
         model = PSAModel()
         return model.calculate()
 
-    def test_fresh_feed_h2(self, base_results) -> None:
+    def test_fresh_feed_h2(self, base_results: PSAResults) -> None:
         """Test H2 fresh feed flow."""
         assert_allclose(
             base_results.flows.fresh_feed[0],
@@ -147,7 +147,7 @@ class TestPSAModelH2Flows:
             rtol=1e-10,
         )
 
-    def test_mixed_feed_h2(self, base_results) -> None:
+    def test_mixed_feed_h2(self, base_results: PSAResults) -> None:
         """Test H2 mixed feed flow."""
         assert_allclose(
             base_results.flows.mixed_feed[0],
@@ -155,7 +155,7 @@ class TestPSAModelH2Flows:
             rtol=1e-10,
         )
 
-    def test_exhaust_h2(self, base_results) -> None:
+    def test_exhaust_h2(self, base_results: PSAResults) -> None:
         """Test H2 exhaust flow."""
         assert_allclose(
             base_results.flows.exhaust[0],
@@ -163,7 +163,7 @@ class TestPSAModelH2Flows:
             rtol=1e-10,
         )
 
-    def test_interstage_h2(self, base_results) -> None:
+    def test_interstage_h2(self, base_results: PSAResults) -> None:
         """Test H2 interstage flow."""
         assert_allclose(
             base_results.flows.interstage[0],
@@ -171,7 +171,7 @@ class TestPSAModelH2Flows:
             rtol=1e-10,
         )
 
-    def test_s2_tail_h2(self, base_results) -> None:
+    def test_s2_tail_h2(self, base_results: PSAResults) -> None:
         """Test H2 S2 tail flow."""
         assert_allclose(
             base_results.flows.s2_tail[0],
@@ -179,7 +179,7 @@ class TestPSAModelH2Flows:
             rtol=1e-10,
         )
 
-    def test_net_product_h2(self, base_results) -> None:
+    def test_net_product_h2(self, base_results: PSAResults) -> None:
         """Test H2 net product flow."""
         assert_allclose(
             base_results.flows.net_product[0],
@@ -197,7 +197,7 @@ class TestPSAModelO2Flows:
         model = PSAModel()
         return model.calculate()
 
-    def test_fresh_feed_o2(self, base_results) -> None:
+    def test_fresh_feed_o2(self, base_results: PSAResults) -> None:
         """Test O2 fresh feed flow."""
         assert_allclose(
             base_results.flows.fresh_feed[5],
@@ -205,7 +205,7 @@ class TestPSAModelO2Flows:
             rtol=1e-10,
         )
 
-    def test_mixed_feed_o2(self, base_results) -> None:
+    def test_mixed_feed_o2(self, base_results: PSAResults) -> None:
         """Test O2 mixed feed flow."""
         assert_allclose(
             base_results.flows.mixed_feed[5],
@@ -213,7 +213,7 @@ class TestPSAModelO2Flows:
             rtol=1e-10,
         )
 
-    def test_exhaust_o2(self, base_results) -> None:
+    def test_exhaust_o2(self, base_results: PSAResults) -> None:
         """Test O2 exhaust flow."""
         assert_allclose(
             base_results.flows.exhaust[5],
@@ -221,7 +221,7 @@ class TestPSAModelO2Flows:
             rtol=1e-10,
         )
 
-    def test_interstage_o2(self, base_results) -> None:
+    def test_interstage_o2(self, base_results: PSAResults) -> None:
         """Test O2 interstage flow."""
         assert_allclose(
             base_results.flows.interstage[5],
@@ -229,7 +229,7 @@ class TestPSAModelO2Flows:
             rtol=1e-10,
         )
 
-    def test_s2_tail_o2(self, base_results) -> None:
+    def test_s2_tail_o2(self, base_results: PSAResults) -> None:
         """Test O2 S2 tail flow."""
         assert_allclose(
             base_results.flows.s2_tail[5],
@@ -237,7 +237,7 @@ class TestPSAModelO2Flows:
             rtol=1e-10,
         )
 
-    def test_net_product_o2(self, base_results) -> None:
+    def test_net_product_o2(self, base_results: PSAResults) -> None:
         """Test O2 net product flow."""
         assert_allclose(
             base_results.flows.net_product[5],
