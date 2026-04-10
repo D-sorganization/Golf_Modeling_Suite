@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -84,6 +85,17 @@ class TestGetEngineStatus:
         monkeypatch.setitem(sys.modules, "opensim", BrokenOpenSim)
 
         assert get_engine_status("opensim") == EngineStatus.BROKEN
+
+    def test_mocked_drake_surface_is_not_available(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        import src.shared.python.engine_core.engine_availability as availability
+
+        availability._engine_status_cache.pop("drake", None)
+        availability._engine_error_cache.pop("drake", None)
+        monkeypatch.setitem(sys.modules, "pydrake.all", MagicMock())
+
+        assert get_engine_status("drake") == EngineStatus.BROKEN
 
 
 # ---------------------------------------------------------------------------

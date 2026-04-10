@@ -37,6 +37,7 @@ import sys
 from collections.abc import Callable
 from enum import Enum
 from typing import Any, TypeVar
+from unittest.mock import Mock
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +73,21 @@ def _validate_opensim_bindings(opensim_module: Any) -> None:
         pass
 
 
+def _validate_drake_bindings(drake_module: Any) -> None:
+    """Reject partial or mock-only pydrake surfaces."""
+    if isinstance(drake_module, Mock):
+        raise TypeError("pydrake.all resolved to a mock module")
+
+    for module_name in (
+        "pydrake.geometry",
+        "pydrake.math",
+        "pydrake.multibody.tree",
+    ):
+        module = importlib.import_module(module_name)
+        if isinstance(module, Mock):
+            raise TypeError(f"{module_name} resolved to a mock module")
+
+
 def _probe_engine(
     engine_name: str,
     import_name: str | None = None,
@@ -101,7 +117,7 @@ def _probe_engine(
 
     try:
         if import_name == "drake":
-            importlib.import_module("pydrake.all")
+            _validate_drake_bindings(importlib.import_module("pydrake.all"))
         elif import_name == "torch":
             importlib.import_module("torch")
         elif import_name == "tf":
