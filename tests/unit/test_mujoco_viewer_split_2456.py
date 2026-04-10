@@ -32,9 +32,7 @@ class TestMuJoCoViewerFileSizes:
     @pytest.mark.unit
     def test_coordinator_loc(self) -> None:
         loc = _count_lines(VIEWER_DIR / "mujoco_viewer.py")
-        assert loc <= LOC_BUDGET, (
-            f"mujoco_viewer.py has {loc} LOC; budget {LOC_BUDGET}"
-        )
+        assert loc <= LOC_BUDGET, f"mujoco_viewer.py has {loc} LOC; budget {LOC_BUDGET}"
 
     @pytest.mark.unit
     def test_backend_loc(self) -> None:
