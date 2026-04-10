@@ -96,7 +96,7 @@ def test_assert_launcher_provider_compatibility_raises_on_failures(
         assert_launcher_provider_compatibility([ExternalModel()], tmp_path)
 
 
-@pytest.mark.skip(reason='CI missing engine runtimes')
+@pytest.mark.skip(reason="CI missing engine runtimes")
 def test_evaluate_launcher_model_compatibility_preserves_canonical_identity(
     tmp_path: Path,
 ) -> None:

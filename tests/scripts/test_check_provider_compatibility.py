@@ -9,7 +9,7 @@ import yaml
 from scripts.check_provider_compatibility import main
 
 
-@pytest.mark.skip(reason='CI missing engine runtimes')
+@pytest.mark.skip(reason="CI missing engine runtimes")
 def test_main_reports_success_for_compatible_provider_manifest(
     tmp_path: Path, capsys
 ) -> None:
