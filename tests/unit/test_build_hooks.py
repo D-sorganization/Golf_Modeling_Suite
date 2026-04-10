@@ -57,6 +57,12 @@ def test_ui_build_hook_ci_env_without_bundle_fails(monkeypatch, tmp_path):
     assert "UI bundle is missing" in str(exc.value)
 
 
+def test_ui_build_hook_editable_ci_without_bundle_skips(monkeypatch, tmp_path):
+    monkeypatch.setenv("CI", "true")
+    hook = build_hooks.UIBuildHook(str(tmp_path), {})
+    hook.initialize("editable", {})
+
+
 @patch("build_hooks.subprocess.run")
 def test_ui_build_hook_builds(mock_run, monkeypatch, tmp_path):
     monkeypatch.delenv("CI", raising=False)

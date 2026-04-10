@@ -45,6 +45,12 @@ class UIBuildHook(BuildHookInterface):
             return
 
         if skip_requested and not force_ui_build:
+            if version == "editable":
+                logger.warning(
+                    "Skipping UI bundle enforcement for editable build without %s",
+                    dist_dir,
+                )
+                return
             msg = (
                 f"UI bundle is missing at {dist_dir} and UI build is disabled "
                 "by CI/SKIP_UI_BUILD. Build ui/dist before packaging or set "
