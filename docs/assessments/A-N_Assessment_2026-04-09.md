@@ -2,57 +2,144 @@
 
 **Date**: 2026-04-09
 **Scope**: Complete adversarial and detailed review targeting extreme quality levels.
-**Reviewer**: Automated scheduled comprehensive review
+**Reviewer**: Automated scheduled comprehensive review (parallel deep-dive)
 
 ## 1. Executive Summary
 
-**Overall Grade: D**
+**Overall Grade: B-** *(upgraded from initial D after deep-dive)*
 
-UpstreamDrift is the largest repository in the fleet: 1,278 source files, 913 tests (0.71 ratio — good), but **292 monolith files**. The codebase appears to overlap significantly with `Golf_GAAI_Sandbox` (shares a 5,585 LOC vendored jQuery and 1,400+ LOC pressure drop interface). The strong test ratio is offset by massive SRP violations across hundreds of files.
+UpstreamDrift has **excellent test coverage** (50% ratio, 929 test files), **strong DbC** (inherited from Tools, `require_finite` / `require(air_density > 0)` patterns throughout), and strong engine abstraction (MuJoCo, Drake, Pinocchio, OpenSim). Primary weaknesses: cross-repo DRY with Tools (301 shared filenames, near-identical `text_editor.py`), 15+ files over 1000 LOC, and some LOD violations from third-party engine adapters.
 
 | Metric | Value |
 |---|---|
-| Source files | 1,278 |
-| Test files | 913 |
-| Source LOC | 580,864 |
-| Test/Src ratio | 0.71 |
-| Monolith files (>500 LOC) | **292** |
+| Total source files | 2,476 |
+| Total LOC | 581,233 |
+| Source LOC (non-test) | ~387,469 |
+| Test files | 929 |
+| Test LOC | 193,764 |
+| Test/Src ratio | **0.50** |
 
 ## 2. Key Factor Findings
 
-### DRY — Grade D
-- Heavy overlap with Golf_GAAI_Sandbox (shared `humanoid_character_builder` and `upstream_drift_tools` packages). Must be resolved at fleet level.
+### DRY — Grade C
 
-### DbC — Grade C+
-- Extensive test coverage suggests contracts exist for critical paths; but the monolith count undermines local reasoning.
+**Issues**
+1. **301 shared filenames with Tools**.
+2. `text_editor.py` is a near-identical copy (1040 vs Tools' 1038 LOC) — only 2 trivial diffs (security comment + hash algorithm).
+3. `src/shared/python/` contains 669 Python files — many likely duplicated from or with Tools.
+4. CLAUDE.md explicitly acknowledges Tools as an upstream dependency, so this SHOULD be resolved via proper dependency consumption.
 
-### TDD — Grade B-
-- 0.71 ratio is the strongest among large codebases in the fleet. Credit given.
+### DbC — Grade A
 
-### Orthogonality — Grade D
-- 292 monoliths is the **worst in the fleet**. SRP is systemically violated.
+**Strengths**
+- Strong contract usage via `require()`, `require_finite()`, `@precondition` decorators.
+- **Aerodynamics module** shows thorough validation: `require_finite(velocity)`, `require(air_density > 0)`.
+- Dedicated `contracts.py` inherited from Tools.
 
-### Reusability — Grade D
-- Monoliths lock behavior into concrete contexts.
+### TDD — Grade A
 
-### Changeability — Grade D
-- Highest regression risk in the fleet.
+**Strengths**
+- **929 test files, ~50% test-to-code ratio** — among the strongest in the fleet.
+- Test markers well-structured: `unit`, `integration`, `slow`, `live_simulation`, `benchmark`, `scientific`.
+- Hypothesis property-based testing.
+- CI enforces 10% coverage minimum with no-regression policy.
 
-### LOD — Grade C-
-- Not spot-checked at this scale.
+### Orthogonality — Grade B
 
-### Function Size / Monoliths
-- **292 files over 500 LOC**
-- `src/shared/python/humanoid_character_builder/generators/mesh_generator.py` — **1,675 LOC**
-- `src/shared/python/upstream_drift_tools/process_calculators/pressure_drop_calculator/pressure_drop_interface.py` — **1,424 LOC**
-- `docs/sphinx/_static/jquery.js` — 5,585 LOC (vendor; don't commit)
+**Strengths**
+- Good engine separation: MuJoCo, Drake, Pinocchio, OpenSim. Each independent.
+- Physics modules are independent.
 
-## 3. Recommended Remediation Plan
+**Issues**
+- `src/shared/python/` at 669 files is a monolithic shared layer.
 
-1. **P0**: **Resolve relationship with Golf_GAAI_Sandbox.** Pick one as source-of-truth for the overlapping shared packages and delete from the other.
-2. **P0**: Decompose `mesh_generator.py` (1,675 LOC) into per-mesh-type generators.
-3. **P0**: Decompose `pressure_drop_interface.py` (1,424 LOC).
-4. **P0**: Remove vendored `jquery.js`.
-5. **P0**: Set CI file-size gate at 500 LOC for new files; establish burn-down plan for existing monoliths.
-6. **P1**: Produce a priority list of the 292 monoliths, sorted by LOC × churn.
-7. **P1**: Extract shared DbC decorators and apply consistently across process calculators.
+### Reusability — Grade B
+
+**Strengths**
+- Physics engine abstraction allows swapping backends.
+- Configurable aerodynamics with toggles (drag/lift/magnus independently).
+- Rust core for performance.
+
+**Issues**
+- Golf-domain-specific — limiting broader reuse.
+
+### Changeability — Grade B
+
+**Strengths**
+- Feature toggles in `AerodynamicsConfig` (frozen dataclasses).
+- Multiple physics engine backends.
+- CI file size budget (**1200 LOC max with exceptions**).
+- Rust bindings via Maturin.
+
+### LOD — Grade C
+
+**Issues**
+1. `src/shared/python/biomechanics/myosuite_adapter.py:223` — `self.muscle_system.agonist.muscles.keys()` (3-level chain).
+2. `Path(__file__).parent.parent.parent.parent` — 4-level directory traversal in 2 places:
+   - `src/shared/python/gui_pkg/help_system.py:53`
+   - `launcher_utils.py:121`
+3. GUI widget signal chaining.
+
+### Function Size — Grade C
+
+**Issues**
+- `aerodynamics.py` has functions approaching 47 LOC (`get_effective_coefficient`).
+- `data_fitting.py` — 1,064 LOC.
+- `kalman filter()` inherited from Tools (90 LOC).
+- Multiple 1000+ LOC files.
+
+### Script Monoliths — Grade C
+
+**15+ files exceed 1000 LOC**:
+
+| File | LOC |
+|---|---|
+| `syngas_compression_calculator.py` | 1,161 |
+| `aerodynamics.py` | 1,095 |
+| `controls_tab.py` | 1,075 |
+| `data_fitting.py` | 1,064 |
+| `psa_gui.py` | 1,055 |
+| `mujoco_viewer.py` | 1,051 |
+| `terrain_representation.py` | 1,045 |
+| `text_editor.py` | 1,040 |
+| `golf_swing_models_xml.py` | 1,015 |
+
+CI has a 1200-line budget but many files cluster near the limit.
+
+## 3. Summary Table
+
+| Criterion | Grade |
+|---|---|
+| DRY | C |
+| DbC | **A** |
+| TDD | **A** |
+| Orthogonality | B |
+| Reusability | B |
+| Changeability | B |
+| LOD | C |
+| Function Size | C |
+| Script Monoliths | C |
+| **Overall** | **B-** |
+
+## 4. Recommended Remediation Plan
+
+### P0 — Resolve Tools dependency
+1. **`text_editor.py` near-duplicate**: consume from Tools via dependency (git submodule or pip install) instead of maintaining a 1040-LOC copy.
+2. **Audit the 301 shared filenames** — identify which are legitimate consumers of Tools and convert them to imports, which are actual drift that needs reconciliation.
+
+### P0 — Decompose `aerodynamics.py` (1095 LOC)
+3. Despite an ARCHITECTURE_DEBT comment, still monolithic. Split:
+   - `config.py` — `AerodynamicsConfig` dataclass
+   - `models/drag.py`, `models/lift.py`, `models/magnus.py` — per-force models
+   - `engine.py` — orchestrator
+4. Do the same for `syngas_compression_calculator.py` (1161) and `data_fitting.py` (1064).
+
+### P1 — XML model files
+5. `src/engines/physics_engines/mujoco/golf_swing_models_xml.py` (1,015 LOC) contains XML model definitions IN Python. Move to external `.xml`/`.mjcf` files loaded at runtime. Removes ~1,000 LOC.
+
+### P1 — LOD fixes
+6. Define a `PROJECT_ROOT` constant in `__init__.py` and replace `Path(__file__).parent.parent.parent.parent` with `PROJECT_ROOT`.
+7. Add `get_muscle_names()` method to `MyoSuiteAdapter`; replace `self.muscle_system.agonist.muscles.keys()` chain.
+
+### P2 — File size budget
+8. Lower CI file size budget from 1200 → 800 LOC over multiple sprints to force decomposition of the 15+ files clustering near the limit.
