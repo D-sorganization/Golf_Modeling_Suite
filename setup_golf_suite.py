@@ -214,7 +214,10 @@ def main() -> int:
 
     # 4. Generate Icon
     if source_icon:
-        if not create_optimized_icon(source_icon, output_icon) and fallback_icon.exists():
+        if (
+            not create_optimized_icon(source_icon, output_icon)
+            and fallback_icon.exists()
+        ):
             output_icon = fallback_icon
             logger.info("Using fallback existing icon.")
     elif not output_icon.exists() and fallback_icon.exists():

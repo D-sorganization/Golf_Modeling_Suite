@@ -71,7 +71,9 @@ def test_install_script_defaults_to_remote_repo(tmp_path: Path) -> None:
     )
 
     assert "Using remote install source" in stdout
-    assert "pipx:install git+https://github.com/D-sorganization/UpstreamDrift.git" in calls
+    assert (
+        "pipx:install git+https://github.com/D-sorganization/UpstreamDrift.git" in calls
+    )
 
 
 def test_install_script_uses_local_checkout_when_present(tmp_path: Path) -> None:

@@ -10,7 +10,9 @@ from installer.windows import setup_config
 from installer.windows.packaging_profiles import get_packaging_profile
 
 
-def _fake_setup_configuration(project_root: Path) -> setup_config.SetupProfileConfiguration:
+def _fake_setup_configuration(
+    project_root: Path,
+) -> setup_config.SetupProfileConfiguration:
     return setup_config.SetupProfileConfiguration(
         profile=get_packaging_profile(None),
         available_engines=(),
