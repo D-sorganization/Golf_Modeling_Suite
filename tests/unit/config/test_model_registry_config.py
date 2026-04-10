@@ -55,6 +55,16 @@ class TestModelConfig:
 
 
 class TestModelRegistryMissingFile:
+    def test_default_config_path_points_to_src_config_models_yaml(self) -> None:
+        registry = ModelRegistry()
+        expected = (
+            Path(__file__).resolve().parents[3]
+            / "src"
+            / "config"
+            / "models.yaml"
+        )
+        assert registry.config_path == expected
+
     def test_missing_file_does_not_raise(self) -> None:
         # A missing config path should log a warning, not raise
         registry = ModelRegistry("/nonexistent/path/models.yaml")

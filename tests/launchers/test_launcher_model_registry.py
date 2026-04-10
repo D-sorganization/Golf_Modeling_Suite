@@ -57,6 +57,13 @@ def test_model_registry_init():
     assert not registry._loaded
 
 
+def test_model_registry_default_path_points_to_src_config_models_yaml():
+    """Test the default registry path matches the repo layout."""
+    registry = ModelRegistry()
+    assert registry.config_path == Path("src/config/models.yaml")
+    assert not registry._loaded
+
+
 def test_model_registry_load_success(mock_yaml_data):
     """Test parsing yaml config correctly."""
     registry = ModelRegistry()

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -18,9 +19,18 @@ class TestStandardModelManagerInit:
         mgr = StandardModelManager(suite_root=tmp_path)
         assert mgr.suite_root == tmp_path
 
-    def test_construct_default_suite_root(self) -> None:
+    @patch("src.shared.python.config.standard_models.get_src_root")
+    def test_construct_default_suite_root(
+        self, mock_get_src_root, tmp_path: Path
+    ) -> None:
+        mock_get_src_root.return_value = tmp_path / "src"
         mgr = StandardModelManager()
-        assert isinstance(mgr.suite_root, Path)
+        assert mgr.suite_root == tmp_path / "src"
+        assert mgr.models_dir == tmp_path / "src" / "shared" / "urdf"
+        assert (
+            mgr.config_file
+            == tmp_path / "src" / "shared" / "urdf" / "standard_models.yaml"
+        )
 
     def test_config_is_dict(self, tmp_path: Path) -> None:
         mgr = StandardModelManager(suite_root=tmp_path)

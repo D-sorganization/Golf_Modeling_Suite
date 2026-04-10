@@ -9,6 +9,7 @@ from pathlib import Path
 import yaml  # type: ignore[import-untyped]
 
 from src.shared.python.core.contracts import ContractChecker
+from src.shared.python.data_io.path_utils import get_repo_root
 
 
 @dataclass
@@ -33,14 +34,14 @@ class ModelRegistry(ContractChecker):
             - All model IDs in the registry are non-empty strings
     """
 
-    def __init__(self, config_path: str | Path = "config/models.yaml") -> None:
+    def __init__(self, config_path: str | Path | None = None) -> None:
         """Initialize registry.
 
         Args:
             config_path: Path to the YAML configuration file.
         """
         if not (config_path is not None):
-            raise ValueError("config_path must be provided")
+            config_path = get_repo_root() / "src" / "config" / "models.yaml"
         self.config_path = Path(config_path)
         self.models: dict[str, ModelConfig] = {}
         self._load_registry()
