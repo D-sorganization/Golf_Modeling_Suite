@@ -54,9 +54,7 @@ def _make_fake_perturbation_modules() -> dict[str, ModuleType]:
 
     config_module.PerturbationConfig = _FakePerturbationConfig
     config_module.PerturbationSummary = _FakePerturbationSummary
-    modules["src.shared.python.pendulum_simulator.perturbation.config"] = (
-        config_module
-    )
+    modules["src.shared.python.pendulum_simulator.perturbation.config"] = config_module
 
     analyzer_module = ModuleType(
         "src.shared.python.pendulum_simulator.pendulum_perturbation_analyzer"
@@ -73,9 +71,9 @@ def _make_fake_perturbation_modules() -> dict[str, ModuleType]:
             return _FakePerturbationSummary()
 
     analyzer_module.PendulumPerturbationAnalyzer = _FakeAnalyzer
-    modules[
-        "src.shared.python.pendulum_simulator.pendulum_perturbation_analyzer"
-    ] = analyzer_module
+    modules["src.shared.python.pendulum_simulator.pendulum_perturbation_analyzer"] = (
+        analyzer_module
+    )
 
     perturbation_analysis_module = ModuleType(
         "src.shared.python.pendulum_simulator.perturbation_analysis"
