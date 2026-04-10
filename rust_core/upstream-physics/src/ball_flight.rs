@@ -165,8 +165,8 @@ pub fn simulate_ball_trajectory(
     // Normalize spin_axis to unit vector; fall back to Z-axis if near-zero
     let raw_spin = Vector3::new(spin_axis[0], spin_axis[1], spin_axis[2]);
     let spin_axis_v = {
-        let n = (raw_spin.x * raw_spin.x + raw_spin.y * raw_spin.y + raw_spin.z * raw_spin.z)
-            .sqrt();
+        let n =
+            (raw_spin.x * raw_spin.x + raw_spin.y * raw_spin.y + raw_spin.z * raw_spin.z).sqrt();
         if n > 1e-10 {
             Vector3::new(raw_spin.x / n, raw_spin.y / n, raw_spin.z / n)
         } else {
