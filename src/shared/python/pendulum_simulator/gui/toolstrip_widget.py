@@ -310,7 +310,8 @@ class ToolStrip(QWidget):
     def _add_separator(self, layout: QHBoxLayout) -> None:
         layout.addWidget(_vline())
 
-    def _build_row1_title_and_model(self, layout: QHBoxLayout) -> None:
+        if not (layout is not None):
+            raise ValueError("layout must be provided")
         title = QLabel("Pendulums")
         title.setStyleSheet(_TITLE)
         title.setFont(QFont("Sans", 11, QFont.Weight.Bold))
@@ -514,16 +515,9 @@ class ToolStrip(QWidget):
 
         get_tracker().show_viewer(self)
 
-    def _add_overlay_scale_row(
-        self,
-        overlay_layout: QVBoxLayout,
-        checkbox: QCheckBox,
-        slider: QSlider,
-        label: QLabel,
-    ) -> None:
-        overlay_layout.addLayout(_overlay_row(checkbox, slider, label))
-
-    def _build_overlay_force_rows(self, overlay_layout: QVBoxLayout) -> None:
+    def _overlay_build_frame_rows(self, overlay_layout: QVBoxLayout) -> None:
+        """Build rows A-D: force/mobility/force-ellipsoid checkboxes and segment row."""
+        # Row A: Force Vectors
         self.chk_forces = QCheckBox("Force Vectors")
         self.chk_forces.setStyleSheet(_CHK_FORCE)
         self.chk_forces.setToolTip(
@@ -531,17 +525,15 @@ class ToolStrip(QWidget):
             "Arrow length scales with force magnitude."
         )
         self.chk_forces.toggled.connect(self.forces_toggled.emit)
-
         self._sld_force = _make_scale_slider(_SLIDER_FORCE, default=10)
-        self._sld_force.setToolTip("Force vector display scale (0.1× – 100×)")
+        self._sld_force.setToolTip("Force vector display scale (0.1x - 100x)")
         self._sld_force.valueChanged.connect(self._on_force_scale)
-
-        self._lbl_force_scale = QLabel("1.0×")
+        self._lbl_force_scale = QLabel("1.0x")
         self._lbl_force_scale.setStyleSheet(_VAL_LBL)
-        self._add_overlay_scale_row(
-            overlay_layout, self.chk_forces, self._sld_force, self._lbl_force_scale
+        overlay_layout.addLayout(
+            _overlay_row(self.chk_forces, self._sld_force, self._lbl_force_scale)
         )
-
+        # Row B: Mobility Ellipsoids
         self.chk_mob = QCheckBox("Mobility Ellipsoids")
         self.chk_mob.setStyleSheet(_CHK_MOB)
         self.chk_mob.setToolTip(
@@ -549,17 +541,15 @@ class ToolStrip(QWidget):
             "Cyan = achievable velocity; large = high dexterity."
         )
         self.chk_mob.toggled.connect(self.mob_ellipsoid_toggled.emit)
-
         self._sld_mob = _make_scale_slider(_SLIDER_MOB, default=10, max_val=100)
-        self._sld_mob.setToolTip("Mobility ellipsoid display scale (0.1× – 10×)")
+        self._sld_mob.setToolTip("Mobility ellipsoid display scale (0.1x - 10x)")
         self._sld_mob.valueChanged.connect(self._on_mob_scale)
-
-        self._lbl_mob_scale = QLabel("1.0×")
+        self._lbl_mob_scale = QLabel("1.0x")
         self._lbl_mob_scale.setStyleSheet(_VAL_LBL)
-        self._add_overlay_scale_row(
-            overlay_layout, self.chk_mob, self._sld_mob, self._lbl_mob_scale
+        overlay_layout.addLayout(
+            _overlay_row(self.chk_mob, self._sld_mob, self._lbl_mob_scale)
         )
-
+        # Row C: Force Ellipsoids
         self.chk_force_ell = QCheckBox("Force Ellipsoids")
         self.chk_force_ell.setStyleSheet(_CHK_FELL)
         self.chk_force_ell.setToolTip(
@@ -567,84 +557,83 @@ class ToolStrip(QWidget):
             "Orange = achievable endpoint force; small = near-singular."
         )
         self.chk_force_ell.toggled.connect(self.force_ellipsoid_toggled.emit)
-
         self._sld_force_ell = _make_scale_slider(_SLIDER_FELL, default=10, max_val=100)
-        self._sld_force_ell.setToolTip("Force ellipsoid display scale (0.1× – 10×)")
+        self._sld_force_ell.setToolTip("Force ellipsoid display scale (0.1x - 10x)")
         self._sld_force_ell.valueChanged.connect(self._on_force_ell_scale)
-
-        self._lbl_force_ell_scale = QLabel("1.0×")
+        self._lbl_force_ell_scale = QLabel("1.0x")
         self._lbl_force_ell_scale.setStyleSheet(_VAL_LBL)
-        self._add_overlay_scale_row(
-            overlay_layout,
-            self.chk_force_ell,
-            self._sld_force_ell,
-            self._lbl_force_ell_scale,
+        overlay_layout.addLayout(
+            _overlay_row(
+                self.chk_force_ell, self._sld_force_ell, self._lbl_force_ell_scale
+            )
         )
-
-    def _build_segment_row(self, overlay_layout: QVBoxLayout) -> None:
+        # Row D: Per-segment visibility sub-checkboxes (#1100, #1101, #1102)
         seg_row = QHBoxLayout()
         seg_row.setContentsMargins(0, 1, 0, 0)
         seg_row.setSpacing(2)
         seg_lbl = QLabel("Segments:")
         seg_lbl.setStyleSheet("color:#505070;font-size:11px;")
         seg_row.addWidget(seg_lbl)
-        self._segment_checks = {}
-        self._segment_names = ["shoulder", "wrist", "tip"]
+        self._segment_checks: dict[str, QCheckBox] = {}
+        self._segment_names: list[str] = ["shoulder", "wrist", "tip"]
         for name in self._segment_names:
-            chk = self._make_segment_checkbox(name[:6])
+            chk = QCheckBox(name[:6])
+            chk.setChecked(True)
+            chk.setStyleSheet(
+                "QCheckBox{color:#707090;font-size:11px;spacing:2px;}"
+                "QCheckBox::indicator{width:11px;height:11px;border:1px solid #404060;"
+                "border-radius:2px;background:#1a1a2a;}"
+                "QCheckBox::indicator:checked{background:#303068;border-color:#5050a0;}"
+            )
+            chk.toggled.connect(self._on_segment_toggled)
             seg_row.addWidget(chk)
             self._segment_checks[name] = chk
         seg_row.addStretch()
         overlay_layout.addLayout(seg_row)
 
-    def _build_overlay_toggle_column(self, layout: QHBoxLayout) -> None:
+    def _overlay_build_extra_col(self, layout: QHBoxLayout) -> None:
+        """Build the extra toggles column (right of the overlay frame)."""
         extra_col = QVBoxLayout()
         extra_col.setContentsMargins(0, 0, 0, 0)
         extra_col.setSpacing(2)
-
         self.chk_zero_torque = QCheckBox("Zero-τ Forces")
         self.chk_zero_torque.setStyleSheet(_CHK_ZERO)
         self.chk_zero_torque.setToolTip(
             "Show zero-torque counterfactual forces (dashed vectors).\n"
-            "These represent joint forces if all driving torques were removed—\n"
+            "These represent joint forces if all driving torques were removed\u2014\n"
             "the passive drift due to gravity and inertia alone."
         )
         self.chk_zero_torque.toggled.connect(self.zero_torque_toggled.emit)
         extra_col.addWidget(self.chk_zero_torque)
-
         self.chk_com = QCheckBox("Center of Mass")
         self.chk_com.setStyleSheet(_CHK_COM)
         self.chk_com.setToolTip("Show the combined center of mass of the whole system.")
         self.chk_com.toggled.connect(self.com_toggled.emit)
         extra_col.addWidget(self.chk_com)
-
         self.chk_torque = QCheckBox("Torque Vectors")
         self.chk_torque.setStyleSheet(_CHK_TORQUE)
         self.chk_torque.setToolTip(
             "Show applied torque as curved arrows at each joint.\n"
-            "Red arrows — magnitude scales with torque value."
+            "Red arrows \u2014 magnitude scales with torque value."
         )
         self.chk_torque.toggled.connect(self.torque_vectors_toggled.emit)
         extra_col.addWidget(self.chk_torque)
-
         self.chk_mof = QCheckBox("Moment of Force")
         self.chk_mof.setStyleSheet(_CHK_MOF)
         self.chk_mof.setToolTip(
             "Show moment of force from proximal segment on distal.\n"
-            "Blue arrows — proximal-on-distal convention."
+            "Blue arrows \u2014 proximal-on-distal convention."
         )
         self.chk_mof.toggled.connect(self.moment_of_force_toggled.emit)
         extra_col.addWidget(self.chk_mof)
-
         self.chk_sum_moments = QCheckBox("Sum of Moments")
         self.chk_sum_moments.setStyleSheet(_CHK_SUM)
         self.chk_sum_moments.setToolTip(
             "Show sum of all moments (torque + moment of force)\n"
-            "Green arrows — resultant moment at each joint."
+            "Green arrows \u2014 resultant moment at each joint."
         )
         self.chk_sum_moments.toggled.connect(self.sum_moments_toggled.emit)
         extra_col.addWidget(self.chk_sum_moments)
-
         self.chk_3d = QCheckBox("3D Segments")
         self.chk_3d.setStyleSheet(_CHK_COM)
         self.chk_3d.setToolTip(
@@ -653,20 +642,13 @@ class ToolStrip(QWidget):
         )
         self.chk_3d.toggled.connect(self.mode_3d_toggled.emit)
         extra_col.addWidget(self.chk_3d)
-
-        self._build_rotation_controls(extra_col)
-        extra_col.addStretch()
-        layout.addLayout(extra_col)
-
-    def _build_rotation_controls(self, layout: QVBoxLayout) -> None:
         azimuth_row = QHBoxLayout()
         azimuth_row.setContentsMargins(0, 0, 0, 0)
         azimuth_row.setSpacing(2)
         az_lbl = QLabel("Az:")
         az_lbl.setStyleSheet("color:#606080;font-size:10px;")
-        az_lbl.setToolTip("View azimuth rotation (0°-360°)")
+        az_lbl.setToolTip("View azimuth rotation (0-360 degrees)")
         azimuth_row.addWidget(az_lbl)
-
         self._sld_azimuth = QSlider(Qt.Orientation.Horizontal)
         self._sld_azimuth.setRange(0, 360)
         self._sld_azimuth.setValue(0)
@@ -679,20 +661,17 @@ class ToolStrip(QWidget):
         )
         self._sld_azimuth.valueChanged.connect(self._on_azimuth_slider)
         azimuth_row.addWidget(self._sld_azimuth)
-
-        self._lbl_azimuth = QLabel("0°")
+        self._lbl_azimuth = QLabel("0 deg")
         self._lbl_azimuth.setStyleSheet("color:#606080;font-size:10px;min-width:30px;")
         azimuth_row.addWidget(self._lbl_azimuth)
-        layout.addLayout(azimuth_row)
-
+        extra_col.addLayout(azimuth_row)
         tilt_row = QHBoxLayout()
         tilt_row.setContentsMargins(0, 0, 0, 0)
         tilt_row.setSpacing(2)
         tilt_lbl = QLabel("Tilt:")
         tilt_lbl.setStyleSheet("color:#606080;font-size:10px;")
-        tilt_lbl.setToolTip("Swing plane tilt from vertical (0°-90°)")
+        tilt_lbl.setToolTip("Swing plane tilt from vertical (0-90 degrees)")
         tilt_row.addWidget(tilt_lbl)
-
         self._sld_tilt = QSlider(Qt.Orientation.Horizontal)
         self._sld_tilt.setRange(0, 90)
         self._sld_tilt.setValue(0)
@@ -705,11 +684,189 @@ class ToolStrip(QWidget):
         )
         self._sld_tilt.valueChanged.connect(self._on_tilt_slider)
         tilt_row.addWidget(self._sld_tilt)
+        self._lbl_tilt = QLabel("0 deg")
+        self._lbl_tilt.setStyleSheet("color:#606080;font-size:10px;min-width:30px;")
+        tilt_row.addWidget(self._lbl_tilt)
+        extra_col.addLayout(tilt_row)
+        extra_col.addStretch()
+        layout.addLayout(extra_col)
 
+    def _overlay_build_frame_rows(self, overlay_layout: QVBoxLayout) -> None:
+        """Build rows A-D: force/mobility/force-ellipsoid checkboxes and segment row."""
+        # Row A: Force Vectors
+        self.chk_forces = QCheckBox("Force Vectors")
+        self.chk_forces.setStyleSheet(_CHK_FORCE)
+        self.chk_forces.setToolTip(
+            "Show net joint force vectors at each joint.\n"
+            "Arrow length scales with force magnitude."
+        )
+        self.chk_forces.toggled.connect(self.forces_toggled.emit)
+        self._sld_force = _make_scale_slider(_SLIDER_FORCE, default=10)
+        self._sld_force.setToolTip("Force vector display scale (0.1× – 100×)")
+        self._sld_force.valueChanged.connect(self._on_force_scale)
+        self._lbl_force_scale = QLabel("1.0×")
+        self._lbl_force_scale.setStyleSheet(_VAL_LBL)
+        overlay_layout.addLayout(
+            _overlay_row(self.chk_forces, self._sld_force, self._lbl_force_scale)
+        )
+        # Row B: Mobility Ellipsoids
+        self.chk_mob = QCheckBox("Mobility Ellipsoids")
+        self.chk_mob.setStyleSheet(_CHK_MOB)
+        self.chk_mob.setToolTip(
+            "Show mobility ellipsoids at segment endpoints.\n"
+            "Cyan = achievable velocity; large = high dexterity."
+        )
+        self.chk_mob.toggled.connect(self.mob_ellipsoid_toggled.emit)
+        self._sld_mob = _make_scale_slider(_SLIDER_MOB, default=10, max_val=100)
+        self._sld_mob.setToolTip("Mobility ellipsoid display scale (0.1× – 10×)")
+        self._sld_mob.valueChanged.connect(self._on_mob_scale)
+        self._lbl_mob_scale = QLabel("1.0×")
+        self._lbl_mob_scale.setStyleSheet(_VAL_LBL)
+        overlay_layout.addLayout(
+            _overlay_row(self.chk_mob, self._sld_mob, self._lbl_mob_scale)
+        )
+        # Row C: Force Ellipsoids
+        self.chk_force_ell = QCheckBox("Force Ellipsoids")
+        self.chk_force_ell.setStyleSheet(_CHK_FELL)
+        self.chk_force_ell.setToolTip(
+            "Show force ellipsoids at segment endpoints.\n"
+            "Orange = achievable endpoint force; small = near-singular."
+        )
+        self.chk_force_ell.toggled.connect(self.force_ellipsoid_toggled.emit)
+        self._sld_force_ell = _make_scale_slider(_SLIDER_FELL, default=10, max_val=100)
+        self._sld_force_ell.setToolTip("Force ellipsoid display scale (0.1× – 10×)")
+        self._sld_force_ell.valueChanged.connect(self._on_force_ell_scale)
+        self._lbl_force_ell_scale = QLabel("1.0×")
+        self._lbl_force_ell_scale.setStyleSheet(_VAL_LBL)
+        overlay_layout.addLayout(
+            _overlay_row(
+                self.chk_force_ell, self._sld_force_ell, self._lbl_force_ell_scale
+            )
+        )
+        # Row D: Per-segment visibility sub-checkboxes (#1100, #1101, #1102)
+        seg_row = QHBoxLayout()
+        seg_row.setContentsMargins(0, 1, 0, 0)
+        seg_row.setSpacing(2)
+        seg_lbl = QLabel("Segments:")
+        seg_lbl.setStyleSheet("color:#505070;font-size:11px;")
+        seg_row.addWidget(seg_lbl)
+        self._segment_checks: dict[str, QCheckBox] = {}
+        self._segment_names: list[str] = ["shoulder", "wrist", "tip"]
+        for name in self._segment_names:
+            chk = QCheckBox(name[:6])
+            chk.setChecked(True)
+            chk.setStyleSheet(
+                "QCheckBox{color:#707090;font-size:11px;spacing:2px;}"
+                "QCheckBox::indicator{width:11px;height:11px;border:1px solid #404060;"
+                "border-radius:2px;background:#1a1a2a;}"
+                "QCheckBox::indicator:checked{background:#303068;border-color:#5050a0;}"
+            )
+            chk.toggled.connect(self._on_segment_toggled)
+            seg_row.addWidget(chk)
+            self._segment_checks[name] = chk
+        seg_row.addStretch()
+        overlay_layout.addLayout(seg_row)
+
+    def _overlay_build_extra_col(self, layout: QHBoxLayout) -> None:
+        """Build the extra toggles column (right of the overlay frame)."""
+        extra_col = QVBoxLayout()
+        extra_col.setContentsMargins(0, 0, 0, 0)
+        extra_col.setSpacing(2)
+        self.chk_zero_torque = QCheckBox("Zero-\u03c4 Forces")
+        self.chk_zero_torque.setStyleSheet(_CHK_ZERO)
+        self.chk_zero_torque.setToolTip(
+            "Show zero-torque counterfactual forces (dashed vectors).\n"
+            "These represent joint forces if all driving torques were removed—\n"
+            "the passive drift due to gravity and inertia alone."
+        )
+        self.chk_zero_torque.toggled.connect(self.zero_torque_toggled.emit)
+        extra_col.addWidget(self.chk_zero_torque)
+        self.chk_com = QCheckBox("Center of Mass")
+        self.chk_com.setStyleSheet(_CHK_COM)
+        self.chk_com.setToolTip("Show the combined center of mass of the whole system.")
+        self.chk_com.toggled.connect(self.com_toggled.emit)
+        extra_col.addWidget(self.chk_com)
+        self.chk_torque = QCheckBox("Torque Vectors")
+        self.chk_torque.setStyleSheet(_CHK_TORQUE)
+        self.chk_torque.setToolTip(
+            "Show applied torque as curved arrows at each joint.\n"
+            "Red arrows — magnitude scales with torque value."
+        )
+        self.chk_torque.toggled.connect(self.torque_vectors_toggled.emit)
+        extra_col.addWidget(self.chk_torque)
+        self.chk_mof = QCheckBox("Moment of Force")
+        self.chk_mof.setStyleSheet(_CHK_MOF)
+        self.chk_mof.setToolTip(
+            "Show moment of force from proximal segment on distal.\n"
+            "Blue arrows — proximal-on-distal convention."
+        )
+        self.chk_mof.toggled.connect(self.moment_of_force_toggled.emit)
+        extra_col.addWidget(self.chk_mof)
+        self.chk_sum_moments = QCheckBox("Sum of Moments")
+        self.chk_sum_moments.setStyleSheet(_CHK_SUM)
+        self.chk_sum_moments.setToolTip(
+            "Show sum of all moments (torque + moment of force)\n"
+            "Green arrows — resultant moment at each joint."
+        )
+        self.chk_sum_moments.toggled.connect(self.sum_moments_toggled.emit)
+        extra_col.addWidget(self.chk_sum_moments)
+        self.chk_3d = QCheckBox("3D Segments")
+        self.chk_3d.setStyleSheet(_CHK_COM)
+        self.chk_3d.setToolTip(
+            "Toggle 3D tapered segment rendering (#1155).\n"
+            "Shows segments as gradient-shaded cylinders."
+        )
+        self.chk_3d.toggled.connect(self.mode_3d_toggled.emit)
+        extra_col.addWidget(self.chk_3d)
+        # Rotation controls (#1146)
+        azimuth_row = QHBoxLayout()
+        azimuth_row.setContentsMargins(0, 0, 0, 0)
+        azimuth_row.setSpacing(2)
+        az_lbl = QLabel("Az:")
+        az_lbl.setStyleSheet("color:#606080;font-size:10px;")
+        az_lbl.setToolTip("View azimuth rotation (0°-360°)")
+        azimuth_row.addWidget(az_lbl)
+        self._sld_azimuth = QSlider(Qt.Orientation.Horizontal)
+        self._sld_azimuth.setRange(0, 360)
+        self._sld_azimuth.setValue(0)
+        self._sld_azimuth.setFixedWidth(80)
+        self._sld_azimuth.setStyleSheet(
+            "QSlider::groove:horizontal{height:4px;background:#252540;"
+            "border-radius:2px;}"
+            "QSlider::handle:horizontal{width:10px;margin:-3px 0;"
+            "background:#6080b0;border-radius:5px;}"
+        )
+        self._sld_azimuth.valueChanged.connect(self._on_azimuth_slider)
+        azimuth_row.addWidget(self._sld_azimuth)
+        self._lbl_azimuth = QLabel("0°")
+        self._lbl_azimuth.setStyleSheet("color:#606080;font-size:10px;min-width:30px;")
+        azimuth_row.addWidget(self._lbl_azimuth)
+        extra_col.addLayout(azimuth_row)
+        tilt_row = QHBoxLayout()
+        tilt_row.setContentsMargins(0, 0, 0, 0)
+        tilt_row.setSpacing(2)
+        tilt_lbl = QLabel("Tilt:")
+        tilt_lbl.setStyleSheet("color:#606080;font-size:10px;")
+        tilt_lbl.setToolTip("Swing plane tilt from vertical (0°-90°)")
+        tilt_row.addWidget(tilt_lbl)
+        self._sld_tilt = QSlider(Qt.Orientation.Horizontal)
+        self._sld_tilt.setRange(0, 90)
+        self._sld_tilt.setValue(0)
+        self._sld_tilt.setFixedWidth(80)
+        self._sld_tilt.setStyleSheet(
+            "QSlider::groove:horizontal{height:4px;background:#252540;"
+            "border-radius:2px;}"
+            "QSlider::handle:horizontal{width:10px;margin:-3px 0;"
+            "background:#608050;border-radius:5px;}"
+        )
+        self._sld_tilt.valueChanged.connect(self._on_tilt_slider)
+        tilt_row.addWidget(self._sld_tilt)
         self._lbl_tilt = QLabel("0°")
         self._lbl_tilt.setStyleSheet("color:#606080;font-size:10px;min-width:30px;")
         tilt_row.addWidget(self._lbl_tilt)
-        layout.addLayout(tilt_row)
+        extra_col.addLayout(tilt_row)
+        extra_col.addStretch()
+        layout.addLayout(extra_col)
 
     def _build_overlay_section(self, layout: QHBoxLayout) -> None:
         """Build stacked overlay controls: three rows of [☑ checkbox] [slider] [value].
@@ -725,16 +882,14 @@ class ToolStrip(QWidget):
         overlay_layout = QVBoxLayout(overlay_frame)
         overlay_layout.setContentsMargins(4, 2, 4, 2)
         overlay_layout.setSpacing(1)
-        self._build_overlay_force_rows(overlay_layout)
-        self._build_segment_row(overlay_layout)
+        self._overlay_build_frame_rows(overlay_layout)
         layout.addWidget(overlay_frame)
         layout.addWidget(_vline())
-        self._build_overlay_toggle_column(layout)
+        self._overlay_build_extra_col(layout)
         layout.addWidget(_vline())
         self._status_lbl = QLabel("Ready")
         self._status_lbl.setStyleSheet("color:#404060;font-size:11px;")
         layout.addWidget(self._status_lbl)
-
         layout.addStretch()
 
     # ------------------------------------------------------------------
@@ -842,23 +997,45 @@ class ToolStrip(QWidget):
         # Remove old checkboxes
         if not (names is not None):
             raise ValueError("names must be provided")
-        self._clear_segment_checks()
+        for chk in self._segment_checks.values():
+            chk.setParent(None)
+            chk.deleteLater()
+        self._segment_checks.clear()
         self._segment_names = [key for key, _label in names]
 
         seg_layout = self._segment_row_layout()
         if seg_layout is None:
             return
-        while seg_layout.count() > 1:
-            item = seg_layout.takeAt(1)
-            w = item.widget() if item is not None else None
-            if w is not None:
-                w.deleteLater()
-        for key, label in names:
-            chk = self._make_segment_checkbox(label)
-            seg_layout.addWidget(chk)
-            self._segment_checks[key] = chk
-        if hasattr(seg_layout, "addStretch"):
-            seg_layout.addStretch()
+        overlay_layout = overlay_frame.layout()
+        if overlay_layout is None:
+            return
+        # The segment row is the last item in overlay_layout
+        seg_item = overlay_layout.itemAt(overlay_layout.count() - 1)
+        if seg_item is not None and seg_item.layout() is not None:
+            seg_layout = seg_item.layout()
+            if not (seg_layout is not None):  # narrowing for mypy
+                raise ValueError("DbC Blocked: Precondition failed.")
+            # Clear old widgets (keep "Segments:" label at position 0)
+            while seg_layout.count() > 1:
+                item = seg_layout.takeAt(1)
+                w = item.widget() if item is not None else None
+                if w is not None:
+                    w.deleteLater()
+            # Add new checkboxes — label for display, key for internal tracking
+            for key, label in names:
+                chk = QCheckBox(label)
+                chk.setChecked(True)
+                chk.setStyleSheet(
+                    "QCheckBox{color:#707090;font-size:10px;spacing:2px;}"
+                    "QCheckBox::indicator{width:11px;height:11px;border:1px solid #404060;"
+                    "border-radius:2px;background:#1a1a2a;}"
+                    "QCheckBox::indicator:checked{background:#303068;border-color:#5050a0;}"
+                )
+                chk.toggled.connect(self._on_segment_toggled)
+                seg_layout.addWidget(chk)
+                self._segment_checks[key] = chk
+            if hasattr(seg_layout, "addStretch"):
+                seg_layout.addStretch()
 
         # Emit all-visible since we just reset
         self.segment_visibility_changed.emit(None)

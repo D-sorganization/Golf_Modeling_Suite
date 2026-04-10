@@ -54,6 +54,8 @@ def export_to_matlab(
     """Export recording to MATLAB .mat format."""
     if not (output_path is not None):
         raise ValueError("output_path must be provided")
+    if not (output_path is not None):
+        raise ValueError("output_path must be provided")
     if not SCIPY_AVAILABLE:
         logger.error("scipy required for MATLAB export (pip install scipy)")
         return False
@@ -113,6 +115,8 @@ def export_to_hdf5(
     compression: str = "gzip",
 ) -> bool:
     """Export recording to HDF5 format."""
+    if not (output_path is not None):
+        raise ValueError("output_path must be provided")
     if not (output_path is not None):
         raise ValueError("output_path must be provided")
     if not H5PY_AVAILABLE:
@@ -253,6 +257,8 @@ def export_to_c3d(
     """
     if not (output_path is not None):
         raise ValueError("output_path must be provided")
+    if not (output_path is not None):
+        raise ValueError("output_path must be provided")
     if not EZC3D_AVAILABLE and not C3D_AVAILABLE:
         logger.error("ezc3d or c3d required for C3D export (pip install ezc3d)")
         return False
@@ -281,6 +287,8 @@ def _export_to_c3d_ezc3d(
     data: C3DExportData,
 ) -> bool:
     """Export using ezc3d library."""
+    if not (output_path is not None):
+        raise ValueError("output_path must be provided")
     if not (output_path is not None):
         raise ValueError("output_path must be provided")
     import ezc3d
@@ -335,6 +343,8 @@ def _export_to_c3d_py(
     """Export using c3d library (fallback)."""
     if not (output_path is not None):
         raise ValueError("output_path must be provided")
+    if not (output_path is not None):
+        raise ValueError("output_path must be provided")
     import c3d
 
     writer = c3d.Writer(point_rate=data.frame_rate)
@@ -362,6 +372,8 @@ def _export_json(output_path: Path, data_dict: dict[str, Any]) -> bool:
 
     Converts numpy arrays to lists for JSON serialization.
     """
+    if not (output_path is not None):
+        raise ValueError("output_path must be provided")
     if not (output_path is not None):
         raise ValueError("output_path must be provided")
     import json
@@ -426,6 +438,8 @@ def _flatten_dict_for_csv(data_dict: dict[str, Any]) -> dict[str, Any]:
 
 def _export_csv(output_path: Path, data_dict: dict[str, Any]) -> bool:
     """Export data dictionary to CSV format."""
+    if not (output_path is not None):
+        raise ValueError("output_path must be provided")
     if not (output_path is not None):
         raise ValueError("output_path must be provided")
     import pandas as pd

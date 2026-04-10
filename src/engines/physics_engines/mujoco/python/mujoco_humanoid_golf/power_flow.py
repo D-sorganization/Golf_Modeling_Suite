@@ -113,6 +113,8 @@ class PowerFlowAnalyzer:
         """
         if not (model is not None):
             raise ValueError("model must be provided")
+        if not (model is not None):
+            raise ValueError("model must be provided")
         self.model = model
 
         # Thread-safe data structure for computations
@@ -130,6 +132,8 @@ class PowerFlowAnalyzer:
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         if not (tau is not None):
             raise ValueError("tau must be provided")
+        if not (tau is not None):
+            raise ValueError("tau must be provided")
         if tau_drift is not None:
             joint_work_drift = tau_drift * qvel * dt
         else:
@@ -145,7 +149,9 @@ class PowerFlowAnalyzer:
 
     def _compute_segment_energies(
         self, qvel: np.ndarray
-    ) -> tuple[np.ndarray, np.ndarray]:  # noqa: E501
+    ) -> tuple[np.ndarray, np.ndarray]:
+        if not (qvel is not None):
+            raise ValueError("qvel must be provided")
         if not (qvel is not None):
             raise ValueError("qvel must be provided")
         import mujoco
@@ -178,6 +184,8 @@ class PowerFlowAnalyzer:
         return segment_ke, segment_pe
 
     def _compute_power_dissipation(self, qvel: np.ndarray) -> float:
+        if not (qvel is not None):
+            raise ValueError("qvel must be provided")
         if not (qvel is not None):
             raise ValueError("qvel must be provided")
         power_diss = 0.0
@@ -224,6 +232,8 @@ class PowerFlowAnalyzer:
         Returns:
             PowerFlowResult with complete power flow analysis
         """
+        if not (qpos is not None):
+            raise ValueError("qpos must be provided")
         if not (qpos is not None):
             raise ValueError("qpos must be provided")
         import mujoco
@@ -294,6 +304,8 @@ class PowerFlowAnalyzer:
         """
         if not (times is not None):
             raise ValueError("times must be provided")
+        if not (times is not None):
+            raise ValueError("times must be provided")
         results = []
 
         for i in range(len(times)):
@@ -329,6 +341,8 @@ class PowerFlowAnalyzer:
         Returns:
             List of InterSegmentTransfer for each body
         """
+        if not (qpos is not None):
+            raise ValueError("qpos must be provided")
         if not (qpos is not None):
             raise ValueError("qpos must be provided")
         import mujoco
@@ -385,6 +399,8 @@ class PowerFlowAnalyzer:
         """
         if not (body_id is not None):
             raise ValueError("body_id must be provided")
+        if not (body_id is not None):
+            raise ValueError("body_id must be provided")
         power_from_parent = 0.0
         power_generation = 0.0
         for j in range(self.model.njnt):
@@ -413,6 +429,8 @@ class PowerFlowAnalyzer:
         """
         if not (body_id is not None):
             raise ValueError("body_id must be provided")
+        if not (body_id is not None):
+            raise ValueError("body_id must be provided")
         power_to_children = 0.0
         for j in range(self.model.njnt):
             joint = self.model.jnt(j)
@@ -435,6 +453,8 @@ class PowerFlowAnalyzer:
         Returns:
             Total dissipated power at this body's joints.
         """
+        if not (body_id is not None):
+            raise ValueError("body_id must be provided")
         if not (body_id is not None):
             raise ValueError("body_id must be provided")
         power_diss = 0.0
@@ -467,6 +487,8 @@ class PowerFlowAnalyzer:
             results: Power flow results for trajectory
             joint_idx: Joint index to plot
         """
+        if not (times is not None):
+            raise ValueError("times must be provided")
         if not (times is not None):
             raise ValueError("times must be provided")
         try:

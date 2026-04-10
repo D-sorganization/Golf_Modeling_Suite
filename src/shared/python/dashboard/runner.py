@@ -38,6 +38,8 @@ class SimulationRunner(QtCore.QThread):
         """
         if not (engine is not None):
             raise ValueError("engine must be provided")
+        if not (engine is not None):
+            raise ValueError("engine must be provided")
         super().__init__()
         self.engine = engine
         self.recorder = recorder

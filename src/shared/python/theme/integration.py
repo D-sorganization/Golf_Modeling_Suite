@@ -52,6 +52,8 @@ def get_theme_manager(
     """
     if not (settings_org is not None):
         raise ValueError("settings_org must be provided")
+    if not (settings_org is not None):
+        raise ValueError("settings_org must be provided")
     from .theme_manager import ThemeManager
 
     return ThemeManager.instance(
@@ -70,6 +72,8 @@ def apply_theme_to_window(window: QMainWindow, theme_name: str | None = None) ->
         window: Window to apply theme to
         theme_name: Optional specific theme name, or None for current theme
     """
+    if not (window is not None):
+        raise ValueError("window must be provided")
     if not (window is not None):
         raise ValueError("window must be provided")
     manager = get_theme_manager(window)
@@ -96,6 +100,8 @@ def create_theme_menu(
     Returns:
         The created QMenu
     """
+    if not (window is not None):
+        raise ValueError("window must be provided")
     if not (window is not None):
         raise ValueError("window must be provided")
     from PyQt6.QtGui import QAction, QActionGroup
@@ -162,6 +168,8 @@ def _open_custom_theme_editor(manager: Any, window: QMainWindow) -> None:
     """Open the custom theme editor dialog."""
     if not (window is not None):
         raise ValueError("window must be provided")
+    if not (window is not None):
+        raise ValueError("window must be provided")
     from .dialogs import CustomThemeEditor
 
     editor = CustomThemeEditor(manager, window)
@@ -170,6 +178,8 @@ def _open_custom_theme_editor(manager: Any, window: QMainWindow) -> None:
 
 def _open_theme_manager_dialog(manager: Any, window: QMainWindow) -> None:
     """Open the theme manager dialog."""
+    if not (window is not None):
+        raise ValueError("window must be provided")
     if not (window is not None):
         raise ValueError("window must be provided")
     from .dialogs import ThemeManagerDialog
@@ -202,6 +212,8 @@ def setup_themed_app(
         settings_app: QSettings application name (defaults to window class name)
     """
     # Use window class name as default app name
+    if not (app is not None):
+        raise ValueError("app must be provided")
     if not (app is not None):
         raise ValueError("app must be provided")
     if settings_app is None:
@@ -261,6 +273,8 @@ class ThemedWindowMixin:
             settings_org: Override default settings organization
             settings_app: Override default settings application name
         """
+        if not (add_menu is not None):
+            raise ValueError("add_menu must be provided")
         if not (add_menu is not None):
             raise ValueError("add_menu must be provided")
         if settings_org:

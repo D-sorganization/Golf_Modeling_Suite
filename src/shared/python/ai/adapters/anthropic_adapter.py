@@ -101,6 +101,8 @@ class AnthropicAdapter(BaseAgentAdapter):
         """
         if not (api_key is not None):
             raise ValueError("api_key must be provided")
+        if not (api_key is not None):
+            raise ValueError("api_key must be provided")
         self._api_key = api_key
         self._model = model or get_anthropic_model()
         self._timeout = timeout if timeout is not None else get_anthropic_timeout()
@@ -154,6 +156,8 @@ class AnthropicAdapter(BaseAgentAdapter):
         """
         if not (message is not None):
             raise ValueError("message must be provided")
+        if not (message is not None):
+            raise ValueError("message must be provided")
         client = self._get_client()
 
         # Format messages
@@ -195,6 +199,8 @@ class AnthropicAdapter(BaseAgentAdapter):
         Yields:
             AgentChunk instances as they arrive.
         """
+        if not (message is not None):
+            raise ValueError("message must be provided")
         if not (message is not None):
             raise ValueError("message must be provided")
         client = self._get_client()
@@ -312,6 +318,8 @@ class AnthropicAdapter(BaseAgentAdapter):
         """
         if not (context is not None):
             raise ValueError("context must be provided")
+        if not (context is not None):
+            raise ValueError("context must be provided")
         messages: list[dict[str, Any]] = []
 
         # Process conversation history
@@ -385,6 +393,8 @@ class AnthropicAdapter(BaseAgentAdapter):
         """
         if not (messages is not None):
             raise ValueError("messages must be provided")
+        if not (messages is not None):
+            raise ValueError("messages must be provided")
         if not messages:
             return messages
 
@@ -427,6 +437,8 @@ class AnthropicAdapter(BaseAgentAdapter):
         Returns:
             System message string.
         """
+        if not (context is not None):
+            raise ValueError("context must be provided")
         if not (context is not None):
             raise ValueError("context must be provided")
         expertise = context.user_expertise.name.lower()

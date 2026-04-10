@@ -12,6 +12,7 @@ or accessible via `sys.executable`.
 It does NOT use Docker. For Docker support, use `golf_launcher.py`.
 """
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -298,6 +299,8 @@ class GolfLauncher(QtWidgets.QMainWindow if PYQT6_AVAILABLE else object):  # typ
         """Add a timestamped message to the log area."""
         if not (message is not None):
             raise ValueError("message must be provided")
+        if not (message is not None):
+            raise ValueError("message must be provided")
         import datetime
 
         timestamp = datetime.datetime.now().strftime("%H:%M:%S")
@@ -370,6 +373,8 @@ class GolfLauncher(QtWidgets.QMainWindow if PYQT6_AVAILABLE else object):  # typ
     def _launch_script(self, name: str, path: Path, cwd: Path) -> None:
         if not (name is not None):
             raise ValueError("name must be provided")
+        if not (name is not None):
+            raise ValueError("name must be provided")
         self.status.setText(f"Launching {name}...")
         self.log_message(f"Starting {name} engine...")
         self.log_message(f"Script path: {path}")
@@ -384,9 +389,19 @@ class GolfLauncher(QtWidgets.QMainWindow if PYQT6_AVAILABLE else object):  # typ
             return
 
         try:
-            # Launch detached process
-            # Use same python interpreter
-            process = subprocess.Popen([sys.executable, str(path)], cwd=str(cwd))  # noqa: S603
+            # Launch detached process using the same interpreter.
+            # Inject repo root into PYTHONPATH so child scripts can import src.*
+            # regardless of ambient shell state.
+            sep = ";" if os.name == "nt" else ":"
+            existing = os.environ.get("PYTHONPATH", "")
+            repo_str = str(self.suite_root)
+            env = os.environ.copy()
+            env["PYTHONPATH"] = f"{repo_str}{sep}{existing}" if existing else repo_str
+            process = subprocess.Popen(  # noqa: S603
+                [sys.executable, str(path)],
+                cwd=str(cwd),
+                env=env,
+            )
             self.log_message(f"{name} launched successfully (PID: {process.pid})")
             self.status.setText(f"{name} Launched")
         except (OSError, subprocess.SubprocessError) as e:

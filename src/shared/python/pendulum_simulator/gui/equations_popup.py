@@ -1,4 +1,28 @@
-"""LaTeX-quality math popup for the Pendulum Simulator."""
+"""
+LaTeX-quality math popup for the Pendulum Simulator.
+
+Displays rendered mathematical equations for:
+- Mass matrix derivation and physical interpretation
+- Full equations of motion for double, triple, and golfer model
+- Coriolis, gravity, friction, and joint limit terms
+- Energy conservation and Lagrangian derivation
+- Golfer 8-DOF Baumgarte constrained system (KKT formulation)
+
+Uses QTextBrowser with rich HTML + CSS for professional-quality rendering.
+
+Design by Contract
+------------------
+- show_equations_popup(parent, topic) is the single entry point.
+- topic must be one of the EquationTopic enum values.
+- The popup is non-modal so the user can keep it open alongside the sim.
+
+DRY
+---
+HTML template and styling are defined once in split modules:
+- _equations_popup_css.py: shared CSS
+- _equations_popup_dynamics_html.py: mass matrix, EOM, delta matrix HTML
+- _equations_popup_jacobians_html.py: ZTCF, Jacobian, constraint Jacobian HTML
+"""
 
 from __future__ import annotations
 
@@ -6,15 +30,15 @@ import logging
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from .equations_popup_jacobian_content import (
-    CONSTRAINT_JACOBIAN_HTML,
-    JACOBIAN_HTML,
+from ._equations_popup_dynamics_html import (
+    _DELTA_HTML,
+    _EOM_HTML,
+    _MASS_MATRIX_HTML,
 )
-from .equations_popup_reference_content import (
-    DELTA_HTML,
-    EOM_HTML,
-    MASS_MATRIX_HTML,
-    ZTCF_HTML,
+from ._equations_popup_jacobians_html import (
+    _CONSTRAINT_JACOBIAN_HTML,
+    _JACOBIAN_HTML,
+    _ZTCF_HTML,
 )
 
 if TYPE_CHECKING:
@@ -34,15 +58,19 @@ class EquationTopic(Enum):
     CONSTRAINT_JACOBIAN = "constraint_jacobian"
 
 
+# ---------------------------------------------------------------------------
+# Topic registry
+# ---------------------------------------------------------------------------
+
 _TOPICS = {
     EquationTopic.MASS_MATRIX: ("Mass Matrix — Derivation", MASS_MATRIX_HTML),
     EquationTopic.EQUATIONS_OF_MOTION: (
         "Equations of Motion — Full Reference",
         EOM_HTML,
     ),
-    EquationTopic.DELTA_MATRIX: ("Delta Matrix (M⁺) — Inverse Dynamics", DELTA_HTML),
-    EquationTopic.ZTCF_MATRIX: ("ZTCF Transfer Matrix — Endpoint Forces", ZTCF_HTML),
-    EquationTopic.JACOBIAN: ("Geometric Jacobian — Velocity Mapping", JACOBIAN_HTML),
+    EquationTopic.DELTA_MATRIX: ("Delta Matrix (M+) — Inverse Dynamics", _DELTA_HTML),
+    EquationTopic.ZTCF_MATRIX: ("ZTCF Transfer Matrix — Endpoint Forces", _ZTCF_HTML),
+    EquationTopic.JACOBIAN: ("Geometric Jacobian — Velocity Mapping", _JACOBIAN_HTML),
     EquationTopic.CONSTRAINT_JACOBIAN: (
         "Constraint Jacobian — Closed-Loop Kinematics",
         CONSTRAINT_JACOBIAN_HTML,
@@ -65,7 +93,7 @@ def show_equations_popup(parent: QWidget | None, topic: EquationTopic) -> QDialo
         QVBoxLayout,
     )
 
-    if topic not in _TOPICS:
+    if not (topic in _TOPICS):  # noqa: E713
         raise ValueError(f"Unknown topic: {topic}")
     title, html = _TOPICS[topic]
 
@@ -97,3 +125,6 @@ def show_equations_popup(parent: QWidget | None, topic: EquationTopic) -> QDialo
     dlg.show()
     logger.info("Opened equations popup: %s", title)
     return dlg
+
+
+__all__ = ["EquationTopic", "show_equations_popup"]

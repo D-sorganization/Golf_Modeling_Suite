@@ -73,12 +73,16 @@ class BaseController:
         """Get the control action."""
         if not (physics is not None):
             raise ValueError("physics must be provided")
+        if not (physics is not None):
+            raise ValueError("physics must be provided")
         return np.zeros(physics.model.nu)
 
 
 class PDController(BaseController):
     def __init__(self, actuators, target_pose, kp=60.0, kd=6.0) -> None:
         """Initialize PD Controller."""
+        if not (actuators is not None):
+            raise ValueError("actuators must be provided")
         if not (actuators is not None):
             raise ValueError("actuators must be provided")
         self.actuators = actuators
@@ -88,6 +92,8 @@ class PDController(BaseController):
 
     def get_action(self, physics) -> np.ndarray:
         """Calculate PD control action."""
+        if not (physics is not None):
+            raise ValueError("physics must be provided")
         if not (physics is not None):
             raise ValueError("physics must be provided")
         action = np.zeros(physics.model.nu)
@@ -112,6 +118,8 @@ class PDController(BaseController):
 class PolynomialController(BaseController):
     def __init__(self, physics) -> None:
         """Initialize Polynomial Controller."""
+        if not (physics is not None):
+            raise ValueError("physics must be provided")
         if not (physics is not None):
             raise ValueError("physics must be provided")
         self.nu = physics.model.nu
@@ -147,6 +155,8 @@ class PolynomialController(BaseController):
         """Calculate polynomial control action."""
         if not (physics is not None):
             raise ValueError("physics must be provided")
+        if not (physics is not None):
+            raise ValueError("physics must be provided")
         t = physics.data.time
         action = np.zeros(self.nu)
         for i in range(self.nu):
@@ -158,6 +168,8 @@ class PolynomialController(BaseController):
 class LQRController(BaseController):
     def __init__(self, physics, target_pose, actuators, height_scale=1.0) -> None:
         """Initialize LQR Controller."""
+        if not (physics is not None):
+            raise ValueError("physics must be provided")
         if not (physics is not None):
             raise ValueError("physics must be provided")
         self.actuators = actuators
@@ -193,6 +205,8 @@ class LQRController(BaseController):
         # Fallback: Diagonal PD matrix embedded in K
         if not (physics is not None):
             raise ValueError("physics must be provided")
+        if not (physics is not None):
+            raise ValueError("physics must be provided")
         nu = physics.model.nu
         nq = physics.model.nq
         nv = physics.model.nv
@@ -219,6 +233,8 @@ class LQRController(BaseController):
 
     def get_action(self, physics) -> np.ndarray:
         """Calculate LQR control action."""
+        if not (physics is not None):
+            raise ValueError("physics must be provided")
         if not (physics is not None):
             raise ValueError("physics must be provided")
         if self.K is None:
@@ -256,6 +272,8 @@ class TimeStep:
     ) -> None:
         if not (step_type is not None):
             raise ValueError("step_type must be provided")
+        if not (step_type is not None):
+            raise ValueError("step_type must be provided")
         self.step_type = step_type
         self.reward = reward
         self.discount = discount
@@ -284,6 +302,8 @@ class PhysicsEnvWrapper:
         """Initialize PhysicsEnvWrapper."""
         if not (physics is not None):
             raise ValueError("physics must be provided")
+        if not (physics is not None):
+            raise ValueError("physics must be provided")
         self._physics = physics
         self._initializer = initializer
 
@@ -301,6 +321,8 @@ class PhysicsEnvWrapper:
                 """Initialize Spec."""
                 if not (shape is not None):
                     raise ValueError("shape must be provided")
+                if not (shape is not None):
+                    raise ValueError("shape must be provided")
                 self.shape = shape
                 self.dtype = np.float64
                 self.minimum = -100.0
@@ -310,6 +332,8 @@ class PhysicsEnvWrapper:
 
     def step(self, action) -> TimeStep:
         """Advance the environment by one step."""
+        if not (action is not None):
+            raise ValueError("action must be provided")
         if not (action is not None):
             raise ValueError("action must be provided")
         self._physics.set_control(action)
@@ -327,6 +351,8 @@ class PhysicsEnvWrapper:
 def save_state(physics, filename) -> None:
     """Save simulation state to file."""
     # Get state as numpy array
+    if not (physics is not None):
+        raise ValueError("physics must be provided")
     if not (physics is not None):
         raise ValueError("physics must be provided")
     state = physics.get_state()
@@ -372,6 +398,8 @@ def _extract_simulation_params(config, duration) -> dict:
 
     Returns a dict with all extracted parameters.
     """
+    if not (config is not None):
+        raise ValueError("config must be provided")
     if not (config is not None):
         raise ValueError("config must be provided")
     control_mode = config.get("control_mode", "pd")
@@ -426,6 +454,8 @@ def _setup_controller(
     """Create and return the appropriate controller based on mode."""
     if not (control_mode is not None):
         raise ValueError("control_mode must be provided")
+    if not (control_mode is not None):
+        raise ValueError("control_mode must be provided")
     controller: BaseController
     if control_mode == "lqr":
         # Calculate height scale (assuming standard 1.56m ref)
@@ -444,6 +474,8 @@ def _setup_controller(
 
 def _run_viewer_loop(physics, controller, initialize_episode, save_path) -> None:
     """Run the simulation in live viewer mode."""
+    if not (physics is not None):
+        raise ValueError("physics must be provided")
     if not (physics is not None):
         raise ValueError("physics must be provided")
     logger.info("Launching Live Viewer...")
@@ -485,6 +517,8 @@ def _build_csv_header(actuator_names) -> list[str]:
 
 def _collect_step_data(physics, actuators, actuator_names, iaa) -> list:
     """Collect one row of CSV data for the current simulation step."""
+    if not (physics is not None):
+        raise ValueError("physics must be provided")
     if not (physics is not None):
         raise ValueError("physics must be provided")
     row = [physics.data.time]
@@ -529,6 +563,8 @@ def _run_headless_loop(
     physics, controller, actuators, duration, output_video, output_data, save_path
 ) -> None:
     """Run the simulation in headless mode, recording video and CSV data."""
+    if not (physics is not None):
+        raise ValueError("physics must be provided")
     if not (physics is not None):
         raise ValueError("physics must be provided")
     logger.info("Simulating (Headless) for %ss...", duration)
@@ -600,6 +636,8 @@ def run_simulation(
 ) -> None:
     """Run the golf simulation."""
     # 1. Load Config
+    if not (output_video is not None):
+        raise ValueError("output_video must be provided")
     if not (output_video is not None):
         raise ValueError("output_video must be provided")
     logger.info("Loading configuration...")

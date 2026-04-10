@@ -108,7 +108,19 @@ class HumanoidURDFGenerator:
     def build_model(
         self, params: BodyParameters, mesh_dir: Path | str | None = None
     ) -> HumanoidModel:
-        """Build HumanoidModel from body parameters."""
+        """
+        Build HumanoidModel from body parameters.
+
+        Args:
+            params: Body parameters
+            mesh_dir: Optional directory containing mesh files
+
+        Returns:
+            HumanoidModel instance
+        """
+        # Validate parameters
+        if not (params is not None):
+            raise ValueError("params must be provided")
         if not (params is not None):
             raise ValueError("params must be provided")
         errors = params.validate()
@@ -151,7 +163,19 @@ class HumanoidURDFGenerator:
         output_path: Path | str | None = None,
         mesh_dir: Path | str | None = None,
     ) -> str:
-        """Generate URDF from body parameters."""
+        """
+        Generate URDF from body parameters.
+
+        Args:
+            params: Body parameters
+            output_path: Optional path to write URDF file
+            mesh_dir: Optional directory containing mesh files
+
+        Returns:
+            URDF XML string
+        """
+        if not (params is not None):
+            raise ValueError("params must be provided")
         if not (params is not None):
             raise ValueError("params must be provided")
         self.build_model(params, mesh_dir)
@@ -174,6 +198,8 @@ class HumanoidURDFGenerator:
         self, dimensions: dict[str, dict[str, float]], params: BodyParameters
     ) -> dict[str, dict[str, float]]:
         """Apply proportion factors to segment dimensions."""
+        if not (dimensions is not None):
+            raise ValueError("dimensions must be provided")
         if not (dimensions is not None):
             raise ValueError("dimensions must be provided")
         scaled = {}
@@ -207,6 +233,9 @@ class HumanoidURDFGenerator:
 
     def _generate_materials(self, params: BodyParameters) -> None:
         """Generate material definitions."""
+        # Skin material
+        if not (params is not None):
+            raise ValueError("params must be provided")
         if not (params is not None):
             raise ValueError("params must be provided")
         skin = params.appearance.skin_tone
@@ -224,6 +253,8 @@ class HumanoidURDFGenerator:
         mesh_dir: Path | str | None,
     ) -> None:
         """Generate a single URDF link."""
+        if not (segment_name is not None):
+            raise ValueError("segment_name must be provided")
         if not (segment_name is not None):
             raise ValueError("segment_name must be provided")
         seg_params = params.get_segment_params(segment_name)
@@ -266,6 +297,9 @@ class HumanoidURDFGenerator:
         mesh_dir: Path | str | None,
     ) -> InertiaResult:
         """Compute inertia for a segment."""
+        # Check for manual override
+        if not (segment_name is not None):
+            raise ValueError("segment_name must be provided")
         if not (segment_name is not None):
             raise ValueError("segment_name must be provided")
         if seg_params.has_inertia_override():
@@ -304,6 +338,65 @@ class HumanoidURDFGenerator:
         )
         return self.primitive_inertia_calc.compute(shape, mass, shape_dims)
 
+    def _create_geometry_dict(
+        self,
+        segment_def: SegmentDefinition,
+        dimensions: dict[str, float],
+        is_collision: bool,
+    ) -> dict[str, Any]:
+        """Create geometry specification dictionary."""
+        if not (segment_def is not None):
+            raise ValueError("segment_def must be provided")
+        if not (segment_def is not None):
+            raise ValueError("segment_def must be provided")
+        geom_spec = (
+            segment_def.get_collision_geometry()
+            if is_collision
+            else segment_def.visual_geometry
+        )
+
+        length = dimensions.get("length", 0.1)
+        width = dimensions.get("width", 0.05)
+        depth = dimensions.get("depth", 0.05)
+
+        # Scale dimensions based on geometry type
+        if geom_spec.geometry_type == GeometryType.BOX:
+            return {
+                "type": "box",
+                "size": (width, depth, length),
+            }
+        if geom_spec.geometry_type == GeometryType.CYLINDER:
+            radius = (width + depth) / 4
+            return {
+                "type": "cylinder",
+                "radius": radius,
+                "length": length,
+            }
+        if geom_spec.geometry_type == GeometryType.SPHERE:
+            radius = length / 2
+            return {
+                "type": "sphere",
+                "radius": radius,
+            }
+        if geom_spec.geometry_type == GeometryType.CAPSULE:
+            radius = (width + depth) / 4
+            return {
+                "type": "cylinder",  # URDF doesn't have capsule, use cylinder
+                "radius": radius,
+                "length": max(0.01, length - 2 * radius),
+            }
+        if geom_spec.geometry_type == GeometryType.MESH:
+            return {
+                "type": "mesh",
+                "filename": geom_spec.mesh_path,
+                "scale": geom_spec.mesh_scale,
+            }
+        # Default to box
+        return {
+            "type": "box",
+            "size": (width, depth, length),
+        }
+
     def _generate_joint(
         self,
         joint_name: str,
@@ -311,8 +404,45 @@ class HumanoidURDFGenerator:
         dimensions: dict[str, dict[str, float]],
     ) -> None:
         """Generate URDF joint(s) from joint definition."""
-        extra_links, joints = generate_joint(
-            joint_name, joint_def, self.config.expand_composite_joints
+        if joint_def.is_composite() and self.config.expand_composite_joints:
+            # Expand to multiple revolute joints
+            self._expand_composite_joint(joint_name, joint_def, dimensions)
+        else:
+            self._generate_single_joint(joint_name, joint_def)
+
+    def _generate_single_joint(
+        self,
+        joint_name: str,
+        joint_def: JointDefinition,
+    ) -> None:
+        """Generate a single URDF joint."""
+        # Map joint type
+        if not (joint_name is not None):
+            raise ValueError("joint_name must be provided")
+        if not (joint_name is not None):
+            raise ValueError("joint_name must be provided")
+        urdf_type = self._map_joint_type(joint_def.joint_type)
+
+        # Get limits for non-fixed joints
+        limits = None
+        if urdf_type in ("revolute", "prismatic"):
+            limits = joint_def.limits.as_dict()
+
+        self._joints.append(
+            GeneratedJoint(
+                name=joint_name,
+                joint_type=urdf_type,
+                parent=joint_def.parent_segment,
+                child=joint_def.child_segment,
+                origin_xyz=joint_def.origin_xyz,
+                origin_rpy=joint_def.origin_rpy,
+                axis=joint_def.axis,
+                limits=limits,
+                dynamics={
+                    "damping": joint_def.damping,
+                    "friction": joint_def.friction,
+                },
+            )
         )
         for link in extra_links:
             self._links[link.name] = link
@@ -331,38 +461,204 @@ class HumanoidURDFGenerator:
         joint_def: JointDefinition,
         dimensions: dict[str, dict[str, float]],
     ) -> None:
-        """Expand composite joint (backward-compat shim)."""
-        extra_links, joints = expand_composite_joint(joint_name, joint_def)
-        for link in extra_links:
-            self._links[link.name] = link
-        self._joints.extend(joints)
+        """Expand composite joint into multiple revolute joints."""
+        if not (joint_name is not None):
+            raise ValueError("joint_name must be provided")
+        if not (joint_name is not None):
+            raise ValueError("joint_name must be provided")
+        if joint_def.joint_type == JointType.GIMBAL:
+            axes = [
+                joint_def.axis,
+                joint_def.secondary_axis or (0.0, 1.0, 0.0),
+                joint_def.tertiary_axis or (1.0, 0.0, 0.0),
+            ]
+            suffixes = ["_z", "_y", "_x"]
+        elif joint_def.joint_type == JointType.UNIVERSAL:
+            axes = [
+                joint_def.axis,
+                joint_def.secondary_axis or (0.0, 1.0, 0.0),
+            ]
+            suffixes = ["_1", "_2"]
+        else:
+            # Not composite, generate single joint
+            self._generate_single_joint(joint_name, joint_def)
+            return
 
-    def _map_joint_type(self, joint_type: Any) -> str:
-        """Map joint type (backward-compat shim)."""
-        return map_joint_type(joint_type)
+        # Create intermediate links for composite joints
+        parent = joint_def.parent_segment
+
+        for i, (axis, suffix) in enumerate(zip(axes, suffixes, strict=True)):
+            is_last = i == len(axes) - 1
+            child = joint_def.child_segment if is_last else f"{joint_name}{suffix}_link"
+
+            # Create intermediate link if not last
+            if not is_last:
+                self._links[child] = GeneratedLink(
+                    name=child,
+                    mass=0.001,  # Minimal mass for intermediate link
+                    inertia=InertiaResult.create_default(0.001),
+                    visual_geometry={"type": "sphere", "radius": 0.001},
+                    collision_geometry=None,
+                    origin_xyz=(0.0, 0.0, 0.0),
+                    origin_rpy=(0.0, 0.0, 0.0),
+                )
+
+            # Origin only for first joint
+            origin_xyz = joint_def.origin_xyz if i == 0 else (0.0, 0.0, 0.0)
+            origin_rpy = joint_def.origin_rpy if i == 0 else (0.0, 0.0, 0.0)
+
+            self._joints.append(
+                GeneratedJoint(
+                    name=f"{joint_name}{suffix}",
+                    joint_type="revolute",
+                    parent=parent,
+                    child=child,
+                    origin_xyz=origin_xyz,
+                    origin_rpy=origin_rpy,
+                    axis=axis,
+                    limits=joint_def.limits.as_dict(),
+                    dynamics={
+                        "damping": joint_def.damping,
+                        "friction": joint_def.friction,
+                    },
+                )
+            )
+
+            parent = child
+
+    def _map_joint_type(self, joint_type: JointType) -> str:
+        """Map internal joint type to URDF joint type string."""
+        if not (joint_type is not None):
+            raise ValueError("joint_type must be provided")
+        if not (joint_type is not None):
+            raise ValueError("joint_type must be provided")
+        mapping = {
+            JointType.FIXED: "fixed",
+            JointType.REVOLUTE: "revolute",
+            JointType.CONTINUOUS: "continuous",
+            JointType.PRISMATIC: "prismatic",
+            JointType.FLOATING: "floating",
+            JointType.PLANAR: "planar",
+            JointType.UNIVERSAL: "revolute",  # Expanded separately
+            JointType.GIMBAL: "revolute",  # Expanded separately
+            JointType.SPHERICAL: "revolute",  # Expanded separately
+        }
+        return mapping.get(joint_type, "fixed")
 
     def _build_urdf_xml(self, robot_name: str) -> str:
-        """Build URDF XML (backward-compat shim)."""
-        return build_urdf_xml(
-            robot_name=robot_name,
-            links=self._links,
-            joints=self._joints,
-            materials=self._materials,
-            pretty_print=self.config.pretty_print,
-            indent=self.config.indent,
-        )
+        """Build the complete URDF XML."""
+        if not (robot_name is not None):
+            raise ValueError("robot_name must be provided")
+        if not (robot_name is not None):
+            raise ValueError("robot_name must be provided")
+        root = ET.Element("robot", name=robot_name)
+
+        # Add materials
+        for mat_name, rgba in self._materials.items():
+            material = ET.SubElement(root, "material", name=mat_name)
+            ET.SubElement(
+                material,
+                "color",
+                rgba=f"{rgba[0]:.4f} {rgba[1]:.4f} {rgba[2]:.4f} {rgba[3]:.4f}",
+            )
+
+        # Add links
+        for link_data in self._links.values():
+            self._add_link_element(root, link_data)
+
+        # Add joints
+        for joint_data in self._joints:
+            self._add_joint_element(root, joint_data)
+
+        # Format XML
+        if self.config.pretty_print:
+            ET.indent(root, space=self.config.indent)
+            return ET.tostring(root, encoding="unicode")
+        return ET.tostring(root, encoding="unicode")
 
     def _add_link_element(self, root: ET.Element, link: GeneratedLink) -> None:
-        """Add link element (backward-compat shim)."""
-        _add_link_element(root, link)
+        """Add a link element to the URDF."""
+        if not (root is not None):
+            raise ValueError("root must be provided")
+        if not (root is not None):
+            raise ValueError("root must be provided")
+        link_elem = ET.SubElement(root, "link", name=link.name)
+
+        # Inertial
+        inertial = ET.SubElement(link_elem, "inertial")
+        ET.SubElement(
+            inertial,
+            "origin",
+            xyz=f"{link.origin_xyz[0]:.6f} {link.origin_xyz[1]:.6f} {link.origin_xyz[2]:.6f}",
+            rpy=f"{link.origin_rpy[0]:.6f} {link.origin_rpy[1]:.6f} {link.origin_rpy[2]:.6f}",
+        )
+        ET.SubElement(inertial, "mass", value=f"{link.mass:.6f}")
+
+        inertia = link.inertia
+        ET.SubElement(
+            inertial,
+            "inertia",
+            ixx=f"{inertia.ixx:.8f}",
+            ixy=f"{inertia.ixy:.8f}",
+            ixz=f"{inertia.ixz:.8f}",
+            iyy=f"{inertia.iyy:.8f}",
+            iyz=f"{inertia.iyz:.8f}",
+            izz=f"{inertia.izz:.8f}",
+        )
+
+        # Visual
+        visual = ET.SubElement(link_elem, "visual")
+        ET.SubElement(visual, "origin", xyz="0 0 0", rpy="0 0 0")
+        self._add_geometry_element(visual, link.visual_geometry)
+        ET.SubElement(visual, "material", name="skin")
+
+        # Collision
+        if link.collision_geometry:
+            collision = ET.SubElement(link_elem, "collision")
+            ET.SubElement(collision, "origin", xyz="0 0 0", rpy="0 0 0")
+            self._add_geometry_element(collision, link.collision_geometry)
 
     def _add_geometry_element(self, parent: ET.Element, geom: dict[str, Any]) -> None:
-        """Add geometry element (backward-compat shim)."""
-        add_geometry_element(parent, geom)
+        """Add geometry element."""
+        if not (parent is not None):
+            raise ValueError("parent must be provided")
+        if not (parent is not None):
+            raise ValueError("parent must be provided")
+        geometry = ET.SubElement(parent, "geometry")
+
+        geom_type = geom["type"]
+        if geom_type == "box":
+            size = geom["size"]
+            ET.SubElement(
+                geometry, "box", size=f"{size[0]:.6f} {size[1]:.6f} {size[2]:.6f}"
+            )
+        elif geom_type == "cylinder":
+            ET.SubElement(
+                geometry,
+                "cylinder",
+                radius=f"{geom['radius']:.6f}",
+                length=f"{geom['length']:.6f}",
+            )
+        elif geom_type == "sphere":
+            ET.SubElement(geometry, "sphere", radius=f"{geom['radius']:.6f}")
+        elif geom_type == "mesh":
+            scale = geom.get("scale", (1.0, 1.0, 1.0))
+            ET.SubElement(
+                geometry,
+                "mesh",
+                filename=geom["filename"],
+                scale=f"{scale[0]:.6f} {scale[1]:.6f} {scale[2]:.6f}",
+            )
 
     def _add_joint_element(self, root: ET.Element, joint: GeneratedJoint) -> None:
-        """Add joint element (backward-compat shim)."""
-        _add_joint_element(root, joint)
+        """Add a joint element to the URDF."""
+        if not (root is not None):
+            raise ValueError("root must be provided")
+        if not (root is not None):
+            raise ValueError("root must be provided")
+        joint_elem = ET.SubElement(
+            root, "joint", name=joint.name, type=joint.joint_type
+        )
 
     def _create_geometry_dict(
         self,
@@ -388,7 +684,19 @@ def generate_humanoid_urdf(
     output_path: Path | str | None = None,
     config: URDFGeneratorConfig | None = None,
 ) -> str:
-    """Convenience function to generate humanoid URDF."""
+    """
+    Convenience function to generate humanoid URDF.
+
+    Args:
+        params: Body parameters
+        output_path: Optional path to write URDF
+        config: Generator configuration
+
+    Returns:
+        URDF XML string
+    """
+    if not (params is not None):
+        raise ValueError("params must be provided")
     if not (params is not None):
         raise ValueError("params must be provided")
     generator = HumanoidURDFGenerator(config)

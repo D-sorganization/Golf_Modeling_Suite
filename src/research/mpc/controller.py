@@ -60,6 +60,8 @@ class CostFunction:
         # State cost
         if not (x is not None):
             raise ValueError("x must be provided")
+        if not (x is not None):
+            raise ValueError("x must be provided")
         x_err = x
         if self.x_ref is not None:
             if self.x_ref.ndim == 1:
@@ -96,6 +98,8 @@ class CostFunction:
         Returns:
             Terminal cost value.
         """
+        if not (x is not None):
+            raise ValueError("x must be provided")
         if not (x is not None):
             raise ValueError("x must be provided")
         if self.P is None:
@@ -186,6 +190,8 @@ class ModelPredictiveController:
         """
         if not (model is not None):
             raise ValueError("model must be provided")
+        if not (model is not None):
+            raise ValueError("model must be provided")
         self.model = model
         self.horizon = horizon
         self.dt = dt
@@ -264,6 +270,8 @@ class ModelPredictiveController:
         """
         if not (x is not None):
             raise ValueError("x must be provided")
+        if not (x is not None):
+            raise ValueError("x must be provided")
         n_q = self._n_x // 2
         q = x[:n_q]
         v = x[n_q:]
@@ -307,6 +315,8 @@ class ModelPredictiveController:
         Returns:
             Tuple of (A, B) matrices.
         """
+        if not (x is not None):
+            raise ValueError("x must be provided")
         if not (x is not None):
             raise ValueError("x must be provided")
         eps = 1e-5
@@ -421,6 +431,8 @@ class ModelPredictiveController:
         """
         if not (X is not None):
             raise ValueError("X must be provided")
+        if not (X is not None):
+            raise ValueError("X must be provided")
         K: list[NDArray[np.floating]] = []
         d: list[NDArray[np.floating]] = []
 
@@ -495,6 +507,8 @@ class ModelPredictiveController:
         """
         if not (X is not None):
             raise ValueError("X must be provided")
+        if not (X is not None):
+            raise ValueError("X must be provided")
         alpha = 1.0
         best_cost = float("inf")
         best_X = X.copy()
@@ -541,6 +555,8 @@ class ModelPredictiveController:
         """
         if not (X is not None):
             raise ValueError("X must be provided")
+        if not (X is not None):
+            raise ValueError("X must be provided")
         max_violation = 0.0
 
         for constraint in self._constraints:
@@ -571,6 +587,8 @@ class ModelPredictiveController:
         Returns:
             First control input u_0.
         """
+        if not (result is not None):
+            raise ValueError("result must be provided")
         if not (result is not None):
             raise ValueError("result must be provided")
         if result.optimal_controls is None:

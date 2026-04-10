@@ -44,6 +44,8 @@ class ValidationResult:
         """Append an error message and mark the result as invalid."""
         if not (msg is not None):
             raise ValueError("msg must be provided")
+        if not (msg is not None):
+            raise ValueError("msg must be provided")
         self.is_valid = False
         self.messages.append(f"ERROR: {msg}")
 
@@ -73,6 +75,8 @@ class PhysicsValidator:
         - Positive definiteness
         - Triangle inequality
         """
+        if not (link is not None):
+            raise ValueError("link must be provided")
         if not (link is not None):
             raise ValueError("link must be provided")
         result = ValidationResult.ok()
@@ -115,6 +119,8 @@ class PhysicsValidator:
         """
         if not (model is not None):
             raise ValueError("model must be provided")
+        if not (model is not None):
+            raise ValueError("model must be provided")
         com = model.compute_center_of_mass()
         support = model.compute_support_polygon()
 
@@ -148,6 +154,8 @@ class PhysicsValidator:
         Returns:
             List of messages describing detected collisions.
         """
+        if not (model is not None):
+            raise ValueError("model must be provided")
         if not (model is not None):
             raise ValueError("model must be provided")
         messages = []
@@ -236,6 +244,8 @@ class PhysicsValidator:
     def _are_connected(self, model: HumanoidModel, name1: str, name2: str) -> bool:
         """Check if two links are directly connected by a joint."""
         # Check child map
+        if not (model is not None):
+            raise ValueError("model must be provided")
         if not (model is not None):
             raise ValueError("model must be provided")
         for joint in model.children_map.get(name1, []):

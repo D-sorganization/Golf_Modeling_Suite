@@ -127,6 +127,8 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         """Set model and data manually (e.g. from async loader)."""
         if not (model is not None):
             raise ValueError("model must be provided")
+        if not (model is not None):
+            raise ValueError("model must be provided")
         self.model = model
         self.data = data
         self.xml_path = None
@@ -339,6 +341,8 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         """
         if not (tau is not None):
             raise ValueError("tau must be provided")
+        if not (tau is not None):
+            raise ValueError("tau must be provided")
         if self.model is None or self.data is None:
             return np.array([])
 
@@ -380,6 +384,8 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
 
     def compute_jacobian(self, body_name: str) -> dict[str, np.ndarray] | None:
         """Compute spatial Jacobian for a specific body."""
+        if not (body_name is not None):
+            raise ValueError("body_name must be provided")
         if not (body_name is not None):
             raise ValueError("body_name must be provided")
         if self.model is None or self.data is None:
@@ -475,6 +481,8 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         """
         if not (q is not None):
             raise ValueError("q must be provided")
+        if not (q is not None):
+            raise ValueError("q must be provided")
         if self.model is None or self.data is None:
             return np.array([])
 
@@ -526,6 +534,8 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         Returns:
             q̈_ZVCF: Acceleration with v=0 (n_v,) [rad/s² or m/s²]
         """
+        if not (q is not None):
+            raise ValueError("q must be provided")
         if not (q is not None):
             raise ValueError("q must be provided")
         if self.model is None or self.data is None:
@@ -581,6 +591,8 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         # Store shaft configuration
         if not (length is not None):
             raise ValueError("length must be provided")
+        if not (length is not None):
+            raise ValueError("length must be provided")
         self._shaft_config = {
             "length": length,
             "EI_profile": EI_profile.copy(),
@@ -634,6 +646,8 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             Tuple of (frequencies [Hz], mode_shapes (n_modes, n_stations))
         """
         # Use average properties for simple analytical solution
+        if not (length is not None):
+            raise ValueError("length must be provided")
         if not (length is not None):
             raise ValueError("length must be provided")
         EI_avg = np.mean(EI_profile)

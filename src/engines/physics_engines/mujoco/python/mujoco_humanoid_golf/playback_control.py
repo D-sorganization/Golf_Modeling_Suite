@@ -40,6 +40,8 @@ class PlaybackController:
         """
         if not (times is not None):
             raise ValueError("times must be provided")
+        if not (times is not None):
+            raise ValueError("times must be provided")
         self.times = times
         self.states = states
         self.controls = controls
@@ -82,6 +84,8 @@ class PlaybackController:
         """
         if not (num_frames is not None):
             raise ValueError("num_frames must be provided")
+        if not (num_frames is not None):
+            raise ValueError("num_frames must be provided")
         new_frame = min(self.current_frame + num_frames, self.num_frames - 1)
         self.seek_to_frame(new_frame)
 
@@ -93,6 +97,8 @@ class PlaybackController:
         """
         if not (num_frames is not None):
             raise ValueError("num_frames must be provided")
+        if not (num_frames is not None):
+            raise ValueError("num_frames must be provided")
         new_frame = max(self.current_frame - num_frames, 0)
         self.seek_to_frame(new_frame)
 
@@ -102,6 +108,8 @@ class PlaybackController:
         Args:
             frame: Frame index (0 to num_frames-1)
         """
+        if not (frame is not None):
+            raise ValueError("frame must be provided")
         if not (frame is not None):
             raise ValueError("frame must be provided")
         frame = max(0, min(frame, self.num_frames - 1))
@@ -119,6 +127,8 @@ class PlaybackController:
         # Find closest frame
         if not (time is not None):
             raise ValueError("time must be provided")
+        if not (time is not None):
+            raise ValueError("time must be provided")
         frame = np.argmin(np.abs(self.times - time))
         self.seek_to_frame(int(frame))
 
@@ -128,6 +138,8 @@ class PlaybackController:
         Args:
             percent: Percentage (0.0 to 100.0)
         """
+        if not (percent is not None):
+            raise ValueError("percent must be provided")
         if not (percent is not None):
             raise ValueError("percent must be provided")
         frame = int((percent / 100.0) * (self.num_frames - 1))
@@ -163,6 +175,8 @@ class PlaybackController:
         Returns:
             True if frame changed
         """
+        if not (dt is not None):
+            raise ValueError("dt must be provided")
         if not (dt is not None):
             raise ValueError("dt must be provided")
         if self.mode != PlaybackMode.PLAYING:
@@ -269,6 +283,8 @@ class PlaybackController:
             output_path: Output image path
             render_callback: Function that takes (state, control) and returns RGB image
         """
+        if not (frame is not None):
+            raise ValueError("frame must be provided")
         if not (frame is not None):
             raise ValueError("frame must be provided")
         frame = max(0, min(frame, self.num_frames - 1))

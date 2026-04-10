@@ -85,6 +85,8 @@ class SafetyLimits:
         """
         if not (robot_config is not None):
             raise ValueError("robot_config must be provided")
+        if not (robot_config is not None):
+            raise ValueError("robot_config must be provided")
         n_joints = robot_config.n_joints
 
         # Default limits
@@ -132,6 +134,8 @@ class SafetyMonitor:
         """
         if not (robot_config is not None):
             raise ValueError("robot_config must be provided")
+        if not (robot_config is not None):
+            raise ValueError("robot_config must be provided")
         self.config = robot_config
         self.limits = limits or SafetyLimits.from_config(robot_config)
         self._speed_override = 1.0
@@ -147,6 +151,8 @@ class SafetyMonitor:
         Returns:
             Safety status.
         """
+        if not (state is not None):
+            raise ValueError("state must be provided")
         if not (state is not None):
             raise ValueError("state must be provided")
         violations = []
@@ -219,6 +225,8 @@ class SafetyMonitor:
         """
         if not (command is not None):
             raise ValueError("command must be provided")
+        if not (command is not None):
+            raise ValueError("command must be provided")
         violations: list[str] = []
         warnings: list[str] = []
 
@@ -284,6 +292,8 @@ class SafetyMonitor:
         """
         if not (desired is not None):
             raise ValueError("desired must be provided")
+        if not (desired is not None):
+            raise ValueError("desired must be provided")
         from src.deployment.realtime import ControlCommand
 
         # Start with desired command
@@ -322,6 +332,15 @@ class SafetyMonitor:
                 safe_command.velocity_targets *= self._speed_override
             if safe_command.torque_commands is not None:
                 safe_command.torque_commands *= self._speed_override
+
+        # Enforce E-stop: freeze position to current and zero feedforward torque
+        if self._emergency_stop:
+            if safe_command.position_targets is not None:
+                safe_command.position_targets = state.joint_positions.copy()
+            if safe_command.feedforward_torque is not None:
+                safe_command.feedforward_torque = np.zeros_like(
+                    safe_command.feedforward_torque
+                )
 
         # Clip torque commands
         if safe_command.torque_commands is not None:
@@ -362,6 +381,8 @@ class SafetyMonitor:
         # Full implementation would use dynamics model
         if not (state is not None):
             raise ValueError("state must be provided")
+        if not (state is not None):
+            raise ValueError("state must be provided")
         max_vel = float(np.max(np.abs(state.joint_velocities)))
         max_decel = 2.0  # m/s² typical deceleration
 
@@ -384,6 +405,8 @@ class SafetyMonitor:
         Args:
             nearby: True if human is within safety distance.
         """
+        if not (nearby is not None):
+            raise ValueError("nearby must be provided")
         if not (nearby is not None):
             raise ValueError("nearby must be provided")
         self._human_nearby = nearby

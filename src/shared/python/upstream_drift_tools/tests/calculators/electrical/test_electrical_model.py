@@ -13,20 +13,18 @@ from upstream_drift_tools.calculators.electrical.glass_interface import (
 
 class TestElectricalModel:
     @pytest.fixture
-    def model(self) -> ThreePhaseElectricalModelEnhanced:
+    def model(self) -> None:
         config = ElectrodeConfig()
         glass = GlassPropertiesInterface()
         return ThreePhaseElectricalModelEnhanced(config, glass)
 
-    def test_initialization(self, model: ThreePhaseElectricalModelEnhanced) -> None:
+    def test_initialization(self, model) -> None:
         assert len(model.electrode_positions) == 3
         np.testing.assert_allclose(
             model.electrode_positions, [0, 2.094395, 4.18879], rtol=1e-4
         )
 
-    def test_calculate_system_state(
-        self, model: ThreePhaseElectricalModelEnhanced
-    ) -> None:
+    def test_calculate_system_state(self, model) -> None:
         depths = np.array([10.0, 10.0, 10.0])
         voltages = np.array([100.0, 100.0, 100.0])
 
@@ -45,9 +43,7 @@ class TestElectricalModel:
         assert "current_distribution" in result
         assert len(result["actual_currents"]) == 3
 
-    def test_parallel_resistance(
-        self, model: ThreePhaseElectricalModelEnhanced
-    ) -> None:
+    def test_parallel_resistance(self, model) -> None:
         r1 = 100.0
         r2 = 100.0
         rp = model._parallel_resistance(r1, r2)

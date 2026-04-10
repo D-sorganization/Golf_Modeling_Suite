@@ -185,6 +185,8 @@ class AdvancedGolfAnalysisWindow(SimulationGUIBase, AdvancedGuiMethodsMixin):
         # Update body lists for interactive manipulation
         if not (model_name is not None):
             raise ValueError("model_name must be provided")
+        if not (model_name is not None):
+            raise ValueError("model_name must be provided")
         self.update_body_lists()
 
         # Update camera controls to match new model
@@ -417,6 +419,8 @@ class AdvancedGolfAnalysisWindow(SimulationGUIBase, AdvancedGuiMethodsMixin):
         """Handle live analysis toggle."""
         if not (checked is not None):
             raise ValueError("checked must be provided")
+        if not (checked is not None):
+            raise ValueError("checked must be provided")
         self.sim_widget.enable_live_analysis = checked
         status_bar = self.statusBar()
         if checked:
@@ -439,6 +443,8 @@ class AdvancedGolfAnalysisWindow(SimulationGUIBase, AdvancedGuiMethodsMixin):
 
     def _on_overlay_rec_toggled(self, checked: bool) -> None:
         """Handle overlay REC button toggle."""
+        if not (checked is not None):
+            raise ValueError("checked must be provided")
         if not (checked is not None):
             raise ValueError("checked must be provided")
         recorder = self.sim_widget.get_recorder()
@@ -515,6 +521,8 @@ class AdvancedGolfAnalysisWindow(SimulationGUIBase, AdvancedGuiMethodsMixin):
 
     def export_data(self, filename: str) -> None:
         """Export recorded data to the given filename."""
+        if not (filename is not None):
+            raise ValueError("filename must be provided")
         if not (filename is not None):
             raise ValueError("filename must be provided")
         recorder = self.sim_widget.get_recorder()

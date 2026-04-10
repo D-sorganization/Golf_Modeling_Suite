@@ -31,6 +31,8 @@ def launch_dashboard(
     """
     if not (engine_class is not None):
         raise ValueError("engine_class must be provided")
+    if not (engine_class is not None):
+        raise ValueError("engine_class must be provided")
     configure_gui_logging()
 
     app = get_qapp()

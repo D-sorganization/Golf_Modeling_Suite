@@ -17,11 +17,11 @@ from humanoid_character_builder.validation.physics_validator import (
 
 class TestPhysicsValidator:
     @pytest.fixture
-    def validator(self) -> PhysicsValidator:
+    def validator(self) -> None:
         return PhysicsValidator()
 
     @pytest.fixture
-    def mock_link(self) -> GeneratedLink:
+    def mock_link(self) -> None:
         return GeneratedLink(
             name="test_link",
             mass=1.0,
@@ -32,17 +32,13 @@ class TestPhysicsValidator:
             origin_rpy=(0, 0, 0),
         )
 
-    def test_validate_inertia_valid(
-        self, validator: PhysicsValidator, mock_link: GeneratedLink
-    ) -> None:
+    def test_validate_inertia_valid(self, validator, mock_link) -> None:
         # Default inertia is valid (sphere approximation)
         result = validator.validate_inertia(mock_link)
         assert result.is_valid
         assert not result.messages
 
-    def test_validate_inertia_not_symmetric(
-        self, validator: PhysicsValidator, mock_link: GeneratedLink
-    ) -> None:
+    def test_validate_inertia_not_symmetric(self, validator, mock_link) -> None:
         # Manually set invalid inertia
         inertia_mat = np.eye(3)
         inertia_mat[0, 1] = 0.5  # Asymmetric
@@ -57,17 +53,13 @@ class TestPhysicsValidator:
 
         # Let's skip asymmetry test or mock as_matrix
 
-    def test_validate_inertia_not_positive_definite(
-        self, validator: PhysicsValidator, mock_link: GeneratedLink
-    ) -> None:
+    def test_validate_inertia_not_positive_definite(self, validator, mock_link) -> None:
         mock_link.inertia.ixx = -1.0  # Invalid
         result = validator.validate_inertia(mock_link)
         assert not result.is_valid
         assert "positive definite" in result.messages[0]
 
-    def test_validate_inertia_triangle_inequality(
-        self, validator: PhysicsValidator, mock_link: GeneratedLink
-    ) -> None:
+    def test_validate_inertia_triangle_inequality(self, validator, mock_link) -> None:
         # Ixx + Iyy < Izz
         # e.g. 1 + 1 < 3
         mock_link.inertia.ixx = 1.0
@@ -79,7 +71,7 @@ class TestPhysicsValidator:
         assert result.is_valid
         assert any("triangle inequality" in msg for msg in result.messages)
 
-    def test_static_stability_stable(self, validator: PhysicsValidator) -> None:
+    def test_static_stability_stable(self, validator) -> None:
         # Create a model with COM inside support
         # Two feet at (-1, 0, 0) and (1, 0, 0)
         # Root (pelvis) at (0, 0, 1)
@@ -144,7 +136,7 @@ class TestPhysicsValidator:
         assert result.is_stable
         assert result.margin > 0
 
-    def test_static_stability_unstable(self, validator: PhysicsValidator) -> None:
+    def test_static_stability_unstable(self, validator) -> None:
         # COM far outside
         # Pelvis at (10, 0, 1) relative to feet? No, feet relative to pelvis.
         # If I move pelvis origin, but joints are relative.
@@ -195,7 +187,7 @@ class TestPhysicsValidator:
         result = validator.check_static_stability(model)
         assert not result.is_stable
 
-    def test_collision_detected(self, validator: PhysicsValidator) -> None:
+    def test_collision_detected(self, validator) -> None:
         # Two boxes overlapping
         link1 = GeneratedLink(
             "link1",

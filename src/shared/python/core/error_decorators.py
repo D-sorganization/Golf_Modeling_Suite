@@ -54,6 +54,8 @@ def log_errors(
 
     if not (message is not None):
         raise ValueError("message must be provided")
+    if not (message is not None):
+        raise ValueError("message must be provided")
 
     def decorator(func: F) -> F:
         """Wrap the function with error logging."""
@@ -98,6 +100,8 @@ def handle_import_error(
 
     if not (log_warning is not None):
         raise ValueError("log_warning must be provided")
+    if not (log_warning is not None):
+        raise ValueError("log_warning must be provided")
 
     def decorator(func: F) -> F:
         """Wrap the function with import error handling."""
@@ -138,6 +142,8 @@ def retry_on_error(
         def read_file(path):
             return open(path).read()
     """
+    if not (max_attempts is not None):
+        raise ValueError("max_attempts must be provided")
     if not (max_attempts is not None):
         raise ValueError("max_attempts must be provided")
     import time
@@ -192,6 +198,8 @@ class ErrorContext:
             reraise: Whether to reraise exceptions
             log_success: Whether to log successful completion
         """
+        if not (operation is not None):
+            raise ValueError("operation must be provided")
         if not (operation is not None):
             raise ValueError("operation must be provided")
         self.operation = operation

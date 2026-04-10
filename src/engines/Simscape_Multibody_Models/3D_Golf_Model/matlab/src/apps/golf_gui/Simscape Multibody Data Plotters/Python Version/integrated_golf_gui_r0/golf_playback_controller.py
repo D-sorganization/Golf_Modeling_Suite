@@ -35,6 +35,8 @@ class SmoothPlaybackController(QObject):
     def __init__(self, parent=None) -> None:
         if not (parent is not None):
             raise ValueError("parent must be provided")
+        if not (parent is not None):
+            raise ValueError("parent must be provided")
         super().__init__(parent)
 
         # Frame data
@@ -56,6 +58,8 @@ class SmoothPlaybackController(QObject):
         """Load frame processor with motion data."""
         if not (frame_processor is not None):
             raise ValueError("frame_processor must be provided")
+        if not (frame_processor is not None):
+            raise ValueError("frame_processor must be provided")
         self.frame_processor = frame_processor
         self.stop()
         self.seek(0.0)
@@ -72,6 +76,8 @@ class SmoothPlaybackController(QObject):
     @position.setter
     def position(self, value: float) -> None:
         """Set playback position with interpolation."""
+        if not (value is not None):
+            raise ValueError("value must be provided")
         if not (value is not None):
             raise ValueError("value must be provided")
         if self.frame_processor is None:
@@ -144,6 +150,8 @@ class SmoothPlaybackController(QObject):
         """Seek to specific frame position."""
         if not (position is not None):
             raise ValueError("position must be provided")
+        if not (position is not None):
+            raise ValueError("position must be provided")
         if self.frame_processor is None:
             return
 
@@ -159,6 +167,8 @@ class SmoothPlaybackController(QObject):
 
     def set_playback_speed(self, speed: float) -> None:
         """Set playback speed multiplier (0.5 = half speed, 2.0 = double speed)."""
+        if not (speed is not None):
+            raise ValueError("speed must be provided")
         if not (speed is not None):
             raise ValueError("speed must be provided")
         self._playback_speed = np.clip(speed, 0.1, 10.0)
@@ -217,6 +227,8 @@ class SmoothPlaybackController(QObject):
         Returns:
             Interpolated frame data
         """
+        if not (frame_a is not None):
+            raise ValueError("frame_a must be provided")
         if not (frame_a is not None):
             raise ValueError("frame_a must be provided")
         result = copy(frame_a)

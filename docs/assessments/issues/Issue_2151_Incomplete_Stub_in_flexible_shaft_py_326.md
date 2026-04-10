@@ -12,11 +12,13 @@ Found critical incomplete implementation in `./src/shared/python/physics/flexibl
 **Type**: Stub | **Location**: `./src/shared/python/physics/flexible_shaft.py:326`
 
 ```python
-apply_load
+step
 ```
 
 ## Audit Metrics
+
 - **Impact**: 5/5 | **Coverage**: 3/5 | **Complexity**: 4/5
 
 ## Recommendation
+
 Implement missing logic or document the rationale for the gap.

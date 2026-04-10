@@ -53,6 +53,8 @@ class ImpedanceParameters:
         # Stiffness
         if not (dim is not None):
             raise ValueError("dim must be provided")
+        if not (dim is not None):
+            raise ValueError("dim must be provided")
         k_matrix = (
             np.diag(self.stiffness) if self.stiffness.ndim == 1 else self.stiffness
         )  # noqa: E501
@@ -109,6 +111,8 @@ class AdvancedController:
         """
         if not (model is not None):
             raise ValueError("model must be provided")
+        if not (model is not None):
+            raise ValueError("model must be provided")
         self.model = model
         self.data = data
 
@@ -139,6 +143,8 @@ class AdvancedController:
 
     def _find_body_id(self, name_pattern: str) -> int | None:
         """Find body ID by name pattern."""
+        if not (name_pattern is not None):
+            raise ValueError("name_pattern must be provided")
         if not (name_pattern is not None):
             raise ValueError("name_pattern must be provided")
         for i in range(self.model.nbody):
@@ -534,6 +540,8 @@ class AdvancedController:
         # MuJoCo 3.3+ may require reshaped arrays - try both approaches
         if not (target_position is not None):
             raise ValueError("target_position must be provided")
+        if not (target_position is not None):
+            raise ValueError("target_position must be provided")
         try:
             jacp = np.zeros((3, self.model.nv))
             jacr = np.zeros((3, self.model.nv))
@@ -621,6 +629,8 @@ class TrajectoryGenerator:
         """
         if not (start is not None):
             raise ValueError("start must be provided")
+        if not (start is not None):
+            raise ValueError("start must be provided")
         num_steps = int(duration / dt)
         t = np.linspace(0, duration, num_steps)
 
@@ -661,6 +671,8 @@ class TrajectoryGenerator:
             Tuple of (positions, velocities, accelerations)
         """
         # Simplified: use minimum jerk between consecutive waypoints
+        if not (waypoints is not None):
+            raise ValueError("waypoints must be provided")
         if not (waypoints is not None):
             raise ValueError("waypoints must be provided")
         all_positions = []

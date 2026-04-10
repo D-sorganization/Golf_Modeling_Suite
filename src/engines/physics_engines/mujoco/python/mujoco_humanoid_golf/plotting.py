@@ -38,6 +38,8 @@ class GolfSwingPlotter(SharedGolfSwingPlotter):
         # Create joint names list if model is provided
         if not (recorder is not None):
             raise ValueError("recorder must be provided")
+        if not (recorder is not None):
+            raise ValueError("recorder must be provided")
         joint_names = None
         if model is not None:
             joint_names = [

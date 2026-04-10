@@ -196,6 +196,8 @@ class WorkflowExecution:
         """
         if not (step_id is not None):
             raise ValueError("step_id must be provided")
+        if not (step_id is not None):
+            raise ValueError("step_id must be provided")
         for result in self.step_results:
             if result.step_id == step_id:
                 return result
@@ -224,6 +226,8 @@ class WorkflowEngine:
         """
         if not (tool_registry is not None):
             raise ValueError("tool_registry must be provided")
+        if not (tool_registry is not None):
+            raise ValueError("tool_registry must be provided")
         self._tool_registry = tool_registry
         self._workflows: dict[str, Workflow] = {}
         self._executions: dict[str, WorkflowExecution] = {}
@@ -236,6 +240,8 @@ class WorkflowEngine:
         Args:
             workflow: Workflow to register.
         """
+        if not (workflow is not None):
+            raise ValueError("workflow must be provided")
         if not (workflow is not None):
             raise ValueError("workflow must be provided")
         self._workflows[workflow.id] = workflow
@@ -264,6 +270,8 @@ class WorkflowEngine:
         Returns:
             List of matching workflows.
         """
+        if not (max_expertise is not None):
+            raise ValueError("max_expertise must be provided")
         if not (max_expertise is not None):
             raise ValueError("max_expertise must be provided")
         workflows = list(self._workflows.values())
@@ -332,6 +340,8 @@ class WorkflowEngine:
         """
         if not (execution is not None):
             raise ValueError("execution must be provided")
+        if not (execution is not None):
+            raise ValueError("execution must be provided")
         workflow = self.get_workflow(execution.workflow_id)
         if workflow is None:
             return True
@@ -350,6 +360,8 @@ class WorkflowEngine:
         Returns:
             Current WorkflowStep, or None if complete.
         """
+        if not (execution is not None):
+            raise ValueError("execution must be provided")
         if not (execution is not None):
             raise ValueError("execution must be provided")
         workflow = self.get_workflow(execution.workflow_id)
@@ -398,6 +410,11 @@ class WorkflowEngine:
 
         skipped = self._check_step_condition(step, execution, start_time)
         if skipped is not None:
+            if execution.current_step_index >= len(workflow.steps):
+                execution.status = StepStatus.COMPLETED
+                logger.info(
+                    "Workflow completed (final step skipped): %s", execution.workflow_id
+                )
             return skipped
 
         tool_result, failure = self._execute_step_tool(step, execution, start_time)
@@ -420,6 +437,8 @@ class WorkflowEngine:
         execution: WorkflowExecution,
         start_time: float,
     ) -> StepResult | None:
+        if not (step is not None):
+            raise ValueError("step must be provided")
         if not (step is not None):
             raise ValueError("step must be provided")
         import time
@@ -446,6 +465,8 @@ class WorkflowEngine:
         execution: WorkflowExecution,
         start_time: float,
     ) -> tuple[ToolResult | None, StepResult | None]:
+        if not (step is not None):
+            raise ValueError("step must be provided")
         if not (step is not None):
             raise ValueError("step must be provided")
         import time
@@ -489,6 +510,8 @@ class WorkflowEngine:
     ) -> StepResult | None:
         if not (step is not None):
             raise ValueError("step must be provided")
+        if not (step is not None):
+            raise ValueError("step must be provided")
         import time
 
         if step.validation is not None:
@@ -520,6 +543,8 @@ class WorkflowEngine:
     ) -> StepResult:
         if not (step is not None):
             raise ValueError("step must be provided")
+        if not (step is not None):
+            raise ValueError("step must be provided")
         import time
 
         result = StepResult(
@@ -529,6 +554,10 @@ class WorkflowEngine:
             duration=time.perf_counter() - start_time,
         )
         execution.step_results.append(result)
+
+        if tool_result and isinstance(tool_result.result, dict):
+            execution.state.update(tool_result.result)
+
         execution.current_step_index += 1
 
         if execution.current_step_index >= len(workflow.steps):
@@ -555,6 +584,8 @@ class WorkflowEngine:
         """
         if not (execution is not None):
             raise ValueError("execution must be provided")
+        if not (execution is not None):
+            raise ValueError("execution must be provided")
         if step.on_failure == RecoveryStrategy.ABORT:
             execution.status = StepStatus.FAILED
             logger.error(
@@ -579,6 +610,8 @@ class WorkflowEngine:
         Returns:
             Progress information dictionary.
         """
+        if not (execution is not None):
+            raise ValueError("execution must be provided")
         if not (execution is not None):
             raise ValueError("execution must be provided")
         workflow = self.get_workflow(execution.workflow_id)
@@ -616,6 +649,8 @@ class WorkflowEngine:
         Returns:
             Educational content string.
         """
+        if not (step is not None):
+            raise ValueError("step must be provided")
         if not (step is not None):
             raise ValueError("step must be provided")
         level_key = expertise_level.name.lower()

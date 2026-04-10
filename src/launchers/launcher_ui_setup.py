@@ -113,6 +113,8 @@ class LauncherUISetupMixin:
     def _setup_file_menu(self, menubar) -> None:
         if not (menubar is not None):
             raise ValueError("menubar must be provided")
+        if not (menubar is not None):
+            raise ValueError("menubar must be provided")
         file_menu = menubar.addMenu("&File")
 
         action_preferences = QAction("&Preferences...", self)
@@ -128,6 +130,8 @@ class LauncherUISetupMixin:
         file_menu.addAction(action_exit)
 
     def _setup_view_menu(self, menubar) -> None:
+        if not (menubar is not None):
+            raise ValueError("menubar must be provided")
         if not (menubar is not None):
             raise ValueError("menubar must be provided")
         view_menu = menubar.addMenu("&View")
@@ -163,6 +167,8 @@ class LauncherUISetupMixin:
     def _setup_tools_menu(self, menubar) -> None:
         if not (menubar is not None):
             raise ValueError("menubar must be provided")
+        if not (menubar is not None):
+            raise ValueError("menubar must be provided")
         tools_menu = menubar.addMenu("&Tools")
 
         action_env = QAction("&Environment Manager...", self)
@@ -174,6 +180,8 @@ class LauncherUISetupMixin:
         tools_menu.addAction(action_diag)
 
     def _setup_help_menu(self, menubar) -> None:
+        if not (menubar is not None):
+            raise ValueError("menubar must be provided")
         if not (menubar is not None):
             raise ValueError("menubar must be provided")
         help_menu = menubar.addMenu("&Help")
@@ -216,6 +224,8 @@ class LauncherUISetupMixin:
     def _setup_top_bar_status_and_search(self, top_bar: QHBoxLayout) -> None:
         """Add status indicator, execution mode label, and search bar to top bar."""
         # Status Indicator
+        if not (top_bar is not None):
+            raise ValueError("top_bar must be provided")
         if not (top_bar is not None):
             raise ValueError("top_bar must be provided")
         self.lbl_status = QLabel("Checking Docker...")
@@ -271,6 +281,8 @@ class LauncherUISetupMixin:
 
     def _setup_top_bar_action_buttons(self, top_bar: QHBoxLayout) -> None:
         """Add Help, Settings, and AI Assistant buttons to top bar."""
+        if not (top_bar is not None):
+            raise ValueError("top_bar must be provided")
         if not (top_bar is not None):
             raise ValueError("top_bar must be provided")
         from src.launchers.launcher_constants import AI_AVAILABLE
@@ -348,6 +360,8 @@ class LauncherUISetupMixin:
 
     def _setup_grid_area(self, layout: QVBoxLayout) -> None:
         """Set up the scrollable grid area."""
+        if not (layout is not None):
+            raise ValueError("layout must be provided")
         if not (layout is not None):
             raise ValueError("layout must be provided")
         self.scroll_area = QScrollArea()
@@ -444,6 +458,8 @@ class LauncherUISetupMixin:
 
     def _append_console_line(self, engine_name: str, line: str) -> None:
         """Append a formatted line to the console widget (GUI thread only)."""
+        if not (engine_name is not None):
+            raise ValueError("engine_name must be provided")
         if not (engine_name is not None):
             raise ValueError("engine_name must be provided")
         if not self._console_dock.isVisible():

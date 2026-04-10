@@ -182,6 +182,8 @@ except ImportError:
             # Strip phase suffix (_g, _l, _s) if present
             if not (species is not None):
                 raise ValueError("species must be provided")
+            if not (species is not None):
+                raise ValueError("species must be provided")
             base_species = species.split("_")[0]
 
             h_f = self.get_formation_enthalpy(base_species)
@@ -248,6 +250,8 @@ class WGSReactorEngine:
 
         if not (temperature is not None):
             raise ValueError("temperature must be provided")
+        if not (temperature is not None):
+            raise ValueError("temperature must be provided")
         delta_H = WGS_DELTA_H  # J/mol
         delta_S = WGS_DELTA_S  # J/(mol·K)
 
@@ -269,6 +273,8 @@ class WGSReactorEngine:
         """
         if not (inlet_composition is not None):
             raise ValueError("inlet_composition must be provided")
+        if not (inlet_composition is not None):
+            raise ValueError("inlet_composition must be provided")
         n_CO_0 = inlet_composition.get("CO", 0)
         n_H2O_0 = inlet_composition.get("H2O", 0) + n_CO_0 * steam_ratio
         n_CO2_0 = inlet_composition.get("CO2", 0)
@@ -286,6 +292,8 @@ class WGSReactorEngine:
         K_eq: float,
     ) -> dict[str, Any]:
         """Assemble the equilibrium result dictionary from the solved extent."""
+        if not (x_eq is not None):
+            raise ValueError("x_eq must be provided")
         if not (x_eq is not None):
             raise ValueError("x_eq must be provided")
         n_CO_eq = n_CO_0 - x_eq
@@ -327,6 +335,8 @@ class WGSReactorEngine:
         """Calculate equilibrium composition for WGS reaction
         using Gibbs free energy minimization."""
 
+        if not (inlet_composition is not None):
+            raise ValueError("inlet_composition must be provided")
         if not (inlet_composition is not None):
             raise ValueError("inlet_composition must be provided")
         n_CO_0, n_H2O_0, n_CO2_0, n_H2_0, n_total_0 = self._prepare_initial_moles(
@@ -426,6 +436,8 @@ class WGSReactorEngine:
     ) -> dict[str, Any]:
         """Size WGS reactor based on throughput and conversion"""
         # Space velocity (GHSV)
+        if not (feed_rate is not None):
+            raise ValueError("feed_rate must be provided")
         if not (feed_rate is not None):
             raise ValueError("feed_rate must be provided")
         ghsv = WGS_TYPICAL_GHSV  # h^-1 (typical for WGS)
@@ -708,6 +720,8 @@ if BASE_CALCULATOR_AVAILABLE:
             self, inlet: dict[str, float], outlet: dict[str, float]
         ) -> None:
             """Create composition comparison plot"""
+            if not (inlet is not None):
+                raise ValueError("inlet must be provided")
             if not (inlet is not None):
                 raise ValueError("inlet must be provided")
             self.figure.clear()

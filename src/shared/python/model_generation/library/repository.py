@@ -78,6 +78,8 @@ class Repository(ABC):
         """Search models by name or description."""
         if not (query is not None):
             raise ValueError("query must be provided")
+        if not (query is not None):
+            raise ValueError("query must be provided")
         query_lower = query.lower()
         return [
             m
@@ -103,6 +105,8 @@ class LocalRepository(Repository):
             name: Repository name
             description: Repository description
         """
+        if not (path is not None):
+            raise ValueError("path must be provided")
         if not (path is not None):
             raise ValueError("path must be provided")
         self._path = Path(path)
@@ -144,6 +148,8 @@ class LocalRepository(Repository):
         destination: Path,
     ) -> Path | None:
         """Copy model to destination (local copy)."""
+        if not (model_path is not None):
+            raise ValueError("model_path must be provided")
         if not (model_path is not None):
             raise ValueError("model_path must be provided")
         import shutil
@@ -192,6 +198,8 @@ class GitHubRepository(Repository):
         """
         if not (owner is not None):
             raise ValueError("owner must be provided")
+        if not (owner is not None):
+            raise ValueError("owner must be provided")
         self._owner = owner
         self._repo = repo
         self._branch = branch
@@ -218,6 +226,8 @@ class GitHubRepository(Repository):
         Returns:
             Configured Request object
         """
+        if not (url is not None):
+            raise ValueError("url must be provided")
         if not (url is not None):
             raise ValueError("url must be provided")
         req = urllib.request.Request(url)
@@ -252,6 +262,8 @@ class GitHubRepository(Repository):
             urllib.error.HTTPError: On non-retryable HTTP errors
             OSError: On network errors after retries exhausted
         """
+        if not (url is not None):
+            raise ValueError("url must be provided")
         if not (url is not None):
             raise ValueError("url must be provided")
         all_results: list = []
@@ -347,6 +359,8 @@ class GitHubRepository(Repository):
         """Recursively scan directory for URDF files."""
         if not (path is not None):
             raise ValueError("path must be provided")
+        if not (path is not None):
+            raise ValueError("path must be provided")
         if depth > 3:  # Limit recursion
             return []
 
@@ -385,6 +399,8 @@ class GitHubRepository(Repository):
         """Download model from GitHub."""
         if not (model_path is not None):
             raise ValueError("model_path must be provided")
+        if not (model_path is not None):
+            raise ValueError("model_path must be provided")
         destination.mkdir(parents=True, exist_ok=True)
 
         # Download URDF
@@ -412,6 +428,8 @@ class GitHubRepository(Repository):
         """Download mesh files from model directory."""
         if not (model_dir is not None):
             raise ValueError("model_dir must be provided")
+        if not (model_dir is not None):
+            raise ValueError("model_dir must be provided")
         mesh_dir = f"{model_dir}/meshes"
         api_url = (
             f"{self.API_BASE}/repos/{self._owner}/{self._repo}/contents/{mesh_dir}"
@@ -437,6 +455,8 @@ class GitHubRepository(Repository):
 
     def download_archive(self, destination: Path) -> bool:
         """Download entire repository as archive."""
+        if not (destination is not None):
+            raise ValueError("destination must be provided")
         if not (destination is not None):
             raise ValueError("destination must be provided")
         archive_url = (
@@ -476,6 +496,8 @@ class CompositeRepository(Repository):
         """
         if not (repositories is not None):
             raise ValueError("repositories must be provided")
+        if not (repositories is not None):
+            raise ValueError("repositories must be provided")
         self._repositories = repositories
         self._name = name
         self._description = description
@@ -513,6 +535,8 @@ class CompositeRepository(Repository):
     ) -> Path | None:
         """Download from appropriate repository."""
         # Extract repo name from path
+        if not (model_path is not None):
+            raise ValueError("model_path must be provided")
         if not (model_path is not None):
             raise ValueError("model_path must be provided")
         parts = model_path.split("/", 1)

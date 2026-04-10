@@ -309,6 +309,8 @@ def run_motion_training(
     """
     if not (trajectory_file is not None):
         raise ValueError("trajectory_file must be provided")
+    if not (trajectory_file is not None):
+        raise ValueError("trajectory_file must be provided")
     config = PipelineConfig(
         trajectory_file=trajectory_file,
         sheet_name=sheet_name,

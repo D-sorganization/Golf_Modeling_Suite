@@ -73,6 +73,8 @@ class MuscleDrivenEnv:
         """
         if not (muscle_system is not None):
             raise ValueError("muscle_system must be provided")
+        if not (muscle_system is not None):
+            raise ValueError("muscle_system must be provided")
         self.muscle_system = muscle_system
         self.task = task
         self.dt = dt
@@ -123,6 +125,8 @@ class MuscleDrivenEnv:
             (observation, reward, done, info)
         """
         # Convert action to muscle excitations
+        if not (action is not None):
+            raise ValueError("action must be provided")
         if not (action is not None):
             raise ValueError("action must be provided")
         excitations = self._action_to_excitations(action)
@@ -220,8 +224,7 @@ class MuscleDrivenEnv:
     def _get_muscle_names(self) -> list[str]:
         """Get list of muscle names in system."""
         if isinstance(self.muscle_system, AntagonistPair):
-            names = list(self.muscle_system.agonist.muscles.keys())
-            names.extend(self.muscle_system.antagonist.muscles.keys())
+            names = self.muscle_system.muscle_names
         else:
             names = list(self.muscle_system.muscles.keys())
         return names
@@ -235,6 +238,8 @@ class MuscleDrivenEnv:
         Returns:
             Excitation dict {muscle_name: excitation}
         """
+        if not (action is not None):
+            raise ValueError("action must be provided")
         if not (action is not None):
             raise ValueError("action must be provided")
         muscle_names = sorted(self._get_muscle_names())
@@ -280,6 +285,8 @@ def train_muscle_policy(env: MuscleDrivenEnv, total_timesteps: int = 100000) -> 
         >>> policy = train_muscle_policy(env, total_timesteps=50000)
         >>> # Policy can now control muscles via neural network
     """
+    if not (env is not None):
+        raise ValueError("env must be provided")
     if not (env is not None):
         raise ValueError("env must be provided")
     if not MYOSUITE_AVAILABLE:
