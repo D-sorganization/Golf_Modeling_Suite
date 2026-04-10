@@ -27,8 +27,8 @@
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript |
 | **License** | MIT |
 | **Current Version** | 2.1.0 |
-| **Spec Version** | 1.0.5 |
-| **Last Spec Update** | 2026-03-30 |
+| **Spec Version** | 1.0.6 |
+| **Last Spec Update** | 2026-04-10 |
 
 ## 2. Purpose & Mission
 
@@ -394,6 +394,8 @@ Beyond standard tools, CI enforces custom checks:
 git clone https://github.com/D-sorganization/UpstreamDrift.git
 cd UpstreamDrift
 python -m pip install -e ".[dev]"  # Include dev dependencies
+# One-line bootstrap from outside a checkout
+curl -fsSL https://raw.githubusercontent.com/D-sorganization/UpstreamDrift/main/install.sh | bash
 # For desktop app: cargo install tauri-cli
 
 # Running the FastAPI Server
@@ -414,6 +416,12 @@ pytest tests/unit/ -v
 pytest tests/integration/ -v
 pytest tests/ --cov=src --cov-fail-under=70
 ```
+
+### Packaging Notes
+
+- Python packaging expects a prebuilt frontend bundle under `ui/dist/`; CI packaging must provide that bundle or explicitly force a rebuild instead of silently shipping a package with no web UI.
+- The quick-install script supports both local checkout installs and remote `git+https://github.com/D-sorganization/UpstreamDrift.git` installs when run via `curl ... | bash`.
+- Windows setup and MSI packaging resolve launcher assets, config, and shared model data from the active `src/` layout (`src/launchers/assets`, `src/config`, `src/shared/urdf`, `src/shared/meshes`).
 
 ### Build Artifacts
 
@@ -457,6 +465,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 | Date | Version | Changes |
 |------|---------|---------|
+| 2026-04-10 | 1.0.6 | Updated install and packaging behavior in the spec: documented one-line remote bootstrap support in `install.sh`, clarified that CI packaging must ship or rebuild `ui/dist` instead of skipping the frontend bundle, and recorded that Windows setup/MSI packaging resolve assets and manifests from the active `src/` tree. |
 | 2026-03-30 | 1.0.5 | A-N Assessment remediation (issue #2255): added DbC input validation (TypeError/ValueError) to functions in `scripts/analyze_completist_data.py`, `check_coverage_gates.py`, `check_dependency_direction.py`, `check_duplicates.py`, `check_heavy_dep_parity.py`, and `check_vendor_updates.py`; extracted chained attribute accesses to intermediate variables (LoD) in `build_hooks.py`, `examples/aerodynamics_demo.py`, `basic_flight_simulation.py`, `topography_demo.py`, `motion_training_demo.py`, and `installer/windows/`; extracted `_data_path()` helper to eliminate repeated `os.path.join(DATA_DIR, ...)` calls (DRY). |
 | 2026-03-30 | 1.0.4 | Suppressed mypy false-positive on `np.savez` keyword-array arguments in `ImitationLearner` and `GAILLearner` save methods; numpy stubs do not model `**kwargs` as ndarray values. |
 | 2026-03-30 | 1.0.3 | Fixed arbitrary code execution vulnerability via pickle in `ImitationLearner` models by serializing configuration data as JSON strings and saving array elements explicitly. |
