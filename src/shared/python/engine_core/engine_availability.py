@@ -88,6 +88,16 @@ def _validate_drake_bindings(drake_module: Any) -> None:
             raise TypeError(f"{module_name} resolved to a mock module")
 
 
+def _validate_pinocchio_bindings(pinocchio_module: Any) -> None:
+    """Reject mock-only or wrong-package Pinocchio surfaces."""
+    if isinstance(pinocchio_module, Mock):
+        raise TypeError("pinocchio resolved to a mock module")
+    if not hasattr(pinocchio_module, "buildModelFromUrdf"):
+        raise ImportError(
+            "Incorrect pinocchio package (likely nose plugin). Please install pinocchio from conda-forge."
+        )
+
+
 def _probe_engine(
     engine_name: str,
     import_name: str | None = None,
@@ -137,11 +147,7 @@ def _probe_engine(
         elif import_name == "pyside6":
             importlib.import_module("PySide6.QtWidgets")
         elif import_name == "pinocchio":
-            pin = importlib.import_module("pinocchio")
-            if not hasattr(pin, "buildModelFromUrdf"):
-                raise ImportError(
-                    "Incorrect pinocchio package (likely nose plugin). Please install pinocchio from conda-forge."
-                )
+            _validate_pinocchio_bindings(importlib.import_module("pinocchio"))
         elif import_name == "opensim":
             _validate_opensim_bindings(importlib.import_module("opensim"))
         else:
