@@ -25,7 +25,6 @@ def _make_fake_simulation_modules() -> dict[str, ModuleType]:
     ):
         module = ModuleType(module_name)
         module.make_polynomial_torque = lambda *args, **kwargs: (args, kwargs)
-<<<<<<< HEAD
         module.run_simulation = lambda *args, **kwargs: {"args": args, "kwargs": kwargs}
         if module_name.endswith(".simulation"):
             module.SimulationResult = _FakeResultBase
@@ -96,7 +95,6 @@ def panel_builders(monkeypatch: pytest.MonkeyPatch):
     }.items():
         monkeypatch.setitem(sys.modules, module_name, module)
 
-<<<<<<< HEAD
     module = import_module("src.shared.python.pendulum_simulator.gui.panel_builders")
     return reload(module)
 
