@@ -62,6 +62,8 @@ class CollisionGeometry:
         """Export collision geometry to file."""
         if not (path is not None):
             raise ValueError("path must be provided")
+        if not (path is not None):
+            raise ValueError("path must be provided")
         if not self.meshes:
             return
 
@@ -86,6 +88,8 @@ class CollisionGeometry:
         Returns:
             CollisionGeometry instance
         """
+        if not (result is not None):
+            raise ValueError("result must be provided")
         if not (result is not None):
             raise ValueError("result must be provided")
         total_verts = sum(
@@ -147,6 +151,8 @@ class CollisionGeometryGenerator:
         """
         if not (method is not None):
             raise ValueError("method must be provided")
+        if not (method is not None):
+            raise ValueError("method must be provided")
         import time
 
         start_time = time.time()
@@ -178,6 +184,8 @@ class CollisionGeometryGenerator:
         Returns:
             Dictionary with quality_score and volume_preservation
         """
+        if not (generated is not None):
+            raise ValueError("generated must be provided")
         if not (generated is not None):
             raise ValueError("generated must be provided")
         import trimesh

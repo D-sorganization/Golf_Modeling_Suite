@@ -190,6 +190,8 @@ class DualHandIKSolver:
         """
         if not (frame is not None):
             raise ValueError("frame must be provided")
+        if not (frame is not None):
+            raise ValueError("frame must be provided")
         s = self.settings
 
         # Get grip orientation as rotation matrix
@@ -223,6 +225,8 @@ class DualHandIKSolver:
         Returns:
             IKResult with solved configuration and error metrics
         """
+        if not (frame is not None):
+            raise ValueError("frame must be provided")
         if not (frame is not None):
             raise ValueError("frame must be provided")
         if q_init is None:
@@ -311,6 +315,8 @@ class DualHandIKSolver:
         """
         if not (trajectory is not None):
             raise ValueError("trajectory must be provided")
+        if not (trajectory is not None):
+            raise ValueError("trajectory must be provided")
         result = TrajectoryIKResult()
 
         q = q_init if q_init is not None else self.q_ref.copy()
@@ -365,6 +371,8 @@ class DualHandIKSolver:
         """
         if not (q is not None):
             raise ValueError("q must be provided")
+        if not (q is not None):
+            raise ValueError("q must be provided")
         pin.forwardKinematics(self.model, self.data, q)
         pin.updateFramePlacements(self.model, self.data)
 
@@ -412,6 +420,8 @@ class DualHandIKSolverFallback:
         q_init: NDArray[np.float64] | None = None,
     ) -> IKResult:
         """Solve IK using damped least-squares."""
+        if not (frame is not None):
+            raise ValueError("frame must be provided")
         if not (frame is not None):
             raise ValueError("frame must be provided")
         if q_init is None:
@@ -494,6 +504,8 @@ class DualHandIKSolverFallback:
         verbose: bool = False,
     ) -> TrajectoryIKResult:
         """Solve IK for entire trajectory."""
+        if not (trajectory is not None):
+            raise ValueError("trajectory must be provided")
         if not (trajectory is not None):
             raise ValueError("trajectory must be provided")
         result = TrajectoryIKResult()

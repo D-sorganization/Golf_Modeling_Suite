@@ -95,6 +95,8 @@ class DomainRandomizer:
         """
         if not (engine is not None):
             raise ValueError("engine must be provided")
+        if not (engine is not None):
+            raise ValueError("engine must be provided")
         self.engine = engine
         self.config = config or DomainRandomizationConfig()
         self.nominal_params = self._store_nominal_params()
@@ -262,6 +264,8 @@ class DomainRandomizer:
         """
         if not (action is not None):
             raise ValueError("action must be provided")
+        if not (action is not None):
+            raise ValueError("action must be provided")
         if not self.config.randomize_delays or self._action_delay == 0:
             return self._apply_action_noise(action)
 
@@ -285,6 +289,8 @@ class DomainRandomizer:
         """
         if not (action is not None):
             raise ValueError("action must be provided")
+        if not (action is not None):
+            raise ValueError("action must be provided")
         if not self.config.randomize_noise or self.config.action_noise_std == 0:
             return action
 
@@ -302,6 +308,8 @@ class DomainRandomizer:
         Returns:
             Delayed and noisy observation.
         """
+        if not (observation is not None):
+            raise ValueError("observation must be provided")
         if not (observation is not None):
             raise ValueError("observation must be provided")
         if not self.config.randomize_delays or self._observation_delay == 0:
@@ -327,6 +335,8 @@ class DomainRandomizer:
         Returns:
             Noisy observation.
         """
+        if not (observation is not None):
+            raise ValueError("observation must be provided")
         if not (observation is not None):
             raise ValueError("observation must be provided")
         if not self.config.randomize_noise or self.config.observation_noise_std == 0:
@@ -356,6 +366,8 @@ class DomainRandomizer:
         Returns:
             List of randomization dictionaries.
         """
+        if not (batch_size is not None):
+            raise ValueError("batch_size must be provided")
         if not (batch_size is not None):
             raise ValueError("batch_size must be provided")
         configs = []

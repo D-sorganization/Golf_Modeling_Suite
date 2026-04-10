@@ -55,6 +55,8 @@ class SystemIdentifier:
         """
         if not (model is not None):
             raise ValueError("model must be provided")
+        if not (model is not None):
+            raise ValueError("model must be provided")
         self.model = model
         self.param_bounds = param_bounds or self._default_bounds()
         self._nominal_params = self._get_current_params()
@@ -103,6 +105,8 @@ class SystemIdentifier:
         Args:
             param_vector: Flattened parameter vector.
         """
+        if not (param_vector is not None):
+            raise ValueError("param_vector must be provided")
         if not (param_vector is not None):
             raise ValueError("param_vector must be provided")
         idx = 0
@@ -162,6 +166,8 @@ class SystemIdentifier:
         """
         if not (initial_state is not None):
             raise ValueError("initial_state must be provided")
+        if not (initial_state is not None):
+            raise ValueError("initial_state must be provided")
         n_steps = len(actions)
         n_q = len(initial_state) // 2
         states = [initial_state.copy()]
@@ -218,6 +224,8 @@ class SystemIdentifier:
         # Ensure same length
         if not (sim_trajectory is not None):
             raise ValueError("sim_trajectory must be provided")
+        if not (sim_trajectory is not None):
+            raise ValueError("sim_trajectory must be provided")
         n = min(len(sim_trajectory), len(real_trajectory))
         sim = sim_trajectory[:n]
         real = real_trajectory[:n]
@@ -250,6 +258,8 @@ class SystemIdentifier:
         Returns:
             Identification result.
         """
+        if not (trajectories is not None):
+            raise ValueError("trajectories must be provided")
         if not (trajectories is not None):
             raise ValueError("trajectories must be provided")
         if params_to_identify is None:
@@ -297,6 +307,8 @@ class SystemIdentifier:
     ) -> float:
         if not (params is not None):
             raise ValueError("params must be provided")
+        if not (params is not None):
+            raise ValueError("params must be provided")
         self._apply_params(params)
         total_error = 0.0
 
@@ -336,6 +348,8 @@ class SystemIdentifier:
         max_iterations: int,
         tolerance: float,
     ) -> tuple[NDArray[np.floating], float, bool, int]:
+        if not (objective is not None):
+            raise ValueError("objective must be provided")
         if not (objective is not None):
             raise ValueError("objective must be provided")
         converged = False
@@ -381,6 +395,8 @@ class SystemIdentifier:
         """
         if not (sim_trajectory is not None):
             raise ValueError("sim_trajectory must be provided")
+        if not (sim_trajectory is not None):
+            raise ValueError("sim_trajectory must be provided")
         n = min(len(sim_trajectory), len(real_trajectory))
         sim = sim_trajectory[:n]
         real = real_trajectory[:n]
@@ -421,6 +437,8 @@ class SystemIdentifier:
             Validation metrics.
         """
         # Apply identified parameters
+        if not (test_trajectories is not None):
+            raise ValueError("test_trajectories must be provided")
         if not (test_trajectories is not None):
             raise ValueError("test_trajectories must be provided")
         param_vector = np.array(

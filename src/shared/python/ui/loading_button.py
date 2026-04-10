@@ -43,6 +43,8 @@ class LoadingSpinner(QWidget):
         """
         if not (size is not None):
             raise ValueError("size must be provided")
+        if not (size is not None):
+            raise ValueError("size must be provided")
         super().__init__(parent)
         self._size = size
         self._angle = 0
@@ -115,6 +117,8 @@ class LoadingButton(QPushButton):
         """
         if not (text is not None):
             raise ValueError("text must be provided")
+        if not (text is not None):
+            raise ValueError("text must be provided")
         super().__init__(text, parent)
         self._original_text = text
         self._loading = False
@@ -145,6 +149,8 @@ class LoadingButton(QPushButton):
             loading: Whether to show loading state
             text: Optional loading text (uses "Loading..." if None)
         """
+        if not (loading is not None):
+            raise ValueError("loading must be provided")
         if not (loading is not None):
             raise ValueError("loading must be provided")
         self._loading = loading
@@ -184,6 +190,8 @@ class LoadingButton(QPushButton):
         """
         if not (text is not None):
             raise ValueError("text must be provided")
+        if not (text is not None):
+            raise ValueError("text must be provided")
         self._original_text = text
         if not self._loading:
             self.setText(text)
@@ -208,6 +216,8 @@ class IconLoadingButton(QWidget):
             icon: Icon character/emoji
             parent: Parent widget
         """
+        if not (text is not None):
+            raise ValueError("text must be provided")
         if not (text is not None):
             raise ValueError("text must be provided")
         super().__init__(parent)
@@ -249,6 +259,8 @@ class IconLoadingButton(QWidget):
 
     def set_loading(self, loading: bool, text: str | None = None) -> None:
         """Set loading state."""
+        if not (loading is not None):
+            raise ValueError("loading must be provided")
         if not (loading is not None):
             raise ValueError("loading must be provided")
         self._loading = loading

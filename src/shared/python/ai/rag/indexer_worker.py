@@ -27,6 +27,8 @@ class IndexerWorker(QThread):
         """
         if not (root_path is not None):
             raise ValueError("root_path must be provided")
+        if not (root_path is not None):
+            raise ValueError("root_path must be provided")
         super().__init__()
         self._root = root_path
         self._store = store

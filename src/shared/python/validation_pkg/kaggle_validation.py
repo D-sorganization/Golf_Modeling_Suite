@@ -204,6 +204,8 @@ def validate_model_against_dataset(
 
     if not (df is not None):
         raise ValueError("df must be provided")
+    if not (df is not None):
+        raise ValueError("df must be provided")
     clean = get_clean_shots(df)
 
     if len(clean) > sample_size:
@@ -271,6 +273,8 @@ def compare_all_models_to_dataset(
 
     if not (sample_size is not None):
         raise ValueError("sample_size must be provided")
+    if not (sample_size is not None):
+        raise ValueError("sample_size must be provided")
     from flight_models import (
         BallFlightModel,
         FlightModelRegistry,
@@ -291,6 +295,8 @@ def compare_all_models_to_dataset(
 
             def model_func(speed: float, angle: float, spin: float) -> float:
                 """Simulate a shot and return carry distance in yards."""
+                if not (speed is not None):
+                    raise ValueError("speed must be provided")
                 if not (speed is not None):
                     raise ValueError("speed must be provided")
                 launch = UnifiedLaunchConditions.from_imperial(

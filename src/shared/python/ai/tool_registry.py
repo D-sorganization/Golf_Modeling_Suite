@@ -168,6 +168,8 @@ class Tool:
         """
         if not (arguments is not None):
             raise ValueError("arguments must be provided")
+        if not (arguments is not None):
+            raise ValueError("arguments must be provided")
         errors: list[str] = []
 
         # Check required parameters
@@ -204,6 +206,8 @@ class Tool:
         Returns:
             ToolResult with execution outcome.
         """
+        if not (arguments is not None):
+            raise ValueError("arguments must be provided")
         if not (arguments is not None):
             raise ValueError("arguments must be provided")
         import time
@@ -290,6 +294,8 @@ class ToolRegistry:
 
         if not (name is not None):
             raise ValueError("name must be provided")
+        if not (name is not None):
+            raise ValueError("name must be provided")
 
         def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             """Register the decorated function as a tool in the registry."""
@@ -321,6 +327,8 @@ class ToolRegistry:
         """
         if not (tool is not None):
             raise ValueError("tool must be provided")
+        if not (tool is not None):
+            raise ValueError("tool must be provided")
         self._tools[tool.name] = tool
         logger.debug("Registered tool: %s", tool.name)
 
@@ -335,6 +343,8 @@ class ToolRegistry:
         Returns:
             List of ToolParameter definitions.
         """
+        if not (func is not None):
+            raise ValueError("func must be provided")
         if not (func is not None):
             raise ValueError("func must be provided")
         parameters: list[ToolParameter] = []
@@ -388,6 +398,8 @@ class ToolRegistry:
         """
         if not (python_type is not None):
             raise ValueError("python_type must be provided")
+        if not (python_type is not None):
+            raise ValueError("python_type must be provided")
         type_mapping = {
             str: "string",
             int: "integer",
@@ -437,6 +449,8 @@ class ToolRegistry:
         """
         if not (max_expertise is not None):
             raise ValueError("max_expertise must be provided")
+        if not (max_expertise is not None):
+            raise ValueError("max_expertise must be provided")
         tools = list(self._tools.values())
 
         if category is not None:
@@ -460,6 +474,8 @@ class ToolRegistry:
         Returns:
             List of tool definitions in provider format.
         """
+        if not (provider_format is not None):
+            raise ValueError("provider_format must be provided")
         if not (provider_format is not None):
             raise ValueError("provider_format must be provided")
         tools = self.list_tools(max_expertise=max_expertise)
@@ -489,6 +505,8 @@ class ToolRegistry:
         Raises:
             ToolExecutionError: If tool not found.
         """
+        if not (name is not None):
+            raise ValueError("name must be provided")
         if not (name is not None):
             raise ValueError("name must be provided")
         tool = self.get_tool(name)

@@ -112,7 +112,7 @@ def _lookup_api_key_by_prefix(api_key: str, db: Session) -> APIKey:
             .all()
         )
     except (RuntimeError, ValueError, OSError):
-        # Fallback: prefix index lookup is unavailable in the current environment.
+        # Fallback: key_prefix column not yet migrated (schema pending)
         active_keys = db.query(APIKey).filter(APIKey.is_active).all()
 
     if not active_keys:

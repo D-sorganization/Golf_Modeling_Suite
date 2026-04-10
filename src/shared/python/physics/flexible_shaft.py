@@ -358,6 +358,8 @@ class RigidShaftModel(ShaftModel):
         """Initialize with shaft properties."""
         if not (properties is not None):
             raise ValueError("properties must be provided")
+        if not (properties is not None):
+            raise ValueError("properties must be provided")
         self.properties = properties
         self.n_stations = len(properties.station_positions)
 
@@ -381,6 +383,8 @@ class RigidShaftModel(ShaftModel):
         """Return unchanged state."""
         if not (dt is not None):
             raise ValueError("dt must be provided")
+        if not (dt is not None):
+            raise ValueError("dt must be provided")
         return self.get_state()
 
 
@@ -399,6 +403,8 @@ class ModalShaftModel(ShaftModel):
         """
         if not (n_modes is not None):
             raise ValueError("n_modes must be provided")
+        if not (n_modes is not None):
+            raise ValueError("n_modes must be provided")
         self.n_modes = n_modes
         self.properties: ShaftProperties | None = None
         self.modes: list[ShaftMode] = []
@@ -412,6 +418,8 @@ class ModalShaftModel(ShaftModel):
 
         Uses approximate analytical mode shapes for cantilevered beam.
         """
+        if not (properties is not None):
+            raise ValueError("properties must be provided")
         if not (properties is not None):
             raise ValueError("properties must be provided")
         self.properties = properties
@@ -492,6 +500,8 @@ class ModalShaftModel(ShaftModel):
         """Apply modal forces from physical load."""
         if not (position is not None):
             raise ValueError("position must be provided")
+        if not (position is not None):
+            raise ValueError("position must be provided")
         if not self.modes or self.properties is None:
             return
 
@@ -507,13 +517,15 @@ class ModalShaftModel(ShaftModel):
             # Modal force = physical force projected onto mode
             # (simplified: only using first component of force)
             modal_force = phi_at_load * np.linalg.norm(force)
-            # ISSUE #2166: Scale factor needs proper modal mass derivation.
+            # Scale factor needs proper modal mass derivation (see issue #2166).
             # Current 1e-6 is an ad-hoc value that produces plausible
             # deflections but lacks rigorous justification.
             self.modal_coords[i] += modal_force * 1e-6
 
     def step(self, dt: float) -> ShaftState:
         """Advance modal coordinates by dt."""
+        if not (dt is not None):
+            raise ValueError("dt must be provided")
         if not (dt is not None):
             raise ValueError("dt must be provided")
         self.time += dt
@@ -554,6 +566,8 @@ class FiniteElementShaftModel(ShaftModel):
         """
         if not (n_elements is not None):
             raise ValueError("n_elements must be provided")
+        if not (n_elements is not None):
+            raise ValueError("n_elements must be provided")
         self.n_elements = n_elements
         self.n_nodes = n_elements + 1
         self.n_dof = 2 * self.n_nodes  # 2 DOF per node (deflection, rotation)
@@ -586,6 +600,8 @@ class FiniteElementShaftModel(ShaftModel):
         Args:
             properties: Shaft properties
         """
+        if not (properties is not None):
+            raise ValueError("properties must be provided")
         if not (properties is not None):
             raise ValueError("properties must be provided")
         self.properties = properties
@@ -647,6 +663,8 @@ class FiniteElementShaftModel(ShaftModel):
         """
         if not (element is not None):
             raise ValueError("element must be provided")
+        if not (element is not None):
+            raise ValueError("element must be provided")
         EI = element.EI
         L = element.length
         L2 = L * L
@@ -681,6 +699,8 @@ class FiniteElementShaftModel(ShaftModel):
         Returns:
             4x4 mass matrix
         """
+        if not (element is not None):
+            raise ValueError("element must be provided")
         if not (element is not None):
             raise ValueError("element must be provided")
         mu = element.mass_per_length
@@ -798,6 +818,8 @@ class FiniteElementShaftModel(ShaftModel):
         """
         if not (position is not None):
             raise ValueError("position must be provided")
+        if not (position is not None):
+            raise ValueError("position must be provided")
         if self.properties is None:
             return
 
@@ -832,6 +854,8 @@ class FiniteElementShaftModel(ShaftModel):
         Returns:
             Updated shaft state
         """
+        if not (dt is not None):
+            raise ValueError("dt must be provided")
         if not (dt is not None):
             raise ValueError("dt must be provided")
         self.time += dt
@@ -897,6 +921,8 @@ class FiniteElementShaftModel(ShaftModel):
         """
         if not (n_modes is not None):
             raise ValueError("n_modes must be provided")
+        if not (n_modes is not None):
+            raise ValueError("n_modes must be provided")
         from scipy.linalg import eigh
 
         # Solve generalized eigenvalue problem
@@ -925,6 +951,8 @@ class FiniteElementShaftModel(ShaftModel):
             Static equilibrium state
         """
         # Save current state
+        if not (load_position is not None):
+            raise ValueError("load_position must be provided")
         if not (load_position is not None):
             raise ValueError("load_position must be provided")
         u_saved = self.u.copy()
@@ -1011,6 +1039,8 @@ def create_shaft_model(
     Returns:
         Initialized shaft model
     """
+    if not (model_type is not None):
+        raise ValueError("model_type must be provided")
     if not (model_type is not None):
         raise ValueError("model_type must be provided")
     if properties is None:

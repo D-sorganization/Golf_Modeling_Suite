@@ -46,6 +46,8 @@ def plot_joint_positions(
     """
     if not (recorder is not None):
         raise ValueError("recorder must be provided")
+    if not (recorder is not None):
+        raise ValueError("recorder must be provided")
     fig, ax, config = resolve_figure(ax, config)
 
     times, positions = recorder.get_time_series("joint_positions")
@@ -95,6 +97,8 @@ def plot_joint_velocities(
     Returns:
         Tuple of (figure, axes)
     """
+    if not (recorder is not None):
+        raise ValueError("recorder must be provided")
     if not (recorder is not None):
         raise ValueError("recorder must be provided")
     fig, ax, config = resolve_figure(ax, config)
@@ -148,6 +152,8 @@ def plot_joint_accelerations(
     Returns:
         Tuple of (figure, axes)
     """
+    if not (recorder is not None):
+        raise ValueError("recorder must be provided")
     if not (recorder is not None):
         raise ValueError("recorder must be provided")
     fig, ax, config = resolve_figure(ax, config)
@@ -211,6 +217,8 @@ def plot_club_head_speed(
     """
     if not (recorder is not None):
         raise ValueError("recorder must be provided")
+    if not (recorder is not None):
+        raise ValueError("recorder must be provided")
     fig, ax, config = resolve_figure(ax, config)
 
     times, speeds = recorder.get_time_series("club_head_speed")
@@ -270,6 +278,8 @@ def plot_com_trajectory(
     Returns:
         Tuple of (figure, axes)
     """
+    if not (recorder is not None):
+        raise ValueError("recorder must be provided")
     if not (recorder is not None):
         raise ValueError("recorder must be provided")
     config = config or PlotConfig()
@@ -361,6 +371,8 @@ def plot_phase_diagram(
     Returns:
         Tuple of (figure, axes)
     """
+    if not (recorder is not None):
+        raise ValueError("recorder must be provided")
     if not (recorder is not None):
         raise ValueError("recorder must be provided")
     fig, ax, config = resolve_figure(ax, config)

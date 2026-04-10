@@ -331,7 +331,9 @@ def _extract_club_config(club_type: str) -> dict[str, Any]:
 
 def _generate_grip_xml(
     club_type: str, num_segments: int, config: dict[str, Any]
-) -> list[str]:  # noqa: E501
+) -> list[str]:
+    if not (club_type is not None):
+        raise ValueError("club_type must be provided")
     if not (club_type is not None):
         raise ValueError("club_type must be provided")
     grip_length = config["grip_length"]
@@ -359,6 +361,8 @@ def _generate_shaft_segments_xml(
     seg_length: float,
     seg_mass: float,
 ) -> list[str]:
+    if not (num_segments is not None):
+        raise ValueError("num_segments must be provided")
     if not (num_segments is not None):
         raise ValueError("num_segments must be provided")
     grip_length = config["grip_length"]
@@ -410,6 +414,8 @@ def _generate_clubhead_xml(
     config: dict[str, Any],
     seg_length: float,
 ) -> list[str]:
+    if not (num_segments is not None):
+        raise ValueError("num_segments must be provided")
     if not (num_segments is not None):
         raise ValueError("num_segments must be provided")
     head_mass = config["head_mass"]

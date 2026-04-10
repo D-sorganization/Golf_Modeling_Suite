@@ -40,6 +40,8 @@ class BasicStatsMixin:
         """
         if not (data is not None):
             raise ValueError("data must be provided")
+        if not (data is not None):
+            raise ValueError("data must be provided")
         require(len(data) > 0, "data must be non-empty")
 
         min_idx = np.argmin(data)
@@ -83,6 +85,8 @@ class BasicStatsMixin:
         Returns:
             List of PeakInfo objects
         """
+        if not (data is not None):
+            raise ValueError("data must be provided")
         if not (data is not None):
             raise ValueError("data must be provided")
         peaks, properties = find_peaks(

@@ -50,6 +50,8 @@ def apply_saturation(
     """
     if not (signal is not None):
         raise ValueError("signal must be provided")
+    if not (signal is not None):
+        raise ValueError("signal must be provided")
     require(
         lower < upper,
         f"lower must be less than upper, got lower={lower}, upper={upper}",
@@ -85,6 +87,8 @@ def _apply_saturation_values(
     Returns:
         Saturated values array.
     """
+    if not (values is not None):
+        raise ValueError("values must be provided")
     if not (values is not None):
         raise ValueError("values must be provided")
     if mode == SaturationMode.HARD:
@@ -145,6 +149,8 @@ def _soft_clip(x: np.ndarray, k: float = 1.0) -> np.ndarray:
     """
     if not (x is not None):
         raise ValueError("x must be provided")
+    if not (x is not None):
+        raise ValueError("x must be provided")
     result = np.zeros_like(x)
     threshold = 1.0 / k
 
@@ -185,6 +191,8 @@ def _cubic_clip(x: np.ndarray, k: float = 1.0) -> np.ndarray:
     """
     if not (x is not None):
         raise ValueError("x must be provided")
+    if not (x is not None):
+        raise ValueError("x must be provided")
     x_scaled = x * k
     mask = np.abs(x_scaled) < 1
 
@@ -208,6 +216,8 @@ def _exponential_clip(x: np.ndarray, k: float = 1.0) -> np.ndarray:
         Exponentially clipped values.
     """
     # f(x) = sign(x) * (1 - exp(-k*|x|)) / (1 - exp(-k))
+    if not (x is not None):
+        raise ValueError("x must be provided")
     if not (x is not None):
         raise ValueError("x must be provided")
     x_abs = np.abs(x)
@@ -236,6 +246,8 @@ def apply_rate_limiter(
     Raises:
         PreconditionError: If max_rate <= 0.
     """
+    if not (signal is not None):
+        raise ValueError("signal must be provided")
     if not (signal is not None):
         raise ValueError("signal must be provided")
     require(max_rate > 0, f"max_rate must be positive, got {max_rate}")
@@ -300,6 +312,8 @@ def apply_deadband(
     """
     if not (signal is not None):
         raise ValueError("signal must be provided")
+    if not (signal is not None):
+        raise ValueError("signal must be provided")
     require(threshold >= 0.0, f"threshold must be non-negative, got {threshold}")
     values = signal.values.copy()
     offset = values - center
@@ -357,6 +371,8 @@ def apply_hysteresis(
     Returns:
         Signal with hysteresis applied.
     """
+    if not (signal is not None):
+        raise ValueError("signal must be provided")
     if not (signal is not None):
         raise ValueError("signal must be provided")
     values = signal.values
@@ -482,6 +498,8 @@ def create_saturation_function(
 
     if not (lower is not None):
         raise ValueError("lower must be provided")
+    if not (lower is not None):
+        raise ValueError("lower must be provided")
 
     def saturate(values: np.ndarray) -> np.ndarray:
         return _apply_saturation_values(values, lower, upper, mode, smoothness)
@@ -507,6 +525,8 @@ def visualize_saturation_curves(
         Dictionary mapping mode name to (input, output) arrays.
     """
     # Generate input values that go beyond limits
+    if not (lower is not None):
+        raise ValueError("lower must be provided")
     if not (lower is not None):
         raise ValueError("lower must be provided")
     margin = (upper - lower) * 0.5

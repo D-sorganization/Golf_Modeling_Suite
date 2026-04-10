@@ -67,6 +67,8 @@ def build_joint_mapping(sim: object, model: object) -> tuple[list[int], list[int
     """
     if not (sim is not None):
         raise ValueError("sim must be provided")
+    if not (sim is not None):
+        raise ValueError("sim must be provided")
     handles: list[int] = []
     pin_indices: list[int] = []
 
@@ -119,6 +121,8 @@ def read_joint_positions(sim: object, handles: list[int]) -> npt.NDArray[np.floa
     Returns:
         Array of joint positions in radians
     """
+    if not (sim is not None):
+        raise ValueError("sim must be provided")
     if not (sim is not None):
         raise ValueError("sim must be provided")
     q_joint: list[float] = []

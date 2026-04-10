@@ -300,6 +300,8 @@ class ControlFeaturesRegistry:
         """
         if not (engine is not None):
             raise ValueError("engine must be provided")
+        if not (engine is not None):
+            raise ValueError("engine must be provided")
         self.engine = engine
         self._features = self._check_availability()
 
@@ -317,6 +319,8 @@ class ControlFeaturesRegistry:
         Returns:
             List of feature descriptors as dictionaries.
         """
+        if not (available_only is not None):
+            raise ValueError("available_only must be provided")
         if not (available_only is not None):
             raise ValueError("available_only must be provided")
         features = self._features
@@ -355,6 +359,8 @@ class ControlFeaturesRegistry:
         """
         if not (name is not None):
             raise ValueError("name must be provided")
+        if not (name is not None):
+            raise ValueError("name must be provided")
         for f in self._features:
             if f.name == name:
                 return {
@@ -379,6 +385,8 @@ class ControlFeaturesRegistry:
         Returns:
             True if the feature is available and callable.
         """
+        if not (name is not None):
+            raise ValueError("name must be provided")
         if not (name is not None):
             raise ValueError("name must be provided")
         for f in self._features:

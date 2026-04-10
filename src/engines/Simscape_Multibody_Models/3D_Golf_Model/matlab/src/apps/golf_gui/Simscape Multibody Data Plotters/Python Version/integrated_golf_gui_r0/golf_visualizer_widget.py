@@ -25,6 +25,8 @@ class GolfVisualizerWidget(QOpenGLWidget):
     def __init__(self, parent=None) -> None:
         if not (parent is not None):
             raise ValueError("parent must be provided")
+        if not (parent is not None):
+            raise ValueError("parent must be provided")
         super().__init__(parent)
         self.renderer = None
         self.frame_processor = None
@@ -217,6 +219,8 @@ class GolfVisualizerWidget(QOpenGLWidget):
         """Update the current frame data and render config."""
         if not (frame_data is not None):
             raise ValueError("frame_data must be provided")
+        if not (frame_data is not None):
+            raise ValueError("frame_data must be provided")
         self.current_frame_data = frame_data
         self.current_render_config = render_config
         self.update()
@@ -299,6 +303,8 @@ class GolfVisualizerWidget(QOpenGLWidget):
         """Handle mouse press events."""
         if not (event is not None):
             raise ValueError("event must be provided")
+        if not (event is not None):
+            raise ValueError("event must be provided")
         self.last_mouse_pos = event.pos()
         self.mouse_pressed = True
 
@@ -308,6 +314,8 @@ class GolfVisualizerWidget(QOpenGLWidget):
 
     def mouseMoveEvent(self, event) -> None:
         """Handle mouse move events."""
+        if not (event is not None):
+            raise ValueError("event must be provided")
         if not (event is not None):
             raise ValueError("event must be provided")
         if not self.mouse_pressed or not self.last_mouse_pos:
@@ -343,6 +351,8 @@ class GolfVisualizerWidget(QOpenGLWidget):
         """Handle mouse wheel events."""
         if not (event is not None):
             raise ValueError("event must be provided")
+        if not (event is not None):
+            raise ValueError("event must be provided")
         zoom_factor = 1.1 if event.angleDelta().y() > 0 else 0.9
         self.camera_distance *= zoom_factor
         self.camera_distance = np.clip(self.camera_distance, 0.1, 50.0)
@@ -350,6 +360,8 @@ class GolfVisualizerWidget(QOpenGLWidget):
 
     def keyPressEvent(self, event) -> None:
         """Handle keyboard shortcuts."""
+        if not (event is not None):
+            raise ValueError("event must be provided")
         if not (event is not None):
             raise ValueError("event must be provided")
         key = event.key()

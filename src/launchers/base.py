@@ -66,6 +66,8 @@ class LaunchItem:
         """
         if not (name is not None):
             raise ValueError("name must be provided")
+        if not (name is not None):
+            raise ValueError("name must be provided")
         self.name = name
         self.description = description
         self.path = path
@@ -172,6 +174,8 @@ class BaseLauncher(QMainWindow):
         """
         if not (file_path is not None):
             raise ValueError("file_path must be provided")
+        if not (file_path is not None):
+            raise ValueError("file_path must be provided")
         if isinstance(file_path, str):
             file_path = Path(file_path)
 
@@ -206,6 +210,8 @@ class BaseLauncher(QMainWindow):
         Returns:
             QFrame containing the card UI
         """
+        if not (item is not None):
+            raise ValueError("item must be provided")
         if not (item is not None):
             raise ValueError("item must be provided")
         card = QFrame()
@@ -267,6 +273,8 @@ class BaseLauncher(QMainWindow):
         """
         if not (items is not None):
             raise ValueError("items must be provided")
+        if not (items is not None):
+            raise ValueError("items must be provided")
         if columns is None:
             columns = self.GRID_COLUMNS
 
@@ -291,6 +299,8 @@ class BaseLauncher(QMainWindow):
         Returns:
             QVBoxLayout containing header widgets
         """
+        if not (title is not None):
+            raise ValueError("title must be provided")
         if not (title is not None):
             raise ValueError("title must be provided")
         layout = QVBoxLayout()

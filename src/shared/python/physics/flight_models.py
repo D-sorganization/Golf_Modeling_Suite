@@ -82,6 +82,8 @@ class UnifiedLaunchConditions:
         """Create launch conditions from imperial units."""
         if not (ball_speed_mph is not None):
             raise ValueError("ball_speed_mph must be provided")
+        if not (ball_speed_mph is not None):
+            raise ValueError("ball_speed_mph must be provided")
         from src.shared.python.core.physics_constants import MPH_TO_MPS
 
         return cls(
@@ -186,6 +188,8 @@ class BallFlightModel(ABC):
         """Standardized metrics computation (Consolidated for DRY)."""
         if not (trajectory is not None):
             raise ValueError("trajectory must be provided")
+        if not (trajectory is not None):
+            raise ValueError("trajectory must be provided")
         if not trajectory:
             return FlightResult([], self.name)
 
@@ -215,6 +219,8 @@ class BallFlightModel(ABC):
         dt: float,
     ) -> FlightResult:
         """Unified ODE integration loop (Consolidated for DRY)."""
+        if not (launch is not None):
+            raise ValueError("launch must be provided")
         if not (launch is not None):
             raise ValueError("launch must be provided")
         v0 = launch.get_initial_velocity()
@@ -286,6 +292,8 @@ class WaterlooPennerModel(BallFlightModel):
         """Simulate ball flight using the Waterloo/Penner quadratic coefficient model."""
         if not (launch is not None):
             raise ValueError("launch must be provided")
+        if not (launch is not None):
+            raise ValueError("launch must be provided")
         cd0, cd1, cd2, cl0, cl1, cl2, cl_max = self.params
         omega_v = launch.get_spin_vector()
         omega_m = np.linalg.norm(omega_v)
@@ -294,6 +302,8 @@ class WaterlooPennerModel(BallFlightModel):
 
         def derivatives(t: float, y: np.ndarray) -> np.ndarray:
             """Compute state derivatives using quadratic Cd/Cl aerodynamics."""
+            if not (t is not None):
+                raise ValueError("t must be provided")
             if not (t is not None):
                 raise ValueError("t must be provided")
             v_val = cast(np.ndarray, y[3:])
@@ -361,6 +371,8 @@ class MacDonaldHanzelyModel(BallFlightModel):
         """Simulate ball flight using the MacDonald-Hanzely spin-decay model."""
         if not (launch is not None):
             raise ValueError("launch must be provided")
+        if not (launch is not None):
+            raise ValueError("launch must be provided")
         omega_0 = launch.spin_rate * 2 * math.pi / 60
         spin_axis = launch.get_spin_vector()
         if np.linalg.norm(spin_axis) > 0:
@@ -371,6 +383,8 @@ class MacDonaldHanzelyModel(BallFlightModel):
 
         def derivatives(t: float, y: np.ndarray) -> np.ndarray:
             """Compute state derivatives with exponential spin decay."""
+            if not (t is not None):
+                raise ValueError("t must be provided")
             if not (t is not None):
                 raise ValueError("t must be provided")
             v_val = cast(np.ndarray, y[3:])
@@ -452,6 +466,8 @@ class ConstantCoefficientModel(BallFlightModel):
         """Simulate ball flight using constant drag and lift coefficients."""
         if not (launch is not None):
             raise ValueError("launch must be provided")
+        if not (launch is not None):
+            raise ValueError("launch must be provided")
         omega_0 = launch.spin_rate * 2 * math.pi / 60
         spin_axis = launch.get_spin_vector()
         if np.linalg.norm(spin_axis) > 0:
@@ -462,6 +478,8 @@ class ConstantCoefficientModel(BallFlightModel):
 
         def derivatives(t: float, y: np.ndarray) -> np.ndarray:
             """Compute state derivatives with constant coefficients and spin decay."""
+            if not (t is not None):
+                raise ValueError("t must be provided")
             if not (t is not None):
                 raise ValueError("t must be provided")
             v_val = cast(np.ndarray, y[3:])
@@ -503,6 +521,8 @@ class FlightModelRegistry:
     @classmethod
     def get_model(cls, model_type: FlightModelType) -> BallFlightModel:
         """Return the flight model instance for the given model type."""
+        if not (model_type is not None):
+            raise ValueError("model_type must be provided")
         if not (model_type is not None):
             raise ValueError("model_type must be provided")
         if not cls._models:
@@ -586,6 +606,8 @@ def compare_models(
     launch: UnifiedLaunchConditions, models: list[BallFlightModel]
 ) -> dict[str, FlightResult]:
     """Compare multiple models for the same launch conditions."""
+    if not (launch is not None):
+        raise ValueError("launch must be provided")
     if not (launch is not None):
         raise ValueError("launch must be provided")
     results = {}

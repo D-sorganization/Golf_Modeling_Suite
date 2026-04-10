@@ -80,6 +80,8 @@ class Demonstration:
         """
         if not (idx is not None):
             raise ValueError("idx must be provided")
+        if not (idx is not None):
+            raise ValueError("idx must be provided")
         frame = {
             "timestamp": self.timestamps[idx],
             "joint_positions": self.joint_positions[idx],
@@ -100,6 +102,8 @@ class Demonstration:
         Returns:
             Subsampled demonstration.
         """
+        if not (factor is not None):
+            raise ValueError("factor must be provided")
         if not (factor is not None):
             raise ValueError("factor must be provided")
         indices = np.arange(0, len(self.timestamps), factor)
@@ -243,6 +247,8 @@ class DemonstrationDataset:
         """
         if not (task_id is not None):
             raise ValueError("task_id must be provided")
+        if not (task_id is not None):
+            raise ValueError("task_id must be provided")
         filtered = [d for d in self.demonstrations if d.task_id == task_id]
         return DemonstrationDataset(filtered)
 
@@ -325,6 +331,8 @@ class DemonstrationDataset:
         """
         if not (noise_std is not None):
             raise ValueError("noise_std must be provided")
+        if not (noise_std is not None):
+            raise ValueError("noise_std must be provided")
         if rng is None:
             rng = np.random.default_rng()
 
@@ -369,6 +377,8 @@ class DemonstrationDataset:
         """
         if not (path is not None):
             raise ValueError("path must be provided")
+        if not (path is not None):
+            raise ValueError("path must be provided")
         path = Path(path)
         data = {
             "version": "1.0",
@@ -388,6 +398,8 @@ class DemonstrationDataset:
         Returns:
             Loaded dataset.
         """
+        if not (path is not None):
+            raise ValueError("path must be provided")
         if not (path is not None):
             raise ValueError("path must be provided")
         path = Path(path)
@@ -411,6 +423,8 @@ class DemonstrationDataset:
         Returns:
             Sampled dataset.
         """
+        if not (n is not None):
+            raise ValueError("n must be provided")
         if not (n is not None):
             raise ValueError("n must be provided")
         if rng is None:

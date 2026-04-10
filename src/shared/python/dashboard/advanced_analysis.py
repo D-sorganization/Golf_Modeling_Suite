@@ -65,6 +65,8 @@ class SpectrogramTab(QtWidgets.QWidget):
     ) -> None:
         if not (recorder is not None):
             raise ValueError("recorder must be provided")
+        if not (recorder is not None):
+            raise ValueError("recorder must be provided")
         super().__init__()
         self.recorder = recorder
         self.current_key = initial_key
@@ -166,6 +168,8 @@ class WaveletTab(QtWidgets.QWidget):
     def __init__(
         self, recorder: RecorderInterface, initial_key: str = "joint_velocities"
     ) -> None:
+        if not (recorder is not None):
+            raise ValueError("recorder must be provided")
         if not (recorder is not None):
             raise ValueError("recorder must be provided")
         super().__init__()
@@ -270,6 +274,8 @@ class SwingPlaneTab(QtWidgets.QWidget):
     def __init__(self, recorder: RecorderInterface) -> None:
         if not (recorder is not None):
             raise ValueError("recorder must be provided")
+        if not (recorder is not None):
+            raise ValueError("recorder must be provided")
         super().__init__()
         self.recorder = recorder
         self.analyzer = SwingPlaneAnalyzer()
@@ -372,6 +378,8 @@ class CorrelationTab(QtWidgets.QWidget):
     """Tab for Correlation Heatmap of scalar metrics."""
 
     def __init__(self, recorder: RecorderInterface) -> None:
+        if not (recorder is not None):
+            raise ValueError("recorder must be provided")
         if not (recorder is not None):
             raise ValueError("recorder must be provided")
         super().__init__()
@@ -479,6 +487,8 @@ class PhasePlaneTab(QtWidgets.QWidget):
     def __init__(self, recorder: RecorderInterface) -> None:
         if not (recorder is not None):
             raise ValueError("recorder must be provided")
+        if not (recorder is not None):
+            raise ValueError("recorder must be provided")
         super().__init__()
         self.recorder = recorder
 
@@ -571,6 +581,8 @@ class CoherenceTab(QtWidgets.QWidget):
         key1: str = "joint_positions",
         key2: str = "joint_torques",
     ) -> None:
+        if not (recorder is not None):
+            raise ValueError("recorder must be provided")
         if not (recorder is not None):
             raise ValueError("recorder must be provided")
         super().__init__()
@@ -692,6 +704,8 @@ class AdvancedAnalysisDialog(QtWidgets.QDialog):
         current_key: str = "joint_positions",
         comparison_key: str | None = None,
     ) -> None:
+        if not (recorder is not None):
+            raise ValueError("recorder must be provided")
         if not (recorder is not None):
             raise ValueError("recorder must be provided")
         super().__init__(parent)

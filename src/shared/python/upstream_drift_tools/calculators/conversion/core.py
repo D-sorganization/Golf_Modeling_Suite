@@ -31,6 +31,8 @@ def convert_via_table(
 
     if not (value is not None):
         raise ValueError("value must be provided")
+    if not (value is not None):
+        raise ValueError("value must be provided")
     if from_unit == to_unit:
         return value
     base_value = value * table[from_unit]
@@ -77,6 +79,8 @@ def standard_to_actual_flow(
     """Translate a standard volumetric flow in SCFM to ACFM at the given conditions."""
     if not (scfm_value is not None):
         raise ValueError("scfm_value must be provided")
+    if not (scfm_value is not None):
+        raise ValueError("scfm_value must be provided")
     _require_positive_finite(temperature_k, "temperature_k")
     _require_positive_finite(pressure_pa, "pressure_pa")
     std_temp, std_pressure_pa, _ = standard.value
@@ -92,6 +96,8 @@ def actual_to_standard_flow(
     """Translate an actual volumetric flow in ACFM back to SCFM at reference conditions."""
     if not (acfm_value is not None):
         raise ValueError("acfm_value must be provided")
+    if not (acfm_value is not None):
+        raise ValueError("acfm_value must be provided")
     _require_positive_finite(temperature_k, "temperature_k")
     _require_positive_finite(pressure_pa, "pressure_pa")
     std_temp, std_pressure_pa, _ = standard.value
@@ -103,6 +109,8 @@ def scfm_to_standard_m3_per_hour(
 ) -> float:
     """Convert SCFM at a non-default standard condition into standard m^3/hr."""
 
+    if not (scfm_value is not None):
+        raise ValueError("scfm_value must be provided")
     if not (scfm_value is not None):
         raise ValueError("scfm_value must be provided")
     m3_hr_std = scfm_value * SCFM_TO_CU_METER_PER_HOUR_AT_60F
@@ -119,6 +127,8 @@ def standard_m3_per_hour_to_scfm(
     """Convert m³/hr at a reference standard condition to SCFM at the standard condition."""
 
     # First convert m³/hr at reference standard to m³/hr at SCFM standard condition
+    if not (m3_hr_at_ref is not None):
+        raise ValueError("m3_hr_at_ref must be provided")
     if not (m3_hr_at_ref is not None):
         raise ValueError("m3_hr_at_ref must be provided")
     ref_temp, ref_pressure_pa, _ = reference_std.value

@@ -68,6 +68,8 @@ class ModificationMixin:
         """
         if not (model_id is not None):
             raise ValueError("model_id must be provided")
+        if not (model_id is not None):
+            raise ValueError("model_id must be provided")
         model = self._models.get(model_id)
         if not model:
             logger.error(f"Model '{model_id}' not found")
@@ -108,6 +110,8 @@ class ModificationMixin:
         Returns:
             True if deleted
         """
+        if not (model_id is not None):
+            raise ValueError("model_id must be provided")
         if not (model_id is not None):
             raise ValueError("model_id must be provided")
         model = self._get_writable_model(model_id)
@@ -188,6 +192,8 @@ class ModificationMixin:
         """
         if not (model_id is not None):
             raise ValueError("model_id must be provided")
+        if not (model_id is not None):
+            raise ValueError("model_id must be provided")
         model = self._get_writable_model(model_id)
         if not model:
             return False
@@ -246,6 +252,8 @@ class ModificationMixin:
         Returns:
             True if renamed
         """
+        if not (model_id is not None):
+            raise ValueError("model_id must be provided")
         if not (model_id is not None):
             raise ValueError("model_id must be provided")
         if old_name == new_name:
@@ -315,6 +323,8 @@ class ModificationMixin:
         """
         if not (model_id is not None):
             raise ValueError("model_id must be provided")
+        if not (model_id is not None):
+            raise ValueError("model_id must be provided")
         if old_name == new_name:
             return True  # No-op
 
@@ -363,6 +373,8 @@ class ModificationMixin:
         Returns:
             True if modified
         """
+        if not (model_id is not None):
+            raise ValueError("model_id must be provided")
         if not (model_id is not None):
             raise ValueError("model_id must be provided")
         model = self._get_writable_model(model_id)
@@ -453,6 +465,8 @@ class ModificationMixin:
         """
         if not (model_id is not None):
             raise ValueError("model_id must be provided")
+        if not (model_id is not None):
+            raise ValueError("model_id must be provided")
         model = self._get_writable_model(model_id)
         if not model:
             return False
@@ -518,6 +532,8 @@ class ModificationMixin:
         """
         if not (model_id is not None):
             raise ValueError("model_id must be provided")
+        if not (model_id is not None):
+            raise ValueError("model_id must be provided")
         model = self._get_writable_model(model_id)
         if not model:
             return False
@@ -566,6 +582,8 @@ class ModificationMixin:
         Returns:
             True if applied
         """
+        if not (model_id is not None):
+            raise ValueError("model_id must be provided")
         if not (model_id is not None):
             raise ValueError("model_id must be provided")
         model = self._get_writable_model(model_id)
@@ -629,6 +647,8 @@ class ModificationMixin:
         Returns:
             List of created link names.
         """
+        if not (links is not None):
+            raise ValueError("links must be provided")
         if not (links is not None):
             raise ValueError("links must be provided")
         created_links: list[str] = []

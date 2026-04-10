@@ -84,6 +84,8 @@ class PinocchioSwingPlaneAnalyzer:
         # Convert joint angles to 3D club head positions
         if not (joint_angles is not None):
             raise ValueError("joint_angles must be provided")
+        if not (joint_angles is not None):
+            raise ValueError("joint_angles must be provided")
         positions = self._compute_club_head_positions(
             joint_angles, link_lengths, plane_inclination_deg
         )
@@ -106,6 +108,8 @@ class PinocchioSwingPlaneAnalyzer:
         Returns:
             Club head positions (N, 3) in world coordinates
         """
+        if not (joint_angles is not None):
+            raise ValueError("joint_angles must be provided")
         if not (joint_angles is not None):
             raise ValueError("joint_angles must be provided")
         l1, l2 = link_lengths
@@ -156,6 +160,8 @@ class PinocchioSwingPlaneAnalyzer:
             Dictionary with plane mesh data for visualization
         """
         # Create a mesh grid for the plane
+        if not (metrics is not None):
+            raise ValueError("metrics must be provided")
         if not (metrics is not None):
             raise ValueError("metrics must be provided")
         u = np.linspace(-extent, extent, 20)

@@ -267,6 +267,8 @@ class URDFBuilder:
         # Sort segments to ensure parents are processed before children
         if not (robot is not None):
             raise ValueError("robot must be provided")
+        if not (robot is not None):
+            raise ValueError("robot must be provided")
         sorted_segments = self._sort_segments_by_hierarchy()
 
         for segment in sorted_segments:
@@ -313,6 +315,8 @@ class URDFBuilder:
         """
         if not (robot is not None):
             raise ValueError("robot must be provided")
+        if not (robot is not None):
+            raise ValueError("robot must be provided")
         link = ET.SubElement(robot, "link", name=segment["name"])
 
         # Add visual
@@ -331,6 +335,8 @@ class URDFBuilder:
             link: Link element.
             segment: Segment data.
         """
+        if not (link is not None):
+            raise ValueError("link must be provided")
         if not (link is not None):
             raise ValueError("link must be provided")
         visual = ET.SubElement(link, "visual")
@@ -356,6 +362,8 @@ class URDFBuilder:
         """
         if not (link is not None):
             raise ValueError("link must be provided")
+        if not (link is not None):
+            raise ValueError("link must be provided")
         collision = ET.SubElement(link, "collision")
 
         # Add origin
@@ -372,6 +380,8 @@ class URDFBuilder:
             link: Link element.
             segment: Segment data.
         """
+        if not (link is not None):
+            raise ValueError("link must be provided")
         if not (link is not None):
             raise ValueError("link must be provided")
         inertial = ET.SubElement(link, "inertial")
@@ -405,6 +415,8 @@ class URDFBuilder:
         """
         if not (parent is not None):
             raise ValueError("parent must be provided")
+        if not (parent is not None):
+            raise ValueError("parent must be provided")
         position = geometry.get("position", {})
         orientation = geometry.get("orientation", {})
 
@@ -427,6 +439,8 @@ class URDFBuilder:
             geometry: Geometry element.
             geom_data: Geometry data.
         """
+        if not (geometry is not None):
+            raise ValueError("geometry must be provided")
         if not (geometry is not None):
             raise ValueError("geometry must be provided")
         shape = geom_data.get("shape", "Box").lower()
@@ -462,6 +476,8 @@ class URDFBuilder:
             robot: Root robot element.
             segment: Segment data.
         """
+        if not (robot is not None):
+            raise ValueError("robot must be provided")
         if not (robot is not None):
             raise ValueError("robot must be provided")
         joint_name = f"{segment['parent']}_to_{segment['name']}"
@@ -515,6 +531,8 @@ class URDFBuilder:
         """
         if not (name is not None):
             raise ValueError("name must be provided")
+        if not (name is not None):
+            raise ValueError("name must be provided")
         self.robot_name = name
         logger.info(f"Robot name set to: {name}")
 
@@ -555,6 +573,8 @@ class URDFBuilder:
             """
             if not (segment_name is not None):
                 raise ValueError("segment_name must be provided")
+            if not (segment_name is not None):
+                raise ValueError("segment_name must be provided")
             if segment_name in visited:
                 return True
 
@@ -593,6 +613,8 @@ class URDFBuilder:
         Args:
             handedness: Handedness.LEFT or Handedness.RIGHT
         """
+        if not (handedness is not None):
+            raise ValueError("handedness must be provided")
         if not (handedness is not None):
             raise ValueError("handedness must be provided")
         self.handedness = handedness
@@ -669,6 +691,8 @@ class URDFBuilder:
         Returns:
             URDF XML string configured for the target handedness.
         """
+        if not (target_handedness is not None):
+            raise ValueError("target_handedness must be provided")
         if not (target_handedness is not None):
             raise ValueError("target_handedness must be provided")
         if target_handedness == self.handedness:

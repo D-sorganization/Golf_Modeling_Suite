@@ -67,6 +67,8 @@ class JointInfo:
         """Create JointInfo from XML element."""
         if not (element is not None):
             raise ValueError("element must be provided")
+        if not (element is not None):
+            raise ValueError("element must be provided")
         name = element.get("name", "unnamed")
         joint_type = element.get("type", "fixed")
 
@@ -161,6 +163,8 @@ class JointSliderWidget(QWidget):
         """Initialize the joint slider widget."""
         if not (joint is not None):
             raise ValueError("joint must be provided")
+        if not (joint is not None):
+            raise ValueError("joint must be provided")
         super().__init__(parent)
         self.joint = joint
         self._setup_ui()
@@ -231,6 +235,8 @@ class JointSliderWidget(QWidget):
         """Handle slider value change."""
         if not (value is not None):
             raise ValueError("value must be provided")
+        if not (value is not None):
+            raise ValueError("value must be provided")
         float_value = value / self.scale
         self.spinbox.blockSignals(True)
         self.spinbox.setValue(float_value)
@@ -240,6 +246,8 @@ class JointSliderWidget(QWidget):
 
     def _on_spinbox_changed(self, value: float) -> None:
         """Handle spinbox value change."""
+        if not (value is not None):
+            raise ValueError("value must be provided")
         if not (value is not None):
             raise ValueError("value must be provided")
         self.slider.blockSignals(True)
@@ -297,6 +305,8 @@ class JointTableWidget(QWidget):
 
     def load_joints(self, joints: dict[str, JointInfo]) -> None:
         """Load joints into the table."""
+        if not (joints is not None):
+            raise ValueError("joints must be provided")
         if not (joints is not None):
             raise ValueError("joints must be provided")
         self.joints = joints
@@ -360,6 +370,8 @@ class JointEditorPanel(QWidget):
         Returns:
             Configured QDoubleSpinBox.
         """
+        if not (min_val is not None):
+            raise ValueError("min_val must be provided")
         if not (min_val is not None):
             raise ValueError("min_val must be provided")
         spin = QDoubleSpinBox()
@@ -474,6 +486,8 @@ class JointEditorPanel(QWidget):
         """Load joints into the combo box."""
         if not (joints is not None):
             raise ValueError("joints must be provided")
+        if not (joints is not None):
+            raise ValueError("joints must be provided")
         self.joint_combo.clear()
         self.joint_combo.addItems(joints.keys())
 
@@ -488,6 +502,8 @@ class JointEditorPanel(QWidget):
     )
     def set_joint(self, joint: JointInfo) -> None:
         """Set the joint to edit."""
+        if not (joint is not None):
+            raise ValueError("joint must be provided")
         if not (joint is not None):
             raise ValueError("joint must be provided")
         self.current_joint = joint
@@ -660,6 +676,8 @@ class JointManipulatorWidget(QWidget):
         """Load URDF content and auto-detect joints."""
         if not (content is not None):
             raise ValueError("content must be provided")
+        if not (content is not None):
+            raise ValueError("content must be provided")
         self.urdf_content = content
         self._on_auto_load()
 
@@ -725,6 +743,8 @@ class JointManipulatorWidget(QWidget):
         """Handle joint value change from slider."""
         if not (name is not None):
             raise ValueError("name must be provided")
+        if not (name is not None):
+            raise ValueError("name must be provided")
         if name in self.joints:
             self.joints[name].current_position = value
 
@@ -756,6 +776,8 @@ class JointManipulatorWidget(QWidget):
 
     def _on_joint_updated(self, name: str, new_element: ET.Element) -> None:
         """Handle joint update from editor."""
+        if not (name is not None):
+            raise ValueError("name must be provided")
         if not (name is not None):
             raise ValueError("name must be provided")
         if not self.urdf_content:

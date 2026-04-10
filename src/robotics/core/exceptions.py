@@ -31,6 +31,8 @@ class RoboticsError(Exception):
         """
         if not (message is not None):
             raise ValueError("message must be provided")
+        if not (message is not None):
+            raise ValueError("message must be provided")
         self.message = message
         self.details = details or {}
         super().__init__(self._format_message())
@@ -70,6 +72,8 @@ class ContactError(RoboticsError):
         """
         if not (message is not None):
             raise ValueError("message must be provided")
+        if not (message is not None):
+            raise ValueError("message must be provided")
         details = details or {}
         if contact_id is not None:
             details["contact_id"] = contact_id
@@ -105,6 +109,8 @@ class ControlError(RoboticsError):
             control_values: Control values that caused error.
             details: Additional context.
         """
+        if not (message is not None):
+            raise ValueError("message must be provided")
         if not (message is not None):
             raise ValueError("message must be provided")
         details = details or {}
@@ -143,6 +149,8 @@ class SolverError(RoboticsError):
             iterations: Number of iterations before failure.
             details: Additional context.
         """
+        if not (message is not None):
+            raise ValueError("message must be provided")
         if not (message is not None):
             raise ValueError("message must be provided")
         details = details or {}
@@ -184,6 +192,8 @@ class LocomotionError(RoboticsError):
         """
         if not (message is not None):
             raise ValueError("message must be provided")
+        if not (message is not None):
+            raise ValueError("message must be provided")
         details = details or {}
         if gait_phase is not None:
             details["gait_phase"] = gait_phase
@@ -218,6 +228,8 @@ class KinematicsError(RoboticsError):
             configuration: Configuration where error occurred.
             details: Additional context.
         """
+        if not (message is not None):
+            raise ValueError("message must be provided")
         if not (message is not None):
             raise ValueError("message must be provided")
         details = details or {}

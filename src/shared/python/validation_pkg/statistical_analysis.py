@@ -143,6 +143,8 @@ class StatisticalAnalyzer(
         """
         if not (times is not None):
             raise ValueError("times must be provided")
+        if not (times is not None):
+            raise ValueError("times must be provided")
         self.times = times
         self.joint_positions = joint_positions
         self.joint_velocities = joint_velocities

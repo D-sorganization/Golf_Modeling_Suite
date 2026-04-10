@@ -63,6 +63,8 @@ class OpenSimMuscleAnalyzer:
         """
         if not (model is not None):
             raise ValueError("model must be provided")
+        if not (model is not None):
+            raise ValueError("model must be provided")
         self.model = model
         self.state = state
         self.muscle_set = model.getMuscles()
@@ -187,6 +189,8 @@ class OpenSimMuscleAnalyzer:
         Args:
             activations: Dictionary mapping muscle names to desired activation [0-1]
         """
+        if not (activations is not None):
+            raise ValueError("activations must be provided")
         if not (activations is not None):
             raise ValueError("activations must be provided")
         if opensim is None:
@@ -335,6 +339,8 @@ class OpenSimGripModel:
         """
         if not (model is not None):
             raise ValueError("model must be provided")
+        if not (model is not None):
+            raise ValueError("model must be provided")
         self.model = model
 
     def add_cylindrical_wrap(
@@ -356,6 +362,8 @@ class OpenSimGripModel:
             length: Wrap cylinder length [m]
             location: (x, y, z) location in grip body frame [m]
         """
+        if not (muscle_name is not None):
+            raise ValueError("muscle_name must be provided")
         if not (muscle_name is not None):
             raise ValueError("muscle_name must be provided")
         if opensim is None:
@@ -406,6 +414,8 @@ class OpenSimGripModel:
         """
         if not (state is not None):
             raise ValueError("state must be provided")
+        if not (state is not None):
+            raise ValueError("state must be provided")
         if opensim is None:
             return {}
 
@@ -429,6 +439,8 @@ class OpenSimGripModel:
             Dictionary with grip analysis metrics
         """
         # Get forces from grip-related muscles
+        if not (state is not None):
+            raise ValueError("state must be provided")
         if not (state is not None):
             raise ValueError("state must be provided")
         muscle_forces = analyzer.get_muscle_forces()

@@ -83,7 +83,7 @@ class UnifiedEngineInterface(ContractChecker):
         try:
             # Convert string to enum if needed
             if isinstance(engine_type, str):
-                engine_type = EngineType(engine_type.upper())
+                engine_type = EngineType(engine_type.lower())
 
             # Load engine
             self.engine_manager._load_engine(engine_type)
@@ -143,6 +143,8 @@ class UnifiedEngineInterface(ContractChecker):
         Returns:
             True if club loaded successfully
         """
+        if not (club_type is not None):
+            raise ValueError("club_type must be provided")
         if not (club_type is not None):
             raise ValueError("club_type must be provided")
         if not self.current_engine:
@@ -298,6 +300,8 @@ class UnifiedEngineInterface(ContractChecker):
         """
         if not (positions is not None):
             raise ValueError("positions must be provided")
+        if not (positions is not None):
+            raise ValueError("positions must be provided")
         if not self.current_engine:
             return False
 
@@ -317,6 +321,8 @@ class UnifiedEngineInterface(ContractChecker):
         Returns:
             True if control applied successfully
         """
+        if not (control_inputs is not None):
+            raise ValueError("control_inputs must be provided")
         if not (control_inputs is not None):
             raise ValueError("control_inputs must be provided")
         if not self.current_engine:
@@ -380,6 +386,8 @@ def quick_setup(
     Returns:
         Configured interface with engine and standard model loaded
     """
+    if not (engine_type is not None):
+        raise ValueError("engine_type must be provided")
     if not (engine_type is not None):
         raise ValueError("engine_type must be provided")
     interface = UnifiedEngineInterface(suite_root)

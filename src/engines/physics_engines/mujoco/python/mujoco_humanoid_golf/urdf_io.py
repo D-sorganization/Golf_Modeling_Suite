@@ -59,6 +59,8 @@ class URDFExporter:
         """
         if not (model is not None):
             raise ValueError("model must be provided")
+        if not (model is not None):
+            raise ValueError("model must be provided")
         self.model = model
         self.data = mujoco.MjData(model)
 
@@ -81,6 +83,8 @@ class URDFExporter:
         Returns:
             URDF XML string
         """
+        if not (output_path is not None):
+            raise ValueError("output_path must be provided")
         if not (output_path is not None):
             raise ValueError("output_path must be provided")
         output_path = Path(output_path)
@@ -124,6 +128,8 @@ class URDFExporter:
     ) -> None:
         """Build URDF tree from MuJoCo model structure."""
         # Find root body (worldbody's first child or free joint body)
+        if not (robot is not None):
+            raise ValueError("robot must be provided")
         if not (robot is not None):
             raise ValueError("robot must be provided")
         root_body_id = self._find_root_body()
@@ -209,6 +215,8 @@ class URDFExporter:
         """Create URDF link element from MuJoCo body."""
         if not (body_id is not None):
             raise ValueError("body_id must be provided")
+        if not (body_id is not None):
+            raise ValueError("body_id must be provided")
         body_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_BODY, body_id)
         if not body_name:
             body_name = f"link_{body_id}"
@@ -235,6 +243,8 @@ class URDFExporter:
     def _create_inertial(self, body_id: int) -> ET.Element | None:
         """Create inertial element from MuJoCo body."""
         # Get body mass and inertia
+        if not (body_id is not None):
+            raise ValueError("body_id must be provided")
         if not (body_id is not None):
             raise ValueError("body_id must be provided")
         mass = self.model.body_mass[body_id]
@@ -276,6 +286,8 @@ class URDFExporter:
         """Create visual geometry elements for a body."""
         if not (body_id is not None):
             raise ValueError("body_id must be provided")
+        if not (body_id is not None):
+            raise ValueError("body_id must be provided")
         visuals = []
 
         # Find all geoms attached to this body
@@ -291,6 +303,8 @@ class URDFExporter:
         """Create collision geometry elements for a body."""
         if not (body_id is not None):
             raise ValueError("body_id must be provided")
+        if not (body_id is not None):
+            raise ValueError("body_id must be provided")
         collisions = []
 
         # Find all geoms attached to this body
@@ -304,6 +318,8 @@ class URDFExporter:
 
     def _geom_to_visual(self, geom_id: int) -> ET.Element | None:
         """Convert MuJoCo geom to URDF visual element."""
+        if not (geom_id is not None):
+            raise ValueError("geom_id must be provided")
         if not (geom_id is not None):
             raise ValueError("geom_id must be provided")
         _geom_type = self.model.geom_type[geom_id]
@@ -339,6 +355,8 @@ class URDFExporter:
         """Convert MuJoCo geom to URDF collision element."""
         if not (geom_id is not None):
             raise ValueError("geom_id must be provided")
+        if not (geom_id is not None):
+            raise ValueError("geom_id must be provided")
         _geom_type = self.model.geom_type[geom_id]
         geom_pos = self.model.geom_pos[geom_id]
         geom_quat = self.model.geom_quat[geom_id]
@@ -367,6 +385,8 @@ class URDFExporter:
         parent: ET.Element,
     ) -> ET.Element | None:
         """Create geometry element (box, sphere, cylinder, mesh) from MuJoCo geom."""
+        if not (geom_id is not None):
+            raise ValueError("geom_id must be provided")
         if not (geom_id is not None):
             raise ValueError("geom_id must be provided")
         geom_type = self.model.geom_type[geom_id]
@@ -414,6 +434,8 @@ class URDFExporter:
         """Create material element from MuJoCo material."""
         if not (mat_id is not None):
             raise ValueError("mat_id must be provided")
+        if not (mat_id is not None):
+            raise ValueError("mat_id must be provided")
         mat_rgba = self.model.mat_rgba[mat_id]
 
         material = ET.Element("material", name=f"material_{mat_id}")
@@ -427,6 +449,8 @@ class URDFExporter:
     ) -> ET.Element | None:
         """Create URDF joint element between two bodies."""
         # Find joint connecting parent to child
+        if not (parent_body_id is not None):
+            raise ValueError("parent_body_id must be provided")
         if not (parent_body_id is not None):
             raise ValueError("parent_body_id must be provided")
         child_jntadr = self.model.body_jntadr[child_body_id]
@@ -517,6 +541,8 @@ class URDFExporter:
 
     def _quat_to_rpy(self, quat: np.ndarray) -> np.ndarray:
         """Convert quaternion (w, x, y, z) to roll-pitch-yaw."""
+        if not (quat is not None):
+            raise ValueError("quat must be provided")
         if not (quat is not None):
             raise ValueError("quat must be provided")
         w, x, y, z = quat[0], quat[1], quat[2], quat[3]
@@ -659,6 +685,8 @@ class URDFImporter:
         """
         if not (body is not None):
             raise ValueError("body must be provided")
+        if not (body is not None):
+            raise ValueError("body must be provided")
         inertial = link.find("inertial")
         if inertial is not None:
             self._add_inertial(body, inertial)
@@ -679,6 +707,8 @@ class URDFImporter:
         Returns:
             List of (joint_element, child_link_name) pairs.
         """
+        if not (joints is not None):
+            raise ValueError("joints must be provided")
         if not (joints is not None):
             raise ValueError("joints must be provided")
         children = []
@@ -704,6 +734,8 @@ class URDFImporter:
         visited: set[str] | None = None,
     ) -> None:
         """Recursively build MuJoCo body structure from URDF."""
+        if not (parent is not None):
+            raise ValueError("parent must be provided")
         if not (parent is not None):
             raise ValueError("parent must be provided")
         if visited is None:
@@ -749,6 +781,8 @@ class URDFImporter:
 
     def _add_inertial(self, body: ET.Element, inertial: ET.Element) -> None:
         """Add inertial properties to MuJoCo body."""
+        if not (body is not None):
+            raise ValueError("body must be provided")
         if not (body is not None):
             raise ValueError("body must be provided")
         inertial_elem = ET.SubElement(body, "inertial")
@@ -801,6 +835,8 @@ class URDFImporter:
         """Add visual geometry to MuJoCo body."""
         if not (body is not None):
             raise ValueError("body must be provided")
+        if not (body is not None):
+            raise ValueError("body must be provided")
         geom = ET.SubElement(body, "geom", type="box")  # Default type
 
         origin = visual.find("origin")
@@ -823,6 +859,8 @@ class URDFImporter:
         """Add collision geometry to MuJoCo body."""
         if not (body is not None):
             raise ValueError("body must be provided")
+        if not (body is not None):
+            raise ValueError("body must be provided")
         geom = ET.SubElement(body, "geom", type="box")  # Default type
         geom.set("contype", "1")
         geom.set("conaffinity", "1")
@@ -838,6 +876,8 @@ class URDFImporter:
 
     def _parse_geometry(self, geom: ET.Element, geometry: ET.Element) -> None:
         """Parse URDF geometry element and set MuJoCo geom properties."""
+        if not (geom is not None):
+            raise ValueError("geom must be provided")
         if not (geom is not None):
             raise ValueError("geom must be provided")
         box = geometry.find("box")
@@ -876,6 +916,8 @@ class URDFImporter:
 
     def _add_joint(self, body: ET.Element, joint: ET.Element) -> None:
         """Add joint to MuJoCo body."""
+        if not (body is not None):
+            raise ValueError("body must be provided")
         if not (body is not None):
             raise ValueError("body must be provided")
         joint_type = joint.get("type", "revolute")
@@ -944,6 +986,8 @@ def export_model_to_urdf(
     """
     if not (model is not None):
         raise ValueError("model must be provided")
+    if not (model is not None):
+        raise ValueError("model must be provided")
     exporter = URDFExporter(model)
     return exporter.export_to_urdf(
         output_path,
@@ -972,6 +1016,8 @@ def import_urdf_to_mujoco(
         >>> mujoco_xml = import_urdf_to_mujoco("robot.urdf")
         >>> model = mujoco.MjModel.from_xml_string(mujoco_xml)
     """
+    if not (urdf_path is not None):
+        raise ValueError("urdf_path must be provided")
     if not (urdf_path is not None):
         raise ValueError("urdf_path must be provided")
     importer = URDFImporter()

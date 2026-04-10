@@ -161,7 +161,7 @@ class TestBundledManifest:
 class TestUnifiedLoader:
     """Tests for loading bundled models via UnifiedModelLoader."""
 
-    def _make_loader(self, tmp_path: Path) -> UnifiedModelLoader:
+    def _make_loader(self, tmp_path: Path) -> object:  # type: ignore[return]
         from model_generation.library.unified_loader import UnifiedModelLoader
 
         return UnifiedModelLoader(prefs_dir=tmp_path)

@@ -1,17 +1,15 @@
 ---
-title: "Incomplete Stub in flexible_shaft.py:342"
-labels: ["incomplete-implementation", "critical", "high-impact"]
+title: "Incomplete Stub in flexible_shaft.py:326"
+labels: ['incomplete-implementation', 'critical', 'high-impact']
 assignee: "unassigned"
 status: "open"
 ---
 
 # Issue Description
-
-Found critical incomplete implementation in `./src/shared/python/physics/flexible_shaft.py` at line 342.
+Found critical incomplete implementation in `./src/shared/python/physics/flexible_shaft.py` at line 326.
 
 ## Context
-
-**Type**: Stub | **Location**: `./src/shared/python/physics/flexible_shaft.py:342`
+**Type**: Stub | **Location**: `./src/shared/python/physics/flexible_shaft.py:326`
 
 ```python
 step

@@ -120,6 +120,8 @@ class PreferencesDialog(QDialog):
         """
         if not (parent is not None):
             raise ValueError("parent must be provided")
+        if not (parent is not None):
+            raise ValueError("parent must be provided")
         super().__init__(parent)
         self.setWindowTitle("Preferences")
         self.setMinimumSize(550, 450)

@@ -99,6 +99,8 @@ def compute_rotation_matrix_from_axes(
     """
     if not (x_axis is not None):
         raise ValueError("x_axis must be provided")
+    if not (x_axis is not None):
+        raise ValueError("x_axis must be provided")
     R = np.column_stack([x_axis, y_axis, z_axis])
     return R
 
@@ -119,6 +121,8 @@ def transform_wrench_to_frame(
         Wrench in target frame
     """
     # Force transforms like a vector: f_target = R @ f_source
+    if not (wrench is not None):
+        raise ValueError("wrench must be provided")
     if not (wrench is not None):
         raise ValueError("wrench must be provided")
     force_target = rotation_to_target @ wrench.force
@@ -158,6 +162,8 @@ def fit_instantaneous_swing_plane(
         SwingPlaneFrame for the current instant
     """
     # Grip axis (shaft direction)
+    if not (clubhead_velocity is not None):
+        raise ValueError("clubhead_velocity must be provided")
     if not (clubhead_velocity is not None):
         raise ValueError("clubhead_velocity must be provided")
     grip_to_club = clubhead_position - grip_position
@@ -222,6 +228,8 @@ def fit_functional_swing_plane(
         SwingPlaneFrame representing the FSP
     """
     # Convert window to seconds
+    if not (clubhead_trajectory is not None):
+        raise ValueError("clubhead_trajectory must be provided")
     if not (clubhead_trajectory is not None):
         raise ValueError("clubhead_trajectory must be provided")
     window_s = window_ms / 1000.0
@@ -303,6 +311,8 @@ def decompose_wrench_in_swing_plane(
             - torque_out_of_plane: Torque perpendicular to swing plane [N·m]
             - torque_about_grip: Moment about grip axis [N·m]
     """
+    if not (wrench is not None):
+        raise ValueError("wrench must be provided")
     if not (wrench is not None):
         raise ValueError("wrench must be provided")
     if wrench.frame != ReferenceFrame.GLOBAL:

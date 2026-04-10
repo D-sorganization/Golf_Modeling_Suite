@@ -34,6 +34,8 @@ class VisualizationTab(QtWidgets.QWidget):
     ) -> None:
         if not (sim_widget is not None):
             raise ValueError("sim_widget must be provided")
+        if not (sim_widget is not None):
+            raise ValueError("sim_widget must be provided")
         super().__init__(parent)
         self.sim_widget = sim_widget
         self._setup_ui()
@@ -77,6 +79,8 @@ class VisualizationTab(QtWidgets.QWidget):
     def _create_camera_presets(self, camera_layout: QtWidgets.QVBoxLayout) -> None:
         if not (camera_layout is not None):
             raise ValueError("camera_layout must be provided")
+        if not (camera_layout is not None):
+            raise ValueError("camera_layout must be provided")
         preset_layout = QtWidgets.QHBoxLayout()
         preset_layout.addWidget(QtWidgets.QLabel("Preset:"))
         self.camera_combo = QtWidgets.QComboBox()
@@ -86,6 +90,8 @@ class VisualizationTab(QtWidgets.QWidget):
         camera_layout.addLayout(preset_layout)
 
     def _create_reset_camera_button(self, camera_layout: QtWidgets.QVBoxLayout) -> None:
+        if not (camera_layout is not None):
+            raise ValueError("camera_layout must be provided")
         if not (camera_layout is not None):
             raise ValueError("camera_layout must be provided")
         reset_cam_btn = QtWidgets.QPushButton("Reset Camera")
@@ -100,7 +106,9 @@ class VisualizationTab(QtWidgets.QWidget):
 
     def _create_camera_sliders(
         self, advanced_cam_layout: QtWidgets.QFormLayout
-    ) -> None:  # noqa: E501
+    ) -> None:
+        if not (advanced_cam_layout is not None):
+            raise ValueError("advanced_cam_layout must be provided")
         if not (advanced_cam_layout is not None):
             raise ValueError("advanced_cam_layout must be provided")
         self.azimuth_slider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
@@ -142,7 +150,9 @@ class VisualizationTab(QtWidgets.QWidget):
 
     def _create_lookat_controls(
         self, advanced_cam_layout: QtWidgets.QFormLayout
-    ) -> None:  # noqa: E501
+    ) -> None:
+        if not (advanced_cam_layout is not None):
+            raise ValueError("advanced_cam_layout must be provided")
         if not (advanced_cam_layout is not None):
             raise ValueError("advanced_cam_layout must be provided")
         lookat_layout = QtWidgets.QHBoxLayout()
@@ -345,6 +355,8 @@ class VisualizationTab(QtWidgets.QWidget):
     def _create_force_checkboxes(self, force_layout: QtWidgets.QVBoxLayout) -> None:
         if not (force_layout is not None):
             raise ValueError("force_layout must be provided")
+        if not (force_layout is not None):
+            raise ValueError("force_layout must be provided")
         self.isolate_forces_cb = QtWidgets.QCheckBox("Isolate to Selected Body")
         self.isolate_forces_cb.setToolTip(
             "Only show forces/torques for the currently selected body (via Right-Click)"
@@ -358,7 +370,9 @@ class VisualizationTab(QtWidgets.QWidget):
 
     def _create_torque_scale_controls(
         self, force_layout: QtWidgets.QVBoxLayout
-    ) -> None:  # noqa: E501
+    ) -> None:
+        if not (force_layout is not None):
+            raise ValueError("force_layout must be provided")
         if not (force_layout is not None):
             raise ValueError("force_layout must be provided")
         torque_scale_layout = QtWidgets.QFormLayout()
@@ -377,6 +391,8 @@ class VisualizationTab(QtWidgets.QWidget):
         force_layout.addLayout(torque_scale_layout)
 
     def _create_force_scale_controls(self, force_layout: QtWidgets.QVBoxLayout) -> None:
+        if not (force_layout is not None):
+            raise ValueError("force_layout must be provided")
         if not (force_layout is not None):
             raise ValueError("force_layout must be provided")
         self.show_forces_cb = QtWidgets.QCheckBox("Show Constraint Forces")
@@ -398,7 +414,9 @@ class VisualizationTab(QtWidgets.QWidget):
 
     def _create_advanced_vector_overlays(
         self, force_layout: QtWidgets.QVBoxLayout
-    ) -> None:  # noqa: E501
+    ) -> None:
+        if not (force_layout is not None):
+            raise ValueError("force_layout must be provided")
         if not (force_layout is not None):
             raise ValueError("force_layout must be provided")
         advanced_vector_group = QtWidgets.QGroupBox("Advanced Vector Overlays")
@@ -498,6 +516,8 @@ class VisualizationTab(QtWidgets.QWidget):
     def on_camera_changed(self, camera_name: str) -> None:
         if not (camera_name is not None):
             raise ValueError("camera_name must be provided")
+        if not (camera_name is not None):
+            raise ValueError("camera_name must be provided")
         require("sim_widget is set", lambda: self.sim_widget is not None)
         """Handle camera view change."""
         self.sim_widget.set_camera(camera_name)
@@ -533,6 +553,8 @@ class VisualizationTab(QtWidgets.QWidget):
     def on_azimuth_changed(self, value: int) -> None:
         if not (value is not None):
             raise ValueError("value must be provided")
+        if not (value is not None):
+            raise ValueError("value must be provided")
         require("sim_widget is set", lambda: self.sim_widget is not None)
         """Handle azimuth slider change."""
         self.sim_widget.set_camera_azimuth(float(value))
@@ -541,12 +563,16 @@ class VisualizationTab(QtWidgets.QWidget):
     def on_elevation_changed(self, value: int) -> None:
         if not (value is not None):
             raise ValueError("value must be provided")
+        if not (value is not None):
+            raise ValueError("value must be provided")
         require("sim_widget is set", lambda: self.sim_widget is not None)
         """Handle elevation slider change."""
         self.sim_widget.set_camera_elevation(float(value))
         self.elevation_label.setText(f"{value}\u00b0")
 
     def on_distance_changed(self, value: int) -> None:
+        if not (value is not None):
+            raise ValueError("value must be provided")
         if not (value is not None):
             raise ValueError("value must be provided")
         require("sim_widget is set", lambda: self.sim_widget is not None)
@@ -636,6 +662,8 @@ class VisualizationTab(QtWidgets.QWidget):
     def on_live_kinematics_changed(self, state: int = 0) -> None:
         if not (state is not None):
             raise ValueError("state must be provided")
+        if not (state is not None):
+            raise ValueError("state must be provided")
         require("sim_widget is set", lambda: self.sim_widget is not None)
         """Handle live kinematics visualization toggle."""
         self.sim_widget.set_live_kinematics_visualization(
@@ -660,12 +688,16 @@ class VisualizationTab(QtWidgets.QWidget):
     def on_show_torques_changed(self, state: int) -> None:
         if not (state is not None):
             raise ValueError("state must be provided")
+        if not (state is not None):
+            raise ValueError("state must be provided")
         require("sim_widget is set", lambda: self.sim_widget is not None)
         """Handle torque visualization toggle."""
         enabled = state == QtCore.Qt.CheckState.Checked.value
         self.sim_widget.set_torque_visualization(enabled)
 
     def on_torque_scale_changed(self, value: int) -> None:
+        if not (value is not None):
+            raise ValueError("value must be provided")
         if not (value is not None):
             raise ValueError("value must be provided")
         require("sim_widget is set", lambda: self.sim_widget is not None)
@@ -680,12 +712,16 @@ class VisualizationTab(QtWidgets.QWidget):
     def on_show_forces_changed(self, state: int) -> None:
         if not (state is not None):
             raise ValueError("state must be provided")
+        if not (state is not None):
+            raise ValueError("state must be provided")
         require("sim_widget is set", lambda: self.sim_widget is not None)
         """Handle force visualization toggle."""
         enabled = state == QtCore.Qt.CheckState.Checked.value
         self.sim_widget.set_force_visualization(enabled)
 
     def on_force_scale_changed(self, value: int) -> None:
+        if not (value is not None):
+            raise ValueError("value must be provided")
         if not (value is not None):
             raise ValueError("value must be provided")
         require("sim_widget is set", lambda: self.sim_widget is not None)
@@ -698,6 +734,8 @@ class VisualizationTab(QtWidgets.QWidget):
         )
 
     def on_isolate_forces_changed(self, state: int) -> None:
+        if not (state is not None):
+            raise ValueError("state must be provided")
         if not (state is not None):
             raise ValueError("state must be provided")
         require("sim_widget is set", lambda: self.sim_widget is not None)
@@ -719,12 +757,16 @@ class VisualizationTab(QtWidgets.QWidget):
     def on_show_contacts_changed(self, state: int) -> None:
         if not (state is not None):
             raise ValueError("state must be provided")
+        if not (state is not None):
+            raise ValueError("state must be provided")
         require("sim_widget is set", lambda: self.sim_widget is not None)
         """Handle contact force visualization toggle."""
         enabled = state == QtCore.Qt.CheckState.Checked.value
         self.sim_widget.set_contact_force_visualization(enabled)
 
     def on_ellipsoid_visualization_changed(self, state: int) -> None:
+        if not (state is not None):
+            raise ValueError("state must be provided")
         if not (state is not None):
             raise ValueError("state must be provided")
         require("sim_widget is set", lambda: self.sim_widget is not None)
@@ -736,6 +778,8 @@ class VisualizationTab(QtWidgets.QWidget):
     def on_swing_plane_changed(self, state: int = 0) -> None:
         if not (state is not None):
             raise ValueError("state must be provided")
+        if not (state is not None):
+            raise ValueError("state must be provided")
         require("sim_widget is set", lambda: self.sim_widget is not None)
         """Handle swing plane / trajectory visualization toggle."""
         self.sim_widget.set_swing_plane_visualization(
@@ -745,6 +789,8 @@ class VisualizationTab(QtWidgets.QWidget):
         )
 
     def on_tracked_body_changed(self, body_name: str) -> None:
+        if not (body_name is not None):
+            raise ValueError("body_name must be provided")
         if not (body_name is not None):
             raise ValueError("body_name must be provided")
         require("sim_widget is set", lambda: self.sim_widget is not None)
@@ -799,6 +845,8 @@ class VisualizationTab(QtWidgets.QWidget):
         rank: int | str,
         nefc: int | str,
     ) -> None:
+        if not (cond is not None):
+            raise ValueError("cond must be provided")
         if not (cond is not None):
             raise ValueError("cond must be provided")
         require("sim_widget is set", lambda: self.sim_widget is not None)

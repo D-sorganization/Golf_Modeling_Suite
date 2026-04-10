@@ -100,6 +100,8 @@ class RobotState:
         """
         if not (sensor_name is not None):
             raise ValueError("sensor_name must be provided")
+        if not (sensor_name is not None):
+            raise ValueError("sensor_name must be provided")
         if self.ft_wrenches is None:
             return None
         return self.ft_wrenches.get(sensor_name)
@@ -149,6 +151,8 @@ class ControlCommand:
         Raises:
             ValueError: If command is invalid.
         """
+        if not (n_joints is not None):
+            raise ValueError("n_joints must be provided")
         if not (n_joints is not None):
             raise ValueError("n_joints must be provided")
         if self.mode == ControlMode.POSITION:

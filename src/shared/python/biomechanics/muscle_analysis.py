@@ -55,6 +55,8 @@ class MuscleSynergyAnalyzer:
         """
         if not (activation_data is not None):
             raise ValueError("activation_data must be provided")
+        if not (activation_data is not None):
+            raise ValueError("activation_data must be provided")
         self.data = np.asarray(activation_data)
         require(
             self.data.ndim == 2,

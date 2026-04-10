@@ -120,6 +120,8 @@ class RobNealDataViewer:
         """
         if not (frame is not None):
             raise ValueError("frame must be provided")
+        if not (frame is not None):
+            raise ValueError("frame must be provided")
         if self.data is None:
             logger.warning("No data loaded")
             return

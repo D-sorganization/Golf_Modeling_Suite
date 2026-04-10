@@ -84,6 +84,8 @@ class DriftControlDecomposer:
         """
         if not (model is not None):
             raise ValueError("model must be provided")
+        if not (model is not None):
+            raise ValueError("model must be provided")
         self.model = model
 
         # Create private data structures for thread-safe analysis
@@ -97,6 +99,8 @@ class DriftControlDecomposer:
         qvel: np.ndarray,
         ctrl: np.ndarray,
     ) -> np.ndarray:
+        if not (qpos is not None):
+            raise ValueError("qpos must be provided")
         if not (qpos is not None):
             raise ValueError("qpos must be provided")
         self._data_full.qpos[:] = qpos
@@ -118,6 +122,8 @@ class DriftControlDecomposer:
     def _compute_drift_acceleration(
         self, qpos: np.ndarray, qvel: np.ndarray
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        if not (qpos is not None):
+            raise ValueError("qpos must be provided")
         if not (qpos is not None):
             raise ValueError("qpos must be provided")
         self._data_drift.qpos[:] = qpos
@@ -146,6 +152,8 @@ class DriftControlDecomposer:
     def _validate_superposition(
         self, qacc_full: np.ndarray, qacc_drift: np.ndarray, qacc_control: np.ndarray
     ) -> float:
+        if not (qacc_full is not None):
+            raise ValueError("qacc_full must be provided")
         if not (qacc_full is not None):
             raise ValueError("qacc_full must be provided")
         qacc_reconstructed = qacc_drift + qacc_control
@@ -185,6 +193,8 @@ class DriftControlDecomposer:
         Raises:
             ValueError: If superposition fails (residual > 1e-5)
         """
+        if not (qpos is not None):
+            raise ValueError("qpos must be provided")
         if not (qpos is not None):
             raise ValueError("qpos must be provided")
         qacc_full = self._compute_full_acceleration(qpos, qvel, ctrl)
@@ -236,6 +246,8 @@ class DriftControlDecomposer:
         """
         if not (qpos_traj is not None):
             raise ValueError("qpos_traj must be provided")
+        if not (qpos_traj is not None):
+            raise ValueError("qpos_traj must be provided")
         results = []
 
         for i in range(len(qpos_traj)):
@@ -267,6 +279,8 @@ class DriftControlDecomposer:
             results: Decomposition results for trajectory
             joint_idx: Joint index to plot
         """
+        if not (times is not None):
+            raise ValueError("times must be provided")
         if not (times is not None):
             raise ValueError("times must be provided")
         try:

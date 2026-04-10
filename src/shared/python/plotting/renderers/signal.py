@@ -20,6 +20,8 @@ class SignalRenderer(BaseRenderer):
         """Plot jerk (rate of change of acceleration) over time."""
         if not (fig is not None):
             raise ValueError("fig must be provided")
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
         times, velocities = self.data.get_series("joint_velocities")
         _, accelerations = self.data.get_series("joint_accelerations")
 
@@ -80,6 +82,8 @@ class SignalRenderer(BaseRenderer):
         """Plot frequency content (PSD) of a joint signal."""
         if not (fig is not None):
             raise ValueError("fig must be provided")
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
         if signal_type == "position":
             _, data = self.data.get_series("joint_positions")
             ylabel = "PSD (rad²/Hz)"
@@ -136,6 +140,8 @@ class SignalRenderer(BaseRenderer):
         signal_type: str = "velocity",
     ) -> None:
         """Plot spectrogram of a joint signal."""
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
         if not (fig is not None):
             raise ValueError("fig must be provided")
         if signal_type == "position":
@@ -196,6 +202,8 @@ class SignalRenderer(BaseRenderer):
         """Plot Multiscale Entropy (MSE) curves."""
         if not (fig is not None):
             raise ValueError("fig must be provided")
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
         try:
             from src.shared.python.validation_pkg.statistical_analysis import (
                 StatisticalAnalyzer,
@@ -250,6 +258,8 @@ class SignalRenderer(BaseRenderer):
         dim: int = 3,
     ) -> None:
         """Plot divergence of nearest neighbors over time to estimate Lyapunov Exponent."""
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
         if not (fig is not None):
             raise ValueError("fig must be provided")
         try:
@@ -345,6 +355,8 @@ class SignalRenderer(BaseRenderer):
         """Plot Continuous Wavelet Transform (CWT) scalogram."""
         if not (fig is not None):
             raise ValueError("fig must be provided")
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
         try:
             from src.shared.python.signal_toolkit import signal_processing
         except ImportError:
@@ -416,6 +428,8 @@ class SignalRenderer(BaseRenderer):
         freq_range: tuple[float, float] = (1.0, 50.0),
     ) -> None:
         """Plot Cross Wavelet Transform (XWT) between two signals."""
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
         if not (fig is not None):
             raise ValueError("fig must be provided")
         try:

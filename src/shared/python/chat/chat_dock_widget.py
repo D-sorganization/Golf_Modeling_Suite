@@ -81,6 +81,8 @@ class ChatMessageBubble(QFrame):
     ) -> None:
         if not (role is not None):
             raise ValueError("role must be provided")
+        if not (role is not None):
+            raise ValueError("role must be provided")
         super().__init__(parent)
         self._role = role
         self._content = content
@@ -112,11 +114,15 @@ class ChatMessageBubble(QFrame):
         """Replace the content text."""
         if not (text is not None):
             raise ValueError("text must be provided")
+        if not (text is not None):
+            raise ValueError("text must be provided")
         self._content = text
         self._content_label.setText(text)
 
     def append_content(self, text: str) -> None:
         """Append text to existing content."""
+        if not (text is not None):
+            raise ValueError("text must be provided")
         if not (text is not None):
             raise ValueError("text must be provided")
         self._content += text
@@ -154,6 +160,8 @@ class ChatDockWidget(QDockWidget):
         accent_color: str = "#FF8800",
         parent: QWidget | None = None,
     ) -> None:
+        if not (app_context is not None):
+            raise ValueError("app_context must be provided")
         if not (app_context is not None):
             raise ValueError("app_context must be provided")
         super().__init__("AI Chat", parent)
@@ -286,6 +294,8 @@ class ChatDockWidget(QDockWidget):
         """Handle incoming WebSocket message."""
         if not (raw is not None):
             raise ValueError("raw must be provided")
+        if not (raw is not None):
+            raise ValueError("raw must be provided")
         try:
             data = json.loads(raw)
         except (json.JSONDecodeError, TypeError):
@@ -360,6 +370,8 @@ class ChatDockWidget(QDockWidget):
         """Add a message bubble to the scroll area."""
         if not (role is not None):
             raise ValueError("role must be provided")
+        if not (role is not None):
+            raise ValueError("role must be provided")
         bubble = ChatMessageBubble(role, content, accent_color=self._accent_color)
         # Insert before the stretch item at the end
         count = self._message_layout.count()
@@ -370,6 +382,8 @@ class ChatDockWidget(QDockWidget):
     def _populate_history(self, messages: list[dict]) -> None:
         """Clear and rebuild message bubbles from history."""
         # Remove existing bubbles (keep the stretch)
+        if not (messages is not None):
+            raise ValueError("messages must be provided")
         if not (messages is not None):
             raise ValueError("messages must be provided")
         while self._message_layout.count() > 1:

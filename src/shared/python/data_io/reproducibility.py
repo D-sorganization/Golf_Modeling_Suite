@@ -108,6 +108,8 @@ def log_execution_time(
     """
     if not (operation_name is not None):
         raise ValueError("operation_name must be provided")
+    if not (operation_name is not None):
+        raise ValueError("operation_name must be provided")
     logr = logger_obj or logger
     start_time = time.perf_counter()
     try:

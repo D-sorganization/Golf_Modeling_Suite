@@ -75,6 +75,8 @@ class GitHubImporter:
         """
         if not (query is not None):
             raise ValueError("query must be provided")
+        if not (query is not None):
+            raise ValueError("query must be provided")
         results = []
 
         # 1. Search Repositories
@@ -123,6 +125,8 @@ class GitHubImporter:
 
     def _process_search_item(self, item: dict[str, Any], dry_run: bool) -> ImportResult:
         """Process a single search result item."""
+        if not (item is not None):
+            raise ValueError("item must be provided")
         if not (item is not None):
             raise ValueError("item must be provided")
         owner = item["owner"]["login"]
@@ -194,6 +198,8 @@ class GitHubImporter:
         Returns:
             List of import results
         """
+        if not (urls is not None):
+            raise ValueError("urls must be provided")
         if not (urls is not None):
             raise ValueError("urls must be provided")
         results = []
@@ -275,6 +281,8 @@ class GitHubImporter:
         self, url: str, owner: str, repo_name: str
     ) -> tuple[str, str]:
         """Fetch repository metadata (branch and description) from GitHub API."""
+        if not (url is not None):
+            raise ValueError("url must be provided")
         if not (url is not None):
             raise ValueError("url must be provided")
         api_url = f"{self.API_BASE}/repos/{owner}/{repo_name}"

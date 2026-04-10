@@ -111,6 +111,8 @@ class MJCFConverter:
         # Parse URDF if needed
         if not (source is not None):
             raise ValueError("source must be provided")
+        if not (source is not None):
+            raise ValueError("source must be provided")
         if isinstance(source, ParsedModel):
             model = source
         else:
@@ -142,6 +144,8 @@ class MJCFConverter:
         # Load MJCF
         if not (source is not None):
             raise ValueError("source must be provided")
+        if not (source is not None):
+            raise ValueError("source must be provided")
         if isinstance(source, Path) or (
             isinstance(source, str) and not source.strip().startswith("<")
         ):
@@ -163,6 +167,8 @@ class MJCFConverter:
 
     def _build_mjcf(self, model: ParsedModel) -> str:
         """Build MJCF XML from parsed model."""
+        if not (model is not None):
+            raise ValueError("model must be provided")
         if not (model is not None):
             raise ValueError("model must be provided")
         lines = []
@@ -247,6 +253,8 @@ class MJCFConverter:
         indent_level: int,
     ) -> list[str]:
         """Recursively build body element."""
+        if not (model is not None):
+            raise ValueError("model must be provided")
         if not (model is not None):
             raise ValueError("model must be provided")
         lines: list[str] = []
@@ -348,6 +356,8 @@ class MJCFConverter:
         """Build geometry element."""
         if not (geometry is not None):
             raise ValueError("geometry must be provided")
+        if not (geometry is not None):
+            raise ValueError("geometry must be provided")
         pos = origin.xyz
         pos_str = f"{pos[0]:.6g} {pos[1]:.6g} {pos[2]:.6g}"
 
@@ -386,6 +396,8 @@ class MJCFConverter:
 
     def _parse_mjcf(self, root: ET.Element) -> ParsedModel:
         """Parse MJCF into ParsedModel."""
+        if not (root is not None):
+            raise ValueError("root must be provided")
         if not (root is not None):
             raise ValueError("root must be provided")
         model_name = root.get("model", "mjcf_model")
@@ -472,6 +484,8 @@ class MJCFConverter:
         """Parse visual geometry and material from an MJCF body element."""
         if not (body_elem is not None):
             raise ValueError("body_elem must be provided")
+        if not (body_elem is not None):
+            raise ValueError("body_elem must be provided")
         from model_generation.core.types import Material
 
         geom_elems = body_elem.findall("geom")
@@ -500,6 +514,8 @@ class MJCFConverter:
         pos: tuple[float, ...],
     ) -> Joint:
         """Parse joint elements and create a URDF joint connecting to parent."""
+        if not (body_elem is not None):
+            raise ValueError("body_elem must be provided")
         if not (body_elem is not None):
             raise ValueError("body_elem must be provided")
         from model_generation.core.types import JointDynamics, JointLimits
@@ -586,6 +602,8 @@ class MJCFConverter:
 
     def _parse_mjcf_geom(self, geom_elem: ET.Element) -> tuple[Geometry | None, Origin]:
         """Parse a MuJoCo geom element into a Geometry and Origin."""
+        if not (geom_elem is not None):
+            raise ValueError("geom_elem must be provided")
         if not (geom_elem is not None):
             raise ValueError("geom_elem must be provided")
         geom_type = geom_elem.get("type", "sphere")

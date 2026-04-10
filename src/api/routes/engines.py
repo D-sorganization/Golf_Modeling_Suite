@@ -19,14 +19,31 @@ from src.shared.python.engine_core.workflow_adapter import EngineWorkflowAdapter
 
 from ..auth.middleware import OptionalAuth, is_local_mode
 from ..dependencies import get_engine_manager
-
-# We keep using the existing response models where appropriate, or define new ones if needed by the plan
 from ..models.responses import (
     CapabilityLevelResponse,
     EngineCapabilitiesResponse,
     EngineStatusResponse,
 )
 from ..utils.path_validation import validate_model_path
+from .physics import clear_physics_caches
+
+
+def _sanitize_for_json(obj: Any) -> Any:
+    """Recursively convert numpy arrays and other non-JSON types to native Python."""
+    import numpy as np
+
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    if isinstance(obj, np.integer):
+        return int(obj)
+    if isinstance(obj, np.floating):
+        return float(obj)
+    if isinstance(obj, dict):
+        return {k: _sanitize_for_json(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_sanitize_for_json(v) for v in obj]
+    return obj
+
 
 
 def _sanitize_for_json(obj: Any) -> Any:
@@ -106,7 +123,7 @@ async def get_engines(
     )
 
 
-@router.get("/api/engines/{engine_name}/probe")
+@router.get("/engines/{engine_name}/probe")
 @handle_api_errors
 async def probe_engine(
     engine_name: str,
@@ -121,7 +138,7 @@ async def probe_engine(
         return {"available": False, "error": str(e)}
 
 
-@router.post("/api/engines/{engine_name}/load")
+@router.post("/engines/{engine_name}/load")
 @handle_api_errors
 async def load_engine_lazy(
     engine_name: str,
@@ -171,6 +188,9 @@ async def load_engine(
                 status_code=400, detail=f"Failed to load engine: {engine_type}"
             )
 
+        # Invalidate control-metadata caches so subsequent requests reflect the new engine
+        clear_physics_caches()
+
         engine = engine_manager.get_active_physics_engine()
 
         if model_path and engine:
@@ -216,6 +236,8 @@ async def unload_engine(
         raise HTTPException(
             status_code=result.status_code, detail=result.payload["detail"]
         )
+    # Invalidate control-metadata caches after unload
+    clear_physics_caches()
     return result.payload
 
 
