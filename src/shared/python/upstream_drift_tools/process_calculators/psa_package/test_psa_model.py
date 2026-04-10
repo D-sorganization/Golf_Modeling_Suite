@@ -11,6 +11,7 @@ from numpy.testing import assert_allclose
 
 from .psa_model import (
     PSAModel,
+    PSAResults,
     calculate_o2_safety_analysis,
     calculate_sensitivity,
     get_flammability_status,
@@ -55,7 +56,7 @@ class TestPSAModelBaseCase:
         )
 
     @pytest.fixture
-    def base_results(self, base_model: PSAModel):  # type: ignore[return]
+    def base_results(self, base_model: PSAModel) -> PSAResults:  # type: ignore[return]
         """Calculate base case results."""
         return base_model.calculate()
 
@@ -133,7 +134,7 @@ class TestPSAModelH2Flows:
     """Test H2 component flows against Excel."""
 
     @pytest.fixture
-    def base_results(self):  # type: ignore[return]
+    def base_results(self) -> PSAResults:  # type: ignore[return]
         """Calculate base case results."""
         model = PSAModel()
         return model.calculate()
@@ -191,7 +192,7 @@ class TestPSAModelO2Flows:
     """Test O2 component flows against Excel."""
 
     @pytest.fixture
-    def base_results(self):  # type: ignore[return]
+    def base_results(self) -> PSAResults:  # type: ignore[return]
         """Calculate base case results."""
         model = PSAModel()
         return model.calculate()
