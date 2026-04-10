@@ -59,8 +59,7 @@ def _validate_opensim_bindings(opensim_module: Any) -> None:
     ]
     if missing_attrs:
         raise AttributeError(
-            "OpenSim package is missing required bindings: "
-            + ", ".join(missing_attrs)
+            "OpenSim package is missing required bindings: " + ", ".join(missing_attrs)
         )
 
     try:
