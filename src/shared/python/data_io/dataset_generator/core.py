@@ -17,265 +17,6 @@ from .models import SimulationSample, TrainingDataset
 logger = get_logger(__name__)
 
 
-@dataclass
-class ParameterRange:
-    """Defines a range for parameter variation.
-
-    Attributes:
-        name: Parameter identifier.
-        min_val: Minimum value.
-        max_val: Maximum value.
-        distribution: Sampling distribution ('uniform', 'normal', 'linspace').
-        num_points: Number of discrete points for linspace distribution.
-    """
-
-    name: str
-    min_val: float
-    max_val: float
-    distribution: str = "uniform"
-    num_points: int = 10
-
-    def __post_init__(self) -> None:
-        """Validate parameter range.
-
-        Raises:
-            ValueError: If min_val > max_val or distribution is unknown.
-        """
-        if self.min_val > self.max_val:
-            raise ValueError(
-                f"Invalid range for '{self.name}': "
-                f"min_val ({self.min_val}) > max_val ({self.max_val})"
-            )
-        valid_distributions = {"uniform", "normal", "linspace"}
-        if self.distribution not in valid_distributions:
-            raise ValueError(
-                f"Unknown distribution '{self.distribution}'. "
-                f"Valid: {sorted(valid_distributions)}"
-            )
-
-    def sample(self, rng: np.random.Generator) -> float:
-        """Sample a value from this range.
-
-        Args:
-            rng: NumPy random generator.
-
-        Returns:
-            Sampled value within the defined range.
-        """
-        if not (rng is not None):
-            raise ValueError("rng must be provided")
-        if not (rng is not None):
-            raise ValueError("rng must be provided")
-        if self.distribution == "uniform":
-            return float(rng.uniform(self.min_val, self.max_val))
-        if self.distribution == "normal":
-            mean = (self.min_val + self.max_val) / 2.0
-            std = (self.max_val - self.min_val) / 6.0  # 99.7% within range
-            val = float(rng.normal(mean, std))
-            return float(np.clip(val, self.min_val, self.max_val))
-        # linspace
-        points = np.linspace(self.min_val, self.max_val, self.num_points)
-        return float(rng.choice(points))
-
-    def linspace(self) -> np.ndarray:
-        """Generate evenly spaced values across the range.
-
-        Returns:
-            Array of evenly spaced values.
-        """
-        return np.linspace(self.min_val, self.max_val, self.num_points)
-
-
-@dataclass
-class ControlProfile:
-    """Defines a control input profile for dataset generation.
-
-    Attributes:
-        name: Profile identifier.
-        profile_type: Type of control profile.
-        parameters: Profile-specific parameters.
-    """
-
-    name: str
-    profile_type: str = "zero"  # zero, constant, sinusoidal, random, step
-    parameters: dict[str, Any] = field(default_factory=dict)
-
-    def generate(
-        self, n_actuators: int, n_steps: int, dt: float, rng: np.random.Generator
-    ) -> np.ndarray:
-        """Generate control input sequence.
-
-        Args:
-            n_actuators: Number of actuators/DOFs.
-            n_steps: Number of timesteps.
-            dt: Timestep size.
-            rng: Random generator.
-
-        Returns:
-            Control array of shape (n_steps, n_actuators).
-        """
-        if not (n_actuators is not None):
-            raise ValueError("n_actuators must be provided")
-        if not (n_actuators is not None):
-            raise ValueError("n_actuators must be provided")
-        if self.profile_type == "zero":
-            return np.zeros((n_steps, n_actuators))
-        if self.profile_type == "constant":
-            magnitude = self.parameters.get("magnitude", 1.0)
-            return np.full((n_steps, n_actuators), magnitude)
-        if self.profile_type == "sinusoidal":
-            freq = self.parameters.get("frequency", 1.0)
-            amplitude = self.parameters.get("amplitude", 1.0)
-            t = np.arange(n_steps) * dt
-            base = amplitude * np.sin(2.0 * np.pi * freq * t)
-            return np.column_stack([base] * n_actuators)
-        if self.profile_type == "random":
-            scale = self.parameters.get("scale", 1.0)
-            return rng.normal(0, scale, (n_steps, n_actuators))
-        if self.profile_type == "step":
-            magnitude = self.parameters.get("magnitude", 1.0)
-            step_time = self.parameters.get("step_time", 0.5)
-            step_idx = int(step_time / dt)
-            profile = np.zeros((n_steps, n_actuators))
-            if step_idx < n_steps:
-                profile[step_idx:] = magnitude
-            return profile
-        return np.zeros((n_steps, n_actuators))
-
-
-@dataclass
-class GeneratorConfig:
-    """Configuration for dataset generation.
-
-    Attributes:
-        num_samples: Number of simulation runs to generate.
-        duration: Duration of each simulation in seconds.
-        timestep: Simulation timestep in seconds.
-        seed: Random seed for reproducibility.
-        vary_initial_positions: Whether to randomize initial joint positions.
-        vary_initial_velocities: Whether to randomize initial joint velocities.
-        position_ranges: Ranges for initial position variation.
-        velocity_ranges: Ranges for initial velocity variation.
-        control_profiles: Control profiles to sample from.
-        record_mass_matrix: Whether to record inertia matrices.
-        record_bias_forces: Whether to record bias forces.
-        record_gravity: Whether to record gravity forces.
-        record_jacobians: Whether to record Jacobians.
-        record_contact_forces: Whether to record contact forces.
-        record_drift_control: Whether to record drift/control decomposition.
-        record_counterfactuals: Whether to record ZTCF/ZVCF.
-        output_fields: Explicit list of fields to record (None = all).
-    """
-
-    num_samples: int = 100
-    duration: float = 2.0
-    timestep: float = 0.002
-    seed: int = 42
-    vary_initial_positions: bool = True
-    vary_initial_velocities: bool = False
-    position_ranges: list[ParameterRange] = field(default_factory=list)
-    velocity_ranges: list[ParameterRange] = field(default_factory=list)
-    control_profiles: list[ControlProfile] = field(
-        default_factory=lambda: [
-            ControlProfile(name="zero"),
-        ]
-    )
-    record_mass_matrix: bool = True
-    record_bias_forces: bool = True
-    record_gravity: bool = True
-    record_jacobians: bool = False
-    record_contact_forces: bool = True
-    record_drift_control: bool = True
-    record_counterfactuals: bool = False
-    output_fields: list[str] | None = None
-
-    def __post_init__(self) -> None:
-        """Validate configuration.
-
-        Raises:
-            ValueError: If configuration values are invalid.
-        """
-        if self.num_samples <= 0:
-            raise ValueError(f"num_samples must be positive, got {self.num_samples}")
-        if self.duration <= 0:
-            raise ValueError(f"duration must be positive, got {self.duration}")
-        if self.timestep <= 0:
-            raise ValueError(f"timestep must be positive, got {self.timestep}")
-        if self.duration < self.timestep:
-            raise ValueError(
-                f"duration ({self.duration}) must be >= timestep ({self.timestep}); "
-                "otherwise no steps would be recorded"
-            )
-
-
-@dataclass
-class SimulationSample:
-    """A single simulation run's recorded data.
-
-    Attributes:
-        sample_id: Unique sample identifier.
-        metadata: Configuration and provenance metadata.
-        times: Time array (n_steps,).
-        positions: Joint positions (n_steps, n_q).
-        velocities: Joint velocities (n_steps, n_v).
-        accelerations: Joint accelerations (n_steps, n_v).
-        torques: Applied joint torques (n_steps, n_v).
-        mass_matrices: Mass matrices per step (n_steps, n_v, n_v) or None.
-        bias_forces: Bias forces per step (n_steps, n_v) or None.
-        gravity_forces: Gravity forces per step (n_steps, n_v) or None.
-        contact_forces: Contact forces per step (n_steps, 3) or None.
-        drift_accelerations: Drift accelerations (n_steps, n_v) or None.
-        control_accelerations: Control accelerations (n_steps, n_v) or None.
-        energies: Energy data dict.
-    """
-
-    sample_id: int
-    metadata: dict[str, Any]
-    times: np.ndarray
-    positions: np.ndarray
-    velocities: np.ndarray
-    accelerations: np.ndarray
-    torques: np.ndarray
-    mass_matrices: np.ndarray | None = None
-    bias_forces: np.ndarray | None = None
-    gravity_forces: np.ndarray | None = None
-    contact_forces: np.ndarray | None = None
-    drift_accelerations: np.ndarray | None = None
-    control_accelerations: np.ndarray | None = None
-    energies: dict[str, np.ndarray] = field(default_factory=dict)
-
-
-@dataclass
-class TrainingDataset:
-    """Collection of simulation samples forming a training dataset.
-
-    Attributes:
-        samples: List of simulation samples.
-        config: Generator configuration used.
-        model_name: Name of the model used.
-        engine_name: Name of the physics engine used.
-        joint_names: Names of joints in the model.
-        creation_time: Unix timestamp of dataset creation.
-    """
-
-    samples: list[SimulationSample]
-    config: GeneratorConfig
-    model_name: str
-    engine_name: str
-    joint_names: list[str]
-    creation_time: float = field(default_factory=time.time)
-
-    @property
-    def num_samples(self) -> int:
-        """Number of samples in the dataset."""
-        return len(self.samples)
-
-    @property
-    def total_frames(self) -> int:
-        """Total number of frames across all samples."""
-        return sum(len(s.times) for s in self.samples)
-
-
 @invariant(
     lambda self: self.engine is not None,
     "DatasetGenerator must have a valid engine reference",
@@ -306,8 +47,6 @@ class DatasetGenerator:
         Raises:
             ValueError: If engine has no model loaded.
         """
-        if not (engine is not None):
-            raise ValueError("engine must be provided")
         if not (engine is not None):
             raise ValueError("engine must be provided")
         self.engine = engine
@@ -348,8 +87,6 @@ class DatasetGenerator:
         """
         if not (config is not None):
             raise ValueError("config must be provided")
-        if not (config is not None):
-            raise ValueError("config must be provided")
         rng = np.random.default_rng(config.seed)
 
         # Save original state
@@ -375,44 +112,42 @@ class DatasetGenerator:
             n_steps,
         )
 
-        try:
-            for i in range(config.num_samples):
-                try:
-                    sample = self._run_single_simulation(
-                        sample_id=i,
-                        config=config,
-                        rng=rng,
-                        n_steps=n_steps,
-                        n_q=n_q,
-                        n_v=n_v,
-                    )
-                    samples.append(sample)
-
-                    if progress_callback is not None:
-                        progress_callback(i + 1, config.num_samples)
-
-                except (RuntimeError, TypeError, ValueError) as e:
-                    logger.warning("Sample %d failed: %s", i, e)
-                    failed_count += 1
-                    continue
-
-            if not samples:
-                raise SimulationError(
-                    f"All {config.num_samples} samples failed during generation"
+        for i in range(config.num_samples):
+            try:
+                sample = self._run_single_simulation(
+                    sample_id=i,
+                    config=config,
+                    rng=rng,
+                    n_steps=n_steps,
+                    n_q=n_q,
+                    n_v=n_v,
                 )
+                samples.append(sample)
 
-            if failed_count > 0:
-                logger.warning(
-                    "%d/%d samples failed during generation",
-                    failed_count,
-                    config.num_samples,
-                )
+                if progress_callback is not None:
+                    progress_callback(i + 1, config.num_samples)
 
-        finally:
-            # Restore original state regardless of success or failure
-            if self._original_state is not None:
-                with contextlib.suppress(ValueError, RuntimeError, AttributeError):
-                    self.engine.set_state(*self._original_state)
+            except (RuntimeError, TypeError, ValueError) as e:
+                logger.warning("Sample %d failed: %s", i, e)
+                failed_count += 1
+                continue
+
+        if not samples:
+            raise SimulationError(
+                f"All {config.num_samples} samples failed during generation"
+            )
+
+        if failed_count > 0:
+            logger.warning(
+                "%d/%d samples failed during generation",
+                failed_count,
+                config.num_samples,
+            )
+
+        # Restore original state
+        if self._original_state is not None:
+            with contextlib.suppress(ValueError, RuntimeError, AttributeError):
+                self.engine.set_state(*self._original_state)
 
         dataset = TrainingDataset(
             samples=samples,
@@ -619,8 +354,6 @@ class DatasetGenerator:
         """
         if not (config is not None):
             raise ValueError("config must be provided")
-        if not (config is not None):
-            raise ValueError("config must be provided")
         if config.record_mass_matrix and buffers["mass_matrices"] is not None:
             with contextlib.suppress(ValueError, RuntimeError, AttributeError):
                 buffers["mass_matrices"][step] = self.engine.compute_mass_matrix()
@@ -657,10 +390,6 @@ class DatasetGenerator:
             buffers["kinetic_energy"][step] = 0.5 * float(v.T @ M @ v)  # type: ignore[index]
         except (ValueError, RuntimeError, AttributeError):
             pass
-        with contextlib.suppress(ValueError, RuntimeError, AttributeError):
-            buffers["potential_energy"][step] = float(  # type: ignore[index]
-                self.engine.compute_potential_energy()  # type: ignore[attr-defined]
-            )
 
     def _generate_initial_conditions(
         self,
@@ -680,8 +409,6 @@ class DatasetGenerator:
         Returns:
             Tuple of (initial_positions, initial_velocities).
         """
-        if not (config is not None):
-            raise ValueError("config must be provided")
         if not (config is not None):
             raise ValueError("config must be provided")
         if config.vary_initial_positions and config.position_ranges:
@@ -771,8 +498,6 @@ class DatasetGenerator:
         """
         if not (dataset is not None):
             raise ValueError("dataset must be provided")
-        if not (dataset is not None):
-            raise ValueError("dataset must be provided")
         try:
             import h5py
         except ImportError:
@@ -800,8 +525,6 @@ class DatasetGenerator:
         """Write dataset-level metadata to an HDF5 file."""
         if not (dataset is not None):
             raise ValueError("dataset must be provided")
-        if not (dataset is not None):
-            raise ValueError("dataset must be provided")
         meta = f.create_group("metadata")
         meta.attrs["model_name"] = dataset.model_name
         meta.attrs["engine_name"] = dataset.engine_name
@@ -821,8 +544,6 @@ class DatasetGenerator:
     @staticmethod
     def _write_hdf5_sample(samples_grp: Any, sample: SimulationSample) -> None:
         """Write a single sample's data to an HDF5 samples group."""
-        if not (sample is not None):
-            raise ValueError("sample must be provided")
         if not (sample is not None):
             raise ValueError("sample must be provided")
         s_grp = samples_grp.create_group(f"sample_{sample.sample_id:06d}")
@@ -867,8 +588,6 @@ class DatasetGenerator:
         """
         if not (dataset is not None):
             raise ValueError("dataset must be provided")
-        if not (dataset is not None):
-            raise ValueError("dataset must be provided")
         output_path = Path(output_path)
         if not output_path.suffix:
             output_path = output_path.with_suffix(".db")
@@ -892,16 +611,13 @@ class DatasetGenerator:
     @staticmethod
     def _create_sqlite_tables(cursor: sqlite3.Cursor) -> None:
         """Create the SQLite schema tables."""
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS dataset_metadata (
                 key TEXT PRIMARY KEY,
                 value TEXT
             )
-        """
-        )
-        cursor.execute(
-            """
+        """)
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS samples (
                 sample_id INTEGER PRIMARY KEY,
                 metadata_json TEXT,
@@ -909,10 +625,8 @@ class DatasetGenerator:
                 n_q INTEGER,
                 n_v INTEGER
             )
-        """
-        )
-        cursor.execute(
-            """
+        """)
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS frames (
                 sample_id INTEGER,
                 step INTEGER,
@@ -925,16 +639,13 @@ class DatasetGenerator:
                 PRIMARY KEY (sample_id, step),
                 FOREIGN KEY (sample_id) REFERENCES samples(sample_id)
             )
-        """
-        )
+        """)
 
     @staticmethod
     def _insert_sqlite_metadata(
         cursor: sqlite3.Cursor, dataset: TrainingDataset
     ) -> None:
         """Insert dataset-level metadata into the SQLite database."""
-        if not (cursor is not None):
-            raise ValueError("cursor must be provided")
         if not (cursor is not None):
             raise ValueError("cursor must be provided")
         meta_items = [
@@ -956,8 +667,6 @@ class DatasetGenerator:
     @staticmethod
     def _insert_sqlite_sample(cursor: sqlite3.Cursor, sample: SimulationSample) -> None:
         """Insert a single sample and its frames into the SQLite database."""
-        if not (cursor is not None):
-            raise ValueError("cursor must be provided")
         if not (cursor is not None):
             raise ValueError("cursor must be provided")
         n_steps = len(sample.times)
@@ -1008,8 +717,6 @@ class DatasetGenerator:
         Returns:
             Path to the output directory.
         """
-        if not (dataset is not None):
-            raise ValueError("dataset must be provided")
         if not (dataset is not None):
             raise ValueError("dataset must be provided")
         output_dir = Path(output_dir)

@@ -43,7 +43,7 @@ def _is_pyqt6_available() -> bool:
     return bool(PYQT6_AVAILABLE)
 
 
-def _get_golf_main(*, prefer_legacy: bool = False) -> Callable[..., None]:
+def _get_golf_main(*, prefer_legacy: bool = False) -> Callable[..., Any] | None:
     """Resolve golf launcher entry point across legacy/new module paths."""
     if prefer_legacy:
         legacy_module = sys.modules.get("launchers.golf_launcher")

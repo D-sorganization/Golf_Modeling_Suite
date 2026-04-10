@@ -77,8 +77,6 @@ class Footstep:
         """Convert quaternion to rotation matrix."""
         if not (q is not None):
             raise ValueError("q must be provided")
-        if not (q is not None):
-            raise ValueError("q must be provided")
         w, x, y, z = q
         return np.array(
             [
@@ -155,8 +153,6 @@ class FootstepPlan:
         """
         if not (t is not None):
             raise ValueError("t must be provided")
-        if not (t is not None):
-            raise ValueError("t must be provided")
         for fs in self.footsteps:
             if fs.timing <= t < fs.timing + fs.duration:
                 return fs
@@ -208,8 +204,6 @@ class FootstepPlanner(ContractChecker):
         """
         if not (parameters is not None):
             raise ValueError("parameters must be provided")
-        if not (parameters is not None):
-            raise ValueError("parameters must be provided")
         self._parameters = parameters
         self._max_step_length = max_step_length
         self._max_step_width = max_step_width
@@ -246,8 +240,6 @@ class FootstepPlanner(ContractChecker):
         """Set new gait parameters."""
         if not (parameters is not None):
             raise ValueError("parameters must be provided")
-        if not (parameters is not None):
-            raise ValueError("parameters must be provided")
         self._parameters = parameters
         self._nominal_width = parameters.step_width
 
@@ -277,8 +269,6 @@ class FootstepPlanner(ContractChecker):
         Returns:
             FootstepPlan to reach goal.
         """
-        if not (start is not None):
-            raise ValueError("start must be provided")
         if not (start is not None):
             raise ValueError("start must be provided")
         start = np.asarray(start, dtype=np.float64)
@@ -361,8 +351,6 @@ class FootstepPlanner(ContractChecker):
         """
         if not (current_position is not None):
             raise ValueError("current_position must be provided")
-        if not (current_position is not None):
-            raise ValueError("current_position must be provided")
         current_position = np.asarray(current_position, dtype=np.float64)
         velocity_command = np.asarray(velocity_command, dtype=np.float64)
 
@@ -406,9 +394,9 @@ class FootstepPlanner(ContractChecker):
             total_duration=timing,
         )
 
-    def _compute_clamped_step(self, vx, vy, omega) -> tuple[float, float, float]:
-        if not (vx is not None):
-            raise ValueError("vx must be provided")
+    def _compute_clamped_step(
+        self, vx: float, vy: float, omega: float
+    ) -> tuple[float, float, float]:
         if not (vx is not None):
             raise ValueError("vx must be provided")
         dt = self._parameters.step_duration
@@ -419,9 +407,13 @@ class FootstepPlanner(ContractChecker):
         )
         return step_x, step_y, step_yaw
 
-    def _advance_position(self, pos, yaw, step_x, step_y) -> NDArray:
-        if not (pos is not None):
-            raise ValueError("pos must be provided")
+    def _advance_position(
+        self,
+        pos: np.ndarray,
+        yaw: float,
+        step_x: float,
+        step_y: float,
+    ) -> np.ndarray:
         if not (pos is not None):
             raise ValueError("pos must be provided")
         cos_yaw = np.cos(yaw)
@@ -430,9 +422,9 @@ class FootstepPlanner(ContractChecker):
         pos[1] += sin_yaw * step_x + cos_yaw * step_y
         return pos
 
-    def _compute_foot_position(self, pos, yaw, foot) -> NDArray:
-        if not (pos is not None):
-            raise ValueError("pos must be provided")
+    def _compute_foot_position(
+        self, pos: np.ndarray, yaw: float, foot: str
+    ) -> np.ndarray:
         if not (pos is not None):
             raise ValueError("pos must be provided")
         cos_yaw = np.cos(yaw)
@@ -471,8 +463,6 @@ class FootstepPlanner(ContractChecker):
         Returns:
             FootstepPlan for rotation.
         """
-        if not (current_position is not None):
-            raise ValueError("current_position must be provided")
         if not (current_position is not None):
             raise ValueError("current_position must be provided")
         current_position = np.asarray(current_position, dtype=np.float64)
@@ -545,8 +535,6 @@ class FootstepPlanner(ContractChecker):
         """Generate footsteps along straight path."""
         if not (start is not None):
             raise ValueError("start must be provided")
-        if not (start is not None):
-            raise ValueError("start must be provided")
         direction = goal - start
         distance = float(np.linalg.norm(direction[:2]))
         path_yaw = float(np.arctan2(direction[1], direction[0]))
@@ -613,8 +601,6 @@ class FootstepPlanner(ContractChecker):
 
     def _normalize_angle(self, angle: float) -> float:
         """Normalize angle to [-pi, pi]."""
-        if not (angle is not None):
-            raise ValueError("angle must be provided")
         if not (angle is not None):
             raise ValueError("angle must be provided")
         while angle > np.pi:

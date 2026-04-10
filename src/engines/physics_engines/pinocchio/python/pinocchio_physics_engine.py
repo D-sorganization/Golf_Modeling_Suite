@@ -94,8 +94,6 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
         """
         if not (path is not None):
             raise ValueError("path must be provided")
-        if not (path is not None):
-            raise ValueError("path must be provided")
         if not path.endswith(".urdf"):
             logger.warning("Pinocchio loader expects URDF, got: %s", path)
 
@@ -117,8 +115,6 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
             content: Model definition string (URDF/XML).
             extension: File extension hint.
         """
-        if not (content is not None):
-            raise ValueError("content must be provided")
         if not (content is not None):
             raise ValueError("content must be provided")
         if extension != "urdf":
@@ -181,27 +177,19 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
         return self.q.copy(), self.v.copy()
 
     def set_state(self, q: np.ndarray, v: np.ndarray) -> None:
-        """Set the current state and refresh derived kinematics."""
-        if not (q is not None):
-            raise ValueError("q must be provided")
+        """Set the current state."""
         if not (q is not None):
             raise ValueError("q must be provided")
         if self.model is None:
             return
 
-        if len(q) != self.model.nq:
-            raise ValueError(f"q size {len(q)} does not match model nq={self.model.nq}")
-        if len(v) != self.model.nv:
-            raise ValueError(f"v size {len(v)} does not match model nv={self.model.nv}")
-        self.q = q.copy()
-        self.v = v.copy()
-        # Refresh derived kinematics so Jacobians and frame placements are current
-        self.forward()
+        if len(q) == self.model.nq:
+            self.q = q.copy()
+        if len(v) == self.model.nv:
+            self.v = v.copy()
 
     def set_control(self, u: np.ndarray) -> None:
         """Apply control inputs (torques/forces)."""
-        if not (u is not None):
-            raise ValueError("u must be provided")
         if not (u is not None):
             raise ValueError("u must be provided")
         if self.model is None:
@@ -300,8 +288,6 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
     )
     def compute_inverse_dynamics(self, qacc: np.ndarray) -> np.ndarray:
         """Compute inverse dynamics tau = ID(q, v, a)."""
-        if not (qacc is not None):
-            raise ValueError("qacc must be provided")
         if not (qacc is not None):
             raise ValueError("qacc must be provided")
         if self.model is None or self.data is None:

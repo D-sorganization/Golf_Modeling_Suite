@@ -21,10 +21,14 @@ function resampled_table = resampleDataToFrequency(data_table, target_freq, sim_
             return;
         end
 
-        % Calculate new time vector anchored to the actual data span
-        % (not 0:dt:sim_time, which would extrapolate before the recording start)
+        % Calculate new time vector
         target_dt = 1 / target_freq;
-        new_time = original_time(1):target_dt:original_time(end);
+        new_time = 0:target_dt:sim_time;
+
+        % Ensure we don't exceed simulation time
+        if new_time(end) > sim_time
+            new_time = new_time(new_time <= sim_time);
+        end
 
         fprintf('Resampling to %d points at %.1f Hz\n', length(new_time), target_freq);
 
@@ -44,15 +48,15 @@ function resampled_table = resampleDataToFrequency(data_table, target_freq, sim_
             if isnumeric(original_data) && length(original_data) == length(original_time)
                 try
                     % Use interp1 for interpolation
-                    resampled_data{col} = interp1(original_time, original_data, new_time, 'linear')';
+                    resampled_data{col} = interp1(original_time, original_data, new_time, 'linear', 'extrap')';
                 catch
                     % Fallback to nearest neighbor if interpolation fails
                     fprintf('Warning: Using nearest neighbor interpolation for column %s\n', data_table.Properties.VariableNames{col});
-                    resampled_data{col} = interp1(original_time, original_data, new_time, 'nearest')';
+                    resampled_data{col} = interp1(original_time, original_data, new_time, 'nearest', 'extrap')';
                 end
             else
                 % For non-numeric or mismatched data, use nearest neighbor
-                resampled_data{col} = interp1(original_time, original_data, new_time, 'nearest')';
+                resampled_data{col} = interp1(original_time, original_data, new_time, 'nearest', 'extrap')';
             end
         end
 

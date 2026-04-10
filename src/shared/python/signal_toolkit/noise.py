@@ -7,7 +7,6 @@ and adding disturbances to signals for simulation and testing.
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any
 
 import numpy as np
 
@@ -51,7 +50,7 @@ class NoiseGenerator:
         t: np.ndarray,
         noise_type: NoiseType = NoiseType.WHITE,
         amplitude: float = 1.0,
-        **kwargs: Any,
+        **kwargs,
     ) -> Signal:
         """Generate a noise signal.
 
@@ -67,8 +66,6 @@ class NoiseGenerator:
         Raises:
             PreconditionError: If amplitude is negative.
         """
-        if not (t is not None):
-            raise ValueError("t must be provided")
         if not (t is not None):
             raise ValueError("t must be provided")
         require(amplitude >= 0.0, f"amplitude must be non-negative, got {amplitude}")
@@ -126,8 +123,6 @@ class NoiseGenerator:
         # Number of random number generators
         if not (n is not None):
             raise ValueError("n must be provided")
-        if not (n is not None):
-            raise ValueError("n must be provided")
         num_sources = 16
 
         # Initialize sources
@@ -160,8 +155,6 @@ class NoiseGenerator:
         """Generate brown (Brownian) noise - integrated white noise."""
         if not (n is not None):
             raise ValueError("n must be provided")
-        if not (n is not None):
-            raise ValueError("n must be provided")
         white = self.rng.standard_normal(n)
         brown = np.cumsum(white)
 
@@ -176,8 +169,6 @@ class NoiseGenerator:
         """Generate blue noise (differentiated white noise)."""
         if not (n is not None):
             raise ValueError("n must be provided")
-        if not (n is not None):
-            raise ValueError("n must be provided")
         white = self.rng.standard_normal(n)
         blue = np.diff(white, prepend=white[0])
 
@@ -188,8 +179,6 @@ class NoiseGenerator:
 
     def _generate_violet_noise(self, n: int, amplitude: float) -> np.ndarray:
         """Generate violet noise (second derivative of white noise)."""
-        if not (n is not None):
-            raise ValueError("n must be provided")
         if not (n is not None):
             raise ValueError("n must be provided")
         white = self.rng.standard_normal(n)
@@ -205,8 +194,6 @@ class NoiseGenerator:
         # Uniform in [-amplitude*sqrt(3), amplitude*sqrt(3)] to have RMS = amplitude
         if not (n is not None):
             raise ValueError("n must be provided")
-        if not (n is not None):
-            raise ValueError("n must be provided")
         half_range = amplitude * np.sqrt(3)
         return self.rng.uniform(-half_range, half_range, n)
 
@@ -217,8 +204,6 @@ class NoiseGenerator:
         probability: float,
     ) -> np.ndarray:
         """Generate impulse (spike) noise."""
-        if not (n is not None):
-            raise ValueError("n must be provided")
         if not (n is not None):
             raise ValueError("n must be provided")
         values = np.zeros(n)
@@ -237,8 +222,6 @@ class NoiseGenerator:
         """Generate quantization noise (uniform within quantization step)."""
         if not (n is not None):
             raise ValueError("n must be provided")
-        if not (n is not None):
-            raise ValueError("n must be provided")
         step = 2 * amplitude / levels
         return self.rng.uniform(-step / 2, step / 2, n)
 
@@ -250,8 +233,6 @@ class NoiseGenerator:
         fs: float,
     ) -> np.ndarray:
         """Generate periodic disturbance (like power line noise)."""
-        if not (n is not None):
-            raise ValueError("n must be provided")
         if not (n is not None):
             raise ValueError("n must be provided")
         t = np.arange(n) / fs
@@ -277,7 +258,7 @@ def add_noise_to_signal(
     snr_db: float | None = None,
     amplitude: float | None = None,
     seed: int | None = None,
-    **kwargs: Any,
+    **kwargs,
 ) -> Signal:
     """Add noise to an existing signal.
 
@@ -292,8 +273,6 @@ def add_noise_to_signal(
     Returns:
         Signal with noise added.
     """
-    if not (signal is not None):
-        raise ValueError("signal must be provided")
     if not (signal is not None):
         raise ValueError("signal must be provided")
     generator = NoiseGenerator(seed)
@@ -327,7 +306,7 @@ def add_noise_to_signal(
 def generate_disturbance_profile(
     t: np.ndarray,
     disturbance_type: str = "step",
-    **kwargs: Any,
+    **kwargs,
 ) -> Signal:
     """Generate a disturbance signal for simulation.
 
@@ -345,8 +324,6 @@ def generate_disturbance_profile(
     Returns:
         Signal containing the disturbance.
     """
-    if not (t is not None):
-        raise ValueError("t must be provided")
     if not (t is not None):
         raise ValueError("t must be provided")
     n = len(t)
@@ -437,7 +414,7 @@ class DisturbanceSimulator:
         self,
         noise_type: NoiseType = NoiseType.WHITE,
         amplitude: float = 0.1,
-        **kwargs: Any,
+        **kwargs,
     ) -> DisturbanceSimulator:
         """Add a noise component.
 
@@ -449,8 +426,6 @@ class DisturbanceSimulator:
         Returns:
             Self for method chaining.
         """
-        if not (noise_type is not None):
-            raise ValueError("noise_type must be provided")
         if not (noise_type is not None):
             raise ValueError("noise_type must be provided")
         self.disturbances.append(
@@ -472,8 +447,6 @@ class DisturbanceSimulator:
         Returns:
             Self for method chaining.
         """
-        if not (step_time is not None):
-            raise ValueError("step_time must be provided")
         if not (step_time is not None):
             raise ValueError("step_time must be provided")
         self.disturbances.append(
@@ -500,8 +473,6 @@ class DisturbanceSimulator:
         Returns:
             Self for method chaining.
         """
-        if not (start_time is not None):
-            raise ValueError("start_time must be provided")
         if not (start_time is not None):
             raise ValueError("start_time must be provided")
         self.disturbances.append(
@@ -533,8 +504,6 @@ class DisturbanceSimulator:
         """
         if not (frequency is not None):
             raise ValueError("frequency must be provided")
-        if not (frequency is not None):
-            raise ValueError("frequency must be provided")
         self.disturbances.append(
             (
                 "disturbance",
@@ -552,8 +521,6 @@ class DisturbanceSimulator:
         Returns:
             Signal with all disturbances combined.
         """
-        if not (t is not None):
-            raise ValueError("t must be provided")
         if not (t is not None):
             raise ValueError("t must be provided")
         combined = np.zeros(len(t))
@@ -585,8 +552,6 @@ class DisturbanceSimulator:
         Returns:
             Signal with disturbances applied.
         """
-        if not (signal is not None):
-            raise ValueError("signal must be provided")
         if not (signal is not None):
             raise ValueError("signal must be provided")
         disturbance = self.generate(signal.time)

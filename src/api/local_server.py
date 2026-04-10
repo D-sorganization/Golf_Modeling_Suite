@@ -49,7 +49,6 @@ from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.responses import HTMLResponse, JSONResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 
-from src.api._version import __version__  # noqa: E402
 from src.api.diagnostics import (  # noqa: E402
     APIDiagnostics,
     get_diagnostic_endpoint_html,
@@ -609,7 +608,7 @@ def create_local_app() -> FastAPI:
             f"All endpoints are available under `{API_PREFIX}/` prefix.\n"
             "Legacy `/api/` routes are maintained for backward compatibility."
         ),
-        version=__version__,
+        version="2.0.0",
         docs_url="/api/docs",  # Swagger UI available locally
         redoc_url="/api/redoc",
     )

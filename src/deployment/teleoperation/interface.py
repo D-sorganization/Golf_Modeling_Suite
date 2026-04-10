@@ -77,8 +77,6 @@ class TeleoperationInterface:
         """
         if not (robot is not None):
             raise ValueError("robot must be provided")
-        if not (robot is not None):
-            raise ValueError("robot must be provided")
         self.robot = robot
         self.input = input_device
         self._mode = TeleoperationMode.POSITION
@@ -133,8 +131,6 @@ class TeleoperationInterface:
         """
         if not (leader_frame is not None):
             raise ValueError("leader_frame must be provided")
-        if not (leader_frame is not None):
-            raise ValueError("leader_frame must be provided")
         self._workspace.leader_frame = leader_frame
         self._workspace.follower_frame = follower_frame
         self._workspace.position_scale = scaling
@@ -158,10 +154,6 @@ class TeleoperationInterface:
             Control command for robot.
         """
         from src.deployment.realtime import ControlCommand, ControlMode
-
-        # Poll device for fresh input before reading state
-        if hasattr(self.input, "update"):
-            self.input.update()
 
         # Get device input
         device_pose = self.input.get_pose()
@@ -226,8 +218,6 @@ class TeleoperationInterface:
         Returns:
             Position control command.
         """
-        if not (device_pose is not None):
-            raise ValueError("device_pose must be provided")
         if not (device_pose is not None):
             raise ValueError("device_pose must be provided")
         from src.deployment.realtime import ControlCommand, ControlMode
@@ -296,8 +286,6 @@ class TeleoperationInterface:
         """
         if not (device_twist is not None):
             raise ValueError("device_twist must be provided")
-        if not (device_twist is not None):
-            raise ValueError("device_twist must be provided")
         from src.deployment.realtime import ControlCommand, ControlMode
 
         # Scale twist
@@ -343,8 +331,6 @@ class TeleoperationInterface:
         """
         if not (device_twist is not None):
             raise ValueError("device_twist must be provided")
-        if not (device_twist is not None):
-            raise ValueError("device_twist must be provided")
         from src.deployment.realtime import ControlCommand, ControlMode
 
         # Interpret twist as desired wrench
@@ -381,8 +367,6 @@ class TeleoperationInterface:
         Returns:
             Impedance control command.
         """
-        if not (device_pose is not None):
-            raise ValueError("device_pose must be provided")
         if not (device_pose is not None):
             raise ValueError("device_pose must be provided")
         from src.deployment.realtime import ControlCommand, ControlMode
@@ -476,8 +460,6 @@ class TeleoperationInterface:
             joint_velocities: Current joint velocities.
             action: Applied action/torque.
         """
-        if not (joint_positions is not None):
-            raise ValueError("joint_positions must be provided")
         if not (joint_positions is not None):
             raise ValueError("joint_positions must be provided")
         if not self._recording:

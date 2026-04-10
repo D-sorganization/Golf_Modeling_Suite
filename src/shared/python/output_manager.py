@@ -6,9 +6,7 @@ now lives in ``shared.python.data_io.output_manager``.
 
 from __future__ import annotations
 
-from typing import Any
-
-import pandas as pd
+from typing import TYPE_CHECKING, Any
 
 from src.shared.python.data_io.output_manager import (
     OutputFormat,
@@ -25,8 +23,6 @@ def save_results(
     """Backward-compatible convenience save helper."""
     if not (results is not None):
         raise ValueError("results must be provided")
-    if not (results is not None):
-        raise ValueError("results must be provided")
     manager = OutputManager()
     return str(
         manager.save_simulation_results(
@@ -39,11 +35,11 @@ def save_results(
 
 
 def load_results(
-    filename: str, format_type: str = "csv", engine: str = "mujoco"
+    filename: str,
+    format_type: str = "csv",
+    engine: str = "mujoco",
 ) -> pd.DataFrame | dict[str, Any] | list[dict[str, Any]]:
     """Backward-compatible convenience load helper."""
-    if not (filename is not None):
-        raise ValueError("filename must be provided")
     if not (filename is not None):
         raise ValueError("filename must be provided")
     manager = OutputManager()

@@ -1,9 +1,6 @@
 """Benchmark comparing trajectory-funnel RL policies across solver configurations."""
 
-from __future__ import annotations
-
 import logging
-from typing import Any
 
 import numpy as np
 
@@ -25,7 +22,9 @@ class TrajectoryFunnelBenchmark:
         ], "Mode must be 'transverse' or 'setpoint'"
         self.mode = mode
 
-    def setpoint_reward(self, current_state, target_state) -> float:
+    def setpoint_reward(
+        self, current_state: np.ndarray, target_state: np.ndarray
+    ) -> float:
         """
         Classical control approach: Drive Euclidean distance to the destination to zero.
         Ignores path geometry, heavily penalizes phase asynchrony.
@@ -35,7 +34,10 @@ class TrajectoryFunnelBenchmark:
         return float(-np.sum(error**2))
 
     def trajectory_funnel_reward(
-        self, current_state, reference_trajectory, current_phase
+        self,
+        current_state: np.ndarray,
+        reference_trajectory: np.ndarray,
+        current_phase: float,
     ) -> float:
         """
         Geometric approach: Reward confinement to the trajectory tube (orbital stability).
@@ -57,7 +59,7 @@ class TrajectoryFunnelBenchmark:
 
         return float(transverse_cost + phase_velocity_reward)
 
-    def simulate_agent_training_mock(self) -> dict[str, Any]:
+    def simulate_agent_training_mock(self) -> dict[str, float]:
         """
         Mocks the RL convergence behavior discussed in Chapter 10.
         This will be replaced with Stable Baselines3 + MuJoCo in future PRs.

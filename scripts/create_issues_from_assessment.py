@@ -83,13 +83,13 @@ def process_findings(
 
     summary = json.loads(path.read_text())
 
-    # Support both the current schema key ("issues") and the legacy key ("critical_issues")
-    all_findings = summary.get("issues", []) or summary.get("critical_issues", [])
-    criticals = [i for i in all_findings if i.get("severity") in sevs]
+    criticals = [
+        i for i in summary.get("critical_issues", []) if i.get("severity") in sevs
+    ]
 
     existing = get_existing_issues() if check_exist else []
 
-    for issue in criticals:
+    for issue in criticals[:20]:
         severity = issue.get("severity", "CRITICAL")
 
         desc = issue.get("description", "")

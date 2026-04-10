@@ -161,6 +161,26 @@ def test_launch_script_unified(mock_secure_popen, mock_validate, manager):
 
 
 @patch(_VALIDATE_SCRIPT)
+@patch(_SECURE_POPEN)
+def test_launch_script_unified_passes_extra_python_paths(
+    mock_secure_popen, mock_validate, manager
+):
+    manager.use_separate_terminals = False
+    mock_secure_popen.return_value = MagicMock()
+
+    with patch("threading.Thread"):
+        manager.launch_script(
+            "Test",
+            PureWindowsPath("/fake/script.py"),
+            PureWindowsPath("/fake/cwd"),
+            extra_python_paths=(Path("/external/provider/src"),),
+        )
+
+    env_passed = mock_secure_popen.call_args[1]["env"]
+    assert str(Path("/external/provider/src")) in env_passed["PYTHONPATH"]
+
+
+@patch(_VALIDATE_SCRIPT)
 @patch("subprocess.Popen")
 @patch(_SECURE_POPEN)
 def test_launch_script_separate_term(
