@@ -104,21 +104,26 @@ class ConfigurationManager(ContractChecker):
         try:
             with open(self.config_path, encoding="utf-8") as f:
                 data = json.load(f)
-
-            # Use dacite or simple dict unpacking with filtering
-            # For simplicity and robustness, we explicitly map fields or allow extra fields to be ignored
-            # if we use **data, but we need to match keys.
-            # Using a filtered dict to avoid TypeError on unknown keys
-            valid_keys = SimulationConfig.__annotations__.keys()
-            filtered_data = {k: v for k, v in data.items() if k in valid_keys}
-
-            config = SimulationConfig(**filtered_data)
-            config.validate()
-            return config
+        except json.JSONDecodeError as e:
+            raise GolfModelingError(
+                f"Failed to load config: malformed JSON in {self.config_path}: {e}"
+            ) from e
         except (FileNotFoundError, PermissionError, OSError) as e:
-            # Fallback to default if load fails, or raise?
-            # Raising is safer to alert user of corruption
+            # Raising is safer to alert user of corruption or access issues
             raise GolfModelingError(f"Failed to load config: {e}") from e
+
+        if not isinstance(data, dict):
+            raise GolfModelingError(
+                f"Failed to load config: expected a JSON object in {self.config_path}"
+            )
+
+        # Use a filtered dict to avoid TypeError on unknown keys.
+        valid_keys = SimulationConfig.__annotations__.keys()
+        filtered_data = {k: v for k, v in data.items() if k in valid_keys}
+
+        config = SimulationConfig(**filtered_data)
+        config.validate()
+        return config
 
     def save(self, config: SimulationConfig) -> None:
         """Save configuration to file."""

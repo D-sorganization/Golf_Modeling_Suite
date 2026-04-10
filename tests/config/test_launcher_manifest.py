@@ -418,6 +418,25 @@ class TestTileProperties:
         assert result["name"] == sample_tile_dict["name"]
         assert result["capabilities"] == sample_tile_dict["capabilities"]
 
+    def test_tile_web_route_roundtrip(self) -> None:
+        """Tile web_route should be preserved through serialization."""
+        tile = LauncherTile.from_dict(
+            {
+                "id": "putting_green",
+                "name": "Putting Green",
+                "description": "Realistic putting green simulation",
+                "category": "physics_engine",
+                "type": "putting_green",
+                "path": "src/engines/physics_engines/putting_green/python/simulator.py",
+                "logo": "putting_green.svg",
+                "status": "simulator",
+                "web_route": "/tools/putting-green",
+            }
+        )
+
+        result = tile.to_dict()
+        assert result["web_route"] == "/tools/putting-green"
+
 
 # =============================================================================
 # 3. Logo Validation
@@ -589,6 +608,18 @@ class TestParity:
         json_str = json.dumps(data)
         parsed = json.loads(json_str)
         assert len(parsed["tiles"]) == len(manifest.tiles)
+
+    def test_manifest_preserves_web_routes(self, manifest: LauncherManifest) -> None:
+        """Manifest serialization should preserve optional web routes."""
+        tile = manifest.get_tile("putting_green")
+        assert tile is not None
+        assert tile.web_route == "/tools/putting-green"
+
+        serialized = manifest.to_dict()
+        tile_data = next(
+            entry for entry in serialized["tiles"] if entry["id"] == "putting_green"
+        )
+        assert tile_data["web_route"] == "/tools/putting-green"
 
 
 # =============================================================================

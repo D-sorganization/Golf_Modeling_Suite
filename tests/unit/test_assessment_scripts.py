@@ -1,8 +1,13 @@
 import unittest
+import json
+from tempfile import TemporaryDirectory
 from pathlib import Path
 from unittest.mock import patch
 
 from scripts.assess_repository import assess_J
+from scripts.create_issues_from_assessment import process_findings
+from scripts.finalize_comprehensive_assessment import main as finalize_assessment
+from scripts import maintain_workflows
 from scripts.generate_assessment_summary import extract_score_from_report
 
 
@@ -49,6 +54,90 @@ class TestAssessmentScripts(unittest.TestCase):
                 # We expect 7.5 if api or src/api exists.
                 # Since we are running in the actual repo, src/api exists.
                 self.assertEqual(score, 7.5)
+
+    @patch("scripts.create_issues_from_assessment.get_existing_issues", return_value=[])
+    @patch("scripts.create_issues_from_assessment.create_issue", return_value=True)
+    def test_process_findings_uses_issues_schema_and_processes_all(
+        self, mock_create_issue, _mock_existing
+    ):
+        with TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir)
+            summary = tmp_path / "summary.json"
+            output_file = tmp_path / "issues.md"
+
+            issues = [
+                {
+                    "severity": "MAJOR",
+                    "description": f"Finding {i}",
+                    "source": "Assessment_J_API_Design",
+                }
+                for i in range(25)
+            ]
+            summary.write_text(json.dumps({"issues": issues}), encoding="utf-8")
+
+            result = process_findings(summary, ["ALL"], False, True, output_file)
+
+            self.assertEqual(result, 0)
+            self.assertEqual(mock_create_issue.call_count, 25)
+            self.assertTrue(output_file.exists())
+            contents = output_file.read_text(encoding="utf-8")
+            self.assertIn("Assessment Issue Staging Report", contents)
+            self.assertIn("Finding 24", contents)
+
+    def test_finalize_assessment_uses_current_pragmatic_json(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir)
+            summary = tmp_path / "assessment_summary.json"
+            review_json = tmp_path / "review.json"
+            completist = tmp_path / "COMPLETIST_LATEST.md"
+            output_md = tmp_path / "Comprehensive_Assessment.md"
+
+            summary.write_text(
+                json.dumps(
+                    {
+                        "overall_score": 8.0,
+                        "category_scores": {"A": {"name": "Code Structure", "score": 8.0}},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            review_json.write_text(
+                json.dumps(
+                    {
+                        "issues": [
+                            {
+                                "principle": "DRY",
+                                "severity": "MAJOR",
+                                "title": "Duplicate code block",
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            completist.write_text("**Critical Gaps**: 3\n", encoding="utf-8")
+
+            with patch(
+                "scripts.finalize_comprehensive_assessment.SUMMARY_JSON", summary
+            ), patch(
+                "scripts.finalize_comprehensive_assessment.PRAGMATIC_REPORT",
+                review_json,
+            ), patch(
+                "scripts.finalize_comprehensive_assessment.COMPLETIST_REPORT",
+                completist,
+            ), patch(
+                "scripts.finalize_comprehensive_assessment.OUTPUT_MD", output_md
+            ):
+                self.assertEqual(finalize_assessment(), 0)
+
+            report = output_md.read_text(encoding="utf-8")
+            self.assertIn("Pragmatic Programmer Review", report)
+            self.assertIn("Duplicate code block", report)
+
+    def test_maintain_workflows_fails_loudly(self):
+        self.assertEqual(maintain_workflows.main(), 1)
+        with self.assertRaises(NotImplementedError):
+            maintain_workflows.refactor_workflow("dummy.yml")
 
 
 if __name__ == "__main__":

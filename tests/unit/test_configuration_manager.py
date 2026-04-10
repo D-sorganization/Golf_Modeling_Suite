@@ -74,3 +74,14 @@ def test_load_nonexistent():
     manager = ConfigurationManager(Path("nonexistent.json"))
     config = manager.load()
     assert config.height_m == 1.8
+
+
+def test_load_malformed_json_raises_normalized_error(tmp_path):
+    """Test malformed JSON is normalized into GolfModelingError."""
+    config_file = tmp_path / "broken.json"
+    config_file.write_text('{"height_m": 1.7,}', encoding="utf-8")
+
+    manager = ConfigurationManager(config_file)
+
+    with pytest.raises(GolfModelingError, match="malformed JSON"):
+        manager.load()

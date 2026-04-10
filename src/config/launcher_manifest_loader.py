@@ -126,6 +126,7 @@ class LauncherTile:
     path: str
     logo: str
     status: str
+    web_route: str | None = None
     capabilities: tuple[str, ...] = ()
     order: int = 99
     engine_type: str | None = None
@@ -160,6 +161,7 @@ class LauncherTile:
             path=data["path"],
             logo=data["logo"],
             status=data.get("status", "unknown"),
+            web_route=data.get("web_route"),
             capabilities=tuple(data.get("capabilities", [])),
             order=data.get("order", 99),
             engine_type=data.get("engine_type"),
@@ -186,6 +188,8 @@ class LauncherTile:
             "capabilities": list(self.capabilities),
             "order": self.order,
         }
+        if self.web_route is not None:
+            result["web_route"] = self.web_route
         if self.engine_type:
             result["engine_type"] = self.engine_type
         if self.provider:
