@@ -71,9 +71,6 @@ def _install_fake_perturbation_modules() -> None:
     )
     perturbation_analysis_module.variability_summary = lambda *args, **kwargs: None
 
-
-
-
     sys.modules["src.shared.python.pendulum_simulator.perturbation_analysis"] = (
         perturbation_analysis_module
     )
