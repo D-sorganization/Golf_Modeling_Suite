@@ -73,7 +73,9 @@ def _load_setup_module(monkeypatch):
     monkeypatch.setattr(
         setup_config,
         "build_setup_configuration",
-        lambda project_root, profile_name: _fake_setup_configuration(project_root),
+        lambda project_root, profile_name, **kwargs: _fake_setup_configuration(
+            project_root
+        ),
     )
     sys.modules.pop("installer.windows.setup", None)
     module = importlib.import_module("installer.windows.setup")
