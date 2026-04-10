@@ -136,4 +136,3 @@ class InverseKinematicsSolver:
             positions.append([x, y, z])
 
         return np.array(positions)
-

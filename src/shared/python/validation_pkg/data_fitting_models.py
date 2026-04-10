@@ -92,4 +92,3 @@ class ParameterEstimationReport:
     sensitivities: list[SensitivityResult]
     quality_metrics: dict[str, float]
     validation_errors: dict[str, float] = field(default_factory=dict)
-

@@ -206,4 +206,3 @@ class ParameterEstimator:
         return self._fit_from_markers(
             marker_array, segment_names, total_body_mass, known_lengths
         )
-

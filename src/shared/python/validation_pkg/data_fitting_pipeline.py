@@ -220,4 +220,3 @@ class A3FittingPipeline:
             return
 
         raise ValueError(f"Unsupported export format: {format}")
-
