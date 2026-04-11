@@ -48,8 +48,8 @@ def _install_fake_perturbation_modules() -> None:
     class _FakePerturbationSummary:
         pass
 
-    config_module.PerturbationConfig = _FakePerturbationConfig  # type: ignore[attr-defined]
-    config_module.PerturbationSummary = _FakePerturbationSummary  # type: ignore[attr-defined]
+    config_module.PerturbationConfig = _FakePerturbationConfig
+    config_module.PerturbationSummary = _FakePerturbationSummary
     sys.modules["src.shared.python.pendulum_simulator.perturbation.config"] = (
         config_module
     )
@@ -58,10 +58,17 @@ def _install_fake_perturbation_modules() -> None:
         "src.shared.python.pendulum_simulator.pendulum_perturbation_analyzer"
     )
 
-    class _FakePendulumPerturbationAnalyzer:
-        pass
+    class _FakeAnalyzer:
+        def __init__(self, *args, **kwargs) -> None:
+            pass
 
-    analyzer_module.PendulumPerturbationAnalyzer = _FakePendulumPerturbationAnalyzer  # type: ignore[attr-defined]
+        def set_base_torque_profile(self, *args, **kwargs) -> None:
+            pass
+
+        def run_batch(self, *args, **kwargs):
+            return _FakePerturbationSummary()
+
+    analyzer_module.PendulumPerturbationAnalyzer = _FakeAnalyzer
     sys.modules[
         "src.shared.python.pendulum_simulator.pendulum_perturbation_analyzer"
     ] = analyzer_module
@@ -70,7 +77,6 @@ def _install_fake_perturbation_modules() -> None:
         "src.shared.python.pendulum_simulator.perturbation_analysis"
     )
     perturbation_analysis_module.variability_summary = lambda *args, **kwargs: None
-
     sys.modules["src.shared.python.pendulum_simulator.perturbation_analysis"] = (
         perturbation_analysis_module
     )
@@ -92,75 +98,144 @@ class _FakeResult:
     def positions_at(self, idx: int):
         return self._positions[idx]
 
-    def velocities_at(self, idx: int):
+    def joint_velocities_at(self, idx: int):
         return self._velocities[idx]
 
-    def to_df(self):
-        import pandas as pd
 
-        df = pd.DataFrame(
-            {
-                "time": self.t,
-            }
-        )
-        for i in range(len(self._positions[0])):
-            df[f"angle_{i + 1}"] = [p[i] for p in self._positions]
-            df[f"velocity_{i + 1}"] = [v[i] for v in self._velocities]
-        return df
+class _FakePendulum:
+    def __init__(self) -> None:
+        self.tilt = None
+        self.azimuth = None
 
+    def set_tilt_angle(self, value) -> None:
+        self.tilt = value
 
-class _FakeConfig:
-    pass
+    def set_view_azimuth(self, value) -> None:
+        self.azimuth = value
 
 
-class TestPanelBuildersHelpers:
-    def old_test_create_velocity_plot_data(self) -> None:
-        times = [0.0, 0.1, 0.2]
-        positions = [[0.1, 0.2], [0.15, 0.25], [0.2, 0.3]]
-        velocities = [[1.0, 2.0], [1.1, 2.1], [1.2, 2.2]]
-        result = _FakeResult(positions, velocities, times)
+class _FakeControls:
+    PRESETS = {
+        "Preset": (None, None, None, None, "1.0, 2.0", "3.0"),
+    }
 
-        x, y1, y2 = panel_builders._create_velocity_plot_data(result, 2)
+    def __init__(self, params: dict) -> None:
+        self._params = params
 
-        assert np.array_equal(x, times)
-        assert np.array_equal(y1, [1.0, 1.1, 1.2])
-        assert np.array_equal(y2, [2.0, 2.1, 2.2])
+    def get_params(self) -> dict:
+        return self._params
 
-    def old_test_create_phase_plot_data(self) -> None:
-        times = [0.0, 0.1, 0.2]
-        positions = [[0.1, 0.2], [0.15, 0.25], [0.2, 0.3]]
-        velocities = [[1.0, 2.0], [1.1, 2.1], [1.2, 2.2]]
-        result = _FakeResult(positions, velocities, times)
 
-        x, y1, y2 = panel_builders._create_phase_plot_data(result, 2)
+class _FakeSimulationPanel:
+    def __init__(self, **kwargs) -> None:
+        self.kwargs = kwargs
+        self.__dict__.update(kwargs)
+        self.perturbation_panel = None
+        self._settings_key = None
 
-        assert np.array_equal(x, [0.1, 0.15, 0.2])
-        assert np.array_equal(y1, [1.0, 1.1, 1.2])
-        assert np.array_equal(y2, [2.0, 2.1, 2.2])
+    def set_perturbation_panel(self, panel) -> None:
+        self.perturbation_panel = panel
 
-    def old_test_create_energy_plot_data_double(self) -> None:
-        times = [0.0, 0.1, 0.2]
-        positions = [[0.1, 0.2], [0.15, 0.25], [0.2, 0.3]]
-        velocities = [[1.0, 2.0], [1.1, 2.1], [1.2, 2.2]]
-        result = _FakeResult(positions, velocities, times)
-        config = _FakeConfig()
-        config.m1 = 1.0  # type: ignore[attr-defined]
-        config.m2 = 1.0  # type: ignore[attr-defined]
-        config.l1 = 1.0  # type: ignore[attr-defined]
-        config.l2 = 1.0  # type: ignore[attr-defined]
-        config.g = 9.81  # type: ignore[attr-defined]
 
-        x, e_kin, e_pot, e_tot = panel_builders._create_energy_plot_data_double(
-            result, config
-        )
+class _FakePerturbationPanel:
+    def __init__(self) -> None:
+        self.coeffs_source = None
+        self.preset_names_source = None
+        self.preset_coeffs = None
+        self.simulate_fn = None
+        self.extract_fn = None
 
-        assert np.array_equal(x, times)
-        assert len(e_kin) == 3
-        assert len(e_pot) == 3
-        assert len(e_tot) == 3
+    def set_coeffs_source(self, callback) -> None:
+        self.coeffs_source = callback
 
-        # Simple bounds check, actual math is in energy_components which we assume is correct
-        assert all(e > 0 for e in e_kin)
-        assert all(math.isfinite(e) for e in e_pot)
-        assert all(math.isfinite(e) for e in e_tot)
-        assert np.allclose(e_tot, np.array(e_kin) + np.array(e_pot))
+    def set_preset_source(self, names_callback, coeffs_callback) -> None:
+        self.preset_names_source = names_callback
+        self.preset_coeffs = coeffs_callback
+
+    def set_simulation_callbacks(self, simulate_fn, extract_fn) -> None:
+        self.simulate_fn = simulate_fn
+        self.extract_fn = extract_fn
+
+
+class _FakeOptimizationWidget:
+    def __init__(self, model_name: str, n_torque_params: int) -> None:
+        self.model_name = model_name
+        self.n_torque_params = n_torque_params
+
+
+def test_helper_parsers_and_motion_extraction() -> None:
+    assert panel_builders._parse_coefficients("1.0, 2.5, , 3") == [1.0, 2.5, 3.0]
+    assert panel_builders._parse_coefficients("") == [0.0]
+    assert panel_builders._chunk_coefficients(np.array([1, 2, 3, 4, 5]), 2) == [
+        [1, 2],
+        [3, 4, 5],
+    ]
+
+    direct = _FakeResult(
+        positions=[{"tip": (1.0, 2.0)}],
+        velocities=[{"tip": (3.0, 4.0)}],
+        times=[0.0],
+    )
+    speed, pos = panel_builders._extract_tip_motion(direct, "tip", velocity_key="tip")
+    assert speed == pytest.approx(5.0)
+    assert pos.tolist() == [1.0, 2.0]
+
+    derived = _FakeResult(
+        positions=[{"tip": (0.0, 0.0)}, {"tip": (3.0, 4.0)}],
+        velocities=[{}, {}],
+        times=[0.0, 2.0],
+    )
+    speed, pos = panel_builders._extract_tip_motion(derived, "tip")
+    assert speed == pytest.approx(2.5)
+    assert pos.tolist() == [3.0, 4.0]
+
+
+def test_build_double_panel_wires_helper_callbacks(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_pendulum = _FakePendulum()
+    fake_controls = _FakeControls(
+        {
+            "m1": 1.0,
+            "m2": 2.0,
+            "L1": 3.0,
+            "L2": 4.0,
+            "theta1_rad": 0.1,
+            "phi_rad": 0.2,
+            "dtheta1": 0.3,
+            "dphi": 0.4,
+            "shoulder_coeffs": [0.1, 0.2],
+            "wrist_coeffs": [0.3, 0.4],
+            "t_end": 1.5,
+            "tilt_deg": 15.0,
+            "azimuth_deg": 30.0,
+            "gravity_on": True,
+            "enable_limits": False,
+            "enable_clamp": False,
+        }
+    )
+    fake_perturb = _FakePerturbationPanel()
+
+    monkeypatch.setattr(panel_builders, "ControlsWidget", lambda: fake_controls)
+    monkeypatch.setattr(panel_builders, "PendulumWidget", lambda: fake_pendulum)
+    monkeypatch.setattr(panel_builders, "MatrixWidget", lambda: object())
+    monkeypatch.setattr(panel_builders, "TorqueHistoryWidget", lambda: object())
+    monkeypatch.setattr(panel_builders, "OptimizationWidget", _FakeOptimizationWidget)
+    monkeypatch.setattr(panel_builders, "PerturbationPanel", lambda: fake_perturb)
+    monkeypatch.setattr(panel_builders, "SimulationPanel", _FakeSimulationPanel)
+
+    panel = panel_builders.build_double_panel(object())
+
+    assert panel._settings_key == "splitter_double"
+    assert panel.pendulum is fake_pendulum
+
+    params = panel.kwargs["params_builder"](fake_controls.get_params())
+    assert fake_pendulum.tilt == pytest.approx(math.radians(15.0))
+    assert fake_pendulum.azimuth == pytest.approx(math.radians(30.0))
+    assert params.g == pytest.approx(
+        panel_builders.GRAVITY_MSS * math.cos(math.radians(15.0))
+    )
+
+    assert fake_perturb.coeffs_source() == [[0.1, 0.2], [0.3, 0.4]]
+    assert fake_perturb.preset_names_source() == ["Preset"]
+    assert fake_perturb.preset_coeffs("Preset") == [[1.0, 2.0], [3.0]]
