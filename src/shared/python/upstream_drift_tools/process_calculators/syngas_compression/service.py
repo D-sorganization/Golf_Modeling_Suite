@@ -59,9 +59,9 @@ def build_active_stages(
             CompressionStage(
                 inlet_pressure=float(inlet_pressure),
                 outlet_pressure=float(outlet_pressure),
-                inlet_temperature=inlet_temp_k
-                if index == 0
-                else INTERCOOLER_OUTLET_TEMP_K,
+                inlet_temperature=(
+                    inlet_temp_k if index == 0 else INTERCOOLER_OUTLET_TEMP_K
+                ),
                 efficiency=float(efficiency_pct) / 100.0,
                 compression_type=compression_type,
             )
