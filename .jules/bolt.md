@@ -1,4 +1,9 @@
+## 2026-01-08 - NumPy Reduction Overhead on Small Axis
+**Learning:** When calculating min/max for an array with shape `(N, 2)` where N is large (100k+), doing `np.min(data, axis=0)` is significantly slower (~17x) than accessing columns separately `np.min(data[:, 0])`. This counter-intuitive result is likely due to the overhead of the general axis reduction mechanism in NumPy versus the optimized contiguous memory scan for a single slice.
 
-## 2026-04-10 - [Optimize np.linalg.norm in handedness_support and electrical_model]
-**Learning:** np.sqrt(np.sum(np.square(diffs, dtype=float), axis=1)) is faster than np.linalg.norm(diffs, axis=1) for small inner dimensions when calculating euclidean distances for 3D paths, avoiding the overhead of np.linalg.norm.
-**Action:** Replace np.linalg.norm(..., axis=1) with np.sqrt(np.sum(np.square(..., dtype=float), axis=1)) for arrays with small inner dimensions.
+**Action:** For arrays with a very small second dimension (e.g., 2D or 3D points), prefer separate column operations over `axis=0` reduction if performance is critical.
+
+## 2026-01-20 - Insufficient Allocation for DTW Backtracking
+**Learning:** In Dynamic Time Warping (DTW) path backtracking, the path length can be up to `N + M` (or `N + M - 1`), not just `max(N, M)`. Allocating only `max(N, M)` causes `IndexError` for non-diagonal paths. A specific implementation in `signal_processing.py` had this bug, causing crashes for real-world signals that weren't perfectly aligned.
+
+**Action:** Always allocate `N + M` for DTW path buffers to handle the worst-case scenario (pure insertion/deletion).
