@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import pytest
 
+from src.shared.python.upstream_drift_tools.process_calculators.constants import (
+    INTERCOOLER_OUTLET_TEMP_K,
+)
 from src.shared.python.upstream_drift_tools.process_calculators.syngas_compression_calculator import (
     CompressionStage,
     SyngasCompressionEngine,
@@ -109,3 +112,65 @@ class TestCalculateCompressionWork:
         )
         with pytest.raises(ValueError):
             self._ENGINE.calculate_compression_work(stage, 1000.0, _MIX_PROPS)
+
+
+class TestCalculateMultistageCompression:
+    def test_multistage_result_uses_intercooling(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        engine = SyngasCompressionEngine()
+        stages = [
+            CompressionStage(1.0, 3.0, 313.15, 0.85, "isentropic"),
+            CompressionStage(3.0, 9.0, 313.15, 0.85, "isentropic"),
+        ]
+
+        monkeypatch.setattr(
+            engine, "calculate_mixture_properties", lambda _: _MIX_PROPS
+        )
+        monkeypatch.setattr(
+            engine,
+            "calculate_water_dropout",
+            lambda *args, **kwargs: {
+                "water_vapor_pressure": 1.0,
+                "relative_humidity": 0.0,
+                "water_dropout": 0.0,
+                "condensation_rate": 0.0,
+                "max_water_vapor": 0.0,
+            },
+        )
+
+        result = engine.calculate_multistage_compression(
+            stages,
+            1000.0,
+            {"H2O": 0.0},
+            intercooling=True,
+        )
+
+        assert len(result["stages"]) == 2
+        assert result["stages"][0]["stage_number"] == 1
+        assert result["stages"][1]["inlet_temp"] == INTERCOOLER_OUTLET_TEMP_K
+        assert result["total_power_hp"] > 0
+
+
+class TestAnalyzeProcessConditions:
+    def test_detects_high_temperature_pressure_and_water_dropout(self) -> None:
+        engine = SyngasCompressionEngine()
+        result = {
+            "stages": [
+                {
+                    "work_isentropic": 100.0,
+                    "work_actual": 140.0,
+                    "water_dropout": {"water_dropout": 0.25},
+                }
+            ],
+            "total_power_hp": 10000.0,
+            "final_temperature": 600.0,
+            "final_pressure": 500.0,
+        }
+
+        analysis = engine.analyze_process_conditions(result)
+
+        assert analysis["warnings"]
+        assert analysis["concerns"]
+        assert analysis["recommendations"]
+        assert analysis["total_water_dropout"] == pytest.approx(0.25)
