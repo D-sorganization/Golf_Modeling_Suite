@@ -216,14 +216,7 @@ class PinocchioPoseEditor(BasePoseEditor):
 
         if any(
             x in name_lower
-            for x in [
-                "spine",
-                "back",
-                "torso",
-                "trunk",
-                "lowerback",
-                "upperback",
-            ]  # noqa: E501
+            for x in ["spine", "back", "torso", "trunk", "lowerback", "upperback"]  # noqa: E501
         ):
             return "Spine"
 

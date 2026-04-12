@@ -92,9 +92,7 @@ def export_to_matlab(
 
         return True
 
-    except (
-        Exception
-    ) as e:  # noqa: BLE001  # broad-catch intentional: any I/O error returns False
+    except Exception as e:  # noqa: BLE001  # broad-catch intentional: any I/O error returns False
         logger.error(f"Failed to export to MATLAB: {e}")
         return False
 
@@ -168,9 +166,7 @@ def export_to_hdf5(
 
         return True
 
-    except (
-        Exception
-    ) as e:  # noqa: BLE001  # broad-catch intentional: any I/O error returns False
+    except Exception as e:  # noqa: BLE001  # broad-catch intentional: any I/O error returns False
         logger.error(f"Failed to export to HDF5: {e}")
         return False
 
