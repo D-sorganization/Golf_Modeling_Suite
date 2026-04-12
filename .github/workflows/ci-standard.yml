@@ -59,7 +59,7 @@ permissions:
 jobs:
   # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 2
     outputs:
       runner: ${{ steps.check.outputs.runner }}
@@ -81,7 +81,7 @@ jobs:
           fi
   quality-gate:
     needs: pick-runner
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
@@ -182,7 +182,7 @@ jobs:
 
   tests:
     needs: [pick-runner, quality-gate]
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     timeout-minutes: 20 # Prevent runaway tests - hard cutoff
     strategy:
       matrix:
@@ -278,7 +278,7 @@ jobs:
 
   shared-tools-consumer-contracts:
     needs: [pick-runner, quality-gate]
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
@@ -322,7 +322,7 @@ jobs:
 
   frontend-tests:
     needs: [pick-runner, quality-gate]
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     defaults:
       run:
         working-directory: ./ui
@@ -359,7 +359,7 @@ jobs:
   # =============================================================================
   matlab-tests:
     needs: [pick-runner, quality-gate]
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     if: false # DISABLED - Requires MATLAB license not available in CI
     continue-on-error: true
     steps:
@@ -378,7 +378,7 @@ jobs:
   # =============================================================================
   arduino-build:
     needs: [pick-runner, quality-gate]
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     if: false # DISABLED - No Arduino components in this project
     steps:
       - uses: actions/checkout@v6
@@ -397,7 +397,7 @@ jobs:
   # =============================================================================
   rust-quality-gate:
     needs: pick-runner
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
