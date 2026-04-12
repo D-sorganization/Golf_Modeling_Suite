@@ -55,7 +55,7 @@ jobs:
 
   # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 2
     outputs:
       runner: ${{ steps.check.outputs.runner }}
@@ -78,7 +78,7 @@ jobs:
   iterative-fix:
     needs: pick-runner
     name: Fix and Verify CI (Iterative)
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     timeout-minutes: 30
     # Only run on failures (not success) for workflow_run events
     if: |

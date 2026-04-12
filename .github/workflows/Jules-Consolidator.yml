@@ -29,7 +29,7 @@ jobs:
 
   # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 2
     outputs:
       runner: ${{ steps.check.outputs.runner }}
@@ -51,7 +51,7 @@ jobs:
           fi
   discover:
     needs: pick-runner
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     outputs:
       pr_count: ${{ steps.list.outputs.count }}
       pr_list: ${{ steps.list.outputs.prs }}
@@ -90,7 +90,7 @@ jobs:
   consolidate:
     needs: [pick-runner, discover]
     if: needs.discover.outputs.should_consolidate == 'true' && inputs.dry_run != 'true'
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v6
         with:

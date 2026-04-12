@@ -38,7 +38,7 @@ jobs:
 
   # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 2
     outputs:
       runner: ${{ steps.check.outputs.runner }}
@@ -60,7 +60,7 @@ jobs:
           fi
   cross-engine-validation:
     needs: pick-runner
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     timeout-minutes: 60
 
     strategy:
@@ -228,7 +228,7 @@ jobs:
   publish-dashboard:
     needs: [pick-runner, cross-engine-validation]
     if: always()
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
 
     steps:
       - name: Download test results
