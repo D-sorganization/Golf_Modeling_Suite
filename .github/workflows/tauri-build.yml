@@ -60,7 +60,7 @@ jobs:
   check:
     needs: pick-runner
     name: Check (Rust + TypeScript)
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6

@@ -43,7 +43,7 @@ jobs:
   complexity-metrics:
     needs: pick-runner
     name: Complexity Analysis (radon)
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v6
 
@@ -122,7 +122,7 @@ jobs:
   duplication-metrics:
     needs: pick-runner
     name: Duplication Analysis (jscpd)
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v6
 
@@ -200,7 +200,7 @@ jobs:
     name: Metrics Summary
     needs: [pick-runner, complexity-metrics, duplication-metrics]
     if: always()
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     steps:
       - name: Final Summary
         run: |

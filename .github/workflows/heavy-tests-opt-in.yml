@@ -48,7 +48,7 @@ jobs:
   run-heavy-tests:
     needs: pick-runner
     name: Heavy Integration Tests
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     timeout-minutes: 90
     env:
       HEAVY_TEST_SLACK_WEBHOOK: ${{ secrets.HEAVY_TEST_SLACK_WEBHOOK }}
