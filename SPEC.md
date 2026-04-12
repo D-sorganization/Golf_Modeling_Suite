@@ -29,7 +29,7 @@ Last-Updated: 2026-04-12T00:59:40Z
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.88                                             |
+| **Spec Version**        | 1.0.89                                             |
 | **Last Spec Update**    | 2026-04-10                                         |
 
 ## 2. Purpose & Mission
@@ -335,6 +335,7 @@ UpstreamDrift employs a comprehensive test pyramid with multiple specialized cat
 
 | Tool       | Version | Purpose                | Blocking? |
 | ---------- | ------- | ---------------------- | --------- |
+| 2026-04-12 | 1.0.89  | Performance optimization: replaced `np.linalg.norm(..., axis=1)`, `np.sum(diff**2, axis=-1)` and explicit array math with dimension-agnostic `np.einsum` to eliminate temporary array allocation overhead when computing Euclidean distances. |
 | ruff       | latest  | Linting and formatting | Yes       |
 | mypy       | 1.7+    | Static type checking   | Yes       |
 | pytest     | 7.0+    | Testing framework      | Yes       |
@@ -403,6 +404,7 @@ Beyond standard tools, CI enforces custom checks:
 
 | Package    | Version | Purpose                |
 | ---------- | ------- | ---------------------- |
+| 2026-04-12 | 1.0.89  | Performance optimization: replaced `np.linalg.norm(..., axis=1)`, `np.sum(diff**2, axis=-1)` and explicit array math with dimension-agnostic `np.einsum` to eliminate temporary array allocation overhead when computing Euclidean distances. |
 | pytest     | 7.0+    | Testing framework      |
 | pytest-cov | 4.0+    | Coverage measurement   |
 | hypothesis | 6.0+    | Property-based testing |
@@ -495,6 +497,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-12 | 1.0.89  | Performance optimization: replaced `np.linalg.norm(..., axis=1)`, `np.sum(diff**2, axis=-1)` and explicit array math with dimension-agnostic `np.einsum` to eliminate temporary array allocation overhead when computing Euclidean distances. |
 | 2026-04-10 | 1.0.87  | Integration(editor-tools): synchronized the shared `text_editor_diff_mixin.py` leaf module with `Tools`, declared type-only editor diff mixin state without changing runtime behavior, and added a drift-guard regression test that ignores the type-only block while pinning selected editor leaf modules to the upstream sibling-repo baseline.                                                                                                                                                                                                                                                                                     |
 | 2026-04-10 | 1.0.86  | Optional-stack contracts(Pinocchio): preserved root-body MuJoCo joints during URDF export so Pinocchio models retain the MuJoCo velocity-DOF contract, rejected mock-only Pinocchio availability surfaces, and isolated induced-acceleration unit mocks from global `sys.modules` leakage.                                                                                                                                                                                                                                                                                                                                            |
 | 2026-04-10 | 1.0.85  | Optional-stack contracts(Drake): tightened Drake availability probing to reject mock-only or partial `pydrake` surfaces, restored module-scoped Drake dependency mocks for module-scoped tests, and aligned the isolated strict reset test with the initialized-engine precondition.                                                                                                                                                                                                                                                                                                                                                  |
