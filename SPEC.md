@@ -335,7 +335,6 @@ UpstreamDrift employs a comprehensive test pyramid with multiple specialized cat
 
 | Tool       | Version | Purpose                | Blocking? |
 | ---------- | ------- | ---------------------- | --------- |
-| 2026-04-12 | 1.0.89  | Performance optimization: replaced `np.linalg.norm(..., axis=1)`, `np.sum(diff**2, axis=-1)` and explicit array math with dimension-agnostic `np.einsum` to eliminate temporary array allocation overhead when computing Euclidean distances. |
 | ruff       | latest  | Linting and formatting | Yes       |
 | mypy       | 1.7+    | Static type checking   | Yes       |
 | pytest     | 7.0+    | Testing framework      | Yes       |
@@ -404,7 +403,6 @@ Beyond standard tools, CI enforces custom checks:
 
 | Package    | Version | Purpose                |
 | ---------- | ------- | ---------------------- |
-| 2026-04-12 | 1.0.89  | Performance optimization: replaced `np.linalg.norm(..., axis=1)`, `np.sum(diff**2, axis=-1)` and explicit array math with dimension-agnostic `np.einsum` to eliminate temporary array allocation overhead when computing Euclidean distances. |
 | pytest     | 7.0+    | Testing framework      |
 | pytest-cov | 4.0+    | Coverage measurement   |
 | hypothesis | 6.0+    | Property-based testing |
