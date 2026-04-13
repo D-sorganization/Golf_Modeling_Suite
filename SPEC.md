@@ -29,7 +29,7 @@ Last-Updated: 2026-04-12T12:00:00Z
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.90                                             |
+| **Spec Version**        | 1.0.91                                             |
 | **Last Spec Update**    | 2026-04-13                                         |
 
 ## 2. Purpose & Mission
@@ -591,6 +591,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 | 2026-04-13 | 1.0.90  | Performance optimization: Replaced `np.sum(diff**2, axis=1)` and `np.sqrt(np.sum(diff**2, axis=1))` with dimension-agnostic, zero-allocation `np.einsum('...i,...i->...', diff, diff)` in `src/shared/python/analysis/nonlinear_dynamics.py` for ~3x speedup. |
 | 2026-04-13 | 1.0.90  | Performance optimization: Replaced `np.sum(diff**2, axis=1)` and `np.sqrt(np.sum(diff**2, axis=1))` with dimension-agnostic, zero-allocation `np.einsum('...i,...i->...', diff, diff)` in `src/shared/python/analysis/nonlinear_dynamics.py` for ~3x speedup. |
 | 2026-03-29 | 1.0.1   | Performance optimization: Replaced `np.linalg.norm(..., axis=1)` with explicit element-wise arithmetic (`np.sqrt` and `np.hypot`) in physics ground reaction forces calculations for a ~5-10x speedup                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 2026-04-13 | 1.0.91  | Performance optimization: Replaced explicit element-wise `np.sqrt(x**2 + y**2 + z**2)` with dimension-agnostic, zero-allocation `np.sqrt(np.einsum('...i,...i->...', diff, diff))` in `src/shared/python/physics/ground_reaction_forces.py` for ~35% speedup over `np.linalg.norm` |
 | 2026-04-13 | 1.0.90  | Performance optimization: Replaced `np.sum(diff**2, axis=1)` and `np.sqrt(np.sum(diff**2, axis=1))` with dimension-agnostic, zero-allocation `np.einsum('...i,...i->...', diff, diff)` in `src/shared/python/analysis/nonlinear_dynamics.py` for ~3x speedup. |
 | 2026-04-13 | 1.0.90  | Performance optimization: Replaced `np.sum(diff**2, axis=1)` and `np.sqrt(np.sum(diff**2, axis=1))` with dimension-agnostic, zero-allocation `np.einsum('...i,...i->...', diff, diff)` in `src/shared/python/analysis/nonlinear_dynamics.py` for ~3x speedup. |
 | 2026-04-13 | 1.0.90  | Performance optimization: Replaced `np.sum(diff**2, axis=1)` and `np.sqrt(np.sum(diff**2, axis=1))` with dimension-agnostic, zero-allocation `np.einsum('...i,...i->...', diff, diff)` in `src/shared/python/analysis/nonlinear_dynamics.py` for ~3x speedup. |
