@@ -82,9 +82,10 @@ def _install_fake_perturbation_modules() -> None:
     )
 
 
-# Save originals so we can restore them after this module's tests run.
-# Without this, xdist workers that collect this file will permanently pollute
-# sys.modules with fake modules, breaking tests that import the real ones
+# Save originals so we can restore them immediately after importing
+# panel_builders.  The fakes must be in sys.modules only for the duration
+# of the import; restoring right away prevents xdist workers (which fork
+# from the main collection process) from inheriting polluted sys.modules
 # (GH2021, GH1949, GH1744).
 _PATCHED_MODULE_NAMES = [
     "src.shared.python.pendulum_simulator.simulation",
@@ -104,14 +105,16 @@ _install_fake_perturbation_modules()
 
 from src.shared.python.pendulum_simulator.gui import panel_builders  # noqa: E402
 
-
-def teardown_module() -> None:
-    """Restore original sys.modules entries after all tests in this file."""
-    for name, original in _saved_modules.items():
-        if original is None:
-            sys.modules.pop(name, None)
-        else:
-            sys.modules[name] = original
+# Restore immediately — panel_builders is now cached in sys.modules and no
+# longer needs the fakes.  This must happen at module level (not in
+# teardown_module) so that xdist workers forked after collection inherit
+# clean sys.modules.
+for _name, _original in _saved_modules.items():
+    if _original is None:
+        sys.modules.pop(_name, None)
+    else:
+        sys.modules[_name] = _original
+del _name, _original
 
 
 class _FakeResult:
