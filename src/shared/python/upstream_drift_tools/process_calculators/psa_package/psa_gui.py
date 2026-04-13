@@ -561,7 +561,7 @@ class SensitivityPlotWidget(QWidget):
     def _plot_recovery_vs_recycle(self) -> None:
         """Plot H2 recovery vs recycle fractions."""
         num_points = self.num_points_spin.value()
-        s2_range = np.linspace(0, 1, num_points)
+        s2_range = np.linspace(0, 1, num_points, dtype=np.float64)
         prod_range = np.array([0.0, 0.1, 0.2])
 
         sensitivity = calculate_sensitivity(
