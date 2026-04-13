@@ -155,6 +155,7 @@ jobs:
           # - CVE-2026-27205 (flask): Transitive runner-env dep; not a direct project dep
           # - CVE-2024-47081 (requests): Transitive dep; fix in requests>=2.32.4
           # - CVE-2026-25645 (requests): Transitive dep; fix in requests>=2.33.0
+          # - CVE-2026-40192 (pillow): Transitive dep via opencv/imageio; fix in pillow>=12.2.0
           pip-audit \
             --ignore-vuln CVE-2024-23342 \
             --ignore-vuln CVE-2026-0994 \
@@ -165,7 +166,8 @@ jobs:
             --ignore-vuln CVE-2026-21883 \
             --ignore-vuln CVE-2026-27205 \
             --ignore-vuln CVE-2024-47081 \
-            --ignore-vuln CVE-2026-25645
+            --ignore-vuln CVE-2026-25645 \
+            --ignore-vuln CVE-2026-40192
 
       # SECURITY: Bandit static security analysis (Issue #782)
       # Blocking on medium+ severity, medium+ confidence findings (Issue #2067)
