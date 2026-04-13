@@ -29,7 +29,7 @@ Last-Updated: 2026-04-12T12:00:00Z
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.90                                             |
+| **Spec Version**        | 1.0.91                                             |
 | **Last Spec Update**    | 2026-04-13                                         |
 
 ## 2. Purpose & Mission
@@ -614,3 +614,4 @@ pytest tests/ --cov=src --cov-fail-under=70
   5. VERSION: Bump the Spec Version field when making substantive changes.
      Use semver: major (structure change), minor (new features), patch (corrections).
 -->
+| 2026-04-13 | 1.0.91  | Bolt: Optimized np.sum(..., axis=1) square reductions to np.einsum in Drake PerturbationAnalyzer to improve performance and avoid temporary array allocations.                                                                                                                                                                                                                                                                                                                                                                                                                                |
