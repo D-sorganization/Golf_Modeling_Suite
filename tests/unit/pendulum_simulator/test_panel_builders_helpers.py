@@ -82,10 +82,36 @@ def _install_fake_perturbation_modules() -> None:
     )
 
 
+# Save originals so we can restore them after this module's tests run.
+# Without this, xdist workers that collect this file will permanently pollute
+# sys.modules with fake modules, breaking tests that import the real ones
+# (GH2021, GH1949, GH1744).
+_PATCHED_MODULE_NAMES = [
+    "src.shared.python.pendulum_simulator.simulation",
+    "src.shared.python.pendulum_simulator.simulation_triple",
+    "src.shared.python.pendulum_simulator.simulation_golfer",
+    "src.shared.python.pendulum_simulator.perturbation",
+    "src.shared.python.pendulum_simulator.perturbation.config",
+    "src.shared.python.pendulum_simulator.pendulum_perturbation_analyzer",
+    "src.shared.python.pendulum_simulator.perturbation_analysis",
+]
+_saved_modules: dict[str, ModuleType | None] = {
+    name: sys.modules.get(name) for name in _PATCHED_MODULE_NAMES
+}
+
 _install_fake_simulation_modules()
 _install_fake_perturbation_modules()
 
 from src.shared.python.pendulum_simulator.gui import panel_builders  # noqa: E402
+
+
+def teardown_module() -> None:
+    """Restore original sys.modules entries after all tests in this file."""
+    for name, original in _saved_modules.items():
+        if original is None:
+            sys.modules.pop(name, None)
+        else:
+            sys.modules[name] = original
 
 
 class _FakeResult:
