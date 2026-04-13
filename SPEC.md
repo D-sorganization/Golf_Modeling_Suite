@@ -1,6 +1,6 @@
 # SPEC.md — Repository Specification Document
 
-Last-Updated: 2026-04-12T00:59:40Z
+Last-Updated: 2026-04-13T00:00:00Z
 
 <!--
   TEMPLATE VERSION: 1.0.0
@@ -29,8 +29,8 @@ Last-Updated: 2026-04-12T00:59:40Z
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.89                                             |
-| **Last Spec Update**    | 2026-04-12                                         |
+| **Spec Version**        | 1.0.90                                             |
+| **Last Spec Update**    | 2026-04-13                                         |
 
 ## 2. Purpose & Mission
 
@@ -292,6 +292,7 @@ UpstreamDrift employs a comprehensive test pyramid with multiple specialized cat
 - **Physics Validation Tests**: Verify results against known ground truth (analytical solutions, published benchmarks)
 - **Benchmark Tests**: Performance regression detection and optimization validation
 - **Property-Based Tests**: Hypothesis-driven fuzzing for robustness
+- **Perturbation Analyzer Tests**: Engine-specific analyzer paths validate optimized squared-norm reductions for peak-speed and trajectory-deviation metrics across Drake, MuJoCo, MyoSuite, OpenSim, and Pinocchio
 
 ### Test Organization
 
