@@ -1,6 +1,6 @@
 # SPEC.md — Repository Specification Document
 
-Last-Updated: 2026-04-12T00:59:40Z
+Last-Updated: 2026-04-13T12:00:00Z
 
 <!--
   TEMPLATE VERSION: 1.0.0
@@ -29,8 +29,8 @@ Last-Updated: 2026-04-12T00:59:40Z
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.88                                             |
-| **Last Spec Update**    | 2026-04-10                                         |
+| **Spec Version**        | 1.0.92                                             |
+| **Last Spec Update**    | 2026-04-13                                         |
 
 ## 2. Purpose & Mission
 
@@ -292,6 +292,7 @@ UpstreamDrift employs a comprehensive test pyramid with multiple specialized cat
 - **Physics Validation Tests**: Verify results against known ground truth (analytical solutions, published benchmarks)
 - **Benchmark Tests**: Performance regression detection and optimization validation
 - **Property-Based Tests**: Hypothesis-driven fuzzing for robustness
+- **Perturbation Analyzer Tests**: Engine-specific analyzer paths validate optimized squared-norm reductions for peak-speed and trajectory-deviation metrics across Drake, MuJoCo, MyoSuite, OpenSim, and Pinocchio
 
 ### Test Organization
 
@@ -495,6 +496,10 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-12 | 1.0.89  | Performance optimization: Replaced `np.sum(..., axis=1)` with `np.einsum('ij,ij->i', ..., ...)` for squared norm calculations in physics engine perturbation analyzers (MuJoCo, Drake, Pinocchio, MyoSuite, OpenSim) to reduce temporary array allocations and improve calculation speed.                                                                                                                                                                                                                                                                                                                                             |
+| 2026-04-13 | 1.0.92  | Performance optimization: Replaced `np.sum(..., axis=1)` squared-norm reductions with `np.einsum("ij,ij->i", ...)` in the Drake, MuJoCo, MyoSuite, OpenSim, and Pinocchio perturbation analyzers to reduce temporary allocations in peak-speed and trajectory-deviation metrics. |
+| 2026-04-13 | 1.0.91  | Performance optimization: Replaced `np.linalg.norm(..., axis=1)` with `np.einsum` in `electrical_model.py` for ~35% speedup. |
+| 2026-04-10 | 1.0.90  | CI(fleet-mode-aware-pick-runner): added mode-aware runner selection (`local`/`cloud`/`hybrid`) via `FLEET_RUNNER_MODE` repo variable across all 54 workflow files, replaced bare `abs()` with `np.abs()` in `signal_toolkit/calculus.py` to satisfy mypy `SupportsAbs` constraint, narrowed `toolstrip_widget.py` segment-layout accessor return type with an `isinstance` guard, and added `type: ignore[assignment]` annotations for Qt metaclass-rebound `pyqtSignal` descriptors in `signal_toolkit/widget.py`. |
 | 2026-04-10 | 1.0.87  | Integration(editor-tools): synchronized the shared `text_editor_diff_mixin.py` leaf module with `Tools`, declared type-only editor diff mixin state without changing runtime behavior, and added a drift-guard regression test that ignores the type-only block while pinning selected editor leaf modules to the upstream sibling-repo baseline.                                                                                                                                                                                                                                                                                     |
 | 2026-04-10 | 1.0.86  | Optional-stack contracts(Pinocchio): preserved root-body MuJoCo joints during URDF export so Pinocchio models retain the MuJoCo velocity-DOF contract, rejected mock-only Pinocchio availability surfaces, and isolated induced-acceleration unit mocks from global `sys.modules` leakage.                                                                                                                                                                                                                                                                                                                                            |
 | 2026-04-10 | 1.0.85  | Optional-stack contracts(Drake): tightened Drake availability probing to reject mock-only or partial `pydrake` surfaces, restored module-scoped Drake dependency mocks for module-scoped tests, and aligned the isolated strict reset test with the initialized-engine precondition.                                                                                                                                                                                                                                                                                                                                                  |
