@@ -209,7 +209,7 @@ jobs:
       - uses: actions/checkout@v6
       - name: Reject Raw Merge Conflict Markers
         run: |
-          if grep -rne '<<<<<<< HEAD' . --exclude-dir=.git; then
+          if grep -rne '<<<<<<< HEAD' . --exclude-dir=.git --exclude-dir=.github; then
             echo "::error::Raw git merge conflict markers found!"
             exit 1
           fi
@@ -316,7 +316,7 @@ jobs:
         run: bash "$GITHUB_WORKSPACE/scripts/setup_tools_workspace.sh"
       - name: Reject Raw Merge Conflict Markers
         run: |
-          if grep -rne '<<<<<<< HEAD' . --exclude-dir=.git; then
+          if grep -rne '<<<<<<< HEAD' . --exclude-dir=.git --exclude-dir=.github; then
             echo "::error::Raw git merge conflict markers found!"
             exit 1
           fi
