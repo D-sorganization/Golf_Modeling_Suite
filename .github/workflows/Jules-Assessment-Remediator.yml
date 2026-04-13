@@ -52,7 +52,6 @@ env:
   COOLDOWN_DAYS: 7
 
 jobs:
-
   # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
     runs-on: d-sorg-fleet

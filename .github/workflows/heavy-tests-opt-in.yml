@@ -22,7 +22,6 @@ on:
     - cron: "0 2 * * 0" # Weekly Sunday 02:00 UTC
 
 jobs:
-
   # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
     runs-on: d-sorg-fleet

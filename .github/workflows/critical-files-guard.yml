@@ -15,7 +15,6 @@ on:
       - "start_api_server.py"
 
 jobs:
-
   # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
     runs-on: d-sorg-fleet
