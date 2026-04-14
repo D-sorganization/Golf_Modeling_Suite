@@ -130,7 +130,7 @@ jobs:
       - name: Verify No Placeholders
         run: |
           violations=$(
-            find . \( -path "./.git" -o -path "./.mypy_cache" -o -path "./.ruff_cache" -o -path "./__pycache__" -o -path "./archive" -o -path "./check_code_quality" -o -path "./scripts" -o -path "./tests/tools" \) -prune -o -type f -name "*.py" -print0 \
+            find . \( -path "./.git" -o -path "./.mypy_cache" -o -path "./.ruff_cache" -o -path "./__pycache__" -o -path "./archive" -o -path "./check_code_quality" -o -path "./scripts" -o -path "./tests/tools" -o -path "./vendor" \) -prune -o -type f -name "*.py" -print0 \
               | xargs -0 grep -nE "TODO|FIXME" || true
           )
           if [ -n "$violations" ]; then
@@ -143,34 +143,29 @@ jobs:
       - name: Security Audit
         run: |
           pip install --upgrade pip
+          # Force-reinstall sortedcontainers before pip-audit: the shared runner toolcache
+          # can carry a half-installed sortedcontainers that makes cyclonedx (pip-audit dep) fail.
+          pip install --force-reinstall --no-deps "sortedcontainers>=2.4.0"
           pip install pip-audit
           # Audit only the project's declared dependency set (requirements-dev.lock)
           # rather than all ambient packages in the shared runner toolcache.
           # The shared self-hosted runner toolcache accumulates stale packages from
           # multiple projects; auditing the full environment produces false positives.
-          # Ignore CVEs with no fix version available or transitive dependencies:
+          # Ignore CVEs with no fix version available:
           # - CVE-2024-23342 (ecdsa): No fix version available
           # - CVE-2026-0994 (protobuf): No fix version available - transitive dep from dm_control
           # - CVE-2026-1703 (pip): pip upgrade may not persist in GHA runner env
           # - CVE-2026-4539 (pygments): No fix version available at time of writing
           # - CVE-2025-71176 (pytest): Fix in pytest>=9.0.3; pyproject.toml updated to require >=9.0.3
-          # - CVE-2026-32274 (black): Transitive runner-env dep; not a direct project dep
-          # - CVE-2026-21883 (bokeh): Transitive runner-env dep; not a direct project dep
-          # - CVE-2026-27205 (flask): Transitive runner-env dep; not a direct project dep
-          # - CVE-2024-47081 (requests): Transitive dep; fix in requests>=2.32.4
-          # - CVE-2026-25645 (requests): Transitive dep; fix in requests>=2.33.0
           # - CVE-2026-40192 (pillow): Transitive dep via opencv/imageio; fix in pillow>=12.2.0
-          pip-audit -r requirements-dev.lock \
+          # Resolved CVEs (issue #2653): black>=26.3.1, bokeh>=3.8.2, flask>=3.1.3, requests>=2.33.0
+          # are now pinned in pyproject.toml dev deps and requirements-dev.lock.
+          python -m pip_audit -r requirements-dev.lock \
             --ignore-vuln CVE-2024-23342 \
             --ignore-vuln CVE-2026-0994 \
             --ignore-vuln CVE-2026-1703 \
             --ignore-vuln CVE-2026-4539 \
             --ignore-vuln CVE-2025-71176 \
-            --ignore-vuln CVE-2026-32274 \
-            --ignore-vuln CVE-2026-21883 \
-            --ignore-vuln CVE-2026-27205 \
-            --ignore-vuln CVE-2024-47081 \
-            --ignore-vuln CVE-2026-25645 \
             --ignore-vuln CVE-2026-40192
 
       # SECURITY: Bandit static security analysis (Issue #782)
@@ -238,7 +233,15 @@ jobs:
           python-version: ${{ matrix.python }}
 
       - name: Install Core Test Dependencies
-        run: pip install -e ".[dev,gui-test]"
+        # Force-reinstall hypothesis + sortedcontainers: the shared self-
+        # hosted toolcache occasionally carries half-installed versions
+        # where the pip metadata says 2.4.0 but the package namespace is
+        # missing exports (e.g. `SortedSet`). A plain `pip install -e` sees
+        # "Requirement already satisfied" and doesn't repair the cache,
+        # which causes hypothesis to fail its terminal-summary import.
+        run: |
+          pip install --force-reinstall --no-deps "sortedcontainers>=2.4.0" "hypothesis>=6.0.0"
+          pip install -e ".[dev,gui-test]"
 
       - name: Document Native Engine Coverage In Core Lane
         run: |
@@ -254,6 +257,16 @@ jobs:
           Xvfb :99 -screen 0 1280x720x24 -ac +extension GLX +render -noreset &
           sleep 1
           echo "DISPLAY=:99" >> $GITHUB_ENV
+
+      - name: Clean Stale Coverage Data
+        # Self-hosted runners reuse workspaces across jobs. A crashed
+        # worker from a prior run can leave behind a partially-written
+        # .coverage.<host>.<pid>.<rand> sqlite file with no 'file' table,
+        # which then causes pytest-cov to abort the next run with
+        # "sqlite3.OperationalError: no such table: file". Remove any
+        # stale coverage artefacts before collecting fresh data.
+        run: |
+          rm -f .coverage .coverage.* coverage.xml || true
 
       - name: Run Core Test Suite
         env:
@@ -352,7 +365,12 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install Core Test Dependencies
-        run: pip install -e ".[dev,gui-test]"
+        # See tests/Install Core Test Dependencies for the rationale —
+        # the shared toolcache can carry a stale `sortedcontainers` that
+        # makes hypothesis fail during pytest_terminal_summary.
+        run: |
+          pip install --force-reinstall --no-deps "sortedcontainers>=2.4.0" "hypothesis>=6.0.0"
+          pip install -e ".[dev,gui-test]"
       - name: Run Shared Tools Consumer Contracts
         env:
           QT_QPA_PLATFORM: offscreen

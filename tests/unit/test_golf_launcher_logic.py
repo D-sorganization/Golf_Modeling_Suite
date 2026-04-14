@@ -45,7 +45,7 @@ class TestGolfLauncherLogic:
         mock_model = SimpleNamespace(
             name="Test Model", description="Desc", id="test_model", type="mujoco"
         )
-        
+
         launcher.registry = MagicMock()
         launcher.registry.get_all_models.return_value = [mock_model]
         launcher.registry.get_model.return_value = mock_model
@@ -70,9 +70,7 @@ class TestGolfLauncherLogic:
         assert mock_model.name.upper() in launcher.btn_launch.text().upper()
 
     @patch("src.launchers.golf_launcher.DockerCheckThread")
-    def test_launch_simulation_constructs_command(
-        self, mock_thread, qtbot
-    ):
+    def test_launch_simulation_constructs_command(self, mock_thread, qtbot):
         from src.launchers.golf_launcher import GolfLauncher
 
         launcher = GolfLauncher()
@@ -89,7 +87,7 @@ class TestGolfLauncherLogic:
         launcher.engine_manager = MagicMock()
         launcher.btn_launch.setEnabled(False)
         launcher.docker_available = True
-        
+
         # Patch docker_launcher
         launcher.docker_launcher = MagicMock()
         launcher.docker_launcher.check_image_exists.return_value = True
@@ -97,12 +95,15 @@ class TestGolfLauncherLogic:
 
         # Check docker requires setting the actual checkbox
         launcher.chk_docker.setChecked(True)
-        
+
         launcher.select_model("test_model")
 
         with (
             patch.object(Path, "exists", return_value=True),
-            patch("src.launchers.launcher_simulation.resolve_model_artifact_path", return_value=Path("engines/test")),
+            patch(
+                "src.launchers.launcher_simulation.resolve_model_artifact_path",
+                return_value=Path("engines/test"),
+            ),
         ):
             launcher.launch_simulation()
 
@@ -141,12 +142,20 @@ class TestGolfLauncherLogic:
         mock_viewer = MagicMock()
 
         with (
-            patch.dict("sys.modules", {"mujoco": mock_mujoco, "mujoco.viewer": mock_viewer}),
+            patch.dict(
+                "sys.modules", {"mujoco": mock_mujoco, "mujoco.viewer": mock_viewer}
+            ),
             patch("src.launchers.launcher_simulation.Path.exists", return_value=False),
-            patch("src.launchers.launcher_simulation.resolve_model_artifact_path", return_value=Path("engines/test/model.xml")),
-            patch("src.launchers.launcher_model_handlers.ModelHandlerRegistry.get_handler", return_value=None),
+            patch(
+                "src.launchers.launcher_simulation.resolve_model_artifact_path",
+                return_value=Path("engines/test/model.xml"),
+            ),
+            patch(
+                "src.launchers.launcher_model_handlers.ModelHandlerRegistry.get_handler",
+                return_value=None,
+            ),
         ):
             launcher.launch_simulation()
-            
+
             mock_mujoco.MjModel.from_xml_path.assert_called_once()
             mock_mujoco.viewer.launch.assert_called_once()
