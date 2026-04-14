@@ -1,21 +1,21 @@
 # Review Comments Archive - 2026-04-14
 
-Generated: 2026-04-14T05:39:31.049683
+Generated: 2026-04-14T13:33:06.689710
 
 ## Reviewer (chatgpt-codex-connector[bot]) (1 comments)
 
-### PR #2662: src/engines/Simscape_Multibody_Models/3D_Golf_Model/python/src/apps/services/analysis.py:None
+### PR #2664: src/shared/python/config/handedness_support.py:None
 
 Actionable: Yes
 Has Suggestion: No
 
 ```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Cast displacement to float before einsum**
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Preserve floating arithmetic in path-length norm**
 
-This change removes the explicit `dtype=float` upcast that the previous `np.square` path had, so `np.einsum` now accumulates in `disp`’s native dtype. If `compute_marker_statistics` is called with integer trajectories (which can happen because marker arrays are built via `to_numpy()` without explicit dtype coercion), the dot product can overflow before `sqrt` and pr...
+Switching from `np.linalg.norm(..., axis=1)` to `np.sqrt(np.einsum(...))` changes dtype behavior: `np.linalg.norm` promotes integer inputs to float, but `np.einsum` keeps integer dtype, so squaring large `int32` deltas can overflow before `sqrt`. In that case `validate_mirror_trajectory` can produce `nan` path lengths and report a false validation failure ev...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/2662#discussion_r3079016478)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/2664#discussion_r3080607809)
 
 ---
 
