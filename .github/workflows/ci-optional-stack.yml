@@ -142,8 +142,12 @@ jobs:
       - name: Install API Extras
         # Install full FastAPI stack for API-path tests.
         # fastapi[all] pulls uvicorn, httpx, python-multipart etc.
+        # Force-reinstall idna[uts46]: the toolcache may carry a minimal idna
+        # (installed as a transitive dep) that lacks uts46_remap, breaking
+        # email-validator which email validation tests depend on.
         run: |
           pip install "fastapi[all]" httpx
+          pip install --force-reinstall "idna[uts46]>=3.4" "email-validator>=2.0.0"
 
       - name: Attempt Pinocchio Ecosystem Installation
         # Pinocchio, Pink, and Crocoddyl are not on PyPI for all platforms.
@@ -174,15 +178,6 @@ jobs:
             echo "- Pinocchio: not available on this runner (ecosystem tests will be skipped)" >> "$GITHUB_STEP_SUMMARY"
             echo "  _Install via conda: conda install pinocchio pink crocoddyl -c conda-forge_" >> "$GITHUB_STEP_SUMMARY"
           fi
-
-      - name: Start Xvfb
-        # Start Xvfb explicitly before all test steps so xvfb-run reuses the
-        # existing display and -p no:xvfb prevents pytest-xvfb from spawning a
-        # second Xvfb instance that collides (same fix as in ci-standard.yml).
-        run: |
-          Xvfb :99 -screen 0 1280x720x24 -ac +extension GLX +render -noreset &
-          sleep 1
-          echo "DISPLAY=:99" >> $GITHUB_ENV
 
       - name: Run API Tests (Optional Stack)
         # Run the API test suite against the full API extras installation.
