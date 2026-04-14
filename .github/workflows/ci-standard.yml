@@ -130,7 +130,7 @@ jobs:
       - name: Verify No Placeholders
         run: |
           violations=$(
-            find . \( -path "./.git" -o -path "./.mypy_cache" -o -path "./.ruff_cache" -o -path "./__pycache__" -o -path "./archive" -o -path "./check_code_quality" -o -path "./scripts" -o -path "./tests/tools" \) -prune -o -type f -name "*.py" -print0 \
+            find . \( -path "./.git" -o -path "./.mypy_cache" -o -path "./.ruff_cache" -o -path "./__pycache__" -o -path "./archive" -o -path "./check_code_quality" -o -path "./scripts" -o -path "./tests/tools" -o -path "./vendor" \) -prune -o -type f -name "*.py" -print0 \
               | xargs -0 grep -nE "TODO|FIXME" || true
           )
           if [ -n "$violations" ]; then
@@ -143,6 +143,9 @@ jobs:
       - name: Security Audit
         run: |
           pip install --upgrade pip
+          # Force-reinstall sortedcontainers before pip-audit: the shared runner toolcache
+          # can carry a half-installed sortedcontainers that makes cyclonedx (pip-audit dep) fail.
+          pip install --force-reinstall --no-deps "sortedcontainers>=2.4.0"
           pip install pip-audit
           # Audit only the project's declared dependency set (requirements-dev.lock)
           # rather than all ambient packages in the shared runner toolcache.
