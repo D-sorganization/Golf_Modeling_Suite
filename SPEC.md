@@ -29,8 +29,8 @@ Last-Updated: 2026-04-13T12:00:00Z
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.92                                             |
-| **Last Spec Update**    | 2026-04-13                                         |
+| **Spec Version**        | 1.0.93                                             |
+| **Last Spec Update**    | 2026-04-14                                         |
 
 ## 2. Purpose & Mission
 
@@ -615,3 +615,4 @@ pytest tests/ --cov=src --cov-fail-under=70
      Use semver: major (structure change), minor (new features), patch (corrections).
 -->
 | 2026-04-13 | 1.0.91  | Bolt: Optimized np.sum(..., axis=1) square reductions to np.einsum in Drake PerturbationAnalyzer to improve performance and avoid temporary array allocations.                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| 2026-04-14 | 1.0.93  | Bolt: Optimized np.sum(np.square(..., dtype=float), axis=1) to np.einsum in 3D_Golf_Model marker statistics analysis to improve performance and avoid type casting errors.                                                                                                                                                                                                                                                                                                                                                                                                                    |
