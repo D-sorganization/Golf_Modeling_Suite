@@ -18,4 +18,3 @@ Switching from `np.linalg.norm(..., axis=1)` to `np.sqrt(np.einsum(...))` change
 [View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/2664#discussion_r3080607809)
 
 ---
-
