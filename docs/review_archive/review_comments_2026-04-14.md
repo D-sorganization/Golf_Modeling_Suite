@@ -33,4 +33,3 @@ Making `PinocchioPhysicsEngine.compute_contact_forces` always raise `NotImplemen
 [View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/2673#discussion_r3082207943)
 
 ---
-
