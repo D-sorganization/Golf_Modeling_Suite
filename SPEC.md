@@ -1,6 +1,6 @@
 # SPEC.md — Repository Specification Document
 
-Last-Updated: 2026-04-13T12:00:00Z
+Last-Updated: 2026-04-14T00:00:00Z
 
 <!--
   TEMPLATE VERSION: 1.0.0
@@ -29,7 +29,7 @@ Last-Updated: 2026-04-13T12:00:00Z
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.93                                             |
+| **Spec Version**        | 1.0.94                                             |
 | **Last Spec Update**    | 2026-04-14                                         |
 
 ## 2. Purpose & Mission
@@ -496,6 +496,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-14 | 1.0.94  | CI infrastructure: hardened optional-stack lane (`ci-optional-stack.yml`) with `idna[uts46]` force-reinstall to fix `email-validator` on toolcache runners, removed conflicting static Xvfb start step (replaced with `xvfb-run --auto-servernum` + `-p no:xvfb` to prevent pytest-xvfb double-spawn), and added `sortedcontainers` force-reinstall before `pip-audit` in the Security Audit step to fix `cyclonedx` import crash. Added 5 mypy exclusions for numpy-stubs 2.2.x/2.3.x divergence files in `pyproject.toml`.                                                                                                          |
 | 2026-04-14 | 1.0.93  | Performance optimization: Extracted redundant `np.linalg.norm(pb - pa)` computations to cached local variables inside collision checker hot loops, and optimized `DistanceResult` validation logic with element-wise calculation instead of `np.linalg.norm`.                                                                                                                                                                                                                                                                                                                                                                         |
 | 2026-04-13 | 1.0.92  | Performance optimization: Replaced `np.sum(..., axis=1)` squared-norm reductions with `np.einsum("ij,ij->i", ...)` in the Drake, MuJoCo, MyoSuite, OpenSim, and Pinocchio perturbation analyzers to reduce temporary allocations in peak-speed and trajectory-deviation metrics.                                                                                                                                                                                                                                                                                                                                                      |
 | 2026-04-13 | 1.0.91  | Performance optimization: Replaced `np.linalg.norm(..., axis=1)` with `np.einsum` in `electrical_model.py` for ~35% speedup.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
