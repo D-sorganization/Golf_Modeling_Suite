@@ -250,9 +250,9 @@ jobs:
         # "Requirement already satisfied" and doesn't repair the cache,
         # which causes hypothesis to fail its terminal-summary import.
         run: |
-          pip install --force-reinstall --no-deps "sortedcontainers>=2.4.0" "hypothesis>=6.0.0"
-          pip install --force-reinstall --no-cache-dir "numpy==2.2.6" "scipy==1.15.3"
-          pip install -e ".[dev,gui-test]"
+          python -m pip install --force-reinstall --no-deps "sortedcontainers>=2.4.0" "hypothesis>=6.0.0"
+          python -m pip install -e ".[dev,gui-test]"
+          python -m pip install --force-reinstall --no-cache-dir "numpy==2.2.6" "scipy==1.15.3"
 
       - name: Document Native Engine Coverage In Core Lane
         run: |
@@ -293,7 +293,7 @@ jobs:
           # - Coverage measurement on src/ (pytest-cov)
           # Optional native-engine extras such as Drake/Pinocchio/OpenSim/MyoSuite
           # are intentionally not provisioned here.
-          xvfb-run --auto-servernum pytest \
+          xvfb-run --auto-servernum python -m pytest \
             -p no:xvfb \
             -n 0 \
             --timeout=60 \
@@ -320,7 +320,7 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- This step exercises the dependency-free validator logic only." >> "$GITHUB_STEP_SUMMARY"
           echo "- It does not install or verify Drake, Pinocchio, OpenSim, or MyoSuite." >> "$GITHUB_STEP_SUMMARY"
-          xvfb-run --auto-servernum pytest tests/integration/test_cross_engine_validation.py \
+          xvfb-run --auto-servernum python -m pytest tests/integration/test_cross_engine_validation.py \
             -p no:xvfb \
             --timeout=60 \
             --timeout-method=thread \
@@ -392,14 +392,15 @@ jobs:
         # the shared toolcache can carry a stale `sortedcontainers` that
         # makes hypothesis fail during pytest_terminal_summary.
         run: |
-          pip install --force-reinstall --no-deps "sortedcontainers>=2.4.0" "hypothesis>=6.0.0"
-          pip install -e ".[dev,gui-test]"
+          python -m pip install --force-reinstall --no-deps "sortedcontainers>=2.4.0" "hypothesis>=6.0.0"
+          python -m pip install -e ".[dev,gui-test]"
+          python -m pip install --force-reinstall --no-cache-dir "numpy==2.2.6" "scipy==1.15.3"
       - name: Run Shared Tools Consumer Contracts
         env:
           QT_QPA_PLATFORM: offscreen
           REQUIRE_REAL_TOOLS_REPO: "1"
         run: |
-          xvfb-run --auto-servernum pytest tests/shared_contracts/ \
+          xvfb-run --auto-servernum python -m pytest tests/shared_contracts/ \
             -p no:xvfb \
             --tools-mode=vendored \
             --timeout=60 \
