@@ -273,8 +273,10 @@ jobs:
           PYTHONPATH: .:src:src/engines/physics_engines/mujoco/python:src/engines/physics_engines/mujoco/python/mujoco_humanoid_golf
           QT_QPA_PLATFORM: offscreen
         run: |
+          export COVERAGE_FILE="$RUNNER_TEMP/.coverage"
+
           # Run the default, dependency-light CI lane:
-          # - Parallel execution (-n auto)
+          # - Bounded parallel execution for self-hosted runner stability
           # - 60 second timeout per test
           # - Skip slow tests in CI for faster feedback
           # - Coverage measurement on src/ (pytest-cov)
@@ -282,7 +284,7 @@ jobs:
           # are intentionally not provisioned here.
           xvfb-run --auto-servernum pytest \
             -p no:xvfb \
-            -n auto \
+            -n 4 \
             --timeout=60 \
             --timeout-method=thread \
             --ignore=tests/shared_contracts \
