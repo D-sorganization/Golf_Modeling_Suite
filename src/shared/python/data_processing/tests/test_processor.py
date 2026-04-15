@@ -11,13 +11,12 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+from contracts import PreconditionError
 from data_processing.processor import (
     SUPPORTED_FILTER_TYPES,
     DataProcessor,
     DatasetInfo,
 )
-
-from contracts import PreconditionError
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Fixtures

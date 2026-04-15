@@ -15,7 +15,6 @@ from pathlib import Path  # noqa: E402
 from typing import Any  # noqa: E402
 
 import pandas as pd  # noqa: E402
-
 from contracts import require  # noqa: E402
 
 logger = logging.getLogger(__name__)
@@ -475,7 +474,7 @@ class DataProcessor:
             # outlier_mask is 1D boolean (per row), broadcast to columns
             mask_1d = result.outlier_mask.astype(bool)
             outlier_mask = pd.DataFrame(
-                {col: mask_1d for col in columns},
+                dict.fromkeys(columns, mask_1d),
                 index=df.index,
             )
             return outlier_mask

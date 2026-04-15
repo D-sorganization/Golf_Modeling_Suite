@@ -2,10 +2,14 @@
 The baseline hashes were captured from the matching files in the sibling
 Tools repository and should only change when that upstream source changes.
 """
+
 from __future__ import annotations
+
 import hashlib
 from pathlib import Path
+
 import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[5 if "tests" in __file__ else 4]
 TOOLS_BASELINE_HASHES: dict[str, str] = {
     "src/shared/python/notes/__init__.py": "638875bb87492a23297b87e1f695ac386e5917eb0d2f34e9d46d2af91e23db2a",
@@ -15,10 +19,12 @@ TOOLS_BASELINE_HASHES: dict[str, str] = {
     "src/shared/python/notes/storage.py": "27fccf123bfe14380185856eddf5a58de95373b2530a14f651b3e049176bd9a6",
 }
 
+
 def _runtime_equivalent_source(relative_path: str) -> bytes:
     """Return the source bytes that should match the Tools runtime baseline."""
     source = (REPO_ROOT / relative_path).read_text(encoding="utf-8")
     return source.encode("utf-8")
+
 
 @pytest.mark.parametrize(
     ("relative_path", "expected_sha256"),

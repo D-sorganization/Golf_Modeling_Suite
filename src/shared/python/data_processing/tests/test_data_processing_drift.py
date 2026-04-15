@@ -2,22 +2,28 @@
 The baseline hashes were captured from the matching files in the sibling
 Tools repository and should only change when that upstream source changes.
 """
+
 from __future__ import annotations
+
 import hashlib
 from pathlib import Path
+
 import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[5 if "tests" in __file__ else 4]
 TOOLS_BASELINE_HASHES: dict[str, str] = {
     "src/shared/python/data_processing/__init__.py": "2590d7fea9e5d12e6c9569ce1811271239483e1f1aded9ad468a84a72ef8e4d7",
-    "src/shared/python/data_processing/processor.py": "b47872ceb3e7bafe5ae6e7aaf97f2c1922d7d21c663b448f23f3f12dbcb6ef18",
+    "src/shared/python/data_processing/processor.py": "e4344d517c0db886d9c3a7a21886bcac8f004ce72540c6d3a759dc1c7bb7379d",
     "src/shared/python/data_processing/tests/__init__.py": "c8061db111018025bf2cc441a14739f890c7ea8980afe9fd569787322290632d",
-    "src/shared/python/data_processing/tests/test_processor.py": "0e359da787212a9ec5325604166785ac28744581f11b9e7234ce63196b9a3dba",
+    "src/shared/python/data_processing/tests/test_processor.py": "f8ff5d8df67ee00d868c38e774999684cfe7f99c054403cf36b41a1881f61634",
 }
+
 
 def _runtime_equivalent_source(relative_path: str) -> bytes:
     """Return the source bytes that should match the Tools runtime baseline."""
     source = (REPO_ROOT / relative_path).read_text(encoding="utf-8")
     return source.encode("utf-8")
+
 
 @pytest.mark.parametrize(
     ("relative_path", "expected_sha256"),

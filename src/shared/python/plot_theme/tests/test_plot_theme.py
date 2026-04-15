@@ -384,16 +384,18 @@ class TestPlotThemeManager:
     def test_apply_to_matplotlib(self):
         m = self._make_manager()
         mock_mpl = MagicMock()
-        with patch.dict(
-            "sys.modules",
-            {
-                "matplotlib": mock_mpl,
-                "matplotlib.pyplot": MagicMock(),
-                "cycler": MagicMock(),
-            },
+        with (
+            patch.dict(
+                "sys.modules",
+                {
+                    "matplotlib": mock_mpl,
+                    "matplotlib.pyplot": MagicMock(),
+                    "cycler": MagicMock(),
+                },
+            ),
+            patch("plot_theme.manager.PlotThemeManager.apply_to_matplotlib"),
         ):
-            with patch("plot_theme.manager.PlotThemeManager.apply_to_matplotlib"):
-                m.apply_to_matplotlib()
+            m.apply_to_matplotlib()
 
     def test_apply_to_matplotlib_import_error(self):
         m = self._make_manager()
@@ -422,13 +424,15 @@ class TestPlotThemeManager:
         """QSettings path: saved theme loaded if it exists in registry."""
         mock_settings = MagicMock()
         mock_settings.value.return_value = "dracula"
-        with patch.dict(
-            "sys.modules", {"PyQt6": MagicMock(), "PyQt6.QtCore": MagicMock()}
+        with (
+            patch.dict(
+                "sys.modules", {"PyQt6": MagicMock(), "PyQt6.QtCore": MagicMock()}
+            ),
+            patch("plot_theme.manager.PlotThemeManager._load_saved_theme"),
         ):
-            with patch("plot_theme.manager.PlotThemeManager._load_saved_theme"):
-                from plot_theme.manager import PlotThemeManager
+            from plot_theme.manager import PlotThemeManager
 
-                m = PlotThemeManager()
+            m = PlotThemeManager()
         # Just verify construction doesn't raise
         assert m is not None
 
