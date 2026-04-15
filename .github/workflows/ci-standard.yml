@@ -251,6 +251,7 @@ jobs:
         # which causes hypothesis to fail its terminal-summary import.
         run: |
           pip install --force-reinstall --no-deps "sortedcontainers>=2.4.0" "hypothesis>=6.0.0"
+          pip install --force-reinstall --no-cache-dir "numpy==2.2.6" "scipy==1.15.3"
           pip install -e ".[dev,gui-test]"
 
       - name: Document Native Engine Coverage In Core Lane
