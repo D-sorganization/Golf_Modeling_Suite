@@ -42,7 +42,7 @@ TOOLS_BASELINE_HASHES: dict[str, str] = {
     "src/shared/python/calc_backend/routers/thermal_profile.py": "3d28f636092e51ee1bab9222e7b238e41963ba348a086881f9d6022d984b944a",
     "src/shared/python/calc_backend/routers/wgs_reactor.py": "de1c655923eae9609318da51e01e3105b6e5e02e8f110bddb9bd3101c01d61d9",
     "src/shared/python/calc_backend/tests/__init__.py": "43778dbd52483ada78a38cc962215e17682f5bfb2cd0937dd9c47ae466f92add",
-    "src/shared/python/calc_backend/tests/test_calc_backend.py": "d601b68f69032ee09e21be740988f1bfae6b8ccb63d8322e869cbfb019949230",
+    "src/shared/python/calc_backend/tests/test_calc_backend.py": "2aaffd7d7b0e2342bb6381d37d335a8c003cf7831a2349733786d095cc41d91b",
     "src/shared/python/calc_backend/tests/test_calc_backend_gaps.py": "4a1bc192239e25573f872907a21e41b5a7cdd04791dc93544fd870564f852aeb",
 }
 

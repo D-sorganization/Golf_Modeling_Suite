@@ -33,6 +33,7 @@ from fastapi.testclient import TestClient
 def client() -> Any:
     import sys
     from unittest.mock import MagicMock
+
     sys.modules["rotation_converter"] = MagicMock()
     sys.modules["rotation_converter.reference_frame_operations"] = MagicMock()
     sys.modules["rotation_converter.converter"] = MagicMock()
