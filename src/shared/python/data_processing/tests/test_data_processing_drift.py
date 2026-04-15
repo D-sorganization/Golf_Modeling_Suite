@@ -13,7 +13,7 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[5 if "tests" in __file__ else 4]
 TOOLS_BASELINE_HASHES: dict[str, str] = {
     "src/shared/python/data_processing/__init__.py": "2590d7fea9e5d12e6c9569ce1811271239483e1f1aded9ad468a84a72ef8e4d7",
-    "src/shared/python/data_processing/processor.py": "e4344d517c0db886d9c3a7a21886bcac8f004ce72540c6d3a759dc1c7bb7379d",
+    "src/shared/python/data_processing/processor.py": "8505d2523ee7cb764df30662fee37c78389f8e22217e56a9fd374ad21bf11925",
     "src/shared/python/data_processing/tests/__init__.py": "c8061db111018025bf2cc441a14739f890c7ea8980afe9fd569787322290632d",
     "src/shared/python/data_processing/tests/test_processor.py": "f8ff5d8df67ee00d868c38e774999684cfe7f99c054403cf36b41a1881f61634",
 }

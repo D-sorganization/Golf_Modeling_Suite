@@ -9,6 +9,7 @@ See issue #407.
 
 from __future__ import annotations  # noqa: E402, F404
 
+import ast  # noqa: E402
 import logging  # noqa: E402
 from dataclasses import dataclass, field  # noqa: E402
 from pathlib import Path  # noqa: E402
@@ -19,6 +20,64 @@ from contracts import require  # noqa: E402
 
 logger = logging.getLogger(__name__)
 SUPPORTED_FILTER_TYPES = {"butterworth", "moving_average", "median", "savgol"}
+
+_DISALLOWED_EVAL_NODES: tuple[type, ...] = (
+    ast.Import,
+    ast.ImportFrom,
+    ast.Lambda,
+    ast.ListComp,
+    ast.DictComp,
+    ast.SetComp,
+    ast.GeneratorExp,
+    ast.Await,
+    ast.Yield,
+    ast.YieldFrom,
+    ast.Global,
+    ast.Nonlocal,
+    ast.FunctionDef,
+    ast.AsyncFunctionDef,
+    ast.ClassDef,
+)
+
+_FORBIDDEN_NAMES: frozenset[str] = frozenset(
+    {
+        "__builtins__",
+        "__import__",
+        "__class__",
+        "__subclasses__",
+        "__globals__",
+        "__locals__",
+        "__code__",
+        "__dict__",
+        "exec",
+        "eval",
+        "compile",
+        "open",
+        "breakpoint",
+        "input",
+    }
+)
+
+
+def _validate_dataframe_expression(expression: str) -> None:
+    """Validate that *expression* is safe to pass to pandas eval/query."""
+    validation_expr = expression.replace("@", "")
+    try:
+        tree = ast.parse(validation_expr, mode="eval")
+    except SyntaxError as exc:
+        raise ValueError(f"Syntax error in expression: {exc}") from exc
+
+    for node in ast.walk(tree):
+        if isinstance(node, _DISALLOWED_EVAL_NODES):
+            raise ValueError(
+                f"Disallowed construct in expression: {type(node).__name__}"
+            )
+        if isinstance(node, ast.Attribute) and node.attr.startswith("__"):
+            raise ValueError(
+                f"Attribute access to dunder name '{node.attr}' is not permitted"
+            )
+        if isinstance(node, ast.Name) and node.id in _FORBIDDEN_NAMES:
+            raise ValueError(f"Use of forbidden name '{node.id}' is not permitted")
 
 
 @dataclass
@@ -370,6 +429,7 @@ class DataProcessor:
             isinstance(expression, str) and bool(expression),
             "expression must be a non-empty string",
         )
+        _validate_dataframe_expression(expression)
         df = self.dataframe
         # pandas DataFrame.eval() is safe -- it only resolves column names
         # within the dataframe and does not execute arbitrary Python code.
