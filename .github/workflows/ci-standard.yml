@@ -215,8 +215,8 @@ jobs:
 
       - name: Install System Dependencies
         run: |
-          sudo apt-get -o DPkg::Lock::Timeout=300 update
-          sudo apt-get -o DPkg::Lock::Timeout=300 install -y \
+          sudo apt-get -o DPkg::Lock::Timeout=300 -o APT::Get::Lock-Timeout=300 update
+          sudo apt-get -o DPkg::Lock::Timeout=300 -o APT::Get::Lock-Timeout=300 install -y \
             libegl1 libgl1 xvfb \
             libxkbcommon-x11-0 \
             libxcb-cursor0 \
@@ -348,8 +348,8 @@ jobs:
 
       - name: Install System Dependencies
         run: |
-          sudo apt-get -o DPkg::Lock::Timeout=300 update
-          sudo apt-get -o DPkg::Lock::Timeout=300 install -y \
+          sudo apt-get -o DPkg::Lock::Timeout=300 -o APT::Get::Lock-Timeout=300 update
+          sudo apt-get -o DPkg::Lock::Timeout=300 -o APT::Get::Lock-Timeout=300 install -y \
             libegl1 libgl1 xvfb \
             libxkbcommon-x11-0 \
             libxcb-cursor0 \
@@ -551,17 +551,17 @@ jobs:
       - name: Build PyO3 Wheel (Maturin)
         if: steps.rust-changes.outputs.has_changes == 'true'
         run: |
-          pip install maturin
+          python3 -m pip install maturin
           cd rust_core/upstream-physics
-          maturin build --features python --release
+          python3 -m maturin build --interpreter python3 --features python --release
           echo "Wheel built successfully"
           ls ../../target/wheels/
 
       - name: Verify Python Bindings
         if: steps.rust-changes.outputs.has_changes == 'true'
         run: |
-          pip install target/wheels/upstream_physics-*.whl
-          python -c "
+          python3 -m pip install target/wheels/upstream_physics-*.whl
+          python3 -c "
           import upstream_physics
           # Verify key types are importable
           cfg = upstream_physics.IntegratorConfig()
