@@ -391,6 +391,9 @@ jobs:
         # See tests/Install Core Test Dependencies for the rationale —
         # the shared toolcache can carry a stale `sortedcontainers` that
         # makes hypothesis fail during pytest_terminal_summary.
+        # Force-reinstall numpy/scipy to ensure a consistent binary ABI:
+        # the self-hosted toolcache for Python 3.11 carries numpy 2.4.x
+        # which is incompatible with cached scipy wheels built against <2.3.
         run: |
           python -m pip install --force-reinstall --no-deps "sortedcontainers>=2.4.0" "hypothesis>=6.0.0"
           python -m pip install -e ".[dev,gui-test]"
