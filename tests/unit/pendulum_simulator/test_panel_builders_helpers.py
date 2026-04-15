@@ -24,9 +24,9 @@ def _install_fake_simulation_modules() -> None:
         pass
 
     simulation_panel_module.SimulationPanel = _ImportOnlySimulationPanel
-    sys.modules[
-        "src.shared.python.pendulum_simulator.gui.simulation_panel"
-    ] = simulation_panel_module
+    sys.modules["src.shared.python.pendulum_simulator.gui.simulation_panel"] = (
+        simulation_panel_module
+    )
 
     for module_name in (
         "src.shared.python.pendulum_simulator.simulation",
