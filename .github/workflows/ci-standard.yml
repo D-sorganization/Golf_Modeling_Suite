@@ -523,14 +523,13 @@ jobs:
         if: steps.rust-changes.outputs.has_changes == 'true'
         run: ln -sfn "$GITHUB_WORKSPACE/_tools_dep" "$GITHUB_WORKSPACE/../Tools"
 
-      - name: Cache Cargo registry and build
+      - name: Cache Cargo registry
         if: steps.rust-changes.outputs.has_changes == 'true'
         uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
