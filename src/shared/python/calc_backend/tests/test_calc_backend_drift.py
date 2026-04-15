@@ -39,11 +39,11 @@ TOOLS_BASELINE_HASHES: dict[str, str] = {
     "src/shared/python/calc_backend/routers/rotation_converter.py": "713f4dc8663a40aa435afaac6196b29489d71e77e81f2f8c0b3d61c1d075ce73",
     "src/shared/python/calc_backend/routers/scrubber.py": "71e4c765f224c7c32709a6eefd6afba89c0bd0230134fe8be7562952a9e17fd9",
     "src/shared/python/calc_backend/routers/syngas_water.py": "eaba7f1dc95ed40599e14080d032f6c2bc6ecf73907a984d007649d71b580f89",
-    "src/shared/python/calc_backend/routers/thermal_profile.py": "c0c6db92510f3995bea28b238b15028491697fa20cebd0ee101c1d77f2583a9e",
+    "src/shared/python/calc_backend/routers/thermal_profile.py": "3d28f636092e51ee1bab9222e7b238e41963ba348a086881f9d6022d984b944a",
     "src/shared/python/calc_backend/routers/wgs_reactor.py": "de1c655923eae9609318da51e01e3105b6e5e02e8f110bddb9bd3101c01d61d9",
     "src/shared/python/calc_backend/tests/__init__.py": "43778dbd52483ada78a38cc962215e17682f5bfb2cd0937dd9c47ae466f92add",
-    "src/shared/python/calc_backend/tests/test_calc_backend.py": "15116657fa5ea3e2aaf6136e7da73bc3babfd51adf76acebe152881ec2d37b48",
-    "src/shared/python/calc_backend/tests/test_calc_backend_gaps.py": "3a73ceb1f15ee7983a6dae34edbcdd351e1fee0de42a0ba91cac107e97ff0169",
+    "src/shared/python/calc_backend/tests/test_calc_backend.py": "d601b68f69032ee09e21be740988f1bfae6b8ccb63d8322e869cbfb019949230",
+    "src/shared/python/calc_backend/tests/test_calc_backend_gaps.py": "4a1bc192239e25573f872907a21e41b5a7cdd04791dc93544fd870564f852aeb",
 }
 
 
