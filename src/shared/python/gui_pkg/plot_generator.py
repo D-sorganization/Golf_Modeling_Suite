@@ -524,7 +524,11 @@ class PlotGenerator:
         # Plot magnitude
         # ⚡ Bolt: Explicit element-wise sum of squares is ~30% faster than np.linalg.norm(..., axis=1)
         magnitude = np.sqrt(
-            np.sum(np.square(data.contact_forces[:, :3], dtype=float), axis=1)
+            np.einsum(
+                "...i,...i->...",
+                data.contact_forces[:, :3].astype(float, copy=False),
+                data.contact_forces[:, :3].astype(float, copy=False),
+            )
         )
         ax.plot(
             data.times,
