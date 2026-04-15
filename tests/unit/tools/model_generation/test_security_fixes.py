@@ -408,9 +408,11 @@ class TestRepositoryURLRestriction:
             source_url="file:///etc/passwd",
         )
 
-        with patch("urllib.request.urlretrieve") as urlretrieve:
-            with pytest.raises(ValueError, match="URL scheme 'file' is not allowed"):
-                library._download_model(entry)
+        with (
+            patch("urllib.request.urlretrieve") as urlretrieve,
+            pytest.raises(ValueError, match="URL scheme 'file' is not allowed"),
+        ):
+            library._download_model(entry)
 
         urlretrieve.assert_not_called()
 

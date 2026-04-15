@@ -1,6 +1,6 @@
 # SPEC.md — Repository Specification Document
 
-Last-Updated: 2026-04-14T00:00:00Z
+Last-Updated: 2026-04-15T00:00:00Z
 
 <!--
   TEMPLATE VERSION: 1.0.0
@@ -29,8 +29,8 @@ Last-Updated: 2026-04-14T00:00:00Z
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.96                                             |
-| **Last Spec Update**    | 2026-04-14                                         |
+| **Spec Version**        | 1.0.97                                             |
+| **Last Spec Update**    | 2026-04-15                                         |
 
 ## 2. Purpose & Mission
 
@@ -496,6 +496,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-15 | 1.0.97  | Security and visualization API hardening: validated model-library download URLs with HTTPS-only scheme checks before `urlretrieve`, added regression coverage for blocked local-file URL schemes, and exported `PyVistaBackend` from the top-level Unreal integration package with factory/root export tests.                                                                                                                                                                                                                                                                                                                         |
 | 2026-04-14 | 1.0.96  | Performance optimization: Replaced `np.sum(velocities**2, axis=1)` with `np.einsum("...i,...i->...", v.astype(float), v.astype(float))` in `handedness_support.py` `validate_energy_conservation` for ~2x speedup with safe float promotion.                                                                                                                                                                                                                                                                                                                                                                                          |
 | 2026-04-14 | 1.0.95  | Performance optimization: Replaced `np.linalg.norm` with `np.einsum("...i,...i->...", diff, diff, dtype=float)` in `handedness_support.py` `validate_mirror_trajectory` for ~35% speedup and safe float promotion preventing integer overflow.                                                                                                                                                                                                                                                                                                                                                                                        |
 | 2026-04-14 | 1.0.94  | CI infrastructure: hardened optional-stack lane (`ci-optional-stack.yml`) with `idna[uts46]` force-reinstall to fix `email-validator` on toolcache runners, removed conflicting static Xvfb start step (replaced with `xvfb-run --auto-servernum` + `-p no:xvfb` to prevent pytest-xvfb double-spawn), and added `sortedcontainers` force-reinstall before `pip-audit` in the Security Audit step to fix `cyclonedx` import crash. Added 5 mypy exclusions for numpy-stubs 2.2.x/2.3.x divergence files in `pyproject.toml`.                                                                                                          |
