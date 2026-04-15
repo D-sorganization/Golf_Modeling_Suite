@@ -1,10 +1,10 @@
 """Thermal profile predictor router.  See issue #608."""
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException  # noqa: E402
 
-from ..contracts.thermal_profile import (
+from ..contracts.thermal_profile import (  # noqa: E402
     ThermalProfileDataPoint,
     ThermalProfileRequest,
     ThermalProfileResponse,
@@ -36,9 +36,9 @@ def _solve_thermal_profile(
     def power_func(t: float) -> float:
         if profile == "constant":
             return power_w
-        if profile == "linear_ramp":
+        elif profile == "linear_ramp":
             return power_w + request.ramp_rate_w_per_s * t
-        if profile == "step":
+        elif profile == "step":
             return power_w if t < request.step_time_s else 0.0
         return power_w
 
