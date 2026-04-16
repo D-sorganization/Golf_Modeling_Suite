@@ -20,9 +20,6 @@ from src.shared.python.contracts import (  # noqa: F401
     InvariantError,
     PostconditionError,
     PreconditionError,
-)
-from src.shared.python.contracts import class_invariant as invariant
-from src.shared.python.contracts import (  # noqa: F401
     contract,
     ensure_valid_result,
     has_finite_elements,
@@ -35,6 +32,9 @@ from src.shared.python.contracts import (  # noqa: F401
     require_positive,
     require_unit_vector,
     set_contracts_enabled,
+)
+from src.shared.python.contracts import (
+    class_invariant as invariant,
 )
 
 # Backward-compatible alias: the old module exposed ``ContractViolation``

@@ -16,11 +16,11 @@ from __future__ import annotations
 
 from src.shared.python.contracts import (  # noqa: F401
     ContractViolationError,
-)
-from src.shared.python.contracts import class_invariant as invariant
-from src.shared.python.contracts import (  # noqa: F401
     postcondition,
     precondition,
+)
+from src.shared.python.contracts import (
+    class_invariant as invariant,
 )
 
 __all__ = [
