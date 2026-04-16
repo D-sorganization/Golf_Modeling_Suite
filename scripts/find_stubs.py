@@ -70,7 +70,10 @@ def check_file(filepath: str, stubs_file: Any, docs_file: Any) -> None:
                 docs_file.write(f"{filepath}:{node.lineno} {node.name}\n")
 
             old_in_protocol = self.in_protocol
-            if any(isinstance(base, ast.Name) and base.id == 'Protocol' for base in node.bases):
+            if any(
+                isinstance(base, ast.Name) and base.id == "Protocol"
+                for base in node.bases
+            ):
                 self.in_protocol = True
 
             self.generic_visit(node)
