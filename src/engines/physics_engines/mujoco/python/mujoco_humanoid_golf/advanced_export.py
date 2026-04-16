@@ -13,14 +13,15 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-# Re-export all shared export functions so existing imports still work
 from src.shared.python.data_io.export import (
     export_recording_all_formats as _shared_export_all,
 )
-from src.shared.python.data_io.export import export_to_c3d  # noqa: F401
-from src.shared.python.data_io.export import export_to_hdf5  # noqa: F401
-from src.shared.python.data_io.export import export_to_matlab  # noqa: F401
+
+# Re-export all shared export functions so existing imports still work
 from src.shared.python.data_io.export import (  # noqa: F401
+    export_to_c3d,  # noqa: F401
+    export_to_hdf5,  # noqa: F401
+    export_to_matlab,  # noqa: F401
     get_available_export_formats,
 )
 

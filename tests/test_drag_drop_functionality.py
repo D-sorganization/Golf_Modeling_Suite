@@ -471,9 +471,7 @@ class TestC3DViewerIntegration(unittest.TestCase):
         gracefully.
         """
         try:
-            from launch_golf_suite import (  # type: ignore[attr-defined]  # noqa: I001
-                launch_c3d_viewer,
-            )
+            from launch_golf_suite import launch_c3d_viewer  # type: ignore[attr-defined]  # noqa: I001
         except ImportError:
             self.skipTest(
                 "launch_c3d_viewer is not available in launch_golf_suite "
