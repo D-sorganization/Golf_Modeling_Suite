@@ -57,4 +57,3 @@ def test_logo_route_rejects_traversal(local_client: TestClient) -> None:
 def test_logo_route_rejects_windows_path_traversal(local_client: TestClient) -> None:
     response = local_client.get("/api/launcher/logos/..\\secret.svg")
     assert response.status_code == 404
-

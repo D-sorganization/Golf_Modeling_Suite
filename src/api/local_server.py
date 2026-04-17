@@ -26,8 +26,8 @@ import mimetypes
 import os
 import time
 from pathlib import Path
-from urllib.parse import unquote
 from typing import Any
+from urllib.parse import unquote
 
 # Fix MIME types for JavaScript modules on Windows
 # Windows registry often has incorrect/missing MIME types for .js files
@@ -223,7 +223,9 @@ def _normalize_request_path(
     return str(candidate)
 
 
-def _safe_static_file(base_path: Path, request_path: str, *, allow_subpaths: bool) -> Path:
+def _safe_static_file(
+    base_path: Path, request_path: str, *, allow_subpaths: bool
+) -> Path:
     """Return a resolved path only if it stays within ``base_path``.
 
     Args:
@@ -238,10 +240,7 @@ def _safe_static_file(base_path: Path, request_path: str, *, allow_subpaths: boo
         ValueError: If path validation fails.
     """
     normalized = _normalize_request_path(request_path, allow_subpaths=allow_subpaths)
-    if normalized:
-        requested = base_path / normalized
-    else:
-        requested = base_path
+    requested = base_path / normalized if normalized else base_path
 
     resolved_base = base_path.resolve()
     resolved_requested = requested.resolve()
@@ -538,7 +537,9 @@ def _register_spa_catch_all(app: FastAPI, ui_path: Path) -> None:
                 )
             if full_path:
                 try:
-                    static_file = _safe_static_file(ui_path, full_path, allow_subpaths=True)
+                    static_file = _safe_static_file(
+                        ui_path, full_path, allow_subpaths=True
+                    )
                 except ValueError:
                     return JSONResponse(
                         status_code=400,
