@@ -91,6 +91,9 @@ FROM continuumio/miniconda3:24.11.1-0 AS runtime
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Apply OS security patches before installing packages
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+
 # Runtime system dependencies only
 # - GL libraries for MuJoCo/Visualization
 # - X11/XCB libraries for PyQt6
