@@ -26,6 +26,7 @@ import mimetypes
 import os
 import time
 from pathlib import Path
+from urllib.parse import unquote
 from typing import Any
 
 # Fix MIME types for JavaScript modules on Windows
@@ -165,15 +166,89 @@ def _find_logo_file(logo_name: str) -> Path | None:
     Returns:
         Path to the logo file, or None if not found.
     """
+
+    try:
+        safe_logo_name = _normalize_request_path(logo_name, allow_subpaths=False)
+    except ValueError:
+        return None
+
     logos_dir = Path(__file__).parent.parent.parent / "assets" / "logos"
-    logo_path = logos_dir / logo_name
+    logo_path = _safe_static_file(logos_dir, safe_logo_name, allow_subpaths=False)
     if logo_path.exists() and logo_path.is_file():
         return logo_path
     launcher_logos = Path(__file__).parent.parent / "launchers" / "assets"
-    alt_path = launcher_logos / logo_name
+    alt_path = _safe_static_file(launcher_logos, safe_logo_name, allow_subpaths=False)
     if alt_path.exists() and alt_path.is_file():
         return alt_path
     return None
+
+
+def _normalize_request_path(
+    request_path: str,
+    *,
+    allow_subpaths: bool,
+) -> str:
+    """Normalize and validate a user-supplied file path.
+
+    Args:
+        request_path: Raw path from a request parameter.
+        allow_subpaths: If ``False``, disallow ``/`` and ``\\`` in names.
+
+    Returns:
+        A normalized relative path string.
+
+    Raises:
+        ValueError: If the path is missing, absolute, or attempts traversal.
+    """
+    if request_path is None:
+        raise ValueError("Path must be provided")
+
+    normalized = unquote(request_path)
+    if "\x00" in normalized:
+        raise ValueError("Invalid path")
+
+    if normalized.startswith(("/", "\\")):
+        raise ValueError("Absolute paths are not allowed")
+
+    if ":" in normalized:
+        raise ValueError("Drive paths are not allowed")
+
+    if not allow_subpaths and ("/" in normalized or "\\" in normalized):
+        raise ValueError("Subpaths are not allowed")
+
+    candidate = Path(normalized)
+    if candidate.is_absolute() or ".." in candidate.parts:
+        raise ValueError("Path traversal detected")
+
+    return str(candidate)
+
+
+def _safe_static_file(base_path: Path, request_path: str, *, allow_subpaths: bool) -> Path:
+    """Return a resolved path only if it stays within ``base_path``.
+
+    Args:
+        base_path: Trusted base directory.
+        request_path: Untrusted relative path from a request.
+        allow_subpaths: Whether nested subdirectories are allowed.
+
+    Returns:
+        The resolved file path.
+
+    Raises:
+        ValueError: If path validation fails.
+    """
+    normalized = _normalize_request_path(request_path, allow_subpaths=allow_subpaths)
+    if normalized:
+        requested = base_path / normalized
+    else:
+        requested = base_path
+
+    resolved_base = base_path.resolve()
+    resolved_requested = requested.resolve()
+    if not resolved_requested.is_relative_to(resolved_base):
+        raise ValueError("Path escapes base directory")
+
+    return resolved_requested
 
 
 def _find_tile_in_manifest(
@@ -461,9 +536,17 @@ def _register_spa_catch_all(app: FastAPI, ui_path: Path) -> None:
                     status_code=404,
                     content={"detail": "API route not found", "path": full_path},
                 )
-            static_file = ui_path / full_path
-            if full_path and static_file.exists() and static_file.is_file():
-                return FileResponse(str(static_file))
+            if full_path:
+                try:
+                    static_file = _safe_static_file(ui_path, full_path, allow_subpaths=True)
+                except ValueError:
+                    return JSONResponse(
+                        status_code=400,
+                        content={"detail": "Invalid path", "path": full_path},
+                    )
+
+                if static_file.exists() and static_file.is_file():
+                    return FileResponse(str(static_file))
             return FileResponse(str(index_html))
 
 
