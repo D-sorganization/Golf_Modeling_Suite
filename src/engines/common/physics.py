@@ -28,6 +28,7 @@ import numpy as np
 
 from src.shared.python.core.constants import GRAVITY
 from src.shared.python.core.contracts import postcondition, precondition
+from src.shared.python.physics.drag_crisis import calibrated_golf_ball_drag_coefficient
 
 # ─── Physical Constants ────────────────────────────────────────────────
 STANDARD_GRAVITY: float = 9.80665  # m/s² (exact, per NIST)
@@ -299,15 +300,7 @@ class AerodynamicsCalculator:
         # Reynolds number
         Re = self.air.density * speed * (2 * self.ball.radius) / self.air.viscosity
 
-        # Golf ball Cd variation with Re (empirical fit)
-        # Below critical Re (~8e4): higher drag (laminar)
-        # Above critical Re: lower drag (turbulent, dimple effect)
-        if Re < 8e4:
-            return 0.5  # Laminar flow
-        if Re < 2e5:
-            # Transition region
-            return 0.5 - 0.25 * (Re - 8e4) / (2e5 - 8e4)
-        return self.ball.drag_coefficient  # Fully turbulent
+        return calibrated_golf_ball_drag_coefficient(Re, self.ball.drag_coefficient)
 
     def _compute_lift_coefficient(self, spin_ratio: float) -> float:
         """Compute lift coefficient based on spin ratio.

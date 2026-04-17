@@ -84,8 +84,8 @@ class TestAerodynamicsCalculator:
 
     def test_drag_increases_with_speed(self, aero: AerodynamicsCalculator) -> None:
         """Test drag increases with speed (quadratic)."""
-        v_slow = np.array([20.0, 0.0, 0.0])
-        v_fast = np.array([40.0, 0.0, 0.0])
+        v_slow = np.array([50.0, 0.0, 0.0])
+        v_fast = np.array([100.0, 0.0, 0.0])
 
         drag_slow = np.linalg.norm(aero.compute_drag(v_slow))
         drag_fast = np.linalg.norm(aero.compute_drag(v_fast))
