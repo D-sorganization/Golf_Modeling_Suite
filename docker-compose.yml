@@ -25,7 +25,7 @@ services:
       - PYTHONPATH=/workspace
       - PATH=/home/golfer/.local/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       - DATABASE_URL=sqlite:////workspace/golf_modeling_suite.db
-      - API_HOST=0.0.0.0
+      - API_HOST=127.0.0.1
       - API_PORT=8001
       - ENVIRONMENT=development
       - MUJOCO_GL=${MUJOCO_GL:-osmesa}

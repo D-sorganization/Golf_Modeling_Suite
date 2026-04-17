@@ -59,3 +59,19 @@ jobs:
           exit-code: "1"
           ignore-unfixed: true
           vuln-type: "os,library"
+
+      - name: Image smoke test
+        run: |
+          docker run -d --name ci-smoke -p 8001:8001 upstreamdrift:ci
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8001/health; then
+              echo "Health check passed"
+              docker rm -f ci-smoke
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Health check timed out after 30s"
+          docker logs ci-smoke
+          docker rm -f ci-smoke
+          exit 1
