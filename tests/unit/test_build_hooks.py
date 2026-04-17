@@ -12,17 +12,20 @@ class DummyHookInterface:
         self.config = config
 
 
-sys.modules["hatchling"] = MagicMock()
-sys.modules["hatchling.builders"] = MagicMock()
-sys.modules["hatchling.builders.hooks"] = MagicMock()
-sys.modules["hatchling.builders.hooks.plugin"] = MagicMock()
-sys.modules["hatchling.builders.hooks.plugin.interface"] = MagicMock()
-sys.modules["hatchling.builders.hooks.plugin.interface"].BuildHookInterface = (
-    DummyHookInterface
-)
+_HATCHLING_MOCKS = {
+    "hatchling": MagicMock(),
+    "hatchling.builders": MagicMock(),
+    "hatchling.builders.hooks": MagicMock(),
+    "hatchling.builders.hooks.plugin": MagicMock(),
+    "hatchling.builders.hooks.plugin.interface": MagicMock(
+        BuildHookInterface=DummyHookInterface
+    ),
+}
 
 with patch.dict(sys.modules, _HATCHLING_MOCKS):
     import build_hooks  # noqa: E402
+
+sys.modules["build_hooks"] = build_hooks
 
 
 class DummyConfig:
