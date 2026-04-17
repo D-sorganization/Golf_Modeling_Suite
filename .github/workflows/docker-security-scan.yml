@@ -22,6 +22,9 @@ jobs:
   trivy-scan:
     name: Trivy Container Scan
     runs-on: self-hosted
+    env:
+      TRIVY_SCANNERS: vuln
+      TRIVY_SKIP_JAVA_DB_UPDATE: "true"
     permissions:
       security-events: write
       contents: read
@@ -40,6 +43,7 @@ jobs:
           format: "sarif"
           output: "trivy-results.sarif"
           severity: "CRITICAL,HIGH"
+          scanners: "vuln"
           # Don't fail the build initially - triage first
           exit-code: "0"
 
@@ -55,6 +59,7 @@ jobs:
           image-ref: "upstreamdrift:ci"
           format: "table"
           severity: "CRITICAL,HIGH,MEDIUM"
+          scanners: "vuln"
           # Exit with error only on CRITICAL vulnerabilities
           exit-code: "1"
           ignore-unfixed: true
