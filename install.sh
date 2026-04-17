@@ -1,6 +1,27 @@
 #!/bin/bash
 # Golf Modeling Suite - Quick Install Script
 # Usage: curl -fsSL https://golf-suite.io/install.sh | bash
+#
+# SECURITY / THREAT MODEL
+# -----------------------
+# This script installs from the local checkout (pip install .) rather
+# than from PyPI, so supply-chain risk is bounded to the state of this
+# repository on your machine.
+#
+# pipx (preferred) creates an isolated virtualenv so the package and
+# its transitive dependencies cannot pollute system or user site-packages.
+#
+# pip3 installs into the active environment without hash verification.
+# If you require a reproducible, hash-pinned install run:
+#   pip install --require-hashes -r requirements.lock
+# and review requirements.lock before running.
+#
+# To verify the source before installing, inspect the diff since the
+# last release tag:
+#   git log --oneline $(git describe --tags --abbrev=0)..HEAD
+#
+# This script does NOT download binaries from the internet; all package
+# resolution happens through your configured pip index.
 
 set -e
 

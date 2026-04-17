@@ -2,7 +2,9 @@
 # Unifies Robotics (MuJoCo, Drake, Pinocchio) and Biomechanics (OpenSim, MyoSim)
 
 # Stage 1: Builder stage with full development tools
-FROM continuumio/miniconda3:24.11.1-0 AS builder
+# Digest pin prevents silent upstream drift.
+# To rotate: docker pull continuumio/miniconda3:24.11.1-0 && docker inspect --format='{{index .RepoDigests 0}}' continuumio/miniconda3:24.11.1-0
+FROM continuumio/miniconda3:24.11.1-0@sha256:bf95f5799c024d6cb9a4e35aab0cff3d4a9e4d2ab3fc574ff90ecb4f2ed5d3bc AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -87,7 +89,7 @@ RUN pip install --no-cache-dir \
 
 
 # Stage 2: Runtime stage with minimal footprint
-FROM continuumio/miniconda3:24.11.1-0 AS runtime
+FROM continuumio/miniconda3:24.11.1-0@sha256:bf95f5799c024d6cb9a4e35aab0cff3d4a9e4d2ab3fc574ff90ecb4f2ed5d3bc AS runtime
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -164,8 +166,9 @@ EXPOSE 8001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8001/health || exit 1
 
-# Default command
-CMD ["/bin/bash"]
+# Default command starts the API server.
+# For interactive debugging use: docker run --rm -it upstream-drift:runtime /bin/bash
+CMD ["python3", "-m", "uvicorn", "src.api.server:app", "--host", "0.0.0.0", "--port", "8001"]
 
 
 # Stage 3: Training stage for advanced ML workflows

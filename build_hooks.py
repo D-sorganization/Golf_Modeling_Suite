@@ -1,4 +1,24 @@
-"""Custom build hooks to bundle UI into Python package."""
+"""Custom build hooks to bundle UI into Python package.
+
+UIBuildHook runs during ``hatch build`` (configured in pyproject.toml
+``[tool.hatch.build.hooks.custom]``).  It calls ``npm ci`` then
+``npm run build`` inside the ``ui/`` directory, writing the production
+bundle to ``ui/dist/``.  That directory is then included in the wheel
+via ``[tool.hatch.build.targets.wheel] artifacts``.
+
+Skip the UI build by setting ``CI=1`` or ``SKIP_UI_BUILD=1`` in the
+environment (e.g. during pure-Python test runs).  If ``ui/dist/`` is
+absent when skipped, a warning is logged but the build still succeeds —
+the wheel will lack the UI assets.  Force a rebuild even when
+``ui/dist/`` already exists by setting
+``[tool.hatch.build.hooks.custom] force_ui_build = true`` in
+pyproject.toml.
+
+Failure modes:
+- ``npm`` not on PATH → RuntimeError with install instructions.
+- ``npm ci`` or ``npm run build`` non-zero exit → RuntimeError with
+  captured stderr/stdout for diagnosis.
+"""
 
 import logging
 import subprocess
