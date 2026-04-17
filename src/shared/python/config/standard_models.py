@@ -55,14 +55,19 @@ class StandardModelManager:
                     "urdf_path": "shared/urdf/human_models/humanSubject06_66dof.urdf",
                     "mesh_dir": "shared/meshes/human",
                     "license": "CC-BY-SA 2.0",
+                    "model_family": "humanoid",
+                    "validation_scope": "biomechanical",
                     "dof": 66,
                     "mass_kg": 75.0,
                     "height_m": 1.75,
                 },
                 "simple_humanoid": {
                     "name": "Simple Humanoid",
-                    "description": "Simplified human model for basic testing",
+                    "description": "Smoke-test humanoid for parser and engine wiring tests",
                     "urdf_path": "shared/urdf/simple_humanoid.urdf",
+                    "model_family": "humanoid",
+                    "validation_scope": "smoke_test",
+                    "biomechanics_ready": False,
                     "dof": 12,
                     "mass_kg": 70.0,
                     "height_m": 1.70,
@@ -377,6 +382,18 @@ class StandardModelManager:
                 "simple": self.config["simple_humanoid"],
             },
             "golf_clubs": self.config["golf_clubs"],
+        }
+
+    def list_biomechanical_humanoid_models(self) -> dict[str, Any]:
+        """List humanoid models that are explicitly validated for biomechanics."""
+        return {
+            key: value
+            for key, value in {
+                "standard": self.config["standard_humanoid"],
+                "simple": self.config["simple_humanoid"],
+            }.items()
+            if value.get("model_family") == "humanoid"
+            and value.get("validation_scope") in {"biomechanical", "research"}
         }
 
     def setup_all_models(self) -> bool:
