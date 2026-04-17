@@ -24,7 +24,6 @@ jobs:
     runs-on: self-hosted
     env:
       TRIVY_SCANNERS: vuln
-      TRIVY_SKIP_JAVA_DB_UPDATE: "true"
     permissions:
       security-events: write
       contents: read
@@ -49,7 +48,7 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: success()
         with:
           sarif_file: "trivy-results.sarif"
 
