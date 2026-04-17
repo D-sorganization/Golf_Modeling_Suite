@@ -48,6 +48,7 @@ from src.shared.python.core.physics_constants import (
     MAGNUS_COEFFICIENT,
     SPIN_DECAY_RATE_S,
 )
+from src.shared.python.physics.drag_crisis import calibrated_golf_ball_drag_coefficient
 
 # =============================================================================
 # Configuration Classes
@@ -257,10 +258,9 @@ class DragModel:
     ) -> float:
         """Get drag coefficient, optionally corrected for Reynolds number.
 
-        The Reynolds correction modifies the base coefficient based on flow regime:
-        - Laminar flow (low Re): higher effective Cd
-        - Turbulent flow (high Re): base coefficient applies
-        - Transition: smooth interpolation
+        The Reynolds correction uses the committed Bearman-Harvey/Smits-Ogg
+        dimpled golf-ball drag calibration table and natural-cubic interpolation
+        instead of the former monotone three-segment approximation.
 
         Args:
             velocity: Ball velocity [m/s]
@@ -283,19 +283,7 @@ class DragModel:
         diameter = 2 * self.ball_radius
         re = air_density * speed * diameter / viscosity
 
-        # Golf ball Cd variation with Re (empirical)
-        # The base_coefficient is used as the turbulent value, with
-        # higher values at lower Reynolds numbers (laminar flow)
-        laminar_cd = 0.5  # Laminar flow coefficient
-        turbulent_cd = self.base_coefficient  # User-specified turbulent coefficient
-
-        if re < 8e4:
-            return laminar_cd  # Laminar flow
-        if re < 2e5:
-            # Transition region - interpolate between laminar and turbulent
-            fraction = (re - 8e4) / (2e5 - 8e4)
-            return laminar_cd - fraction * (laminar_cd - turbulent_cd)
-        return turbulent_cd  # Fully turbulent
+        return calibrated_golf_ball_drag_coefficient(re, self.base_coefficient)
 
 
 class LiftModel:

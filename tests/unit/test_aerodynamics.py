@@ -216,7 +216,7 @@ class TestDragModel:
 
     def test_drag_proportional_to_speed_squared(self) -> None:
         """Test drag magnitude scales with v^2."""
-        model = DragModel()
+        model = DragModel(reynolds_correction=False)
         v1 = np.array([10.0, 0.0, 0.0])
         v2 = np.array([20.0, 0.0, 0.0])  # 2x velocity
 
@@ -258,6 +258,18 @@ class TestDragModel:
 
         # At high Re (turbulent), golf ball has lower Cd
         assert cd_high < cd_low
+
+    def test_reynolds_correction_preserves_drag_crisis_minimum(self) -> None:
+        """Calibrated Cd(Re) has a dimpled-ball drag-crisis minimum."""
+        model = DragModel(reynolds_correction=True)
+
+        cd_subcritical = model.get_effective_coefficient(np.array([8.5, 0.0, 0.0]))
+        cd_minimum = model.get_effective_coefficient(np.array([24.0, 0.0, 0.0]))
+        cd_post_crisis = model.get_effective_coefficient(np.array([95.0, 0.0, 0.0]))
+
+        assert cd_minimum < cd_subcritical
+        assert cd_post_crisis > cd_minimum
+        assert cd_post_crisis != pytest.approx(model.base_coefficient)
 
 
 # =============================================================================
