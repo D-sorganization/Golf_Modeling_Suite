@@ -648,6 +648,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 | 2026-04-14 | 1.0.112 | fix: prevent test_paths_utils false failure from /tmp/pyproject.toml — test now uses a clean isolated tmp directory instead of relying on /tmp state. |
 | 2026-04-15 | 1.0.113 | Bolt: Optimized `np.sum(np.square(...))` and explicit sum of squares to `np.einsum` in `analysis_tab.py`, `marker_plot_tab.py`, and `motion_capture.py` to improve performance. |
 | 1.0.124 | 2026-04-16 | Replaced np.sum axis reductions with np.einsum for performance optimization |
+| 2026-04-17 | 1.0.125 | Added density-aware, seeded sensor noise modeling for IMU and force-torque sensors, including white-noise density, bias random walk, calibration transforms, saturation handling, and regression coverage for deterministic seeded behavior. |
 
 
 ## Changelog

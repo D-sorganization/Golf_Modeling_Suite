@@ -31,6 +31,7 @@ from src.robotics.sensing.noise_models import (
     GaussianNoise,
     QuantizationNoise,
     create_realistic_sensor_noise,
+    WhiteNoiseDensity,
 )
 
 
@@ -194,6 +195,35 @@ class TestNoiseModels:
 
         assert noisy.shape == signal.shape
 
+    def test_white_noise_density(self) -> None:
+        """Test white-noise density noise model has valid output and shape."""
+        noise = WhiteNoiseDensity(noise_density=0.01, sample_rate=1000.0, seed=11)
+
+        signal = np.array([0.0, 0.0, 0.0])
+        noisy = noise.apply(signal)
+
+        assert noisy.shape == signal.shape
+        assert not np.allclose(noisy, signal)
+
+
+    def test_create_realistic_sensor_noise_with_density(self) -> None:
+        """Test factory supports density-based noise."""
+        noise = create_realistic_sensor_noise(
+            noise_std=None,
+            noise_density=0.01,
+            bias_drift_rate=0.001,
+            quantization_bits=12,
+            signal_range=100.0,
+            sample_rate=1000.0,
+            seed=77,
+        )
+
+        signal = np.array([0.0])
+        noisy = noise.apply(signal)
+
+        assert noisy.shape == signal.shape
+        assert not np.allclose(noisy, signal)
+
 
 class TestForceTorqueSensor:
     """Tests for ForceTorqueSensor class."""
@@ -308,6 +338,46 @@ class TestForceTorqueSensor:
         # Should estimate x ≈ 1
         assert abs(location[0] - 1.0) < 0.1
 
+    def test_force_torque_seeded_density_paths_reproducible(self) -> None:
+        """Test deterministic seeded noise for force/torque density paths."""
+        config = ForceTorqueSensorConfig(
+            force_noise_std=0.0,
+            torque_noise_std=0.0,
+            force_noise_density=0.001,
+            torque_noise_density=0.001,
+            force_bias_random_walk_density=0.00001,
+            torque_bias_random_walk_density=0.000002,
+            cutoff_frequency=1000.0,
+            seed=99,
+        )
+
+        ft_a = ForceTorqueSensor(config)
+        ft_b = ForceTorqueSensor(config)
+
+        ra = ft_a.read(np.array([1.0, 2.0, 3.0, 0.5, 0.0, 0.0]))
+        rb = ft_b.read(np.array([1.0, 2.0, 3.0, 0.5, 0.0, 0.0]))
+
+        assert_allclose(ra.wrench, rb.wrench)
+
+    def test_force_torque_calibration(self) -> None:
+        """Test force/torque calibration scales each axis."""
+        sensor = ForceTorqueSensor(
+            ForceTorqueSensorConfig(
+                force_noise_std=0.0,
+                torque_noise_std=0.0,
+                force_scale_factors=(2.0, 3.0, 4.0),
+                torque_scale_factors=(1.0, 2.0, 3.0),
+                force_range=1000.0,
+                torque_range=1000.0,
+                cutoff_frequency=1000.0,
+            )
+        )
+
+        reading = sensor.read(np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0]))
+
+        assert_allclose(reading.wrench[:3], np.array([2.0, 3.0, 4.0]))
+        assert_allclose(reading.wrench[3:], np.array([1.0, 2.0, 3.0]))
+
 
 class TestIMUSensor:
     """Tests for IMUSensor class."""
@@ -347,6 +417,50 @@ class TestIMUSensor:
 
         assert reading.linear_acceleration.shape == (3,)
         assert reading.angular_velocity.shape == (3,)
+
+    def test_imu_seeded_density_paths_reproducible(self) -> None:
+        """Test seed drives deterministic density and bias-walk streams."""
+        config = IMUSensorConfig(
+            accel_noise_std=0.0,
+            gyro_noise_std=0.0,
+            accel_noise_density=0.002,
+            gyro_noise_density=0.0004,
+            accel_bias_random_walk_density=0.00001,
+            gyro_bias_random_walk_density=0.000001,
+            cutoff_frequency=1000.0,
+            seed=12345,
+        )
+
+        imu_a = IMUSensor(config)
+        imu_b = IMUSensor(config)
+
+        ra = imu_a.read(np.array([0.0, 0.0, 9.81]), np.array([0.0, 0.0, 0.0]))
+        rb = imu_b.read(np.array([0.0, 0.0, 9.81]), np.array([0.0, 0.0, 0.0]))
+
+        assert_allclose(ra.linear_acceleration, rb.linear_acceleration)
+        assert_allclose(ra.angular_velocity, rb.angular_velocity)
+
+    def test_imu_calibration_and_saturation(self) -> None:
+        """Test IMU calibration and saturation are applied."""
+        imu = IMUSensor(
+            IMUSensorConfig(
+                accel_noise_std=0.0,
+                gyro_noise_std=0.0,
+                accel_scale_factors=(2.0, 1.0, 1.0),
+                gyro_scale_factors=(1.0, 1.0, 0.5),
+                accel_range=1.0,
+                gyro_range=2.0,
+                cutoff_frequency=1000.0,
+            )
+        )
+
+        reading = imu.read(
+            linear_accel=np.array([1.0, 0.0, 0.0]),
+            angular_vel=np.array([0.0, 0.0, 5.0]),
+        )
+
+        assert abs(reading.linear_acceleration[0]) == 1.0  # clipped at +/-1g
+        assert abs(reading.angular_velocity[2]) == 2.0  # clipped at +/-2 rad/s
 
     def test_imu_invalid_input_raises(self) -> None:
         """Test IMU raises for invalid input shape."""

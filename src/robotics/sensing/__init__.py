@@ -30,8 +30,10 @@ from src.robotics.sensing.noise_models import (
     BrownianNoise,
     CompositeNoise,
     GaussianNoise,
+    SaturationModel,
     NoiseModel,
     QuantizationNoise,
+    WhiteNoiseDensity,
 )
 
 __all__ = [
@@ -41,7 +43,9 @@ __all__ = [
     "IMUSensorConfig",
     "NoiseModel",
     "GaussianNoise",
+    "WhiteNoiseDensity",
     "BrownianNoise",
     "QuantizationNoise",
+    "SaturationModel",
     "CompositeNoise",
 ]

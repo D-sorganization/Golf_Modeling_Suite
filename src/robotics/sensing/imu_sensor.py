@@ -11,6 +11,7 @@ Design by Contract:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from math import cos, sin
 
 import numpy as np
 from numpy.typing import NDArray
@@ -21,6 +22,9 @@ from src.robotics.sensing.noise_models import (
     BrownianNoise,
     CompositeNoise,
     GaussianNoise,
+    SaturationModel,
+    WhiteNoiseDensity,
+    derive_seed,
 )
 from src.shared.python.core.constants import GRAVITY
 
@@ -35,11 +39,20 @@ class IMUSensorConfig:
         gyro_range: Maximum measurable angular velocity [rad/s].
         accel_noise_std: Accelerometer noise std [m/s^2].
         gyro_noise_std: Gyroscope noise std [rad/s].
+        accel_noise_density: Accelerometer noise density [m/s^2/√Hz].
+        gyro_noise_density: Gyroscope noise density [rad/s/√Hz].
         accel_bias_drift: Accelerometer bias drift [m/s^2/step].
         gyro_bias_drift: Gyroscope bias drift [rad/s/step].
+        accel_bias_random_walk_density: Bias random walk density [m/s^2/√Hz].
+        gyro_bias_random_walk_density: Bias random walk density [rad/s/√Hz].
         gravity: Gravity vector in world frame [m/s^2].
+        accel_scale_factors: Axis scale calibration.
+        gyro_scale_factors: Axis scale calibration.
+        accel_misalignment_deg: Small misalignment in deg around roll, pitch, yaw.
+        gyro_misalignment_deg: Small misalignment in deg around roll, pitch, yaw.
         cutoff_frequency: Sensor bandwidth [Hz].
         sample_rate: Sampling rate [Hz].
+        saturation_softness: Soft saturation knee (0 for hard clip).
         seed: Random seed for reproducibility.
     """
 
@@ -48,13 +61,22 @@ class IMUSensorConfig:
     gyro_range: float = 35.0  # ~2000 deg/s
     accel_noise_std: float = 0.01
     gyro_noise_std: float = 0.001
+    accel_noise_density: float | None = None
+    gyro_noise_density: float | None = None
     accel_bias_drift: float = 0.0001
     gyro_bias_drift: float = 0.00001
+    accel_bias_random_walk_density: float | None = None
+    gyro_bias_random_walk_density: float | None = None
     gravity: NDArray[np.float64] = field(
         default_factory=lambda: np.array([0.0, 0.0, -GRAVITY])
     )
+    accel_scale_factors: tuple[float, float, float] = (1.0, 1.0, 1.0)
+    gyro_scale_factors: tuple[float, float, float] = (1.0, 1.0, 1.0)
+    accel_misalignment_deg: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    gyro_misalignment_deg: tuple[float, float, float] = (0.0, 0.0, 0.0)
     cutoff_frequency: float = 200.0
     sample_rate: float = 1000.0
+    saturation_softness: float = 0.0
     seed: int | None = None
 
 
@@ -63,9 +85,11 @@ class IMUSensor:
 
     Provides 6-axis IMU measurements (3-axis accelerometer + 3-axis gyroscope)
     with configurable noise characteristics including:
-    - Additive white Gaussian noise
-    - Bias drift (random walk)
+    - White noise (standard deviation or density)
+    - Bias random walk
     - Bandwidth limitations
+    - Calibration (scale/misalignment)
+    - Saturation/clipping
 
     Design by Contract:
         Invariants:
@@ -76,15 +100,6 @@ class IMUSensor:
         Postconditions:
             - read() returns valid IMUReading
             - Orientation quaternion (if computed) is unit length
-
-    Example:
-        >>> config = IMUSensorConfig(sensor_id="body_imu")
-        >>> imu = IMUSensor(config)
-        >>> reading = imu.read(
-        ...     linear_accel=np.array([0, 0, 9.81]),
-        ...     angular_vel=np.array([0, 0, 0.1]),
-        ...     timestamp=0.001,
-        ... )
     """
 
     def __init__(self, config: IMUSensorConfig | None = None) -> None:
@@ -96,17 +111,21 @@ class IMUSensor:
         self._config = config or IMUSensorConfig()
         self._validate_config()
 
-        # Initialize noise models
         self._accel_noise = self._create_noise_model(
             self._config.accel_noise_std,
             self._config.accel_bias_drift,
+            noise_density=self._config.accel_noise_density,
+            bias_density=self._config.accel_bias_random_walk_density,
+            stream="accel",
         )
         self._gyro_noise = self._create_noise_model(
             self._config.gyro_noise_std,
             self._config.gyro_bias_drift,
+            noise_density=self._config.gyro_noise_density,
+            bias_density=self._config.gyro_bias_random_walk_density,
+            stream="gyro",
         )
 
-        # Bandwidth filters
         self._accel_filter = BandwidthLimitedNoise(
             cutoff_frequency=self._config.cutoff_frequency,
             sample_rate=self._config.sample_rate,
@@ -116,8 +135,29 @@ class IMUSensor:
             sample_rate=self._config.sample_rate,
         )
 
-        # Orientation estimate state
-        self._orientation = np.array([1.0, 0.0, 0.0, 0.0])  # Identity quaternion
+        self._accel_calibration = _build_calibration_matrix(
+            self._config.accel_scale_factors,
+            self._config.accel_misalignment_deg,
+        )
+        self._gyro_calibration = _build_calibration_matrix(
+            self._config.gyro_scale_factors,
+            self._config.gyro_misalignment_deg,
+        )
+
+        self._accel_saturation = SaturationModel(
+            lower=-self._config.accel_range,
+            upper=self._config.accel_range,
+            mode="hard" if self._config.saturation_softness <= 0 else "soft",
+            soft_knee=max(self._config.saturation_softness, 1.0),
+        )
+        self._gyro_saturation = SaturationModel(
+            lower=-self._config.gyro_range,
+            upper=self._config.gyro_range,
+            mode="hard" if self._config.saturation_softness <= 0 else "soft",
+            soft_knee=max(self._config.saturation_softness, 1.0),
+        )
+
+        self._orientation = np.array([1.0, 0.0, 0.0, 0.0])
         self._last_timestamp: float | None = None
 
     def _validate_config(self) -> None:
@@ -126,31 +166,95 @@ class IMUSensor:
             raise ValueError("accel_noise_std must be non-negative")
         if self._config.gyro_noise_std < 0:
             raise ValueError("gyro_noise_std must be non-negative")
+        if self._config.accel_bias_drift < 0:
+            raise ValueError("accel_bias_drift must be non-negative")
+        if self._config.gyro_bias_drift < 0:
+            raise ValueError("gyro_bias_drift must be non-negative")
+        if (
+            self._config.accel_noise_density is not None
+            and self._config.accel_noise_density < 0
+        ):
+            raise ValueError("accel_noise_density must be non-negative")
+        if (
+            self._config.gyro_noise_density is not None
+            and self._config.gyro_noise_density < 0
+        ):
+            raise ValueError("gyro_noise_density must be non-negative")
+        if (
+            self._config.accel_bias_random_walk_density is not None
+            and self._config.accel_bias_random_walk_density < 0
+        ):
+            raise ValueError("accel_bias_random_walk_density must be non-negative")
+        if (
+            self._config.gyro_bias_random_walk_density is not None
+            and self._config.gyro_bias_random_walk_density < 0
+        ):
+            raise ValueError("gyro_bias_random_walk_density must be non-negative")
         if self._config.cutoff_frequency <= 0:
             raise ValueError("cutoff_frequency must be positive")
+        if self._config.sample_rate <= 0:
+            raise ValueError("sample_rate must be positive")
+        if self._config.accel_range <= 0:
+            raise ValueError("accel_range must be positive")
+        if self._config.gyro_range <= 0:
+            raise ValueError("gyro_range must be positive")
+        if len(self._config.accel_scale_factors) != 3:
+            raise ValueError("accel_scale_factors must have 3 entries")
+        if len(self._config.gyro_scale_factors) != 3:
+            raise ValueError("gyro_scale_factors must have 3 entries")
+        if len(self._config.accel_misalignment_deg) != 3:
+            raise ValueError("accel_misalignment_deg must have 3 entries")
+        if len(self._config.gyro_misalignment_deg) != 3:
+            raise ValueError("gyro_misalignment_deg must have 3 entries")
 
     def _create_noise_model(
         self,
         noise_std: float,
         bias_drift: float,
+        *,
+        noise_density: float | None,
+        bias_density: float | None,
+        stream: str,
     ) -> CompositeNoise:
-        """Create composite noise model.
+        """Create composite noise model for one channel.
 
         Args:
-            noise_std: White noise standard deviation.
-            bias_drift: Bias drift rate.
+            noise_std: White noise std fallback.
+            bias_drift: Fallback bias drift rate.
+            noise_density: Optional white-noise density.
+            bias_density: Optional bias random-walk density.
+            stream: Stream identifier for seed derivation.
 
         Returns:
             Composite noise model.
         """
+        if noise_density is None:
+            noise_model = GaussianNoise(
+                std=noise_std,
+                seed=derive_seed(self._config.seed, stream, "white"),
+            )
+            noise_std_for_limits = noise_std
+        else:
+            noise_model = WhiteNoiseDensity(
+                noise_density=noise_density,
+                sample_rate=self._config.sample_rate,
+                seed=derive_seed(self._config.seed, stream, "white"),
+            )
+            noise_std_for_limits = noise_density * np.sqrt(self._config.sample_rate)
+
+        if bias_density is None:
+            bias_std = bias_drift
+        else:
+            bias_std = bias_density * np.sqrt(self._config.sample_rate)
+
         return CompositeNoise(
             models=[
                 BrownianNoise(
-                    drift_rate=bias_drift,
-                    max_bias=noise_std * 10,
-                    seed=self._config.seed,
+                    drift_rate=bias_std,
+                    max_bias=noise_std_for_limits * 10,
+                    seed=derive_seed(self._config.seed, stream, "bias"),
                 ),
-                GaussianNoise(std=noise_std, seed=self._config.seed),
+                noise_model,
             ]
         )
 
@@ -186,9 +290,6 @@ class IMUSensor:
 
         Returns:
             IMUReading with noisy measurements.
-
-        Raises:
-            ValueError: If input arrays have wrong shape.
         """
         linear_accel = np.asarray(linear_accel, dtype=np.float64)
         angular_vel = np.asarray(angular_vel, dtype=np.float64)
@@ -198,33 +299,23 @@ class IMUSensor:
         if angular_vel.shape != (3,):
             raise ValueError(f"angular_vel must be (3,), got {angular_vel.shape}")
 
-        # Apply noise
         noisy_accel = self._accel_noise.apply(linear_accel)
         noisy_gyro = self._gyro_noise.apply(angular_vel)
 
-        # Apply bandwidth filter
         filtered_accel = self._accel_filter.apply(noisy_accel)
         filtered_gyro = self._gyro_filter.apply(noisy_gyro)
 
-        # Clip to sensor range
-        filtered_accel = np.clip(
-            filtered_accel,
-            -self._config.accel_range,
-            self._config.accel_range,
-        )
-        filtered_gyro = np.clip(
-            filtered_gyro,
-            -self._config.gyro_range,
-            self._config.gyro_range,
-        )
+        calibrated_accel = self._accel_calibration @ filtered_accel
+        calibrated_gyro = self._gyro_calibration @ filtered_gyro
 
-        # Update orientation estimate
+        clipped_accel = self._accel_saturation.apply(calibrated_accel)
+        clipped_gyro = self._gyro_saturation.apply(calibrated_gyro)
+
         orientation = None
-        if include_orientation:
-            if self._last_timestamp is not None:
-                dt = timestamp - self._last_timestamp
-                if dt > 0:
-                    self._integrate_orientation(filtered_gyro, dt)
+        if include_orientation and self._last_timestamp is not None:
+            dt = timestamp - self._last_timestamp
+            if dt > 0:
+                self._integrate_orientation(clipped_gyro, dt)
             orientation = self._orientation.copy()
 
         self._last_timestamp = timestamp
@@ -232,8 +323,8 @@ class IMUSensor:
         return IMUReading(
             timestamp=timestamp,
             sensor_id=self._config.sensor_id,
-            linear_acceleration=filtered_accel,
-            angular_velocity=filtered_gyro,
+            linear_acceleration=clipped_accel,
+            angular_velocity=clipped_gyro,
             orientation=orientation,
         )
 
@@ -244,25 +335,21 @@ class IMUSensor:
     ) -> None:
         """Integrate angular velocity to update orientation.
 
-        Uses first-order quaternion integration.
+        Uses exponential-map integration over the sample interval.
 
         Args:
             angular_vel: Angular velocity [rad/s].
             dt: Time step [s].
         """
-        # Quaternion derivative: dq/dt = 0.5 * q * omega
-        # where omega = [0, wx, wy, wz]
         if not (angular_vel is not None):
             raise ValueError("angular_vel must be provided")
-        omega_mag = float(np.linalg.norm(angular_vel))
 
-        if omega_mag < 1e-10:
+        angle = float(np.linalg.norm(angular_vel) * dt)
+        if angle < 1e-12:
             return
 
-        # Compute rotation quaternion
-        half_angle = 0.5 * omega_mag * dt
-        axis = angular_vel / omega_mag
-
+        axis = angular_vel / np.linalg.norm(angular_vel)
+        half_angle = 0.5 * angle
         dq = np.array(
             [
                 np.cos(half_angle),
@@ -272,10 +359,7 @@ class IMUSensor:
             ]
         )
 
-        # Quaternion multiplication: q_new = q * dq
         self._orientation = _quaternion_multiply(self._orientation, dq)
-
-        # Normalize
         self._orientation /= np.linalg.norm(self._orientation)
 
     def reset(self) -> None:
@@ -296,8 +380,6 @@ class IMUSensor:
         quaternion = np.asarray(quaternion, dtype=np.float64)
         if quaternion.shape != (4,):
             raise ValueError(f"Quaternion must be (4,), got {quaternion.shape}")
-
-        # Normalize
         self._orientation = quaternion / np.linalg.norm(quaternion)
 
     def get_gravity_in_sensor_frame(self) -> NDArray[np.float64]:
@@ -306,9 +388,37 @@ class IMUSensor:
         Returns:
             Gravity vector (3,) in sensor frame [m/s^2].
         """
-        # Rotate world gravity into sensor frame using orientation inverse
         q_inv = _quaternion_inverse(self._orientation)
         return _rotate_vector_by_quaternion(self._config.gravity, q_inv)
+
+
+def _build_calibration_matrix(
+    scale_factors: tuple[float, float, float],
+    misalignment_deg: tuple[float, float, float],
+) -> NDArray[np.float64]:
+    """Build calibration transform from scale and misalignment."""
+    scales = np.asarray(scale_factors, dtype=np.float64)
+    if scales.shape != (3,):
+        raise ValueError("scale_factors must have shape (3,)")
+
+    roll, pitch, yaw = np.deg2rad(misalignment_deg)
+    cx = cos(roll)
+    sx = sin(roll)
+    cy = cos(pitch)
+    sy = sin(pitch)
+    cz = cos(yaw)
+    sz = sin(yaw)
+
+    # Intrinsic x->y->z Euler misalignment approximation.
+    misalignment = np.array(
+        [
+            [cy * cz, -cz * sx * sy - cx * sz, sx * sz + cx * cz * sy],
+            [cy * sz, cx * cz - sx * sy * sz, -cx * sz * sy + sx * cz],
+            [-sy, cy * sx, cx * cy],
+        ]
+    )
+
+    return misalignment @ np.diag(scales)
 
 
 def _quaternion_multiply(
@@ -340,14 +450,7 @@ def _quaternion_multiply(
 
 
 def _quaternion_inverse(q: NDArray[np.float64]) -> NDArray[np.float64]:
-    """Compute quaternion inverse (conjugate for unit quaternion).
-
-    Args:
-        q: Quaternion [w, x, y, z].
-
-    Returns:
-        Inverse quaternion.
-    """
+    """Compute quaternion inverse (conjugate for unit quaternion)."""
     return np.array([q[0], -q[1], -q[2], -q[3]])
 
 
@@ -364,17 +467,14 @@ def _rotate_vector_by_quaternion(
     Returns:
         Rotated vector (3,).
     """
-    # v' = q * [0, v] * q^{-1}
     if not (v is not None):
         raise ValueError("v must be provided")
     v_quat = np.array([0.0, v[0], v[1], v[2]])
     q_inv = _quaternion_inverse(q)
-
     result = _quaternion_multiply(
         _quaternion_multiply(q, v_quat),
         q_inv,
     )
-
     return result[1:4]
 
 
@@ -385,7 +485,7 @@ def create_ideal_imu(sensor_id: str = "ideal_imu") -> IMUSensor:
         sensor_id: Sensor identifier.
 
     Returns:
-        IMUSensor with zero noise.
+        IMU with zero noise.
     """
     return IMUSensor(
         IMUSensorConfig(
@@ -413,7 +513,6 @@ def create_realistic_imu(
     Returns:
         IMUSensor with appropriate noise characteristics.
     """
-    # Noise parameters based on typical sensor grades
     if not (sensor_id is not None):
         raise ValueError("sensor_id must be provided")
     noise_params = {
@@ -422,30 +521,34 @@ def create_realistic_imu(
             "gyro_noise_std": 0.01,
             "accel_bias_drift": 0.001,
             "gyro_bias_drift": 0.0001,
+            "accel_noise_density": 0.0001,
+            "gyro_noise_density": 0.00001,
         },
         "industrial": {
             "accel_noise_std": 0.01,
             "gyro_noise_std": 0.001,
             "accel_bias_drift": 0.0001,
             "gyro_bias_drift": 0.00001,
+            "accel_noise_density": 0.00002,
+            "gyro_noise_density": 0.000002,
+            "accel_bias_random_walk_density": 0.000002,
+            "gyro_bias_random_walk_density": 0.0000002,
         },
         "tactical": {
             "accel_noise_std": 0.001,
             "gyro_noise_std": 0.0001,
             "accel_bias_drift": 0.00001,
             "gyro_bias_drift": 0.000001,
+            "accel_noise_density": 0.00001,
+            "gyro_noise_density": 0.000001,
+            "accel_bias_random_walk_density": 0.0000002,
+            "gyro_bias_random_walk_density": 0.00000002,
+            "accel_scale_factors": (0.999, 0.9998, 1.0003),
+            "gyro_scale_factors": (1.0001, 0.9997, 1.0002),
+            "accel_misalignment_deg": (0.04, -0.03, 0.02),
+            "gyro_misalignment_deg": (0.02, 0.01, -0.02),
         },
     }
 
     params = noise_params.get(quality, noise_params["industrial"])
-
-    return IMUSensor(
-        IMUSensorConfig(
-            sensor_id=sensor_id,
-            seed=seed,
-            accel_noise_std=params["accel_noise_std"],
-            gyro_noise_std=params["gyro_noise_std"],
-            accel_bias_drift=params["accel_bias_drift"],
-            gyro_bias_drift=params["gyro_bias_drift"],
-        )
-    )
+    return IMUSensor(IMUSensorConfig(sensor_id=sensor_id, seed=seed, **params))
