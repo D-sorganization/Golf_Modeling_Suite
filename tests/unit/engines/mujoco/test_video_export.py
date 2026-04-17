@@ -10,16 +10,13 @@ import mujoco
 import numpy as np
 import pytest
 
-# Mock dependencies before import
-sys.modules["cv2"] = MagicMock()
-sys.modules["imageio"] = MagicMock()
-
-from src.engines.physics_engines.mujoco.python.mujoco_humanoid_golf.video_export import (  # noqa: E402, E501
-    VideoExporter,
-    VideoFormat,
-    create_metrics_overlay,
-    export_simulation_video,
-)
+with patch.dict(sys.modules, {"cv2": MagicMock(), "imageio": MagicMock()}):
+    from src.engines.physics_engines.mujoco.python.mujoco_humanoid_golf.video_export import (  # noqa: E501
+        VideoExporter,
+        VideoFormat,
+        create_metrics_overlay,
+        export_simulation_video,
+    )
 
 # Path to the mujoco module reference inside video_export (imported as `mj`)
 _VID_EXPORT_MJ = (

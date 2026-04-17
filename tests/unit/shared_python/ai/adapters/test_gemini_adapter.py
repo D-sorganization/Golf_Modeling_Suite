@@ -1,29 +1,19 @@
 """Tests for the Gemini adapter."""
 
 import sys
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
-# Mock google.generativeai globally so lazy imports bypass the missing package
+import pytest
+
 mock_genai_pkg = MagicMock()
-sys.modules["google"] = MagicMock()
-sys.modules["google.generativeai"] = mock_genai_pkg
-sys.modules["google.generativeai.types"] = MagicMock()
+_GOOGLE_MOCKS = {
+    "google": MagicMock(),
+    "google.generativeai": mock_genai_pkg,
+    "google.generativeai.types": MagicMock(),
+}
 
-from unittest.mock import MagicMock, patch  # noqa: E402
-
-import pytest  # noqa: E402
-
-
-@pytest.fixture(autouse=True)
-def reset_mocks():
-    sys.modules["google.generativeai"].reset_mock()
-
-
-@pytest.fixture(autouse=True)
-def patch_has_gemini():
-    with patch("src.shared.python.ai.adapters.gemini_adapter.HAS_GEMINI", True):
-        yield
-
+_google_patcher = patch.dict(sys.modules, _GOOGLE_MOCKS)
+_google_patcher.start()
 
 from src.shared.python.ai.adapters.gemini_adapter import GeminiAdapter  # noqa: E402
 from src.shared.python.ai.types import (  # noqa: E402
@@ -31,6 +21,17 @@ from src.shared.python.ai.types import (  # noqa: E402
     Message,
     ProviderCapability,
 )
+
+
+@pytest.fixture(autouse=True)
+def reset_mocks():
+    mock_genai_pkg.reset_mock()
+
+
+@pytest.fixture(autouse=True)
+def patch_has_gemini():
+    with patch("src.shared.python.ai.adapters.gemini_adapter.HAS_GEMINI", True):
+        yield
 
 
 def test_init_missing_package():
@@ -74,11 +75,10 @@ def test_capabilities():
 def test_validate_connection_success():
     """Test a successful connection validation."""
 
-    # The generative model is returned by the class constructor mock
-    mock_model_inst = sys.modules["google.generativeai"].GenerativeModel.return_value
+    mock_model_inst = mock_genai_pkg.GenerativeModel.return_value
     mock_model_inst.generate_content.return_value = MagicMock()
 
-    sys.modules["google.generativeai"].configure.reset_mock()
+    mock_genai_pkg.configure.reset_mock()
     adapter = GeminiAdapter("sk")
     success, msg = adapter.validate_connection()
 
@@ -90,10 +90,10 @@ def test_validate_connection_success():
 def test_validate_connection_failure():
     """Test a failed connection validation."""
 
-    mock_model_inst = sys.modules["google.generativeai"].GenerativeModel.return_value
+    mock_model_inst = mock_genai_pkg.GenerativeModel.return_value
     mock_model_inst.generate_content.side_effect = ValueError("Network out")
 
-    sys.modules["google.generativeai"].configure.reset_mock()
+    mock_genai_pkg.configure.reset_mock()
     adapter = GeminiAdapter("sk")
     success, msg = adapter.validate_connection()
 
@@ -104,9 +104,9 @@ def test_validate_connection_failure():
 def test_build_chat_session():
     """Test history parser for Gemini chat."""
 
-    sys.modules["google.generativeai"].configure.reset_mock()
+    mock_genai_pkg.configure.reset_mock()
     adapter = GeminiAdapter("sk")
-    mock_model_inst = sys.modules["google.generativeai"].GenerativeModel.return_value
+    mock_model_inst = mock_genai_pkg.GenerativeModel.return_value
 
     ctx = ConversationContext()
     ctx.messages = [
@@ -130,7 +130,7 @@ def test_build_chat_session():
 
 def test_send_message_success():
     """Test robust send_message path."""
-    sys.modules["google.generativeai"].configure.reset_mock()
+    mock_genai_pkg.configure.reset_mock()
     adapter = GeminiAdapter("sk")
 
     mock_chat = MagicMock()
@@ -138,7 +138,7 @@ def test_send_message_success():
     mock_response.text = "Hello there"
     mock_chat.send_message.return_value = mock_response
 
-    mock_model_inst = sys.modules["google.generativeai"].GenerativeModel.return_value
+    mock_model_inst = mock_genai_pkg.GenerativeModel.return_value
     mock_model_inst.start_chat.return_value = mock_chat
 
     resp = adapter.send_message("Greetings", ConversationContext(), [])
@@ -149,13 +149,13 @@ def test_send_message_success():
 
 def test_send_message_error():
     """Test send_message error trap."""
-    sys.modules["google.generativeai"].configure.reset_mock()
+    mock_genai_pkg.configure.reset_mock()
     adapter = GeminiAdapter("sk")
 
     mock_chat = MagicMock()
     mock_chat.send_message.side_effect = OSError("Connection refused")
 
-    mock_model_inst = sys.modules["google.generativeai"].GenerativeModel.return_value
+    mock_model_inst = mock_genai_pkg.GenerativeModel.return_value
     mock_model_inst.start_chat.return_value = mock_chat
 
     resp = adapter.send_message("Greetings", ConversationContext(), [])
@@ -165,7 +165,7 @@ def test_send_message_error():
 
 def test_stream_response():
     """Test streaming chunk iterator."""
-    sys.modules["google.generativeai"].configure.reset_mock()
+    mock_genai_pkg.configure.reset_mock()
     adapter = GeminiAdapter("sk")
 
     mock_chat = MagicMock()
@@ -177,7 +177,7 @@ def test_stream_response():
 
     mock_chat.send_message.return_value = [c1, c2]
 
-    mock_model_inst = sys.modules["google.generativeai"].GenerativeModel.return_value
+    mock_model_inst = mock_genai_pkg.GenerativeModel.return_value
     mock_model_inst.start_chat.return_value = mock_chat
 
     chunks = list(adapter.stream_response("test", ConversationContext(), []))
@@ -189,13 +189,13 @@ def test_stream_response():
 
 def test_stream_error():
     """Test streaming chunk iterator handles generic exceptions safely."""
-    sys.modules["google.generativeai"].configure.reset_mock()
+    mock_genai_pkg.configure.reset_mock()
     adapter = GeminiAdapter("sk")
 
     mock_chat = MagicMock()
     mock_chat.send_message.side_effect = RuntimeError("Broken pipe")
 
-    mock_model_inst = sys.modules["google.generativeai"].GenerativeModel.return_value
+    mock_model_inst = mock_genai_pkg.GenerativeModel.return_value
     mock_model_inst.start_chat.return_value = mock_chat
 
     chunks = list(adapter.stream_response("test", ConversationContext(), []))
