@@ -29,28 +29,43 @@ def check_makefile(errors: list[str]) -> None:
     content = "\n".join(lines)
 
     forbidden = [
-        (r'@echo "  make format    - Format code \(black, ruff\)"', "Use Ruff-only format guidance"),
-        (r"@echo \"Running black\\.\\.\\.\"", "Remove black formatter step from format target"),
+        (
+            r'@echo "  make format    - Format code \(black, ruff\)"',
+            "Use Ruff-only format guidance",
+        ),
+        (
+            r"@echo \"Running black\\.\\.\\.\"",
+            "Remove black formatter step from format target",
+        ),
         (r"^black \\.$", "Remove black formatter command from Makefile format target"),
-        (r"including dev tools: ruff, black, mypy, pytest", "Remove black from install dev-tool note"),
+        (
+            r"including dev tools: ruff, black, mypy, pytest",
+            "Remove black from install dev-tool note",
+        ),
     ]
 
     hits = [pattern for pattern, _ in forbidden if re.search(pattern, content)]
     if hits:
         descriptions = [
-            desc
-            for pattern, desc in forbidden
-            if re.search(pattern, content)
+            desc for pattern, desc in forbidden if re.search(pattern, content)
         ]
-        _fail("Makefile formatter guidance is no longer Ruff-only", descriptions, errors)
+        _fail(
+            "Makefile formatter guidance is no longer Ruff-only", descriptions, errors
+        )
 
     if "black" in content:
-        _fail("Makefile contains unexpected formatter references to black", ["black"], errors)
+        _fail(
+            "Makefile contains unexpected formatter references to black",
+            ["black"],
+            errors,
+        )
 
 
 def check_precommit(errors: list[str]) -> None:
     lines = _read_lines(PRE_COMMIT)
-    black_hooks = [i + 1 for i, line in enumerate(lines) if re.match(r"^\s*- id:\s*black$", line)]
+    black_hooks = [
+        i + 1 for i, line in enumerate(lines) if re.match(r"^\s*- id:\s*black$", line)
+    ]
     if black_hooks:
         _fail(
             ".pre-commit-config.yaml still defines a black hook",
@@ -110,7 +125,9 @@ def main() -> int:
         for error in errors:
             print(f"- {error}")
         return 1
-    print("OK: formatter guidance is Ruff-aligned in Makefile, docs, and pre-commit config")
+    print(
+        "OK: formatter guidance is Ruff-aligned in Makefile, docs, and pre-commit config"
+    )
     return 0
 
 
