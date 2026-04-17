@@ -1,0 +1,6 @@
+# .cargo/config.toml
+# LOCAL DEV: tools-core resolved via ../Tools/rust_core/tools-core (sibling repo).
+# CI OVERRIDE: pass --config "patch.crates-io.tools-core.path=/path" or uncomment below.
+
+# [patch.crates-io]
+# tools-core = { path = "/opt/ci/Tools/rust_core/tools-core" }
