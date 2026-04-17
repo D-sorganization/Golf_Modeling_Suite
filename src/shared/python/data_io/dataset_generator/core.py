@@ -215,19 +215,19 @@ class DatasetGenerator:
             "control_type": profile.profile_type,
         }
 
-        if not (buffers["times"] is not None):
+        if buffers["times"] is None:
             raise ValueError("times buffer must not be None")
-        if not (buffers["positions"] is not None):
+        if buffers["positions"] is None:
             raise ValueError("positions buffer must not be None")
-        if not (buffers["velocities"] is not None):
+        if buffers["velocities"] is None:
             raise ValueError("velocities buffer must not be None")
-        if not (buffers["accelerations"] is not None):
+        if buffers["accelerations"] is None:
             raise ValueError("accelerations buffer must not be None")
-        if not (buffers["torques"] is not None):
+        if buffers["torques"] is None:
             raise ValueError("torques buffer must not be None")
-        if not (buffers["kinetic_energy"] is not None):
+        if buffers["kinetic_energy"] is None:
             raise ValueError("kinetic_energy buffer must not be None")
-        if not (buffers["potential_energy"] is not None):
+        if buffers["potential_energy"] is None:
             raise ValueError("potential_energy buffer must not be None")
 
         return SimulationSample(
