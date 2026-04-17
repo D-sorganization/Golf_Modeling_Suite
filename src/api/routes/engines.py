@@ -275,12 +275,16 @@ async def get_engine_capabilities(
         default_caps = EngineCapabilities(engine_name=engine_type)
         caps_dict = default_caps.to_dict()
 
-    # Build capability list
+    # Build capability list; exclude metadata keys that are not capability levels
+    _VALID_LEVELS = frozenset({"full", "partial", "none"})
     capability_list = []
     summary = {"full": 0, "partial": 0, "none": 0}
 
     for key, level in caps_dict.items():
         if key == "engine_name":
+            continue
+        # Skip metadata fields that are not capability level values
+        if level not in _VALID_LEVELS:
             continue
         supported = level != "none"
         capability_list.append(
