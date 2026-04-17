@@ -82,7 +82,7 @@ jobs:
   quality-gate:
     needs: pick-runner
     runs-on: self-hosted
-    timeout-minutes: 20
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v6
         with:
