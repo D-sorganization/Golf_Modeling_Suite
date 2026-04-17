@@ -179,7 +179,7 @@ FROM runtime AS training
 USER root
 
 # Install CUDA toolkit via conda for GPU training support
-RUN conda install -y -c conda-forge -c nvidia \
+RUN conda install -y -c pytorch -c nvidia -c conda-forge \
     cuda-toolkit \
     cudnn \
     pytorch \
