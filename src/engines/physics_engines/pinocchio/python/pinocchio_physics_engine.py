@@ -9,7 +9,7 @@ initialization patterns.
 
 from __future__ import annotations
 
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 import numpy as np
 
@@ -21,6 +21,10 @@ from src.shared.python.core.contracts import (
 )
 from src.shared.python.engine_core.base_physics_engine import (
     BasePhysicsEngine,
+)
+from src.shared.python.engine_core.capabilities import (
+    CapabilityLevel,
+    EngineCapabilities,
 )
 from src.shared.python.engine_core.engine_availability import (
     PINOCCHIO_AVAILABLE,
@@ -36,6 +40,7 @@ from src.shared.python.core import constants
 logger = get_logger(__name__)
 
 DEFAULT_TIME_STEP = float(constants.DEFAULT_TIME_STEP)
+PinocchioIntegrator = Literal["semi_implicit", "rk4"]
 
 
 @invariant(
@@ -68,6 +73,7 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
         self.a: np.ndarray = np.array([])
         self.tau: np.ndarray = np.array([])
         self.time: float = 0.0
+        self.integrator: PinocchioIntegrator = "rk4"
 
     @property
     def is_initialized(self) -> bool:
@@ -86,13 +92,25 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
             return cast(str, self.model.name)
         return self.model_name_str
 
+    def get_capabilities(self) -> EngineCapabilities:
+        """Report Pinocchio capabilities, including lack of contact GRF support."""
+        return EngineCapabilities(
+            engine_name="Pinocchio",
+            mass_matrix=CapabilityLevel.FULL,
+            jacobian=CapabilityLevel.FULL,
+            contact_forces=CapabilityLevel.NONE,
+            inverse_dynamics=CapabilityLevel.FULL,
+            drift_acceleration=CapabilityLevel.FULL,
+            extra={"spatial_jacobian_order": "angular_linear"},
+        )
+
     def _load_from_path_impl(self, path: str) -> None:
         """Pinocchio-specific model loading from URDF file path.
 
         Args:
             path: Validated path to URDF model file.
         """
-        if not (path is not None):
+        if path is None:
             raise ValueError("path must be provided")
         if not path.endswith(".urdf"):
             logger.warning("Pinocchio loader expects URDF, got: %s", path)
@@ -115,7 +133,7 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
             content: Model definition string (URDF/XML).
             extension: File extension hint.
         """
-        if not (content is not None):
+        if content is None:
             raise ValueError("content must be provided")
         if extension != "urdf":
             logger.warning("Pinocchio load_from_string mostly supports URDF.")
@@ -143,24 +161,75 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
             self.forward()
 
     @precondition(
-        lambda self, dt=None: self.is_initialized,
+        lambda self, dt=None, **kwargs: self.is_initialized,
         "Engine must be initialized",
     )
-    def step(self, dt: float | None = None) -> None:
+    def step(
+        self,
+        dt: float | None = None,
+        *,
+        integrator: PinocchioIntegrator | None = None,
+    ) -> None:
         """Advance the simulation by one time step."""
         if self.model is None or self.data is None:
             return
 
         time_step = dt if dt is not None else DEFAULT_TIME_STEP
+        if time_step <= 0.0:
+            raise ValueError("dt must be positive")
 
-        # Explicit Forward Dynamics: a = ABA(q, v, tau)
-        self.a = pin.aba(self.model, self.data, self.q, self.v, self.tau)
-
-        # Semi-implicit Euler integration
-        self.v += self.a * time_step
-        self.q = pin.integrate(self.model, self.q, self.v * time_step)
+        method = integrator or self.integrator
+        if method == "rk4":
+            self._step_rk4(time_step)
+        elif method == "semi_implicit":
+            self._step_semi_implicit(time_step)
+        else:
+            raise ValueError(f"Unsupported Pinocchio integrator: {method!r}")
 
         self.time += time_step
+        self.forward()
+
+    def _step_semi_implicit(self, dt: float) -> None:
+        """Advance with velocity-first symplectic Euler integration."""
+        if self.model is None or self.data is None:
+            return
+
+        self.a = pin.aba(self.model, self.data, self.q, self.v, self.tau)
+        self.v = self.v + self.a * dt
+        self.q = pin.integrate(self.model, self.q, self.v * dt)
+
+    def _step_rk4(self, dt: float) -> None:
+        """Advance with fourth-order Runge-Kutta on Pinocchio tangent state."""
+        if self.model is None or self.data is None:
+            return
+
+        q0 = self.q.copy()
+        v0 = self.v.copy()
+        tau = self.tau.copy()
+
+        def acceleration(q: np.ndarray, v: np.ndarray) -> np.ndarray:
+            return cast(np.ndarray, pin.aba(self.model, self.data, q, v, tau))
+
+        a1 = acceleration(q0, v0)
+        v2 = v0 + 0.5 * dt * a1
+        q2 = pin.integrate(self.model, q0, 0.5 * dt * v0)
+
+        a2 = acceleration(q2, v2)
+        v3 = v0 + 0.5 * dt * a2
+        q3 = pin.integrate(self.model, q0, 0.5 * dt * v2)
+
+        a3 = acceleration(q3, v3)
+        v4 = v0 + dt * a3
+        q4 = pin.integrate(self.model, q0, dt * v3)
+
+        a4 = acceleration(q4, v4)
+
+        weighted_velocity = (v0 + 2.0 * v2 + 2.0 * v3 + v4) / 6.0
+        weighted_acceleration = (a1 + 2.0 * a2 + 2.0 * a3 + a4) / 6.0
+
+        self.q = pin.integrate(self.model, q0, dt * weighted_velocity)
+        self.v = v0 + dt * weighted_acceleration
+        self.a = a4.copy()
 
     @precondition(lambda self: self.is_initialized, "Engine must be initialized")
     def forward(self) -> None:
@@ -178,7 +247,7 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
 
     def set_state(self, q: np.ndarray, v: np.ndarray) -> None:
         """Set the current state."""
-        if not (q is not None):
+        if q is None:
             raise ValueError("q must be provided")
         if self.model is None:
             return
@@ -190,7 +259,7 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
 
     def set_control(self, u: np.ndarray) -> None:
         """Apply control inputs (torques/forces)."""
-        if not (u is not None):
+        if u is None:
             raise ValueError("u must be provided")
         if self.model is None:
             return
@@ -288,7 +357,7 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
     )
     def compute_inverse_dynamics(self, qacc: np.ndarray) -> np.ndarray:
         """Compute inverse dynamics tau = ID(q, v, a)."""
-        if not (qacc is not None):
+        if qacc is None:
             raise ValueError("qacc must be provided")
         if self.model is None or self.data is None:
             return np.array([])
@@ -325,7 +394,7 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
     )
     def compute_jacobian(self, body_name: str) -> dict[str, np.ndarray] | None:
         """Compute spatial Jacobian for a specific body."""
-        if not (body_name is not None):
+        if body_name is None:
             raise ValueError("body_name must be provided")
         if self.model is None or self.data is None:
             return None
@@ -390,7 +459,7 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
         Returns:
             q_ddot_control: Control acceleration vector (nv,)
         """
-        if not (tau is not None):
+        if tau is None:
             raise ValueError("tau must be provided")
         if self.model is None or self.data is None:
             return np.array([])
@@ -420,7 +489,7 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
         Returns:
             q_ddot_ZTCF: Acceleration under zero torque (n_v,)
         """
-        if not (q is not None):
+        if q is None:
             raise ValueError("q must be provided")
         if self.model is None or self.data is None:
             return np.array([])
@@ -446,7 +515,7 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
         Returns:
             q_ddot_ZVCF: Acceleration with v=0 (n_v,)
         """
-        if not (q is not None):
+        if q is None:
             raise ValueError("q must be provided")
         if self.model is None or self.data is None:
             return np.array([])

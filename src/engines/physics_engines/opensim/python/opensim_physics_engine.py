@@ -170,7 +170,7 @@ class OpenSimPhysicsEngine(PhysicsEngine):
 
     def set_state(self, q: np.ndarray, v: np.ndarray) -> None:
         """Set coordinate positions and speeds on the model state."""
-        if not (q is not None):
+        if q is None:
             raise ValueError("q must be provided")
         if not self._model or not self._state:
             return
@@ -195,7 +195,7 @@ class OpenSimPhysicsEngine(PhysicsEngine):
 
     def set_control(self, u: np.ndarray) -> None:
         """Set controls for the model."""
-        if not (u is not None):
+        if u is None:
             raise ValueError("u must be provided")
         if not self._model or not self._state:
             return
@@ -291,7 +291,7 @@ class OpenSimPhysicsEngine(PhysicsEngine):
     @postcondition(check_finite, "Inverse dynamics torques must contain finite values")
     def compute_inverse_dynamics(self, qacc: np.ndarray) -> np.ndarray:
         """Compute required torques for the given joint accelerations."""
-        if not (qacc is not None):
+        if qacc is None:
             raise ValueError("qacc must be provided")
         if not self._model or not self._state:
             return np.array([])
@@ -345,7 +345,7 @@ class OpenSimPhysicsEngine(PhysicsEngine):
             - 'angular': Rotation Jacobian (3 × nv) [rad/rad or rad/m]
             - 'spatial': Combined [angular; linear] (6 × nv)
         """
-        if not (body_name is not None):
+        if body_name is None:
             raise ValueError("body_name must be provided")
         if not self._model or not self._state or opensim is None:
             return None
@@ -368,17 +368,9 @@ class OpenSimPhysicsEngine(PhysicsEngine):
             jacp = np.zeros((3, nv))
             jacr = np.zeros((3, nv))
 
-            # Get current body transform
-            transform = body.getTransformInGround(self._state)
-            pos_0 = np.array([transform.p()[0], transform.p()[1], transform.p()[2]])
-
-            # Extract rotation as axis-angle for numerical differentiation
-            rotation_0 = transform.R()
-
-            # Finite difference perturbation: use sqrt(machine epsilon) for double
-            # precision to balance truncation and round-off errors for first-order
-            # finite differences. See Nocedal & Wright, Numerical Optimization, Ch 8.
-            eps = np.sqrt(np.finfo(float).eps)  # ~1.49e-8 for float64
+            # Central differences with a macroscopic angular step are more stable
+            # for OpenSim coordinates than sqrt(eps) forward differences.
+            eps = 1e-4
 
             # Store original state
             q_orig = np.zeros(nq)
@@ -386,40 +378,48 @@ class OpenSimPhysicsEngine(PhysicsEngine):
                 q_orig[i] = self._state.getQ()[i]
 
             for i in range(nv):
-                # Perturb coordinate i
-                q_pert = q_orig.copy()
-                # Scale the finite-difference step so large-angle states do not
-                # collapse to machine-noise perturbations.
+                # Perturb coordinate i symmetrically.
                 local_eps = eps * max(1.0, abs(q_orig[i]))
-                q_pert[i] += local_eps
+                q_plus = q_orig.copy()
+                q_minus = q_orig.copy()
+                q_plus[i] += local_eps
+                q_minus[i] -= local_eps
 
-                # Set perturbed state
+                # Set positively perturbed state.
                 for j in range(nq):
-                    self._state.updQ()[j] = q_pert[j]
+                    self._state.updQ()[j] = q_plus[j]
                 self._model.realizePosition(self._state)
 
-                # Get perturbed transform
-                transform_pert = body.getTransformInGround(self._state)
-                pos_pert = np.array(
+                transform_plus = body.getTransformInGround(self._state)
+                pos_plus = np.array(
                     [
-                        transform_pert.p()[0],
-                        transform_pert.p()[1],
-                        transform_pert.p()[2],
+                        transform_plus.p()[0],
+                        transform_plus.p()[1],
+                        transform_plus.p()[2],
                     ]
                 )
+                rotation_plus = transform_plus.R()
 
-                # Position Jacobian column
-                jacp[:, i] = (pos_pert - pos_0) / local_eps
+                # Set negatively perturbed state.
+                for j in range(nq):
+                    self._state.updQ()[j] = q_minus[j]
+                self._model.realizePosition(self._state)
 
-                # Angular Jacobian (using rotation matrix difference)
-                rotation_pert = transform_pert.R()
-
-                # Compute angular velocity from rotation difference
-                # R_pert = R_0 * exp([w] * local_eps) => [w] ≈ logm(R_0^T * R_pert) / local_eps
-                # Simplified: use axis-angle representation difference
-                jacr[:, i] = (
-                    self._rotation_difference(rotation_0, rotation_pert) / local_eps
+                transform_minus = body.getTransformInGround(self._state)
+                pos_minus = np.array(
+                    [
+                        transform_minus.p()[0],
+                        transform_minus.p()[1],
+                        transform_minus.p()[2],
+                    ]
                 )
+                rotation_minus = transform_minus.R()
+
+                # Position and angular Jacobian columns.
+                jacp[:, i] = (pos_plus - pos_minus) / (2.0 * local_eps)
+                jacr[:, i] = self._rotation_difference(
+                    rotation_minus, rotation_plus
+                ) / (2.0 * local_eps)
 
             # Restore original state
             for i in range(nq):
@@ -531,7 +531,7 @@ class OpenSimPhysicsEngine(PhysicsEngine):
         Returns:
             q_ddot_control: Control acceleration vector (nv,) [rad/s² or m/s²]
         """
-        if not (tau is not None):
+        if tau is None:
             raise ValueError("tau must be provided")
         if not self._model or not self._state:
             logger.warning("Model or state not initialized")
@@ -697,7 +697,7 @@ class OpenSimPhysicsEngine(PhysicsEngine):
         Returns:
             q̈_ZTCF: Acceleration under zero applied torque (n_v,)
         """
-        if not (q is not None):
+        if q is None:
             raise ValueError("q must be provided")
         if not self._model or not self._state:
             return np.array([])
@@ -747,7 +747,7 @@ class OpenSimPhysicsEngine(PhysicsEngine):
         Returns:
             q̈_ZVCF: Acceleration with v=0 (n_v,)
         """
-        if not (q is not None):
+        if q is None:
             raise ValueError("q must be provided")
         if not self._model or not self._state:
             return np.array([])
