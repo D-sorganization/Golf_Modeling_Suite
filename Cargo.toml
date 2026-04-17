@@ -15,8 +15,11 @@ authors = ["D-sorganization"]
 repository = "https://github.com/D-sorganization/UpstreamDrift"
 
 [workspace.dependencies]
-# Shared kernel from Tools repository
-# Local path for development; CI overrides via .cargo/config.toml
+# Shared kernel from Tools repository.
+# Local dev: Tools repo must be checked out as a sibling directory (../Tools).
+# CI override: scripts/setup_tools_workspace.sh symlinks _tools_dep -> ../Tools so
+#   this path resolves correctly without any per-developer config.
+# To replicate CI locally: run `scripts/setup_tools_workspace.sh` after cloning.
 tools-core = { path = "../Tools/rust_core/tools-core" }
 pyo3 = { version = "0.24", features = ["extension-module"] }
 wasm-bindgen = "0.2"

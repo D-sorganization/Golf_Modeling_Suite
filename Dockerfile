@@ -2,7 +2,10 @@
 # Unifies Robotics (MuJoCo, Drake, Pinocchio) and Biomechanics (OpenSim, MyoSim)
 
 # Stage 1: Builder stage with full development tools
-FROM continuumio/miniconda3:24.11.1-0 AS builder
+# Digest pinned to linux/amd64 continuumio/miniconda3:24.11.1-0.
+# To rotate: docker manifest inspect continuumio/miniconda3:<new-tag> | jq '.manifests[]|select(.platform.architecture=="amd64")|.digest'
+# then update both FROM lines below and the tag in the comment.
+FROM continuumio/miniconda3:24.11.1-0@sha256:bf95f579953e5bd7012a5b3c01404622410613c77169d29ddb4e2b9bd95a98d4 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -87,7 +90,7 @@ RUN pip install --no-cache-dir \
 
 
 # Stage 2: Runtime stage with minimal footprint
-FROM continuumio/miniconda3:24.11.1-0 AS runtime
+FROM continuumio/miniconda3:24.11.1-0@sha256:bf95f579953e5bd7012a5b3c01404622410613c77169d29ddb4e2b9bd95a98d4 AS runtime
 
 ENV DEBIAN_FRONTEND=noninteractive
 

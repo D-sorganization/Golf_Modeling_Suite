@@ -1,4 +1,23 @@
-"""Custom build hooks to bundle UI into Python package."""
+"""Custom build hooks to bundle the React UI into the Python wheel.
+
+Build process
+-------------
+1. ``UIBuildHook.initialize`` is invoked by hatchling before the wheel is assembled.
+2. If ``CI`` or ``SKIP_UI_BUILD`` env vars are set the step is skipped — the
+   caller is responsible for providing a pre-built ``ui/dist/`` directory.
+3. Otherwise ``npm ci`` installs frontend dependencies (via package-lock.json),
+   then ``npm run build`` produces ``ui/dist/``.
+4. hatchling then includes ``ui/dist/`` in the wheel via the ``[tool.hatch.build]``
+   ``artifacts`` list in ``pyproject.toml``.
+
+Failure modes
+-------------
+* ``npm`` not on ``PATH`` → ``RuntimeError`` with actionable message.
+* ``npm ci`` or ``npm run build`` exits non-zero → ``RuntimeError`` with captured
+  stderr/stdout.
+* UI dist directory missing after a CI skip → warning logged; the wheel will be
+  built without UI assets (likely broken at runtime).
+"""
 
 import logging
 import subprocess

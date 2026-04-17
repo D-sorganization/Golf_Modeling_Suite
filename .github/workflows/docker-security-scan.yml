@@ -63,3 +63,21 @@ jobs:
           exit-code: "1"
           ignore-unfixed: true
           vuln-type: "os,library"
+
+      - name: Image smoke test
+        run: |
+          # Verify the built image can start and respond on /health within 30 s.
+          docker run -d --name smoke-test -p 8001:8001 \
+            -e MUJOCO_GL=osmesa \
+            -e DATABASE_URL=sqlite:////tmp/smoke.db \
+            upstreamdrift:ci
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8001/health; then
+              echo "Health check passed on attempt $i"
+              break
+            fi
+            [ "$i" -eq 30 ] && echo "Health check timed out" && exit 1
+            sleep 1
+          done
+        env:
+          DOCKER_BUILDKIT: "1"
