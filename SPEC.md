@@ -29,7 +29,7 @@ Last-Updated: 2026-04-17T00:00:00Z
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.127                                            |
+| **Spec Version**        | 1.0.128                                            |
 | **Last Spec Update**    | 2026-04-17                                         |
 
 ## 2. Purpose & Mission
@@ -656,3 +656,5 @@ pytest tests/ --cov=src --cov-fail-under=70
 ## Changelog
 
 - 2026-04-16: Fixed import sorting in analyzer.py, advanced_export.py, and related files; restored completist audit documentation.
+
+- 2026-04-17: Bolt: Replaced np.linalg.norm with math.sqrt(np.dot) in collision_checker.py for performance optimization
