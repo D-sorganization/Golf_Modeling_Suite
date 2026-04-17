@@ -156,29 +156,21 @@ def test_rigid_body_friction_spin(basic_pre_state, default_impact_params) -> Non
     # r x F = (-R, 0, 0) x (0, F, 0) = (0, 0, -R*F).
     # Spin should be -Z.
 
-    # Code implementation:
-    # spin_axis = np.cross(n, tangent_dir) = (0, 0, 1).
-    # This produces +Z spin.
-    # So the code seems to have sign error or different convention.
-    # "Spin from friction: τ = r × F ... spin_axis = np.cross(n, tangent_dir)"
-    # If r = -R*n.
-    # r x F = -R * (n x F).
-    # tangent_dir is direction of F.
-    # So torque is proportional to -(n x tangent_dir).
-    # But code uses +(n x tangent_dir).
-    # So code produces opposite spin.
+    assert post_state.ball_angular_velocity[2] < 0
+    assert post_state.ball_angular_velocity[0] == 0
+    assert post_state.ball_angular_velocity[1] == 0
 
-    # HOWEVER, I should fix the test to match the code for now if I am just adding coverage,
-    # OR fix the code if it's definitely wrong.
-    # Given the prompt is "Expand test coverage", I should probably respect existing code behavior unless explicitly asked to fix bugs.
-    # BUT, "Write high-quality... code". A bug is not high quality.
-    # And "Scientific-Auditor" persona implies correctness.
 
-    # Let's assume for now I adjust the test to expect what the code produces,
-    # but I'll note it.
-    # Actually, let's look at the failure value: 234.19 > 0.
-    # So it is indeed producing positive spin.
+def test_rigid_body_friction_spin_follows_contact_torque_sign(
+    basic_pre_state, default_impact_params
+) -> None:
+    """Friction spin should follow tau = r x F at the back of the ball."""
+    basic_pre_state.clubhead_velocity = np.array([45.0, -5.0, 0.0])
 
+    post_state = RigidBodyImpactModel().solve(basic_pre_state, default_impact_params)
+
+    # n=(1,0,0), tangent_dir=(0,-1,0), and r=-R*n, so
+    # tau is proportional to -(n x tangent_dir) = +Z.
     assert post_state.ball_angular_velocity[2] > 0
     assert post_state.ball_angular_velocity[0] == 0
     assert post_state.ball_angular_velocity[1] == 0

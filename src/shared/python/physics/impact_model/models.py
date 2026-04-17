@@ -94,7 +94,9 @@ class RigidBodyImpactModel(ImpactModel):
             float(friction_coefficient * j),
             float(GOLF_BALL_MASS_KG * tangent_mag * 0.4),
         )
-        spin_axis = np.cross(n, tangent_dir)
+        # Contact point is behind the ball center at r = -R*n, so friction
+        # torque on the ball is proportional to -(n x tangent_dir).
+        spin_axis = -np.cross(n, tangent_dir)
         spin_magnitude = j_friction / (
             GOLF_BALL_MOMENT_OF_INERTIA_KG_M2 / GOLF_BALL_RADIUS_M
         )
