@@ -1,6 +1,9 @@
 import os
+import subprocess
 import sys
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 class DummyHookInterface:
@@ -9,20 +12,19 @@ class DummyHookInterface:
         self.config = config
 
 
-sys.modules["hatchling"] = MagicMock()
-sys.modules["hatchling.builders"] = MagicMock()
-sys.modules["hatchling.builders.hooks"] = MagicMock()
-sys.modules["hatchling.builders.hooks.plugin"] = MagicMock()
-sys.modules["hatchling.builders.hooks.plugin.interface"] = MagicMock()
-sys.modules[
+_HATCHLING_MOCKS = {
+    "hatchling": MagicMock(),
+    "hatchling.builders": MagicMock(),
+    "hatchling.builders.hooks": MagicMock(),
+    "hatchling.builders.hooks.plugin": MagicMock(),
+    "hatchling.builders.hooks.plugin.interface": MagicMock(),
+}
+_HATCHLING_MOCKS[
     "hatchling.builders.hooks.plugin.interface"
 ].BuildHookInterface = DummyHookInterface
 
-import subprocess  # noqa: E402
-
-import pytest  # noqa: E402
-
-import build_hooks  # noqa: E402
+with patch.dict(sys.modules, _HATCHLING_MOCKS):
+    import build_hooks  # noqa: E402
 
 
 class DummyConfig:
