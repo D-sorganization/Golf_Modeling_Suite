@@ -37,7 +37,7 @@ engine combinations.
 
 ### Python
 
-- **Formatter**: Black (default settings)
+- **Formatter**: Ruff (`ruff format`, 88-char line limit)
 - **Linter**: Ruff
 - **Type Checker**: MyPy (see note below)
 - Use type hints for all new functions
@@ -52,7 +52,7 @@ engine combinations.
 Use the Makefile for convenience:
 
 ```bash
-make format   # Format with black and ruff
+make format   # Format with ruff
 make lint     # Run ruff and mypy
 make test     # Run pytest
 make check    # Run all checks
@@ -61,13 +61,12 @@ make check    # Run all checks
 Or run commands directly:
 
 ```bash
-python3 -m black .
 python3 -m ruff check . --fix
 python3 -m mypy .
 python3 -m pytest
 ```
 
-> **Note on Tests**: Because our CI pipeline strictly checks test files, please run `ruff check tests/ --fix` and `black tests/` before submitting to prevent failures on test suites.
+> **Note on Tests**: Because our CI pipeline strictly checks test files, please run `ruff check tests/ --fix` and `ruff format tests/` before submitting to prevent failures on test suites.
 
 ## 🎯 Physics Engine Guidelines
 
@@ -112,6 +111,6 @@ Example: `feat(mujoco): Add contact force visualization`
 
 ## 🤝 Pull Request Process
 
-1. Ensure CI passes (ruff, black, mypy, pytest)
+1. Ensure CI passes (ruff check, ruff format, mypy, pytest)
 2. Update documentation
 3. Request review from maintainers

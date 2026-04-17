@@ -87,6 +87,15 @@ black_report*.txt
 coverage.xml
 coverage.json
 htmlcov/
+# Security scan artifacts (generated in CI, not committed)
+bandit_results.json
+bandit_results*.json
+
+# Generated test/analysis artifacts
+matlab_quality_report.txt
+test.npz
+temp_id.txt
+
 
 # Test output debris (prevent accumulation at root)
 test_*.txt
