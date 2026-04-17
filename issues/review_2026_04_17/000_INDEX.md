@@ -23,29 +23,29 @@ of which bundles related findings to keep the tracker tractable.
 
 ## Issue Index
 
-| #   | Title                                                                             | Severity |
-| --- | --------------------------------------------------------------------------------- | -------- |
-| 013 | Critical physics-convention bugs in engine wrappers (gravity, GRF, Jacobians)     | CRITICAL |
-| 014 | Pinocchio integration order breaks energy conservation                            | HIGH     |
-| 015 | Impact model: gear-effect sign error, angular-momentum non-conservation, loft ignored | CRITICAL |
-| 016 | Aerodynamics model is not professionally calibrated (Cd / Cl / Magnus / wind)     | HIGH     |
-| 017 | Humanoid URDF fidelity: toy-grade skeleton, asymmetric grip, missing joints       | HIGH     |
-| 018 | Missing core golf-domain features (launch monitor, attack angle, spin loft, …)    | HIGH     |
-| 019 | Shaft / club model gaps: no torsion, static loft, unused equipment specs          | HIGH     |
+| #   | Title                                                                                    | Severity |
+| --- | ---------------------------------------------------------------------------------------- | -------- |
+| 013 | Critical physics-convention bugs in engine wrappers (gravity, GRF, Jacobians)            | CRITICAL |
+| 014 | Pinocchio integration order breaks energy conservation                                   | HIGH     |
+| 015 | Impact model: gear-effect sign error, angular-momentum non-conservation, loft ignored    | CRITICAL |
+| 016 | Aerodynamics model is not professionally calibrated (Cd / Cl / Magnus / wind)            | HIGH     |
+| 017 | Humanoid URDF fidelity: toy-grade skeleton, asymmetric grip, missing joints              | HIGH     |
+| 018 | Missing core golf-domain features (launch monitor, attack angle, spin loft, …)           | HIGH     |
+| 019 | Shaft / club model gaps: no torsion, static loft, unused equipment specs                 | HIGH     |
 | 020 | Whole-body control: no damped pseudo-inverse, broken hierarchical QP, silent QP failures | CRITICAL |
-| 021 | Contact & friction-cone model is non-conservative, ignores complementarity and impacts | HIGH     |
-| 022 | ZMP / stability control is not valid during a golf swing (assumes walking gait)   | HIGH     |
-| 023 | Sensor noise models are toy-grade (IMU, force-torque)                             | MEDIUM   |
-| 024 | Motion planners have stubs, no smoothing, naive nearest-neighbor, no timeouts     | MEDIUM   |
-| 025 | RL / imitation / retargeting: non-determinism, broken IK, math errors             | HIGH     |
-| 026 | System-ID, domain randomization, MPC and differentiable physics correctness       | HIGH     |
-| 027 | Test suite: mocked physics at module level, loose tolerances, tautologies         | CRITICAL |
-| 028 | Missing critical physics validation tests (clubhead speed, impact, URDF mass, …)  | HIGH     |
-| 029 | API security hardening: disabled auth defaults, CORS, path-traversal, CSRF        | CRITICAL |
-| 030 | Launcher / process-manager races, UI thread blocking, unclean subprocess handling | HIGH     |
-| 031 | Repo-wide code-quality antipatterns (`if not (x is not None)` x325, etc.)         | HIGH     |
-| 032 | CI, docs, and hygiene bloat (56 workflows, committed artifacts, duplicate LICENSE) | MEDIUM   |
-| 033 | Build / deploy hardening (Dockerfile pinning, Makefile/CLAUDE.md formatter mismatch) | MEDIUM   |
+| 021 | Contact & friction-cone model is non-conservative, ignores complementarity and impacts   | HIGH     |
+| 022 | ZMP / stability control is not valid during a golf swing (assumes walking gait)          | HIGH     |
+| 023 | Sensor noise models are toy-grade (IMU, force-torque)                                    | MEDIUM   |
+| 024 | Motion planners have stubs, no smoothing, naive nearest-neighbor, no timeouts            | MEDIUM   |
+| 025 | RL / imitation / retargeting: non-determinism, broken IK, math errors                    | HIGH     |
+| 026 | System-ID, domain randomization, MPC and differentiable physics correctness              | HIGH     |
+| 027 | Test suite: mocked physics at module level, loose tolerances, tautologies                | CRITICAL |
+| 028 | Missing critical physics validation tests (clubhead speed, impact, URDF mass, …)         | HIGH     |
+| 029 | API security hardening: disabled auth defaults, CORS, path-traversal, CSRF               | CRITICAL |
+| 030 | Launcher / process-manager races, UI thread blocking, unclean subprocess handling        | HIGH     |
+| 031 | Repo-wide code-quality antipatterns (`if not (x is not None)` x325, etc.)                | HIGH     |
+| 032 | CI, docs, and hygiene bloat (56 workflows, committed artifacts, duplicate LICENSE)       | MEDIUM   |
+| 033 | Build / deploy hardening (Dockerfile pinning, Makefile/CLAUDE.md formatter mismatch)     | MEDIUM   |
 
 ## Methodology
 
@@ -61,7 +61,7 @@ diagnosis-only. The `Tools` repository that UpstreamDrift vendors from
 
 ```
 # Option 1 — create one issue per file with the `gh` CLI
-for f in issues/review_2026_04_17/0[0-9][0-9]_*.md; do
+for f in issues/review_2026_04_17/0[1-9][0-9]_*.md; do
   title=$(head -1 "$f" | sed 's/^# //')
   gh issue create --title "$title" --body-file "$f" --label review-2026-04-17
 done

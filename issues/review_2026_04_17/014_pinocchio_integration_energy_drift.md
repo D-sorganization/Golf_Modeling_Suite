@@ -1,27 +1,28 @@
-# [HIGH] Pinocchio integration order + RK4 correctness break energy conservation for long swings
+# [HIGH] Pinocchio and pendulum integration need calibrated energy-regression coverage
 
 ## Summary
 
-The Pinocchio physics wrapper integrates rigid-body dynamics with an
-out-of-order semi-implicit Euler step that accumulates energy error
-across a multi-second golf swing. The Drake motion-optimization path
-and the pendulum RK4 path have related defects. Together, these break
-the suite's ability to perform hours-long training runs or
-multi-engine parity comparisons.
+The Pinocchio physics wrapper uses a standard semi-implicit Euler step,
+but the repository does not appear to have a calibrated, engine-wide
+energy-regression baseline that validates it under the swing conditions
+this project cares about. The Drake motion-optimization path and the
+pendulum RK4 path have related coverage gaps. Together, these weaken the
+suite's ability to perform hours-long training runs or multi-engine
+parity comparisons.
 
 ## Findings
 
-### 1. Out-of-order semi-implicit step
+### 1. Energy drift is unbounded by a per-engine regression
 
 `src/engines/physics_engines/pinocchio/python/pinocchio_physics_engine.py:156-163`
 
-The step computes `a = aba(q_n, v_n)`, then updates `v_{n+1} = v_n + a·dt`,
-then `q_{n+1} = integrate(q_n, v_{n+1}·dt)`. A correct symplectic Euler
-is fine, but this mixes orders: it uses the **new** velocity to
-integrate the old configuration. Over a 1-second downswing with
-high accelerations the energy drift is O(10 %) on a simple pendulum
-(easy to confirm with `tests/physics_validation/test_pendulum_accuracy.py`
-after tightening its current 20 % tolerance, see issue #027).
+The current update is the standard semi-implicit (symplectic) Euler
+form: compute `a = aba(q_n, v_n)`, update `v_{n+1} = v_n + a·dt`, then
+integrate `q_{n+1}` from `v_{n+1}`. That is not itself a defect. The
+gap is that this integrator does not appear to be exercised by a
+calibrated energy-conservation regression for the swing scenarios this
+repository targets, so the acceptable drift budget is effectively
+unreviewed.
 
 ### 2. No implicit-integration option
 
@@ -76,7 +77,6 @@ assert abs(E - E0) / abs(E0) < 1e-3, f"drift: {(E-E0)/E0:.3%}"  # currently fail
 
 ## Acceptance Criteria
 
-- [ ] Fix the integration order in `PinocchioPhysicsEngine.step()` to be correctly symplectic *or* swap to RK4 by default.
 - [ ] Add a 10-s ballistic free-fall energy-conservation test to `tests/physics_validation/test_energy_conservation.py` and run it on Drake, MuJoCo, Pinocchio, OpenSim.
 - [ ] Add an `integrator: Literal["semi_implicit", "rk4", "implicit_euler"]` parameter to the common `step()` API.
 - [ ] Pendulum RK4 must sample torque `τ(t + c_i · dt)` correctly at each Butcher-tableau stage.
