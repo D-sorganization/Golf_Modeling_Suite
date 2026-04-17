@@ -448,6 +448,11 @@ upstream-drift simulate --engine mujoco --model shared/models/golf_swing.urdf
 cd ui && npm install && npm run tauri build
 # Outputs: UpstreamDrift.exe (Windows), UpstreamDrift.app (macOS), UpstreamDrift.AppImage (Linux)
 
+# Containerized API
+docker build -t upstream-drift:runtime .
+docker run --rm -p 8001:8001 upstream-drift:runtime
+# The runtime image binds to 0.0.0.0:8001 and starts `src.api.server:app` by default.
+
 # Running Tests
 pytest tests/unit/ -v
 pytest tests/integration/ -v

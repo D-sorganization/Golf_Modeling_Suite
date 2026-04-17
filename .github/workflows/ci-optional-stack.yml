@@ -97,8 +97,29 @@ jobs:
 
       - name: Install System Dependencies
         run: |
-          sudo apt-get -o DPkg::Lock::Timeout=300 update
-          sudo apt-get -o DPkg::Lock::Timeout=300 install -y \
+          wait_for_apt_locks() {
+            for attempt in {1..30}; do
+              if ! sudo fuser /var/lib/apt/lists/lock /var/lib/dpkg/lock /var/lib/dpkg/lock-frontend >/dev/null 2>&1; then
+                return 0
+              fi
+              echo "apt locks are still held on attempt $attempt; waiting before apt-get"
+              sleep 20
+            done
+          }
+          apt_retry() {
+            for attempt in {1..18}; do
+              wait_for_apt_locks
+              if sudo apt-get -o DPkg::Lock::Timeout=300 -o APT::Get::Lock-Timeout=300 "$@"; then
+                return 0
+              fi
+              echo "apt-get $* failed on attempt $attempt; retrying after lock backoff"
+              sleep 20
+            done
+            wait_for_apt_locks
+            sudo apt-get -o DPkg::Lock::Timeout=300 -o APT::Get::Lock-Timeout=300 "$@"
+          }
+          apt_retry update
+          apt_retry install -y \
             libegl1 libgl1 xvfb \
             libxkbcommon-x11-0 \
             libxcb-cursor0 \
