@@ -48,6 +48,7 @@ class TestDockerBuild(unittest.TestCase):
         # Check for required components (multi-stage build with pinned version)
         self.assertIn("FROM continuumio/miniconda3:24.11.1-0 AS builder", content)
         self.assertIn("FROM continuumio/miniconda3:24.11.1-0 AS runtime", content)
+        self.assertIn("-c pytorch -c nvidia", content)
         self.assertIn('ENV PYTHONPATH="/workspace"', content)
         self.assertIn("WORKDIR /workspace", content)
         self.assertIn(
