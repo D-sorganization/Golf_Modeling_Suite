@@ -1,36 +1,38 @@
 # Review Comments Archive - 2026-04-16
 
-Generated: 2026-04-16T04:40:35.739896
+Generated: 2026-04-16T19:07:15.722864
 
 ## Reviewer (chatgpt-codex-connector[bot]) (2 comments)
 
-### PR #2691: docs/assessments/issues/Issue_2323_Incomplete_Stub_in_model_source_providers_py_67.md:None
-
-Actionable: No
-Has Suggestion: No
-
-```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Exclude Protocol methods from critical stub issues**
-
-This ticket marks `ModelSourceProvider.can_resolve` as a critical missing implementation, but the referenced symbol is a `Protocol` interface method that is intentionally declared with `...` (`src/shared/python/config/model_source_providers.py:62-78`). Treating interface declarations as critical stubs creates false-positive work, inflates critical-gap metr...
-```
-
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/2691#discussion_r3092443764)
-
----
-
-### PR #2691: docs/assessments/issues/Issue_2310_Incomplete_Stub_in_controls_widget_base_py_490.md:None
+### PR #2697: issues/review_2026_04_17/014_pinocchio_integration_energy_drift.md:None
 
 Actionable: Yes
 Has Suggestion: No
 
 ```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Skip no-op extension hooks in stub classification**
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Correct the symplectic-Euler diagnosis in this draft**
 
-This issue labels `_update_torque_preview` as a critical incomplete implementation, but that method is an intentional extension hook with a default no-op behavior (`src/shared/python/pendulum_simulator/gui/controls_widget_base.py:490-491`, docstring says override only if needed). Classifying designed no-op hooks as critical gaps generates false high-priorit...
+This section flags `v_{n+1}=v_n+a\,dt` followed by `q_{n+1}=integrate(q_n, v_{n+1}dt)` as an ordering bug, but that is the standard semi-implicit (symplectic) Euler update and matches the referenced implementation in `pinocchio_physics_engine.py`. Leaving this as a HIGH-severity defect will create a misleading issue and likely send follow-up work toward ...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/2691#discussion_r3092443768)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/2697#discussion_r3097338538)
+
+---
+
+### PR #2697: issues/review_2026_04_17/000_INDEX.md:None
+
+Actionable: Yes
+Has Suggestion: No
+
+```
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Exclude the index file from issue-creation loop**
+
+The provided glob `0[0-9][0-9]_*.md` also matches `000_INDEX.md`, so running this command creates an extra GitHub issue for the overview file. That contradicts the stated “21 issue drafts” and adds a noisy non-actionable issue unless users manually filter it out. Narrow the pattern or explicitly skip `000_INDEX.md` in the loop.
+
+Useful? React with 👍 / 👎.
+```
+
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/2697#discussion_r3097338539)
 
 ---
 
