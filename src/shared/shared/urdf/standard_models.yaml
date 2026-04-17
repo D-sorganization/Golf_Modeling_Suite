@@ -1,0 +1,30 @@
+golf_clubs:
+  driver:
+    length_m: 1.143
+    loft_deg: 10.5
+    mass_kg: 0.31
+    name: Driver
+    urdf_path: shared/urdf/golf_clubs/driver.urdf
+  iron_7:
+    length_m: 0.927
+    loft_deg: 34.0
+    mass_kg: 0.41
+    name: 7-Iron
+    urdf_path: shared/urdf/golf_clubs/7_iron.urdf
+simple_humanoid:
+  description: Simplified human model for basic testing
+  dof: 12
+  height_m: 1.7
+  mass_kg: 70.0
+  name: Simple Humanoid
+  urdf_path: shared/urdf/simple_humanoid.urdf
+standard_humanoid:
+  description: High-fidelity human body model from human-gazebo repository
+  dof: 66
+  height_m: 1.75
+  license: CC-BY-SA 2.0
+  mass_kg: 75.0
+  mesh_dir: shared/meshes/human
+  name: Standard Humanoid with Meshes
+  source: https://github.com/robotology/human-gazebo
+  urdf_path: shared/urdf/human_models/humanSubject06_66dof.urdf

@@ -45,6 +45,8 @@ from src.shared.python.perturbation.analyzer_base import (  # noqa: F401  re-exp
     MANDATORY_METRICS,
     ComparisonReport,  # noqa: F401
     PerturbationAnalyzerBase,
+    build_joint_polys,
+    compute_ee_velocity_fd,
 )
 
 logger = logging.getLogger(__name__)

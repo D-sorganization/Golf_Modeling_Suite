@@ -18,16 +18,16 @@
     "data_explorer",
     "project_map"
   ],
-  "selected_model": "opensim_golf",
+  "selected_model": "generic_mjcf",
   "window_geometry": {
-    "x": 574,
-    "y": -30,
-    "width": 1880,
-    "height": 999
+    "x": 40,
+    "y": 30,
+    "width": 760,
+    "height": 760
   },
   "options": {
     "live_visualization": true,
     "gpu_acceleration": false,
-    "docker_mode": true
+    "docker_mode": false
   }
 }
