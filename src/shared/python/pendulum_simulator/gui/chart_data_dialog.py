@@ -45,7 +45,7 @@ class ChartDataDialog(QDialog):
         parent: QWidget | None = None,
         model_type: str = "double",
     ) -> None:
-        if not (model_type is not None):
+        if model_type is None:
             raise ValueError("model_type must be provided")
         super().__init__(parent)
         self.setWindowTitle("Select Chart Data")
