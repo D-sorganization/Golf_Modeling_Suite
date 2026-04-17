@@ -1,36 +1,53 @@
 # Review Comments Archive - 2026-04-16
 
-Generated: 2026-04-16T04:40:35.739896
+Generated: 2026-04-16T21:55:49.572466
 
-## Reviewer (chatgpt-codex-connector[bot]) (2 comments)
+## Reviewer (chatgpt-codex-connector[bot]) (3 comments)
 
-### PR #2691: docs/assessments/issues/Issue_2323_Incomplete_Stub_in_model_source_providers_py_67.md:None
+### PR #2722: src/robotics/sensing/imu_sensor.py:319
 
 Actionable: No
 Has Suggestion: No
 
 ```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Exclude Protocol methods from critical stub issues**
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Return orientation on initial IMU read**
 
-This ticket marks `ModelSourceProvider.can_resolve` as a critical missing implementation, but the referenced symbol is a `Protocol` interface method that is intentionally declared with `...` (`src/shared/python/config/model_source_providers.py:62-78`). Treating interface declarations as critical stubs creates false-positive work, inflates critical-gap metr...
+With `include_orientation=True`, the first `read()` call now returns `orientation=None` because the assignment is gated on `_last_timestamp` being set. That breaks callers that rely on receiving a quaternion whenever orientation output is requested (the sensor already has a valid initialized orientation), and this regression appears only on the initial sample. Keep in...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/2691#discussion_r3092443764)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/2722#discussion_r3097868179)
 
 ---
 
-### PR #2691: docs/assessments/issues/Issue_2310_Incomplete_Stub_in_controls_widget_base_py_490.md:None
+### PR #2722: src/robotics/sensing/noise_models.py:495
 
-Actionable: Yes
+Actionable: No
 Has Suggestion: No
 
 ```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Skip no-op extension hooks in stub classification**
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Decouple bias clipping from white-noise level**
 
-This issue labels `_update_torque_preview` as a critical incomplete implementation, but that method is an intentional extension hook with a default no-op behavior (`src/shared/python/pendulum_simulator/gui/controls_widget_base.py:490-491`, docstring says override only if needed). Classifying designed no-op hooks as critical gaps generates false high-priorit...
+The factory now ties `BrownianNoise.max_bias` to `representative_std`, so when callers intentionally configure zero white noise (`noise_std=0` or `noise_density=0`) with nonzero `bias_drift_rate`, `max_bias` becomes `0` and the random walk is fully clipped out. This silently disables bias drift and makes bias-only simulations impossible even though `bias_drift_...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/2691#discussion_r3092443768)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/2722#discussion_r3097868183)
+
+---
+
+### PR #2722: src/robotics/sensing/noise_models.py:243
+
+Actionable: No
+Has Suggestion: No
+
+```
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Return vector initial_bias from current_bias**
+
+The `BrownianNoise` API now accepts array-valued `initial_bias`, but `current_bias` forces a `(1,)` shape before first `apply()` (and after `reset()`), which raises `ValueError` for vector initial biases. This makes the new vector-bias mode unusable for state inspection exactly when users typically query it.
+
+Useful? React with 👍 / 👎.
+```
+
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/2722#discussion_r3097868185)
 
 ---
 
