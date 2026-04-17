@@ -280,8 +280,11 @@ async def get_engine_capabilities(
     capability_list = []
     summary = {"full": 0, "partial": 0, "none": 0}
 
+    valid_levels = {"full", "partial", "none"}
     for key, level in caps_dict.items():
-        if key == "engine_name":
+        if key in ("engine_name", "spatial_jacobian_order"):
+            continue
+        if level not in valid_levels:
             continue
         # Skip metadata fields that are not capability level values
         if level not in _VALID_LEVELS:

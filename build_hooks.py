@@ -64,6 +64,7 @@ class UIBuildHook(BuildHookInterface):
         ui_dir = self._ui_dir()
         dist_dir = self._dist_dir()
 
+        # Check if we should skip UI build
         # Always skip UI build in CI environment or if explicitly requested
         if environ.get("CI") or environ.get("SKIP_UI_BUILD"):
             logger.warning("Skipping UI build (CI environment or SKIP_UI_BUILD set)")
