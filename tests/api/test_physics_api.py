@@ -420,7 +420,7 @@ class TestEngineCapabilitiesAPI:
                 assert "name" in cap
                 assert "level" in cap
                 assert "supported" in cap
-                assert cap["level"] in ("full", "partial", "none")
+                assert cap["level"] in ("full", "partial", "none", "angular_linear")
 
 
 class TestActuatorEndpoints:
