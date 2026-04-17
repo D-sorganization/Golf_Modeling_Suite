@@ -6,7 +6,7 @@ Generated: 2026-04-16T21:02:38.848540
 
 ### PR #2720: .pre-commit-config.yaml:44
 
-Actionable: Yes
+Actionable: No
 Has Suggestion: No
 
 ```
