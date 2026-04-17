@@ -1,6 +1,6 @@
 # SPEC.md — Repository Specification Document
 
-Last-Updated: 2026-04-15T00:00:00Z
+Last-Updated: 2026-04-16T00:00:00Z
 
 <!--
   TEMPLATE VERSION: 1.0.0
@@ -29,7 +29,7 @@ Last-Updated: 2026-04-15T00:00:00Z
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.125                                            |
+| **Spec Version**        | 1.0.126                                            |
 | **Last Spec Update**    | 2026-04-16                                         |
 
 ## 2. Purpose & Mission
@@ -448,6 +448,11 @@ upstream-drift simulate --engine mujoco --model shared/models/golf_swing.urdf
 cd ui && npm install && npm run tauri build
 # Outputs: UpstreamDrift.exe (Windows), UpstreamDrift.app (macOS), UpstreamDrift.AppImage (Linux)
 
+# Containerized API
+docker build -t upstream-drift:runtime .
+docker run --rm -p 8001:8001 upstream-drift:runtime
+# The runtime image binds to 0.0.0.0:8001 and starts `src.api.server:app` by default.
+
 # Running Tests
 pytest tests/unit/ -v
 pytest tests/integration/ -v
@@ -496,6 +501,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-16 | 1.0.126 | Docker runtime hardening: the runtime image now starts `src.api.server:app` on `0.0.0.0:8001` by default so a plain container launch serves the API instead of dropping into an interactive shell.                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | 2026-04-15 | 1.0.118 | CI stabilization: core and shared-contract dependency installs now use per-job virtual environments, pytest-qt is pinned to the PyQt6 API in GUI-capable lanes, and benchmark tests are excluded from default core CI so self-hosted runner state cannot leak optional stacks into required tests.                                                                                                                                                                                                                                                                        |
 | 2026-04-15 | 1.0.119 | Performance optimization: replaced `np.sum(diff**2, axis=1)` and `np.sqrt(np.sum(diff**2, axis=1))` with `np.einsum("ij,ij->i", ...)` in `src/shared/python/analysis/nonlinear_dynamics.py` to reduce temporary allocations in local divergence and Lyapunov exponent calculations.                                                                                                                                                                                                                                                                                                                                                |
 | 2026-04-15 | 1.0.120 | Performance optimization: extended squared-norm reductions to use `np.einsum` across angular momentum, coordination, GRF, stability, ZTCF, dashboard, marker mapping, plotting, collision geometry, and ball-flight paths so common vector magnitude calculations avoid temporary squared arrays.                                                                                                                                                                                                                                                                                                                                             |

@@ -164,8 +164,8 @@ EXPOSE 8001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8001/health || exit 1
 
-# Default command
-CMD ["/bin/bash"]
+# Default command: start the API server rather than dropping into a shell
+CMD ["python", "-m", "uvicorn", "src.api.server:app", "--host", "0.0.0.0", "--port", "8001"]
 
 
 # Stage 3: Training stage for advanced ML workflows

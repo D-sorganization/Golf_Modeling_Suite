@@ -50,6 +50,11 @@ class TestDockerBuild(unittest.TestCase):
         self.assertIn("FROM continuumio/miniconda3:24.11.1-0 AS runtime", content)
         self.assertIn('ENV PYTHONPATH="/workspace"', content)
         self.assertIn("WORKDIR /workspace", content)
+        self.assertIn(
+            'CMD ["python", "-m", "uvicorn", "src.api.server:app", '
+            '"--host", "0.0.0.0", "--port", "8001"]',
+            content,
+        )
 
     def test_dockerfile_pythonpath_setup(self):
         """Test that Dockerfile sets up PYTHONPATH correctly."""
