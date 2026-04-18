@@ -48,7 +48,7 @@ def test_init_missing_package():
 @patch("src.shared.python.ai.adapters.gemini_adapter.genai.configure")
 @patch("src.shared.python.ai.adapters.gemini_adapter.GenerativeModel")
 def test_init_success(mock_model_cls, mock_configure):
-    adapter = GeminiAdapter("sk-gemini", "gemini-test-model")
+    adapter = GeminiAdapter("sk-gemini", "gemini-test-model")  # nosec B106 - test fixture
 
     mock_configure.assert_called_once_with(api_key="sk-gemini")
     mock_model_cls.assert_called_once_with("gemini-test-model")
@@ -60,7 +60,7 @@ def test_init_success(mock_model_cls, mock_configure):
 def test_capabilities():
     """Test capabilities properly define vision and streaming."""
     mock_genai_pkg.configure.reset_mock()
-    adapter = GeminiAdapter("sk-gemini")
+    adapter = GeminiAdapter("sk-gemini")  # nosec B106 - test fixture
     caps = adapter.capabilities
 
     assert caps.provider_name == "google"

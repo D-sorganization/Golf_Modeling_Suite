@@ -23,8 +23,10 @@ _HATCHLING_MOCKS[
     "hatchling.builders.hooks.plugin.interface"
 ].BuildHookInterface = DummyHookInterface
 
-with patch.dict(sys.modules, _HATCHLING_MOCKS):
-    import build_hooks  # noqa: E402
+_hatchling_patcher = patch.dict(sys.modules, _HATCHLING_MOCKS)
+_hatchling_patcher.start()
+
+import build_hooks  # noqa: E402
 
 
 class DummyConfig:
@@ -117,13 +119,13 @@ def test_force_ui_build_true_when_configured(tmp_path):
     assert hook._force_ui_build() is True
 
 
-def test_npm_error_message_prefers_stderr():
+def test_subprocess_error_message_prefers_stderr():
     err = subprocess.CalledProcessError(
         1, "npm", stderr="stderr msg", output="stdout msg"
     )
-    assert build_hooks.UIBuildHook._npm_error_message(err) == "stderr msg"
+    assert build_hooks.UIBuildHook._subprocess_error_message(err) == "stderr msg"
 
 
-def test_npm_error_message_falls_back_to_stdout():
+def test_subprocess_error_message_falls_back_to_stdout():
     err = subprocess.CalledProcessError(1, "npm", stderr="", output="stdout msg")
-    assert build_hooks.UIBuildHook._npm_error_message(err) == "stdout msg"
+    assert build_hooks.UIBuildHook._subprocess_error_message(err) == "stdout msg"
