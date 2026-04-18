@@ -94,11 +94,54 @@ class RigidBodyImpactModel(ImpactModel):
             float(friction_coefficient * j),
             float(GOLF_BALL_MASS_KG * tangent_mag * 0.4),
         )
-        spin_axis = np.cross(n, tangent_dir)
+        # Gear effect: τ = r × F where r = −R·n (contact point behind ball)
+        # and F ∝ j_friction·tangent_dir. Result: spin ∝ tangent_dir × n.
+        spin_axis = np.cross(tangent_dir, n)
         spin_magnitude = j_friction / (
             GOLF_BALL_MOMENT_OF_INERTIA_KG_M2 / GOLF_BALL_RADIUS_M
         )
         return pre_state.ball_angular_velocity + spin_magnitude * spin_axis
+
+    def _compute_friction_impulse_on_club(
+        self,
+        pre_state: PreImpactState,
+        v_rel: np.ndarray,
+        v_approach: float,
+        n: np.ndarray,
+        j: float,
+        friction_coefficient: float,
+    ) -> np.ndarray:
+        """Compute angular impulse on club from friction.
+
+        By Newton's third law, the friction impulse that spins the ball
+        produces an equal and opposite angular impulse on the club.
+        """
+        if pre_state is None:
+            raise ValueError("pre_state must be provided")
+        if pre_state.impact_offset is None:
+            return np.zeros(3)
+
+        v_tangent = v_rel - v_approach * n
+        tangent_mag = np.linalg.norm(v_tangent)
+
+        if tangent_mag <= 1e-6:
+            return np.zeros(3)
+
+        tangent_dir = v_tangent / tangent_mag
+        j_friction = min(
+            float(friction_coefficient * j),
+            float(GOLF_BALL_MASS_KG * tangent_mag * 0.4),
+        )
+        # r = impact offset (from club COM to contact point)
+        r = pre_state.impact_offset
+        # Friction impulse: F = j_friction * tangent_dir
+        # Angular impulse: L_friction = r × (j_friction * tangent_dir)
+        friction_torque = np.cross(r, j_friction * tangent_dir)
+        return (
+            friction_torque / pre_state.clubhead_moi
+            if pre_state.clubhead_moi > 0
+            else np.zeros(3)
+        )
 
     def _compute_energy_transfer(
         self,
@@ -166,6 +209,17 @@ class RigidBodyImpactModel(ImpactModel):
             j,
             params.friction_coefficient,
         )
+        # Apply angular impulse back on club from friction (Newton's 3rd law)
+        club_angular_impulse = self._compute_friction_impulse_on_club(
+            pre_state,
+            v_rel,
+            v_approach,
+            n,
+            j,
+            params.friction_coefficient,
+        )
+        club_spin_post = pre_state.clubhead_angular_velocity + club_angular_impulse
+
         energy_transfer = self._compute_energy_transfer(
             pre_state.ball_velocity,
             v_ball_post,
@@ -181,7 +235,7 @@ class RigidBodyImpactModel(ImpactModel):
             ball_velocity=v_ball_post,
             ball_angular_velocity=ball_spin,
             clubhead_velocity=v_club_post,
-            clubhead_angular_velocity=pre_state.clubhead_angular_velocity.copy(),
+            clubhead_angular_velocity=club_spin_post,
             contact_duration=0.0,
             energy_transfer=energy_transfer,
             impact_location=impact_loc,
