@@ -1,0 +1,38 @@
+{
+  "violations": [
+    {
+      "issue": 2712,
+      "file": "tests/unit/engines/drake/test_drake_visualizer.py",
+      "lines": "14-15",
+      "mock_target": "pydrake",
+      "priority": "CRITICAL",
+      "status": "needs_fix"
+    },
+    {
+      "issue": 2712,
+      "file": "tests/unit/engines/drake/test_induced_acceleration.py",
+      "lines": "13-14",
+      "mock_target": "pydrake",
+      "priority": "CRITICAL",
+      "status": "needs_fix"
+    },
+    {
+      "issue": 2712,
+      "file": "tests/unit/test_optimize_arm.py",
+      "lines": "16-17,37,41",
+      "mock_target": ["casadi", "pinocchio"],
+      "priority": "HIGH",
+      "status": "needs_fix"
+    },
+    {
+      "issue": 2712,
+      "file": "tests/unit/engines/mujoco/conftest.py",
+      "lines": "13-15",
+      "mock_target": "mujoco",
+      "priority": "HIGH",
+      "status": "needs_fix"
+    }
+  ],
+  "remediation_pattern": "Use @patch.dict('sys.modules', {mock_target: MagicMock()}) at test method level",
+  "validation": "Run pytest tests/ -n auto to verify no state pollution"
+}
