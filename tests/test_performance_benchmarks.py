@@ -104,22 +104,19 @@ class TestCoriolisPerformance(unittest.TestCase):
         analyzer = KinematicForceAnalyzer(model, data)
 
         qpos = np.zeros(model.nv)
-        qvel = np.random.default_rng(0).standard_normal(model.nv) * 0.5
+        qvel = np.random.randn(model.nv) * 0.5
 
         # Time RNE method
         start = time.perf_counter()
-        iterations = 50
-        for _ in range(iterations):
+        for _ in range(50):
             analyzer.compute_coriolis_forces_rne(qpos, qvel)
         rne_time = time.perf_counter() - start
-        avg_time_ms = (rne_time / iterations) * 1000
 
-        # RNE should stay comfortably fast for this small model, but leave enough
-        # headroom for shared CI runners.
+        # RNE should be fast
         self.assertLess(
-            avg_time_ms,
-            2.0,
-            f"RNE computation took {avg_time_ms:.2f}ms per iteration",
+            rne_time,
+            0.05,  # 50 iterations should take < 50ms
+            f"RNE computation took {rne_time * 1000:.1f}ms for 50 iterations",
         )
 
 
