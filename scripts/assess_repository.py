@@ -177,7 +177,13 @@ def assess_F() -> Path:
     findings = []
     score = 8.0
 
-    secrets = grep_count(REPO_ROOT, r"password|secret|key\s*=", "**/*.py")
+    # Count secrets in all Python files except tests (for repo-level assessment)
+    # Check src/, scripts/, examples/, and other non-test directories
+    pattern = r"password|secret|key\s*="
+    secrets = 0
+    for glob_pattern in ["src/**/*.py", "scripts/**/*.py", "examples/**/*.py"]:
+        secrets += grep_count(REPO_ROOT, pattern, glob_pattern)
+
     if secrets > 0:
         findings.append(
             f"Potential hardcoded secrets found in {secrets} files (needs verification)."
