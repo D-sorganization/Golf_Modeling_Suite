@@ -11,10 +11,10 @@ Contains:
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
-from matplotlib.axes import Axes, _AxesBase
+from matplotlib.axes import Axes
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 from src.shared.python.dashboard.advanced_analysis import AdvancedAnalysisDialog
@@ -136,7 +136,7 @@ class LivePlotWidget(QtWidgets.QWidget):
         self._main_layout.addWidget(self.canvas)
 
         self.ax = self.canvas.fig.add_subplot(111)
-        self.ax2: Axes | _AxesBase | None = None  # Secondary axis
+        self.ax2: Axes | None = None  # Secondary axis
         self.line_objects: list[Any] = []
         self.line_objects2: list[Any] = []
 
@@ -519,7 +519,7 @@ class LivePlotWidget(QtWidgets.QWidget):
             if self.comparison_label:
                 title += f" vs {self.comparison_label}"
                 # Create secondary axis
-                self.ax2 = self.ax.twinx()
+                self.ax2 = cast(Axes, self.ax.twinx())
             self.ax.set_xlabel("Time (s)")
 
         self.ax.set_title(title)
