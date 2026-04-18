@@ -237,31 +237,28 @@ def example_4_inverse_dynamics() -> None:
     )  # noqa: E501
 
     # Decomposition percentages
-    if id_results:
-        # ⚡ Bolt: Vectorized np.einsum is ~7x faster than list comp with np.linalg.norm
-        jt = np.array([r.joint_torques for r in id_results])
-        np.mean(np.sqrt(np.einsum("ij,ij->i", jt, jt)))
-
-        it_list = [
-            r.inertial_torques for r in id_results if r.inertial_torques is not None
-        ]
-        if it_list:
-            it = np.array(it_list)
-            np.mean(np.sqrt(np.einsum("ij,ij->i", it, it)))
-
-        ct_list = [
-            r.coriolis_torques for r in id_results if r.coriolis_torques is not None
-        ]
-        if ct_list:
-            ct = np.array(ct_list)
-            np.mean(np.sqrt(np.einsum("ij,ij->i", ct, ct)))
-
-        gt_list = [
-            r.gravity_torques for r in id_results if r.gravity_torques is not None
-        ]
-        if gt_list:
-            gt = np.array(gt_list)
-            np.mean(np.sqrt(np.einsum("ij,ij->i", gt, gt)))
+    np.mean([np.linalg.norm(r.joint_torques) for r in id_results])
+    np.mean(
+        [
+            np.linalg.norm(r.inertial_torques)
+            for r in id_results
+            if r.inertial_torques is not None
+        ],  # noqa: E501
+    )
+    np.mean(
+        [
+            np.linalg.norm(r.coriolis_torques)
+            for r in id_results
+            if r.coriolis_torques is not None
+        ],  # noqa: E501
+    )
+    np.mean(
+        [
+            np.linalg.norm(r.gravity_torques)
+            for r in id_results
+            if r.gravity_torques is not None
+        ],  # noqa: E501
+    )
 
     export_inverse_dynamics_to_csv(times, id_results, "inverse_dynamics.csv")
 

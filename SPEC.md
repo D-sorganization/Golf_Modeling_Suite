@@ -29,7 +29,7 @@ Last-Updated: 2026-04-17T00:00:00Z
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.130                                            |
+| **Spec Version**        | 1.0.131                                            |
 | **Last Spec Update**    | 2026-04-17                                         |
 
 ## 2. Purpose & Mission
@@ -661,4 +661,5 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 ## Changelog
 
+- 2026-04-18: Bolt: Vectorize list comprehensions of np.linalg.norm with np.einsum in impact_model/solver.py to improve performance.
 - 2026-04-16: Fixed import sorting in analyzer.py, advanced_export.py, and related files; restored completist audit documentation.
