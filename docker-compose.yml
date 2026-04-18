@@ -44,7 +44,7 @@ services:
       - ./ui:/app:delegated
       - /app/node_modules
     working_dir: /app
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    command: sh -c "[ -d node_modules ] || npm ci && npm run dev -- --host 0.0.0.0"
     environment:
       - VITE_API_URL=http://backend:8001
     depends_on:
