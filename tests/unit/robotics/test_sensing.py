@@ -30,8 +30,8 @@ from src.robotics.sensing.noise_models import (
     CompositeNoise,
     GaussianNoise,
     QuantizationNoise,
-    create_realistic_sensor_noise,
     WhiteNoiseDensity,
+    create_realistic_sensor_noise,
 )
 
 
@@ -159,9 +159,9 @@ class TestNoiseModels:
 
         # 2nd-order filter should respond more slowly to a step than 1st-order
         # at early samples, the 2nd-order output must lag behind the 1st-order
-        assert arr2[3] < arr1[3], (
-            "order=2 filter should be slower than order=1 at early samples"
-        )
+        assert (
+            arr2[3] < arr1[3]
+        ), "order=2 filter should be slower than order=1 at early samples"
         # Both should eventually converge toward 1.0
         assert arr2[-1] > 0.8
 
@@ -204,7 +204,6 @@ class TestNoiseModels:
 
         assert noisy.shape == signal.shape
         assert not np.allclose(noisy, signal)
-
 
     def test_create_realistic_sensor_noise_with_density(self) -> None:
         """Test factory supports density-based noise."""

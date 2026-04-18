@@ -42,15 +42,15 @@ def derive_seed(base_seed: int | None, *parts: str) -> int | None:
     return int.from_bytes(hasher.digest(), byteorder="little", signed=False)
 
 
-def _broadcast_value(value: Any, shape: tuple[int, ...], name: str) -> NDArray[np.float64]:
+def _broadcast_value(
+    value: Any, shape: tuple[int, ...], name: str
+) -> NDArray[np.float64]:
     """Broadcast a scalar or vector constant to the target shape."""
     array = np.asarray(value, dtype=np.float64)
     if array.shape == ():
         return np.full(shape, float(array), dtype=np.float64)
     if array.shape != shape:
-        raise ValueError(
-            f"{name} must be scalar or shape {shape}, got {array.shape}"
-        )
+        raise ValueError(f"{name} must be scalar or shape {shape}, got {array.shape}")
     return array.copy()
 
 
@@ -187,7 +187,9 @@ class BrownianNoise(NoiseModel):
     max_bias: float | NDArray[np.float64] = 1.0
     seed: int | None = None
     _rng: np.random.Generator = field(init=False, repr=False)
-    _current_bias: NDArray[np.float64] | None = field(init=False, repr=False, default=None)
+    _current_bias: NDArray[np.float64] | None = field(
+        init=False, repr=False, default=None
+    )
 
     def __post_init__(self) -> None:
         """Initialize state."""

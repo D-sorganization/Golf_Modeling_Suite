@@ -30,9 +30,9 @@ from src.robotics.sensing.noise_models import (
     BrownianNoise,
     CompositeNoise,
     GaussianNoise,
-    SaturationModel,
     NoiseModel,
     QuantizationNoise,
+    SaturationModel,
     WhiteNoiseDensity,
 )
 
