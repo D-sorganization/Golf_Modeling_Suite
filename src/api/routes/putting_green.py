@@ -275,9 +275,12 @@ async def scatter_analysis(
     final_positions = [r.final_position.tolist() for r in results]
     holed_count = sum(1 for r in results if r.holed)
     hole_pos = green.hole_position
-    avg_dist = float(
-        np.mean([np.linalg.norm(r.final_position - hole_pos) for r in results])
-    )
+    if not results:
+        avg_dist = float("nan")
+    else:
+        # ⚡ Bolt: Vectorized sum of squares is faster than repeated np.linalg.norm
+        diffs = np.array([r.final_position for r in results], dtype=float) - hole_pos
+        avg_dist = float(np.mean(np.sqrt(np.einsum("ij,ij->i", diffs, diffs))))
 
     return ScatterAnalysisResponse(
         final_positions=final_positions,
