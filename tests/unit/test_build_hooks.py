@@ -19,9 +19,9 @@ _HATCHLING_MOCKS = {
     "hatchling.builders.hooks.plugin": MagicMock(),
     "hatchling.builders.hooks.plugin.interface": MagicMock(),
 }
-_HATCHLING_MOCKS[
-    "hatchling.builders.hooks.plugin.interface"
-].BuildHookInterface = DummyHookInterface
+_HATCHLING_MOCKS["hatchling.builders.hooks.plugin.interface"].BuildHookInterface = (
+    DummyHookInterface
+)
 
 _hatchling_patcher = patch.dict(sys.modules, _HATCHLING_MOCKS)
 _hatchling_patcher.start()
