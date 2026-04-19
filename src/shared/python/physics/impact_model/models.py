@@ -94,11 +94,76 @@ class RigidBodyImpactModel(ImpactModel):
             float(friction_coefficient * j),
             float(GOLF_BALL_MASS_KG * tangent_mag * 0.4),
         )
-        spin_axis = np.cross(n, tangent_dir)
+        # Gear effect: τ = r × F where r = −R·n (contact point behind ball)
+        # and F ∝ j_friction·tangent_dir. Result: spin ∝ tangent_dir × n.
+        spin_axis = np.cross(tangent_dir, n)
         spin_magnitude = j_friction / (
             GOLF_BALL_MOMENT_OF_INERTIA_KG_M2 / GOLF_BALL_RADIUS_M
         )
         return pre_state.ball_angular_velocity + spin_magnitude * spin_axis
+
+    def _impact_offset_to_face_vector(
+        self, impact_offset: np.ndarray, n: np.ndarray
+    ) -> np.ndarray:
+        """Map [horizontal, vertical] face offset into a 3D lever arm."""
+        offset = np.asarray(impact_offset, dtype=float)
+        if offset.shape != (2,):
+            raise ValueError("impact_offset must be a 2D face-plane vector")
+
+        normal = n / np.linalg.norm(n)
+        up = np.array([0.0, 0.0, 1.0])
+        vertical_axis = up - np.dot(up, normal) * normal
+
+        if np.linalg.norm(vertical_axis) <= 1e-6:
+            fallback = np.array([0.0, 1.0, 0.0])
+            vertical_axis = fallback - np.dot(fallback, normal) * normal
+
+        vertical_axis = vertical_axis / np.linalg.norm(vertical_axis)
+        horizontal_axis = np.cross(vertical_axis, normal)
+        horizontal_axis = horizontal_axis / np.linalg.norm(horizontal_axis)
+
+        return offset[0] * horizontal_axis + offset[1] * vertical_axis
+
+    def _compute_friction_impulse_on_club(
+        self,
+        pre_state: PreImpactState,
+        v_rel: np.ndarray,
+        v_approach: float,
+        n: np.ndarray,
+        j: float,
+        friction_coefficient: float,
+    ) -> np.ndarray:
+        """Compute angular impulse on club from friction.
+
+        By Newton's third law, the friction impulse that spins the ball
+        produces an equal and opposite angular impulse on the club.
+        """
+        if pre_state is None:
+            raise ValueError("pre_state must be provided")
+        if pre_state.impact_offset is None:
+            return np.zeros(3)
+
+        v_tangent = v_rel - v_approach * n
+        tangent_mag = np.linalg.norm(v_tangent)
+
+        if tangent_mag <= 1e-6:
+            return np.zeros(3)
+
+        tangent_dir = v_tangent / tangent_mag
+        j_friction = min(
+            float(friction_coefficient * j),
+            float(GOLF_BALL_MASS_KG * tangent_mag * 0.4),
+        )
+        # r = impact offset in the clubface plane, from club COM to contact point.
+        r = self._impact_offset_to_face_vector(pre_state.impact_offset, n)
+        # The club receives the equal and opposite friction impulse from the ball.
+        friction_impulse_on_club = -j_friction * tangent_dir
+        friction_torque = np.cross(r, friction_impulse_on_club)
+        return (
+            friction_torque / pre_state.clubhead_moi
+            if pre_state.clubhead_moi > 0
+            else np.zeros(3)
+        )
 
     def _compute_energy_transfer(
         self,
@@ -166,6 +231,17 @@ class RigidBodyImpactModel(ImpactModel):
             j,
             params.friction_coefficient,
         )
+        # Apply angular impulse back on club from friction (Newton's 3rd law)
+        club_angular_impulse = self._compute_friction_impulse_on_club(
+            pre_state,
+            v_rel,
+            v_approach,
+            n,
+            j,
+            params.friction_coefficient,
+        )
+        club_spin_post = pre_state.clubhead_angular_velocity + club_angular_impulse
+
         energy_transfer = self._compute_energy_transfer(
             pre_state.ball_velocity,
             v_ball_post,
@@ -181,7 +257,7 @@ class RigidBodyImpactModel(ImpactModel):
             ball_velocity=v_ball_post,
             ball_angular_velocity=ball_spin,
             clubhead_velocity=v_club_post,
-            clubhead_angular_velocity=pre_state.clubhead_angular_velocity.copy(),
+            clubhead_angular_velocity=club_spin_post,
             contact_duration=0.0,
             energy_transfer=energy_transfer,
             impact_location=impact_loc,

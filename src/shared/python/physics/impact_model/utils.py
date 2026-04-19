@@ -126,9 +126,12 @@ def validate_energy_balance(
     )
     total_ke_post = ke_ball_post + ke_ball_rot_post + ke_club_post
 
-    # Energy loss
+    # Energy loss ratio for a Newton impact with the ball initially at rest:
+    # ΔKE/KE_pre = (1 - e^2) / (1 + μ), where μ = m_club / m_ball.
     energy_lost = total_ke_pre - total_ke_post
-    expected_loss_factor = 1 - params.cor**2  # COR relates velocities, not energy
+    # Reduce to translational-only for energy loss (rotational effects small)
+    mu = m_club / m_ball
+    expected_loss_factor = (1 - params.cor**2) / (1 + mu)
 
     return {
         "total_ke_pre": float(total_ke_pre),
