@@ -58,9 +58,9 @@ class PyVistaBackend(ViewerBackend):
             self._plotter.background_color = self.config.background_color
 
             # Configure camera
-            self._plotter.camera.position = self._camera.position.to_numpy()
-            self._plotter.camera.focal_point = self._camera.target.to_numpy()
-            self._plotter.camera.up = self._camera.up.to_numpy()
+            self._plotter.camera.position = tuple(self._camera.position.to_numpy())
+            self._plotter.camera.focal_point = tuple(self._camera.target.to_numpy())
+            self._plotter.camera.up = tuple(self._camera.up.to_numpy())
             self._plotter.camera.view_angle = self._camera.fov
 
             self._is_initialized = True
