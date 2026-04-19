@@ -22,11 +22,12 @@ from pathlib import Path
 from typing import Any
 
 # Add the motion_training module to path
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(
-    0,
-    str(PROJECT_ROOT / "src" / "engines" / "physics_engines" / "pinocchio" / "python"),
+_this_file = Path(__file__).resolve()
+PROJECT_ROOT = _this_file.parents[1]
+_pinocchio_python_dir = (
+    PROJECT_ROOT / "src" / "engines" / "physics_engines" / "pinocchio" / "python"
 )
+sys.path.insert(0, str(_pinocchio_python_dir))
 
 
 def parse_args() -> argparse.Namespace:

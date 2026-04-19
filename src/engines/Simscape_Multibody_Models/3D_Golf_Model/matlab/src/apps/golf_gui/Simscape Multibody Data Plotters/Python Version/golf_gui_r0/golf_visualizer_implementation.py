@@ -1,66 +1,42 @@
-#!/usr/bin/env python3
-"""Modern Golf Swing Visualizer - Production Implementation
-High-performance, visually stunning 3D golf swing analysis tool
-Key Technologies:
-- PyQt6 for modern GUI
-- OpenGL 4.3+ for hardware-accelerated rendering
-- ModernGL for simplified OpenGL interface
-- NumPy + Numba for high-performance computations
-"""
+# mypy: disable-error-code="no-redef"
+"""Thin facade for the legacy golf swing visualizer."""
 
 from __future__ import annotations
 
-# ============================================================================
-# HIGH-PERFORMANCE DATA STRUCTURES
-# ============================================================================
 import logging
 import sys
 import time
 from dataclasses import dataclass
 from typing import Any
 
-import moderngl as mgl
-import numpy as np
-import scipy.io
-from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtOpenGLWidgets import QOpenGLWidget
-from PyQt6.QtWidgets import (
-    QApplication,
-    QCheckBox,
-    QDockWidget,
-    QGroupBox,
-    QHBoxLayout,
-    QLabel,
-    QMainWindow,
-    QPushButton,
-    QSlider,
-    QVBoxLayout,
-    QWidget,
-)
+from PyQt6.QtWidgets import QApplication
+
+try:
+    from .golf_visualizer_app import ModernGolfVisualizerApp
+    from .golf_visualizer_data import DataProcessor
+    from .golf_visualizer_models import FrameData, RenderConfig
+    from .golf_visualizer_renderer import OpenGLRenderer
+    from .golf_visualizer_widget import ModernGolfVisualizerWidget
+except ImportError:
+    from golf_visualizer_app import ModernGolfVisualizerApp
+    from golf_visualizer_data import DataProcessor
+    from golf_visualizer_models import FrameData, RenderConfig
+    from golf_visualizer_renderer import OpenGLRenderer
+    from golf_visualizer_widget import ModernGolfVisualizerWidget
 
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class FrameData:
-    """Optimized frame data structure"""
+__all__ = [
+    "FrameData",
+    "RenderConfig",
+    "DataProcessor",
+    "OpenGLRenderer",
+    "ModernGolfVisualizerWidget",
+    "ModernGolfVisualizerApp",
+    "main",
+]
 
-    frame_idx: int
-    time: float
-    # Body points (NumPy arrays for vectorized operations)
-    butt: np.ndarray
-    clubhead: np.ndarray
-    midpoint: np.ndarray
-    left_wrist: np.ndarray
-    left_elbow: np.ndarray
-    left_shoulder: np.ndarray
-    right_wrist: np.ndarray
-    right_elbow: np.ndarray
-    right_shoulder: np.ndarray
-    hub: np.ndarray
-    # Force/torque vectors for each dataset
-    forces: dict[str, np.ndarray]  # 'BASEQ', 'ZTCFQ', 'DELTAQ'
-    torques: dict[str, np.ndarray]
 
 
 @dataclass
@@ -1359,7 +1335,7 @@ class ModernGolfVisualizerApp(QMainWindow):
 # MAIN APPLICATION ENTRY POINT
 # ============================================================================
 def main() -> None:
-    """Main application entry point"""
+    """Main application entry point."""
     app = QApplication(sys.argv)
     app.setApplicationName("Modern Golf Swing Visualizer")
     app.setApplicationVersion("2.0")
@@ -1367,8 +1343,8 @@ def main() -> None:
     window.show()
     try:
         window.gl_widget.load_data("BASEQ.mat", "ZTCFQ.mat", "DELTAQ.mat")
-    except (RuntimeError, ValueError, OSError) as e:
-        logger.info(f"Note: Sample data not found - {e}")
+    except (RuntimeError, ValueError, OSError) as exc:
+        logger.info("Note: Sample data not found - %s", exc)
         logger.info("Please load data using File -> Load Data")
     sys.exit(app.exec())
 

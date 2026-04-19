@@ -275,8 +275,8 @@ class TestPSAModelSensitivity:
 
     def test_sensitivity_output_shapes(self) -> None:
         """Test that sensitivity output arrays have correct shapes."""
-        s2_range = np.linspace(0, 1, 11)
-        prod_range = np.array([0.0, 0.1, 0.2])
+        s2_range = np.linspace(0.0, 1.0, 11, dtype=np.float64)
+        prod_range = np.array([0.0, 0.1, 0.2], dtype=np.float64)
 
         sensitivity = calculate_sensitivity(
             s2_tail_recycle_range=s2_range,

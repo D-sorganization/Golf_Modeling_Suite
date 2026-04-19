@@ -23,8 +23,12 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  resolve-issues:
-    runs-on: ubuntu-latest
+  # ── Dispatcher: route to self-hosted if available ──────────────────────────
+  pick-runner:
+    runs-on: d-sorg-fleet
+    timeout-minutes: 2
+    outputs:
+      runner: ${{ steps.check.outputs.runner }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -47,7 +51,7 @@ jobs:
       - name: Gather Priority Issues
         id: gather
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
           mkdir -p .jules/resolver_data
 
@@ -63,7 +67,7 @@ jobs:
       - name: Find or Create Fix Branch
         id: branch
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
           # Check for existing open PR from this workflow
           EXISTING_PR=$(gh pr list --state open --json number,headRefName,title \
@@ -199,7 +203,7 @@ jobs:
 
       - name: Commit and Create/Update PR
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
           REUSING_PR: ${{ steps.branch.outputs.reusing_pr }}
           EXISTING_PR_NUM: ${{ steps.branch.outputs.existing_pr_num }}
         run: |

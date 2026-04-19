@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Signal import and export utilities.
 
 This module provides functionality for importing signals from various
@@ -82,7 +86,7 @@ class SignalImporter:
             # Import all columns except time
             value_indices = [i for i in range(len(header)) if i != time_idx]
             value_names = [header[i] for i in value_indices]
-        elif isinstance(value_columns, (str, int)):
+        elif isinstance(value_columns, str | int):
             value_indices = [resolve_column(value_columns)]
             value_names = [header[value_indices[0]]]
         else:
@@ -182,7 +186,7 @@ class SignalImporter:
         if not (file_path is not None):
             raise ValueError("file_path must be provided")
         file_path = Path(file_path)
-        data = np.load(file_path)
+        data = np.load(file_path, allow_pickle=False)
 
         time = data[time_key]
         values = data[value_key]
@@ -592,7 +596,7 @@ class SignalLoader:
 
         if fmt == "npy":
             # .npy files contain a single array
-            data = np.load(file_path)
+            data = np.load(file_path, allow_pickle=False)
             if data.ndim == 1:
                 # Assume uniform time sampling
                 time = np.arange(len(data))

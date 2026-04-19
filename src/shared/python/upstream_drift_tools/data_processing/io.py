@@ -115,7 +115,7 @@ class DataWriter:
         elif fmt == "json":
             df.to_json(path, orient="records", indent=2, **kwargs)
         elif fmt == "pickle":
-            df.to_pickle(path)
+            raise ValueError("Pickle format is disabled for security reasons.")
         elif fmt == "numpy":
             np.save(str(path), df.values)
         elif fmt == "sqlite":

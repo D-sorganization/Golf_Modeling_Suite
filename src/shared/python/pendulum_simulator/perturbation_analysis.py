@@ -190,6 +190,7 @@ def perturb_torque_coeffs(
     noise_amplitude : float â€” amplitude of the perturbation
     noise_type : str â€” noise colour
     seed : int, optional
+    perturb_mode : str â€" perturbation mode (currently only 'additive' is used)
 
     Returns
     -------
@@ -207,6 +208,13 @@ def perturb_torque_coeffs(
         "pink",
         "brown",
     }, f"noise_type must be 'white', 'pink', or 'brown'; got {noise_type!r}"
+    assert perturb_mode in {
+        "additive",
+        "multiplicative",
+        "both",
+    }, (
+        f"perturb_mode must be 'additive', 'multiplicative', or 'both'; got {perturb_mode!r}"
+    )
 
     if noise_amplitude == 0.0:
         return [list(c) for c in coeffs]

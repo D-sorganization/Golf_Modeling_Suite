@@ -1,5 +1,6 @@
 """Tests for golf_suite_launcher.py."""
 
+import importlib
 import sys  # noqa: E402
 from collections.abc import Generator  # noqa: E402
 from pathlib import Path  # noqa: E402
@@ -41,8 +42,13 @@ def test_init_raises_without_pyqt() -> None:
     with patch("src.launchers.golf_suite_launcher.PYQT6_AVAILABLE", False):
         import src.launchers.golf_suite_launcher as gsl
 
-        with pytest.raises(ImportError, match="PyQt6 is required"):
-            gsl.GolfLauncher()
+        try:
+            importlib.reload(gsl)
+
+            with pytest.raises(ImportError, match="PyQt6 is required"):
+                gsl.GolfLauncher()
+        finally:
+            importlib.reload(gsl)
 
 
 def test_imports_without_pyqt() -> None:

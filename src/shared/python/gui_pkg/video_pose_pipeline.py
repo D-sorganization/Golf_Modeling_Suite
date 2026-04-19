@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Enhanced video-based pose estimation pipeline.
 
 This module provides a complete pipeline for processing golf swing videos:
@@ -508,7 +512,7 @@ class VideoPosePipeline:
             for name in keypoint_names:
                 if name in result.raw_keypoints:
                     kp = result.raw_keypoints[name]
-                    if isinstance(kp, (list, tuple)) and len(kp) >= 2:
+                    if isinstance(kp, list | tuple) and len(kp) >= 2:
                         positions.append([kp[0], kp[1], kp[2] if len(kp) > 2 else 0.0])
                     else:
                         positions.append([0.0, 0.0, 0.0])

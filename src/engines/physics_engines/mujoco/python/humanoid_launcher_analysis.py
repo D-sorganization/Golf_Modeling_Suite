@@ -137,7 +137,7 @@ class AnalysisMixin:
 
             target_file = (
                 self.current_dir / "mujoco_humanoid_golf" / "polynomial_generator.py"
-            )
+            )  # noqa: E501
 
             if not target_file.exists():
                 raise FileNotFoundError(f"File not found: {target_file}")
@@ -312,12 +312,12 @@ class AnalysisMixin:
         if save:
             path, _ = QFileDialog.getSaveFileName(
                 self, "Save State", "", "JSON State (*.json)"
-            )
+            )  # noqa: E501
 
         else:
             path, _ = QFileDialog.getOpenFileName(
                 self, "Load State", "", "JSON State (*.json)"
-            )
+            )  # noqa: E501
 
         if path:
             line_edit.setText(path)
@@ -490,7 +490,7 @@ class AnalysisMixin:
 
             times, g_vals, c_vals, t_vals, tot_vals = self._read_iaa_data(
                 csv_path, joint
-            )
+            )  # noqa: E501
 
             if not times:
                 return

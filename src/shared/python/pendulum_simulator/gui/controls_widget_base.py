@@ -82,6 +82,17 @@ STYLE_COMBO = "background:#2a2a38;color:#e0e0f0;border:1px solid #505068;border-
 class ControlsWidgetBase(QWidget):
     """Abstract base for pendulum model control panels.
 
+    DRY resolution (issue #2353): Common signals, preset wiring, playback
+    controls, export section, and run/reset builders are defined here and
+    shared by ``ControlsWidget`` (double pendulum) and
+    ``ControlsWidgetTriple`` (triple pendulum).
+
+    The ``_build_sim_section`` and ``_build_dissipation_section`` methods
+    in the subclasses appear similar but differ by joint count, label
+    text, and field arrangement, making them intentionally model-specific.
+    If a third pendulum model is added, consider introducing a
+    ``_build_n_joint_sim_section(n)`` factory method here.
+
     Subclass contract
     -----------------
     - Define ``PRESETS`` as a class-level dict.

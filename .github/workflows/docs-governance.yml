@@ -14,8 +14,12 @@ on:
       - ".github/workflows/docs-governance.yml"
 
 jobs:
-  docs-governance:
-    runs-on: ubuntu-latest
+  # ── Dispatcher: route to self-hosted if available ──────────────────────────
+  pick-runner:
+    runs-on: d-sorg-fleet
+    timeout-minutes: 2
+    outputs:
+      runner: ${{ steps.check.outputs.runner }}
     steps:
       - uses: actions/checkout@v6
         with:

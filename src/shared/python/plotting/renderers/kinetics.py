@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Kinetics plotting renderer."""
 
 from __future__ import annotations
@@ -581,7 +585,8 @@ class KineticsRenderer(BaseRenderer):
             ax.text(0.5, 0.5, "No Angular Momentum Data", ha="center", va="center")
             return
 
-        am_mag = np.sqrt(np.sum(am_data**2, axis=1))
+        am_f = am_data.astype(float, copy=False)
+        am_mag = np.sqrt(np.einsum("...i,...i->...", am_f, am_f))
 
         ax = fig.add_subplot(111)
 
@@ -633,7 +638,8 @@ class KineticsRenderer(BaseRenderer):
         sc = ax.scatter(lx, ly, lz, c=times, cmap="viridis", s=20)
         ax.plot(lx, ly, lz, color="gray", alpha=0.3)
 
-        max_idx = np.argmax(np.sum(am_data**2, axis=1))
+        am_f = am_data.astype(float, copy=False)
+        max_idx = np.argmax(np.einsum("...i,...i->...", am_f, am_f))
 
         ax.plot(
             [0, lx[max_idx]],

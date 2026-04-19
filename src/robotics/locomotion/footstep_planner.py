@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Footstep planning for bipedal locomotion.
 
 This module provides footstep generation and planning for
@@ -317,7 +321,7 @@ class FootstepPlanner(ContractChecker):
             total_duration=total_duration,
         )
 
-    @precondition(
+    @precondition(  # fmt: skip
         lambda self,
         current_position,
         current_yaw,
@@ -326,7 +330,7 @@ class FootstepPlanner(ContractChecker):
         start_foot="left": (n_steps > 0),
         "Number of steps must be positive",
     )
-    @precondition(
+    @precondition(  # fmt: skip
         lambda self,
         current_position,
         current_yaw,
@@ -410,10 +414,10 @@ class FootstepPlanner(ContractChecker):
         if not (vx is not None):
             raise ValueError("vx must be provided")
         dt = self._parameters.step_duration
-        step_x = np.clip(vx * dt, -self._max_step_length, self._max_step_length)
-        step_y = np.clip(vy * dt, -self._max_step_width, self._max_step_width)
-        step_yaw = np.clip(
-            omega * dt, -self._max_step_rotation, self._max_step_rotation
+        step_x = float(np.clip(vx * dt, -self._max_step_length, self._max_step_length))
+        step_y = float(np.clip(vy * dt, -self._max_step_width, self._max_step_width))
+        step_yaw = float(
+            np.clip(omega * dt, -self._max_step_rotation, self._max_step_rotation)
         )
         return step_x, step_y, step_yaw
 

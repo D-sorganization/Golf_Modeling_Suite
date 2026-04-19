@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""User-friendly Python interface for advanced pressure drop calculator.
+"""Thin public facade for advanced pressure drop calculations.
 
 This module provides a simplified API for performing pressure drop calculations
 with support for various input units and gas compositions.
@@ -61,10 +61,14 @@ from ._pressure_drop_validation import validate_inputs
 from .engine.pressure_drop_calculation_engine import (
     PressureDropCalculationEngine,
 )
-from .models.pressure_drop_data_models import (
-    GasComposition,
-    PipeFitting,
-    PressureDropInputs,
+from .pressure_drop_reference import (
+    compare_friction_methods,
+    list_fittings,
+    list_flow_units,
+    list_gas_components,
+    list_materials,
+    list_pipe_sizes,
+    show_help,
 )
 from .utils.fitting_loss_coefficients import FITTING_K_FACTORS
 from .utils.flow_rate_converter import (

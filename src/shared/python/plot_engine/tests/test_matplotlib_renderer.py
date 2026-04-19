@@ -7,6 +7,8 @@ and theme integration.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+
 import matplotlib
 
 matplotlib.use("Agg")  # Non-interactive backend for testing

@@ -15,18 +15,19 @@ These tests help catch:
 
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import numpy as np
+
+from src.shared.python.logging_pkg.logging_config import get_logger
 
 if TYPE_CHECKING:
     import mujoco
 else:
     mujoco = None
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -187,16 +188,13 @@ class PhysicsValidator:
             if np.isfinite(potential_energy):
                 return potential_energy
 
-        # PE = sum(m_i * g * h_i) for all bodies
-        pe = 0.0
+        # PE = sum(m_i * g * h_i) for all bodies (vectorized)
         gravity = self.model.opt.gravity[2]  # Z gravity component
+        masses = self.model.body_mass[1:]  # Skip world body
+        heights = self._scratch_data.xipos[1:, 2]  # Z positions
+        pe = float(np.dot(masses, heights) * (-gravity))
 
-        for i in range(1, self.model.nbody):  # Skip world body
-            mass = self.model.body_mass[i]
-            height = self._scratch_data.xipos[i, 2]  # Z position
-            pe += mass * (-gravity) * height
-
-        return float(pe)
+        return pe
 
     def step_forward(
         self,

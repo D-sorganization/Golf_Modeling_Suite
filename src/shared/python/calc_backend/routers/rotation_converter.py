@@ -1,13 +1,25 @@
-"""Rotation Converter calculator router."""
+"""Rotation Converter calculator router.
+
+.. note::
+   This router uses the deprecated ``rotation_converter`` Python package.
+   When ``math-primitives`` Rust bindings gain euler-convention and
+   rodrigues support, this router should migrate to
+   ``tools_core.math_primitives``.  See issue #1255.
+"""
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 from fastapi import APIRouter, HTTPException
-from rotation_converter.reference_frame_operations import (
-    compute_reference_frame_operation,
-)
 
+# Suppress DeprecationWarning from rotation_converter import (we know it's deprecated)
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", DeprecationWarning)
+    from rotation_converter.reference_frame_operations import (
+        compute_reference_frame_operation,
+    )
 from ..contracts.rotation_converter import (
     ReferenceFrameConversionRequest,
     ReferenceFrameConversionResponse,
@@ -23,7 +35,9 @@ router = APIRouter(prefix="/api/calc/rotation-converter", tags=["rotation-conver
 def compute_rotation(request: RotationConverterRequest) -> RotationConverterResponse:
     """Convert between different 3D rotation representations."""
     try:
-        from rotation_converter.converter import Rotation
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            from rotation_converter.converter import Rotation
     except ImportError as e:
         raise HTTPException(
             status_code=503,

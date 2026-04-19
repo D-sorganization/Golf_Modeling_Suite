@@ -157,7 +157,7 @@ def _interpret_swing_motion(mid_motion_ranges: list, club_motion_ranges: list) -
     if max(club_motion_ranges) > max(mid_motion_ranges) * 1.5:
         logger.info(
             "  ✓ Club head has larger motion than hands (typical of golf swing)"
-        )
+        )  # noqa: E501
     else:
         logger.info("  ✗ Club head motion similar to hands (unusual for golf swing)")
 
@@ -188,7 +188,7 @@ def _analyze_key_frame(name: str, frame: dict) -> None:
     logger.info("%s frame (t=%ss):", name, frame["time"])
     logger.info(
         f"  Mid-hands: X={frame['mid_X']:.3f}, Y={frame['mid_Y']:.3f}, "
-        f"Z={frame['mid_Z']:.3f}"
+        f"Z={frame['mid_Z']:.3f}"  # noqa: E501
     )
     logger.info(
         f"  Club head: X={frame['club_X']:.3f}, Y={frame['club_Y']:.3f}, "
@@ -211,15 +211,15 @@ def _analyze_key_frame(name: str, frame: dict) -> None:
     logger.info("  Mid-hands direction cosines:")
     logger.info(
         f"    X-axis: [{frame['mid_Xx']:.3f}, {frame['mid_Xy']:.3f}, "
-        f"{frame['mid_Xz']:.3f}]"
+        f"{frame['mid_Xz']:.3f}]"  # noqa: E501
     )
     logger.info(
         f"    Y-axis: [{frame['mid_Yx']:.3f}, {frame['mid_Yy']:.3f}, "
-        f"{frame['mid_Yz']:.3f}]"
+        f"{frame['mid_Yz']:.3f}]"  # noqa: E501
     )
     logger.info(
         f"    Z-axis: [{frame['mid_Zx']:.3f}, {frame['mid_Zy']:.3f}, "
-        f"{frame['mid_Zz']:.3f}]"
+        f"{frame['mid_Zz']:.3f}]"  # noqa: E501
     )
 
     # Check if direction cosines form a proper rotation matrix

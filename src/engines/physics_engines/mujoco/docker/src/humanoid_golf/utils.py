@@ -332,7 +332,7 @@ def _attach_club(
             # Locate it where left hand should be (slightly above right hand?)
             rhand.add(
                 "site", name="club_grip_site", pos=[0, 0.05 * w_scale, -0.15 * h_scale]
-            )
+            )  # noqa: E501
 
             # Site on Left Hand (palm center)
             lhand.add("site", name="lhand_grip_site", pos=[0, 0, -0.05 * h_scale])

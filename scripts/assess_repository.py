@@ -186,11 +186,11 @@ def assess_F() -> Path:
 
     if secrets > 0:
         findings.append(
-            f"Potential hardcoded secrets found in {secrets} files (needs verification)."
+            f"Potential hardcoded secrets found in {hardcoded_secrets} src files (needs verification)."
         )
         score -= 1
     else:
-        findings.append("No obvious hardcoded secrets patterns found.")
+        findings.append("No obvious hardcoded secrets patterns found in src/ files.")
 
     recs = [
         "Run bandit security analysis regularly.",

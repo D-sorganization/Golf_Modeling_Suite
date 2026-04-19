@@ -58,7 +58,7 @@ class TrajectoryTracer:
         """
         self._desired_traces[body_name] = [
             np.asarray(p, dtype=np.float64) for p in positions
-        ]
+        ]  # noqa: E501
 
     def get_desired_trace(self, body_name: str) -> list[np.ndarray]:
         """Return the desired reference trajectory for a body."""

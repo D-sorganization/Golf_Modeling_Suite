@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
+
 """URDF import and export functionality for MuJoCo models.
 
 This module provides utilities to convert between MuJoCo MJCF and URDF formats,
@@ -140,6 +144,13 @@ class URDFExporter:
             if parent_id == 0:  # worldbody
                 return i
         return None
+
+    def _body_link_name(self, body_id: int) -> str:
+        """Return the URDF link name for a MuJoCo body."""
+        return (
+            mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_BODY, body_id)
+            or f"link_{body_id}"
+        )
 
     def _build_children(
         self,

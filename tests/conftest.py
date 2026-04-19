@@ -213,10 +213,12 @@ def mock_drake_dependencies() -> Generator[tuple[MagicMock, MagicMock], None, No
         "sys.modules",
         {
             "pydrake": mock_pydrake,
+            "pydrake.geometry": MagicMock(),
             "pydrake.math": MagicMock(),
             "pydrake.multibody": MagicMock(),
             "pydrake.multibody.plant": MagicMock(),
             "pydrake.multibody.parsing": MagicMock(),
+            "pydrake.multibody.tree": MagicMock(),
             "pydrake.systems": MagicMock(),
             "pydrake.systems.framework": MagicMock(),
             "pydrake.systems.analysis": MagicMock(),

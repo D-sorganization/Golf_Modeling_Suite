@@ -63,24 +63,19 @@ class EquationTopic(Enum):
 # ---------------------------------------------------------------------------
 
 _TOPICS = {
-    EquationTopic.MASS_MATRIX: ("Mass Matrix — Derivation", _MASS_MATRIX_HTML),
+    EquationTopic.MASS_MATRIX: ("Mass Matrix — Derivation", MASS_MATRIX_HTML),
     EquationTopic.EQUATIONS_OF_MOTION: (
         "Equations of Motion — Full Reference",
-        _EOM_HTML,
+        EOM_HTML,
     ),
     EquationTopic.DELTA_MATRIX: ("Delta Matrix (M+) — Inverse Dynamics", _DELTA_HTML),
     EquationTopic.ZTCF_MATRIX: ("ZTCF Transfer Matrix — Endpoint Forces", _ZTCF_HTML),
     EquationTopic.JACOBIAN: ("Geometric Jacobian — Velocity Mapping", _JACOBIAN_HTML),
     EquationTopic.CONSTRAINT_JACOBIAN: (
         "Constraint Jacobian — Closed-Loop Kinematics",
-        _CONSTRAINT_JACOBIAN_HTML,
+        CONSTRAINT_JACOBIAN_HTML,
     ),
 }
-
-
-# ---------------------------------------------------------------------------
-# Public entry point
-# ---------------------------------------------------------------------------
 
 
 def show_equations_popup(parent: QWidget | None, topic: EquationTopic) -> QDialog:

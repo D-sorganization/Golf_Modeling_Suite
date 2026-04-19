@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Data fitting and parameter estimation for golf biomechanics (Guideline A3).
 
 This module implements the A3 pipeline per project design guidelines:
@@ -328,15 +332,15 @@ class A3FittingPipeline:
         )
 
         # Convert to kinematic states
-        kinematic_data = []
-        for i, t in enumerate(timestamps):
-            state = KinematicState(
+        kinematic_data = [
+            KinematicState(
                 timestamp=float(t),
                 marker_positions=(
                     marker_positions[i] if i < len(marker_positions) else None
                 ),
             )
-            kinematic_data.append(state)
+            for i, t in enumerate(timestamps)
+        ]
 
         # Fit segment parameters
         fit_result = self.param_estimator.fit_parameters_to_kinematics(
@@ -346,18 +350,15 @@ class A3FittingPipeline:
         )
 
         # Create segment params from fit result
-        segment_params = []
-        for segment_name in self.segment_names:
-            length_key = f"{segment_name}_length"
-            mass_key = f"{segment_name}_mass"
-
-            if length_key in fit_result.parameters:
-                params = BodySegmentParams(
-                    name=segment_name,
-                    length=fit_result.parameters[length_key],
-                    mass=fit_result.parameters.get(mass_key, 0.0),
-                )
-                segment_params.append(params)
+        segment_params = [
+            BodySegmentParams(
+                name=segment_name,
+                length=fit_result.parameters[f"{segment_name}_length"],
+                mass=fit_result.parameters.get(f"{segment_name}_mass", 0.0),
+            )
+            for segment_name in self.segment_names
+            if f"{segment_name}_length" in fit_result.parameters
+        ]
 
         # Sensitivity analysis (placeholder - requires model function)
         sensitivities: list[SensitivityResult] = []

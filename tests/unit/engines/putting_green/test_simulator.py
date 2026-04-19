@@ -340,7 +340,7 @@ class TestPuttingGreenSimulatorPhysicsInterface:
     def test_compute_mass_matrix(self, simulator: PuttingGreenSimulator) -> None:
         """Should return mass matrix (single ball = scalar mass)."""
         M = simulator.compute_mass_matrix()
-        assert M.shape == (2, 2) or isinstance(M, (int, float))
+        assert M.shape == (2, 2) or isinstance(M, int | float)
 
     def test_compute_bias_forces(self, simulator: PuttingGreenSimulator) -> None:
         """Should compute bias forces (friction + slope)."""
@@ -503,6 +503,8 @@ class TestPuttingGreenSimulatorIO:
 
 class TestPuttingGreenSimulatorAdvanced:
     """Advanced feature tests."""
+
+    pytestmark = pytest.mark.slow
 
     @pytest.fixture
     def simulator(self) -> PuttingGreenSimulator:

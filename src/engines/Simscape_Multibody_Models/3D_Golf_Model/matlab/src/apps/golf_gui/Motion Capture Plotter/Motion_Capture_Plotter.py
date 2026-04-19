@@ -1,65 +1,32 @@
-"""
-Motion Capture Plotter - 3D visualization of golf swing data.
-
-Decomposed via SRP into:
-- mocap_data_loader.py: Data parsing/loading (Excel, CSV formats)
-"""
+"""Thin facade for the legacy motion-capture golf plotter."""
 
 from __future__ import annotations
 
-import logging
-import os
 import sys
 from typing import Any
 
-import matplotlib
-import numpy as np
-import pandas as pd
+from motion_capture_plotter_data import MotionCapturePlotterDataMixin
+from motion_capture_plotter_ui import MotionCapturePlotterUIMixin
+from motion_capture_plotter_visualization import MotionCapturePlotterVisualizationMixin
+from PyQt6.QtCore import QTimer
+from PyQt6.QtWidgets import QApplication, QMainWindow
 
-matplotlib.use("QtAgg")  # Use QtAgg backend for PyQt6 compatibility
 
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-from mocap_data_loader import (
-    find_available_joints,
-    get_simscape_joint_positions,
-    parse_excel_row,
-    process_excel_sheet,
-    safe_float,
-)
-from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import (
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QFileDialog,
-    QGroupBox,
-    QHBoxLayout,
-    QLabel,
+class MotionCapturePlotter(
+    MotionCapturePlotterVisualizationMixin,
+    MotionCapturePlotterDataMixin,
+    MotionCapturePlotterUIMixin,
     QMainWindow,
-    QMessageBox,
-    QPushButton,
-    QScrollArea,
-    QSlider,
-    QTextEdit,
-    QVBoxLayout,
-    QWidget,
-)
-
-logger = logging.getLogger(__name__)
-
-
-class MotionCapturePlotter(QMainWindow):
+):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("Motion Capture Plotter - PyQt6")
         self.setGeometry(100, 100, 1400, 900)
 
         # Data storage - now supporting multiple data sources simultaneously
-        self.swing_data = {}  # Motion capture data
-        self.simscape_data = {}  # Simscape data
-        self.current_swing = None
+        self.swing_data: dict[str, object] = {}  # Motion capture data
+        self.simscape_data: dict[str, object] = {}  # Simscape data
+        self.current_swing: str | None = None
         self.current_frame = 0
         self.is_playing = False
         self.current_filter = "none"
@@ -69,7 +36,7 @@ class MotionCapturePlotter(QMainWindow):
         self.motion_scale = 1.0  # Use actual scale since we have real coordinates
 
         # Mouse interaction state
-        self._last_pos = None
+        self._last_pos: tuple[float, float] | None = None
 
         # Setup UI
         self.setup_ui()

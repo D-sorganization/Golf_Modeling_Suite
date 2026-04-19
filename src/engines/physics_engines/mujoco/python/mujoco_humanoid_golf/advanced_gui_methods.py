@@ -87,7 +87,7 @@ class AdvancedGuiMethodsMixin:
             for i in range(self.sim_widget.get_num_geoms()):
                 name = mujoco.mj_id2name(
                     self.sim_widget.model, mujoco.mjtObj.mjOBJ_GEOM, i
-                )
+                )  # noqa: E501
                 if name and name_part in name:
                     self.sim_widget.set_geom_rgba(i, rgba)
 
@@ -143,7 +143,7 @@ class AdvancedGuiMethodsMixin:
 
             QtWidgets.QMessageBox.warning(
                 None, "Error", "Matplotlib or shared modules not found."
-            )
+            )  # noqa: E501
             return
 
         if not hasattr(self, "sim_widget"):
@@ -198,7 +198,7 @@ class AdvancedGuiMethodsMixin:
         tab_widget.addTab(
             self._create_kinematic_sequence_tab(
                 plotter, recorder, Figure, FigureCanvasQTAgg
-            ),
+            ),  # noqa: E501
             "Kinematic Sequence",
         )
         tab_widget.addTab(
@@ -210,13 +210,13 @@ class AdvancedGuiMethodsMixin:
         tab_widget.addTab(
             self._create_work_loop_tab(
                 plotter, analyzer, torso_idx, Figure, FigureCanvasQTAgg
-            ),
+            ),  # noqa: E501
             "Work Loop",
         )
         tab_widget.addTab(
             self._create_ssc_tab(
                 plotter, pelvis_idx, torso_idx, Figure, FigureCanvasQTAgg
-            ),
+            ),  # noqa: E501
             "Stretch-Shortening",
         )
 
@@ -426,7 +426,7 @@ class AdvancedGuiMethodsMixin:
                     ks_result = ks_analyzer.analyze(ks_data, ks_times)
                     plotter.plot_kinematic_sequence(
                         fig, segment_indices, analyzer_result=ks_result
-                    )
+                    )  # noqa: E501
                 else:
                     plotter.plot_kinematic_sequence(fig, segment_indices)
             else:
@@ -484,7 +484,7 @@ class AdvancedGuiMethodsMixin:
 
                 coupling_angles = analyzer.compute_coupling_angles(
                     pelvis_idx, torso_idx
-                )
+                )  # noqa: E501
                 plotter.plot_coupling_angle(
                     fig,
                     coupling_angles,

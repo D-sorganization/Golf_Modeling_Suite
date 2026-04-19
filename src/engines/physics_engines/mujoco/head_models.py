@@ -294,7 +294,7 @@ def generate_flexible_club_xml(club_type: str = "driver", num_segments: int = 3)
     xml_parts = _generate_grip_xml(club_type, num_segments, config)
     xml_parts.extend(
         _generate_shaft_segments_xml(num_segments, config, seg_length, seg_mass)
-    )
+    )  # noqa: E501
     xml_parts.extend(_generate_clubhead_xml(num_segments, config, seg_length))
 
     for i in range(num_segments):
@@ -396,14 +396,14 @@ def _generate_shaft_segments_xml(
                 f'{indent}         range="-0.{15 + i * 5} 0.{15 + i * 5}" '
                 f'damping="{damping:.2f}" stiffness="{stiffness}" armature="0.001"/>',
                 f'{indent}  <inertial pos="0 0 -{seg_length / 2:.4f}" '
-                f'mass="{seg_mass:.4f}"',
+                f'mass="{seg_mass:.4f}"',  # noqa: E501
                 f'{indent}            diaginertia="{seg_mass * seg_length**2 / 12:.8f} '
                 f"{seg_mass * seg_length**2 / 12:.8f} "
                 f'{seg_mass * shaft_radius**2 / 2:.8f}"/>',
                 f'{indent}  <geom name="{seg_name}_geom" type="capsule" '
                 f'fromto="0 0 0 0 0 -{seg_length:.4f}"',
                 f'{indent}        size="{shaft_radius:.4f}" '
-                f'material="club_shaft_mat"/>',
+                f'material="club_shaft_mat"/>',  # noqa: E501
             ],
         )
     return xml_parts
@@ -438,7 +438,7 @@ def _generate_clubhead_xml(
         f'{indent}  <inertial pos="0 0.02 -0.01" mass="0.010"',
         f'{indent}            diaginertia="0.000005 0.000005 0.000002"/>',
         f'{indent}  <geom name="hosel_geom" type="cylinder" '
-        f'fromto="0 0 0 0 0.030 -0.005"',
+        f'fromto="0 0 0 0 0.030 -0.005"',  # noqa: E501
         f'{indent}        size="0.008" material="club_head_mat"/>',
         f'{indent}  <body name="clubhead" pos="0 0.040 -0.008">',
         f'{indent}    <inertial pos="0 {h_h / 2:.4f} 0.002" mass="{head_mass:.4f}"',
@@ -449,7 +449,7 @@ def _generate_clubhead_xml(
         f'{indent}    <geom name="face" type="box"',
         f'{indent}          size="{h_w + 0.001:.4f} 0.003 {h_d + 0.001:.4f}"',
         f'{indent}          pos="0 {h_h * 2 + 0.003:.4f} 0" '
-        f'rgba="0.85 0.15 0.15 0.9"/>',
+        f'rgba="0.85 0.15 0.15 0.9"/>',  # noqa: E501
         f"{indent}  </body>",
         f"{indent}</body>",
     ]

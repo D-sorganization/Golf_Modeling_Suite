@@ -12,6 +12,15 @@ import sys
 from pathlib import Path
 
 from src.launchers.base import REPO_ROOT, BaseLauncher, LaunchItem, run_launcher
+from src.shared.python.security.secure_subprocess import (
+    SecureSubprocessError,
+    secure_popen,
+)
+
+
+def _spawn_process(command: list[str], cwd: object) -> None:
+    """Spawn a launcher subprocess through the secure wrapper."""
+    secure_popen(command, cwd=cwd, suite_root=REPO_ROOT)
 
 
 def _make_subprocess_env(repo_root: Path) -> dict[str, str]:

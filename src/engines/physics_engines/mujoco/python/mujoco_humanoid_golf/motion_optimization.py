@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
+
 """Motion optimization and trajectory planning for golf swing.
 
 This module provides advanced optimization tools for generating optimal
@@ -261,16 +265,19 @@ class SwingOptimizer:
 
         if variation == "speed":
             speeds = np.linspace(30.0, 55.0, num_swings)
-            for speed in speeds:
-                result = self.optimize_swing_for_speed(target_speed=speed)
-                swings.append(result)
+            return [
+                self.optimize_swing_for_speed(target_speed=float(speed))
+                for speed in speeds
+            ]
 
         elif variation == "accuracy":
             base_pos = np.array([2.0, 0.0, 0.0])
-            for i in range(num_swings):
-                offset = np.array([0, (i - num_swings / 2) * 0.2, 0])
-                target = base_pos + offset
-                result = self.optimize_swing_for_accuracy(target_position=target)
-                swings.append(result)
+            return [
+                self.optimize_swing_for_accuracy(
+                    target_position=base_pos
+                    + np.array([0, (i - num_swings / 2) * 0.2, 0])
+                )
+                for i in range(num_swings)
+            ]
 
         return swings

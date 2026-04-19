@@ -7,7 +7,7 @@ simplified, chainable interface suitable for scripting, API backends, and tests.
 See issue #407.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
 import ast
 import logging
@@ -15,7 +15,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-import pandas as pd
+import pandas as pd  # noqa: E402
+from contracts import require  # noqa: E402
 
 logger = logging.getLogger(__name__)
 SUPPORTED_FILTER_TYPES = {"butterworth", "moving_average", "median", "savgol"}
@@ -269,6 +270,11 @@ class DataProcessor:
 
         Uses the core ``resample_data`` when available, else falls back to
         pandas interpolation.
+
+        Args:
+            target_rate: Target sample rate in Hz. Must be positive.
+            time_column: Column containing time values. Auto-detected if None.
+            method: Interpolation method ('linear', 'cubic', etc.).
         """
         if not (target_rate is not None):
             raise ValueError("target_rate must be provided")

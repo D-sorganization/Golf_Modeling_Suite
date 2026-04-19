@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """
 Local-first API server for Golf Modeling Suite.
 
@@ -34,9 +38,18 @@ mimetypes.add_type("image/png", ".png")
 mimetypes.add_type("image/jpeg", ".jpg")
 mimetypes.add_type("image/x-icon", ".ico")
 
-# Ensure we're running in local mode
+# Ensure we're running in local mode with explicit security configuration
 os.environ.setdefault("GOLF_SUITE_MODE", "local")
-os.environ.setdefault("GOLF_AUTH_DISABLED", "true")
+# Auth is disabled ONLY in local mode for development convenience.
+# This is an intentional security boundary: local servers have NO auth by design.
+# Production servers MUST NOT use local_server.py and MUST enforce authentication.
+# See issue #2714 for security hardening requirements.
+if os.environ.get("GOLF_SUITE_MODE") == "local":
+    os.environ.setdefault("GOLF_AUTH_DISABLED", "true")
+else:
+    # Production and other modes: auth is REQUIRED unless explicitly overridden
+    # by deployment configuration (e.g., cloud IAM, OAuth2 middleware)
+    os.environ.setdefault("GOLF_AUTH_DISABLED", "false")
 
 # NOTE: These imports are placed after env setup intentionally
 # The environment variables must be set before FastAPI initialization
@@ -144,14 +157,13 @@ def _load_launcher_manifest() -> dict[str, Any]:
     Returns:
         Parsed manifest dict, or a default empty manifest if not found.
     """
-    import json
+    from src.config.launcher_manifest_loader import LauncherManifest
 
-    manifest_path = Path(__file__).parent.parent / "config" / "launcher_manifest.json"
-    if manifest_path.exists():
-        with open(manifest_path, encoding="utf-8") as f:
-            result: dict[str, Any] = json.load(f)
-            return result
-    return {"version": "1.0.0", "tiles": []}
+    try:
+        return LauncherManifest.load().to_dict()
+    except (FileNotFoundError, ValueError, OSError) as exc:
+        logger.error("[launch] Failed to load launcher manifest: %s", exc)
+        return {"version": "1.0.0", "tiles": []}
 
 
 def _find_logo_file(logo_name: str) -> Path | None:
@@ -185,15 +197,10 @@ def _find_tile_in_manifest(
     Returns:
         Tuple of (manifest dict, tile dict) or (None, None) if not found.
     """
-    import json as _json
-
-    manifest_path = Path(__file__).parent.parent / "config" / "launcher_manifest.json"
-    if not manifest_path.exists():
-        logger.error("[launch] Manifest not found at %s", manifest_path)
+    manifest = _load_launcher_manifest()
+    if not manifest.get("tiles"):
+        logger.error("[launch] Manifest not available for tile lookup")
         return None, None
-
-    with open(manifest_path, encoding="utf-8") as f:
-        manifest = _json.load(f)
 
     for t in manifest.get("tiles", []):
         if t.get("id") == tile_id:

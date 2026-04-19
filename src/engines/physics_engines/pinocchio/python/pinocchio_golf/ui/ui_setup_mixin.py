@@ -98,7 +98,7 @@ class UISetupMixin:
 
     def _setup_visualization_panel(
         self: PinocchioGUI, sim_layout: QtWidgets.QVBoxLayout
-    ) -> None:
+    ) -> None:  # noqa: E501
         """Build the visualization group box."""
         if not (sim_layout is not None):
             raise ValueError("sim_layout must be provided")
@@ -123,7 +123,7 @@ class UISetupMixin:
         self.chk_live_analysis = QtWidgets.QCheckBox("Live Analysis (Induced/CF)")
         self.chk_live_analysis.setToolTip(
             "Compute Induced Accelerations and Counterfactuals in real-time "
-            "(Can slow down sim)"
+            "(Can slow down sim)"  # noqa: E501
         )
         self.chk_live_analysis.toggled.connect(self.on_live_analysis_toggled)
         vis_layout.addWidget(self.chk_live_analysis)
@@ -257,7 +257,7 @@ class UISetupMixin:
         self.btn_record.setCheckable(True)
         self.btn_record.setStyleSheet(
             "QPushButton:checked { background-color: #ffcccc; }"
-        )
+        )  # noqa: E501
         self.btn_record.clicked.connect(self._toggle_recording)
         rec_layout.addWidget(self.btn_record)
 

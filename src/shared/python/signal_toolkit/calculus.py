@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Differentiation and integration utilities for signals.
 
 This module provides tools for computing derivatives, integrals,
@@ -334,11 +338,11 @@ class Integrator:
         )
 
         # Compute positive and negative areas
-        area_positive = _trapz(np.maximum(y_range, 0), t_range)
-        area_negative = _trapz(np.minimum(y_range, 0), t_range)
+        area_positive = float(_trapz(np.maximum(y_range, 0), t_range))
+        area_negative = float(_trapz(np.minimum(y_range, 0), t_range))
 
         return IntegralResult(
-            value=value,
+            value=float(value),
             lower_bound=lower_bound,
             upper_bound=upper_bound,
             cumulative_signal=cumulative_signal,
@@ -584,7 +588,7 @@ def compute_arc_length(
     # Arc length element: ds = sqrt(1 + (dy/dt)^2) * dt
     ds = np.sqrt(1 + y_prime**2)
 
-    return _trapz(ds, signal.time)
+    return float(_trapz(ds, signal.time))
 
 
 def find_extrema(

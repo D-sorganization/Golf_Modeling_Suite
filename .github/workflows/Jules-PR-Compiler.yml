@@ -17,8 +17,12 @@ permissions:
   pull-requests: write
 
 jobs:
-  compile-prs:
-    runs-on: ubuntu-latest
+  # ── Dispatcher: route to self-hosted if available ──────────────────────────
+  pick-runner:
+    runs-on: d-sorg-fleet
+    timeout-minutes: 2
+    outputs:
+      runner: ${{ steps.check.outputs.runner }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -27,7 +31,7 @@ jobs:
       - name: Analyze Open PRs
         id: analyze
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
           mkdir -p .jules/pr_compiler
 
@@ -98,7 +102,7 @@ jobs:
       - name: Compile PRs
         if: steps.analyze.outputs.skip != 'true' && steps.groups.outputs.has_compilable == 'true' && inputs.dry_run != true
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
           # Process each compilable group
           python3 << 'PYEOF'
@@ -239,7 +243,7 @@ jobs:
       - name: Cleanup Merged PR Branches
         if: steps.analyze.outputs.skip != 'true' && steps.groups.outputs.has_compilable == 'true' && inputs.dry_run != true
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
           # Note: Individual PRs are closed via "Closes #N" in the compiled PR body
           # This step just cleans up tracking

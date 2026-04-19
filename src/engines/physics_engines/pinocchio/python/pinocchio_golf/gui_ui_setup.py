@@ -126,7 +126,7 @@ class UISetupMixin:
 
     def _setup_visualization_panel(
         self: Any, sim_layout: QtWidgets.QVBoxLayout
-    ) -> None:
+    ) -> None:  # noqa: E501
         """Build the visualization group box."""
         if not (sim_layout is not None):
             raise ValueError("sim_layout must be provided")
@@ -151,7 +151,7 @@ class UISetupMixin:
         self.chk_live_analysis = QtWidgets.QCheckBox("Live Analysis (Induced/CF)")
         self.chk_live_analysis.setToolTip(
             "Compute Induced Accelerations and Counterfactuals in real-time "
-            "(Can slow down sim)"
+            "(Can slow down sim)"  # noqa: E501
         )
         self.chk_live_analysis.toggled.connect(self._on_live_analysis_toggled)
         vis_layout.addWidget(self.chk_live_analysis)
@@ -228,7 +228,7 @@ class UISetupMixin:
         self.combo_induced.addItems(["gravity", "velocity", "total"])
         self.combo_induced.setToolTip(
             "Select source (e.g. gravity) or type "
-            "specific torque vector in comma-sep form"
+            "specific torque vector in comma-sep form"  # noqa: E501
         )
 
         # Use lineEdit signal to avoid lag on keystrokes
@@ -275,7 +275,7 @@ class UISetupMixin:
 
     def _setup_matrix_analysis_panel(
         self: Any, sim_layout: QtWidgets.QVBoxLayout
-    ) -> None:
+    ) -> None:  # noqa: E501
         """Build the matrix analysis group box."""
         if not (sim_layout is not None):
             raise ValueError("sim_layout must be provided")
@@ -311,7 +311,7 @@ class UISetupMixin:
         self.btn_record.setCheckable(True)
         self.btn_record.setStyleSheet(
             "QPushButton:checked { background-color: #ffcccc; }"
-        )
+        )  # noqa: E501
         self.btn_record.clicked.connect(self._toggle_recording)
         rec_layout.addWidget(self.btn_record)
 
@@ -408,7 +408,7 @@ class UISetupMixin:
 
         slider.valueChanged.connect(
             lambda val, s=spin, k=idx: self._on_slider(val, s, k)
-        )
+        )  # noqa: E501
         spin.valueChanged.connect(lambda val, s=slider, k=idx: self._on_spin(val, s, k))
 
         r_layout.addWidget(slider)

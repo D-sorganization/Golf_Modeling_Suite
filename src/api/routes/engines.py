@@ -45,6 +45,24 @@ def _sanitize_for_json(obj: Any) -> Any:
     return obj
 
 
+
+def _sanitize_for_json(obj: Any) -> Any:
+    """Recursively convert numpy arrays and other non-JSON types to native Python."""
+    import numpy as np
+
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    if isinstance(obj, np.integer):
+        return int(obj)
+    if isinstance(obj, np.floating):
+        return float(obj)
+    if isinstance(obj, dict):
+        return {k: _sanitize_for_json(v) for k, v in obj.items()}
+    if isinstance(obj, list | tuple):
+        return [_sanitize_for_json(v) for v in obj]
+    return obj
+
+
 router = APIRouter()
 
 
@@ -283,8 +301,11 @@ async def get_engine_capabilities(
     capability_list = []
     summary = {"full": 0, "partial": 0, "none": 0}
 
+    valid_levels = {"full", "partial", "none"}
     for key, level in caps_dict.items():
-        if key == "engine_name":
+        if key in ("engine_name", "spatial_jacobian_order"):
+            continue
+        if level not in valid_levels:
             continue
         supported = level != "none"
         capability_list.append(

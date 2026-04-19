@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Deformable object simulation classes."""
 
 from __future__ import annotations
@@ -374,7 +378,10 @@ class Cable(DeformableObject):
 
         if rest_lengths is None:
             # Compute from initial mesh
-            self._rest_lengths = np.linalg.norm(np.diff(mesh, axis=0), axis=1)
+            # ⚡ Bolt: np.einsum is much faster than np.sum(np.square(...), axis=-1)
+            # and avoids temporary array allocations
+            diffs = np.diff(mesh, axis=0)
+            self._rest_lengths = np.sqrt(np.einsum("ij,ij->i", diffs, diffs))
         else:
             self._rest_lengths = rest_lengths
 
@@ -392,7 +399,9 @@ class Cable(DeformableObject):
             Current total length.
         """
         segments = np.diff(self._mesh, axis=0)
-        return float(np.sum(np.linalg.norm(segments, axis=1)))
+        # ⚡ Bolt: np.einsum is much faster than np.sum(np.square(...), axis=-1)
+        # and avoids temporary array allocations
+        return float(np.sum(np.sqrt(np.einsum("ij,ij->i", segments, segments))))
 
     def get_tension(self) -> float:
         """Get average cable tension.
@@ -402,7 +411,9 @@ class Cable(DeformableObject):
         """
         forces = self.compute_internal_forces()
         # Average force magnitude
-        return float(np.mean(np.linalg.norm(forces, axis=1)))
+        # ⚡ Bolt: np.einsum is much faster than np.sum(np.square(...), axis=-1)
+        # and avoids temporary array allocations
+        return float(np.mean(np.sqrt(np.einsum("ij,ij->i", forces, forces))))
 
     def compute_internal_forces(self) -> NDArray[np.floating]:
         """Compute spring and bending forces.

@@ -42,7 +42,7 @@ class GolfLauncher(QtWidgets.QMainWindow):
         self.drake_path = self.repos_dir / "Drake_Golf_Model/python/src/golf_gui.py"
         self.pinocchio_path = (
             self.repos_dir / "Pinocchio_Golf_Model/python/pinocchio_golf/gui.py"
-        )
+        )  # noqa: E501
 
         self._setup_ui()
 
@@ -96,7 +96,7 @@ class GolfLauncher(QtWidgets.QMainWindow):
         if not path.exists():
             QtWidgets.QMessageBox.critical(
                 self, "Error", f"Could not find script:\n{path}"
-            )
+            )  # noqa: E501
             self.status.setText("Error")
             return
 
@@ -108,7 +108,7 @@ class GolfLauncher(QtWidgets.QMainWindow):
         except (OSError, subprocess.SubprocessError) as e:
             QtWidgets.QMessageBox.critical(
                 self, "Error", f"Failed to launch {name}:\n{e}"
-            )
+            )  # noqa: E501
             self.status.setText("Error")
 
     def _launch_mujoco(self) -> None:

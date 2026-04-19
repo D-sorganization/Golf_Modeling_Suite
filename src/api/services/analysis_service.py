@@ -416,6 +416,6 @@ class AnalysisService:
             return list(data.tolist())
         if isinstance(data, (list, tuple)):
             return list(data)
-        if isinstance(data, (int, float)):
+        if isinstance(data, int | float):
             return [data]
         return []

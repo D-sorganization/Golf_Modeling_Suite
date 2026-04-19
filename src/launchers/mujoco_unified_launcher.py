@@ -6,10 +6,20 @@ Hub for accessing MuJoCo Humanoid Simulation and Analysis Dashboard.
 Refactored to use BaseLauncher to eliminate DRY violations.
 """
 
-import subprocess
 import sys
 
 from src.launchers.base import REPO_ROOT, BaseLauncher, LaunchItem, run_launcher
+from src.shared.python.security.secure_subprocess import (
+    SecureSubprocessError,
+    secure_popen,
+)
+
+
+def _spawn_process(
+    command: list[str], cwd: object, env: dict[str, str] | None = None
+) -> None:
+    """Spawn a launcher subprocess through the secure wrapper."""
+    secure_popen(command, cwd=cwd, suite_root=REPO_ROOT, env=env)
 
 
 class MujocoUnifiedLauncher(BaseLauncher):

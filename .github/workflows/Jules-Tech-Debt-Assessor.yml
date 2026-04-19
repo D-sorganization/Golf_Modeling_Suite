@@ -26,8 +26,12 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  assess-technical-debt:
-    runs-on: ubuntu-latest
+  # ── Dispatcher: route to self-hosted if available ──────────────────────────
+  pick-runner:
+    runs-on: d-sorg-fleet
+    timeout-minutes: 2
+    outputs:
+      runner: ${{ steps.check.outputs.runner }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -449,7 +453,7 @@ jobs:
       - name: Create GitHub Issue for Critical Debt
         if: inputs.create_issues != false
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
           DEBT_SCORE: ${{ steps.report.outputs.debt_score }}
           SEVERITY: ${{ steps.report.outputs.severity }}
           REPORT_FILE: ${{ steps.report.outputs.report_file }}
@@ -504,7 +508,7 @@ jobs:
 
       - name: Commit and Push Report
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

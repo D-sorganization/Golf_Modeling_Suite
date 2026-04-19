@@ -1,12 +1,13 @@
 """Utilities for analyzing Python code quality and structure."""
 
 import ast
-import logging
 import re
 from pathlib import Path
 from typing import Any
 
-logger = logging.getLogger(__name__)
+from src.shared.python.logging_pkg.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 def get_python_metrics(file_path: Path) -> dict[str, Any]:
@@ -60,9 +61,22 @@ def assess_error_handling_content(content: str) -> dict[str, int]:
 
 def assess_logging_content(content: str) -> dict[str, int]:
     """Count logging vs print usage in content."""
+    print_usage = 0
+    try:
+        tree = ast.parse(content)
+        for node in ast.walk(tree):
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Name)
+                and node.func.id == "print"
+            ):
+                print_usage += 1
+    except SyntaxError:
+        print_usage = len(re.findall(r"(?<!\w)print\s*\(", content))
+
     return {
         "logging_usage": len(re.findall(r"logging\.|logger\.", content)),
-        "print_usage": content.count("print("),
+        "print_usage": print_usage,
     }
 
 

@@ -152,7 +152,7 @@ class DrakeSimApp(  # type: ignore[misc, no-any-unimported]
         self.current_urdf_path: str | None = None
         self.available_models: list[dict] = [
             {"name": "Default Golf Model", "path": None}
-        ]
+        ]  # noqa: E501
         self._scan_urdf_models()
 
         # Initialize Simulation
@@ -174,13 +174,11 @@ class DrakeSimApp(  # type: ignore[misc, no-any-unimported]
         if not self.plant:
             return []
 
-        names = []
-        for i in range(self.plant.num_joints()):
-            joint = self.plant.get_joint(JointIndex(i))
-            # Only include 1-DOF joints for simplicity in plotting mapping
-            if joint.num_velocities() == 1:
-                names.append(joint.name())
-        return names
+        return [
+            self.plant.get_joint(JointIndex(i)).name()
+            for i in range(self.plant.num_joints())
+            if self.plant.get_joint(JointIndex(i)).num_velocities() == 1
+        ]
 
     def _scan_urdf_models(self) -> None:
         """Scan shared/urdf for models."""
@@ -203,7 +201,7 @@ class DrakeSimApp(  # type: ignore[misc, no-any-unimported]
                     name = urdf_file.stem.replace("_", " ").title()
                     self.available_models.append(
                         {"name": f"URDF: {name}", "path": str(urdf_file)}
-                    )
+                    )  # noqa: E501
         except (FileNotFoundError, OSError) as e:
             LOGGER.error(f"Failed to scan URDF models: {e}")
 
@@ -236,7 +234,7 @@ class DrakeSimApp(  # type: ignore[misc, no-any-unimported]
             params = GolfModelParams()
             self.diagram, self.plant, _ = build_golf_swing_diagram(
                 params, meshcat=self.meshcat
-            )
+            )  # noqa: E501
 
         if self.diagram is None:
             builder = DiagramBuilder()

@@ -20,8 +20,6 @@ import logging
 from ...constants import HUNDRED_FEET_IN_METERS, METERS_TO_INCHES
 from ..models.pressure_drop_data_models import (
     FlowProperties,
-    GasComposition,
-    PipeFitting,
     PressureDropInputs,
     PressureDropResults,
 )

@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """
 Golf Swing Analyzer.
 
@@ -88,7 +92,7 @@ class SwingAnalyzer:
         self.min_confidence = min_confidence
         self.smoothing_window = smoothing_window
 
-    @precondition(
+    @precondition(  # fmt: skip
         lambda self,
         video_path,
         stance=StanceDirection.UNKNOWN,

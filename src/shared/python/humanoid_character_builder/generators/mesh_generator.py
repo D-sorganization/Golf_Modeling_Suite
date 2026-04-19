@@ -1,10 +1,4 @@
-"""
-Mesh generation interfaces for humanoid character builder.
-
-This module defines interfaces for mesh generation backends
-(MakeHuman, SMPL, etc.) and provides a factory for creating
-mesh generators.
-"""
+"""Thin facade for humanoid mesh-generator backends."""
 
 from __future__ import annotations
 

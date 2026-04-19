@@ -38,7 +38,7 @@ class VisualizationMixin:
             except TypeError:
                 logger.warning(
                     "Meshcat Visualizer: server_args not supported. Using default."
-                )
+                )  # noqa: E501
                 self.viewer = viz.Visualizer()
 
             url = self.viewer.url() if callable(self.viewer.url) else self.viewer.url
@@ -71,7 +71,7 @@ class VisualizationMixin:
             or self.data is None
             or self.q is None
             or self.viz is None
-        ):
+        ):  # noqa: E501
             return
 
         # Update Visuals via Pinocchio Visualizer
@@ -112,7 +112,7 @@ class VisualizationMixin:
         pin.computeJointJacobians(self.model, self.data, self.q)
         J = pin.getJointJacobian(
             self.model, self.data, joint_id, pin.ReferenceFrame.LOCAL
-        )
+        )  # noqa: E501
 
         try:
             s = np.linalg.svd(J, compute_uv=False)
@@ -157,7 +157,7 @@ class VisualizationMixin:
                     if (
                         self.chk_mobility.isChecked()
                         and res.mobility_matrix is not None
-                    ):
+                    ):  # noqa: E501
                         path_name = f"{res.body_name}/mobility"
                         radii = res.velocity_ellipsoid.radii
                         self._draw_ellipsoid_meshcat(
@@ -171,7 +171,7 @@ class VisualizationMixin:
                     if (
                         self.chk_force_ellip.isChecked()
                         and res.force_matrix is not None
-                    ):
+                    ):  # noqa: E501
                         path_name = f"{res.body_name}/force"
                         radii = res.force_ellipsoid.radii
                         self._draw_ellipsoid_meshcat(

@@ -63,7 +63,7 @@ class AnalysisTab(QtWidgets.QWidget):
         self.total_energy_label = QtWidgets.QLabel("--")
         self.recording_label = QtWidgets.QLabel(
             "Not recording"
-        )  # Added for update_metrics logic
+        )  # Added for update_metrics logic  # noqa: E501
         self.recording_label.setStyleSheet(Styles.RECORDING_IDLE)
 
         self.recording_time_label = QtWidgets.QLabel("--")
@@ -220,7 +220,7 @@ class AnalysisTab(QtWidgets.QWidget):
                     "provenance": {
                         "software": (
                             f"{provenance.software_name} v{provenance.software_version}"
-                        ),
+                        ),  # noqa: E501
                         "timestamp_utc": provenance.timestamp_utc,
                         "git_commit": provenance.git_commit_sha,
                         "git_branch": provenance.git_branch,

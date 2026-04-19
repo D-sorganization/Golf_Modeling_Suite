@@ -12,8 +12,12 @@ permissions:
   pull-requests: read
 
 jobs:
-  generate-metrics:
-    runs-on: ubuntu-latest
+  # ── Dispatcher: route to self-hosted if available ──────────────────────────
+  pick-runner:
+    runs-on: d-sorg-fleet
+    timeout-minutes: 2
+    outputs:
+      runner: ${{ steps.check.outputs.runner }}
     steps:
       - uses: actions/checkout@v6
 

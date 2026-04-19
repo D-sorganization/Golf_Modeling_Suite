@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Core Data Processing Engine.
 
 Provides headless data manipulation, filtering, and analysis capabilities.
@@ -19,6 +23,11 @@ import numpy as np
 import pandas as pd
 from scipy.signal import butter, filtfilt, medfilt, savgol_filter
 
+from src.shared.python.data_processing.processor import (
+    _validate_dataframe_expression,
+)
+from src.shared.python.logging_pkg.logging_config import get_logger
+
 from ..calculators.base import BaseCalculationEngine
 from .exceptions import (
     ColumnNotFoundError,
@@ -31,7 +40,7 @@ from .exceptions import (
 )
 from .io import DataReader, DataWriter
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # ---------------------------------------------------------------------------
 # Expression validation (security -- issue #2065)
@@ -613,7 +622,9 @@ class DataProcessorEngine(BaseCalculationEngine):
                     )
                 ]
             else:
-                self.data = self.data.query(f"{column} {operator} @value")
+                expr = f"{column} {operator} @value"
+                _validate_dataframe_expression(expr.replace("@", ""))
+                self.data = self.data.query(expr)
             return ProcessingResult(success=True, message="Filtered", data=self.data)
         except (KeyError, ValueError, TypeError, SyntaxError) as e:
             self._undo()
@@ -630,6 +641,14 @@ class DataProcessorEngine(BaseCalculationEngine):
             raise DataNotLoadedError("No data loaded")
         if not expression:
             raise FilterError("Query expression must not be empty")
+
+        # Security: validate the expression before passing to DataFrame.query()
+        # which can execute arbitrary Python code.
+        try:
+            _validate_dataframe_expression(expression)
+        except ValueError as exc:
+            raise FilterError(str(exc)) from exc
+
         self._save_undo_state()
         try:
             self.data = self.data.query(expression)

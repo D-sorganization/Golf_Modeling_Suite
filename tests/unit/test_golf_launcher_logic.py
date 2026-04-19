@@ -5,7 +5,8 @@ Unit tests for GolfLauncher GUI logic (Model selection, Launching).
 import sys
 from collections.abc import Generator
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -290,22 +291,18 @@ class TestGolfLauncherLogic:
         """Test proper initialization of the launcher."""
         from src.launchers.golf_launcher import GolfLauncher
 
-        # Setup mock registry
-        registry_instance = mock_registry.return_value
-        registry_instance.get_all_models.return_value = []
-
-        # Setup mock thread
         thread_instance = mock_thread.return_value
         thread_instance.result = MagicMock()
 
         launcher = GolfLauncher()
+        qtbot.addWidget(launcher)
+
         launcher.engine_manager = MagicMock()
         launcher.btn_launch.setEnabled(False)
 
-        assert launcher.windowTitle() == "Golf Modeling Suite - GolfingRobot"
+        assert "UpstreamDrift" in launcher.windowTitle()
         mock_thread.return_value.start.assert_called_once()
 
-        # Verify UI components exist
         assert hasattr(launcher, "grid_layout")
         assert hasattr(launcher, "btn_launch")
 
@@ -318,41 +315,35 @@ class TestGolfLauncherLogic:
         """Test that selecting a model updates the launch button."""
         from src.launchers.golf_launcher import GolfLauncher
 
-        # Setup registry with one model
-        mock_model = Mock()
-        mock_model.name = "Test Model"
-        mock_model.description = "Desc"
-        mock_model.id = "test_model"
-        mock_model.type = "mujoco"
-
-        registry_instance = mock_registry.return_value
-        registry_instance.get_all_models.return_value = [mock_model]
-        registry_instance.get_model.return_value = mock_model
-
         launcher = GolfLauncher()
+        qtbot.addWidget(launcher)
+
+        mock_model = SimpleNamespace(
+            name="Test Model", description="Desc", id="test_model", type="mujoco"
+        )
+
+        launcher.registry = MagicMock()
+        launcher.registry.get_all_models.return_value = [mock_model]
+        launcher.registry.get_model.return_value = mock_model
+        launcher._build_available_models()
+
         launcher.engine_manager = MagicMock()
         launcher.btn_launch.setEnabled(False)
 
-        # Initial state: No Docker, No Model
         assert launcher.btn_launch.isEnabled() is False
 
-        # Simulate Docker becoming available
         launcher.on_docker_check_complete(True)
         assert launcher.docker_available is True
 
-        # Initial selection logic might have selected test_model since it's the only one
-        # Let's verify or reset
         launcher.selected_model = None
         launcher.btn_launch.setEnabled(False)
         launcher.btn_launch.setText("SELECT A MODEL")
 
-        # Select by ID
         launcher.select_model("test_model")
 
         assert launcher.selected_model == "test_model"
         assert launcher.btn_launch.isEnabled() is True
-        # The button text should contain the NAME, upper case
-        assert "TEST MODEL" in launcher.btn_launch.text()
+        assert mock_model.name.upper() in launcher.btn_launch.text().upper()
 
     @pytest.mark.skip(
         reason="GolfLauncher construction hangs in CI (mixed mock/real Qt segfaults)",
@@ -365,45 +356,44 @@ class TestGolfLauncherLogic:
         """Test launch simulation logic."""
         from src.launchers.golf_launcher import GolfLauncher
 
-        mock_model = Mock()
-        mock_model.name = "Test Model"
-        mock_model.path = "engines/test"
-        mock_model.id = "test_model"
-        mock_model.type = "docker"
-
-        registry_instance = mock_registry.return_value
-        registry_instance.get_all_models.return_value = [mock_model]
-        registry_instance.get_model.return_value = mock_model
-
         launcher = GolfLauncher()
+        qtbot.addWidget(launcher)
+
+        mock_model = SimpleNamespace(
+            name="Test Model", path="engines/test", id="test_model", type="docker"
+        )
+        launcher.registry = MagicMock()
+        launcher.registry.get_all_models.return_value = [mock_model]
+        launcher.registry.get_model.return_value = mock_model
+        launcher._build_available_models()
+
         launcher.engine_manager = MagicMock()
         launcher.btn_launch.setEnabled(False)
         launcher.docker_available = True
+
+        # Patch docker_launcher
+        launcher.docker_launcher = MagicMock()
+        launcher.docker_launcher.check_image_exists.return_value = True
+        launcher.docker_launcher.launch_container.return_value = MagicMock()
+
+        # Check docker requires setting the actual checkbox
+        launcher.chk_docker.setChecked(True)
+
         launcher.select_model("test_model")
 
-        # Mock subprocess
         with (
-            patch("src.launchers.golf_launcher.subprocess.Popen") as mock_popen,
             patch.object(Path, "exists", return_value=True),
-            patch("os.name", "posix"),
+            patch(
+                "src.launchers.launcher_simulation.resolve_model_artifact_path",
+                return_value=Path("engines/test"),
+            ),
         ):
-            # We need to verify _launch_docker_container is called essentially
-            # because type is "docker" (not custom)
-
             launcher.launch_simulation()
 
-            mock_popen.assert_called()
-            args = mock_popen.call_args[0][0]
-            assert args[0] == "docker"
-            assert args[1] == "run"
-            assert args[1] == "run"
-            # Verify volume mount path logic: args[5] should be the
-            # '-v REPOS_ROOT:/workspace' argument.
-            assert "UpstreamDrift" in args[5] or "workspace" in args[5]
-            # Also check working directory is set to /workspace
-            assert "-w" in args
-            idx = args.index("-w")
-            assert args[idx + 1] == "/workspace"
+        launcher.docker_launcher.launch_container.assert_called_once()
+        args, kwargs = launcher.docker_launcher.launch_container.call_args
+        assert kwargs["model_type"] == "docker"
+        assert kwargs["model_name"] == "Test Model"
 
     @pytest.mark.skip(
         reason="GolfLauncher construction hangs in CI (mixed mock/real Qt segfaults)",
@@ -414,30 +404,46 @@ class TestGolfLauncherLogic:
         """Test launching a generic MJCF file."""
         from src.launchers.golf_launcher import GolfLauncher
 
-        mock_model = Mock()
-        mock_model.name = "Generic MJCF"
-        mock_model.path = "engines/test/model.xml"
-        mock_model.id = "generic_mjcf"
-        mock_model.type = "mjcf"
-
-        registry_instance = mock_registry.return_value
-        registry_instance.get_all_models.return_value = [mock_model]
-        registry_instance.get_model.return_value = mock_model
-
         launcher = GolfLauncher()
+        qtbot.addWidget(launcher)
+
+        mock_model = SimpleNamespace(
+            name="Generic MJCF",
+            path="engines/test/model.xml",
+            id="generic_mjcf",
+            type="mjcf",
+        )
+        launcher.registry = MagicMock()
+        launcher.registry.get_all_models.return_value = [mock_model]
+        launcher.registry.get_model.return_value = mock_model
+        launcher._build_available_models()
+
         launcher.engine_manager = MagicMock()
         launcher.btn_launch.setEnabled(False)
         launcher.docker_available = True
         launcher.select_model("generic_mjcf")
 
+        # Fake check local dependencies
+        launcher._check_local_dependencies = MagicMock(return_value=True)
+
+        mock_mujoco = MagicMock()
+        mock_viewer = MagicMock()
+
         with (
-            patch("src.launchers.golf_launcher.subprocess.Popen") as mock_popen,
-            patch.object(Path, "exists", return_value=True),
+            patch.dict(
+                "sys.modules", {"mujoco": mock_mujoco, "mujoco.viewer": mock_viewer}
+            ),
+            patch("src.launchers.launcher_simulation.Path.exists", return_value=False),
+            patch(
+                "src.launchers.launcher_simulation.resolve_model_artifact_path",
+                return_value=Path("engines/test/model.xml"),
+            ),
+            patch(
+                "src.launchers.launcher_model_handlers.ModelHandlerRegistry.get_handler",
+                return_value=None,
+            ),
         ):
             launcher.launch_simulation()
 
-            mock_popen.assert_called()
-            args = mock_popen.call_args[0][0]
-            # Should use sys.executable
-            assert args[0] == sys.executable
-            assert "mujoco.viewer" in args[2]
+            mock_mujoco.MjModel.from_xml_path.assert_called_once()
+            mock_mujoco.viewer.launch.assert_called_once()

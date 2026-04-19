@@ -82,7 +82,7 @@ class AdvancedGolfAnalysisWindow(SimulationGUIBase, AdvancedGuiMethodsMixin):
             else:
                 logger.warning(
                     "Stylesheet not found: %s; using default Qt styling", style_path
-                )
+                )  # noqa: E501
         except ImportError:
             logger.exception("Failed to load stylesheet, using default Qt styling")
 
@@ -539,6 +539,6 @@ class AdvancedGolfAnalysisWindow(SimulationGUIBase, AdvancedGuiMethodsMixin):
         if self.sim_widget.model is not None:
             return [
                 self.sim_widget.get_joint_name(i)
-                for i in range(self.sim_widget.get_num_joints())
+                for i in range(self.sim_widget.get_num_joints())  # noqa: E501
             ]
         return []

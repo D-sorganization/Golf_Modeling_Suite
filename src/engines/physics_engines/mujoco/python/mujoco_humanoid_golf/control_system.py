@@ -329,4 +329,4 @@ class ControlSystem:
                 # Ensure control type is set to polynomial
                 self.actuator_controls[
                     actuator_index
-                ].control_type = ControlType.POLYNOMIAL
+                ].control_type = ControlType.POLYNOMIAL  # noqa: E501

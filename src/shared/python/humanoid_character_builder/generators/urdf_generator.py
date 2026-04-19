@@ -4,6 +4,16 @@ Standalone URDF generator for humanoid characters.
 This module generates complete URDF files from body parameters,
 segment definitions, and computed inertias. It is fully self-contained
 and does not depend on other Golf Modeling Suite modules.
+
+Internal implementation is decomposed into focused sub-modules:
+
+- :mod:`urdf_config`       -- URDFGeneratorConfig dataclass
+- :mod:`urdf_geometry`     -- geometry dict creation and XML rendering
+- :mod:`urdf_joints`       -- joint-type mapping and composite expansion
+- :mod:`urdf_xml_builder`  -- full XML tree assembly
+
+Public API (HumanoidURDFGenerator, URDFGeneratorConfig,
+generate_humanoid_urdf) is fully preserved.
 """
 
 from __future__ import annotations
@@ -43,44 +53,13 @@ from humanoid_character_builder.mesh.primitive_inertia import PrimitiveInertiaCa
 
 logger = logging.getLogger(__name__)
 
-
-@dataclass
-class URDFGeneratorConfig:
-    """Configuration for URDF generation."""
-
-    # Inertia calculation mode
-    inertia_mode: InertiaMode = InertiaMode.PRIMITIVE_APPROXIMATION
-
-    # Density for uniform density calculation (kg/m^3)
-    default_density: float = 1050.0
-
-    # Mesh paths (relative to URDF or package://)
-    mesh_package_name: str | None = None  # e.g., "humanoid_model"
-    visual_mesh_dir: str = "meshes/visual"
-    collision_mesh_dir: str = "meshes/collision"
-
-    # Use mesh for visual geometry (vs primitives)
-    use_mesh_visual: bool = False
-
-    # Use mesh for collision geometry (vs primitives)
-    use_mesh_collision: bool = False
-
-    # Generate collision geometry
-    generate_collision: bool = True
-
-    # Joint configuration
-    default_joint_damping: float = 0.5
-    default_joint_friction: float = 0.0
-
-    # URDF formatting
-    pretty_print: bool = True
-    indent: str = "  "
-
-    # Expand composite joints (gimbal/universal) to multiple revolute joints
-    expand_composite_joints: bool = True
-
-    # Include comments in URDF
-    include_comments: bool = True
+# Re-export URDFGeneratorConfig so existing callers that import it from this
+# module continue to work without change.
+__all__ = [
+    "HumanoidURDFGenerator",
+    "URDFGeneratorConfig",
+    "generate_humanoid_urdf",
+]
 
 
 class HumanoidURDFGenerator:
@@ -106,32 +85,18 @@ class HumanoidURDFGenerator:
         self.config = config or URDFGeneratorConfig()
         self.mesh_inertia_calc = MeshInertiaCalculator(self.config.default_density)
         self.primitive_inertia_calc = PrimitiveInertiaCalculator()
-
-        # Generated data
         self._links: dict[str, GeneratedLink] = {}
         self._joints: list[GeneratedJoint] = []
         self._materials: dict[str, tuple[float, float, float, float]] = {}
 
-    @precondition(
-        lambda params: params is not None,
-        "params must not be None",
-    )
-    @precondition(
-        lambda params: params.height_m > 0,
-        "Height must be positive",
-    )
-    @precondition(
-        lambda params: params.mass_kg > 0,
-        "Mass must be positive",
-    )
+    @precondition(lambda params: params is not None, "params must not be None")
+    @precondition(lambda params: params.height_m > 0, "Height must be positive")
+    @precondition(lambda params: params.mass_kg > 0, "Mass must be positive")
     @postcondition(
-        lambda result: len(result.links) > 0,
-        "Model must have at least one link",
+        lambda result: len(result.links) > 0, "Model must have at least one link"
     )
     def build_model(
-        self,
-        params: BodyParameters,
-        mesh_dir: Path | str | None = None,
+        self, params: BodyParameters, mesh_dir: Path | str | None = None
     ) -> HumanoidModel:
         """
         Build HumanoidModel from body parameters.
@@ -191,22 +156,13 @@ class HumanoidURDFGenerator:
 
         return HumanoidModel(self._links, self._joints)
 
-    @precondition(
-        lambda params: params is not None,
-        "params must not be None",
-    )
-    @precondition(
-        lambda params: params.height_m > 0,
-        "Height must be positive",
-    )
-    @precondition(
-        lambda params: params.mass_kg > 0,
-        "Mass must be positive",
-    )
+    @precondition(lambda params: params is not None, "params must not be None")
+    @precondition(lambda params: params.height_m > 0, "Height must be positive")
+    @precondition(lambda params: params.mass_kg > 0, "Mass must be positive")
     @postcondition(
-        lambda result: len(result) > 0,
-        "URDF output must not be empty",
+        lambda result: _is_valid_xml(result), "Generated URDF must be valid XML"
     )
+    @postcondition(lambda result: len(result) > 0, "URDF output must not be empty")
     def generate(
         self,
         params: BodyParameters,
@@ -244,7 +200,6 @@ class HumanoidURDFGenerator:
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_text(urdf_xml)
             logger.info(f"URDF written to {output_path}")
-
         return urdf_xml
 
 

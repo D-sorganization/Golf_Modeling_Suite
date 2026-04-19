@@ -73,8 +73,6 @@ pie title Issues by Module
 | `./src/shared/python/model_generation/library/repository.py` | 55 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/model_generation/library/repository.py` | 60 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/model_generation/editor/editor_clipboard.py` | 41 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/model_generation/editor/editor_modifications.py` | 49 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/model_generation/editor/editor_modifications.py` | 51 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/model_generation/editor/editor_modifications.py` | 53 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/model_generation/editor/editor_modifications.py` | 55 | Stub | 5 | 3 | 4 |
 | `./src/shared/python/model_generation/builders/base_builder.py` | 191 | Stub | 5 | 3 | 4 |
@@ -133,9 +131,20 @@ pie title Issues by Module
 | `./src/api/utils/error_codes.py` | 101 | # Resource Errors (GMS-RES-XXX) | XXX |
 | `./src/api/utils/error_codes.py` | 106 | # System Errors (GMS-SYS-XXX) | XXX |
 | `./src/shared/models/opensim/opensim-models/Tutorials/doc/styles/site.css` | 3404 | html body { /* HACK: Temporary fix for CONF-15412 */ | HACK |
+| `./src/engines/pendulum_models/tools/matlab_utilities/README.md` | 261 | - TRACKED_TASK, TRACKED_DEFECT, HACK, XXX placeholders | XXX |
+| `./src/engines/physics_engines/drake/tools/matlab_utilities/README.md` | 261 | - TRACKED_TASK, TRACKED_DEFECT, HACK, XXX placeholders | XXX |
+| `./src/engines/physics_engines/pinocchio/tools/matlab_utilities/README.md` | 261 | - TRACKED_TASK, TRACKED_DEFECT, HACK, XXX placeholders | XXX |
+| `./src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab_utilities/README.md` | 261 | - TRACKED_TASK, TRACKED_DEFECT, HACK, XXX placeholders | XXX |
 | `./src/tools/matlab_utilities/scripts/matlab_quality_check.py` | 83 | (r"\bHACK\b", "HACK comment found"), | HACK |
 | `./src/tools/matlab_utilities/scripts/matlab_quality_check.py` | 84 | (r"\bXXX\b", "XXX comment found"), | XXX |
 | `./shared/models/opensim/opensim-models/Tutorials/doc/styles/site.css` | 3404 | html body { /* HACK: Temporary fix for CONF-15412 */ | HACK |
+| `./scripts/refresh_completist_data.py` | 60 | "TRACKED_TASK\|TRACKED_DEFECT\|XXX\|HACK\|TEMP", | XXX |
+| `./vendor/ud-tools/src/tools/matlab_quality_utils.py` | 232 | (r"\bHACK\b", "HACK comment found"), | HACK |
+| `./vendor/ud-tools/src/tools/matlab_quality_utils.py` | 233 | (r"\bXXX\b", "XXX comment found"), | XXX |
+| `./.gaai/core/skills/cross/friction-retrospective/SKILL.md` | 58 | - `signal: high` → automatic promotion candidate (CAND-XXX) | XXX |
+| `./.gaai/core/skills/cross/friction-retrospective/SKILL.md` | 64 | - **High-Signal Events (CAND-XXX):** each candidate with evidence, proposed promotion target, and re | XXX |
+| `./.gaai/core/skills/cross/friction-retrospective/SKILL.md` | 91 | - Promotion candidates (CAND-XXX) with evidence and recommended targets | XXX |
+| `./.gaai/core/skills/cross/friction-retrospective/SKILL.md` | 98 | - Every CAND-XXX has at least 2 supporting evidence entries (or 1 with `signal: high`) | XXX |
 | `./tests/unit/api/test_error_codes.py` | 36 | """Postcondition: All codes follow GMS-XXX-NNN format.""" | XXX |
 | `./tests/unit/utils/test_error_codes.py` | 39 | """Every error code must follow GMS-XXX-NNN pattern.""" | XXX |
 | `./tests/unit/utils/test_error_codes.py` | 42 | assert len(parts) == 3, f"{code.name} doesn't follow GMS-XXX-NNN" | XXX |

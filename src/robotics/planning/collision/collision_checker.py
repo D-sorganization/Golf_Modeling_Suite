@@ -391,8 +391,10 @@ class CollisionChecker:
                     closest_pair = pair
                     point_a = pa
                     point_b = pb
-                    if np.linalg.norm(pb - pa) > 1e-10:
-                        normal = (pb - pa) / np.linalg.norm(pb - pa)
+                    diff = pb - pa
+                    norm = np.linalg.norm(diff)
+                    if norm > 1e-10:
+                        normal = diff / norm
 
             # Check environment
             body_names = self._engine.get_body_names()
@@ -410,8 +412,10 @@ class CollisionChecker:
                         closest_pair = env_pair
                         point_a = pa
                         point_b = pb
-                        if np.linalg.norm(pb - pa) > 1e-10:
-                            normal = (pb - pa) / np.linalg.norm(pb - pa)
+                        diff = pb - pa
+                        norm = np.linalg.norm(diff)
+                        if norm > 1e-10:
+                            normal = diff / norm
 
             computation_time = time.perf_counter() - start_time
 

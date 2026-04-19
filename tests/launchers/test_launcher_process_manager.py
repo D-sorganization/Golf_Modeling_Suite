@@ -75,6 +75,13 @@ def test_get_subprocess_env(manager) -> None:
     assert src_str in env["PYTHONPATH"]
 
 
+def test_get_subprocess_env_includes_extra_python_paths(manager):
+    env = manager.get_subprocess_env((Path("/external/src"), Path("/external/src")))
+    expected = str(Path("/external/src"))
+    assert expected in env["PYTHONPATH"]
+    assert env["PYTHONPATH"].count(expected) == 1
+
+
 @patch("src.launchers.launcher_process_manager.datetime")
 @patch("builtins.open", new_callable=mock_open)
 def test_write_log_line(mock_open_file, mock_datetime, manager) -> None:

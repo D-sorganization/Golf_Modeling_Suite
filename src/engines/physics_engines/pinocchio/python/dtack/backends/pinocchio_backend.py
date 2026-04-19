@@ -83,7 +83,7 @@ class PinocchioBackend:
         """
         if not PINOCCHIO_AVAILABLE:
             msg = (
-                "Pinocchio is required but not installed. Install with: pip install pin"
+                "Pinocchio is required but not installed. Install with: pip install pin"  # noqa: E501
             )
             raise ImportError(msg)
 
@@ -96,7 +96,7 @@ class PinocchioBackend:
         if model_path_obj.suffix == ".urdf":
             self.model, self.collision_model, self.visual_model = (
                 pin.buildModelsFromUrdf(str(model_path_obj), "")
-            )
+            )  # noqa: E501
         else:
             msg = f"Unsupported model format: {model_path_obj.suffix}"
             raise ValueError(msg)
@@ -167,7 +167,7 @@ class PinocchioBackend:
 
     def compute_mass_matrix(
         self, q: npt.NDArray[np.float64]
-    ) -> npt.NDArray[np.float64]:
+    ) -> npt.NDArray[np.float64]:  # noqa: E501
         """Compute mass matrix (CRBA).
 
         Args:
@@ -241,7 +241,7 @@ class PinocchioBackend:
         pin.updateFramePlacements(self.model, self.data)
         result = pin.computeFrameJacobian(
             self.model, self.data, q_arr, frame_id, reference_frame
-        )
+        )  # noqa: E501
         return np.asarray(result, dtype=np.float64)
 
     def forward_kinematics(self, q: npt.NDArray[np.float64]) -> list[pin.SE3]:
