@@ -422,6 +422,14 @@ class TestEngineCapabilitiesAPI:
                 assert "supported" in cap
                 assert cap["level"] in ("full", "partial", "none", "angular_linear")
 
+    def test_metadata_fields_are_filtered(self, client) -> None:
+        """Capability metadata should not leak into the capability list."""
+        resp = client.get("/engines/pendulum/capabilities")
+        assert resp.status_code == 200
+        names = {cap["name"] for cap in resp.json()["capabilities"]}
+        assert "engine_name" not in names
+        assert "spatial_jacobian_order" not in names
+
 
 class TestActuatorEndpoints:
     """Test actuator control endpoints (require loaded engine)."""

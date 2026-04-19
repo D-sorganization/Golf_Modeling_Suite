@@ -54,6 +54,8 @@ class UIBuildHook(BuildHookInterface):
         """Extract the most informative message from a CalledProcessError."""
         return e.stderr or e.stdout or str(e)
 
+    _npm_error_message = _subprocess_error_message
+
     def initialize(self, version: str, build_data: dict) -> None:
         """Initialize build hook."""
         if not (version):

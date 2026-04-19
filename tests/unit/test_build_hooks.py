@@ -1,9 +1,6 @@
 import os
-import subprocess
 import sys
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 
 class DummyHookInterface:
@@ -12,20 +9,20 @@ class DummyHookInterface:
         self.config = config
 
 
-_HATCHLING_MOCKS = {
-    "hatchling": MagicMock(),
-    "hatchling.builders": MagicMock(),
-    "hatchling.builders.hooks": MagicMock(),
-    "hatchling.builders.hooks.plugin": MagicMock(),
-    "hatchling.builders.hooks.plugin.interface": MagicMock(
-        BuildHookInterface=DummyHookInterface
-    ),
-}
+sys.modules["hatchling"] = MagicMock()
+sys.modules["hatchling.builders"] = MagicMock()
+sys.modules["hatchling.builders.hooks"] = MagicMock()
+sys.modules["hatchling.builders.hooks.plugin"] = MagicMock()
+sys.modules["hatchling.builders.hooks.plugin.interface"] = MagicMock()
+sys.modules[
+    "hatchling.builders.hooks.plugin.interface"
+].BuildHookInterface = DummyHookInterface
 
-with patch.dict(sys.modules, _HATCHLING_MOCKS):
-    import build_hooks  # noqa: E402
+import subprocess  # noqa: E402
 
-sys.modules["build_hooks"] = build_hooks
+import pytest  # noqa: E402
+
+import build_hooks  # noqa: E402
 
 
 class DummyConfig:
@@ -96,3 +93,35 @@ def test_ui_build_hook_missing_npm(mock_run, monkeypatch, tmp_path):
         hook.initialize("1.0.0", {})
 
     assert "npm not found" in str(exc.value)
+
+
+def test_ui_dir_property(tmp_path):
+    hook = build_hooks.UIBuildHook(str(tmp_path), {})
+    assert hook._ui_dir == tmp_path / "ui"
+
+
+def test_dist_dir_property(tmp_path):
+    hook = build_hooks.UIBuildHook(str(tmp_path), {})
+    assert hook._dist_dir == tmp_path / "ui" / "dist"
+
+
+def test_force_ui_build_false_by_default(tmp_path):
+    hook = build_hooks.UIBuildHook(str(tmp_path), {})
+    assert hook._force_ui_build() is False
+
+
+def test_force_ui_build_true_when_configured(tmp_path):
+    hook = build_hooks.UIBuildHook(str(tmp_path), {"force_ui_build": True})
+    assert hook._force_ui_build() is True
+
+
+def test_npm_error_message_prefers_stderr():
+    err = subprocess.CalledProcessError(
+        1, "npm", stderr="stderr msg", output="stdout msg"
+    )
+    assert build_hooks.UIBuildHook._npm_error_message(err) == "stderr msg"
+
+
+def test_npm_error_message_falls_back_to_stdout():
+    err = subprocess.CalledProcessError(1, "npm", stderr="", output="stdout msg")
+    assert build_hooks.UIBuildHook._npm_error_message(err) == "stdout msg"

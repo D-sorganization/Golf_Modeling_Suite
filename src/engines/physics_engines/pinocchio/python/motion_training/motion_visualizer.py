@@ -14,7 +14,7 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
 
@@ -449,9 +449,7 @@ class MotionVisualizer:
         else:
             indices = np.linspace(
                 0, trajectory.num_frames - 1, num_frames_to_show
-            ).astype(
-                int
-            )  # noqa: E501
+            ).astype(int)  # noqa: E501
 
         for i, idx in enumerate(indices):
             frame = trajectory.frames[idx]
@@ -542,7 +540,7 @@ class MatplotlibVisualizer:
         if trajectory is None:
             raise ValueError("trajectory must be provided")
         fig = plt.figure(figsize=figsize)
-        ax = fig.add_subplot(111, projection="3d")
+        ax = cast(Any, fig.add_subplot(111, projection="3d"))
 
         # Plot grip path
         grip_pos = trajectory.grip_positions
