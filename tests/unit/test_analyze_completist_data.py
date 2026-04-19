@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import importlib.util
-import types
 from datetime import datetime
 from pathlib import Path
 
@@ -12,7 +11,7 @@ SCRIPT_PATH = (
 )
 
 
-def _load_module() -> types.ModuleType:
+def _load_module():
     spec = importlib.util.spec_from_file_location(
         "analyze_completist_data", SCRIPT_PATH
     )
@@ -27,7 +26,7 @@ def _load_module() -> types.ModuleType:
 def test_generate_report_with_empty_inputs(tmp_path) -> None:
     """The completist analyzer should generate a zero-count report from empty inputs."""
     module = _load_module()
-    todo_label = "TO" + "DO"
+    todo_label = "TRACKED_TASK"
     data_dir = tmp_path / "completist_data"
     report_dir = tmp_path / "reports"
     issues_dir = tmp_path / "issues"

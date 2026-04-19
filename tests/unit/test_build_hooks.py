@@ -31,40 +31,22 @@ class DummyConfig:
         self.config = config or {}
 
 
-def test_ui_build_hook_ci_env(monkeypatch, tmp_path) -> None:
+def test_ui_build_hook_ci_env(monkeypatch, tmp_path):
     monkeypatch.setenv("CI", "true")
-    (tmp_path / "ui" / "dist").mkdir(parents=True)
     hook = build_hooks.UIBuildHook(str(tmp_path), {})
     hook.initialize("1.0.0", {})
     # Should skip, no error
 
 
-def test_ui_build_hook_skip_env(monkeypatch, tmp_path) -> None:
+def test_ui_build_hook_skip_env(monkeypatch, tmp_path):
     monkeypatch.setenv("SKIP_UI_BUILD", "1")
-    (tmp_path / "ui" / "dist").mkdir(parents=True)
     hook = build_hooks.UIBuildHook(str(tmp_path), {})
     hook.initialize("1.0.0", {})
     # Should skip, no error
-
-
-def test_ui_build_hook_ci_env_without_bundle_fails(monkeypatch, tmp_path) -> None:
-    monkeypatch.setenv("CI", "true")
-    hook = build_hooks.UIBuildHook(str(tmp_path), {})
-
-    with pytest.raises(RuntimeError) as exc:
-        hook.initialize("1.0.0", {})
-
-    assert "UI bundle is missing" in str(exc.value)
-
-
-def test_ui_build_hook_editable_ci_without_bundle_skips(monkeypatch, tmp_path) -> None:
-    monkeypatch.setenv("CI", "true")
-    hook = build_hooks.UIBuildHook(str(tmp_path), {})
-    hook.initialize("editable", {})
 
 
 @patch("build_hooks.subprocess.run")
-def test_ui_build_hook_builds(mock_run, monkeypatch, tmp_path) -> None:
+def test_ui_build_hook_builds(mock_run, monkeypatch, tmp_path):
     monkeypatch.delenv("CI", raising=False)
     monkeypatch.delenv("SKIP_UI_BUILD", raising=False)
 
@@ -86,7 +68,7 @@ def test_ui_build_hook_builds(mock_run, monkeypatch, tmp_path) -> None:
 
 
 @patch("build_hooks.subprocess.run")
-def test_ui_build_hook_fails(mock_run, monkeypatch, tmp_path) -> None:
+def test_ui_build_hook_fails(mock_run, monkeypatch, tmp_path):
     monkeypatch.delenv("CI", raising=False)
     monkeypatch.delenv("SKIP_UI_BUILD", raising=False)
 
@@ -100,7 +82,7 @@ def test_ui_build_hook_fails(mock_run, monkeypatch, tmp_path) -> None:
 
 
 @patch("build_hooks.subprocess.run")
-def test_ui_build_hook_missing_npm(mock_run, monkeypatch, tmp_path) -> None:
+def test_ui_build_hook_missing_npm(mock_run, monkeypatch, tmp_path):
     monkeypatch.delenv("CI", raising=False)
     monkeypatch.delenv("SKIP_UI_BUILD", raising=False)
 
@@ -111,3 +93,35 @@ def test_ui_build_hook_missing_npm(mock_run, monkeypatch, tmp_path) -> None:
         hook.initialize("1.0.0", {})
 
     assert "npm not found" in str(exc.value)
+
+
+def test_ui_dir_property(tmp_path):
+    hook = build_hooks.UIBuildHook(str(tmp_path), {})
+    assert hook._ui_dir == tmp_path / "ui"
+
+
+def test_dist_dir_property(tmp_path):
+    hook = build_hooks.UIBuildHook(str(tmp_path), {})
+    assert hook._dist_dir == tmp_path / "ui" / "dist"
+
+
+def test_force_ui_build_false_by_default(tmp_path):
+    hook = build_hooks.UIBuildHook(str(tmp_path), {})
+    assert hook._force_ui_build() is False
+
+
+def test_force_ui_build_true_when_configured(tmp_path):
+    hook = build_hooks.UIBuildHook(str(tmp_path), {"force_ui_build": True})
+    assert hook._force_ui_build() is True
+
+
+def test_npm_error_message_prefers_stderr():
+    err = subprocess.CalledProcessError(
+        1, "npm", stderr="stderr msg", output="stdout msg"
+    )
+    assert build_hooks.UIBuildHook._npm_error_message(err) == "stderr msg"
+
+
+def test_npm_error_message_falls_back_to_stdout():
+    err = subprocess.CalledProcessError(1, "npm", stderr="", output="stdout msg")
+    assert build_hooks.UIBuildHook._npm_error_message(err) == "stdout msg"

@@ -13,7 +13,9 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-project_root = Path(__file__).resolve().parents[1]
+_this_file = Path(__file__).resolve()
+_parents = _this_file.parents
+project_root = _parents[1]
 sys.path.insert(0, str(project_root))
 
 import numpy as np  # noqa: E402
@@ -26,7 +28,7 @@ from src.shared.python.physics.aerodynamics import (  # noqa: E402
 
 def _report_forces(engine: AerodynamicsEngine, speed_ms: float, label: str) -> None:
     """Print force components for a ball travelling at *speed_ms* m/s."""
-    if not (engine is not None):
+    if engine is None:
         raise ValueError("Engine must be provided")
     if not (speed_ms >= 0.0):
         raise ValueError("Speed must be non-negative")

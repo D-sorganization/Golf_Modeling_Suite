@@ -9,13 +9,13 @@ from src.launchers.docker_manager import (  # noqa: E402
     DockerCheckThread,
     DockerLauncher,
 )
-from src.shared.python.security.secure_subprocess import (
-    SecureSubprocessError,  # noqa: E402
+from src.shared.python.security.secure_subprocess import (  # noqa: E402
+    SecureSubprocessError,
 )
 
 
 @patch("src.launchers.docker_manager.secure_run")
-def test_docker_check_thread_success(mock_run) -> None:
+def test_docker_check_thread_success(mock_run):
     thread = DockerCheckThread()
     mock_signal = MagicMock()
     thread.result.connect(mock_signal)
@@ -30,7 +30,7 @@ def test_docker_check_thread_success(mock_run) -> None:
     "src.launchers.docker_manager.secure_run",
     side_effect=SecureSubprocessError("Failed", [], 1),
 )
-def test_docker_check_thread_failure(mock_run) -> None:
+def test_docker_check_thread_failure(mock_run):
     thread = DockerCheckThread()
     mock_signal = MagicMock()
     thread.result.connect(mock_signal)
@@ -41,7 +41,7 @@ def test_docker_check_thread_failure(mock_run) -> None:
     mock_signal.assert_called_once_with(False)
 
 
-def test_docker_build_thread_invalid_context() -> None:
+def test_docker_build_thread_invalid_context():
     thread = DockerBuildThread(context_path=Path("/does/not/exist/at/all"))
     mock_finished = MagicMock()
     thread.finished_signal.connect(mock_finished)
@@ -56,7 +56,7 @@ def test_docker_build_thread_invalid_context() -> None:
 
 @patch("subprocess.Popen")
 @patch.object(Path, "exists", return_value=True)
-def test_docker_build_thread_success(mock_exists, mock_popen) -> None:
+def test_docker_build_thread_success(mock_exists, mock_popen):
     context = Path("/fake/context")
     thread = DockerBuildThread(
         target_stage="all", image_name="test_image", context_path=context
@@ -82,7 +82,7 @@ def test_docker_build_thread_success(mock_exists, mock_popen) -> None:
 
 @patch("subprocess.Popen")
 @patch.object(Path, "exists", return_value=True)
-def test_docker_build_thread_failure(mock_exists, mock_popen) -> None:
+def test_docker_build_thread_failure(mock_exists, mock_popen):
     context = Path("/fake/context")
     thread = DockerBuildThread(
         target_stage="all", image_name="test_image", context_path=context
@@ -104,7 +104,7 @@ def test_docker_build_thread_failure(mock_exists, mock_popen) -> None:
 
 @patch("subprocess.Popen")
 @patch.object(Path, "exists", return_value=True)
-def test_docker_build_thread_linux(mock_exists, mock_popen) -> None:
+def test_docker_build_thread_linux(mock_exists, mock_popen):
     context = Path("/fake/context")
     thread = DockerBuildThread(
         target_stage="all", image_name="test_image", context_path=context
@@ -130,7 +130,7 @@ def test_docker_build_thread_linux(mock_exists, mock_popen) -> None:
 
 @patch("subprocess.Popen")
 @patch.object(Path, "exists", return_value=True)
-def test_docker_build_thread_empty_line(mock_exists, mock_popen) -> None:
+def test_docker_build_thread_empty_line(mock_exists, mock_popen):
     context = Path("/fake/context")
     thread = DockerBuildThread(
         target_stage="all", image_name="test_image", context_path=context
@@ -158,7 +158,7 @@ def test_docker_build_thread_empty_line(mock_exists, mock_popen) -> None:
 
 @patch("subprocess.Popen", side_effect=OSError("Boom"))
 @patch.object(Path, "exists", return_value=True)
-def test_docker_build_thread_exception(mock_exists, mock_popen) -> None:
+def test_docker_build_thread_exception(mock_exists, mock_popen):
     context = Path("/fake/context")
     thread = DockerBuildThread(
         target_stage="all", image_name="test_image", context_path=context
@@ -172,7 +172,7 @@ def test_docker_build_thread_exception(mock_exists, mock_popen) -> None:
     mock_finished.assert_called_once_with(False, "Boom")
 
 
-def test_docker_launcher_check_image_exists_true() -> None:
+def test_docker_launcher_check_image_exists_true():
     launcher = DockerLauncher(repo_root=Path("/fake/repo"), image_name="my_image")
 
     with patch("subprocess.run") as mock_run:
@@ -184,7 +184,7 @@ def test_docker_launcher_check_image_exists_true() -> None:
         mock_run.assert_called_once()
 
 
-def test_docker_launcher_check_image_exists_legacy() -> None:
+def test_docker_launcher_check_image_exists_legacy():
     launcher = DockerLauncher(repo_root=Path("/fake/repo"), image_name="my_image")
 
     with patch("subprocess.run") as mock_run:
@@ -203,7 +203,7 @@ def test_docker_launcher_check_image_exists_legacy() -> None:
         assert launcher.image_name != "my_image"
 
 
-def test_docker_launcher_check_image_exists_false() -> None:
+def test_docker_launcher_check_image_exists_false():
     launcher = DockerLauncher(repo_root=Path("/fake/repo"), image_name="my_image")
 
     with patch("subprocess.run") as mock_run:
@@ -214,14 +214,14 @@ def test_docker_launcher_check_image_exists_false() -> None:
         assert launcher.check_image_exists() is False
 
 
-def test_docker_launcher_check_image_exists_exception() -> None:
+def test_docker_launcher_check_image_exists_exception():
     launcher = DockerLauncher(repo_root=Path("/fake/repo"), image_name="my_image")
 
     with patch("subprocess.run", side_effect=OSError("Boom")):
         assert launcher.check_image_exists() is False
 
 
-def test_build_launch_command_windows() -> None:
+def test_build_launch_command_windows():
     launcher = DockerLauncher(repo_root=Path("/fake/repo"), image_name="my_image")
 
     repo_path = Path("/fake/repo/src/some/drake_model.py")
@@ -239,7 +239,7 @@ def test_build_launch_command_windows() -> None:
         assert cmd[-1] == "src.drake_gui_app"
 
 
-def test_build_launch_command_linux() -> None:
+def test_build_launch_command_linux():
     launcher = DockerLauncher(repo_root=Path("/fake/repo"), image_name="my_image")
 
     mock_repo_path = MagicMock()
@@ -258,7 +258,7 @@ def test_build_launch_command_linux() -> None:
         assert cmd[-1] == "pinocchio_golf/gui.py"
 
 
-def test_build_launch_command_custom_and_other() -> None:
+def test_build_launch_command_custom_and_other():
     launcher = DockerLauncher(repo_root=Path("/fake/repo"), image_name="my_image")
 
     mock_repo_path = MagicMock()
@@ -286,7 +286,7 @@ def test_build_launch_command_custom_and_other() -> None:
 
 
 @patch("subprocess.Popen")
-def test_launch_container_capture_output(mock_popen) -> None:
+def test_launch_container_capture_output(mock_popen):
     launcher = DockerLauncher(repo_root=Path("/fake/repo"), image_name="my_image")
 
     with patch.object(launcher, "build_launch_command", return_value=["docker", "run"]):
@@ -304,7 +304,7 @@ def test_launch_container_capture_output(mock_popen) -> None:
 
 
 @patch("subprocess.Popen")
-def test_launch_container_capture_output_posix(mock_popen) -> None:
+def test_launch_container_capture_output_posix(mock_popen):
     launcher = DockerLauncher(repo_root=Path("/fake/repo"), image_name="my_image")
 
     with (
@@ -324,7 +324,7 @@ def test_launch_container_capture_output_posix(mock_popen) -> None:
 
 
 @patch("subprocess.Popen", side_effect=OSError("Failed"))
-def test_launch_container_os_error(mock_popen) -> None:
+def test_launch_container_os_error(mock_popen):
     launcher = DockerLauncher(repo_root=Path("/fake/repo"), image_name="my_image")
 
     with patch.object(launcher, "build_launch_command", return_value=["docker", "run"]):

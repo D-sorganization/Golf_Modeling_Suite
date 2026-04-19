@@ -8,14 +8,13 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from fastapi import APIRouter, Depends
 
 from src.api.utils.datetime_compat import iso_format, utc_now
 from src.shared.python.core.contracts import precondition
 
-from .._version import __version__
 from ..dependencies import get_engine_manager
 
 if TYPE_CHECKING:
@@ -29,7 +28,7 @@ async def root() -> dict[str, str]:
     """Root endpoint with API information."""
     return {
         "message": "Golf Modeling Suite API",
-        "version": __version__,
+        "version": "1.0.0",
         "docs": "/docs",
         "status": "running",
     }
@@ -59,7 +58,7 @@ async def health_check(
 
 
 @router.get("/api/diagnostics", response_model=None)
-async def get_diagnostics() -> dict:  # type: ignore[type-arg]
+async def get_diagnostics() -> dict[str, Any]:
     """Get comprehensive diagnostic information for browser mode."""
     repo_root = Path(__file__).parent.parent.parent.parent
 

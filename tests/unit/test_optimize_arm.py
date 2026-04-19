@@ -1,5 +1,4 @@
 import sys
-from typing import Any
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -36,7 +35,7 @@ for _key in ["casadi", "pinocchio", "pinocchio.casadi"]:
         del sys.modules[_key]
 
 
-def setup_module(module) -> None:
+def setup_module(module):
     """Re-install mocks for test execution in this module."""
     for key in ["casadi", "pinocchio", "pinocchio.casadi"]:
         if key in sys.modules:
@@ -46,7 +45,7 @@ def setup_module(module) -> None:
     sys.modules["pinocchio.casadi"] = cpin
 
 
-def teardown_module(module) -> None:
+def teardown_module(module):
     """Clean up sys.modules pollution by restoring original modules."""
     for key in ["casadi", "pinocchio", "pinocchio.casadi"]:
         if key in _saved_modules:
@@ -56,7 +55,7 @@ def teardown_module(module) -> None:
 
 
 @pytest.fixture
-def mock_casadi() -> MagicMock:
+def mock_casadi():
     opti = MagicMock()
     # Mock variable creation
     mock_var = MagicMock()
@@ -89,7 +88,7 @@ def mock_casadi() -> MagicMock:
     # Set up value side effect to return appropriate mock data
     call_count = 0
 
-    def value_side_effect(arg) -> Any:
+    def value_side_effect(arg):
         nonlocal call_count
         call_count += 1
         # Return data based on call order: Q, V, U, cost
@@ -114,7 +113,7 @@ def mock_casadi() -> MagicMock:
 
 
 @pytest.fixture
-def mock_pinocchio() -> MagicMock:
+def mock_pinocchio():
     # Mock model
     model = MagicMock()
     model.nq = 2
@@ -133,7 +132,7 @@ def mock_pinocchio() -> MagicMock:
     return model
 
 
-def test_main_execution(mock_casadi, mock_pinocchio) -> None:
+def test_main_execution(mock_casadi, mock_pinocchio):
     with (
         patch("os.path.exists", return_value=True),
         patch(
@@ -152,7 +151,7 @@ def test_main_execution(mock_casadi, mock_pinocchio) -> None:
         assert mock_save.call_count == 3
 
 
-def test_main_missing_dependencies() -> None:
+def test_main_missing_dependencies():
     with (
         patch(
             "src.shared.python.optimization.examples.optimize_arm.DEPENDENCIES_AVAILABLE",
@@ -173,12 +172,12 @@ def test_main_missing_dependencies() -> None:
         )
 
 
-def test_urdf_not_found() -> None:
+def test_urdf_not_found():
     with patch("os.path.exists", return_value=False), pytest.raises(SystemExit):
         main()
 
 
-def test_optimization_failure(mock_casadi, mock_pinocchio) -> None:
+def test_optimization_failure(mock_casadi, mock_pinocchio):
     mock_casadi.solve.side_effect = RuntimeError("Infeasible")
 
     with patch("os.path.exists", return_value=True), pytest.raises(SystemExit):

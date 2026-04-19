@@ -19,17 +19,17 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from typing import Any
 
 # Add the motion_training module to path
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(
-    0,
-    str(PROJECT_ROOT / "src" / "engines" / "physics_engines" / "pinocchio" / "python"),
+_this_file = Path(__file__).resolve()
+PROJECT_ROOT = _this_file.parents[1]
+_pinocchio_python_dir = (
+    PROJECT_ROOT / "src" / "engines" / "physics_engines" / "pinocchio" / "python"
 )
+sys.path.insert(0, str(_pinocchio_python_dir))
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
         description="Motion Training Demo - Generate body motion from club trajectory",
@@ -93,15 +93,13 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def run_trajectory_analysis(
-    trajectory_path: Path, sheet_name: str, output_dir: Path
-) -> Any:
+def run_trajectory_analysis(trajectory_path: Path, sheet_name: str, output_dir: Path):
     """Run trajectory analysis and generate plots."""
-    if not (trajectory_path is not None):
+    if trajectory_path is None:
         raise ValueError("trajectory_path required")
     if not (sheet_name):
         raise ValueError("sheet_name required")
-    if not (output_dir is not None):
+    if output_dir is None:
         raise ValueError("output_dir required")
     from motion_training.club_trajectory_parser import ClubTrajectoryParser
 
@@ -126,8 +124,8 @@ def run_trajectory_analysis(
     return trajectory
 
 
-def _parse_and_subsample(trajectory_path: Any, sheet_name: Any, subsample: Any) -> Any:
-    if not (trajectory_path is not None):
+def _parse_and_subsample(trajectory_path, sheet_name, subsample):
+    if trajectory_path is None:
         raise ValueError("trajectory_path required")
     if not (sheet_name):
         raise ValueError("sheet_name required")
@@ -144,10 +142,10 @@ def _parse_and_subsample(trajectory_path: Any, sheet_name: Any, subsample: Any) 
     return trajectory
 
 
-def _init_and_solve_ik(urdf_path: Any, trajectory: Any) -> Any:
-    if not (urdf_path is not None):
+def _init_and_solve_ik(urdf_path, trajectory):
+    if urdf_path is None:
         raise ValueError("urdf_path required")
-    if not (trajectory is not None):
+    if trajectory is None:
         raise ValueError("trajectory required")
     from motion_training.dual_hand_ik_solver import (
         IKSolverSettings,
@@ -173,12 +171,12 @@ def _init_and_solve_ik(urdf_path: Any, trajectory: Any) -> Any:
     return ik_result
 
 
-def _export_results(ik_result, trajectory, output_dir) -> None:
-    if not (ik_result is not None):
+def _export_results(ik_result, trajectory, output_dir):
+    if ik_result is None:
         raise ValueError("ik_result required")
-    if not (trajectory is not None):
+    if trajectory is None:
         raise ValueError("trajectory required")
-    if not (output_dir is not None):
+    if output_dir is None:
         raise ValueError("output_dir required")
     from motion_training.trajectory_exporter import TrajectoryExporter
 
@@ -214,7 +212,7 @@ def _export_results(ik_result, trajectory, output_dir) -> None:
         pass
 
 
-def _run_visualization(urdf_path, trajectory, ik_result, visualize, playback) -> None:
+def _run_visualization(urdf_path, trajectory, ik_result, visualize, playback):
     if visualize:
         try:
             from motion_training.motion_visualizer import MotionVisualizer
@@ -241,15 +239,15 @@ def run_ik_demo(
     subsample: int = 10,
     visualize: bool = False,
     playback: bool = False,
-) -> Any:
+):
     """Run the full IK demo."""
-    if not (trajectory_path is not None):
+    if trajectory_path is None:
         raise ValueError("trajectory_path required")
     if not (sheet_name):
         raise ValueError("sheet_name required")
-    if not (urdf_path is not None):
+    if urdf_path is None:
         raise ValueError("urdf_path required")
-    if not (output_dir is not None):
+    if output_dir is None:
         raise ValueError("output_dir required")
 
     trajectory = _parse_and_subsample(trajectory_path, sheet_name, subsample)
@@ -264,7 +262,7 @@ def run_ik_demo(
     return ik_result
 
 
-def main() -> None:
+def main():
     """Main entry point."""
     args = parse_args()
 

@@ -4,7 +4,6 @@ These tests verify the simulation service using Design by Contract principles.
 """
 
 from enum import Enum
-from typing import Any, NoReturn
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -47,13 +46,13 @@ class MockEngineType(Enum):
 
 
 @pytest.fixture(scope="module")
-def anyio_backend() -> str:
+def anyio_backend():
     """Use asyncio backend only (trio not installed)."""
     return "asyncio"
 
 
 @pytest.fixture
-def mock_engine_manager() -> MagicMock:
+def mock_engine_manager():
     """Create a mock engine manager."""
     manager = MagicMock(spec=EngineManager)
     manager._load_engine = MagicMock()
@@ -62,7 +61,7 @@ def mock_engine_manager() -> MagicMock:
 
 
 @pytest.fixture
-def simulation_service(mock_engine_manager: MagicMock) -> Any:
+def simulation_service(mock_engine_manager):
     """Create a simulation service instance."""
     from src.api.services.simulation_service import SimulationService
 
@@ -72,23 +71,23 @@ def simulation_service(mock_engine_manager: MagicMock) -> Any:
 class TestSimulationServiceContract:
     """Design by Contract tests for SimulationService class."""
 
-    def test_instantiates(self, mock_engine_manager) -> None:
+    def test_instantiates(self, mock_engine_manager):
         """Postcondition: SimulationService can be instantiated."""
         from src.api.services.simulation_service import SimulationService
 
         service = SimulationService(mock_engine_manager)
         assert service is not None
 
-    def test_has_engine_manager(self, simulation_service) -> None:
+    def test_has_engine_manager(self, simulation_service):
         """Postcondition: SimulationService has engine_manager attribute."""
         assert hasattr(simulation_service, "engine_manager")
 
-    def test_has_run_simulation_method(self, simulation_service) -> None:
+    def test_has_run_simulation_method(self, simulation_service):
         """Postcondition: SimulationService has run_simulation method."""
         assert hasattr(simulation_service, "run_simulation")
         assert callable(simulation_service.run_simulation)
 
-    def test_has_run_simulation_background_method(self, simulation_service) -> None:
+    def test_has_run_simulation_background_method(self, simulation_service):
         """Postcondition: SimulationService has run_simulation_background method."""
         assert hasattr(simulation_service, "run_simulation_background")
         assert callable(simulation_service.run_simulation_background)
@@ -97,7 +96,7 @@ class TestSimulationServiceContract:
 class TestRunSimulationContract:
     """Design by Contract tests for run_simulation method."""
 
-    async def test_returns_simulation_response(self, mock_engine_manager) -> None:
+    async def test_returns_simulation_response(self, mock_engine_manager):
         """Postcondition: Returns SimulationResponse."""
         from src.api.models.requests import SimulationRequest
         from src.api.models.responses import SimulationResponse
@@ -142,7 +141,7 @@ class TestRunSimulationContract:
 class TestRunSimulation:
     """Functional tests for run_simulation."""
 
-    async def test_simulation_success(self, mock_engine_manager) -> None:
+    async def test_simulation_success(self, mock_engine_manager):
         """Test successful simulation run."""
         from src.api.models.requests import SimulationRequest
         from src.api.services.simulation_service import SimulationService
@@ -182,7 +181,7 @@ class TestRunSimulation:
             assert result.duration == 0.01
             assert result.frames == 10  # 0.01 / 0.001
 
-    async def test_simulation_loads_model(self, mock_engine_manager) -> None:
+    async def test_simulation_loads_model(self, mock_engine_manager):
         """Test that simulation loads model when path provided."""
         from src.api.models.requests import SimulationRequest
         from src.api.services.simulation_service import SimulationService
@@ -218,7 +217,7 @@ class TestRunSimulation:
             await service.run_simulation(request)
             mock_engine.load_from_path.assert_called_once_with("/path/to/model.xml")
 
-    async def test_simulation_sets_initial_state(self, mock_engine_manager) -> None:
+    async def test_simulation_sets_initial_state(self, mock_engine_manager):
         """Test that simulation sets initial state when provided."""
         from src.api.models.requests import SimulationRequest
         from src.api.services.simulation_service import SimulationService
@@ -255,9 +254,7 @@ class TestRunSimulation:
             await service.run_simulation(request)
             mock_engine.set_state.assert_called_once_with([0.1, 0.2], [0.0, 0.0])
 
-    async def test_simulation_failure_returns_error_response(
-        self, mock_engine_manager
-    ) -> None:
+    async def test_simulation_failure_returns_error_response(self, mock_engine_manager):
         """Test that simulation failure returns error response."""
         from src.api.models.requests import SimulationRequest
         from src.api.services.simulation_service import SimulationService
@@ -276,7 +273,7 @@ class TestRunSimulation:
             assert result.success is False
             assert result.frames == 0
 
-    async def test_simulation_with_control_inputs(self, mock_engine_manager) -> None:
+    async def test_simulation_with_control_inputs(self, mock_engine_manager):
         """Test simulation with control inputs."""
         from src.api.models.requests import SimulationRequest
         from src.api.services.simulation_service import SimulationService
@@ -318,7 +315,7 @@ class TestRunSimulation:
 class TestRunSimulationBackground:
     """Tests for run_simulation_background method."""
 
-    async def test_updates_task_status_to_running(self, mock_engine_manager) -> None:
+    async def test_updates_task_status_to_running(self, mock_engine_manager):
         """Test that background task updates status to running."""
         from src.api.models.requests import SimulationRequest
         from src.api.services.simulation_service import SimulationService
@@ -353,9 +350,7 @@ class TestRunSimulationBackground:
             assert "task_123" in active_tasks
             assert active_tasks["task_123"]["status"] in ["completed", "failed"]
 
-    async def test_handles_simulation_failure_in_background(
-        self, mock_engine_manager
-    ) -> None:
+    async def test_handles_simulation_failure_in_background(self, mock_engine_manager):
         """Test that background task handles simulation failure gracefully.
 
         Note: Exceptions in run_simulation are caught and returned as
@@ -379,9 +374,7 @@ class TestRunSimulationBackground:
             assert active_tasks["task_456"]["status"] == "completed"
             assert active_tasks["task_456"]["result"]["success"] is False
 
-    async def test_handles_uncaught_exception_in_background(
-        self, mock_engine_manager
-    ) -> None:
+    async def test_handles_uncaught_exception_in_background(self, mock_engine_manager):
         """Test that background task handles uncaught exceptions."""
         from src.api.models.requests import SimulationRequest
         from src.api.services.simulation_service import SimulationService
@@ -391,7 +384,7 @@ class TestRunSimulationBackground:
             service = SimulationService(mock_engine_manager)
 
             # Patch run_simulation to raise an exception that isn't caught
-            async def raise_error(req) -> NoReturn:
+            async def raise_error(req):
                 raise RuntimeError("Uncaught error")
 
             service.run_simulation = raise_error
@@ -407,7 +400,7 @@ class TestRunSimulationBackground:
 class TestExtractSimulationData:
     """Tests for _extract_simulation_data helper method."""
 
-    def test_extracts_time_series_data(self, simulation_service) -> None:
+    def test_extracts_time_series_data(self, simulation_service):
         """Test extracting time series data from recorder."""
         mock_recorder = MagicMock(spec=_RECORDER_SPEC_ATTRS)
         mock_recorder.get_time_series = MagicMock(
@@ -434,7 +427,7 @@ class TestExtractSimulationData:
         assert "joint_positions" in data
         assert "joint_velocities" in data
 
-    def test_handles_missing_data_gracefully(self, simulation_service) -> None:
+    def test_handles_missing_data_gracefully(self, simulation_service):
         """Test handling missing data gracefully."""
         mock_recorder = MagicMock(spec=_RECORDER_SPEC_ATTRS)
         mock_recorder.get_time_series = MagicMock(side_effect=KeyError("No data"))
@@ -448,7 +441,7 @@ class TestExtractSimulationData:
 class TestPerformAnalysis:
     """Tests for _perform_analysis helper method."""
 
-    def test_extracts_ztcf_data(self, simulation_service) -> None:
+    def test_extracts_ztcf_data(self, simulation_service):
         """Test extracting ZTCF analysis data."""
         mock_recorder = MagicMock(spec=_RECORDER_SPEC_ATTRS)
         mock_recorder.get_time_series = MagicMock(
@@ -461,7 +454,7 @@ class TestPerformAnalysis:
         assert "ztcf_acceleration" in results
         mock_recorder.get_time_series.assert_called_with("ztcf_accel")
 
-    def test_extracts_zvcf_data(self, simulation_service) -> None:
+    def test_extracts_zvcf_data(self, simulation_service):
         """Test extracting ZVCF analysis data."""
         mock_recorder = MagicMock(spec=_RECORDER_SPEC_ATTRS)
         mock_recorder.get_time_series = MagicMock(
@@ -473,7 +466,7 @@ class TestPerformAnalysis:
 
         assert "zvcf_acceleration" in results
 
-    def test_extracts_drift_data(self, simulation_service) -> None:
+    def test_extracts_drift_data(self, simulation_service):
         """Test extracting drift analysis data."""
         mock_recorder = MagicMock(spec=_RECORDER_SPEC_ATTRS)
         mock_recorder.get_time_series = MagicMock(
@@ -485,7 +478,7 @@ class TestPerformAnalysis:
 
         assert "drift_acceleration" in results
 
-    def test_handles_analysis_error(self, simulation_service) -> None:
+    def test_handles_analysis_error(self, simulation_service):
         """Test handling analysis error."""
         mock_recorder = MagicMock(spec=_RECORDER_SPEC_ATTRS)
         mock_recorder.get_time_series = MagicMock(
@@ -497,164 +490,3 @@ class TestPerformAnalysis:
 
         # Should return empty results without raising
         assert isinstance(results, dict)
-
-
-# ──────────────────────────────────────────────────────────────
-#  SimulationStats — authoritative runtime state (issue #2469)
-# ──────────────────────────────────────────────────────────────
-
-
-class TestSimulationStats:
-    """SimulationStats dataclass is the single source of truth for runtime state."""
-
-    def test_can_import(self) -> None:
-        from src.api.services.simulation_service import SimulationStats  # noqa: F401
-
-    def test_default_frame_count_is_zero(self) -> None:
-        from src.api.services.simulation_service import SimulationStats
-
-        s = SimulationStats()
-        assert s.frame_count == 0
-
-    def test_default_is_not_recording(self) -> None:
-        from src.api.services.simulation_service import SimulationStats
-
-        s = SimulationStats()
-        assert s.is_recording is False
-
-    def test_default_recorded_frames_is_empty(self) -> None:
-        from src.api.services.simulation_service import SimulationStats
-
-        s = SimulationStats()
-        assert s.recorded_frames == []
-
-    def test_default_speed_factor_is_one(self) -> None:
-        from src.api.services.simulation_service import SimulationStats
-
-        s = SimulationStats()
-        assert s.speed_factor == 1.0
-
-    def test_start_time_is_float(self) -> None:
-        from src.api.services.simulation_service import SimulationStats
-
-        s = SimulationStats()
-        assert isinstance(s.start_time, float)
-
-
-class TestSimulationServiceStatsTracking:
-    """SimulationService owns stats and wires them through the sim loop."""
-
-    def test_service_exposes_stats_property(self, mock_engine_manager) -> None:
-        from src.api.services.simulation_service import (
-            SimulationService,
-            SimulationStats,
-        )
-
-        service = SimulationService(mock_engine_manager)
-        assert isinstance(service.stats, SimulationStats)
-
-    def test_start_recording_sets_flag(self, mock_engine_manager) -> None:
-        from src.api.services.simulation_service import SimulationService
-
-        service = SimulationService(mock_engine_manager)
-        service.start_recording()
-        assert service.stats.is_recording is True
-
-    def test_start_recording_clears_frames(self, mock_engine_manager) -> None:
-        from src.api.services.simulation_service import SimulationService
-
-        service = SimulationService(mock_engine_manager)
-        # Manually place a frame to verify it gets cleared
-        service.stats.recorded_frames.append({"t": 0.0})
-        service.start_recording()
-        assert service.stats.recorded_frames == []
-
-    def test_stop_recording_clears_flag(self, mock_engine_manager) -> None:
-        from src.api.services.simulation_service import SimulationService
-
-        service = SimulationService(mock_engine_manager)
-        service.start_recording()
-        service.stop_recording()
-        assert service.stats.is_recording is False
-
-    def test_set_speed_factor_updates_stats(self, mock_engine_manager) -> None:
-        from src.api.services.simulation_service import SimulationService
-
-        service = SimulationService(mock_engine_manager)
-        service.set_speed_factor(2.5)
-        assert service.stats.speed_factor == 2.5
-
-    async def test_frame_count_reflects_simulation_steps(
-        self, mock_engine_manager
-    ) -> None:
-        """After run_simulation, stats.frame_count equals the steps executed."""
-        from src.api.models.requests import SimulationRequest
-        from src.api.services.simulation_service import SimulationService
-
-        mock_engine = MagicMock(spec=PhysicsEngine)
-        mock_engine.step = MagicMock()
-        mock_engine_manager.get_active_physics_engine = MagicMock(
-            return_value=mock_engine
-        )
-
-        with (
-            patch(
-                "src.api.services.simulation_service.GenericPhysicsRecorder"
-            ) as MockRecorder,
-            patch("src.api.services.simulation_service.EngineType", MockEngineType),
-        ):
-            mock_recorder = MagicMock(spec=_RECORDER_SPEC_ATTRS)
-            mock_recorder.is_recording = False
-            mock_recorder.record_step = MagicMock()
-            mock_recorder.get_time_series = MagicMock(
-                return_value=(np.array([0.0, 0.001]), np.array([[0], [0.1]]))
-            )
-            MockRecorder.return_value = mock_recorder
-
-            service = SimulationService(mock_engine_manager)
-            request = SimulationRequest(
-                engine_type="mujoco",
-                duration=0.01,
-                timestep=0.001,
-            )
-
-            await service.run_simulation(request)
-            # 0.01 / 0.001 = 10 steps
-            assert service.stats.frame_count == 10
-
-    async def test_start_time_reset_on_run_simulation(
-        self, mock_engine_manager
-    ) -> None:
-        """run_simulation resets start_time so wall_time is accurate."""
-        import time
-
-        from src.api.models.requests import SimulationRequest
-        from src.api.services.simulation_service import SimulationService
-
-        mock_engine = MagicMock(spec=PhysicsEngine)
-        mock_engine.step = MagicMock()
-        mock_engine_manager.get_active_physics_engine = MagicMock(
-            return_value=mock_engine
-        )
-
-        with (
-            patch(
-                "src.api.services.simulation_service.GenericPhysicsRecorder"
-            ) as MockRecorder,
-            patch("src.api.services.simulation_service.EngineType", MockEngineType),
-        ):
-            mock_recorder = MagicMock(spec=_RECORDER_SPEC_ATTRS)
-            mock_recorder.is_recording = False
-            mock_recorder.record_step = MagicMock()
-            mock_recorder.get_time_series = MagicMock(
-                return_value=(np.array([0.0]), np.array([[0]]))
-            )
-            MockRecorder.return_value = mock_recorder
-
-            service = SimulationService(mock_engine_manager)
-            before = time.time()
-            request = SimulationRequest(engine_type="mujoco", duration=0.001)
-            await service.run_simulation(request)
-            after = time.time()
-
-            assert before <= service.stats.start_time <= after

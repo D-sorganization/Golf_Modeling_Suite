@@ -1,12 +1,13 @@
 """Utilities for analyzing Python code quality and structure."""
 
 import ast
-import logging
 import re
 from pathlib import Path
 from typing import Any
 
-logger = logging.getLogger(__name__)
+from src.shared.python.logging_pkg.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 def get_python_metrics(file_path: Path) -> dict[str, Any]:
@@ -60,9 +61,22 @@ def assess_error_handling_content(content: str) -> dict[str, int]:
 
 def assess_logging_content(content: str) -> dict[str, int]:
     """Count logging vs print usage in content."""
+    print_usage = 0
+    try:
+        tree = ast.parse(content)
+        for node in ast.walk(tree):
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Name)
+                and node.func.id == "print"
+            ):
+                print_usage += 1
+    except SyntaxError:
+        print_usage = len(re.findall(r"(?<!\w)print\s*\(", content))
+
     return {
         "logging_usage": len(re.findall(r"logging\.|logger\.", content)),
-        "print_usage": content.count("print("),
+        "print_usage": print_usage,
     }
 
 
@@ -99,9 +113,7 @@ def count_files(root: Path, pattern: str) -> int:
 
 def grep_count(root: Path, pattern: str, file_pattern: str = "**/*.py") -> int:
     """Count files where a regex pattern is found."""
-    if not (root is not None):
-        raise ValueError("root must be provided")
-    if not (root is not None):
+    if root is None:
         raise ValueError("root must be provided")
     count = 0
     regex = re.compile(pattern)
@@ -126,9 +138,7 @@ def classify_assessment_category(source_name: str, description: str = "") -> str
     Returns:
         A standardized category name.
     """
-    if not (source_name is not None):
-        raise ValueError("source_name must be provided")
-    if not (source_name is not None):
+    if source_name is None:
         raise ValueError("source_name must be provided")
     text = (source_name + " " + description).lower()
 

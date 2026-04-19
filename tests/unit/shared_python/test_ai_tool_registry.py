@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Any
-
 import pytest
 
 from src.shared.python.ai.exceptions import ToolExecutionError
@@ -14,7 +12,7 @@ from src.shared.python.ai.tool_registry import (
 )
 
 
-def test_tool_parameter_to_json() -> None:
+def test_tool_parameter_to_json():
     tp = ToolParameter("p1", "desc", type="string", required=True, default="a")
     js = tp.to_json_schema()
     assert js["type"] == "string"
@@ -27,8 +25,8 @@ def test_tool_parameter_to_json() -> None:
     assert js2["enum"] == ["x", "y"]
 
 
-def test_tool_to_json_schema() -> None:
-    def handler(a) -> Any:
+def test_tool_to_json_schema():
+    def handler(a):
         return a
 
     t = Tool(
@@ -44,8 +42,8 @@ def test_tool_to_json_schema() -> None:
     assert "a" in js["parameters"]["required"]
 
 
-def test_tool_formats() -> None:
-    def handler(a) -> Any:
+def test_tool_formats():
+    def handler(a):
         return a
 
     t = Tool(name="tool", description="desc", handler=handler)
@@ -59,8 +57,8 @@ def test_tool_formats() -> None:
     assert "input_schema" in anthropic
 
 
-def test_validate_arguments() -> None:
-    def handler(a, b=1) -> Any:
+def test_validate_arguments():
+    def handler(a, b=1):
         return a + b
 
     t = Tool(
@@ -92,8 +90,8 @@ def test_validate_arguments() -> None:
     assert t.validate_arguments({"a": 1, "b": "x"}) == []
 
 
-def test_execute() -> None:
-    def handler(a) -> Any:
+def test_execute():
+    def handler(a):
         if a == 0:
             raise ValueError("bad a")
         return a * 2
@@ -116,7 +114,7 @@ def test_execute() -> None:
     assert "bad a" in res_exc.error
 
 
-def test_registry_extract_parameters() -> None:
+def test_registry_extract_parameters():
     reg = ToolRegistry()
 
     def my_func(a: int, b: str = "yes") -> None:
@@ -133,7 +131,7 @@ def test_registry_extract_parameters() -> None:
     assert params[1].required is False
 
 
-def test_registry_register_and_execute() -> None:
+def test_registry_register_and_execute():
     reg = ToolRegistry()
 
     @reg.register("add", "adds")
@@ -151,15 +149,15 @@ def test_registry_register_and_execute() -> None:
         reg.execute("missing", {})
 
 
-def test_registry_list_tools() -> None:
+def test_registry_list_tools():
     reg = ToolRegistry()
 
     @reg.register("t1", "desc1", category=ToolCategory.ANALYSIS, expertise_level=1)
-    def t1() -> None:
+    def t1():
         pass
 
     @reg.register("t2", "desc2", category=ToolCategory.SIMULATION, expertise_level=3)
-    def t2() -> None:
+    def t2():
         pass
 
     all_t = reg.list_tools()
@@ -174,11 +172,11 @@ def test_registry_list_tools() -> None:
     assert exp_t[0].name == "t1"
 
 
-def test_get_tools_for_provider() -> None:
+def test_get_tools_for_provider():
     reg = ToolRegistry()
 
     @reg.register("tool", "desc")
-    def tool() -> None:
+    def tool():
         pass
 
     assert "type" in reg.get_tools_for_provider("openai")[0]
@@ -186,13 +184,13 @@ def test_get_tools_for_provider() -> None:
     assert "type" not in reg.get_tools_for_provider("json")[0]  # JSON schema format
 
 
-def test_global_registry() -> None:
+def test_global_registry():
     r1 = get_global_registry()
     r2 = get_global_registry()
     assert r1 is r2
 
 
-def test_python_type_to_json() -> None:
+def test_python_type_to_json():
     reg = ToolRegistry()
     assert reg._python_type_to_json(str) == "string"
     assert reg._python_type_to_json(int) == "integer"

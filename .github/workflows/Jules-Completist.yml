@@ -3,8 +3,8 @@ name: Jules Completist (Incomplete Implementation Auditor)
 on:
   workflow_call:
   workflow_dispatch:
-  schedule:
-    - cron: "0 0 * * 0,4" # Daily at 1 AM UTC (matches Control Tower)
+  # Schedule removed: Control Tower (Jules-Control-Tower.yml) handles all scheduling.
+  # This workflow runs via workflow_call from Control Tower at 09:00 UTC Sun+Thu.
 
 permissions:
   contents: write
@@ -12,8 +12,31 @@ permissions:
   issues: write
 
 jobs:
+  # ── Dispatcher: route to self-hosted if available ──────────────────────────
+  pick-runner:
+    runs-on: d-sorg-fleet
+    timeout-minutes: 2
+    outputs:
+      runner: ${{ steps.check.outputs.runner }}
+    steps:
+      - name: Check for self-hosted runner
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        run: |
+          ONLINE=$(gh api /orgs/${{ github.repository_owner }}/actions/runners \
+            --jq '[.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length' \
+            2>/dev/null || echo "0")
+          if [[ "$ONLINE" -gt 0 ]]; then
+            echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
+            echo "Self-hosted runner online — routing locally"
+          else
+            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
+            echo "No self-hosted runner — using GitHub-hosted"
+          fi
   audit-completeness:
-    runs-on: ubuntu-latest
+    needs: pick-runner
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v6
         with:

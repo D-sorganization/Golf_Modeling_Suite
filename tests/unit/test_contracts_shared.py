@@ -6,7 +6,6 @@ This file tests the outer src.shared.python.contracts module.
 
 from __future__ import annotations
 
-import types
 from collections.abc import Generator
 
 import pytest
@@ -31,7 +30,7 @@ def enforce_contracts(monkeypatch: pytest.MonkeyPatch) -> Generator[None, None, 
     _contracts.set_contract_level(original_level)
 
 
-def _get_contracts() -> types.ModuleType:
+def _get_contracts():
     """Import after env var is set."""
     import src.shared.python.contracts as c
 

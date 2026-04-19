@@ -108,9 +108,12 @@ TEST_ANGULAR_VAL = 2.0
 
 
 class TestMuJoCoStrict:
-    def setup_method(self) -> None:
+    def setup_method(self):
         """Enforce strict patching via direct dependency injection."""
-        # 1. Ensure the module is loaded (using whatever state sys.modules is in)
+        self.patcher = patch.dict("sys.modules", module_patches)
+        self.patcher.start()
+
+        # 1. Ensure the module is loaded with mocked heavy dependencies.
         import engines.physics_engines.mujoco.python.mujoco_humanoid_golf.physics_engine as mod
 
         # 2. Force the module's 'mujoco' reference to be OUR mock
@@ -121,12 +124,13 @@ class TestMuJoCoStrict:
         self.MuJoCoPhysicsEngine = mod.MuJoCoPhysicsEngine
         self.mod = mod
 
-    def teardown_method(self) -> None:
+    def teardown_method(self):
         # Restore original if needed (though we mostly don't care in strict/mocked env)
         if hasattr(self, "original_mujoco"):
             setattr(self.mod, "mujoco", self.original_mujoco)  # noqa: B010
+        self.patcher.stop()
 
-    def test_jacobian_standardization_mocked(self) -> None:
+    def test_jacobian_standardization_mocked(self):
         """Verify compute_jacobian returns standard suite format [Angular; Linear] for spatial."""
         # Use the class from the patched module
         engine = self.MuJoCoPhysicsEngine()
@@ -136,7 +140,7 @@ class TestMuJoCoStrict:
         engine.model.nv = 6
 
         # Mock mj_jacBody to return known values
-        def side_effect_jac(model, data, jac_linear, jac_angular, body_id) -> None:
+        def side_effect_jac(model, data, jac_linear, jac_angular, body_id):
             jac_linear.fill(TEST_LINEAR_VAL)  # Linear (MuJoCo spec: jacp)
             jac_angular.fill(TEST_ANGULAR_VAL)  # Angular (MuJoCo spec: jacr)
 
@@ -164,7 +168,7 @@ class TestMuJoCoStrict:
             spatial[3:, :], 1.0, err_msg="Bottom rows must be linear"
         )
 
-    def test_get_sensors_implemented(self) -> None:
+    def test_get_sensors_implemented(self):
         engine = self.MuJoCoPhysicsEngine()
         assert hasattr(engine, "get_sensors"), "MuJoCo must implement get_sensors"
 
@@ -181,9 +185,29 @@ class TestMuJoCoStrict:
         sensors = engine.get_sensors()
         assert sensors["sensor_0"] == 0.123
 
+    def test_contact_forces_preserve_mujoco_grf_sign(self):
+        """MuJoCo GRF should point in the same world direction as the contact force."""
+        engine = self.MuJoCoPhysicsEngine()
+        engine.model = MagicMock()
+        engine.data = MagicMock()
+        engine.data.ncon = 1
+
+        contact = MagicMock()
+        contact.frame = np.eye(3).reshape(-1)
+        engine.data.contact = [contact]
+
+        def side_effect_contact_force(model, data, index, c_force):
+            c_force[:3] = np.array([0.0, 0.0, 735.75])
+
+        mock_mujoco.mj_contactForce.side_effect = side_effect_contact_force
+
+        force = engine.compute_contact_forces()
+
+        np.testing.assert_allclose(force, np.array([0.0, 0.0, 735.75]))
+
 
 class TestOpenSimStrict:
-    def test_inverse_dynamics_implemented(self) -> None:
+    def test_inverse_dynamics_implemented(self):
         engine = OpenSimPhysicsEngine()
         engine._model = MagicMock(
             spec=["getNumSpeeds", "getNumCoordinates", "initSystem", "realizeVelocity"]
@@ -214,7 +238,7 @@ class TestOpenSimStrict:
 
 
 class TestMyoSuiteStrict:
-    def test_loading_uses_gym(self) -> None:
+    def test_loading_uses_gym(self):
         """MyoSuite should assume path is an Env ID and load via gym."""
         engine = MyoSuitePhysicsEngine()
 
@@ -231,7 +255,7 @@ class TestMyoSuiteStrict:
         mock_gym.make.assert_called_with("myoElbow-v0")
         mock_env.reset.assert_called()
 
-    def test_loading_without_sim_raises_and_rolls_back_state(self) -> None:
+    def test_loading_without_sim_raises_and_rolls_back_state(self):
         """MyoSuite should fail fast if the env does not expose a MuJoCo sim."""
         engine = MyoSuitePhysicsEngine()
         mock_env = MagicMock(
@@ -246,7 +270,7 @@ class TestMyoSuiteStrict:
         assert engine.sim is None
         assert engine.env_id == ""
 
-    def test_step_uses_env_step_and_preserves_timestep(self) -> None:
+    def test_step_uses_env_step_and_preserves_timestep(self):
         """MyoSuite should step via Gym and ignore unsafe dt overrides."""
         engine = MyoSuitePhysicsEngine()
         mock_env = MagicMock(
@@ -271,7 +295,7 @@ class TestMyoSuiteStrict:
         assert not mock_sim.step.called
         assert mock_sim.model.opt.timestep == 0.01
 
-    def test_step_uses_last_control_action_when_available(self) -> None:
+    def test_step_uses_last_control_action_when_available(self):
         """MyoSuite should send the last control through the Gym step bridge."""
         engine = MyoSuitePhysicsEngine()
         mock_env = MagicMock(
@@ -298,7 +322,7 @@ class TestMyoSuiteStrict:
 
 
 class TestPendulumStrict:
-    def test_protocol_methods(self) -> None:
+    def test_protocol_methods(self):
         engine = PendulumPhysicsEngine()
         engine.reset()
 

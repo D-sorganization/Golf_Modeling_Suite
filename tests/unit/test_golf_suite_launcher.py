@@ -4,9 +4,7 @@ Unit tests for Golf Suite Launcher.
 
 import os
 import sys
-from collections.abc import Generator
 from pathlib import Path
-from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -16,7 +14,7 @@ os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
 
 @pytest.fixture(scope="module", autouse=True)
-def cleanup_imports() -> Generator[None, None, None]:
+def cleanup_imports():
     """Clean up imports after tests to prevent mock leakage."""
     yield
     sys.modules.pop("src.launchers.golf_suite_launcher", None)
@@ -34,19 +32,19 @@ class MockQMainWindow:
     def __init__(self, *args, **kwargs):
         pass
 
-    def setWindowTitle(self, t) -> None:
+    def setWindowTitle(self, t):
         pass
 
-    def resize(self, w, h) -> None:
+    def resize(self, w, h):
         pass
 
-    def setCentralWidget(self, w) -> None:
+    def setCentralWidget(self, w):
         pass
 
-    def show(self) -> None:
+    def show(self):
         pass
 
-    def style(self) -> MagicMock:
+    def style(self):
         return MagicMock()
 
 
@@ -59,16 +57,16 @@ class MockQVBoxLayout:
     def __init__(self, *args, **kwargs):
         pass
 
-    def addWidget(self, w) -> None:
+    def addWidget(self, w):
         pass
 
-    def addSpacing(self, s) -> None:
+    def addSpacing(self, s):
         pass
 
-    def addStretch(self) -> None:
+    def addStretch(self):
         pass
 
-    def addLayout(self, layout) -> None:
+    def addLayout(self, layout):
         pass
 
 
@@ -76,10 +74,10 @@ class MockQHBoxLayout:
     def __init__(self, *args, **kwargs):
         pass
 
-    def addWidget(self, w) -> None:
+    def addWidget(self, w):
         pass
 
-    def addStretch(self) -> None:
+    def addStretch(self):
         pass
 
 
@@ -87,16 +85,16 @@ class MockQLabel:
     def __init__(self, t="", *args, **kwargs):
         pass
 
-    def setAlignment(self, a) -> None:
+    def setAlignment(self, a):
         pass
 
-    def font(self) -> MagicMock:
+    def font(self):
         return MagicMock()
 
-    def setFont(self, f) -> None:
+    def setFont(self, f):
         pass
 
-    def setText(self, t) -> None:
+    def setText(self, t):
         pass
 
 
@@ -104,19 +102,19 @@ class MockQPushButton:
     def __init__(self, t="", *args, **kwargs):
         self.clicked = MagicMock()
 
-    def setMinimumHeight(self, h) -> None:
+    def setMinimumHeight(self, h):
         pass
 
-    def setIcon(self, icon) -> None:
+    def setIcon(self, icon):
         pass
 
-    def setToolTip(self, t) -> None:
+    def setToolTip(self, t):
         pass
 
-    def setAccessibleName(self, n) -> None:
+    def setAccessibleName(self, n):
         pass
 
-    def setText(self, t) -> None:
+    def setText(self, t):
         pass
 
 
@@ -124,22 +122,22 @@ class MockQTextEdit:
     def __init__(self, *args, **kwargs):
         pass
 
-    def setMaximumHeight(self, h) -> None:
+    def setMaximumHeight(self, h):
         pass
 
-    def setReadOnly(self, b) -> None:
+    def setReadOnly(self, b):
         pass
 
-    def setStyleSheet(self, s) -> None:
+    def setStyleSheet(self, s):
         pass
 
-    def append(self, s) -> None:
+    def append(self, s):
         pass
 
-    def clear(self) -> None:
+    def clear(self):
         pass
 
-    def toPlainText(self) -> str:
+    def toPlainText(self):
         return "Log content"
 
 
@@ -158,7 +156,7 @@ class MockQClipboard:
     def __init__(self):
         self.text = ""
 
-    def setText(self, t) -> None:
+    def setText(self, t):
         self.text = t
 
 
@@ -207,7 +205,7 @@ _STATUS_SPEC = ["setText", "setAlignment", "font", "setFont"]
 
 
 @pytest.fixture
-def mock_subprocess() -> Generator[MagicMock, None, None]:
+def mock_subprocess():
     """Mock subprocess.Popen."""
     with patch("subprocess.Popen") as mock_popen:
         process = MagicMock(
@@ -219,7 +217,7 @@ def mock_subprocess() -> Generator[MagicMock, None, None]:
 
 
 @pytest.fixture
-def launcher_app() -> Any:
+def launcher_app():
     """Fixture to create the launcher instance."""
     # Ensure PYQT6_AVAILABLE is True for logic testing
     golf_suite_launcher.PYQT6_AVAILABLE = True
@@ -230,7 +228,7 @@ def launcher_app() -> Any:
 class TestGolfSuiteLauncher:
     """Test suite for GolfLauncher."""
 
-    def test_initialization(self, launcher_app) -> None:
+    def test_initialization(self, launcher_app):
         """Test UI initialization."""
         # Verify launcher instance was created with essential attributes
         assert launcher_app is not None, "Launcher should be instantiated"
@@ -244,7 +242,7 @@ class TestGolfSuiteLauncher:
         assert hasattr(launcher_app, "log_text"), "Launcher should have log_text widget"
         assert hasattr(launcher_app, "status"), "Launcher should have status widget"
 
-    def test_launch_mujoco(self, launcher_app, mock_subprocess) -> None:
+    def test_launch_mujoco(self, launcher_app, mock_subprocess):
         """Test launching MuJoCo engine."""
         # Mock path existence
         with patch.object(Path, "exists", return_value=True):
@@ -258,7 +256,7 @@ class TestGolfSuiteLauncher:
         # CWD is the python root, checks only for mujoco path component
         assert "mujoco" in str(kwargs["cwd"])
 
-    def test_launch_drake(self, launcher_app, mock_subprocess) -> None:
+    def test_launch_drake(self, launcher_app, mock_subprocess):
         """Test launching Drake engine."""
         with patch.object(Path, "exists", return_value=True):
             launcher_app._launch_drake()
@@ -267,7 +265,7 @@ class TestGolfSuiteLauncher:
         args, kwargs = mock_subprocess.call_args
         assert "drake_gui_app.py" in str(args[0][1])
 
-    def test_launch_pinocchio(self, launcher_app, mock_subprocess) -> None:
+    def test_launch_pinocchio(self, launcher_app, mock_subprocess):
         """Test launching Pinocchio engine."""
         with patch.object(Path, "exists", return_value=True):
             launcher_app._launch_pinocchio()
@@ -276,7 +274,7 @@ class TestGolfSuiteLauncher:
         args, kwargs = mock_subprocess.call_args
         assert "gui.py" in str(args[0][1])
 
-    def test_script_not_found(self, launcher_app, mock_subprocess) -> None:
+    def test_script_not_found(self, launcher_app, mock_subprocess):
         """Test handling of missing script."""
         with patch.object(Path, "exists", return_value=False):
             # We need to mock log_text since it's an instance of MockQTextEdit
@@ -290,7 +288,7 @@ class TestGolfSuiteLauncher:
             args = launcher_app.log_text.append.call_args_list
             assert any("ERROR" in str(a) for a in args)
 
-    def test_log_functions(self, launcher_app) -> None:
+    def test_log_functions(self, launcher_app):
         """Test logging functions."""
         launcher_app.log_text = MagicMock(spec=_LOG_TEXT_SPEC)
 
@@ -301,7 +299,7 @@ class TestGolfSuiteLauncher:
         launcher_app.clear_log()
         launcher_app.log_text.clear.assert_called()
 
-    def test_copy_log(self, launcher_app) -> None:
+    def test_copy_log(self, launcher_app):
         """Test copying log to clipboard."""
         launcher_app.log_text = MagicMock(spec=_LOG_TEXT_SPEC)
         launcher_app.log_text.toPlainText.return_value = "Log content"
@@ -320,7 +318,7 @@ class TestGolfSuiteLauncher:
         assert "Log copied to clipboard." in args[0]
         launcher_app.status.setText.assert_called_with("Log copied")
 
-    def test_main_function(self, launcher_app) -> None:
+    def test_main_function(self, launcher_app):
         """Test main entry point."""
         # Use manual patching to ensure we modify the *reloaded* module object
         original_launcher = golf_suite_launcher.GolfLauncher

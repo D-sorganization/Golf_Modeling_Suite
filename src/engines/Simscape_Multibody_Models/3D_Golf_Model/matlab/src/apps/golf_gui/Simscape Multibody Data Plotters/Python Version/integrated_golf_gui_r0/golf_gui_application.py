@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import logging
 import sys
-from typing import Any
 
 from golf_gui_styles import get_full_modern_style
 from golf_gui_tabs import ComparisonTab, MotionCaptureTab, SimulinkModelTab
@@ -211,7 +210,7 @@ class GolfVisualizerMainWindow(QMainWindow):
 
         dialog = VideoExportDialog(
             self, tab.opengl_widget.renderer, tab.frame_processor
-        )
+        )  # noqa: E501
         dialog.exec()
 
     def _reset_camera(self) -> None:
@@ -240,23 +239,23 @@ class GolfVisualizerMainWindow(QMainWindow):
         if hasattr(self, "gl_widget") and self.gl_widget:
             self.gl_widget.set_above_view()
 
-    def _toggle_face_normal(self, state: Any) -> None:
+    def _toggle_face_normal(self, state) -> None:
         """Toggle face normal visibility."""
         if (
             hasattr(self, "gl_widget")
             and self.gl_widget
             and self.gl_widget.current_render_config
-        ):
+        ):  # noqa: E501
             self.gl_widget.current_render_config.show_face_normal = bool(state)
             self.gl_widget.update()
 
-    def _toggle_ball(self, state: Any) -> None:
+    def _toggle_ball(self, state) -> None:
         """Toggle ball visibility."""
         if (
             hasattr(self, "gl_widget")
             and self.gl_widget
             and self.gl_widget.current_render_config
-        ):
+        ):  # noqa: E501
             self.gl_widget.current_render_config.show_ball = bool(state)
             self.gl_widget.update()
 

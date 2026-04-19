@@ -33,7 +33,7 @@ class MockRecorder:
         self.joint_positions = np.zeros((100, 2))
         self.joint_velocities = np.zeros((100, 2))
 
-    def get_time_series(self, field_name) -> tuple[np.ndarray, np.ndarray]:
+    def get_time_series(self, field_name):
         if field_name == "cop_position":
             return self.times, self.cop_position
         if field_name == "com_position":
@@ -48,28 +48,26 @@ class MockRecorder:
             return self.times, self.joint_velocities
         raise KeyError(f"Unknown field: {field_name}")
 
-    def get_induced_acceleration_series(
-        self, source_name
-    ) -> tuple[np.ndarray, np.ndarray]:
+    def get_induced_acceleration_series(self, source_name):
         return self.times, np.zeros((100, 3))
 
-    def get_counterfactual_series(self, cf_name) -> tuple[np.ndarray, np.ndarray]:
+    def get_counterfactual_series(self, cf_name):
         return self.times, np.zeros((100, 3))
 
 
 class TestSharedPlottingAdvanced(unittest.TestCase):
     """Test advanced plotting features."""
 
-    def setUp(self) -> None:
+    def setUp(self):
         self.recorder = MockRecorder()
         self.plotter = GolfSwingPlotter(self.recorder)
         self.fig = plt.figure()
 
-    def tearDown(self) -> None:
+    def tearDown(self):
         plt.close(self.fig)
 
     @unittest.skipUnless(_HAS_3D, "mpl_toolkits.mplot3d unavailable")
-    def test_plot_grf_butterfly_diagram(self) -> None:
+    def test_plot_grf_butterfly_diagram(self):
         """Test plotting GRF butterfly diagram."""
         self.plotter.plot_grf_butterfly_diagram(self.fig)
         # Check if axes were created (projection='3d' creates an Axes3D object)
@@ -78,7 +76,7 @@ class TestSharedPlottingAdvanced(unittest.TestCase):
         self.assertEqual(ax.name, "3d")
         self.assertEqual(ax.get_title(), "GRF Butterfly Diagram")
 
-    def test_plot_grf_butterfly_diagram_no_data(self) -> None:
+    def test_plot_grf_butterfly_diagram_no_data(self):
         """Test graceful handling of missing data."""
         empty_recorder = MagicMock()
         empty_recorder.get_time_series.side_effect = KeyError("Data missing")
@@ -89,7 +87,7 @@ class TestSharedPlottingAdvanced(unittest.TestCase):
         # Should catch exception and not crash
 
     @unittest.skipUnless(_HAS_3D, "mpl_toolkits.mplot3d unavailable")
-    def test_plot_angular_momentum_3d(self) -> None:
+    def test_plot_angular_momentum_3d(self):
         """Test plotting 3D angular momentum."""
         self.plotter.plot_angular_momentum_3d(self.fig)
         self.assertTrue(len(self.fig.axes) > 0)
@@ -97,7 +95,7 @@ class TestSharedPlottingAdvanced(unittest.TestCase):
         self.assertEqual(ax.name, "3d")
         self.assertEqual(ax.get_title(), "3D Angular Momentum Trajectory")
 
-    def test_plot_stability_diagram(self) -> None:
+    def test_plot_stability_diagram(self):
         """Test plotting stability diagram."""
         self.plotter.plot_stability_diagram(self.fig)
         self.assertTrue(len(self.fig.axes) > 0)
@@ -105,7 +103,7 @@ class TestSharedPlottingAdvanced(unittest.TestCase):
         self.assertNotEqual(ax.name, "3d")  # Should be 2D
         self.assertEqual(ax.get_title(), "Stability Diagram (CoM vs CoP)")
 
-    def test_plot_stability_diagram_missing_data(self) -> None:
+    def test_plot_stability_diagram_missing_data(self):
         """Test stability diagram with missing data."""
         mock_rec = MagicMock()
         # Return time but empty arrays

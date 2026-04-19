@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
+
 """MuJoCo physics engine integration for humanoid golf simulation.
 
 Wraps the MuJoCo physics backend to provide a unified interface for
@@ -21,16 +25,18 @@ from src.shared.python.core.contracts import (
     postcondition,
     precondition,
 )
+from src.shared.python.data_io.path_utils import get_repo_root
 from src.shared.python.engine_core.interfaces import PhysicsEngine
 from src.shared.python.logging_pkg.logging_config import get_logger
 from src.shared.python.security.security_utils import validate_path
 
 logger = get_logger(__name__)
 
-# Model directories allowed for loading (relative to suite root)
-# Hardening: Prevent loading from arbitrary system paths
-SUITE_ROOT = Path(__file__).parents[5]
-REPO_ROOT = SUITE_ROOT.parent
+# Model directories allowed for loading (relative to suite root).
+# Use centralized root discovery rather than fragile parents[N] indexing
+# (see issue #2354).
+REPO_ROOT = get_repo_root()
+SUITE_ROOT = REPO_ROOT / "src"
 
 ALLOWED_MODEL_DIRS = [
     SUITE_ROOT / "engines",
@@ -119,9 +125,7 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
 
     def set_model_data(self, model: mujoco.MjModel, data: mujoco.MjData) -> None:
         """Set model and data manually (e.g. from async loader)."""
-        if not (model is not None):
-            raise ValueError("model must be provided")
-        if not (model is not None):
+        if model is None:
             raise ValueError("model must be provided")
         self.model = model
         self.data = data
@@ -137,7 +141,7 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
 
     @precondition(
         lambda self, dt=None: self.is_initialized, "Engine must be initialized"
-    )
+    )  # noqa: E501
     def step(self, dt: float | None = None) -> None:
         """Step the simulation forward."""
         if self.model is not None and self.data is not None:
@@ -176,14 +180,14 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             if len(q) != len(self.data.qpos):
                 raise ValueError(
                     f"State q size mismatch: got {len(q)}, "
-                    f"expected {len(self.data.qpos)}"
+                    f"expected {len(self.data.qpos)}"  # noqa: E501
                 )
             self.data.qpos[:] = q
 
             if len(v) != len(self.data.qvel):
                 raise ValueError(
                     f"State v size mismatch: got {len(v)}, "
-                    f"expected {len(self.data.qvel)}"
+                    f"expected {len(self.data.qvel)}"  # noqa: E501
                 )
             self.data.qvel[:] = v
 
@@ -197,7 +201,7 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             if len(u) != self.model.nu:
                 raise ValueError(
                     f"Control vector size mismatch: got {len(u)}, "
-                    f"expected {self.model.nu}"
+                    f"expected {self.model.nu}"  # noqa: E501
                 )
             self.data.ctrl[:] = u
 
@@ -333,9 +337,7 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         Returns:
             q_ddot_control: Control acceleration vector (nv,) [rad/s² or m/s²]
         """
-        if not (tau is not None):
-            raise ValueError("tau must be provided")
-        if not (tau is not None):
+        if tau is None:
             raise ValueError("tau must be provided")
         if self.model is None or self.data is None:
             return np.array([])
@@ -378,9 +380,7 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
 
     def compute_jacobian(self, body_name: str) -> dict[str, np.ndarray] | None:
         """Compute spatial Jacobian for a specific body."""
-        if not (body_name is not None):
-            raise ValueError("body_name must be provided")
-        if not (body_name is not None):
+        if body_name is None:
             raise ValueError("body_name must be provided")
         if self.model is None or self.data is None:
             return None
@@ -398,7 +398,7 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             "linear": jacp,
             "angular": jacr,
             "spatial": np.vstack([jacr, jacp]),
-            # Standardized to [Angular; Linear] (Drake convention)
+            # Suite spatial convention: [Angular; Linear].
         }
 
     def compute_contact_forces(self) -> np.ndarray:
@@ -427,9 +427,10 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             f_local = c_force[:3]
             f_world = contact_frame.T @ f_local
 
-            # The ground reaction force (GRF) acting ON the system (geom2 usually)
-            # is the negative of the force exerted BY geom2 on the ground (geom1).
-            total_force -= f_world
+            # MuJoCo reports the contact force exerted by geom2 on geom1.
+            # For foot-ground contacts where the foot is geom1, this is already
+            # the upward ground reaction force acting on the modeled body.
+            total_force += f_world
 
         return total_force
 
@@ -473,9 +474,7 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         Returns:
             q̈_ZTCF: Acceleration under zero applied torque (n_v,) [rad/s² or m/s²]
         """
-        if not (q is not None):
-            raise ValueError("q must be provided")
-        if not (q is not None):
+        if q is None:
             raise ValueError("q must be provided")
         if self.model is None or self.data is None:
             return np.array([])
@@ -528,9 +527,7 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         Returns:
             q̈_ZVCF: Acceleration with v=0 (n_v,) [rad/s² or m/s²]
         """
-        if not (q is not None):
-            raise ValueError("q must be provided")
-        if not (q is not None):
+        if q is None:
             raise ValueError("q must be provided")
         if self.model is None or self.data is None:
             return np.array([])
@@ -583,9 +580,7 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             True if successfully configured.
         """
         # Store shaft configuration
-        if not (length is not None):
-            raise ValueError("length must be provided")
-        if not (length is not None):
+        if length is None:
             raise ValueError("length must be provided")
         self._shaft_config = {
             "length": length,
@@ -640,9 +635,7 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             Tuple of (frequencies [Hz], mode_shapes (n_modes, n_stations))
         """
         # Use average properties for simple analytical solution
-        if not (length is not None):
-            raise ValueError("length must be provided")
-        if not (length is not None):
+        if length is None:
             raise ValueError("length must be provided")
         EI_avg = np.mean(EI_profile)
         mu_avg = np.mean(mass_profile)  # Linear mass density [kg/m]
@@ -692,7 +685,7 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         """
         if not hasattr(self, "_shaft_config") or not hasattr(
             self, "_shaft_modal_state"
-        ):
+        ):  # noqa: E501
             return None
 
         modes = self._shaft_modes
@@ -705,7 +698,7 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
 
         for i, (amp, vel) in enumerate(
             zip(state["amplitudes"], state["velocities"], strict=True)
-        ):
+        ):  # noqa: E501
             deflection += amp * modes["mode_shapes"][i]
             velocity += vel * modes["mode_shapes"][i]
 

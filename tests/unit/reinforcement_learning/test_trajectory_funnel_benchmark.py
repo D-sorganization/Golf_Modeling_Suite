@@ -6,7 +6,7 @@ from src.reinforcement_learning.trajectory_funnel_benchmark import (
 )
 
 
-def test_initialization() -> None:
+def test_initialization():
     bench = TrajectoryFunnelBenchmark("transverse")
     assert bench.mode == "transverse"
 
@@ -17,7 +17,7 @@ def test_initialization() -> None:
         TrajectoryFunnelBenchmark("invalid")
 
 
-def test_setpoint_reward() -> None:
+def test_setpoint_reward():
     bench = TrajectoryFunnelBenchmark("setpoint")
 
     current = np.array([1.0, 2.0])
@@ -30,7 +30,7 @@ def test_setpoint_reward() -> None:
         bench.setpoint_reward(None, target)
 
 
-def test_trajectory_funnel_reward() -> None:
+def test_trajectory_funnel_reward():
     bench = TrajectoryFunnelBenchmark("transverse")
 
     current = np.array([0.0, 0.5])
@@ -46,7 +46,7 @@ def test_trajectory_funnel_reward() -> None:
     assert np.isclose(res, -2.5)
 
 
-def test_simulate_agent_training_mock() -> None:
+def test_simulate_agent_training_mock():
     bench_setpoint = TrajectoryFunnelBenchmark("setpoint")
     res1 = bench_setpoint.simulate_agent_training_mock()
     assert res1["convergence_epochs"] == 15000

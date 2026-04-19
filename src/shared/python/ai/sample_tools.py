@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Sample tools for AI integration with Golf Suite.
 
 This module provides pre-built tools that expose Golf Modeling Suite
@@ -33,7 +37,7 @@ def _get_education_system() -> EducationSystem:
         _education_holder["instance"] = EducationSystem()
 
     system = _education_holder["instance"]
-    if not (system is not None):  # Ensure it is not None for mypy
+    if system is None:  # Ensure it is not None for mypy
         raise ValueError("DbC Blocked: Precondition failed.")
     return system
 
@@ -88,7 +92,7 @@ def _register_list_sample_files_tool(registry: ToolRegistry) -> None:
         }
 
 
-def _register_load_c3d_tool(registry: ToolRegistry) -> None:  # type: ignore[return]
+def _register_load_c3d_tool(registry: ToolRegistry):
     @registry.register(
         name="load_c3d",
         description=(
@@ -149,10 +153,10 @@ def _register_load_c3d_tool(registry: ToolRegistry) -> None:  # type: ignore[ret
         except ImportError as e:
             return {"success": False, "error": f"Failed to load C3D: {e}"}
 
-    return load_c3d  # type: ignore[return-value]
+    return load_c3d
 
 
-def _register_marker_info_tool(registry: ToolRegistry, load_c3d_fn: Any) -> None:
+def _register_marker_info_tool(registry: ToolRegistry, load_c3d_fn) -> None:
     @registry.register(
         name="get_marker_info",
         description=(
@@ -224,7 +228,7 @@ def _register_marker_info_tool(registry: ToolRegistry, load_c3d_fn: Any) -> None
 def _register_data_tools(registry: ToolRegistry) -> None:
     """Register data loading and management tools."""
     _register_list_sample_files_tool(registry)
-    load_c3d_fn = _register_load_c3d_tool(registry)  # type: ignore[func-returns-value]
+    load_c3d_fn = _register_load_c3d_tool(registry)
     _register_marker_info_tool(registry, load_c3d_fn)
 
 
@@ -252,9 +256,7 @@ def _register_inverse_dynamics_tool(registry: ToolRegistry) -> None:
         Returns:
             Simulation results summary.
         """
-        if not (file_path is not None):
-            raise ValueError("file_path must be provided")
-        if not (file_path is not None):
+        if file_path is None:
             raise ValueError("file_path must be provided")
         valid_engines = ["mujoco", "drake", "pinocchio"]
         if engine.lower() not in valid_engines:
@@ -308,9 +310,7 @@ def _register_interpret_torques_tool(registry: ToolRegistry) -> None:
             Interpretation of torque values.
         """
         # Typical ranges for golf swing (approximate)
-        if not (shoulder_torque is not None):
-            raise ValueError("shoulder_torque must be provided")
-        if not (shoulder_torque is not None):
+        if shoulder_torque is None:
             raise ValueError("shoulder_torque must be provided")
         ranges = {
             "shoulder": {"low": 40, "typical": 80, "high": 150, "unit": "N·m"},
@@ -320,9 +320,7 @@ def _register_interpret_torques_tool(registry: ToolRegistry) -> None:
 
         def classify(value: float, range_info: dict[str, Any]) -> str:
             """Classify a torque value relative to its typical range."""
-            if not (value is not None):
-                raise ValueError("value must be provided")
-            if not (value is not None):
+            if value is None:
                 raise ValueError("value must be provided")
             if value < range_info["low"]:
                 return "Below typical"
@@ -382,9 +380,7 @@ def _register_explain_concept_tool(registry: ToolRegistry) -> None:
         Returns:
             Explanation at appropriate level.
         """
-        if not (term is not None):
-            raise ValueError("term must be provided")
-        if not (term is not None):
+        if term is None:
             raise ValueError("term must be provided")
         edu = _get_education_system()
 

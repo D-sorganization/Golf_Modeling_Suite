@@ -4,8 +4,6 @@ This test suite ensures all physics engines can be probed and loaded correctly.
 Following TDD approach - tests written first, then implementations.
 """
 
-from collections.abc import Generator
-
 import pytest
 
 try:
@@ -17,7 +15,7 @@ except ImportError:
 
 
 @pytest.fixture(scope="module")
-def client() -> Generator[TestClient, None, None]:
+def client():
     """Test client with proper app lifespan."""
     with TestClient(app) as test_client:
         yield test_client

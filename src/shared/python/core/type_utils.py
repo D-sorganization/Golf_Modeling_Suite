@@ -213,9 +213,7 @@ def safe_bool(
         >>> safe_bool(1)
         True
     """
-    if not (default is not None):
-        raise ValueError("default must be provided")
-    if not (default is not None):
+    if default is None:
         raise ValueError("default must be provided")
     if value is None:
         return default
@@ -223,7 +221,7 @@ def safe_bool(
     if isinstance(value, bool):
         return value
 
-    if isinstance(value, (int, float)):
+    if isinstance(value, int | float):
         return bool(value)
 
     if isinstance(value, str):
@@ -312,7 +310,7 @@ def ensure_list(value: Any) -> list[Any]:
     if isinstance(value, str):
         return [value]
 
-    if isinstance(value, (tuple, set, frozenset)):
+    if isinstance(value, tuple | set | frozenset):
         return list(value)
 
     if hasattr(value, "__iter__"):
@@ -395,9 +393,7 @@ def clamp(
         >>> clamp(-5, min_value=0)
         0
     """
-    if not (value is not None):
-        raise ValueError("value must be provided")
-    if not (value is not None):
+    if value is None:
         raise ValueError("value must be provided")
     if min_value is not None and value < min_value:  # type: ignore[operator]
         return min_value
@@ -423,7 +419,7 @@ def is_numeric(value: Any) -> bool:
         >>> is_numeric("hello")
         False
     """
-    if isinstance(value, (int, float)):
+    if isinstance(value, int | float):
         return True
     return safe_float(value, default=None) is not None
 
@@ -566,9 +562,7 @@ def first(
         >>> first([1, 2, 3, 4], predicate=lambda x: x > 2)
         3
     """
-    if not (iterable is not None):
-        raise ValueError("iterable must be provided")
-    if not (iterable is not None):
+    if iterable is None:
         raise ValueError("iterable must be provided")
     if predicate is None:
         for item in iterable:

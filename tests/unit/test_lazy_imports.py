@@ -1,7 +1,6 @@
 """Tests for lazy import functionality in dependency management."""
 
 import sys
-from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -13,7 +12,7 @@ from src.shared.python.gui_pkg.gui_utils import get_qapp
 class TestSharedModuleLazyImports:
     """Test that shared module doesn't eagerly import heavy dependencies."""
 
-    def test_shared_init_no_eager_imports(self) -> None:
+    def test_shared_init_no_eager_imports(self):
         """Verify shared/__init__.py doesn't import matplotlib at module level."""
         # The shared.python module is at src.shared.python
         # We verify that matplotlib is not imported at module level
@@ -28,7 +27,7 @@ class TestSharedModuleLazyImports:
         assert not hasattr(src.shared.python, "plt")
         assert not hasattr(src.shared.python, "matplotlib")
 
-    def test_output_manager_imports_dependencies(self) -> None:
+    def test_output_manager_imports_dependencies(self):
         """Verify output_manager.py imports numpy and pandas directly."""
         from src.shared.python.data_io import output_manager
 
@@ -36,7 +35,7 @@ class TestSharedModuleLazyImports:
         assert hasattr(output_manager, "np")
         assert hasattr(output_manager, "pd")
 
-    def test_common_utils_imports(self) -> None:
+    def test_common_utils_imports(self):
         """Verify common_utils.py imports numpy/pandas but not matplotlib."""
         # Avoid deleting from sys.modules as it causes pandas C-API errors.
         from src.shared.python.data_io import common_utils
@@ -53,7 +52,7 @@ class TestPolynomialGeneratorLazyImport:
     """Test lazy import of polynomial generator widget."""
 
     @pytest.fixture
-    def mock_launcher(self) -> Any:
+    def mock_launcher(self):
         """Create a mock launcher instance."""
         from PyQt6.QtWidgets import QMainWindow
 
@@ -67,7 +66,7 @@ class TestPolynomialGeneratorLazyImport:
         launcher.save_config = MagicMock()  # type: ignore[attr-defined]
         return launcher
 
-    def test_polynomial_generator_not_imported_at_module_level(self) -> None:
+    def test_polynomial_generator_not_imported_at_module_level(self):
         """Verify polynomial generator is not imported when humanoid_launcher loads."""
         # Remove modules to simulate fresh import
         modules_to_remove = [
@@ -86,7 +85,7 @@ class TestPolynomialGeneratorLazyImport:
             # For now, we verify the pattern is correct
             pass
 
-    def test_polynomial_generator_import_error_handling(self) -> None:
+    def test_polynomial_generator_import_error_handling(self):
         """Test ImportError handling when polynomial generator unavailable."""
         # Try to import and handle expected ImportError
         try:
@@ -107,7 +106,7 @@ class TestPolynomialGeneratorLazyImport:
                 or "no module named" in error_msg
             )
 
-    def test_polynomial_generator_oserror_handling(self) -> None:
+    def test_polynomial_generator_oserror_handling(self):
         """Test OSError handling for DLL initialization failures."""
         # Test that OSError messages contain helpful info
         error_msg = "[WinError 1114] DLL initialization failed"
@@ -115,7 +114,7 @@ class TestPolynomialGeneratorLazyImport:
         # Verify the error message format
         assert "1114" in str(os_error) or "DLL" in str(os_error)
 
-    def test_polynomial_generator_successful_import(self) -> None:
+    def test_polynomial_generator_successful_import(self):
         """Test successful import when dependencies are available."""
         try:
             from mujoco_humanoid_golf.polynomial_generator import (
@@ -133,12 +132,12 @@ class TestPolynomialGeneratorLazyImport:
 class TestGracefulDegradation:
     """Test that features degrade gracefully when dependencies missing."""
 
-    def test_launcher_starts_without_mujoco(self) -> None:
+    def test_launcher_starts_without_mujoco(self):
         """Verify launcher can start even if MuJoCo not installed."""
         # This would be an integration test
         # For now, we verify the pattern exists
 
-    def test_clear_error_messages(self) -> None:
+    def test_clear_error_messages(self):
         """Verify error messages are clear and helpful."""
         # Test ImportError message
         import_error_msg = (

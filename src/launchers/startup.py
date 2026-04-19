@@ -16,7 +16,9 @@ from src.shared.python.logging_pkg.logging_config import get_logger
 from src.shared.python.security.secure_subprocess import secure_run
 
 if TYPE_CHECKING:
-    from src.shared.python.theme.theme_manager import ThemeColors
+    from src.shared.python.theme.theme_manager import (  # type: ignore[attr-defined]
+        ThemeColors,
+    )
 
 logger = get_logger(__name__)
 
@@ -26,7 +28,7 @@ ASSETS_DIR = Path(__file__).parent / "assets"
 
 # Theme availability check
 try:
-    from src.shared.python.theme import (
+    from src.shared.python.theme import (  # type: ignore[attr-defined]
         Colors,
         Sizes,
         Weights,
@@ -42,9 +44,11 @@ except ImportError:
 def _get_theme_colors() -> ThemeColors:
     """Get current theme colors, with fallback to dark theme defaults."""
     try:
-        from src.shared.python.theme import get_current_colors
+        from src.shared.python.theme import (  # type: ignore[attr-defined]
+            get_current_colors,
+        )
 
-        return get_current_colors()
+        return get_current_colors()  # type: ignore[attr-defined]
     except ImportError:
         from src.shared.python.theme import DARK_THEME
 
@@ -65,9 +69,7 @@ class StartupResults:
     @classmethod
     def from_dict(cls, data: dict) -> StartupResults:
         """Create StartupResults from worker results dict."""
-        if not (data is not None):
-            raise ValueError("data must be provided")
-        if not (data is not None):
+        if data is None:
             raise ValueError("data must be provided")
         results = cls()
         results.registry = data.get("registry")
@@ -130,9 +132,7 @@ class GolfSplashScreen(QSplashScreen):
         self, painter: QPainter, text_primary: str, text_secondary: str
     ) -> None:
         """Draw the logo image, title text, and subtitle."""
-        if not (painter is not None):
-            raise ValueError("painter must be provided")
-        if not (painter is not None):
+        if painter is None:
             raise ValueError("painter must be provided")
         center_x = self.width() // 2
         logo_y = 50
@@ -171,9 +171,7 @@ class GolfSplashScreen(QSplashScreen):
 
     def _draw_progress_bar(self, painter: QPainter, accent: str, bg_bar: str) -> None:
         """Draw the loading status text and progress bar."""
-        if not (painter is not None):
-            raise ValueError("painter must be provided")
-        if not (painter is not None):
+        if painter is None:
             raise ValueError("painter must be provided")
         status_font = (
             get_qfont(size=Sizes.SM, weight=Weights.MEDIUM)
@@ -206,9 +204,7 @@ class GolfSplashScreen(QSplashScreen):
 
     def _draw_version_labels(self, painter: QPainter, text_quaternary: str) -> None:
         """Draw the version and branding labels at the bottom."""
-        if not (painter is not None):
-            raise ValueError("painter must be provided")
-        if not (painter is not None):
+        if painter is None:
             raise ValueError("painter must be provided")
         version_font = (
             get_qfont(size=Sizes.XS, weight=Weights.NORMAL)
@@ -246,9 +242,7 @@ class GolfSplashScreen(QSplashScreen):
 
     def show_message(self, message: str, progress: int) -> None:
         """Update the displayed loading message and progress percentage."""
-        if not (message is not None):
-            raise ValueError("message must be provided")
-        if not (message is not None):
+        if message is None:
             raise ValueError("message must be provided")
         self.loading_message = message
         self.progress = progress
@@ -267,9 +261,7 @@ class AsyncStartupWorker(QThread):
     error_signal = pyqtSignal(str)
 
     def __init__(self, repos_root: Path) -> None:
-        if not (repos_root is not None):
-            raise ValueError("repos_root must be provided")
-        if not (repos_root is not None):
+        if repos_root is None:
             raise ValueError("repos_root must be provided")
         super().__init__()
         self.repos_root = repos_root

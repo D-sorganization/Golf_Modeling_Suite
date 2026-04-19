@@ -19,9 +19,7 @@ class TestProvenance(unittest.TestCase):
     @patch("src.shared.python.data_io.provenance.subprocess.check_output")
     @patch("src.shared.python.data_io.provenance.datetime")
     @patch("src.shared.python.data_io.provenance.hashlib")
-    def test_capture_provenance(
-        self, mock_hashlib, mock_datetime, mock_subprocess
-    ) -> None:
+    def test_capture_provenance(self, mock_hashlib, mock_datetime, mock_subprocess):
         """Test capturing provenance with mocked environment."""
         # Mock datetime
         mock_now = datetime(2025, 1, 1, 12, 0, 0)
@@ -57,7 +55,7 @@ class TestProvenance(unittest.TestCase):
         self.assertEqual(provenance.parameters["param1"], 10)
         self.assertEqual(provenance.numpy_version, np.__version__)
 
-    def test_to_header_lines(self) -> None:
+    def test_to_header_lines(self):
         """Test header line generation."""
         provenance = ProvenanceInfo(
             timestamp_utc="2025-01-01T12:00:00Z",
@@ -80,7 +78,7 @@ class TestProvenance(unittest.TestCase):
         self.assertTrue(any("dt: 0.01" in line for line in lines))
         self.assertTrue(any("NumPy: 1.21.0" in line for line in lines))
 
-    def test_add_provenance_header_file(self) -> None:
+    def test_add_provenance_header_file(self):
         """Test writing provenance to file object."""
         provenance = ProvenanceInfo(
             timestamp_utc="2025-01-01T12:00:00Z",
@@ -100,7 +98,7 @@ class TestProvenance(unittest.TestCase):
         self.assertTrue(any("2025-01-01T12:00:00Z" in line for line in header_lines))
 
     @patch("src.shared.python.data_io.provenance.ProvenanceInfo.capture")
-    def test_add_provenance_to_csv(self, mock_capture) -> None:
+    def test_add_provenance_to_csv(self, mock_capture):
         """Test prepending provenance to CSV file."""
         mock_capture.return_value = ProvenanceInfo(
             timestamp_utc="2025-01-01T12:00:00Z",
@@ -123,7 +121,7 @@ class TestProvenance(unittest.TestCase):
         # Check that original content was written last (or at least written)
         handle.write.assert_any_call("col1,col2\n1,2")
 
-    def test_capture_provenance_without_mujoco_version(self) -> None:
+    def test_capture_provenance_without_mujoco_version(self):
         """Capture should tolerate mujoco module without __version__."""
         with patch.dict("sys.modules", {"mujoco": object()}):
             provenance = ProvenanceInfo.capture()

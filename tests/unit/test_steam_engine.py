@@ -6,8 +6,6 @@ does not require CoolProp or Cantera, so they run in all environments.
 
 from __future__ import annotations
 
-from typing import Any
-
 import pytest
 
 
@@ -85,7 +83,7 @@ class TestSimplifiedSteamProperties:
     """Tests for the simplified steam property calculations."""
 
     @pytest.fixture
-    def engine(self) -> Any:
+    def engine(self):
         """Create a SteamCalculationEngine."""
         from src.shared.python.upstream_drift_tools.calculators.thermo.steam_engine import (
             SteamCalculationEngine,
@@ -144,13 +142,13 @@ class TestSimplifiedSteamProperties:
         assert result.specific_volume > 0.0
 
     def test_precondition_negative_temperature_raises(self, engine) -> None:
-        """Negative temperature (K) should raise AssertionError."""
-        with pytest.raises(AssertionError):
+        """Negative temperature (K) should raise ValueError."""
+        with pytest.raises(ValueError):
             engine.calculate_properties(temperature=-10.0, pressure=101325.0)
 
     def test_precondition_zero_pressure_raises(self, engine) -> None:
-        """Zero pressure should raise AssertionError."""
-        with pytest.raises(AssertionError):
+        """Zero pressure should raise ValueError."""
+        with pytest.raises(ValueError):
             engine.calculate_properties(temperature=400.0, pressure=0.0)
 
     def test_to_dict_returns_dict(self, engine) -> None:
@@ -168,7 +166,7 @@ class TestWaterVaporPressure:
     """Tests for water vapor pressure calculation methods."""
 
     @pytest.fixture
-    def engine(self) -> Any:
+    def engine(self):
         """Create engine."""
         from src.shared.python.upstream_drift_tools.calculators.thermo.steam_engine import (
             SteamCalculationEngine,

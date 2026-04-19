@@ -6,8 +6,6 @@ Refactored for DRY compliance using parameterized engine tests.
 
 from __future__ import annotations
 
-from typing import Any
-
 import numpy as np
 import pytest
 
@@ -19,7 +17,7 @@ logger = get_logger(__name__)
 SUPERPOSITION_TOLERANCE = 1e-5
 
 
-def _get_engine(engine_name: str) -> Any:
+def _get_engine(engine_name: str):
     """Factory to get the requested physics engine, skipping if not available."""
     if engine_name == "pinocchio":
         try:
@@ -52,7 +50,7 @@ def _get_engine(engine_name: str) -> Any:
 class TestDriftControlDecomposition:
     """Unified tests for drift-control decomposition across all engines."""
 
-    def test_superposition(self, engine_name, pendulum_urdf) -> None:
+    def test_superposition(self, engine_name, pendulum_urdf):
         """Verify drift + control = full dynamics. (Requirement F)"""
         engine = _get_engine(engine_name)
 
@@ -121,7 +119,7 @@ class TestDriftControlDecomposition:
             f"{engine_name}: Superposition failed (res={max_res:.2e})"
         )
 
-    def test_zero_control(self, engine_name, pendulum_urdf) -> None:
+    def test_zero_control(self, engine_name, pendulum_urdf):
         """Verify full dynamics with tau=0 equals drift acceleration."""
         engine = _get_engine(engine_name)
         try:
@@ -167,7 +165,7 @@ class TestDriftControlDecomposition:
 
         np.testing.assert_allclose(a_drift, a_full_zero, atol=1e-10)
 
-    def test_interface_compliance(self, engine_name, pendulum_urdf) -> None:
+    def test_interface_compliance(self, engine_name, pendulum_urdf):
         """Verify drift-control API compliance."""
         engine = _get_engine(engine_name)
         assert hasattr(engine, "compute_drift_acceleration")

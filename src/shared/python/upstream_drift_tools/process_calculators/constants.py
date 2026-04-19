@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Physical Constants and Conversion Factors for Process Calculators.
 
 This module provides NIST-standard physical constants and conversion factors
@@ -41,12 +45,8 @@ from upstream_drift_tools.utils.unit_constants import (
 from upstream_drift_tools.utils.unit_constants import (
     DENSITY_WATER_STD as _DENSITY_WATER_STD,
 )
-from upstream_drift_tools.utils.unit_constants import (
-    HOURS_PER_DAY as _HOURS_PER_DAY,
-)
-from upstream_drift_tools.utils.unit_constants import (
-    KG_TO_LB as _KG_TO_LB,
-)
+from upstream_drift_tools.utils.unit_constants import HOURS_PER_DAY as _HOURS_PER_DAY
+from upstream_drift_tools.utils.unit_constants import KG_TO_LB as _KG_TO_LB
 from upstream_drift_tools.utils.unit_constants import (
     R_UNIVERSAL_KMOL as _R_UNIVERSAL_KMOL,
 )

@@ -8,8 +8,7 @@ internal mathematical logic directly.
 
 from __future__ import annotations
 
-from collections.abc import Generator
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from fastapi import FastAPI
@@ -23,7 +22,7 @@ client = TestClient(_app)
 
 
 @pytest.fixture
-def mock_tools() -> Generator[tuple[MagicMock, ...], None, None]:
+def mock_tools():
     """Mock the scrubber calculators securely from Tools."""
     with (
         patch(

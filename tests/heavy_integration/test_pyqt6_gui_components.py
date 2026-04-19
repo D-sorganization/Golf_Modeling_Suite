@@ -8,14 +8,12 @@ All tests skip gracefully when PyQt6 is unavailable.
 from __future__ import annotations
 
 import sys
-from collections.abc import Generator
-from typing import Any
 
 import pytest
 
 
 @pytest.fixture(scope="module")
-def qt_app() -> Generator[Any, None, None]:
+def qt_app():
     """Return or create a QApplication singleton for headless tests."""
     try:
         from PyQt6.QtWidgets import QApplication
@@ -117,8 +115,8 @@ class TestPendulumSimulatorGui:
     def test_pendulum_gui_importable(self, qt_app) -> None:  # noqa: ARG002
         """pendulum_simulator GUI module is importable."""
         try:
-            from src.shared.python.pendulum_simulator.gui import (
-                main_window,  # noqa: F401
+            from src.shared.python.pendulum_simulator.gui import (  # noqa: F401
+                main_window,
             )
         except ImportError as exc:
             pytest.skip(f"pendulum_simulator GUI not importable: {exc}")

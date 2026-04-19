@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
-
 import pytest
 
 from src.shared.python.core.contracts.exceptions import InvariantError
@@ -39,7 +37,7 @@ class TestContractChecker:
             def __init__(self) -> None:
                 self.mass = 1.0
 
-            def _get_invariants(self) -> list[tuple[Callable[[], bool], str]]:
+            def _get_invariants(self):
                 return [(lambda: self.mass > 0, "mass must be positive")]
 
         obj = MyClass()
@@ -50,7 +48,7 @@ class TestContractChecker:
             def __init__(self) -> None:
                 self.mass = -1.0
 
-            def _get_invariants(self) -> list[tuple[Callable[[], bool], str]]:
+            def _get_invariants(self):
                 return [(lambda: self.mass > 0, "mass must be positive")]
 
         obj = MyClass()
@@ -63,7 +61,7 @@ class TestContractChecker:
                 self.mass = 1.0
                 self.timestep = 0.01
 
-            def _get_invariants(self) -> list[tuple[Callable[[], bool], str]]:
+            def _get_invariants(self):
                 return [
                     (lambda: self.mass > 0, "mass must be positive"),
                     (lambda: self.timestep > 0, "timestep must be positive"),
@@ -86,7 +84,7 @@ class TestInvariantCheckedDecorator:
             def __init__(self) -> None:
                 self.count = 0
 
-            def _get_invariants(self) -> list[tuple[Callable[[], bool], str]]:
+            def _get_invariants(self):
                 return [(lambda: self.count >= 0, "count must be non-negative")]
 
             @invariant_checked
@@ -102,7 +100,7 @@ class TestInvariantCheckedDecorator:
             def __init__(self) -> None:
                 self.value = 1.0
 
-            def _get_invariants(self) -> list[tuple[Callable[[], bool], str]]:
+            def _get_invariants(self):
                 return [(lambda: self.value > 0, "value must be positive")]
 
             @invariant_checked

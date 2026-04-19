@@ -78,9 +78,7 @@ class MultiModelShotTracerWidget(QWidget):
 
     def __init__(self, parent: "QWidget | None" = None) -> None:
         """Initialize the shot tracer widget."""
-        if not (parent is not None):
-            raise ValueError("parent must be provided")
-        if not (parent is not None):
+        if parent is None:
             raise ValueError("parent must be provided")
         super().__init__(parent)
         self.results: dict[str, FlightResult] = {}
@@ -302,9 +300,7 @@ class MultiModelShotTracerWidget(QWidget):
 
     def _apply_preset(self, club: str) -> None:
         """Apply preset values for a club type."""
-        if not (club is not None):
-            raise ValueError("club must be provided")
-        if not (club is not None):
+        if club is None:
             raise ValueError("club must be provided")
         presets = {
             "driver": (163.0, 11.0, 2500.0),
@@ -451,8 +447,7 @@ def main() -> None:
     app.setStyle("Fusion")
 
     # Apply dark theme
-    app.setStyleSheet(
-        """
+    app.setStyleSheet("""
         QMainWindow, QWidget {
             background-color: #2b2b2b;
             color: #ffffff;
@@ -504,8 +499,7 @@ def main() -> None:
             padding: 5px;
             border: 1px solid #555;
         }
-        """
-    )
+        """)
 
     window = MultiModelShotTracerWindow()
     window.show()

@@ -21,7 +21,7 @@ def is_engine_available(engine_type: EngineType) -> bool:
     return bool(probe_result.is_available())
 
 
-def test_pinocchio_golfer_stability() -> None:
+def test_pinocchio_golfer_stability():
     """Verify the Pinocchio golfer URDF loads and simulates without exploding."""
     if not is_engine_available(EngineType.PINOCCHIO):
         pytest.skip("Pinocchio not installed")
@@ -77,7 +77,7 @@ def test_pinocchio_golfer_stability() -> None:
     logger.info("Golfer URDF stability check passed.")
 
 
-def test_mujoco_myoarm_stability() -> None:
+def test_mujoco_myoarm_stability():
     """Verify the MuJoCo MyoArm XML loads and steps safely."""
     if not is_engine_available(EngineType.MUJOCO):
         pytest.skip("MuJoCo not installed")
