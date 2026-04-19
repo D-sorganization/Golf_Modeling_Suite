@@ -119,6 +119,39 @@ def test_rigid_body_angular_momentum_conservation(
     )
 
 
+def test_club_friction_impulse_maps_face_offset_to_3d(
+    basic_pre_state, default_impact_params
+) -> None:
+    """Vertical face offset must not be interpreted as a global Y offset."""
+    basic_pre_state.clubhead_velocity = np.array([45.0, 5.0, 0.0])
+    basic_pre_state.impact_offset = np.array([0.0, 0.01])
+
+    model = RigidBodyImpactModel()
+    n = basic_pre_state.clubhead_orientation / np.linalg.norm(
+        basic_pre_state.clubhead_orientation
+    )
+    v_rel = basic_pre_state.clubhead_velocity - basic_pre_state.ball_velocity
+    j, v_approach = model._compute_impulse(
+        v_rel,
+        n,
+        basic_pre_state.clubhead_mass,
+        default_impact_params.cor,
+    )
+
+    club_impulse = model._compute_friction_impulse_on_club(
+        basic_pre_state,
+        v_rel,
+        v_approach,
+        n,
+        j,
+        default_impact_params.friction_coefficient,
+    )
+
+    assert club_impulse[0] > 0
+    assert club_impulse[1] == pytest.approx(0.0)
+    assert club_impulse[2] == pytest.approx(0.0)
+
+
 def test_rigid_body_friction_spin(basic_pre_state, default_impact_params) -> None:
     """Test spin generation from glancing impact."""
     # Modify pre-state to have tangential velocity component
@@ -296,6 +329,9 @@ def test_validate_energy_balance(basic_pre_state, default_impact_params) -> None
     assert analysis["total_ke_pre"] > 0
     assert analysis["total_ke_post"] > 0
     assert analysis["energy_lost"] > 0  # Inelastic collision (COR < 1)
+    mu = basic_pre_state.clubhead_mass / GOLF_BALL_MASS_KG
+    expected_loss_factor = (1 - default_impact_params.cor**2) / (1 + mu)
+    assert analysis["expected_loss_factor"] == pytest.approx(expected_loss_factor)
 
 
 def test_create_impact_model() -> None:

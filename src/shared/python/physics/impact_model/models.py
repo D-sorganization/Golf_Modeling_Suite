@@ -102,6 +102,28 @@ class RigidBodyImpactModel(ImpactModel):
         )
         return pre_state.ball_angular_velocity + spin_magnitude * spin_axis
 
+    def _impact_offset_to_face_vector(
+        self, impact_offset: np.ndarray, n: np.ndarray
+    ) -> np.ndarray:
+        """Map [horizontal, vertical] face offset into a 3D lever arm."""
+        offset = np.asarray(impact_offset, dtype=float)
+        if offset.shape != (2,):
+            raise ValueError("impact_offset must be a 2D face-plane vector")
+
+        normal = n / np.linalg.norm(n)
+        up = np.array([0.0, 0.0, 1.0])
+        vertical_axis = up - np.dot(up, normal) * normal
+
+        if np.linalg.norm(vertical_axis) <= 1e-6:
+            fallback = np.array([0.0, 1.0, 0.0])
+            vertical_axis = fallback - np.dot(fallback, normal) * normal
+
+        vertical_axis = vertical_axis / np.linalg.norm(vertical_axis)
+        horizontal_axis = np.cross(vertical_axis, normal)
+        horizontal_axis = horizontal_axis / np.linalg.norm(horizontal_axis)
+
+        return offset[0] * horizontal_axis + offset[1] * vertical_axis
+
     def _compute_friction_impulse_on_club(
         self,
         pre_state: PreImpactState,
@@ -132,11 +154,11 @@ class RigidBodyImpactModel(ImpactModel):
             float(friction_coefficient * j),
             float(GOLF_BALL_MASS_KG * tangent_mag * 0.4),
         )
-        # r = impact offset (from club COM to contact point)
-        r = pre_state.impact_offset
-        # Friction impulse: F = j_friction * tangent_dir
-        # Angular impulse: L_friction = r × (j_friction * tangent_dir)
-        friction_torque = np.cross(r, j_friction * tangent_dir)
+        # r = impact offset in the clubface plane, from club COM to contact point.
+        r = self._impact_offset_to_face_vector(pre_state.impact_offset, n)
+        # The club receives the equal and opposite friction impulse from the ball.
+        friction_impulse_on_club = -j_friction * tangent_dir
+        friction_torque = np.cross(r, friction_impulse_on_club)
         return (
             friction_torque / pre_state.clubhead_moi
             if pre_state.clubhead_moi > 0
@@ -295,10 +317,10 @@ class SpringDamperImpactModel(ImpactModel):
         )
 
         # Initial state - place ball at contact
-        x_ball = GOLF_BALL_RADIUS_M * n  # Ball surface at origin
-        v_ball = pre_state.ball_velocity.copy()
-        x_club = np.zeros(3)
-        v_club = pre_state.clubhead_velocity.copy()
+        x_ball: np.ndarray = GOLF_BALL_RADIUS_M * n  # Ball surface at origin
+        v_ball: np.ndarray = pre_state.ball_velocity.copy()
+        x_club: np.ndarray = np.zeros(3)
+        v_club: np.ndarray = pre_state.clubhead_velocity.copy()
 
         # Integration
         contact_time = 0.0
