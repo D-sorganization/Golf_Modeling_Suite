@@ -10,11 +10,11 @@ from src.deployment.teleoperation.devices import (
 
 
 class DummyDevice(BaseInputDevice):
-    def update(self) -> None:
+    def update(self):
         pass
 
 
-def test_base_input_device() -> None:
+def test_base_input_device():
     dev = DummyDevice()
     assert not dev.is_connected
     assert dev.connect()
@@ -37,7 +37,7 @@ def test_base_input_device() -> None:
     assert not dev.is_connected
 
 
-def test_spacemouse_input() -> None:
+def test_spacemouse_input():
     dev = SpaceMouseInput(0)
     assert not dev.is_connected
     assert dev.connect()
@@ -55,7 +55,7 @@ def test_spacemouse_input() -> None:
     dev.update()
 
 
-def test_vr_controller_input() -> None:
+def test_vr_controller_input():
     dev = VRControllerInput("left", "steamvr")
     assert dev._hand == "left"
     assert dev._tracking_system == "steamvr"
@@ -72,7 +72,7 @@ def test_vr_controller_input() -> None:
     dev.update()
 
 
-def test_haptic_device_input() -> None:
+def test_haptic_device_input():
     dev = HapticDeviceInput("phantom")
     assert dev.connect()
 
@@ -89,7 +89,7 @@ def test_haptic_device_input() -> None:
     dev.set_force_feedback(wrench)
 
 
-def test_keyboard_mouse_input() -> None:
+def test_keyboard_mouse_input():
     dev = KeyboardMouseInput()
     assert dev.connect()
 

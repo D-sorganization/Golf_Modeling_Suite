@@ -7,7 +7,6 @@ that the API layer correctly implements the contract boundaries.
 
 from __future__ import annotations
 
-from collections.abc import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -30,7 +29,7 @@ client = TestClient(_app)
 
 
 @pytest.fixture
-def mock_rotation_class() -> Generator[tuple[MagicMock, MagicMock], None, None]:
+def mock_rotation_class():
     """Mock the Rotation class from rotation_converter.converter."""
     with patch(
         "src.shared.python.calc_backend.routers.rotation_converter.Rotation"

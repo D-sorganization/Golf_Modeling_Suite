@@ -260,9 +260,7 @@ class GolfLauncher(
 
     def _get_model(self, model_id: str) -> Any | None:
         """Retrieve a model or application by ID."""
-        if not (model_id is not None):
-            raise ValueError("model_id must be provided")
-        if not (model_id is not None):
+        if model_id is None:
             raise ValueError("model_id must be provided")
         if model_id in self.available_models:
             return self.available_models[model_id]
@@ -306,9 +304,7 @@ class GolfLauncher(
 
     def _apply_model_selection(self, selected_ids: list[str]) -> None:
         """Apply a new set of selected models from the layout dialog."""
-        if not (selected_ids is not None):
-            raise ValueError("selected_ids must be provided")
-        if not (selected_ids is not None):
+        if selected_ids is None:
             raise ValueError("selected_ids must be provided")
         self.layout_manager.apply_model_selection(selected_ids)
         self.model_order = self.layout_manager.model_order
@@ -330,9 +326,7 @@ class GolfLauncher(
 
     def update_search_filter(self, text: str) -> None:
         """Update the search filter and rebuild grid."""
-        if not (text is not None):
-            raise ValueError("text must be provided")
-        if not (text is not None):
+        if text is None:
             raise ValueError("text must be provided")
         self.layout_manager.update_search_filter(text)
         self._rebuild_grid()
@@ -346,9 +340,7 @@ class GolfLauncher(
 
     def launch_model_direct(self, model_id: str) -> None:
         """Selects and immediately launches the model (for double-click)."""
-        if not (model_id is not None):
-            raise ValueError("model_id must be provided")
-        if not (model_id is not None):
+        if model_id is None:
             raise ValueError("model_id must be provided")
         self.select_model(model_id)
         QApplication.processEvents(QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents)
@@ -441,9 +433,7 @@ class GolfLauncher(
 
     def _safe_int(self, value: Any, default: int) -> int:
         """Safely convert a value to int, handling Mock objects from tests."""
-        if not (default is not None):
-            raise ValueError("default must be provided")
-        if not (default is not None):
+        if default is None:
             raise ValueError("default must be provided")
         if hasattr(value, "return_value"):
             return default
@@ -453,9 +443,7 @@ class GolfLauncher(
 
     def select_model(self, model_id: str) -> None:
         """Select a model and update UI."""
-        if not (model_id is not None):
-            raise ValueError("model_id must be provided")
-        if not (model_id is not None):
+        if model_id is None:
             raise ValueError("model_id must be provided")
         self.selected_model = model_id
 
@@ -471,18 +459,15 @@ class GolfLauncher(
 
         for mid, card in self.model_cards.items():
             if mid == model_id:
-                card.setStyleSheet(
-                    f"""
+                card.setStyleSheet(f"""
                     QFrame#ModelCard {{
                         background-color: {c.bg_highlight};
                         border: 2px solid {c.primary};
                         border-radius: 12px;
                     }}
-                    """
-                )
+                    """)
             else:
-                card.setStyleSheet(
-                    f"""
+                card.setStyleSheet(f"""
                     QFrame#ModelCard {{
                         background-color: {c.bg_elevated};
                         border: 1px solid {c.border_default};
@@ -492,8 +477,7 @@ class GolfLauncher(
                         background-color: {c.bg_highlight};
                         border: 1px solid {c.border_strong};
                     }}
-                    """
-                )
+                    """)
 
         # Update launch button
         model = self._get_model(model_id)
@@ -518,15 +502,13 @@ class GolfLauncher(
         if not self.selected_model:
             self.btn_launch.setText("Select a Model")
             self.btn_launch.setEnabled(False)
-            self.btn_launch.setStyleSheet(
-                f"""
+            self.btn_launch.setStyleSheet(f"""
                 QPushButton {{
                     background-color: {c.bg_elevated};
                     color: {c.text_quaternary};
                     border-radius: 6px;
                 }}
-                """
-            )
+                """)
             return
 
         name = model_name or self.selected_model
@@ -539,23 +521,20 @@ class GolfLauncher(
             and not self.docker_available
         ):
             self.btn_launch.setText("! Docker Required")
-            self.btn_launch.setStyleSheet(
-                f"""
+            self.btn_launch.setStyleSheet(f"""
                 QPushButton {{
                     background-color: {c.bg_elevated};
                     color: {c.error};
                     border: 2px solid {c.error};
                     border-radius: 6px;
                 }}
-                """
-            )
+                """)
             self.btn_launch.setEnabled(False)
             return
 
         self.btn_launch.setText(f"Launch {name} >")
         self.btn_launch.setEnabled(True)
-        self.btn_launch.setStyleSheet(
-            f"""
+        self.btn_launch.setStyleSheet(f"""
             QPushButton {{
                 background-color: {c.success};
                 color: white;
@@ -565,14 +544,11 @@ class GolfLauncher(
             QPushButton:hover {{
                 background-color: {c.success_hover};
             }}
-            """
-        )
+            """)
 
     def _get_engine_type(self, model_type: str) -> Any:
         """Map model type to EngineType."""
-        if not (model_type is not None):
-            raise ValueError("model_type must be provided")
-        if not (model_type is not None):
+        if model_type is None:
             raise ValueError("model_type must be provided")
         _, EngineType = _lazy_load_engine_manager()
 
@@ -592,9 +568,7 @@ class GolfLauncher(
 
     def _apply_docker_status(self, available: bool) -> None:
         """Apply Docker availability status to UI."""
-        if not (available is not None):
-            raise ValueError("available must be provided")
-        if not (available is not None):
+        if available is None:
             raise ValueError("available must be provided")
         self.docker_available = available
         if available:

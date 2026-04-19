@@ -7,7 +7,7 @@ simulations, matching the functionality available in the MuJoCo engine.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -285,7 +285,7 @@ class DrakeMotionOptimizer:
 
     def _build_optimization_result(
         self,
-        opt_result: Any,
+        opt_result,
         optimal_trajectory: np.ndarray,
         objective_values: dict[str, float],
         constraint_violations: dict[str, float],

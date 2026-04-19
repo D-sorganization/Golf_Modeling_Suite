@@ -16,7 +16,7 @@ from src.shared.python.validation_pkg.statistical_analysis import StatisticalAna
 class TestSwingComparison(unittest.TestCase):
     """Test suite for swing comparison logic."""
 
-    def setUp(self) -> None:
+    def setUp(self):
         """Set up test data."""
         # Create mock data for reference
         self.ref_data = {
@@ -33,13 +33,13 @@ class TestSwingComparison(unittest.TestCase):
             "joint_torques": self.ref_data["joint_torques"],
         }
 
-    def test_init_with_dict(self) -> None:
+    def test_init_with_dict(self):
         """Test initialization with dictionaries."""
         comparator = SwingComparator(self.ref_data, self.stu_data)
         self.assertIsInstance(comparator.ref, StatisticalAnalyzer)
         self.assertIsInstance(comparator.student, StatisticalAnalyzer)
 
-    def test_init_with_analyzer(self) -> None:
+    def test_init_with_analyzer(self):
         """Test initialization with StatisticalAnalyzer objects."""
         ref_analyzer = StatisticalAnalyzer(**self.ref_data)
         stu_analyzer = StatisticalAnalyzer(**self.stu_data)
@@ -48,7 +48,7 @@ class TestSwingComparison(unittest.TestCase):
         self.assertIs(comparator.student, stu_analyzer)
 
     @patch.object(StatisticalAnalyzer, "compute_tempo")
-    def test_compare_tempo(self, mock_tempo) -> None:
+    def test_compare_tempo(self, mock_tempo):
         """Test tempo comparison."""
         # Mock tempo returns (start, top, ratio, ...)
         mock_tempo.side_effect = [
@@ -68,7 +68,7 @@ class TestSwingComparison(unittest.TestCase):
             self.assertAlmostEqual(metric.percent_diff, 10.0)
 
     @patch("src.shared.python.signal_toolkit.signal_processing.compute_dtw_path")
-    def test_compute_kinematic_similarity(self, mock_dtw) -> None:
+    def test_compute_kinematic_similarity(self, mock_dtw):
         """Test kinematic similarity with mocked DTW."""
         # Mock DTW result (dist, path)
         mock_dtw.return_value = (10.0, [(i, i) for i in range(100)])
@@ -82,7 +82,7 @@ class TestSwingComparison(unittest.TestCase):
             self.assertEqual(len(res.path), 100)
             self.assertAlmostEqual(res.normalized_distance, 0.1)
 
-    def test_compare_peak_speeds(self) -> None:
+    def test_compare_peak_speeds(self):
         """Test peak speed comparison."""
         comparator = SwingComparator(self.ref_data, self.stu_data)
         segment_indices = {"Joint1": 0, "Joint2": 1}
@@ -100,7 +100,7 @@ class TestSwingComparison(unittest.TestCase):
         self.assertAlmostEqual(metrics["Joint1"].student_value, stu_peak)
         self.assertAlmostEqual(metrics["Joint1"].reference_value, ref_peak)
 
-    def test_generate_comparison_report(self) -> None:
+    def test_generate_comparison_report(self):
         """Test full report generation."""
         comparator = SwingComparator(self.ref_data, self.stu_data)
         segment_indices = {"Joint1": 0}

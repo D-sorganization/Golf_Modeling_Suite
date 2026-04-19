@@ -18,6 +18,7 @@ Has Suggestion: No
 [View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/2746#discussion_r3099641884)
 
 ---
+
 ### PR #2746: scripts/assess_repository.py:185
 
 Actionable: Yes
@@ -32,3 +33,4 @@ The new pattern requires exact identifiers `password`, `secret`, `api_key`, or `
 [View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/2746#discussion_r3099641890)
 
 ---
+

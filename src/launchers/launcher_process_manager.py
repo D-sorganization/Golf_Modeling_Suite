@@ -97,9 +97,7 @@ class ProcessManager:
             use_separate_terminals: If True, each engine opens its own
                 console window (legacy behaviour).
         """
-        if not (repo_root is not None):
-            raise ValueError("repo_root must be provided")
-        if not (repo_root is not None):
+        if repo_root is None:
             raise ValueError("repo_root must be provided")
         self.repo_root = repo_root
         self.running_processes: dict[str, Popen[bytes]] = {}
@@ -176,38 +174,10 @@ class ProcessManager:
         """
         env = os.environ.copy()
         existing_path = env.get("PYTHONPATH", "")
-        separator = ";" if os.name == "nt" else ":"
-        current_paths = existing_path.split(separator) if existing_path else []
-
-        shared_python = str(self.repo_root / "src" / "shared" / "python")
-        mujoco_python = str(
-            self.repo_root / "src" / "engines" / "physics_engines" / "mujoco" / "python"
+        env["PYTHONPATH"] = self._merge_python_paths(
+            existing_path,
+            tuple(str(path) for path in extra_python_paths),
         )
-        # Include conda site-packages for opensim/pinocchio if available.
-        # Use os.path to avoid WindowsPath instantiation issues on Linux.
-        conda_sp = os.path.join(
-            os.path.expanduser("~"),
-            "miniconda3",
-            "lib",
-            "python3.10",
-            "site-packages",
-        )
-
-        # repo_root and src are always added (required for imports).
-        # Optional extras are only added when the directory exists.
-        paths_to_add = []
-        for p in [repo_root_str, src_dir]:
-            if p not in current_paths:
-                paths_to_add.append(p)
-        for p in [shared_python, mujoco_python, conda_sp]:
-            if p not in current_paths and os.path.isdir(p):
-                paths_to_add.append(p)
-
-        if paths_to_add:
-            new_paths = separator.join(paths_to_add)
-            env["PYTHONPATH"] = (
-                f"{new_paths}{separator}{existing_path}" if existing_path else new_paths
-            )
 
         return env
 
@@ -279,9 +249,7 @@ class ProcessManager:
 
     def _emit_output(self, name: str, line: str) -> None:
         """Route a line of process output to callback, logger, and log file."""
-        if not (name is not None):
-            raise ValueError("name must be provided")
-        if not (name is not None):
+        if name is None:
             raise ValueError("name must be provided")
         self._write_log_line(name, line)
         if self.output_callback is not None:
@@ -296,9 +264,7 @@ class ProcessManager:
         containers) that still need their output captured in the unified
         console and log file.
         """
-        if not (name is not None):
-            raise ValueError("name must be provided")
-        if not (name is not None):
+        if name is None:
             raise ValueError("name must be provided")
         # Guard running_processes dict with lock (issue #2715)
         with self._process_lock:
@@ -316,9 +282,7 @@ class ProcessManager:
 
         Runs in a daemon thread so the main GUI thread is never blocked.
         """
-        if not (name is not None):
-            raise ValueError("name must be provided")
-        if not (name is not None):
+        if name is None:
             raise ValueError("name must be provided")
         try:
             if process.stdout:
@@ -370,19 +334,6 @@ class ProcessManager:
 
             # Validate working directory (issue #2715: reject paths outside repo)
             cwd = self._validate_context_path(cwd)
-
-            # Diagnostic: log full launch details for debugging silent failures
-            logger.info(
-                "Launching script %s: cmd=[%s, %s], cwd=%s, PYTHONPATH=%s",
-                name,
-                sys.executable,
-                script_path,
-                cwd,
-                process_env.get("PYTHONPATH", "<unset>")[:300],
-            )
-
-            # Validate script path to prevent path-traversal / injection.
-            validate_script_path(script_path, self.repo_root)
 
             # Diagnostic: log full launch details for debugging silent failures
             logger.info(
@@ -490,12 +441,6 @@ class ProcessManager:
                     f"Invalid module name (potential injection): {module_name!r}"
                 )
 
-            # Validate module name: must be a dotted Python identifier.
-            if not _MODULE_NAME_RE.match(module_name):
-                raise SecureSubprocessError(
-                    f"Invalid module name (potential injection): {module_name!r}"
-                )
-
             if os.name == "nt":
                 current_pythonpath = process_env.get("PYTHONPATH", "")
                 repo_root_str = str(self.repo_root)
@@ -587,72 +532,40 @@ class ProcessManager:
             logger.error(f"Failed to launch {name}: {e}")
             return None
 
-    def _get_wsl_distro(self) -> str:
-        """Return the WSL distro name from WSL_DISTRO env var (default: Ubuntu)."""
-        return os.environ.get("WSL_DISTRO", "Ubuntu")
-
-    def _get_wsl_project_dir(self) -> str:
-        """Return the WSL project directory from WSL_PROJECT_DIR env var.
-
-        Falls back to converting self.repo_root to a WSL path.
-        """
-        if env_val := os.environ.get("WSL_PROJECT_DIR"):
-            return env_val
-        return self._convert_to_wsl_path(str(self.repo_root))
-
-    def _get_wsl_conda_env(self) -> str:
-        """Return the conda environment name from WSL_CONDA_ENV env var (default: base)."""
-        return os.environ.get("WSL_CONDA_ENV", "base")
-
     def launch_in_wsl(
         self,
         script_path: str,
-        project_dir: str | None = None,
+        project_dir: str = "/mnt/c/Users/diete/Repositories/UpstreamDrift",
     ) -> bool:
         """Launch a script in WSL2 Ubuntu environment.
 
-        WSL settings are read from environment variables so this method is
-        portable across developers and machines:
-        - ``WSL_DISTRO``: WSL distro name (default: ``"Ubuntu"``)
-        - ``WSL_PROJECT_DIR``: WSL path to the project root (default: derived
-          from repo_root)
-        - ``WSL_CONDA_ENV``: conda environment name (default: ``"base"``)
-
         Args:
             script_path: Windows path to the script.
-            project_dir: Override WSL project dir (uses WSL_PROJECT_DIR if not set).
+            project_dir: WSL path to the project directory.
 
         Returns:
             True if launch succeeded, False otherwise.
         """
         # Convert Windows path to WSL path
-        if not (script_path is not None):
+        if script_path is None:
             raise ValueError("script_path must be provided")
-        if not (script_path is not None):
-            raise ValueError("script_path must be provided")
-
-        resolved_project_dir = project_dir or self._get_wsl_project_dir()
-        distro = self._get_wsl_distro()
-        conda_env = self._get_wsl_conda_env()
-
         wsl_script_path = self._convert_to_wsl_path(script_path)
 
         # Use shlex.quote to prevent injection of shell metacharacters in the
         # paths that are interpolated into the bash -c script.
-        quoted_project_dir = shlex.quote(resolved_project_dir)
+        quoted_project_dir = shlex.quote(project_dir)
         quoted_wsl_script = shlex.quote(wsl_script_path)
-        quoted_conda_env = shlex.quote(conda_env)
 
         wsl_cmd = (
             "source ~/miniforge3/etc/profile.d/conda.sh\n"
-            f"conda activate {quoted_conda_env}\n"
+            "conda activate golf_suite\n"
             'export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$LD_LIBRARY_PATH"\n'
             f"export PYTHONPATH={quoted_project_dir}:$PYTHONPATH\n"
             f"cd {quoted_project_dir}\n"
             f"python {quoted_wsl_script}\n"
         )
 
-        cmd = ["wsl", "-d", distro, "--", "bash", "-c", wsl_cmd]
+        cmd = ["wsl", "-d", "Ubuntu-22.04", "--", "bash", "-c", wsl_cmd]
 
         try:
             logger.info(f"Launching in WSL: {script_path}")
@@ -673,24 +586,20 @@ class ProcessManager:
         self,
         module_name: str,
         cwd: Path | None = None,
-        project_dir: str | None = None,
+        project_dir: str = "/mnt/c/Users/diete/Repositories/UpstreamDrift",
     ) -> bool:
         """Launch a Python module in WSL2 Ubuntu environment.
-
-        WSL settings are read from environment variables (see launch_in_wsl).
 
         Args:
             module_name: Python module name to run with -m flag.
             cwd: Optional working directory (Windows Path).
-            project_dir: Override WSL project dir (uses WSL_PROJECT_DIR if not set).
+            project_dir: WSL path to the project directory.
 
         Returns:
             True if launch succeeded, False otherwise.
         """
         # Determine working directory
-        if not (module_name is not None):
-            raise ValueError("module_name must be provided")
-        if not (module_name is not None):
+        if module_name is None:
             raise ValueError("module_name must be provided")
 
         # Validate module name: must be a dotted Python identifier.
@@ -700,31 +609,26 @@ class ProcessManager:
             )
             return False
 
-        resolved_project_dir = project_dir or self._get_wsl_project_dir()
-        distro = self._get_wsl_distro()
-        conda_env = self._get_wsl_conda_env()
-
-        work_dir = resolved_project_dir
+        work_dir = project_dir
         if cwd:
             work_dir = self._convert_to_wsl_path(str(cwd))
 
         # Use shlex.quote to prevent injection of shell metacharacters in the
         # paths that are interpolated into the bash -c script.
         # module_name has already been validated against the allowlist regex.
-        quoted_project_dir = shlex.quote(resolved_project_dir)
+        quoted_project_dir = shlex.quote(project_dir)
         quoted_work_dir = shlex.quote(work_dir)
-        quoted_conda_env = shlex.quote(conda_env)
 
         wsl_cmd = (
             "source ~/miniforge3/etc/profile.d/conda.sh\n"
-            f"conda activate {quoted_conda_env}\n"
+            "conda activate golf_suite\n"
             'export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$LD_LIBRARY_PATH"\n'
             f"export PYTHONPATH={quoted_project_dir}:$PYTHONPATH\n"
             f"cd {quoted_work_dir}\n"
             f"python -m {module_name}\n"
         )
 
-        cmd = ["wsl", "-d", distro, "--", "bash", "-c", wsl_cmd]
+        cmd = ["wsl", "-d", "Ubuntu-22.04", "--", "bash", "-c", wsl_cmd]
 
         try:
             logger.info(f"Launching module in WSL: {module_name}")
@@ -750,9 +654,7 @@ class ProcessManager:
         Returns:
             WSL-style path string.
         """
-        if not (windows_path is not None):
-            raise ValueError("windows_path must be provided")
-        if not (windows_path is not None):
+        if windows_path is None:
             raise ValueError("windows_path must be provided")
         if len(windows_path) > 1 and windows_path[1] == ":":
             drive = windows_path[0].lower()
@@ -789,9 +691,7 @@ class ProcessManager:
         Returns:
             True if the process is running, False otherwise.
         """
-        if not (name is not None):
-            raise ValueError("name must be provided")
-        if not (name is not None):
+        if name is None:
             raise ValueError("name must be provided")
         if name not in self.running_processes:
             return False

@@ -18,7 +18,7 @@ def _make_params(**kwargs) -> TriplePendulumParams:
     return TriplePendulumParams(**defaults)
 
 
-def _zero_torque(t) -> tuple[float, float, float]:
+def _zero_torque(t):
     return 0.0, 0.0, 0.0
 
 

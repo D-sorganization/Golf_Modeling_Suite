@@ -16,7 +16,7 @@ from src.shared.python.core.contracts import precondition
 from src.shared.python.logging_pkg.logging_config import get_logger
 
 logger = get_logger(__name__)
-router = APIRouter(prefix="/launcher", tags=["launcher"])
+router = APIRouter(prefix="/api/launcher", tags=["launcher"])
 
 # Cache the manifest in memory (singleton holder avoids 'global')
 _launcher_state: dict[str, LauncherManifest | None] = {"manifest": None}
@@ -298,7 +298,7 @@ def _get_engine_capabilities() -> dict[str, dict[str, str]]:
     profiles = _build_engine_profiles()
     _capabilities_state["cache"] = {k: v.to_dict() for k, v in profiles.items()}
 
-    if not (_capabilities_state["cache"] is not None):  # Ensure not None for mypy
+    if _capabilities_state["cache"] is None:  # Ensure not None for mypy
         raise ValueError("DbC Blocked: Precondition failed.")
     return _capabilities_state["cache"]
 

@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 
 
-def test_lazy_imports_engine_manager() -> None:
+def test_lazy_imports_engine_manager():
     """Test that importing EngineManager does NOT import heavy engine libraries."""
 
     # Ensure modules are not already loaded

@@ -8,7 +8,6 @@ underlying math or logic, which is the responsibility of the `Tools` repository.
 
 from __future__ import annotations
 
-from collections.abc import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -23,7 +22,7 @@ client = TestClient(_app)
 
 
 @pytest.fixture
-def mock_calculator() -> Generator[MagicMock, None, None]:
+def mock_calculator():
     """Mock the AcidGasDewpointCalculator to adhere to Shared Component Strategy."""
     with patch(
         "upstream_drift_tools.process_calculators.acid_gas_dewpoint_calculator.AcidGasDewpointCalculator"

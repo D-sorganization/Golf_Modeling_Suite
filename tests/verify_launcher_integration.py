@@ -11,7 +11,7 @@ sys_path = sys.path
 sys_path.append(getcwd())
 
 
-def verify_launcher_init() -> bool | None:
+def verify_launcher_init():
     QApplication(sys.argv)
 
     # Try to import and init the launcher

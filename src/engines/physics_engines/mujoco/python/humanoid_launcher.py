@@ -111,9 +111,7 @@ class RemoteRecorder(RecorderInterface):
 
     def get_time_series(self, field_name: str) -> tuple[np.ndarray, np.ndarray]:
         """Return time-aligned arrays for a named data field."""
-        if not (field_name is not None):
-            raise ValueError("field_name must be provided")
-        if not (field_name is not None):
+        if field_name is None:
             raise ValueError("field_name must be provided")
         if not self.data["times"]:
             return np.array([]), np.array([])
@@ -141,9 +139,7 @@ class RemoteRecorder(RecorderInterface):
         self, source_name: str | int
     ) -> tuple[np.ndarray, np.ndarray]:
         """Return induced acceleration time series for a source."""
-        if not (source_name is not None):
-            raise ValueError("source_name must be provided")
-        if not (source_name is not None):
+        if source_name is None:
             raise ValueError("source_name must be provided")
         if not self.data["times"]:
             return np.array([]), np.array([])
@@ -229,8 +225,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     # Global Stylesheet for Rounded Buttons and Modern Look
-    app.setStyleSheet(
-        """
+    app.setStyleSheet("""
         QPushButton {
             border-radius: 5px;
             padding: 5px;
@@ -276,8 +271,7 @@ if __name__ == "__main__":
         QMessageBox QLabel {
             color: white;
         }
-    """
-    )
+    """)
 
     window = HumanoidLauncher()
     window.show()

@@ -11,12 +11,12 @@ from src.launchers.docker_dialog import EnvironmentDialog  # noqa: E402
 
 
 @pytest.fixture
-def dialog(qapp) -> EnvironmentDialog:
+def dialog(qapp):
     """Provide an EnvironmentDialog instance."""
     return EnvironmentDialog()
 
 
-def test_init(dialog) -> None:
+def test_init(dialog):
     """Test dialog initialization."""
     assert dialog.windowTitle() == "Manage Environment"
     assert dialog.build_thread is None
@@ -24,7 +24,7 @@ def test_init(dialog) -> None:
     assert dialog._elapsed_timer_id is None
 
 
-def test_setup_ui(dialog) -> None:
+def test_setup_ui(dialog):
     """Test UI setup."""
     assert dialog.combo_stage is not None
     assert dialog.btn_build is not None
@@ -35,7 +35,7 @@ def test_setup_ui(dialog) -> None:
 
 
 @patch("src.launchers.docker_dialog.DockerBuildThread")
-def test_start_build(mock_thread_cls, dialog) -> None:
+def test_start_build(mock_thread_cls, dialog):
     """Test starting the build process."""
     mock_thread = MagicMock()
     mock_thread_cls.return_value = mock_thread
@@ -55,7 +55,7 @@ def test_start_build(mock_thread_cls, dialog) -> None:
         assert dialog.build_thread == mock_thread
 
 
-def test_on_build_log(dialog) -> None:
+def test_on_build_log(dialog):
     """Test appending to log."""
     # Append creates text without changing read-only
     with patch.object(dialog.console, "append") as mock_append:
@@ -67,7 +67,7 @@ def test_on_build_log(dialog) -> None:
         dialog._on_build_log("test log 2")
 
 
-def test_on_build_finished_success(dialog) -> None:
+def test_on_build_finished_success(dialog):
     """Test handling a successful build finish."""
     dialog._build_start_time = 1.0
     dialog._elapsed_timer_id = 999
@@ -86,7 +86,7 @@ def test_on_build_finished_success(dialog) -> None:
         assert "Done!" in dialog.build_status_label.text()
 
 
-def test_on_build_finished_failure(dialog) -> None:
+def test_on_build_finished_failure(dialog):
     """Test handling a failed build finish."""
     dialog._build_start_time = 0.0
     dialog._elapsed_timer_id = None
@@ -101,7 +101,7 @@ def test_on_build_finished_failure(dialog) -> None:
         assert "Error!" in dialog.build_status_label.text()
 
 
-def test_cancel_build(dialog) -> None:
+def test_cancel_build(dialog):
     """Test canceling an active build."""
     mock_thread = MagicMock()
     mock_thread.isRunning.return_value = True
@@ -125,14 +125,14 @@ def test_cancel_build(dialog) -> None:
     assert dialog._elapsed_timer_id is None
 
 
-def test_cancel_build_no_thread(dialog) -> None:
+def test_cancel_build_no_thread(dialog):
     """Test canceling when no build thread is active."""
     dialog.build_thread = None
     dialog._cancel_build()
     # Nothing should crash
 
 
-def test_timer_event(dialog) -> None:
+def test_timer_event(dialog):
     """Test timer event updates elapsed time."""
     dialog._build_start_time = 5.0
     with patch("src.launchers.docker_dialog.time.monotonic", return_value=15.0):

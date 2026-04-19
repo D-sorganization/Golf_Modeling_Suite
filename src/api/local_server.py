@@ -58,7 +58,6 @@ from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.responses import HTMLResponse, JSONResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 
-from src.api._version import __version__  # noqa: E402
 from src.api.diagnostics import (  # noqa: E402
     APIDiagnostics,
     get_diagnostic_endpoint_html,
@@ -221,7 +220,7 @@ def _execute_tile_launch(
     Returns:
         Success dict or JSONResponse with error details.
     """
-    if not (tile_id is not None):
+    if tile_id is None:
         raise ValueError("tile_id must be provided")
     model_type = tile.get("type", "")
     repo_path = Path(__file__).parent.parent.parent
@@ -341,7 +340,7 @@ def _register_health_and_diagnostic_endpoints(
 ) -> None:
     """Register health check and diagnostic endpoints."""
 
-    if not (app is not None):
+    if app is None:
         raise ValueError("app must be provided")
 
     @app.get("/api/health")
@@ -433,7 +432,7 @@ def _mount_assets_directory(app: FastAPI, ui_path: Path) -> None:
         app: The FastAPI application instance.
         ui_path: Path to the UI build directory.
     """
-    if not (app is not None):
+    if app is None:
         raise ValueError("app must be provided")
     assets_path = ui_path / "assets"
     if assets_path.exists():
@@ -455,7 +454,7 @@ def _register_spa_catch_all(app: FastAPI, ui_path: Path) -> None:
         app: The FastAPI application instance.
         ui_path: Path to the UI build directory.
     """
-    if not (app is not None):
+    if app is None:
         raise ValueError("app must be provided")
     index_html = ui_path / "index.html"
     if index_html.exists():
@@ -464,7 +463,7 @@ def _register_spa_catch_all(app: FastAPI, ui_path: Path) -> None:
         @app.get("/{full_path:path}")
         async def serve_spa(request: Request, full_path: str) -> Any:
             """Serve the SPA index.html for all non-API routes."""
-            if not (request is not None):
+            if request is None:
                 raise ValueError("request must be provided")
             if full_path.startswith("api/"):
                 return JSONResponse(
@@ -575,7 +574,7 @@ def _register_error_page_catch_all(app: FastAPI) -> None:
         request: Request, full_path: str
     ) -> HTMLResponse | JSONResponse:
         """Serve a helpful error page when UI is not built."""
-        if not (request is not None):
+        if request is None:
             raise ValueError("request must be provided")
         if full_path.startswith("api/"):
             return JSONResponse(
@@ -618,7 +617,7 @@ def create_local_app() -> FastAPI:
             f"All endpoints are available under `{API_PREFIX}/` prefix.\n"
             "Legacy `/api/` routes are maintained for backward compatibility."
         ),
-        version=__version__,
+        version="2.0.0",
         docs_url="/api/docs",  # Swagger UI available locally
         redoc_url="/api/redoc",
     )
@@ -693,7 +692,7 @@ def print_logo_animated() -> None:
 
 def print_matrix_status(message: str, indent: int = 4) -> None:
     """Print status message in matrix green style."""
-    if not (message is not None):
+    if message is None:
         raise ValueError("message must be provided")
     GREEN = "\033[38;5;46m"  # Bright matrix green
     RESET = "\033[0m"
@@ -702,14 +701,13 @@ def print_matrix_status(message: str, indent: int = 4) -> None:
 
 def print_server_info(host: str, port: int) -> None:
     """Print server info box."""
-    if not (host is not None):
+    if host is None:
         raise ValueError("host must be provided")
     CYAN = "\033[38;5;51m"
     RESET = "\033[0m"
 
     try:
-        logger.info(
-            f"""
+        logger.info(f"""
 {CYAN}    ┌─────────────────────────────────────────────────────────┐
     │              Golf Modeling Suite - Local Server         │
     ├─────────────────────────────────────────────────────────┤
@@ -719,8 +717,7 @@ def print_server_info(host: str, port: int) -> None:
     │  Mode: LOCAL (no auth required)                         │
     │  Press Ctrl+C to stop.                                  │
     └─────────────────────────────────────────────────────────┘{RESET}
-    """
-        )
+    """)
     except UnicodeEncodeError:
         logger.info("\n    Golf Modeling Suite - Local Server")
         logger.info("    Running at: http://%s:%s", host, port)

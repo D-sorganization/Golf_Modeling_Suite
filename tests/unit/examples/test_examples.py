@@ -1,13 +1,10 @@
-from __future__ import annotations
-
 from pathlib import Path
-from typing import Any
 from unittest.mock import MagicMock, patch
 
 EXAMPLES_DIR = Path(__file__).resolve().parent.parent.parent.parent / "examples"
 
 
-def run_example(name, monkeypatch) -> None:
+def run_example(name, monkeypatch):
     import runpy
 
     # Prevent sys.exit from killing tests
@@ -15,15 +12,15 @@ def run_example(name, monkeypatch) -> None:
     runpy.run_path(str(EXAMPLES_DIR / name), run_name="__main__")
 
 
-def test_injury_risk_tutorial(monkeypatch) -> None:
+def test_injury_risk_tutorial(monkeypatch):
     run_example("03_injury_risk_tutorial.py", monkeypatch)
 
 
-def test_aerodynamics_demo(monkeypatch) -> None:
+def test_aerodynamics_demo(monkeypatch):
     run_example("aerodynamics_demo.py", monkeypatch)
 
 
-def test_basic_flight_simulation(monkeypatch) -> None:
+def test_basic_flight_simulation(monkeypatch):
     """basic_flight_simulation.py requires the Rust physics kernel.
 
     When Rust is not installed (e.g. CI without the wheel), we mock
@@ -44,7 +41,7 @@ def test_basic_flight_simulation(monkeypatch) -> None:
             self.vx, self.vy, self.vz = 70.0, 0.0, 10.0
 
     class _FakeResult:
-        def get_points(self) -> list[Any]:
+        def get_points(self):
             return [_FakePoint(i * 0.05, i * 3.0, max(0.0, 20.0 - i)) for i in range(5)]
 
     fake_physics.IntegratorConfig = MagicMock(return_value=object())
@@ -62,13 +59,13 @@ def test_basic_flight_simulation(monkeypatch) -> None:
         run_example("basic_flight_simulation.py", monkeypatch)
 
 
-def test_topography_demo(monkeypatch) -> None:
+def test_topography_demo(monkeypatch):
     run_example("topography_demo.py", monkeypatch)
 
 
 @patch("matplotlib.pyplot.show")
 @patch("matplotlib.pyplot.close")
-def test_motion_training_demo(mock_close, mock_show, monkeypatch, tmp_path) -> None:
+def test_motion_training_demo(mock_close, mock_show, monkeypatch, tmp_path):
     import sys
 
     sys.modules["motion_training"] = MagicMock()

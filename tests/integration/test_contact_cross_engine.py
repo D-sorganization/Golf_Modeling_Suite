@@ -33,7 +33,7 @@ def _skip_if_mujoco_state_unavailable(engine) -> None:
 
 
 @pytest.fixture(scope="module")
-def ball_urdf(tmp_path_factory: pytest.TempPathFactory) -> str:
+def ball_urdf(tmp_path_factory):
     """Create a simple ball URDF for contact testing."""
     # Golf ball: mass = 0.045kg, radius = 0.02135m
     urdf_content = """<?xml version="1.0"?>
@@ -76,7 +76,7 @@ def ball_urdf(tmp_path_factory: pytest.TempPathFactory) -> str:
 class TestBasicContactPhysics:
     """Test fundamental contact behavior across all engines."""
 
-    def test_mujoco_ball_drop_energy_dissipation(self, ball_urdf) -> None:
+    def test_mujoco_ball_drop_energy_dissipation(self, ball_urdf):
         """Verify MuJoCo contact dissipates energy (ball doesn't bounce forever)."""
         try:
             from src.engines.physics_engines.mujoco.python.mujoco_humanoid_golf.physics_engine import (
@@ -131,13 +131,13 @@ class TestBasicContactPhysics:
         np.sqrt(E_final / E_initial)
 
     @pytest.mark.slow
-    def test_drake_ball_drop_energy_dissipation(self, ball_urdf) -> None:
+    def test_drake_ball_drop_energy_dissipation(self, ball_urdf):
         """Verify Drake contact dissipates energy."""
         pytest.skip("Drake contact model testing - implementation pending")
         # Expected behavior: Similar to MuJoCo but may use different contact model
 
     @pytest.mark.slow
-    def test_pinocchio_contact_behavior(self, ball_urdf) -> None:
+    def test_pinocchio_contact_behavior(self, ball_urdf):
         """Document Pinocchio contact behavior."""
         try:
             from src.engines.physics_engines.pinocchio.python.pinocchio_physics_engine import (
@@ -171,7 +171,7 @@ class TestCrossEngineContactComparison:
         [0.1, 0.5, 1.0, 2.0],
         ids=["10cm", "50cm", "1m", "2m"],
     )
-    def test_mujoco_restitution_coefficient(self, ball_urdf, drop_height) -> None:
+    def test_mujoco_restitution_coefficient(self, ball_urdf, drop_height):
         """Measure MuJoCo's effective coefficient of restitution at various heights."""
         try:
             from src.engines.physics_engines.mujoco.python.mujoco_humanoid_golf.physics_engine import (
@@ -222,7 +222,7 @@ class TestCrossEngineContactComparison:
 class TestContactModelDocumentation:
     """Document expected differences between engine contact models."""
 
-    def test_document_mujoco_contact_model(self) -> None:
+    def test_document_mujoco_contact_model(self):
         """Document MuJoCo's contact physics approach."""
         documentation = """
         MuJoCo Contact Model:
@@ -242,7 +242,7 @@ class TestContactModelDocumentation:
         # This is a documentation test - always passes
         assert True, documentation
 
-    def test_document_drake_contact_model(self) -> None:
+    def test_document_drake_contact_model(self):
         """Document Drake's contact physics approach."""
         documentation = """
         Drake Contact Model:
@@ -260,7 +260,7 @@ class TestContactModelDocumentation:
         """
         assert True, documentation
 
-    def test_document_pinocchio_contact_model(self) -> None:
+    def test_document_pinocchio_contact_model(self):
         """Document Pinocchio's contact physics approach."""
         documentation = """
         Pinocchio Contact Model:
@@ -281,7 +281,7 @@ class TestContactModelDocumentation:
 class TestContactEnergyConservation:
     """Test energy conservation properties with contact."""
 
-    def test_mujoco_elastic_collision_energy(self, ball_urdf) -> None:
+    def test_mujoco_elastic_collision_energy(self, ball_urdf):
         """Verify (near) energy conservation for elastic collisions in MuJoCo.
 
         With high restitution coefficient, energy should be mostly conserved.
@@ -289,7 +289,7 @@ class TestContactEnergyConservation:
         pytest.skip("Elastic collision test - requires custom contact parameters")
         # Verify E_before ≈ E_after (within tolerance)
 
-    def test_contact_work_energy_theorem(self) -> None:
+    def test_contact_work_energy_theorem(self):
         """Verify work-energy theorem holds during contact."""
         pytest.skip("Work-energy validation - requires contact force measurement")
         # Verify: ΔKE = W_contact + W_gravity
@@ -298,7 +298,7 @@ class TestContactEnergyConservation:
 class TestContactStability:
     """Test numerical stability of contact simulations."""
 
-    def test_mujoco_stacked_boxes_stability(self) -> None:
+    def test_mujoco_stacked_boxes_stability(self):
         """Verify stacked objects don't explode due to contact errors."""
         pytest.skip("Stability test - requires multi-body contact URDF")
         # Simulate for extended time
@@ -309,13 +309,13 @@ class TestContactStability:
 class TestContactCrossValidation:
     """Cross-validate contact results between engines (where comparable)."""
 
-    def test_compare_energy_dissipation_rates(self, ball_urdf) -> None:
+    def test_compare_energy_dissipation_rates(self, ball_urdf):
         """Compare energy dissipation across engines for same scenario."""
         pytest.skip("Cross-engine comparison - requires all engines installed")
         # Document differences in energy dissipation
         # Ensure differences are within expected range (not catastrophic)
 
-    def test_compare_contact_force_magnitudes(self) -> None:
+    def test_compare_contact_force_magnitudes(self):
         """Compare contact force magnitudes across engines."""
         pytest.skip("Force comparison - requires contact force extraction")
         # Compare across engines

@@ -7,7 +7,6 @@ import json
 import logging
 import subprocess
 import sys
-from pathlib import Path
 
 from scripts.script_utils import get_repo_root
 
@@ -41,7 +40,7 @@ DOCS_DIR.mkdir(parents=True, exist_ok=True)
 ISSUES_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def assess_A() -> Path:
+def assess_A():
     """Assess code structure and directory organization."""
     # Code Structure
     findings = []
@@ -64,7 +63,7 @@ def assess_A() -> Path:
     )
 
 
-def assess_B() -> Path:
+def assess_B():
     """Assess documentation quality and coverage."""
     # Documentation
     findings = []
@@ -95,7 +94,7 @@ def assess_B() -> Path:
     )
 
 
-def assess_C() -> Path:
+def assess_C():
     """Assess test coverage and test file count."""
     # Test Coverage
     findings = []
@@ -117,7 +116,7 @@ def assess_C() -> Path:
     )
 
 
-def assess_D() -> Path:
+def assess_D():
     """Error Handling assessment."""
     findings = []
     py_files = REPO_ROOT.rglob("*.py")
@@ -152,7 +151,7 @@ def assess_D() -> Path:
     )
 
 
-def assess_E() -> Path:
+def assess_E():
     """Assess performance profiling practices."""
     # Performance
     findings = []
@@ -171,26 +170,32 @@ def assess_E() -> Path:
     )
 
 
-def assess_F() -> Path:
+def assess_F():
     """Assess security practices and hardcoded secrets."""
     # Security
     findings = []
     score = 8.0
 
-    # Count secrets in all Python files except tests (for repo-level assessment)
-    # Check src/, scripts/, examples/, and other non-test directories
-    pattern = r"password|secret|key\s*="
-    secrets = 0
-    for glob_pattern in ["src/**/*.py", "scripts/**/*.py", "examples/**/*.py"]:
-        secrets += grep_count(REPO_ROOT, pattern, glob_pattern)
-
-    if secrets > 0:
+    # Look for actual hardcoded string literal assignments in production paths.
+    # Pattern requires a string value of 8+ chars to avoid matching docstring
+    # examples, type annotations, and function parameter names.
+    # Test files are excluded because they legitimately use fake placeholder values.
+    secret_pattern = r'(?:password|secret|api_key|token)\s*=\s*["\'][^"\']{8,}["\']'
+    scan_globs = ("src/**/*.py", "scripts/**/*.py", "examples/**/*.py")
+    hardcoded_secrets = sum(
+        grep_count(REPO_ROOT, secret_pattern, glob_pattern)
+        for glob_pattern in scan_globs
+    )
+    if hardcoded_secrets > 0:
         findings.append(
-            f"Potential hardcoded secrets found in {hardcoded_secrets} src files (needs verification)."
+            "Potential hardcoded secrets found in "
+            f"{hardcoded_secrets} production files (needs verification)."
         )
         score -= 1
     else:
-        findings.append("No obvious hardcoded secrets patterns found in src/ files.")
+        findings.append(
+            "No obvious hardcoded secrets patterns found in src/, scripts/, or examples/ files."
+        )
 
     recs = [
         "Run bandit security analysis regularly.",
@@ -201,7 +206,7 @@ def assess_F() -> Path:
     )
 
 
-def assess_G() -> Path:
+def assess_G():
     """Assess dependency management and definition files."""
     # Dependencies
     findings = []
@@ -222,7 +227,7 @@ def assess_G() -> Path:
     )
 
 
-def assess_H() -> Path:
+def assess_H():
     """Assess CI/CD pipeline configuration."""
     # CI/CD
     findings = []
@@ -244,7 +249,7 @@ def assess_H() -> Path:
     )
 
 
-def assess_I() -> Path:
+def assess_I():
     """Assess code style and linter configuration."""
     # Code Style
     findings = []
@@ -263,7 +268,7 @@ def assess_I() -> Path:
     )
 
 
-def assess_J() -> Path:
+def assess_J():
     """Assess API design and endpoint documentation."""
     # API Design
     findings = []
@@ -301,7 +306,7 @@ def assess_J() -> Path:
     )
 
 
-def assess_K() -> Path:
+def assess_K():
     """Assess data handling and validation patterns."""
     # Data Handling
     findings = []
@@ -315,7 +320,7 @@ def assess_K() -> Path:
     )
 
 
-def assess_L() -> Path:
+def assess_L():
     """Logging assessment."""
     findings = []
     py_files = REPO_ROOT.rglob("*.py")
@@ -352,7 +357,7 @@ def assess_L() -> Path:
     )
 
 
-def assess_M() -> Path:
+def assess_M():
     """Assess configuration management practices."""
     # Configuration
     findings = []
@@ -367,7 +372,7 @@ def assess_M() -> Path:
     )
 
 
-def assess_N() -> Path:
+def assess_N():
     """Assess scalability readiness of the architecture."""
     # Scalability
     findings = []
@@ -384,7 +389,7 @@ def assess_N() -> Path:
     )
 
 
-def assess_O() -> Path:
+def assess_O():
     """Assess code maintainability and complexity metrics."""
     # Maintainability
     findings = []
@@ -411,7 +416,7 @@ def assess_O() -> Path:
     )
 
 
-def run_all_assessments() -> list[Path]:
+def run_all_assessments():
     """Execute all category assessments and return their reports."""
     assessors = [
         assess_A,
@@ -442,7 +447,7 @@ def run_all_assessments() -> list[Path]:
     return reports
 
 
-def generate_issues_locally(json_path) -> None:
+def generate_issues_locally(json_path):
     """Read summary JSON and create issue markdown files for low scores."""
     try:
         with open(json_path) as f:
@@ -466,7 +471,7 @@ def generate_issues_locally(json_path) -> None:
         logger.error("Error generating local issues: %s", e)
 
 
-def main() -> None:
+def main():
     """Run all assessments and generate the summary report."""
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     logger.info("Starting repository assessment...")

@@ -113,7 +113,7 @@ def get_env_bool(
     Example:
         >>> debug = get_env_bool("DEBUG", default=False)
     """
-    if not (name is not None):
+    if name is None:
         raise ValueError("name must be provided")
     value = os.environ.get(name)
 
@@ -270,7 +270,7 @@ def get_env_list(
     Example:
         >>> hosts = get_env_list("ALLOWED_HOSTS", default=["localhost"])
     """
-    if not (name is not None):
+    if name is None:
         raise ValueError("name must be provided")
     value = os.environ.get(name)
 
@@ -504,15 +504,11 @@ def get_golf_port(default: int = 8000) -> int:
     )
 
 
-def get_golf_suite_mode(default: str = "remote") -> str:
+def get_golf_suite_mode(default: str = "local") -> str:
     """Get the Golf Suite operating mode.
 
-    Defaults to ``"remote"`` (auth-required) when ``GOLF_SUITE_MODE`` is not
-    set.  Set ``GOLF_SUITE_MODE=local`` explicitly to enable auth bypass for
-    local development — do not rely on the absence of the variable.
-
     Args:
-        default: Default mode (``"remote"``).
+        default: Default mode (``"local"``).
 
     Returns:
         Mode string (e.g., ``"local"``, ``"remote"``).

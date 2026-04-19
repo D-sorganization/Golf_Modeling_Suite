@@ -32,7 +32,7 @@ class TextEditorDiffMixin:
         Returns:
             DiffResult with changes
         """
-        return self._compute_diff(self._original_content, self._content)  # type: ignore[attr-defined]
+        return self._compute_diff(self._original_content, self._content)
 
     def get_diff_between_versions(
         self,
@@ -48,13 +48,13 @@ class TextEditorDiffMixin:
         Returns:
             DiffResult with changes
         """
-        if version_a < 0 or version_a >= len(self._history):  # type: ignore[attr-defined]
+        if version_a < 0 or version_a >= len(self._history):
             raise IndexError(f"Invalid version index: {version_a}")
-        if version_b < 0 or version_b >= len(self._history):  # type: ignore[attr-defined]
+        if version_b < 0 or version_b >= len(self._history):
             raise IndexError(f"Invalid version index: {version_b}")
 
-        content_a = self._history[version_a].content  # type: ignore[attr-defined]
-        content_b = self._history[version_b].content  # type: ignore[attr-defined]
+        content_a = self._history[version_a].content
+        content_b = self._history[version_b].content
         return self._compute_diff(content_a, content_b)
 
     def get_diff_with_string(self, other_content: str) -> DiffResult:
@@ -66,7 +66,7 @@ class TextEditorDiffMixin:
         Returns:
             DiffResult with changes
         """
-        return self._compute_diff(self._content, other_content)  # type: ignore[attr-defined]
+        return self._compute_diff(self._content, other_content)
 
     def _compute_diff(self, original: str, modified: str) -> DiffResult:
         """Compute diff between two strings."""
@@ -168,9 +168,9 @@ class TextEditorDiffMixin:
         if context_lines is None:
             raise ValueError("context_lines must be provided")
         if original is None:
-            original = self._original_content  # type: ignore[attr-defined]
+            original = self._original_content
         if modified is None:
-            modified = self._content  # type: ignore[attr-defined]
+            modified = self._content
 
         original_lines = original.splitlines()
         modified_lines = modified.splitlines()

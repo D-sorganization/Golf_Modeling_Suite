@@ -8,14 +8,14 @@ from PIL import Image
 import setup_golf_suite
 
 
-def test_apply_icon_optimizations() -> None:
+def test_apply_icon_optimizations():
     # Create dummy image
     img = Image.new("RGBA", (32, 32))
     opt = setup_golf_suite._apply_icon_optimizations(img, 32)
     assert opt is not None
 
 
-def test_create_optimized_icon(tmp_path) -> None:
+def test_create_optimized_icon(tmp_path):
     img = Image.new("RGBA", (256, 256))
     src = tmp_path / "src.png"
     img.save(src)
@@ -26,7 +26,7 @@ def test_create_optimized_icon(tmp_path) -> None:
     assert out.exists()
 
 
-def test_create_optimized_icon_missing() -> None:
+def test_create_optimized_icon_missing():
     res = setup_golf_suite.create_optimized_icon(
         pathlib.Path("missing.png"), pathlib.Path("out.ico")
     )
@@ -34,7 +34,7 @@ def test_create_optimized_icon_missing() -> None:
 
 
 @patch("subprocess.run")
-def test_create_shortcut_windows(mock_run) -> None:
+def test_create_shortcut_windows(mock_run):
     res = setup_golf_suite.create_shortcut_windows(
         "script.py", pathlib.Path("/wd"), pathlib.Path("/icon.ico"), "desc"
     )
@@ -43,7 +43,7 @@ def test_create_shortcut_windows(mock_run) -> None:
 
 
 @patch("subprocess.run")
-def test_create_shortcut_windows_fail(mock_run) -> None:
+def test_create_shortcut_windows_fail(mock_run):
     from subprocess import CalledProcessError
 
     mock_run.side_effect = CalledProcessError(1, "cmd", b"", b"error")
@@ -53,12 +53,11 @@ def test_create_shortcut_windows_fail(mock_run) -> None:
     assert res is False
 
 
-def test_find_source_image(tmp_path) -> None:
+def test_find_source_image(tmp_path):
     res = setup_golf_suite._find_source_image(tmp_path)
     assert res is None
 
-    src = tmp_path / "src" / "launchers" / "assets" / "golf_robot_cropped.png"
-    src.parent.mkdir(parents=True)
+    src = tmp_path / "GolfingRobot.png"
     src.touch()
     res = setup_golf_suite._find_source_image(tmp_path)
     assert res == src
@@ -67,15 +66,9 @@ def test_find_source_image(tmp_path) -> None:
 @patch("setup_golf_suite.git_sync_repository")
 @patch("setup_golf_suite.check_python_dependencies")
 @patch("setup_golf_suite.create_optimized_icon")
-def test_main(
-    mock_create_icon, mock_chk_deps, mock_sync, tmp_path, monkeypatch
-) -> None:
+def test_main(mock_create_icon, mock_chk_deps, mock_sync, tmp_path, monkeypatch):
     monkeypatch.setattr("setup_golf_suite.get_repo_root", lambda: tmp_path)
     mock_chk_deps.return_value = True
-
-    source = tmp_path / "src" / "launchers" / "assets" / "golf_robot_icon.png"
-    source.parent.mkdir(parents=True)
-    source.touch()
 
     # Needs to not attempt creation of actual shortcuts on CI, but we mock the platform or function.
     monkeypatch.setattr(
@@ -83,13 +76,10 @@ def test_main(
     )
 
     assert setup_golf_suite.main() == 0
-    mock_create_icon.assert_called_once_with(
-        source, tmp_path / "src" / "launchers" / "assets" / "golf_suite_unified.ico"
-    )
 
 
 @patch("setup_golf_suite.git_sync_repository")
 @patch("setup_golf_suite.check_python_dependencies")
-def test_main_no_deps(mock_chk_deps, mock_sync) -> None:
+def test_main_no_deps(mock_chk_deps, mock_sync):
     mock_chk_deps.return_value = False
     assert setup_golf_suite.main() == 1

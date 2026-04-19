@@ -126,18 +126,15 @@ class ContactManager(ContractChecker):
         Raises:
             ContactError: If contact detection fails.
         """
-        # Set configuration if provided, restoring afterwards
+        # Set configuration if provided
         if q is not None:
             current_q, current_v = self._engine.get_state()
             self._engine.set_state(q, current_v)
-            try:
-                contacts = (
-                    self._detect_from_engine() if self._is_contact_capable else []
-                )
-            finally:
-                self._engine.set_state(current_q, current_v)
-        else:
-            contacts = self._detect_from_engine() if self._is_contact_capable else []
+
+        contacts: list[ContactState] = []
+
+        # Fallback: no contact detection available
+        contacts = self._detect_from_engine() if self._is_contact_capable else []
 
         self._contact_cache = contacts
         return contacts
@@ -180,9 +177,7 @@ class ContactManager(ContractChecker):
         Returns:
             ContactState object.
         """
-        if not (info is not None):
-            raise ValueError("info must be provided")
-        if not (info is not None):
+        if info is None:
             raise ValueError("info must be provided")
         contact_id = self._next_contact_id
         self._next_contact_id += 1
@@ -221,9 +216,7 @@ class ContactManager(ContractChecker):
         Returns:
             Contact Jacobian (3, n_v) or (6, n_v), or None if unavailable.
         """
-        if not (contact is not None):
-            raise ValueError("contact must be provided")
-        if not (contact is not None):
+        if contact is None:
             raise ValueError("contact must be provided")
         if not self._is_contact_capable:
             return None
@@ -325,9 +318,7 @@ class ContactManager(ContractChecker):
         Returns:
             True if point is inside support polygon.
         """
-        if not (point is not None):
-            raise ValueError("point must be provided")
-        if not (point is not None):
+        if point is None:
             raise ValueError("point must be provided")
         polygon = self.compute_support_polygon(contacts)
         if polygon is None:
@@ -446,9 +437,7 @@ def _point_in_polygon(
     Returns:
         True if point is inside or on boundary.
     """
-    if not (point is not None):
-        raise ValueError("point must be provided")
-    if not (point is not None):
+    if point is None:
         raise ValueError("point must be provided")
     n = len(polygon)
     if n < 3:

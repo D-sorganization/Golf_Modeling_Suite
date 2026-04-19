@@ -6,8 +6,6 @@ does not require CoolProp or Cantera, so they run in all environments.
 
 from __future__ import annotations
 
-from typing import Any
-
 import pytest
 
 
@@ -85,7 +83,7 @@ class TestSimplifiedSteamProperties:
     """Tests for the simplified steam property calculations."""
 
     @pytest.fixture
-    def engine(self) -> Any:
+    def engine(self):
         """Create a SteamCalculationEngine."""
         from src.shared.python.upstream_drift_tools.calculators.thermo.steam_engine import (
             SteamCalculationEngine,
@@ -168,7 +166,7 @@ class TestWaterVaporPressure:
     """Tests for water vapor pressure calculation methods."""
 
     @pytest.fixture
-    def engine(self) -> Any:
+    def engine(self):
         """Create engine."""
         from src.shared.python.upstream_drift_tools.calculators.thermo.steam_engine import (
             SteamCalculationEngine,

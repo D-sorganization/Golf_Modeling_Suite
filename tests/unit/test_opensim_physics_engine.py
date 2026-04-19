@@ -54,7 +54,7 @@ with (
 
 
 @pytest.fixture
-def engine() -> OpenSimPhysicsEngine:
+def engine():
     # Reset mock_opensim for each test
     mock_opensim.reset_mock()
     # Ensure the engine module's opensim ref points to our mock
@@ -62,11 +62,11 @@ def engine() -> OpenSimPhysicsEngine:
     return OpenSimPhysicsEngine()
 
 
-def test_initialization(engine) -> None:
+def test_initialization(engine):
     assert engine.model_name == "OpenSim_NoModel"
 
 
-def test_load_from_path(engine) -> None:
+def test_load_from_path(engine):
     path = "test_model.osim"
 
     mock_model = MagicMock(spec=_OSIM_MODEL_SPEC)
@@ -81,7 +81,7 @@ def test_load_from_path(engine) -> None:
     assert engine.model_name == "TestModel"
 
 
-def test_load_from_path_rejects_reload_without_mutating_state(engine) -> None:
+def test_load_from_path_rejects_reload_without_mutating_state(engine):
     path = "test_model.osim"
 
     mock_model = MagicMock(spec=_OSIM_MODEL_SPEC)
@@ -102,7 +102,7 @@ def test_load_from_path_rejects_reload_without_mutating_state(engine) -> None:
 
 
 @patch("tempfile.NamedTemporaryFile")
-def test_load_from_string(mock_named_temp, engine) -> None:
+def test_load_from_string(mock_named_temp, engine):
     # Setup mock temp file
     mock_tmp = MagicMock(spec=["name", "write", "flush"])
     mock_tmp.name = "/tmp/fake.osim"
@@ -118,7 +118,7 @@ def test_load_from_string(mock_named_temp, engine) -> None:
     mock_tmp.write.assert_called_once_with("<osim/>")
 
 
-def test_reset(engine) -> None:
+def test_reset(engine):
     # Setup loaded model
     engine._model = MagicMock(spec=_OSIM_MODEL_SPEC)
     engine._state = MagicMock(spec=_OSIM_STATE_SPEC)
@@ -131,7 +131,7 @@ def test_reset(engine) -> None:
     engine._manager.setSessionTime.assert_called_with(0.0)
 
 
-def test_step(engine) -> None:
+def test_step(engine):
     # Setup loaded model
     engine._model = MagicMock(spec=_OSIM_MODEL_SPEC)
     engine._state = MagicMock(spec=_OSIM_STATE_SPEC)
@@ -145,7 +145,7 @@ def test_step(engine) -> None:
     engine._manager.integrate.assert_called_with(1.01)
 
 
-def test_get_state(engine) -> None:
+def test_get_state(engine):
     engine._model = MagicMock(spec=_OSIM_MODEL_SPEC)
     engine._state = MagicMock(spec=_OSIM_STATE_SPEC)
 
@@ -168,7 +168,7 @@ def test_get_state(engine) -> None:
     assert np.allclose(v, [0.01, 0.02])
 
 
-def test_set_state(engine) -> None:
+def test_set_state(engine):
     engine._model = MagicMock(spec=_OSIM_MODEL_SPEC)
     engine._state = MagicMock(spec=_OSIM_STATE_SPEC)
 
@@ -185,7 +185,7 @@ def test_set_state(engine) -> None:
     engine._model.realizeVelocity.assert_called_with(engine._state)
 
 
-def test_compute_mass_matrix(engine) -> None:
+def test_compute_mass_matrix(engine):
     engine._model = MagicMock(spec=_OSIM_MODEL_SPEC)
     engine._state = MagicMock(spec=_OSIM_STATE_SPEC)
 
@@ -205,7 +205,7 @@ def test_compute_mass_matrix(engine) -> None:
     assert M.shape == (2, 2)
 
 
-def test_compute_jacobian_scales_finite_difference_step(engine) -> None:
+def test_compute_jacobian_uses_stable_central_difference_step(engine):
     model = MagicMock(spec=_OSIM_MODEL_SPEC + ["getBodySet"])
     state = MagicMock(spec=_OSIM_STATE_SPEC + ["getNQ", "getNU", "updQ"])
     engine._model = model
@@ -232,10 +232,10 @@ def test_compute_jacobian_scales_finite_difference_step(engine) -> None:
         def __init__(self, x):
             self._x = x
 
-        def p(self) -> list[float]:
+        def p(self):
             return [self._x, 0.0, 0.0]
 
-        def R(self) -> MagicMock:
+        def R(self):
             return MagicMock()
 
     body = MagicMock()

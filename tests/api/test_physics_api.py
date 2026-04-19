@@ -15,8 +15,6 @@ Tests cover:
 
 from __future__ import annotations
 
-from collections.abc import Generator
-
 import pytest
 from pydantic import ValidationError
 
@@ -285,7 +283,7 @@ class TestResponseModels:
 #  API Integration Tests (require FastAPI)
 # ──────────────────────────────────────────────────────────────
 @pytest.fixture()
-def client() -> Generator[TestClient, None, None]:
+def client():
     """Create test client."""
     if not HAS_FASTAPI:
         pytest.skip("FastAPI not available")

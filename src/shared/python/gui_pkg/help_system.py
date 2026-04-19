@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from PyQt6.QtCore import QSize, Qt, QUrl
@@ -48,10 +49,9 @@ from PyQt6.QtWidgets import (
 if TYPE_CHECKING:
     pass
 
-from src.shared.python import SUITE_ROOT
-
 # Get paths
-DOCS_DIR = SUITE_ROOT / "docs"
+REPOS_ROOT = Path(__file__).parent.parent.parent.parent.resolve()
+DOCS_DIR = REPOS_ROOT / "docs"
 HELP_DIR = DOCS_DIR / "help"
 USER_MANUAL_PATH = DOCS_DIR / "USER_MANUAL.md"
 
@@ -110,9 +110,7 @@ def _extract_section_from_manual(content: str, topic: str) -> str | None:
         The extracted section content, or None if not found.
     """
     # Map topics to section headers in the manual
-    if not (content is not None):
-        raise ValueError("content must be provided")
-    if not (content is not None):
+    if content is None:
         raise ValueError("content must be provided")
     topic_mapping = {
         "engine_selection": "Physics Engines Guide",
@@ -360,8 +358,7 @@ class HelpDialog(QDialog):
 
     def _apply_styles(self) -> None:
         """Apply CSS styles to the dialog."""
-        self.setStyleSheet(
-            """
+        self.setStyleSheet("""
             QDialog {
                 background-color: #1E1E1E;
             }
@@ -441,8 +438,7 @@ class HelpDialog(QDialog):
                 font-family: 'Segoe UI', sans-serif;
                 font-size: 14px;
             }
-        """
-        )
+        """)
 
     def _load_topics(self) -> None:
         """Load available topics into the UI."""
@@ -482,9 +478,7 @@ class HelpDialog(QDialog):
         Args:
             topic: The topic identifier.
         """
-        if not (topic is not None):
-            raise ValueError("topic must be provided")
-        if not (topic is not None):
+        if topic is None:
             raise ValueError("topic must be provided")
         if topic == "__user_manual__":
             self._load_user_manual()
@@ -512,9 +506,7 @@ class HelpDialog(QDialog):
         Args:
             item: The clicked list item.
         """
-        if not (item is not None):
-            raise ValueError("item must be provided")
-        if not (item is not None):
+        if item is None:
             raise ValueError("item must be provided")
         topic = item.data(Qt.ItemDataRole.UserRole)
         if topic:
@@ -526,9 +518,7 @@ class HelpDialog(QDialog):
         Args:
             index: The selected index.
         """
-        if not (index is not None):
-            raise ValueError("index must be provided")
-        if not (index is not None):
+        if index is None:
             raise ValueError("index must be provided")
         topic = self.topic_combo.itemData(index)
         if topic:
@@ -541,9 +531,7 @@ class HelpDialog(QDialog):
             text: The search text.
         """
         # Filter topic list
-        if not (text is not None):
-            raise ValueError("text must be provided")
-        if not (text is not None):
+        if text is None:
             raise ValueError("text must be provided")
         search_lower = text.lower()
         for i in range(self.topic_list.count()):
@@ -578,9 +566,7 @@ class HelpButton(QToolButton):
             tooltip: The tooltip text.
             parent: The parent widget.
         """
-        if not (topic is not None):
-            raise ValueError("topic must be provided")
-        if not (topic is not None):
+        if topic is None:
             raise ValueError("topic must be provided")
         super().__init__(parent)
         self.topic = topic
@@ -592,8 +578,7 @@ class HelpButton(QToolButton):
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
         # Style
-        self.setStyleSheet(
-            """
+        self.setStyleSheet("""
             QToolButton {
                 background-color: #3C3C3C;
                 color: #0A84FF;
@@ -607,8 +592,7 @@ class HelpButton(QToolButton):
                 color: white;
                 border: 1px solid #0A84FF;
             }
-        """
-        )
+        """)
 
         # Connect click
         self.clicked.connect(self._on_clicked)
@@ -651,9 +635,7 @@ class TooltipManager:
             help_topic: Optional help topic for "more info" link.
         """
         # Build tooltip HTML
-        if not (widget is not None):
-            raise ValueError("widget must be provided")
-        if not (widget is not None):
+        if widget is None:
             raise ValueError("widget must be provided")
         tooltip_html = f"<b>{short_text}</b>"
         if long_text:
@@ -681,9 +663,7 @@ class TooltipManager:
         Returns:
             The help topic, or None if not registered.
         """
-        if not (widget is not None):
-            raise ValueError("widget must be provided")
-        if not (widget is not None):
+        if widget is None:
             raise ValueError("widget must be provided")
         widget_id = id(widget)
         content = cls._tooltip_content.get(widget_id)
@@ -701,9 +681,7 @@ class TooltipManager:
             widget: The widget.
             position: Optional position to show tooltip.
         """
-        if not (widget is not None):
-            raise ValueError("widget must be provided")
-        if not (widget is not None):
+        if widget is None:
             raise ValueError("widget must be provided")
         widget_id = id(widget)
         content = cls._tooltip_content.get(widget_id)
@@ -739,9 +717,7 @@ def create_help_menu_actions(
         A list of tuples (name, shortcut, callback) for menu actions.
     """
 
-    if not (parent is not None):
-        raise ValueError("parent must be provided")
-    if not (parent is not None):
+    if parent is None:
         raise ValueError("parent must be provided")
 
     def default_open_manual() -> None:
@@ -786,9 +762,7 @@ def add_help_button_to_widget(
     Returns:
         The created HelpButton.
     """
-    if not (layout is not None):
-        raise ValueError("layout must be provided")
-    if not (layout is not None):
+    if layout is None:
         raise ValueError("layout must be provided")
     button = HelpButton(topic, tooltip)
     layout.addWidget(button)

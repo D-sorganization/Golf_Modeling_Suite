@@ -18,3 +18,4 @@ The new `formatter-guidance-consistency` hook invokes `python3` via `language: s
 [View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/2720#discussion_r3097772501)
 
 ---
+

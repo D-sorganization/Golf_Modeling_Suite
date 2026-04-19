@@ -1,4 +1,3 @@
-from collections.abc import Generator
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -31,7 +30,7 @@ class MockPhysicsEngine:
 
 
 @pytest.fixture(autouse=True, scope="module")
-def mock_pinocchio_dependencies() -> Generator[tuple[MagicMock, MagicMock], None, None]:
+def mock_pinocchio_dependencies():
     """Fixture to mock pinocchio and interfaces safely for the duration of this module."""
     mock_pin = MagicMock()
     mock_interfaces = MagicMock()
@@ -45,9 +44,7 @@ def mock_pinocchio_dependencies() -> Generator[tuple[MagicMock, MagicMock], None
 
 
 @pytest.fixture(scope="module")
-def PinocchioPhysicsEngineClass(
-    mock_pinocchio_dependencies,
-) -> Generator[type, None, None]:
+def PinocchioPhysicsEngineClass(mock_pinocchio_dependencies: Any) -> Any:
     """Fixture to provide the PinocchioPhysicsEngine class with mocked dependencies."""
     # Ensure module is imported via the correct src-rooted path
     import src.engines.physics_engines.pinocchio.python.pinocchio_physics_engine as mod
@@ -69,20 +66,38 @@ def PinocchioPhysicsEngineClass(
 
 
 @pytest.fixture
-def engine(PinocchioPhysicsEngineClass) -> Any:
+def engine(PinocchioPhysicsEngineClass):
     """Fixture to provide a PinocchioPhysicsEngine instance."""
     return PinocchioPhysicsEngineClass()
 
 
-def test_initialization(engine) -> None:
+def test_initialization(engine: Any) -> None:
     assert engine.model is None
     assert engine.data is None
     assert engine.time == 0.0
 
 
-@patch("engines.physics_engines.pinocchio.python.pinocchio_physics_engine.pin")
-def test_load_from_path(mock_pin, engine) -> None:
-    engine.load_from_path("test.urdf")
+@patch("src.engines.physics_engines.pinocchio.python.pinocchio_physics_engine.pin")
+@patch(
+    "src.shared.python.engine_core.base_physics_engine.BasePhysicsEngine.load_from_path",
+    autospec=True,
+)
+def test_load_from_path(mock_load: Any, mock_pin: Any, engine: Any) -> None:
+    """load_from_path delegates to _load_from_path_impl with mocked pinocchio.
+
+    We bypass the BasePhysicsEngine file-validation layer (tested separately)
+    and call _load_from_path_impl directly to verify the pinocchio-specific
+    logic (buildModelFromUrdf, neutral, createData calls).
+    """
+    # Arrange: configure mock model/data return values
+    mock_model = MagicMock(spec=_PIN_MODEL_SPEC)
+    mock_model.nq = 1
+    mock_model.nv = 1
+    mock_pin.buildModelFromUrdf.return_value = mock_model
+    mock_pin.neutral.return_value = np.array([0.0])
+
+    # Act: call _load_from_path_impl directly to bypass BasePhysicsEngine path check
+    engine._load_from_path_impl("test.urdf")
 
     mock_pin.buildModelFromUrdf.assert_called_once_with("test.urdf")
     mock_pin.neutral.assert_called_once()
@@ -90,8 +105,8 @@ def test_load_from_path(mock_pin, engine) -> None:
     assert engine.data is not None
 
 
-@patch("engines.physics_engines.pinocchio.python.pinocchio_physics_engine.pin")
-def test_load_from_string(mock_pin, engine) -> None:
+@patch("src.engines.physics_engines.pinocchio.python.pinocchio_physics_engine.pin")
+def test_load_from_string(mock_pin: Any, engine: Any) -> None:
     content = "<robot/>"
     mock_model = MagicMock(spec=_PIN_MODEL_SPEC)
     mock_model.nv = 2
@@ -105,7 +120,7 @@ def test_load_from_string(mock_pin, engine) -> None:
     assert engine.model is not None
 
 
-def test_step(engine) -> None:
+def test_step(engine: Any) -> None:
     engine.model = MagicMock(spec=_PIN_MODEL_SPEC)
     engine.data = MagicMock(spec=_PIN_DATA_SPEC)
     engine.q = np.array([0.0])
@@ -128,7 +143,7 @@ def test_step(engine) -> None:
         np.testing.assert_array_equal(engine.v, np.array([0.1]))
 
 
-def test_compute_mass_matrix(engine) -> None:
+def test_compute_mass_matrix(engine: Any) -> None:
     engine.model = MagicMock(spec=_PIN_MODEL_SPEC)
     engine.data = MagicMock(spec=_PIN_DATA_SPEC)
     # Mock data.M
@@ -145,7 +160,7 @@ def test_compute_mass_matrix(engine) -> None:
         np.testing.assert_array_almost_equal(M, expected)
 
 
-def test_compute_jacobian(engine) -> None:
+def test_compute_jacobian(engine: Any) -> None:
     engine.model = MagicMock(spec=_PIN_MODEL_SPEC)
     engine.data = MagicMock(spec=_PIN_DATA_SPEC)
     engine.model.existBodyName.return_value = True

@@ -15,7 +15,6 @@ from fastapi import APIRouter, Depends
 from src.api.utils.datetime_compat import iso_format, utc_now
 from src.shared.python.core.contracts import precondition
 
-from .._version import __version__
 from ..dependencies import get_engine_manager
 
 if TYPE_CHECKING:
@@ -29,7 +28,7 @@ async def root() -> dict[str, str]:
     """Root endpoint with API information."""
     return {
         "message": "Golf Modeling Suite API",
-        "version": __version__,
+        "version": "1.0.0",
         "docs": "/docs",
         "status": "running",
     }

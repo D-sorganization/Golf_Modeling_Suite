@@ -6,9 +6,6 @@ engine-vs-API consistency testing.
 
 from __future__ import annotations
 
-from collections.abc import Generator
-from typing import Any
-
 import pytest
 
 try:
@@ -20,14 +17,14 @@ except ImportError:
 
 
 @pytest.fixture(scope="module")
-def client() -> Generator[TestClient, None, None]:
+def client():
     """FastAPI test client with full app lifespan."""
     with TestClient(app) as test_client:
         yield test_client
 
 
 @pytest.fixture
-def pendulum_engine() -> Any:
+def pendulum_engine():
     """Fresh PendulumPhysicsEngine instance."""
     from src.engines.physics_engines.pendulum.python.pendulum_physics_engine import (
         PendulumPhysicsEngine,

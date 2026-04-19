@@ -4,7 +4,6 @@ Unit tests for launcher functionality.
 
 import contextlib
 import os
-from collections.abc import Generator
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -16,7 +15,7 @@ from src.shared.python.data_io.path_utils import get_repo_root
 class TestLauncherModule:
     """Test cases for launcher module functionality."""
 
-    def test_launcher_module_imports(self) -> None:
+    def test_launcher_module_imports(self):
         """Test that launcher modules can be imported."""
         # Test main launch script
         try:
@@ -29,7 +28,7 @@ class TestLauncherModule:
         except ImportError:
             pytest.skip("Main launcher not available")
 
-    def test_launcher_paths_configuration(self) -> None:
+    def test_launcher_paths_configuration(self):
         """Test launcher path configuration without GUI initialization."""
         # Mock PyQt6 to avoid GUI initialization
         with patch.dict(
@@ -51,7 +50,7 @@ class TestLauncherModule:
             except ImportError:
                 pytest.skip("Golf suite launcher not available")
 
-    def test_main_launcher_script_structure(self) -> None:
+    def test_main_launcher_script_structure(self):
         """Test main launcher script structure."""
         try:
             import launch_golf_suite
@@ -66,7 +65,7 @@ class TestLauncherModule:
             pytest.skip("Main launcher not available")
 
     @patch("sys.argv", ["launch_golf_suite.py", "--help"])
-    def test_main_help_argument(self) -> None:
+    def test_main_help_argument(self):
         """Test main function with help argument."""
         import argparse
 
@@ -88,7 +87,7 @@ class TestLauncherModule:
         except ImportError:
             pytest.skip("Main launcher not available")
 
-    def test_launcher_error_handling(self) -> None:
+    def test_launcher_error_handling(self):
         """Test launcher error handling.
 
         Validates that main() handles argument parsing and the --engine flag
@@ -108,7 +107,7 @@ class TestLauncherModule:
 class TestLauncherUtilities:
     """Test launcher utility functions."""
 
-    def test_path_resolution(self) -> None:
+    def test_path_resolution(self):
         """Test path resolution utilities."""
         # Test that we can resolve paths correctly
         project_root = get_repo_root()
@@ -129,7 +128,7 @@ class TestLauncherUtilities:
             dir_path = project_root / "src" / dir_name
             assert dir_path.exists(), f"Directory src/{dir_name} should exist"
 
-    def test_engine_path_construction(self) -> None:
+    def test_engine_path_construction(self):
         """Test construction of engine paths."""
         project_root = get_repo_root()
 
@@ -162,7 +161,7 @@ class TestLauncherUtilities:
         assert isinstance(drake_path, Path)
         assert "drake" in str(drake_path)
 
-    def test_logging_configuration(self) -> None:
+    def test_logging_configuration(self):
         """Test logging configuration."""
         try:
             # Should be able to import logging utilities
@@ -180,7 +179,7 @@ class TestLauncherIntegration:
     """Integration tests for launcher functionality."""
 
     @pytest.mark.integration
-    def test_launcher_module_integration(self) -> None:
+    def test_launcher_module_integration(self):
         """Test integration between launcher modules."""
         project_root = get_repo_root()
 
@@ -212,7 +211,7 @@ class TestLauncherIntegration:
                 pytest.skip(f"Launcher integration not available: {e}")
 
     @pytest.mark.integration
-    def test_shared_utilities_integration(self) -> None:
+    def test_shared_utilities_integration(self):
         """Test integration with shared utilities."""
         try:
             from src.shared.python.data_io.common_utils import (
@@ -233,7 +232,7 @@ class TestLauncherIntegration:
 
 # Mock fixtures for GUI testing
 @pytest.fixture
-def mock_qt_application() -> Generator[Mock, None, None]:
+def mock_qt_application():
     """Mock Qt application for testing."""
     with patch.dict(
         "sys.modules",
@@ -248,7 +247,7 @@ def mock_qt_application() -> Generator[Mock, None, None]:
 
 
 @pytest.fixture
-def mock_launcher_environment() -> Generator[None, None, None]:
+def mock_launcher_environment():
     """Mock launcher environment."""
     with patch.dict(
         os.environ, {"GOLF_SUITE_HEADLESS": "1", "GOLF_SUITE_TEST_MODE": "1"}

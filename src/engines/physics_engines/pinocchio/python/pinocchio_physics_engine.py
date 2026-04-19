@@ -110,9 +110,7 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
         Args:
             path: Validated path to URDF model file.
         """
-        if not (path is not None):
-            raise ValueError("path must be provided")
-        if not (path is not None):
+        if path is None:
             raise ValueError("path must be provided")
         if not path.endswith(".urdf"):
             logger.warning("Pinocchio loader expects URDF, got: %s", path)
@@ -135,9 +133,7 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
             content: Model definition string (URDF/XML).
             extension: File extension hint.
         """
-        if not (content is not None):
-            raise ValueError("content must be provided")
-        if not (content is not None):
+        if content is None:
             raise ValueError("content must be provided")
         if extension != "urdf":
             logger.warning("Pinocchio load_from_string mostly supports URDF.")
@@ -250,28 +246,20 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
         return self.q.copy(), self.v.copy()
 
     def set_state(self, q: np.ndarray, v: np.ndarray) -> None:
-        """Set the current state and refresh derived kinematics."""
-        if not (q is not None):
-            raise ValueError("q must be provided")
-        if not (q is not None):
+        """Set the current state."""
+        if q is None:
             raise ValueError("q must be provided")
         if self.model is None:
             return
 
-        if len(q) != self.model.nq:
-            raise ValueError(f"q size {len(q)} does not match model nq={self.model.nq}")
-        if len(v) != self.model.nv:
-            raise ValueError(f"v size {len(v)} does not match model nv={self.model.nv}")
-        self.q = q.copy()
-        self.v = v.copy()
-        # Refresh derived kinematics so Jacobians and frame placements are current
-        self.forward()
+        if len(q) == self.model.nq:
+            self.q = q.copy()
+        if len(v) == self.model.nv:
+            self.v = v.copy()
 
     def set_control(self, u: np.ndarray) -> None:
         """Apply control inputs (torques/forces)."""
-        if not (u is not None):
-            raise ValueError("u must be provided")
-        if not (u is not None):
+        if u is None:
             raise ValueError("u must be provided")
         if self.model is None:
             return
@@ -369,9 +357,7 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
     )
     def compute_inverse_dynamics(self, qacc: np.ndarray) -> np.ndarray:
         """Compute inverse dynamics tau = ID(q, v, a)."""
-        if not (qacc is not None):
-            raise ValueError("qacc must be provided")
-        if not (qacc is not None):
+        if qacc is None:
             raise ValueError("qacc must be provided")
         if self.model is None or self.data is None:
             return np.array([])
@@ -408,7 +394,7 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
     )
     def compute_jacobian(self, body_name: str) -> dict[str, np.ndarray] | None:
         """Compute spatial Jacobian for a specific body."""
-        if not (body_name is not None):
+        if body_name is None:
             raise ValueError("body_name must be provided")
         if self.model is None or self.data is None:
             return None
@@ -473,7 +459,7 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
         Returns:
             q_ddot_control: Control acceleration vector (nv,)
         """
-        if not (tau is not None):
+        if tau is None:
             raise ValueError("tau must be provided")
         if self.model is None or self.data is None:
             return np.array([])
@@ -503,7 +489,7 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
         Returns:
             q_ddot_ZTCF: Acceleration under zero torque (n_v,)
         """
-        if not (q is not None):
+        if q is None:
             raise ValueError("q must be provided")
         if self.model is None or self.data is None:
             return np.array([])
@@ -529,7 +515,7 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
         Returns:
             q_ddot_ZVCF: Acceleration with v=0 (n_v,)
         """
-        if not (q is not None):
+        if q is None:
             raise ValueError("q must be provided")
         if self.model is None or self.data is None:
             return np.array([])
