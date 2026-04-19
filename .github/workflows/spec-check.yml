@@ -55,7 +55,7 @@ jobs:
     steps:
       - name: Enable Windows long paths
         if: runner.os == 'Windows'
-        run: git config --system core.longpaths true
+        run: git config --global core.longpaths true
 
       - name: Checkout
         uses: actions/checkout@v6
