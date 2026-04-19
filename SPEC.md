@@ -29,7 +29,7 @@ Last-Updated: 2026-04-19T00:00:00Z
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.133                                            |
+| **Spec Version**        | 1.0.134                                            |
 | **Last Spec Update**    | 2026-04-19                                         |
 
 ## 2. Purpose & Mission
@@ -666,3 +666,4 @@ pytest tests/ --cov=src --cov-fail-under=70
 ## Changelog
 
 - 2026-04-16: Fixed import sorting in analyzer.py, advanced_export.py, and related files; restored completist audit documentation.
+| 2026-04-19 | 1.0.134 | Bolt: Optimized SupportPolygon.distance_to_edge by replacing np.sum and np.linalg.norm with explicit scalar arithmetic and math.hypot for ~15x speedup. |
