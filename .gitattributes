@@ -11,3 +11,8 @@
 # Exclude archived legacy code from language statistics
 engines/pendulum_models/archive/** linguist-vendored
 engines/pendulum_models/archive/** linguist-documentation
+
+# GAAI framework merge drivers: auto-resolve to staging/main version
+# Prevents merge conflicts on framework files when merging stale branches
+.gaai/core/** merge=theirs
+.gaai/project/contexts/backlog/** merge=theirs
