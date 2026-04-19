@@ -40,9 +40,9 @@ def _apply_icon_optimizations(img: PILImage, size: int) -> PILImage:
     Returns:
         Optimized PIL Image.
     """
-    if img is None:
+    if not (img is not None):
         raise ValueError("Image cannot be None")
-    if size is None:
+    if not (size is not None):
         raise ValueError("size must be provided")
     if not isinstance(size, int):
         raise ValueError("size must be an integer")
@@ -68,9 +68,9 @@ def create_optimized_icon(source_path: pathlib.Path, output_path: pathlib.Path) 
 
     Orthogonality: Decouples image processing from file system management.
     """
-    if source_path is None:
+    if not (source_path is not None):
         raise ValueError("Source path must not be None")
-    if output_path is None:
+    if not (output_path is not None):
         raise ValueError("Output path must not be None")
     if not isinstance(source_path, pathlib.Path):
         raise ValueError("source_path must be a Path object")
@@ -129,9 +129,9 @@ def create_shortcut_windows(
     """Create a desktop shortcut using PowerShell interaction."""
     if not (target_script):
         raise ValueError("Target script must not be empty")
-    if working_dir is None:
+    if not (working_dir is not None):
         raise ValueError("Working directory must be provided")
-    if icon_path is None:
+    if not (icon_path is not None):
         raise ValueError("Icon path must be provided")
     if not isinstance(target_script, str):
         raise ValueError("target_script must be a string")

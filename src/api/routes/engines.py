@@ -61,7 +61,7 @@ async def get_engines(
     _user: Any = Depends(OptionalAuth(auto_error=False)),
 ) -> EngineListResponse:
     """Get status of all available physics engines."""
-    if engine_manager is None:
+    if not (engine_manager is not None):
         raise ValueError("engine_manager must be provided")
     engines = []
     available_engines = engine_manager.get_available_engines()
@@ -248,7 +248,7 @@ async def get_engine_capabilities(
     Raises:
         HTTPException: If engine type is invalid or engine cannot be queried.
     """
-    if engine_type is None:
+    if not (engine_type is not None):
         raise ValueError("engine_type must be provided")
     try:
         engine_enum = EngineType(engine_type.lower())
@@ -279,11 +279,8 @@ async def get_engine_capabilities(
     capability_list = []
     summary = {"full": 0, "partial": 0, "none": 0}
 
-    valid_levels = {"full", "partial", "none"}
     for key, level in caps_dict.items():
-        if key in ("engine_name", "spatial_jacobian_order"):
-            continue
-        if level not in valid_levels:
+        if key == "engine_name":
             continue
         supported = level != "none"
         capability_list.append(

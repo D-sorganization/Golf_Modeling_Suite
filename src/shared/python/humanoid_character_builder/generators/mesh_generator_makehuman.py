@@ -98,7 +98,7 @@ class MakeHumanMeshGenerator(MeshGeneratorInterface):
         Uses MakeHuman's Python API when available, or falls back to
         loading pre-made MakeHuman exports with vertex group segmentation.
         """
-        if params is None:
+        if not (params is not None):
             raise ValueError("params must be provided")
         if not self.is_available:
             return GeneratedMeshResult(
@@ -145,7 +145,7 @@ class MakeHumanMeshGenerator(MeshGeneratorInterface):
         Writes a Python script via _build_mh_script and runs it via
         _run_makehuman_script, then loads the resulting OBJ and segments it.
         """
-        if params is None:
+        if not (params is not None):
             raise ValueError("params must be provided")
         import json
         import tempfile
@@ -282,7 +282,7 @@ class MakeHumanMeshGenerator(MeshGeneratorInterface):
         self, visual_dir: Path, collision_dir: Path
     ) -> GeneratedMeshResult:
         """Segment a generated mesh by vertex groups."""
-        if visual_dir is None:
+        if not (visual_dir is not None):
             raise ValueError("visual_dir must be provided")
         try:
             import trimesh
@@ -311,7 +311,7 @@ class MakeHumanMeshGenerator(MeshGeneratorInterface):
         vertex_groups: dict[str, list[int]] | None = None,
     ) -> GeneratedMeshResult:
         """Segment mesh into body parts using vertex groups or geometry."""
-        if visual_dir is None:
+        if not (visual_dir is not None):
             raise ValueError("visual_dir must be provided")
         from humanoid_character_builder.core.segment_definitions import (
             HUMANOID_SEGMENTS,
@@ -374,7 +374,7 @@ class MakeHumanMeshGenerator(MeshGeneratorInterface):
         valid_segments: Any,
     ) -> tuple[dict[str, Path], dict[str, Path]]:
         """Segment mesh using vertex group indices."""
-        if visual_dir is None:
+        if not (visual_dir is not None):
             raise ValueError("visual_dir must be provided")
         mesh_paths: dict[str, Path] = {}
         collision_paths: dict[str, Path] = {}
@@ -412,7 +412,7 @@ class MakeHumanMeshGenerator(MeshGeneratorInterface):
         valid_segments: Any,
     ) -> tuple[dict[str, Path], dict[str, Path]]:
         """Segment mesh using bounding-box z-range slicing."""
-        if visual_dir is None:
+        if not (visual_dir is not None):
             raise ValueError("visual_dir must be provided")
         mesh_paths: dict[str, Path] = {}
         collision_paths: dict[str, Path] = {}
@@ -462,7 +462,7 @@ class MakeHumanMeshGenerator(MeshGeneratorInterface):
 
     def _parse_obj_vertex_groups(self, obj_file: Path) -> dict[str, list[int]]:
         """Parse vertex groups from OBJ file."""
-        if obj_file is None:
+        if not (obj_file is not None):
             raise ValueError("obj_file must be provided")
         groups: dict[str, list[int]] = {}
         current_group = "default"
@@ -632,7 +632,7 @@ class MakeHumanMeshGenerator(MeshGeneratorInterface):
         Returns:
             Python source code string ready to be written to a .py file.
         """
-        if modifiers is None:
+        if not (modifiers is not None):
             raise ValueError("modifiers must be provided")
         modifiers_repr = repr(modifiers)
         obj_path_str = str(body_obj_path).replace("\\", "/")
@@ -687,7 +687,7 @@ generate_human()
         Returns:
             True if the script exited with return code 0, False otherwise.
         """
-        if script_path is None:
+        if not (script_path is not None):
             raise ValueError("script_path must be provided")
         import subprocess
 

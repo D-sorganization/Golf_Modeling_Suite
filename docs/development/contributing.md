@@ -12,7 +12,7 @@ We welcome contributions! Please follow these guidelines.
 
 ## Code Style
 
-- **Python**: We use `ruff`.
+- **Python**: We use `ruff` and `black`.
 - **Type Checking**: We use `mypy`.
 - **MATLAB**: Follow standard MATLAB coding practices.
 

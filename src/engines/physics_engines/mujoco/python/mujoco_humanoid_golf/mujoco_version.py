@@ -93,7 +93,7 @@ class MjDataContext:
             model: MuJoCo model (needed for forward kinematics)
             data: MuJoCo data structure to protect
         """
-        if model is None:
+        if not (model is not None):
             raise ValueError("model must be provided")
         self.model = model
         self.data = data

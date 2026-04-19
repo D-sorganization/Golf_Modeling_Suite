@@ -98,9 +98,9 @@ class SimulationService:
             timestep: Time step per simulation step.
             steps: Total number of steps to execute.
         """
-        if recorder is None:
+        if not (recorder is not None):
             raise ValueError("recorder must be provided")
-        if engine is None:
+        if not (engine is not None):
             raise ValueError("engine must be provided")
         if not recorder.is_recording:
             recorder.record_step()
@@ -211,7 +211,7 @@ class SimulationService:
         Returns:
             Dictionary containing simulation data
         """
-        if recorder is None:
+        if not (recorder is not None):
             raise ValueError("recorder must be provided")
         data = {}
 
@@ -261,7 +261,7 @@ class SimulationService:
         Returns:
             Analysis results
         """
-        if recorder is None:
+        if not (recorder is not None):
             raise ValueError("recorder must be provided")
         results = {}
 

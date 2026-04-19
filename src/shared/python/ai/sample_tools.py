@@ -37,7 +37,7 @@ def _get_education_system() -> EducationSystem:
         _education_holder["instance"] = EducationSystem()
 
     system = _education_holder["instance"]
-    if system is None:  # Ensure it is not None for mypy
+    if not (system is not None):  # Ensure it is not None for mypy
         raise ValueError("DbC Blocked: Precondition failed.")
     return system
 
@@ -256,7 +256,7 @@ def _register_inverse_dynamics_tool(registry: ToolRegistry) -> None:
         Returns:
             Simulation results summary.
         """
-        if file_path is None:
+        if not (file_path is not None):
             raise ValueError("file_path must be provided")
         valid_engines = ["mujoco", "drake", "pinocchio"]
         if engine.lower() not in valid_engines:
@@ -310,7 +310,7 @@ def _register_interpret_torques_tool(registry: ToolRegistry) -> None:
             Interpretation of torque values.
         """
         # Typical ranges for golf swing (approximate)
-        if shoulder_torque is None:
+        if not (shoulder_torque is not None):
             raise ValueError("shoulder_torque must be provided")
         ranges = {
             "shoulder": {"low": 40, "typical": 80, "high": 150, "unit": "N·m"},
@@ -320,7 +320,7 @@ def _register_interpret_torques_tool(registry: ToolRegistry) -> None:
 
         def classify(value: float, range_info: dict[str, Any]) -> str:
             """Classify a torque value relative to its typical range."""
-            if value is None:
+            if not (value is not None):
                 raise ValueError("value must be provided")
             if value < range_info["low"]:
                 return "Below typical"
@@ -380,7 +380,7 @@ def _register_explain_concept_tool(registry: ToolRegistry) -> None:
         Returns:
             Explanation at appropriate level.
         """
-        if term is None:
+        if not (term is not None):
             raise ValueError("term must be provided")
         edu = _get_education_system()
 

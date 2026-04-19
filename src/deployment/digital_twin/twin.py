@@ -88,7 +88,7 @@ class DigitalTwin:
             sim_engine: Physics engine for simulation.
             real_interface: Real robot interface.
         """
-        if sim_engine is None:
+        if not (sim_engine is not None):
             raise ValueError("sim_engine must be provided")
         self.sim = sim_engine
         self.real = real_interface
@@ -159,7 +159,7 @@ class DigitalTwin:
         Returns:
             Predicted state trajectory (n_steps+1, n_states).
         """
-        if horizon is None:
+        if not (horizon is not None):
             raise ValueError("horizon must be provided")
         n_steps = int(horizon / dt)
         n_steps = min(n_steps, len(control_sequence))

@@ -39,7 +39,7 @@ class PinocchioManipulabilityAnalyzer:
 
     def __init__(self, model: pin.Model, data: pin.Data) -> None:
         """Initialize the analyzer."""
-        if model is None:
+        if not (model is not None):
             raise ValueError("model must be provided")
         self.model = model
         self.data = data
@@ -49,7 +49,7 @@ class PinocchioManipulabilityAnalyzer:
     ) -> ManipulabilityResult | None:
         """Compute manipulability metrics for a specific frame/body."""
         # Resolve frame ID (Pinocchio tends to use Frames for end effectors)
-        if body_name is None:
+        if not (body_name is not None):
             raise ValueError("body_name must be provided")
         if not self.model.existFrame(body_name):
             # Try body name if frame not found?

@@ -116,7 +116,7 @@ class ModelLoaderDialog(QDialog):
 
     def _setup_info_and_buttons(self, layout: QVBoxLayout) -> None:
         """Set up the model info display and OK/Cancel buttons."""
-        if layout is None:
+        if not (layout is not None):
             raise ValueError("layout must be provided")
         info_label = QLabel("Model Information:")
         info_label.setStyleSheet("font-weight: bold; margin-top: 10px;")
@@ -181,7 +181,7 @@ class ModelLoaderDialog(QDialog):
         self._setup_info_and_buttons(layout)
 
     def _setup_repo_tab(self, parent: QWidget) -> None:
-        if parent is None:
+        if not (parent is not None):
             raise ValueError("parent must be provided")
         from PyQt6.QtWidgets import QHeaderView, QLineEdit, QTreeWidget
 
@@ -237,7 +237,7 @@ class ModelLoaderDialog(QDialog):
         layout.addWidget(load_btn)
 
     def _populate_repo_tree(self, models: list) -> None:
-        if models is None:
+        if not (models is not None):
             raise ValueError("models must be provided")
         from PyQt6.QtWidgets import QTreeWidgetItem
 
@@ -253,7 +253,7 @@ class ModelLoaderDialog(QDialog):
             self.repo_tree.addTopLevelItem(item)
 
     def _filter_repo_list(self, text: str) -> None:
-        if text is None:
+        if not (text is not None):
             raise ValueError("text must be provided")
         text = text.lower()
 
@@ -266,7 +266,7 @@ class ModelLoaderDialog(QDialog):
         self._populate_repo_tree(filtered)
 
     def _setup_embedded_tab(self, parent: QWidget) -> None:
-        if parent is None:
+        if not (parent is not None):
             raise ValueError("parent must be provided")
         from PyQt6.QtWidgets import QListWidget
 
@@ -304,7 +304,7 @@ class ModelLoaderDialog(QDialog):
         layout.addWidget(load_btn)
 
     def _setup_community_tab(self, parent: QWidget) -> None:
-        if parent is None:
+        if not (parent is not None):
             raise ValueError("parent must be provided")
         from PyQt6.QtWidgets import QListWidget, QListWidgetItem
 
@@ -349,7 +349,7 @@ class ModelLoaderDialog(QDialog):
         layout.addWidget(load_btn)
 
     def _setup_imported_tab(self, parent: QWidget) -> None:
-        if parent is None:
+        if not (parent is not None):
             raise ValueError("parent must be provided")
         from PyQt6.QtWidgets import QHeaderView, QTreeWidget
 
@@ -708,7 +708,7 @@ class ModelLoaderDialog(QDialog):
 
         """
 
-        if title is None:
+        if not (title is not None):
             raise ValueError("title must be provided")
         group = QGroupBox(title)
 
@@ -771,7 +771,7 @@ class ModelLoaderDialog(QDialog):
 
         """
 
-        if category is None:
+        if not (category is not None):
             raise ValueError("category must be provided")
         model_key = None
 
@@ -839,7 +839,7 @@ class ModelLoaderDialog(QDialog):
 
         """
 
-        if category is None:
+        if not (category is not None):
             raise ValueError("category must be provided")
         formatters: dict[str, Any] = {
             "human": self._format_human_info,
@@ -978,7 +978,7 @@ class ModelLoaderDialog(QDialog):
 
         """
 
-        if category is None:
+        if not (category is not None):
             raise ValueError("category must be provided")
         if category == "human":
             model_key = self.human_combo.currentData()

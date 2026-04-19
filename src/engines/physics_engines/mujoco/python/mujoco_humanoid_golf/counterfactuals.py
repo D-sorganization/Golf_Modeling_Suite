@@ -90,7 +90,7 @@ class CounterfactualAnalyzer:
         Args:
             model: MuJoCo model
         """
-        if model is None:
+        if not (model is not None):
             raise ValueError("model must be provided")
         self.model = model
 
@@ -128,7 +128,7 @@ class CounterfactualAnalyzer:
             CounterfactualResult with torque attribution
         """
         # 1. Compute OBSERVED acceleration (with control)
-        if qpos is None:
+        if not (qpos is not None):
             raise ValueError("qpos must be provided")
         self._data_observed.qpos[:] = qpos
         self._data_observed.qvel[:] = qvel
@@ -214,7 +214,7 @@ class CounterfactualAnalyzer:
             CounterfactualResult with velocity attribution
         """
         # 1. Compute OBSERVED acceleration (with velocity)
-        if qpos is None:
+        if not (qpos is not None):
             raise ValueError("qpos must be provided")
         self._data_observed.qpos[:] = qpos
         self._data_observed.qvel[:] = qvel
@@ -289,7 +289,7 @@ class CounterfactualAnalyzer:
         Returns:
             List of CounterfactualResult (ZTCF) for each timestep
         """
-        if qpos_traj is None:
+        if not (qpos_traj is not None):
             raise ValueError("qpos_traj must be provided")
         return [
             self.ztcf(qpos_traj[i], qvel_traj[i], ctrl_traj[i])
@@ -310,7 +310,7 @@ class CounterfactualAnalyzer:
         Returns:
             List of CounterfactualResult (ZVCF) for each timestep
         """
-        if qpos_traj is None:
+        if not (qpos_traj is not None):
             raise ValueError("qpos_traj must be provided")
         return [self.zvcf(qpos_traj[i], qvel_traj[i]) for i in range(len(qpos_traj))]
 
@@ -332,7 +332,7 @@ class CounterfactualAnalyzer:
             results: Counterfactual results for trajectory
             joint_idx: Joint index to plot
         """
-        if times is None:
+        if not (times is not None):
             raise ValueError("times must be provided")
         try:
             import matplotlib.pyplot as plt

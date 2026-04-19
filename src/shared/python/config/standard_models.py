@@ -172,7 +172,7 @@ class StandardModelManager:
         In production, this would download actual STL files from human-gazebo.
         """
         # Create basic temporary STL files
-        if mesh_dir is None:
+        if not (mesh_dir is not None):
             raise ValueError("mesh_dir must be provided")
         temporary_meshes = [
             "head.stl",
@@ -222,7 +222,7 @@ class StandardModelManager:
 
     def _generate_golf_club_urdf(self, club_type: str, output_path: Path) -> None:
         """Generate golf club URDF file."""
-        if club_type is None:
+        if not (club_type is not None):
             raise ValueError("club_type must be provided")
         club_config: dict[str, Any] = self.config["golf_clubs"][club_type]
 
@@ -326,7 +326,7 @@ class StandardModelManager:
         Returns:
             Dictionary mapping engine names to compatibility status
         """
-        if urdf_path is None:
+        if not (urdf_path is not None):
             raise ValueError("urdf_path must be provided")
         results = {}
 

@@ -158,7 +158,7 @@ class OllamaAdapter(BaseAgentAdapter):
             AITimeoutError: If request times out.
             AIProviderError: For other Ollama errors.
         """
-        if message is None:
+        if not (message is not None):
             raise ValueError("message must be provided")
         client = self._get_client()
 
@@ -222,7 +222,7 @@ class OllamaAdapter(BaseAgentAdapter):
         Yields:
             AgentChunk instances as they arrive.
         """
-        if message is None:
+        if not (message is not None):
             raise ValueError("message must be provided")
         client = self._get_client()
         messages = self._format_messages(context, message, tools)
@@ -359,7 +359,7 @@ class OllamaAdapter(BaseAgentAdapter):
         Returns:
             List of message dicts for Ollama.
         """
-        if context is None:
+        if not (context is not None):
             raise ValueError("context must be provided")
         messages: list[dict[str, str]] = []
 
@@ -405,7 +405,7 @@ class OllamaAdapter(BaseAgentAdapter):
         Returns:
             Parsed AgentResponse.
         """
-        if data is None:
+        if not (data is not None):
             raise ValueError("data must be provided")
         message = data.get("message", {})
         content = message.get("content", "")

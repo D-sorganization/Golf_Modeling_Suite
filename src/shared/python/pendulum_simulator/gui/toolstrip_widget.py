@@ -187,7 +187,7 @@ def _make_scale_slider(style: str, default: int = 10, max_val: int = 1000) -> QS
     max_val=1000 → 0.1×…100× (force vectors, which can be very large)
     max_val=100  → 0.1×…10×  (ellipsoids, more subtle visual scaling)
     """
-    if style is None:
+    if not (style is not None):
         raise ValueError("style must be provided")
     s = QSlider(Qt.Orientation.Horizontal)
     s.setRange(1, max_val)
@@ -209,7 +209,7 @@ def _overlay_row(
     label: QLabel,
 ) -> QHBoxLayout:
     """Build a single overlay row: [☑ Name] [---slider---] [value]."""
-    if checkbox is None:
+    if not (checkbox is not None):
         raise ValueError("checkbox must be provided")
     row = QHBoxLayout()
     row.setContentsMargins(0, 0, 0, 0)
@@ -486,7 +486,7 @@ class ToolStrip(QWidget):
     def _build_row1(self, layout: QHBoxLayout) -> None:
         """Actions row: Title | Run Reset Play | Speed | [frame slider] | Frame# | Reset View"""
 
-        if layout is None:
+        if not (layout is not None):
             raise ValueError("layout must be provided")
         self._build_row1_title_and_model(layout)
         self._add_separator(layout)
@@ -717,7 +717,7 @@ class ToolStrip(QWidget):
         All three overlay types (Force Vectors, Mobility Ellipsoids, Force Ellipsoids)
         are stacked vertically in a compact section.
         """
-        if layout is None:
+        if not (layout is not None):
             raise ValueError("layout must be provided")
         overlay_frame = QFrame()
         overlay_frame.setObjectName("overlay_section")
@@ -746,7 +746,7 @@ class ToolStrip(QWidget):
         self.play_toggled.emit(checked)
 
     def _on_frame_slider_changed(self, val: int) -> None:
-        if val is None:
+        if not (val is not None):
             raise ValueError("val must be provided")
         total = self._frame_slider.maximum()
         pct = int(100 * val / max(total, 1))
@@ -767,7 +767,7 @@ class ToolStrip(QWidget):
 
     def _on_azimuth_slider(self, deg: int) -> None:
         """Emit azimuth rotation in radians from slider value (#1146)."""
-        if deg is None:
+        if not (deg is not None):
             raise ValueError("deg must be provided")
         import numpy as np
 
@@ -776,7 +776,7 @@ class ToolStrip(QWidget):
 
     def _on_tilt_slider(self, deg: int) -> None:
         """Emit tilt rotation in radians from slider value (#1146)."""
-        if deg is None:
+        if not (deg is not None):
             raise ValueError("deg must be provided")
         import numpy as np
 
@@ -789,7 +789,7 @@ class ToolStrip(QWidget):
 
     def set_running(self, running: bool) -> None:
         """Disable run/reset while simulation is computing."""
-        if running is None:
+        if not (running is not None):
             raise ValueError("running must be provided")
         self.btn_run.setEnabled(not running)
         self.btn_reset.setEnabled(not running)
@@ -805,7 +805,7 @@ class ToolStrip(QWidget):
 
     def set_frame(self, idx: int) -> None:
         """Update slider + label to reflect current frame (no re-emission)."""
-        if idx is None:
+        if not (idx is not None):
             raise ValueError("idx must be provided")
         self._frame_slider.blockSignals(True)
         self._frame_slider.setValue(idx)
@@ -840,7 +840,7 @@ class ToolStrip(QWidget):
             e.g. [("shoulder", "Shoulder"), ("wrist", "Wrist")] for double.
         """
         # Remove old checkboxes
-        if names is None:
+        if not (names is not None):
             raise ValueError("names must be provided")
         self._clear_segment_checks()
         self._segment_names = [key for key, _label in names]

@@ -45,9 +45,9 @@ class URDFExporter:
         Args:
             yaml_path: Path to canonical YAML specification
         """
-        if yaml_path is None:
+        if not (yaml_path is not None):
             raise ValueError("yaml_path must be provided")
-        if yaml_path is None:
+        if not (yaml_path is not None):
             raise ValueError("yaml_path must be provided")
         self.yaml_path = Path(yaml_path)
         with self.yaml_path.open() as f:
@@ -59,7 +59,7 @@ class URDFExporter:
         Args:
             output_path: Path to output URDF file
         """
-        if output_path is None:
+        if not (output_path is not None):
             raise ValueError("output_path must be provided")
         output = Path(output_path)
         urdf_content = self._generate_urdf()
@@ -114,7 +114,7 @@ class URDFExporter:
         Returns:
             List of URDF lines
         """
-        if segment is None:
+        if not (segment is not None):
             raise ValueError("segment must be provided")
         lines = []
         seg_name = segment["name"]
@@ -183,7 +183,7 @@ class URDFExporter:
         Returns:
             List of URDF lines
         """
-        if parent_name is None:
+        if not (parent_name is not None):
             raise ValueError("parent_name must be provided")
         lines = []
         joint_name = f"{parent_name}_to_{seg_name}"
@@ -234,7 +234,7 @@ class URDFExporter:
         Returns:
             List of URDF lines
         """
-        if parent_name is None:
+        if not (parent_name is not None):
             raise ValueError("parent_name must be provided")
         lines = []
         intermediate_link = f"{seg_name}_intermediate"
@@ -309,7 +309,7 @@ class URDFExporter:
         Returns:
             List of URDF lines
         """
-        if parent_name is None:
+        if not (parent_name is not None):
             raise ValueError("parent_name must be provided")
         lines = []
         intermediate1 = f"{seg_name}_gimbal_z"
@@ -394,7 +394,7 @@ class URDFExporter:
         Returns:
             List of URDF lines
         """
-        if body is None:
+        if not (body is not None):
             raise ValueError("body must be provided")
         lines = ["    <inertial>"]
         lines.append(f'      <mass value="{body["mass"]}"/>')
@@ -435,7 +435,7 @@ class URDFExporter:
     ) -> list[str]:
         """Generate URDF for a joint block."""
 
-        if name is None:
+        if not (name is not None):
             raise ValueError("name must be provided")
         origin_xyz, origin_rpy = self._parse_origin(origin)
         lines = [
@@ -472,7 +472,7 @@ class URDFExporter:
         Returns:
             List of URDF lines
         """
-        if body is None:
+        if not (body is not None):
             raise ValueError("body must be provided")
         lines = ["    <visual>"]
         geom_origin = body.get("geometry", {}).get("origin")

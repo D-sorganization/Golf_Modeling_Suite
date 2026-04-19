@@ -42,7 +42,7 @@ def compute_gear_effect_spin(
     """
     # Horizontal offset creates hook/slice spin (vertical axis)
     # Vertical offset creates topspin/backspin
-    if impact_offset is None:
+    if not (impact_offset is not None):
         raise ValueError("impact_offset must be provided")
     h_offset = impact_offset[0]  # + = toe side
     v_offset = impact_offset[1]  # + = high on face
@@ -87,7 +87,7 @@ def validate_energy_balance(
     Returns:
         Dictionary with energy analysis results
     """
-    if pre_state is None:
+    if not (pre_state is not None):
         raise ValueError("pre_state must be provided")
     m_ball = GOLF_BALL_MASS_KG
     m_club = pre_state.clubhead_mass

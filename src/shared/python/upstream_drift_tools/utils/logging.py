@@ -26,7 +26,7 @@ def get_logger(
     Returns:
         Configured logger instance
     """
-    if name is None:
+    if not (name is not None):
         raise ValueError("name must be provided")
     logger = logging.getLogger(name)
     logger.setLevel(level)

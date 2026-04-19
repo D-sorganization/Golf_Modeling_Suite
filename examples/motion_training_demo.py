@@ -95,11 +95,11 @@ def parse_args():
 
 def run_trajectory_analysis(trajectory_path: Path, sheet_name: str, output_dir: Path):
     """Run trajectory analysis and generate plots."""
-    if trajectory_path is None:
+    if not (trajectory_path is not None):
         raise ValueError("trajectory_path required")
     if not (sheet_name):
         raise ValueError("sheet_name required")
-    if output_dir is None:
+    if not (output_dir is not None):
         raise ValueError("output_dir required")
     from motion_training.club_trajectory_parser import ClubTrajectoryParser
 
@@ -125,7 +125,7 @@ def run_trajectory_analysis(trajectory_path: Path, sheet_name: str, output_dir: 
 
 
 def _parse_and_subsample(trajectory_path, sheet_name, subsample):
-    if trajectory_path is None:
+    if not (trajectory_path is not None):
         raise ValueError("trajectory_path required")
     if not (sheet_name):
         raise ValueError("sheet_name required")
@@ -143,9 +143,9 @@ def _parse_and_subsample(trajectory_path, sheet_name, subsample):
 
 
 def _init_and_solve_ik(urdf_path, trajectory):
-    if urdf_path is None:
+    if not (urdf_path is not None):
         raise ValueError("urdf_path required")
-    if trajectory is None:
+    if not (trajectory is not None):
         raise ValueError("trajectory required")
     from motion_training.dual_hand_ik_solver import (
         IKSolverSettings,
@@ -172,11 +172,11 @@ def _init_and_solve_ik(urdf_path, trajectory):
 
 
 def _export_results(ik_result, trajectory, output_dir):
-    if ik_result is None:
+    if not (ik_result is not None):
         raise ValueError("ik_result required")
-    if trajectory is None:
+    if not (trajectory is not None):
         raise ValueError("trajectory required")
-    if output_dir is None:
+    if not (output_dir is not None):
         raise ValueError("output_dir required")
     from motion_training.trajectory_exporter import TrajectoryExporter
 
@@ -241,13 +241,13 @@ def run_ik_demo(
     playback: bool = False,
 ):
     """Run the full IK demo."""
-    if trajectory_path is None:
+    if not (trajectory_path is not None):
         raise ValueError("trajectory_path required")
     if not (sheet_name):
         raise ValueError("sheet_name required")
-    if urdf_path is None:
+    if not (urdf_path is not None):
         raise ValueError("urdf_path required")
-    if output_dir is None:
+    if not (output_dir is not None):
         raise ValueError("output_dir required")
 
     trajectory = _parse_and_subsample(trajectory_path, sheet_name, subsample)

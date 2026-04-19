@@ -201,7 +201,7 @@ class InverseKinematicsSolver:
             tolerance: Convergence tolerance for numerical IK
             max_iterations: Maximum iterations for numerical IK
         """
-        if segment_lengths is None:
+        if not (segment_lengths is not None):
             raise ValueError("segment_lengths must be provided")
         self.segment_lengths = segment_lengths
         self.joint_names = joint_names
@@ -276,7 +276,7 @@ class InverseKinematicsSolver:
         Returns:
             FitResult with optimized joint angles.
         """
-        if target_positions is None:
+        if not (target_positions is not None):
             raise ValueError("target_positions must be provided")
         n_joints = len(self.joint_names)
 
@@ -343,7 +343,7 @@ class InverseKinematicsSolver:
             End effector positions [M x 3]
         """
         # Simple planar chain for demonstration
-        if angles is None:
+        if not (angles is not None):
             raise ValueError("angles must be provided")
         positions = []
         x, y, z = 0.0, 0.0, 0.0
@@ -391,7 +391,7 @@ class ParameterEstimator:
             anthropometric_model: Model for mass/inertia regression
                 ("dempster", "winter", "de_leva")
         """
-        if anthropometric_model is None:
+        if not (anthropometric_model is not None):
             raise ValueError("anthropometric_model must be provided")
         self.anthropometric_model = anthropometric_model
         self._load_regression_coefficients()
@@ -449,7 +449,7 @@ class ParameterEstimator:
             Tuple of (mean_length, std_length) in meters.
         """
         # Compute distances for each frame
-        if proximal_markers is None:
+        if not (proximal_markers is not None):
             raise ValueError("proximal_markers must be provided")
         # ⚡ Bolt: np.einsum is ~2x faster than np.sum(diff**2, axis=-1) and ~10x faster than np.linalg.norm
         diff = distal_markers - proximal_markers
@@ -479,7 +479,7 @@ class ParameterEstimator:
             BodySegmentParams with estimated values.
         """
         # Get regression coefficients
-        if segment_name is None:
+        if not (segment_name is not None):
             raise ValueError("segment_name must be provided")
         if segment_name in self.coefficients:
             mass_frac, com_frac, rog_frac = self.coefficients[segment_name]
@@ -521,7 +521,7 @@ class ParameterEstimator:
         known_lengths: dict[str, float] | None,
     ) -> FitResult:
         """Estimate segment parameters using anthropometric tables only."""
-        if segment_names is None:
+        if not (segment_names is not None):
             raise ValueError("segment_names must be provided")
         logger.warning("No marker data - using anthropometric estimates only")
         params: dict[str, Any] = {}
@@ -548,7 +548,7 @@ class ParameterEstimator:
         known_lengths: dict[str, float] | None,
     ) -> FitResult:
         """Fit segment parameters from marker position data."""
-        if marker_array is None:
+        if not (marker_array is not None):
             raise ValueError("marker_array must be provided")
         fitted_params: dict[str, Any] = {}
         all_residuals: list[float] = []
@@ -606,7 +606,7 @@ class ParameterEstimator:
         Returns:
             FitResult with fitted parameters.
         """
-        if kinematic_data is None:
+        if not (kinematic_data is not None):
             raise ValueError("kinematic_data must be provided")
         if not kinematic_data:
             return FitResult(
@@ -654,7 +654,7 @@ class SensitivityAnalyzer:
         Args:
             perturbation_size: Fractional perturbation for finite differences
         """
-        if perturbation_size is None:
+        if not (perturbation_size is not None):
             raise ValueError("perturbation_size must be provided")
         self.perturbation_size = perturbation_size
 
@@ -678,7 +678,7 @@ class SensitivityAnalyzer:
         Returns:
             SensitivityResult with sensitivity indices.
         """
-        if parameter_name is None:
+        if not (parameter_name is not None):
             raise ValueError("parameter_name must be provided")
         delta = nominal_value * self.perturbation_size
 
@@ -739,7 +739,7 @@ class SensitivityAnalyzer:
         Returns:
             Dictionary with summary statistics and rankings.
         """
-        if sensitivities is None:
+        if not (sensitivities is not None):
             raise ValueError("sensitivities must be provided")
         if not sensitivities:
             return {"error": "No sensitivity data"}
@@ -803,7 +803,7 @@ def convert_poses_to_markers(
         Tuple of (marker_positions [M x 3], marker_names [M]).
     """
     # Standard mapping from pose estimation to biomechanical markers
-    if pose_keypoints is None:
+    if not (pose_keypoints is not None):
         raise ValueError("pose_keypoints must be provided")
     pose_to_marker_map = {
         # MediaPipe / OpenPose keypoint names -> Biomechanics marker names
@@ -875,7 +875,7 @@ class A3FittingPipeline:
         Args:
             anthropometric_model: Model for parameter regression
         """
-        if anthropometric_model is None:
+        if not (anthropometric_model is not None):
             raise ValueError("anthropometric_model must be provided")
         self.param_estimator = ParameterEstimator(anthropometric_model)
         self.sensitivity_analyzer = SensitivityAnalyzer()
@@ -911,7 +911,7 @@ class A3FittingPipeline:
         Returns:
             Complete ParameterEstimationReport.
         """
-        if marker_positions is None:
+        if not (marker_positions is not None):
             raise ValueError("marker_positions must be provided")
         logger.info(
             f"Fitting A3 model for subject '{subject_id}' "
@@ -990,7 +990,7 @@ class A3FittingPipeline:
         Returns:
             Complete ParameterEstimationReport.
         """
-        if c3d_path is None:
+        if not (c3d_path is not None):
             raise ValueError("c3d_path must be provided")
         try:
             import ezc3d
@@ -1040,7 +1040,7 @@ class A3FittingPipeline:
             output_path: Output file path
             format: Export format ("json", "csv")
         """
-        if report is None:
+        if not (report is not None):
             raise ValueError("report must be provided")
         import json
 

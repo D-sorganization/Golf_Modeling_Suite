@@ -36,7 +36,7 @@ def friction_factor_colebrook(
     tolerance: float = 1e-6,
 ) -> float:
     """Calculate friction factor using Colebrook-White equation (implicit)."""
-    if reynolds_number is None:
+    if not (reynolds_number is not None):
         raise ValueError("reynolds_number must be provided")
     if reynolds_number < RE_LAMINAR_UPPER:
         return friction_factor_laminar(reynolds_number)
@@ -64,7 +64,7 @@ def friction_factor_swamee_jain(
     reynolds_number: float, relative_roughness: float
 ) -> float:
     """Calculate friction factor using Swamee-Jain explicit approximation."""
-    if reynolds_number is None:
+    if not (reynolds_number is not None):
         raise ValueError("reynolds_number must be provided")
     if reynolds_number < RE_LAMINAR_UPPER:
         return friction_factor_laminar(reynolds_number)
@@ -85,7 +85,7 @@ def friction_factor_churchill(
     reynolds_number: float, relative_roughness: float
 ) -> float:
     """Calculate friction factor using Churchill explicit correlation."""
-    if reynolds_number is None:
+    if not (reynolds_number is not None):
         raise ValueError("reynolds_number must be provided")
     if reynolds_number < 1:
         return LAMINAR_FRICTION_CONSTANT
@@ -107,7 +107,7 @@ def friction_factor_churchill(
 
 def friction_factor_haaland(reynolds_number: float, relative_roughness: float) -> float:
     """Calculate friction factor using Haaland explicit approximation."""
-    if reynolds_number is None:
+    if not (reynolds_number is not None):
         raise ValueError("reynolds_number must be provided")
     if reynolds_number < RE_LAMINAR_UPPER:
         return friction_factor_laminar(reynolds_number)
@@ -122,7 +122,7 @@ def select_friction_factor_method(
     method: str, reynolds_number: float, relative_roughness: float
 ) -> float:
     """Select and calculate friction factor using the specified method."""
-    if method is None:
+    if not (method is not None):
         raise ValueError("method must be provided")
 
     normalized = method.lower()

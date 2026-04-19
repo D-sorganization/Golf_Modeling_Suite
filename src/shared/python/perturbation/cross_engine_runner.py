@@ -341,7 +341,7 @@ class CrossEnginePerturbationRunner:
         -------
         CrossEngineReport
         """
-        if self._profile is None:
+        if not (self._profile is not None):
             raise ValueError("set_profile() must be called before run_all()")
 
         t_wall_start = time.monotonic()
@@ -388,7 +388,7 @@ class CrossEnginePerturbationRunner:
         Pre:  ``profile`` has been set.
         Pre:  engine_name in SUPPORTED_ENGINES.
         """
-        if self._profile is None:
+        if not (self._profile is not None):
             raise ValueError("set_profile() must be called before run_single()")
         if not (engine_name in SUPPORTED_ENGINES):  # noqa: E713
             raise ValueError(f"Unknown engine: {engine_name!r}")

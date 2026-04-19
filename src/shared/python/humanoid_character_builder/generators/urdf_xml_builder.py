@@ -36,7 +36,7 @@ def build_urdf_xml(
     Returns:
         URDF XML as a unicode string (no XML declaration header).
     """
-    if robot_name is None:
+    if not (robot_name is not None):
         raise ValueError("robot_name must be provided")
     root = ET.Element("robot", name=robot_name)
 
@@ -64,7 +64,7 @@ def build_urdf_xml(
 
 def _add_link_element(root: ET.Element, link: GeneratedLink) -> None:
     """Add a <link> element to the robot XML root."""
-    if root is None:
+    if not (root is not None):
         raise ValueError("root must be provided")
     link_elem = ET.SubElement(root, "link", name=link.name)
 
@@ -113,7 +113,7 @@ def _add_link_element(root: ET.Element, link: GeneratedLink) -> None:
 
 def _add_joint_element(root: ET.Element, joint: GeneratedJoint) -> None:
     """Add a <joint> element to the robot XML root."""
-    if root is None:
+    if not (root is not None):
         raise ValueError("root must be provided")
     joint_elem = ET.SubElement(root, "joint", name=joint.name, type=joint.joint_type)
 

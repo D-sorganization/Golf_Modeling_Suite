@@ -58,7 +58,7 @@ class HumanoidWalkEnv(RoboticsGymEnv):
             render_mode: Render mode.
         """
         # Create task config for walking
-        if engine is None:
+        if not (engine is not None):
             raise ValueError("engine must be provided")
         task_config = TaskConfig(
             task_type=TaskType.LOCOMOTION,
@@ -152,7 +152,7 @@ class HumanoidWalkEnv(RoboticsGymEnv):
 
     def _compute_reward(self, action: NDArray[np.floating]) -> float:
         """Compute reward for walking task."""
-        if action is None:
+        if not (action is not None):
             raise ValueError("action must be provided")
         reward = 0.0
 
@@ -281,7 +281,7 @@ class HumanoidStandEnv(RoboticsGymEnv):
             reward_config: Reward configuration.
             render_mode: Render mode.
         """
-        if engine is None:
+        if not (engine is not None):
             raise ValueError("engine must be provided")
         task_config = TaskConfig(
             task_type=TaskType.BALANCE,
@@ -354,7 +354,7 @@ class HumanoidStandEnv(RoboticsGymEnv):
 
     def _compute_reward(self, action: NDArray[np.floating]) -> float:
         """Compute reward for standing task."""
-        if action is None:
+        if not (action is not None):
             raise ValueError("action must be provided")
         reward = 0.0
 

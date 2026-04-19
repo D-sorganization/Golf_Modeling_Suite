@@ -128,7 +128,7 @@ class GeminiAdapter(BaseAgentAdapter):
 
     def _build_chat_session(self, context: ConversationContext) -> Any:
         """Build a chat session with history."""
-        if context is None:
+        if not (context is not None):
             raise ValueError("context must be provided")
         history = []
         for msg in context.messages:

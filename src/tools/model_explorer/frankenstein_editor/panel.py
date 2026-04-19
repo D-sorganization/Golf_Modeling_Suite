@@ -36,7 +36,7 @@ class ModelPanel(QWidget):
 
     def __init__(self, title: str, parent: QWidget | None = None) -> None:
         """Initialize the model panel."""
-        if title is None:
+        if not (title is not None):
             raise ValueError("title must be provided")
         super().__init__(parent)
         self.title = title
@@ -177,7 +177,7 @@ class ModelPanel(QWidget):
 
     def _on_item_double_clicked(self, item: QTreeWidgetItem, column: int) -> None:
         """Handle double-click for stealing component."""
-        if item is None:
+        if not (item is not None):
             raise ValueError("item must be provided")
         element = item.data(0, Qt.ItemDataRole.UserRole)
         if element is not None:
@@ -210,7 +210,7 @@ class ModelPanel(QWidget):
 
     def _emit_copy(self, item: QTreeWidgetItem) -> None:
         """Emit signal to copy component."""
-        if item is None:
+        if not (item is not None):
             raise ValueError("item must be provided")
         element = item.data(0, Qt.ItemDataRole.UserRole)
         if element is not None:
@@ -220,7 +220,7 @@ class ModelPanel(QWidget):
 
     def _remove_component(self, item: QTreeWidgetItem) -> None:
         """Remove a component from the model."""
-        if item is None:
+        if not (item is not None):
             raise ValueError("item must be provided")
         if not self.model:
             return
@@ -318,7 +318,7 @@ class ModelPanel(QWidget):
         Returns:
             The name used, or None if failed
         """
-        if comp_type is None:
+        if not (comp_type is not None):
             raise ValueError("comp_type must be provided")
         if not self.model:
             self.model = URDFModel.create_empty()

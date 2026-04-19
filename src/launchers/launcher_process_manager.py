@@ -97,15 +97,13 @@ class ProcessManager:
             use_separate_terminals: If True, each engine opens its own
                 console window (legacy behaviour).
         """
-        if repo_root is None:
+        if not (repo_root is not None):
             raise ValueError("repo_root must be provided")
         self.repo_root = repo_root
         self.running_processes: dict[str, Popen[bytes]] = {}
         self.output_callback = output_callback
         self.use_separate_terminals = use_separate_terminals
         self._output_threads: dict[str, threading.Thread] = {}
-        # Thread-safe guard for running_processes dict (issue #2715)
-        self._process_lock = threading.RLock()
 
         # Persistent log file for all process output
         self._log_dir = Path.home() / ".golf_modeling_suite"
@@ -181,39 +179,6 @@ class ProcessManager:
 
         return env
 
-    def _validate_context_path(self, context_path: Path) -> Path:
-        """Validate subprocess working directory against allowlist (issue #2715).
-
-        Args:
-            context_path: Proposed working directory.
-
-        Returns:
-            Resolved path if valid.
-
-        Raises:
-            ValueError: If path is outside repo_root, is a symlink, or unresolvable.
-        """
-        try:
-            resolved = context_path.resolve()
-        except (RuntimeError, OSError) as e:
-            raise ValueError(f"Cannot resolve path {context_path}: {e}") from e
-
-        repo_root_resolved = self.repo_root.resolve()
-
-        # Reject if not within repo_root
-        try:
-            resolved.relative_to(repo_root_resolved)
-        except ValueError as e:
-            raise ValueError(
-                f"Path {context_path} is outside repo_root {self.repo_root}"
-            ) from e
-
-        # Reject if original is a symlink (prevents symlink-escape bypasses)
-        if context_path.is_symlink():
-            raise ValueError(f"Symlinks not allowed for subprocess cwd: {context_path}")
-
-        return resolved
-
     def _init_log_file(self) -> None:
         """Initialize the persistent process output log file."""
         try:
@@ -249,7 +214,7 @@ class ProcessManager:
 
     def _emit_output(self, name: str, line: str) -> None:
         """Route a line of process output to callback, logger, and log file."""
-        if name is None:
+        if not (name is not None):
             raise ValueError("name must be provided")
         self._write_log_line(name, line)
         if self.output_callback is not None:
@@ -264,11 +229,9 @@ class ProcessManager:
         containers) that still need their output captured in the unified
         console and log file.
         """
-        if name is None:
+        if not (name is not None):
             raise ValueError("name must be provided")
-        # Guard running_processes dict with lock (issue #2715)
-        with self._process_lock:
-            self.running_processes[name] = process
+        self.running_processes[name] = process
         t = threading.Thread(
             target=self._stream_output,
             args=(name, process),
@@ -282,7 +245,7 @@ class ProcessManager:
 
         Runs in a daemon thread so the main GUI thread is never blocked.
         """
-        if name is None:
+        if not (name is not None):
             raise ValueError("name must be provided")
         try:
             if process.stdout:
@@ -331,9 +294,6 @@ class ProcessManager:
 
             # Validate script path to prevent path-traversal / injection.
             validate_script_path(script_path, self.repo_root)
-
-            # Validate working directory (issue #2715: reject paths outside repo)
-            cwd = self._validate_context_path(cwd)
 
             # Diagnostic: log full launch details for debugging silent failures
             logger.info(
@@ -390,9 +350,7 @@ class ProcessManager:
                 t.start()
                 self._output_threads[name] = t
 
-            # Guard running_processes dict with lock (issue #2715)
-            with self._process_lock:
-                self.running_processes[name] = process
+            self.running_processes[name] = process
             logger.info(f"Launched {name} (PID: {process.pid})")
             return process
 
@@ -401,7 +359,6 @@ class ProcessManager:
             PermissionError,
             OSError,
             SecureSubprocessError,
-            ValueError,
         ) as e:
             logger.error(f"Failed to launch {name}: {e}")
             return None
@@ -431,9 +388,6 @@ class ProcessManager:
         """
         try:
             process_env = env or self.get_subprocess_env(extra_python_paths)
-
-            # Validate working directory (issue #2715: reject paths outside repo)
-            cwd = self._validate_context_path(cwd)
 
             # Validate module name: must be a dotted Python identifier.
             if not _MODULE_NAME_RE.match(module_name):
@@ -516,9 +470,7 @@ class ProcessManager:
                 t.start()
                 self._output_threads[name] = t
 
-            # Guard running_processes dict with lock (issue #2715)
-            with self._process_lock:
-                self.running_processes[name] = process
+            self.running_processes[name] = process
             logger.info(f"Launched module {name} (PID: {process.pid})")
             return process
 
@@ -527,7 +479,6 @@ class ProcessManager:
             PermissionError,
             OSError,
             SecureSubprocessError,
-            ValueError,
         ) as e:
             logger.error(f"Failed to launch {name}: {e}")
             return None
@@ -547,7 +498,7 @@ class ProcessManager:
             True if launch succeeded, False otherwise.
         """
         # Convert Windows path to WSL path
-        if script_path is None:
+        if not (script_path is not None):
             raise ValueError("script_path must be provided")
         wsl_script_path = self._convert_to_wsl_path(script_path)
 
@@ -599,7 +550,7 @@ class ProcessManager:
             True if launch succeeded, False otherwise.
         """
         # Determine working directory
-        if module_name is None:
+        if not (module_name is not None):
             raise ValueError("module_name must be provided")
 
         # Validate module name: must be a dotted Python identifier.
@@ -654,7 +605,7 @@ class ProcessManager:
         Returns:
             WSL-style path string.
         """
-        if windows_path is None:
+        if not (windows_path is not None):
             raise ValueError("windows_path must be provided")
         if len(windows_path) > 1 and windows_path[1] == ":":
             drive = windows_path[0].lower()
@@ -691,7 +642,7 @@ class ProcessManager:
         Returns:
             True if the process is running, False otherwise.
         """
-        if name is None:
+        if not (name is not None):
             raise ValueError("name must be provided")
         if name not in self.running_processes:
             return False

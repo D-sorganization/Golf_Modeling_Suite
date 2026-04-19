@@ -77,7 +77,7 @@ class DrakePhysicsEngine(PhysicsEngine):
         Args:
             time_step: Simulation time step in seconds.
         """
-        if time_step is None:
+        if not (time_step is not None):
             raise ValueError("time_step must be provided")
         self.builder = DiagramBuilder()
         self.plant: MultibodyPlant
@@ -120,7 +120,7 @@ class DrakePhysicsEngine(PhysicsEngine):
     def load_from_path(self, path: str) -> None:
         """Load model from file path (URDF, SDF, MJCF if supported)."""
         # Drake Parser supports SDF, URDF, MJCF (experimental)
-        if path is None:
+        if not (path is not None):
             raise ValueError("path must be provided")
         parser = Parser(self.plant)
         # We can try to infer model name from path
@@ -142,7 +142,7 @@ class DrakePhysicsEngine(PhysicsEngine):
 
     def load_from_string(self, content: str, extension: str | None = None) -> None:
         """Load model from string content."""
-        if content is None:
+        if not (content is not None):
             raise ValueError("content must be provided")
         parser = Parser(self.plant)
         ext = extension if extension else "urdf"  # Default to URDF if unknown?
@@ -234,7 +234,7 @@ class DrakePhysicsEngine(PhysicsEngine):
 
     def set_state(self, q: np.ndarray, v: np.ndarray) -> None:
         """Set the current state."""
-        if q is None:
+        if not (q is not None):
             raise ValueError("q must be provided")
         if not self.plant_context:
             logger.warning("set_state called on uninitialized engine")
@@ -245,7 +245,7 @@ class DrakePhysicsEngine(PhysicsEngine):
 
     def set_control(self, u: np.ndarray) -> None:
         """Apply control inputs (torques/forces)."""
-        if u is None:
+        if not (u is not None):
             raise ValueError("u must be provided")
         if not self.plant_context:
             logger.warning("set_control called on uninitialized engine")
@@ -349,7 +349,7 @@ class DrakePhysicsEngine(PhysicsEngine):
     @postcondition(check_finite, "Inverse dynamics must contain finite values")
     def compute_inverse_dynamics(self, qacc: np.ndarray) -> np.ndarray:
         """Compute inverse dynamics tau = ID(q, v, a)."""
-        if qacc is None:
+        if not (qacc is not None):
             raise ValueError("qacc must be provided")
         if not self.plant_context:
             return np.array([])
@@ -414,7 +414,7 @@ class DrakePhysicsEngine(PhysicsEngine):
 
     def compute_jacobian(self, body_name: str) -> dict[str, np.ndarray] | None:
         """Compute spatial Jacobian for a specific body."""
-        if body_name is None:
+        if not (body_name is not None):
             raise ValueError("body_name must be provided")
         if not self.plant_context:
             return None
@@ -496,7 +496,7 @@ class DrakePhysicsEngine(PhysicsEngine):
         Returns:
             q_ddot_control: Control acceleration vector (nv,) [rad/s² or m/s²]
         """
-        if tau is None:
+        if not (tau is not None):
             raise ValueError("tau must be provided")
         if not self.plant_context:
             return np.array([])
@@ -527,7 +527,7 @@ class DrakePhysicsEngine(PhysicsEngine):
         Returns:
             q̈_ZTCF: Acceleration under zero applied torque (n_v,) [rad/s² or m/s²]
         """
-        if q is None:
+        if not (q is not None):
             raise ValueError("q must be provided")
         if not self.plant_context:
             return np.array([])
@@ -581,7 +581,7 @@ class DrakePhysicsEngine(PhysicsEngine):
         Returns:
             q̈_ZVCF: Acceleration with v=0 (n_v,) [rad/s² or m/s²]
         """
-        if q is None:
+        if not (q is not None):
             raise ValueError("q must be provided")
         if not self.plant_context:
             return np.array([])

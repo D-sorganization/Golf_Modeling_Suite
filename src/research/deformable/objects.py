@@ -71,7 +71,7 @@ class DeformableObject(ABC):
             mesh: Initial mesh node positions (N, 3).
             material: Material properties.
         """
-        if mesh is None:
+        if not (mesh is not None):
             raise ValueError("mesh must be provided")
         self._mesh = mesh.copy()
         self._rest_mesh = mesh.copy()
@@ -130,7 +130,7 @@ class DeformableObject(ABC):
             node_indices: Indices of nodes to apply force to.
             forces: Force vectors (len(node_indices), 3) or (3,) for all.
         """
-        if node_indices is None:
+        if not (node_indices is not None):
             raise ValueError("node_indices must be provided")
         if forces.ndim == 1:
             forces = np.tile(forces, (len(node_indices), 1))
@@ -203,7 +203,7 @@ class SoftBody(DeformableObject):
             tetrahedra: Tetrahedral connectivity (M, 4).
             material: Material properties.
         """
-        if mesh is None:
+        if not (mesh is not None):
             raise ValueError("mesh must be provided")
         super().__init__(mesh, material)
         self._tetrahedra = tetrahedra
@@ -219,7 +219,7 @@ class SoftBody(DeformableObject):
         Returns:
             Volumes for each tetrahedron.
         """
-        if positions is None:
+        if not (positions is not None):
             raise ValueError("positions must be provided")
         volumes = np.zeros(len(self._tetrahedra))
 
@@ -313,7 +313,7 @@ class SoftBody(DeformableObject):
             dt: Timestep.
         """
         # Compute forces
-        if dt is None:
+        if not (dt is not None):
             raise ValueError("dt must be provided")
         internal_forces = self.compute_internal_forces()
         total_forces = internal_forces + self._external_forces
@@ -360,7 +360,7 @@ class Cable(DeformableObject):
             material: Material properties.
             rest_lengths: Rest lengths between nodes (optional).
         """
-        if mesh is None:
+        if not (mesh is not None):
             raise ValueError("mesh must be provided")
         super().__init__(mesh, material)
 
@@ -456,7 +456,7 @@ class Cable(DeformableObject):
         Args:
             dt: Timestep.
         """
-        if dt is None:
+        if not (dt is not None):
             raise ValueError("dt must be provided")
         internal_forces = self.compute_internal_forces()
         total_forces = internal_forces + self._external_forces
@@ -507,7 +507,7 @@ class Cloth(DeformableObject):
             height: Grid height.
             material: Material properties.
         """
-        if mesh is None:
+        if not (mesh is not None):
             raise ValueError("mesh must be provided")
         super().__init__(mesh, material)
         self._width = width
@@ -632,7 +632,7 @@ class Cloth(DeformableObject):
         Args:
             dt: Timestep.
         """
-        if dt is None:
+        if not (dt is not None):
             raise ValueError("dt must be provided")
         internal_forces = self.compute_internal_forces()
         total_forces = internal_forces + self._external_forces

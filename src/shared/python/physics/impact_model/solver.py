@@ -48,7 +48,7 @@ class ImpactRecorder:
         Returns:
             Recorded ImpactEvent
         """
-        if timestamp is None:
+        if not (timestamp is not None):
             raise ValueError("timestamp must be provided")
         energy_balance = validate_energy_balance(pre_state, post_state, params)
 
@@ -153,7 +153,7 @@ class ImpactSolverAPI:
             model_type: Type of impact model to use
             params: Impact parameters (uses defaults if None)
         """
-        if model_type is None:
+        if not (model_type is not None):
             raise ValueError("model_type must be provided")
         self.model_type = model_type
         self.model = create_impact_model(model_type)
@@ -198,7 +198,7 @@ class ImpactSolverAPI:
         Returns:
             Post-impact state
         """
-        if timestamp is None:
+        if not (timestamp is not None):
             raise ValueError("timestamp must be provided")
         if ball_velocity is None:
             ball_velocity = np.zeros(3)
@@ -249,7 +249,7 @@ class ImpactSolverAPI:
             Post-impact state with gear effect spin added
         """
         # Solve base impact
-        if timestamp is None:
+        if not (timestamp is not None):
             raise ValueError("timestamp must be provided")
         post_state = self.solve_impact(
             timestamp,
@@ -353,7 +353,7 @@ class ImpactSolverAPI:
         Returns:
             Validation result with pass/fail and details
         """
-        if tolerance is None:
+        if not (tolerance is not None):
             raise ValueError("tolerance must be provided")
         if not self.recorder.events:
             return {"valid": False, "error": "No impacts recorded"}
@@ -403,23 +403,19 @@ class ImpactSolverAPI:
         Returns:
             Validation result with pass/fail and details
         """
-        if max_spin_rpm is None:
+        if not (max_spin_rpm is not None):
             raise ValueError("max_spin_rpm must be provided")
         if not self.recorder.events:
             return {"valid": False, "error": "No impacts recorded"}
 
         max_spin_rad = max_spin_rpm * 2 * np.pi / 60  # Convert to rad/s
 
-        if self.recorder.events:
-            # ⚡ Bolt: Vectorized np.einsum is ~7x faster than list comp with np.linalg.norm
-            sv = np.array(
-                [e.post_state.ball_angular_velocity for e in self.recorder.events],
-            )
-            spins = np.sqrt(np.einsum("ij,ij->i", sv, sv)).tolist()
-        else:
-            spins = []
+        spins = [
+            np.linalg.norm(event.post_state.ball_angular_velocity)
+            for event in self.recorder.events
+        ]
 
-        max_observed = float(np.max(spins)) if spins else 0.0
+        max_observed = float(np.max(spins))
         max_observed_rpm = max_observed * 60 / (2 * np.pi)
 
         return {

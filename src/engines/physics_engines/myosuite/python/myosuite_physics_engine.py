@@ -227,7 +227,7 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
     def set_state(self, q: np.ndarray, v: np.ndarray) -> None:
         """Set joint positions and velocities on the simulation."""
-        if q is None:
+        if not (q is not None):
             raise ValueError("q must be provided")
         if not self.sim:
             return
@@ -288,7 +288,7 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
     def set_control(self, u: np.ndarray) -> None:
         """Set control (ctrl)."""
-        if u is None:
+        if not (u is not None):
             raise ValueError("u must be provided")
         self._last_action = np.array(u, copy=True)
 
@@ -391,7 +391,7 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
         """Compute inverse dynamics torques for the given acceleration."""
         # Requires calling mj_inverse
 
-        if qacc is None:
+        if not (qacc is not None):
             raise ValueError("qacc must be provided")
         if not self.sim:
             return np.array([])
@@ -412,7 +412,7 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
     def compute_jacobian(self, body_name: str) -> dict[str, np.ndarray] | None:
         """Compute linear and angular Jacobian for a named body."""
-        if body_name is None:
+        if not (body_name is not None):
             raise ValueError("body_name must be provided")
         if not self.sim:
             return None
@@ -521,7 +521,7 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
         """
 
-        if tau is None:
+        if not (tau is not None):
             raise ValueError("tau must be provided")
         if not self.sim:
             logger.warning("Simulation not initialized")
@@ -626,7 +626,7 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
         """
 
-        if activations is None:
+        if not (activations is not None):
             raise ValueError("activations must be provided")
         analyzer = self.get_muscle_analyzer()
 
@@ -772,7 +772,7 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
         """
 
-        if q is None:
+        if not (q is not None):
             raise ValueError("q must be provided")
         if not self.sim:
             return np.array([])
@@ -835,7 +835,7 @@ class MyoSuitePhysicsEngine(PhysicsEngine):
 
         """
 
-        if q is None:
+        if not (q is not None):
             raise ValueError("q must be provided")
         if not self.sim:
             return np.array([])

@@ -83,7 +83,7 @@ class ZMPComputer(ContractChecker):
             engine: Physics engine with CoM computation capabilities.
             ground_height: Height of ground plane [m].
         """
-        if engine is None:
+        if not (engine is not None):
             raise ValueError("engine must be provided")
         self._engine = engine
         self._ground_height = ground_height
@@ -265,7 +265,7 @@ class ZMPComputer(ContractChecker):
         Returns:
             Stability margin [m]. Negative if outside support.
         """
-        if zmp_position is None:
+        if not (zmp_position is not None):
             raise ValueError("zmp_position must be provided")
         _, margin = self._check_support(zmp_position[:2], support_polygon)
         return margin
@@ -327,7 +327,7 @@ class ZMPComputer(ContractChecker):
         Returns:
             Tuple of (is_inside, margin_to_boundary).
         """
-        if point is None:
+        if not (point is not None):
             raise ValueError("point must be provided")
         if support_polygon is None:
             # Default support polygon: realistic human bipedal stance (~30cm x 45cm)
@@ -360,7 +360,7 @@ class ZMPComputer(ContractChecker):
         polygon: NDArray[np.float64],
     ) -> bool:
         """Check if point is inside polygon using ray casting."""
-        if point is None:
+        if not (point is not None):
             raise ValueError("point must be provided")
         n = len(polygon)
         inside = False
@@ -384,7 +384,7 @@ class ZMPComputer(ContractChecker):
         polygon: NDArray[np.float64],
     ) -> float:
         """Compute minimum distance from point to polygon boundary."""
-        if point is None:
+        if not (point is not None):
             raise ValueError("point must be provided")
         n = len(polygon)
         min_dist = float("inf")
@@ -403,7 +403,7 @@ class ZMPComputer(ContractChecker):
         seg_b: NDArray[np.float64],
     ) -> float:
         """Compute distance from point to line segment."""
-        if point is None:
+        if not (point is not None):
             raise ValueError("point must be provided")
         v = seg_b - seg_a
         u = point - seg_a
