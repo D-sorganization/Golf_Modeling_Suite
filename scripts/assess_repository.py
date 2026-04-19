@@ -176,22 +176,26 @@ def assess_F():
     findings = []
     score = 8.0
 
-    # Look for actual hardcoded string literal assignments in src/ only.
+    # Look for actual hardcoded string literal assignments in production paths.
     # Pattern requires a string value of 8+ chars to avoid matching docstring
     # examples, type annotations, and function parameter names.
     # Test files are excluded because they legitimately use fake placeholder values.
-    hardcoded_secrets = grep_count(
-        REPO_ROOT,
-        r'(?:password|secret|api_key|token)\s*=\s*["\'][^"\']{8,}["\']',
-        "src/**/*.py",
+    secret_pattern = r'(?:password|secret|api_key|token)\s*=\s*["\'][^"\']{8,}["\']'
+    scan_globs = ("src/**/*.py", "scripts/**/*.py", "examples/**/*.py")
+    hardcoded_secrets = sum(
+        grep_count(REPO_ROOT, secret_pattern, glob_pattern)
+        for glob_pattern in scan_globs
     )
     if hardcoded_secrets > 0:
         findings.append(
-            f"Potential hardcoded secrets found in {hardcoded_secrets} src files (needs verification)."
+            "Potential hardcoded secrets found in "
+            f"{hardcoded_secrets} production files (needs verification)."
         )
         score -= 1
     else:
-        findings.append("No obvious hardcoded secrets patterns found in src/ files.")
+        findings.append(
+            "No obvious hardcoded secrets patterns found in src/, scripts/, or examples/ files."
+        )
 
     recs = [
         "Run bandit security analysis regularly.",
