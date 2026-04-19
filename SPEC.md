@@ -1,6 +1,6 @@
 # SPEC.md — Repository Specification Document
 
-Last-Updated: 2026-04-19T00:00:00Z
+Last-Updated: 2026-04-17T00:00:00Z
 
 <!--
   TEMPLATE VERSION: 1.0.0
@@ -243,7 +243,7 @@ UpstreamDrift/
 
 Configuration is managed through:
 
-- **Environment Variables**: `UPSTREAM_DRIFT_ENGINE` (default: mujoco), `UPSTREAM_DRIFT_API_PORT` (default: 8000), `GOLF_SUITE_MODE` (local server defaults to `local`), and `GOLF_AUTH_DISABLED` (local server defaults to `true` only when `GOLF_SUITE_MODE=local`; non-local modes default to `false` unless deployment configuration explicitly overrides authentication)
+- **Environment Variables**: `UPSTREAM_DRIFT_ENGINE` (default: mujoco), `UPSTREAM_DRIFT_API_PORT` (default: 8000)
 - **YAML Config Files**: `~/.upstream_drift/config.yaml` with engine-specific sections
 - **Model Pack Manifests**: versioned YAML manifests in `src/shared/python/config/model_pack_manifest.py` shape, with compatibility support for legacy `config/models.yaml` registries during migration
 - **Launcher Source Metadata**: model entries may optionally declare `provider`, `source_root`, `working_dir`, and `python_paths` so launcher processes can execute from external provider repos without assuming all assets live inside `UpstreamDrift`
@@ -293,7 +293,6 @@ UpstreamDrift employs a comprehensive test pyramid with multiple specialized cat
 - **Benchmark Tests**: Performance regression detection and optimization validation
 - **Property-Based Tests**: Hypothesis-driven fuzzing for robustness
 - **Perturbation Analyzer Tests**: Engine-specific analyzer paths validate optimized squared-norm reductions for peak-speed and trajectory-deviation metrics across Drake, MuJoCo, MyoSuite, OpenSim, and Pinocchio
-- **Kinematic Force Analyzer Tests**: MuJoCo kinematic-force central-difference calculations switch to one-sided perturbations near joint limits so finite-difference inputs stay within model bounds
 
 ### Test Organization
 
@@ -666,5 +665,6 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 ## Changelog
 
-- 2026-04-18: Bolt: Vectorize list comprehensions of np.linalg.norm with np.einsum in impact_model/solver.py to improve performance.
 - 2026-04-16: Fixed import sorting in analyzer.py, advanced_export.py, and related files; restored completist audit documentation.
+
+- 2026-04-17: Bolt: Replaced np.linalg.norm with math.sqrt(np.dot) in collision_checker.py for performance optimization
