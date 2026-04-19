@@ -39,9 +39,18 @@ mimetypes.add_type("image/png", ".png")
 mimetypes.add_type("image/jpeg", ".jpg")
 mimetypes.add_type("image/x-icon", ".ico")
 
-# Ensure we're running in local mode
+# Ensure we're running in local mode with explicit security configuration
 os.environ.setdefault("GOLF_SUITE_MODE", "local")
-os.environ.setdefault("GOLF_AUTH_DISABLED", "true")
+# Auth is disabled ONLY in local mode for development convenience.
+# This is an intentional security boundary: local servers have NO auth by design.
+# Production servers MUST NOT use local_server.py and MUST enforce authentication.
+# See issue #2714 for security hardening requirements.
+if os.environ.get("GOLF_SUITE_MODE") == "local":
+    os.environ.setdefault("GOLF_AUTH_DISABLED", "true")
+else:
+    # Production and other modes: auth is REQUIRED unless explicitly overridden
+    # by deployment configuration (e.g., cloud IAM, OAuth2 middleware)
+    os.environ.setdefault("GOLF_AUTH_DISABLED", "false")
 
 # NOTE: These imports are placed after env setup intentionally
 # The environment variables must be set before FastAPI initialization
@@ -187,12 +196,14 @@ def _normalize_request_path(
     request_path: str,
     *,
     allow_subpaths: bool,
+    allow_colons: bool = False,
 ) -> str:
     """Normalize and validate a user-supplied file path.
 
     Args:
         request_path: Raw path from a request parameter.
         allow_subpaths: If ``False``, disallow ``/`` and ``\\`` in names.
+        allow_colons: If ``False``, disallow colon-bearing path segments.
 
     Returns:
         A normalized relative path string.
@@ -210,8 +221,14 @@ def _normalize_request_path(
     if normalized.startswith(("/", "\\")):
         raise ValueError("Absolute paths are not allowed")
 
-    if ":" in normalized:
+    path_parts = normalized.replace("\\", "/").split("/")
+    if any(
+        len(part) >= 2 and part[1] == ":" and part[0].isalpha() for part in path_parts
+    ):
         raise ValueError("Drive paths are not allowed")
+
+    if ":" in normalized and not allow_colons:
+        raise ValueError("Colons are not allowed in static file paths")
 
     if not allow_subpaths and ("/" in normalized or "\\" in normalized):
         raise ValueError("Subpaths are not allowed")
@@ -221,6 +238,19 @@ def _normalize_request_path(
         raise ValueError("Path traversal detected")
 
     return str(candidate)
+
+
+def _is_safe_spa_route_path(request_path: str) -> bool:
+    """Return whether a path is safe to hand to the client-side SPA router."""
+    try:
+        _normalize_request_path(
+            request_path,
+            allow_subpaths=True,
+            allow_colons=True,
+        )
+    except ValueError:
+        return False
+    return True
 
 
 def _safe_static_file(
@@ -285,7 +315,7 @@ def _execute_tile_launch(
     Returns:
         Success dict or JSONResponse with error details.
     """
-    if not (tile_id is not None):
+    if tile_id is None:
         raise ValueError("tile_id must be provided")
     model_type = tile.get("type", "")
     repo_path = Path(__file__).parent.parent.parent
@@ -405,7 +435,7 @@ def _register_health_and_diagnostic_endpoints(
 ) -> None:
     """Register health check and diagnostic endpoints."""
 
-    if not (app is not None):
+    if app is None:
         raise ValueError("app must be provided")
 
     @app.get("/api/health")
@@ -497,7 +527,7 @@ def _mount_assets_directory(app: FastAPI, ui_path: Path) -> None:
         app: The FastAPI application instance.
         ui_path: Path to the UI build directory.
     """
-    if not (app is not None):
+    if app is None:
         raise ValueError("app must be provided")
     assets_path = ui_path / "assets"
     if assets_path.exists():
@@ -519,7 +549,7 @@ def _register_spa_catch_all(app: FastAPI, ui_path: Path) -> None:
         app: The FastAPI application instance.
         ui_path: Path to the UI build directory.
     """
-    if not (app is not None):
+    if app is None:
         raise ValueError("app must be provided")
     index_html = ui_path / "index.html"
     if index_html.exists():
@@ -528,7 +558,7 @@ def _register_spa_catch_all(app: FastAPI, ui_path: Path) -> None:
         @app.get("/{full_path:path}")
         async def serve_spa(request: Request, full_path: str) -> Any:
             """Serve the SPA index.html for all non-API routes."""
-            if not (request is not None):
+            if request is None:
                 raise ValueError("request must be provided")
             if full_path.startswith("api/"):
                 return JSONResponse(
@@ -541,6 +571,8 @@ def _register_spa_catch_all(app: FastAPI, ui_path: Path) -> None:
                         ui_path, full_path, allow_subpaths=True
                     )
                 except ValueError:
+                    if _is_safe_spa_route_path(full_path):
+                        return FileResponse(str(index_html))
                     return JSONResponse(
                         status_code=400,
                         content={"detail": "Invalid path", "path": full_path},
@@ -649,7 +681,7 @@ def _register_error_page_catch_all(app: FastAPI) -> None:
         request: Request, full_path: str
     ) -> HTMLResponse | JSONResponse:
         """Serve a helpful error page when UI is not built."""
-        if not (request is not None):
+        if request is None:
             raise ValueError("request must be provided")
         if full_path.startswith("api/"):
             return JSONResponse(
@@ -767,7 +799,7 @@ def print_logo_animated() -> None:
 
 def print_matrix_status(message: str, indent: int = 4) -> None:
     """Print status message in matrix green style."""
-    if not (message is not None):
+    if message is None:
         raise ValueError("message must be provided")
     GREEN = "\033[38;5;46m"  # Bright matrix green
     RESET = "\033[0m"
@@ -776,7 +808,7 @@ def print_matrix_status(message: str, indent: int = 4) -> None:
 
 def print_server_info(host: str, port: int) -> None:
     """Print server info box."""
-    if not (host is not None):
+    if host is None:
         raise ValueError("host must be provided")
     CYAN = "\033[38;5;51m"
     RESET = "\033[0m"
