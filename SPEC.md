@@ -665,5 +665,6 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 ## Changelog
 
+- 2026-04-18: Bolt: Vectorize list comprehensions of np.linalg.norm with np.einsum in impact_model/solver.py to improve performance.
 - 2026-04-16: Fixed import sorting in analyzer.py, advanced_export.py, and related files; restored completist audit documentation.
 | 2026-04-19 | 1.0.134 | Bolt: Optimized SupportPolygon.distance_to_edge by replacing np.sum and np.linalg.norm with explicit scalar arithmetic and math.hypot for ~15x speedup. |
