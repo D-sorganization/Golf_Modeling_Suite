@@ -1,21 +1,21 @@
 # Review Comments Archive - 2026-04-18
 
-Generated: 2026-04-18T00:11:24.116497
+Generated: 2026-04-18T22:41:55.524113
 
 ## Reviewer (chatgpt-codex-connector[bot]) (1 comments)
 
-### PR #2760: src/engines/physics_engines/mujoco/python/mujoco_humanoid_golf/kinematic_forces/analyzer.py:259
+### PR #2768: docker-compose.yml:None
 
 Actionable: Yes
 Has Suggestion: No
 
 ```
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Use effective step size when clamping finite-difference states**
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Check dependency contents, not just node_modules directory**
 
-Clamping the perturbed state here can make one-sided or zero-sided perturbations, but the derivative is still later divided by a fixed `2*epsilon`; at a joint limit with outward velocity, `qpos + epsilon*qvel` is clipped to the boundary while the opposite side is not, so `jacp_dot` (and therefore `coriolis_force`) is systematically underestimat...
+The new startup guard skips installation whenever `node_modules` exists, but this service mounts an anonymous volume at `/app/node_modules`, so the directory exists even when the volume is brand new and empty. On a fresh `docker compose up` (or after volume prune), `[ -d node_modules ]` is true, `npm ci` is skipped, and `npm run dev` can fail due t...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/2760#discussion_r3104498582)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/2768#discussion_r3105522051)
 
 ---
 
