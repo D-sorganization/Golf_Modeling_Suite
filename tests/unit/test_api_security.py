@@ -202,7 +202,7 @@ class TestBcryptAPIKeyVerification:
         current_user = MagicMock(spec=User)
         current_user.id = 7
         api_key_data = APIKeyCreate(name="integration key")
-        generated_api_key = "gms_abcdefgh1234567890"
+        generated_api_key = "gms_abcdefgh1234567890"  # nosec B105 - test fixture
 
         fake_response = MagicMock()
         with (
@@ -308,7 +308,7 @@ class TestPasswordSecurity:
         """Test that passwords are hashed with bcrypt."""
         security_manager = SecurityManager()
 
-        password = "test_password_123!@#"
+        password = "test_password_123!@#"  # nosec B105 - test fixture, not a real credential
         hashed = security_manager.hash_password(password)
 
         # Verify bcrypt format
@@ -468,7 +468,7 @@ class TestSecurityBestPractices:
         """Test that password verification is resistant to timing attacks."""
         security_manager = SecurityManager()
 
-        password = "test_password"
+        password = "test_password"  # nosec B105 - test fixture, not a real credential
         hashed = security_manager.hash_password(password)
 
         import time
