@@ -29,7 +29,7 @@ Last-Updated: 2026-04-19T00:00:00Z
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.134                                            |
+| **Spec Version**        | 1.0.135                                            |
 | **Last Spec Update**    | 2026-04-19                                         |
 
 ## 2. Purpose & Mission
@@ -360,7 +360,7 @@ Beyond standard tools, CI enforces custom checks:
 - **File Size Budget**: No module exceeds 500 lines; classes capped at 200 LOC
 - **Import Depth**: Maximum 4 import levels to prevent circular dependencies
 - **Physics Fitness**: Cross-engine validation must pass with <5% tolerance
-- **Docker Size Gate**: Built images must not exceed 800 MB
+- **Docker Size Gate**: Runtime API images must not exceed 4,000 MB
 
 ### CI/CD Pipeline
 
@@ -372,7 +372,7 @@ Beyond standard tools, CI enforces custom checks:
 | `nightly-cross-validation.yml` | Daily 2:00 UTC                         | Full multi-engine validation suite against all model variations                                                                                               | No (informational) |
 | `tauri-build.yml`              | Tag release                            | Build desktop apps for Windows/macOS/Linux                                                                                                                    | Yes (for releases) |
 | `vendor-freshness.yml`         | Weekly                                 | Check for stale dependencies and security updates                                                                                                             | No (warning-only)  |
-| `docker-size-gates.yml`        | Push                                   | Ensure Docker image size stays <800 MB                                                                                                                        | Yes                |
+| `docker-size-gates.yml`        | Push                                   | Ensure Docker runtime image size stays under the 4,000 MB API budget                                                                                           | Yes                |
 
 ## 9. Dependencies
 
@@ -497,6 +497,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-19 | 1.0.135 | Slim Docker runtime: runtime API images now target `python:3.12-slim` with a copied venv, explicit headless API dependencies, lazy dashboard GUI imports for PyQt-free server startup, runtime Docker security scanning, a 4,000 MB size budget, and patched runtime package baselines for current Trivy findings.                                                                                                                                                                                                                                                                       |
 | 2026-04-19 | 1.0.134 | Bolt: Optimized `np.linalg.norm(diff)` to `np.sqrt(np.vdot(diff, diff))` in `src/robotics/planning/collision/collision_checker.py` to improve performance by safely bypassing array reduction overhead on small 1D vectors while preserving type safety. |
 | 2026-04-19 | 1.0.133 | Launcher/process-manager race conditions: `EnvironmentDialog` now guards against concurrent Docker builds with a `_building` flag, joins build threads with 5-second timeout in `closeEvent()`, and logs a warning when termination is forced. `TaskManager` gains a `shutdown()` method to close the engine semaphore gracefully and a `_closed` guard in `__del__()`. `GolfLauncher` and `LauncherProcessManager` receive corresponding cleanup improvements. Also fixes `PyVistaBackend` mypy error (`window_size` list vs tuple). Refs #2715.                                                                                                 |
 | 2026-04-18 | 1.0.133 | Performance optimization: Replaced `np.linalg.norm` in list comprehensions with batched `np.einsum` calculations in `putting_green.py`, `grip_contact_model.py`, and `examples_motion_capture.py`. Added explicit safe-default empty-list guards to preserve numeric equivalence and avoid overhead on small multi-dimensional arrays.                                                                                                                                                                                                                                                                                                            |

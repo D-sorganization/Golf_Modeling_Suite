@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
+RUN python -m pip install --upgrade "pip==25.3"
 
 # Core API + physics stack from lockfile
 COPY requirements.lock /tmp/requirements.lock
@@ -60,7 +61,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # MuJoCo headless rendering + health check
 # X11/XCB/PyQt6 libs removed — not needed in a headless API server
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
+    openssl \
     libgl1 \
     libosmesa6 \
     libglew2.2 \
