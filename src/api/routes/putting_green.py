@@ -275,9 +275,13 @@ async def scatter_analysis(
     final_positions = [r.final_position.tolist() for r in results]
     holed_count = sum(1 for r in results if r.holed)
     hole_pos = green.hole_position
-    avg_dist = float(
-        np.mean([np.linalg.norm(r.final_position - hole_pos) for r in results])
-    )
+
+    if final_positions:
+        # Vectorized sum of squares avoids repeated np.linalg.norm calls.
+        diffs = np.array(final_positions, dtype=float) - hole_pos
+        avg_dist = float(np.mean(np.sqrt(np.einsum("ij,ij->i", diffs, diffs))))
+    else:
+        avg_dist = float("nan")
 
     return ScatterAnalysisResponse(
         final_positions=final_positions,
