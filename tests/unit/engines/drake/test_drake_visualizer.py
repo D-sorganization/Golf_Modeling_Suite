@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -9,6 +10,8 @@ import numpy as np
 import pytest
 
 
+# Per CLAUDE.md: never module-level sys.modules mocking.
+# Use patch.dict context managers instead.
 # Fix mocking for class methods and types
 # RotationMatrix needs to be a class with MakeYRotation classmethod
 class MockRotationMatrix:
@@ -43,26 +46,24 @@ class MockRigidTransform:
         """Initialize mock rigid transform."""
 
 
-def _create_mock_pydrake() -> MagicMock:
-    """Create a properly configured mock for pydrake."""
-    mock_pydrake = MagicMock()
-    mock_pydrake.RotationMatrix = MockRotationMatrix
-    mock_pydrake.RigidTransform = MockRigidTransform
-    mock_pydrake.Cylinder = MagicMock()
-    mock_pydrake.Sphere = MagicMock()
-    mock_pydrake.Rgba = MagicMock()
-    return mock_pydrake
+_MOCK_PYDRAKE = MagicMock()
+_MOCK_PYDRAKE.RotationMatrix = MockRotationMatrix
+_MOCK_PYDRAKE.RigidTransform = MockRigidTransform
+_MOCK_PYDRAKE.Cylinder = MagicMock()
+_MOCK_PYDRAKE.Sphere = MagicMock()
+_MOCK_PYDRAKE.Rgba = MagicMock()
+
+_PYDRAKE_MOCK = {
+    "pydrake": _MOCK_PYDRAKE,
+    "pydrake.all": _MOCK_PYDRAKE,
+}
+
+with patch.dict(sys.modules, _PYDRAKE_MOCK):
+    from src.engines.physics_engines.drake.python.src.drake_visualizer import (  # noqa: E402
+        DrakeVisualizer,
+    )
 
 
-from src.engines.physics_engines.drake.python.src.drake_visualizer import (  # noqa: E402
-    DrakeVisualizer,
-)
-
-
-@patch.dict(
-    "sys.modules",
-    {"pydrake": _create_mock_pydrake(), "pydrake.all": _create_mock_pydrake()},
-)
 class TestDrakeVisualizer:
     """Test suite for DrakeVisualizer."""
 
