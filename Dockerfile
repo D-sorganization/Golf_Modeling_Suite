@@ -2,7 +2,10 @@
 # Unifies Robotics (MuJoCo, Drake, Pinocchio) and Biomechanics (OpenSim, MyoSim)
 
 # Stage 1: Builder stage with full development tools
-FROM continuumio/miniconda3:24.11.1-0 AS builder
+# Digest pinned to continuumio/miniconda3:24.11.1-0 (all-platform manifest).
+# To rotate: run `docker manifest inspect continuumio/miniconda3:<new-tag>` and
+# update both the tag and the digest here; review conda/Python release notes.
+FROM continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -87,12 +90,10 @@ RUN pip install --no-cache-dir \
 
 
 # Stage 2: Runtime stage with minimal footprint
-FROM continuumio/miniconda3:24.11.1-0 AS runtime
+# Same digest as builder — keep both in sync when rotating.
+FROM continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b AS runtime
 
 ENV DEBIAN_FRONTEND=noninteractive
-
-# Apply OS security patches before installing packages
-RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 
 # Runtime system dependencies only
 # - GL libraries for MuJoCo/Visualization
@@ -167,8 +168,9 @@ EXPOSE 8001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8001/health || exit 1
 
-# Default command: start the API server rather than dropping into a shell
-CMD ["python", "-m", "uvicorn", "src.api.server:app", "--host", "0.0.0.0", "--port", "8001"]
+# Default command — starts the FastAPI server on port 8001.
+# Override with `docker run ... /bin/bash` for an interactive shell.
+CMD ["python3", "-m", "uvicorn", "src.api.server:app", "--host", "0.0.0.0", "--port", "8001"]
 
 
 # Stage 3: Training stage for advanced ML workflows
@@ -177,7 +179,7 @@ FROM runtime AS training
 USER root
 
 # Install CUDA toolkit via conda for GPU training support
-RUN conda install -y -c conda-forge -c pytorch -c nvidia \
+RUN conda install -y -c pytorch -c nvidia -c conda-forge \
     cuda-toolkit \
     cudnn \
     pytorch \

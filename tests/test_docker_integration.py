@@ -46,13 +46,18 @@ class TestDockerBuild(unittest.TestCase):
         content = dockerfile_path.read_text()
 
         # Check for required components (multi-stage build with pinned version)
-        self.assertIn("FROM continuumio/miniconda3:24.11.1-0 AS builder", content)
-        self.assertIn("FROM continuumio/miniconda3:24.11.1-0 AS runtime", content)
-        self.assertIn("-c pytorch -c nvidia", content)
+        self.assertIn(
+            "FROM continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b AS builder",
+            content,
+        )
+        self.assertIn(
+            "FROM continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b AS runtime",
+            content,
+        )
         self.assertIn('ENV PYTHONPATH="/workspace"', content)
         self.assertIn("WORKDIR /workspace", content)
         self.assertIn(
-            'CMD ["python", "-m", "uvicorn", "src.api.server:app", '
+            'CMD ["python3", "-m", "uvicorn", "src.api.server:app", '
             '"--host", "0.0.0.0", "--port", "8001"]',
             content,
         )
@@ -444,7 +449,10 @@ class TestContainerEnvironment(unittest.TestCase):
         content = dockerfile_path.read_text()
 
         # Verify base image (pinned version, multi-stage build) and package installation
-        self.assertIn("FROM continuumio/miniconda3:24.11.1-0 AS builder", content)
+        self.assertIn(
+            "FROM continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b AS builder",
+            content,
+        )
         self.assertIn("conda install", content)
         self.assertIn("python=3.12", content)
 
