@@ -279,9 +279,12 @@ async def get_engine_capabilities(
     capability_list = []
     summary = {"full": 0, "partial": 0, "none": 0}
 
-    _non_level_keys = {"engine_name", "spatial_jacobian_order"}
+    valid_levels = {"full", "partial", "none"}
+    non_level_keys = {"engine_name", "spatial_jacobian_order"}
     for key, level in caps_dict.items():
-        if key in _non_level_keys:
+        if key in non_level_keys:
+            continue
+        if level not in valid_levels:
             continue
         supported = level != "none"
         capability_list.append(
