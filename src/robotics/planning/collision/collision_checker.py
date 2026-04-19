@@ -6,7 +6,6 @@ for robot motion planning.
 
 from __future__ import annotations
 
-import math
 import time
 from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
@@ -385,7 +384,7 @@ class CollisionChecker:
                     point_a = pa
                     point_b = pb
                     diff = pb - pa
-                    norm = math.sqrt(np.dot(diff, diff))
+                    norm = np.linalg.norm(diff)
                     if norm > 1e-10:
                         normal = diff / norm
 
@@ -410,7 +409,7 @@ class CollisionChecker:
                         point_a = pa
                         point_b = pb
                         diff = pb - pa
-                        norm = math.sqrt(np.dot(diff, diff))
+                        norm = np.linalg.norm(diff)
                         if norm > 1e-10:
                             normal = diff / norm
 
