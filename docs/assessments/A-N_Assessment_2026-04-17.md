@@ -246,4 +246,3 @@ Checks ownership, release, contribution, security, and license metadata.
 - Proposed fix: Review hotspots and introduce boundary methods or DTOs where callers traverse object graphs.
 - Acceptance criteria: Hotspots are documented, simplified, or justified; tests cover any API boundary changes.
 - Expectations: Law of Demeter, SRP, maintainability
-
