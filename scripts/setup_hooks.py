@@ -93,7 +93,6 @@ def install_dev_dependencies() -> None:
     logger.info("\n[4/4] Installing hook dependencies...")
     deps = [
         "ruff>=0.14.0",
-        "black>=26.0.0",
         "mypy>=1.13.0",
         "bandit>=1.7.0",
         "types-requests",
@@ -133,7 +132,7 @@ def log_summary() -> None:
     logger.info("""
 PRE-COMMIT (runs on every commit, <15 seconds):
   - ruff (lint + auto-fix)
-  - black (format)
+  - ruff format
   - no-wildcard-imports
   - quality-check (no TODOs/FIXMEs)
   - no-debug-statements

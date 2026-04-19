@@ -48,13 +48,13 @@ def _assess_architecture(py_files: list) -> tuple[list[str], int]:
 def _assess_hygiene() -> tuple[list[str], int]:
     """Run hygiene & quality assessment (B)."""
     ruff = run_tool_check(["ruff", "check", ".", "--statistics"])
-    black = run_tool_check(["black", "--check", "--quiet", "."])
+    ruff_fmt = run_tool_check(["ruff", "format", "--check", "."])
     findings = [
         f"- Ruff check: {_CHECK + ' passed' if ruff['exit_code'] == 0 else _CROSS + ' issues found'}",
-        f"- Black formatting: {_CHECK + ' formatted' if black['exit_code'] == 0 else _CROSS + ' needs formatting'}",
+        f"- Ruff format: {_CHECK + ' formatted' if ruff_fmt['exit_code'] == 0 else _CROSS + ' needs formatting'}",
     ]
     penalty = (0 if ruff["exit_code"] == 0 else 2) + (
-        0 if black["exit_code"] == 0 else 1
+        0 if ruff_fmt["exit_code"] == 0 else 1
     )
     return findings, 10 - penalty
 

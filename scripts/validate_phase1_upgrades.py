@@ -108,7 +108,6 @@ class Phase1Validator:
             required_sections = [
                 "build-system",
                 "project",
-                "tool.black",
                 "tool.ruff",
                 "tool.mypy",
                 "tool.pytest.ini_options",
@@ -344,7 +343,6 @@ class Phase1Validator:
             content = pyproject_path.read_text()
 
             required_tools = [
-                "[tool.black]",
                 "[tool.ruff]",
                 "[tool.mypy]",
                 "[tool.pytest.ini_options]",
