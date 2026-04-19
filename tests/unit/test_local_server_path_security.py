@@ -33,9 +33,12 @@ def local_client(monkeypatch, tmp_path):
         yield client
 
 
-def test_spa_rejects_nested_traversal_path(local_client: TestClient) -> None:
-    response = local_client.get("/nested/../safe.txt")
-    assert response.status_code == 400
+def test_normalize_request_path_rejects_nested_traversal_path() -> None:
+    with pytest.raises(ValueError, match="Path traversal detected"):
+        local_server._normalize_request_path(
+            "nested/../safe.txt",
+            allow_subpaths=True,
+        )
 
 
 def test_spa_allows_nested_file_when_in_bounds(local_client: TestClient) -> None:
