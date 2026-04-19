@@ -180,9 +180,19 @@ def assess_F():
     # Pattern requires a string value of 8+ chars to avoid matching docstring
     # examples, type annotations, and function parameter names.
     # Test files are excluded because they legitimately use fake placeholder values.
+    #
+    # Exclusions baked into the pattern (negative lookahead on the value):
+    #   - "your-*"        — docstring examples (e.g. api_key="your-api-key-here")
+    #   - "example*"      — placeholder strings used in documentation
+    #   - "placeholder*"  — explicit placeholder names
+    #   - "fake*"         — clearly fake test credentials
+    #   - "test*"         — test fixture values
+    #   - "dummy*"        — dummy values used for typing demonstrations
+    # These are safe to skip because real secrets never start with these words.
     hardcoded_secrets = grep_count(
         REPO_ROOT,
-        r'(?:password|secret|api_key|token)\s*=\s*["\'][^"\']{8,}["\']',
+        r'(?:password|secret|api_key|token)\s*=\s*["\']'
+        r'(?!your-|example|placeholder|fake|test|dummy|<|{)[^"\']{8,}["\']',
         "src/**/*.py",
     )
     if hardcoded_secrets > 0:

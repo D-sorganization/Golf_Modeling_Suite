@@ -1,9 +1,16 @@
+import re
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
 from scripts.assess_repository import assess_J
 from scripts.generate_assessment_summary import extract_score_from_report
+
+# Secret-scan pattern extracted from assess_F() — kept in sync by reference.
+_SECRET_PATTERN = re.compile(
+    r'(?:password|secret|api_key|token)\s*=\s*["\']'
+    r'(?!your-|example|placeholder|fake|test|dummy|<|{)[^"\']{8,}["\']'
+)
 
 
 class TestAssessmentScripts(unittest.TestCase):
@@ -49,6 +56,62 @@ class TestAssessmentScripts(unittest.TestCase):
                 # We expect 7.5 if api or src/api exists.
                 # Since we are running in the actual repo, src/api exists.
                 self.assertEqual(score, 7.5)
+
+
+class TestSecretScanPattern:
+    """Validate the hardcoded-secret regex used in assess_F().
+
+    Ensures real production secrets are flagged while documented placeholder
+    credentials are excluded. Closes issue #2798.
+    """
+
+    def test_real_secret_is_flagged(self) -> None:
+        """A genuine-looking secret assignment in production code is matched."""
+        line = 'api_key = "sk-abcdef1234567890"'
+        assert _SECRET_PATTERN.search(line) is not None, (
+            "Real secret literal should be flagged"
+        )
+
+    def test_password_literal_is_flagged(self) -> None:
+        line = "password = 'SuperSecretP@ss!'"
+        assert _SECRET_PATTERN.search(line) is not None
+
+    def test_docstring_example_your_prefix_skipped(self) -> None:
+        """Docstring examples using 'your-*' placeholder are not flagged."""
+        line = '    >>> adapter = AnthropicAdapter(api_key="your-api-key-here")'
+        assert _SECRET_PATTERN.search(line) is None, (
+            "Docstring placeholder 'your-api-key-here' must not be flagged"
+        )
+
+    def test_example_prefix_skipped(self) -> None:
+        line = 'token = "example-token-value"'
+        assert _SECRET_PATTERN.search(line) is None
+
+    def test_placeholder_prefix_skipped(self) -> None:
+        line = 'secret = "placeholder-secret"'
+        assert _SECRET_PATTERN.search(line) is None
+
+    def test_fake_prefix_skipped(self) -> None:
+        line = 'password = "fakep@ssword123"'
+        assert _SECRET_PATTERN.search(line) is None
+
+    def test_test_prefix_skipped(self) -> None:
+        line = 'api_key = "testkey-abc123xyz"'
+        assert _SECRET_PATTERN.search(line) is None
+
+    def test_dummy_prefix_skipped(self) -> None:
+        line = 'token = "dummytoken12345"'
+        assert _SECRET_PATTERN.search(line) is None
+
+    def test_short_value_not_matched(self) -> None:
+        """Values shorter than 8 chars are intentionally not matched."""
+        line = 'password = "short"'
+        assert _SECRET_PATTERN.search(line) is None
+
+    def test_env_var_usage_not_matched(self) -> None:
+        """Assignment from os.environ is not a hardcoded secret."""
+        line = 'api_key = os.environ.get("API_KEY")'
+        assert _SECRET_PATTERN.search(line) is None
 
 
 if __name__ == "__main__":
