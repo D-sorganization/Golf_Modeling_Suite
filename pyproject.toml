@@ -175,7 +175,7 @@ select = [
     "RET",   # return statement cleanup
 ]
 ignore = [
-    "E501",    # line too long (handled by black)
+    "E501",    # line too long (handled by ruff format)
     "B008",    # function call in default arg (FastAPI Depends)
     "RET504",  # unnecessary assign before return (often clearer)
     "PERF203", # try-except in loop (unavoidable in some patterns)
