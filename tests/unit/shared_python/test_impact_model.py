@@ -114,9 +114,9 @@ def test_rigid_body_angular_momentum_conservation(
     # The friction is internal, so angular momentum should nearly conserve
     # within the noise of the impact calculation
     delta_L = L_total_post - L_total_pre
-    assert np.linalg.norm(delta_L) < 0.01, (
-        f"Angular momentum change too large: {np.linalg.norm(delta_L):.4f}"
-    )
+    assert (
+        np.linalg.norm(delta_L) < 0.01
+    ), f"Angular momentum change too large: {np.linalg.norm(delta_L):.4f}"
 
 
 def test_club_friction_impulse_maps_face_offset_to_3d(
