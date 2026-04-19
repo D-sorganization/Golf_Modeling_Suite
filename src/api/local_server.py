@@ -165,22 +165,55 @@ def _load_launcher_manifest() -> dict[str, Any]:
         return {"version": "1.0.0", "tiles": []}
 
 
+def _is_safe_path(candidate: Path, allowed_root: Path) -> bool:
+    """Return True if *candidate* resolves within *allowed_root*.
+
+    Rejects path-traversal attempts (``..``), absolute path injections,
+    URL-encoded separators, and symlink escapes by comparing resolved paths.
+
+    Args:
+        candidate: The path to validate.
+        allowed_root: The directory the candidate must reside inside.
+
+    Returns:
+        True when *candidate* is strictly inside *allowed_root*, False otherwise.
+    """
+    try:
+        resolved = candidate.resolve()
+        allowed_resolved = allowed_root.resolve()
+        resolved.relative_to(allowed_resolved)
+    except (ValueError, OSError):
+        return False
+    return True
+
+
 def _find_logo_file(logo_name: str) -> Path | None:
     """Search for a logo file in known asset directories.
 
+    Validates *logo_name* against each allowed root to prevent path-traversal
+    attacks before checking whether the file exists.
+
     Args:
-        logo_name: Filename of the logo to find.
+        logo_name: Filename of the logo to find (must not escape its directory).
 
     Returns:
-        Path to the logo file, or None if not found.
+        Path to the logo file, or None if not found or traversal detected.
     """
     logos_dir = Path(__file__).parent.parent.parent / "assets" / "logos"
     logo_path = logos_dir / logo_name
-    if logo_path.exists() and logo_path.is_file():
+    if (
+        _is_safe_path(logo_path, logos_dir)
+        and logo_path.exists()
+        and logo_path.is_file()
+    ):
         return logo_path
     launcher_logos = Path(__file__).parent.parent / "launchers" / "assets"
     alt_path = launcher_logos / logo_name
-    if alt_path.exists() and alt_path.is_file():
+    if (
+        _is_safe_path(alt_path, launcher_logos)
+        and alt_path.exists()
+        and alt_path.is_file()
+    ):
         return alt_path
     return None
 

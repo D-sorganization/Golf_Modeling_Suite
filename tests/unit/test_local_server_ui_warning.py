@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 import pytest
 
@@ -112,3 +113,50 @@ def test_local_app_description_mentions_versioning(monkeypatch, tmp_path) -> Non
     app = local_server.create_local_app()
     assert "v1" in app.description
     assert "/api/v1/" in app.description
+
+
+# ── Path-traversal hardening tests (#2805) ───────────────────────────────────
+
+
+class TestIsSafePath:
+    """Verify _is_safe_path blocks traversal and allows safe paths."""
+
+    def test_allows_file_inside_root(self, tmp_path: Path) -> None:
+        """A regular file inside the allowed root is accepted."""
+        logo = tmp_path / "logo.png"
+        logo.touch()
+        assert local_server._is_safe_path(logo, tmp_path)
+
+    def test_allows_nested_file_inside_root(self, tmp_path: Path) -> None:
+        sub = tmp_path / "sub"
+        sub.mkdir()
+        nested = sub / "icon.svg"
+        nested.touch()
+        assert local_server._is_safe_path(nested, tmp_path)
+
+    def test_rejects_dotdot_traversal(self, tmp_path: Path) -> None:
+        """Path with '..' that escapes the allowed root is rejected."""
+        outside = tmp_path / ".." / "escape.txt"
+        assert not local_server._is_safe_path(outside, tmp_path)
+
+    def test_rejects_absolute_path_outside_root(self, tmp_path: Path) -> None:
+        """An absolute path outside the allowed root is rejected."""
+        import tempfile
+        from pathlib import Path as PathClass
+
+        with tempfile.NamedTemporaryFile(delete=False) as f:
+            outside = PathClass(f.name)
+        assert not local_server._is_safe_path(outside, tmp_path)
+
+
+class TestFindLogoFile:
+    """_find_logo_file must reject traversal attempts without errors."""
+
+    def test_traversal_name_returns_none(self, tmp_path: Path) -> None:
+        """A traversal-style logo name must return None, not serve a file."""
+        result = local_server._find_logo_file("../../etc/passwd")
+        assert result is None
+
+    def test_nonexistent_logo_returns_none(self) -> None:
+        result = local_server._find_logo_file("does_not_exist_xyz.png")
+        assert result is None
