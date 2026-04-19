@@ -54,7 +54,7 @@ def make_response(
     Returns:
         Response dictionary.
     """
-    if result is not None or error is None:
+    if result is None and error is None:
         raise ValueError("result or error must be provided")
     if result is not None and error is not None:
         raise ValueError("result and error are mutually exclusive")
