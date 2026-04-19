@@ -1,6 +1,6 @@
 # SPEC.md — Repository Specification Document
 
-Last-Updated: 2026-04-18T00:00:00Z
+Last-Updated: 2026-04-19T00:00:00Z
 
 <!--
   TEMPLATE VERSION: 1.0.0
@@ -30,7 +30,7 @@ Last-Updated: 2026-04-18T00:00:00Z
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
 | **Spec Version**        | 1.0.133                                            |
-| **Last Spec Update**    | 2026-04-18                                         |
+| **Last Spec Update**    | 2026-04-19                                         |
 
 ## 2. Purpose & Mission
 
@@ -497,6 +497,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-19 | 1.0.133 | Launcher/process-manager race conditions: `EnvironmentDialog` now guards against concurrent Docker builds with a `_building` flag, joins build threads with 5-second timeout in `closeEvent()`, and logs a warning when termination is forced. `TaskManager` gains a `shutdown()` method to close the engine semaphore gracefully and a `_closed` guard in `__del__()`. `GolfLauncher` and `LauncherProcessManager` receive corresponding cleanup improvements. Also fixes `PyVistaBackend` mypy error (`window_size` list vs tuple). Refs #2715. |
 | 2026-04-18 | 1.0.133 | Performance optimization: Replaced `np.linalg.norm` in list comprehensions with batched `np.einsum` calculations in `putting_green.py`, `grip_contact_model.py`, and `examples_motion_capture.py`. Added explicit safe-default empty-list guards to preserve numeric equivalence and avoid overhead on small multi-dimensional arrays.                                                                                                                                                                                          |
 | 2026-04-18 | 1.0.132 | API security hardening: `src/api/local_server.py` now makes the local-development authentication boundary explicit by defaulting `GOLF_AUTH_DISABLED=true` only when `GOLF_SUITE_MODE=local`; non-local modes default authentication to enabled unless deployment configuration deliberately overrides it.                                                                                                                                                                                                                                                                             |
 | 2026-04-18 | 1.0.131 | Performance optimization: Replaced a slow Python list comprehension executing `np.linalg.norm` iteratively with a fully vectorized NumPy calculation using `np.einsum` in the putting green `scatter_analysis` route, reducing calculation time and avoiding intermediate array allocations. Also added a safety check for empty result sets.                                                                                                                                                                                                       |
