@@ -4,7 +4,7 @@
 # Stage 1: Builder stage with full development tools
 # Digest pin prevents silent upstream drift.
 # To rotate: docker pull continuumio/miniconda3:24.11.1-0 && docker inspect --format='{{index .RepoDigests 0}}' continuumio/miniconda3:24.11.1-0
-FROM continuumio/miniconda3:24.11.1-0@sha256:bf95f5799c024d6cb9a4e35aab0cff3d4a9e4d2ab3fc574ff90ecb4f2ed5d3bc AS builder
+FROM continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -89,7 +89,7 @@ RUN pip install --no-cache-dir \
 
 
 # Stage 2: Runtime stage with minimal footprint
-FROM continuumio/miniconda3:24.11.1-0@sha256:bf95f5799c024d6cb9a4e35aab0cff3d4a9e4d2ab3fc574ff90ecb4f2ed5d3bc AS runtime
+FROM continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b AS runtime
 
 ENV DEBIAN_FRONTEND=noninteractive
 
