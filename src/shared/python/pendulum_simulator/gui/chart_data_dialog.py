@@ -116,6 +116,6 @@ class ChartDataDialog(QDialog):
         x_key = self._x_combo.currentData()
         y_key = self._y_combo.currentData()
         degree = self._reg_degree.value()
-        if not (x_key is not None and y_key is not None):
+        if x_key is not None and y_key is None:
             raise ValueError("DbC Blocked: Precondition failed.")
         return x_key, y_key, degree
