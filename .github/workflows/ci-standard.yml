@@ -89,27 +89,27 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-python@v6
         with: { python-version: "3.11" }
-      - run: pip install ruff==0.14.10 mypy>=1.15.0 bandit==1.7.7 pydocstyle==6.3.0
+      - run: python -m pip install ruff==0.14.10 "mypy>=1.15.0" bandit==1.7.7 pydocstyle==6.3.0
 
       # FIX: Less aggressive Ruff (Errors, Warnings, Imports only)
       - name: Lint
-        run: ruff check .
+        run: python -m ruff check .
 
       # Use ruff format (consistent with pre-commit hooks) - ruff format is
       # a strict superset of black's style; running both causes conflicts.
       # Runs on full repo (.) to catch formatting issues outside src/scripts/tests.
       - name: Check Formatting (ruff)
-        run: ruff format --check .
+        run: python -m ruff format --check .
 
-      - run: pip install mypy types-PyYAML types-requests
-      - run: pip install -e .[dev]
+      - run: python -m pip install mypy types-PyYAML types-requests
+      - run: python -m pip install -e .[dev]
       # Baseline mypy check across all of src/
-      - run: mypy src --config-file pyproject.toml
+      - run: python -m mypy src --config-file pyproject.toml
       # Strict mypy for the fully-annotated API layer (issue #2105).
       # --follow-imports=silent applies strict rules only to src/api/ files,
       # not to their transitive dependencies (which have pre-existing issues).
       - name: MyPy Strict (src/api)
-        run: mypy src/api --strict --follow-imports=silent --config-file pyproject.toml
+        run: python -m mypy src/api --strict --follow-imports=silent --config-file pyproject.toml
 
       - name: Dependency Direction Fitness Check
         run: python3 scripts/check_dependency_direction.py
