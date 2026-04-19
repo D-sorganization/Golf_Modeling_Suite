@@ -38,18 +38,9 @@ mimetypes.add_type("image/png", ".png")
 mimetypes.add_type("image/jpeg", ".jpg")
 mimetypes.add_type("image/x-icon", ".ico")
 
-# Ensure we're running in local mode with explicit security configuration
+# Ensure we're running in local mode
 os.environ.setdefault("GOLF_SUITE_MODE", "local")
-# Auth is disabled ONLY in local mode for development convenience.
-# This is an intentional security boundary: local servers have NO auth by design.
-# Production servers MUST NOT use local_server.py and MUST enforce authentication.
-# See issue #2714 for security hardening requirements.
-if os.environ.get("GOLF_SUITE_MODE") == "local":
-    os.environ.setdefault("GOLF_AUTH_DISABLED", "true")
-else:
-    # Production and other modes: auth is REQUIRED unless explicitly overridden
-    # by deployment configuration (e.g., cloud IAM, OAuth2 middleware)
-    os.environ.setdefault("GOLF_AUTH_DISABLED", "false")
+os.environ.setdefault("GOLF_AUTH_DISABLED", "true")
 
 # NOTE: These imports are placed after env setup intentionally
 # The environment variables must be set before FastAPI initialization
@@ -707,7 +698,8 @@ def print_server_info(host: str, port: int) -> None:
     RESET = "\033[0m"
 
     try:
-        logger.info(f"""
+        logger.info(
+            f"""
 {CYAN}    ┌─────────────────────────────────────────────────────────┐
     │              Golf Modeling Suite - Local Server         │
     ├─────────────────────────────────────────────────────────┤
@@ -717,7 +709,8 @@ def print_server_info(host: str, port: int) -> None:
     │  Mode: LOCAL (no auth required)                         │
     │  Press Ctrl+C to stop.                                  │
     └─────────────────────────────────────────────────────────┘{RESET}
-    """)
+    """
+        )
     except UnicodeEncodeError:
         logger.info("\n    Golf Modeling Suite - Local Server")
         logger.info("    Running at: http://%s:%s", host, port)

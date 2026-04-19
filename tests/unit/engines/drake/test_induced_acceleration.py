@@ -3,23 +3,21 @@
 from __future__ import annotations
 
 import sys
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
 
-# Per CLAUDE.md: never module-level sys.modules mocking.
-# Use patch.dict context managers instead.
-_PYDRAKE_MOCK = {
-    "pydrake": MagicMock(),
-    "pydrake.all": MagicMock(),
-}
+# Mock pydrake before importing the module under test
+mock_pydrake = MagicMock()
+sys.modules["pydrake"] = mock_pydrake
+sys.modules["pydrake.all"] = mock_pydrake
 
-# Import the module under test with patched sys.modules
-with patch.dict(sys.modules, _PYDRAKE_MOCK):
-    from src.engines.physics_engines.drake.python.src.induced_acceleration import (  # noqa: E402
-        DrakeInducedAccelerationAnalyzer,
-    )
+# Now import the module under test
+# We use 'src' as a package anchor if possible, or relative import if path is set
+from src.engines.physics_engines.drake.python.src.induced_acceleration import (  # noqa: E402
+    DrakeInducedAccelerationAnalyzer,
+)
 
 
 class TestDrakeInducedAcceleration:

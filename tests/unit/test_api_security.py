@@ -202,7 +202,7 @@ class TestBcryptAPIKeyVerification:
         current_user = MagicMock(spec=User)
         current_user.id = 7
         api_key_data = APIKeyCreate(name="integration key")
-        generated_api_key = "gms_abcdefgh1234567890"  # nosec B105 - test fixture
+        generated_api_key = "gms_abcdefgh1234567890"
 
         fake_response = MagicMock()
         with (
@@ -308,7 +308,7 @@ class TestPasswordSecurity:
         """Test that passwords are hashed with bcrypt."""
         security_manager = SecurityManager()
 
-        password = "test_password_123!@#"  # nosec B105 - test fixture, not a real credential
+        password = "test_password_123!@#"
         hashed = security_manager.hash_password(password)
 
         # Verify bcrypt format
@@ -443,12 +443,12 @@ class TestSecurityBestPractices:
         ]
 
         for pattern in suspicious_patterns:
-            assert (
-                pattern not in security_source.lower()
-            ), f"Found suspicious pattern in security.py: {pattern}"
-            assert (
-                pattern not in dependencies_source.lower()
-            ), f"Found suspicious pattern in dependencies.py: {pattern}"
+            assert pattern not in security_source.lower(), (
+                f"Found suspicious pattern in security.py: {pattern}"
+            )
+            assert pattern not in dependencies_source.lower(), (
+                f"Found suspicious pattern in dependencies.py: {pattern}"
+            )
 
     def test_secure_random_generation(self) -> None:
         """Test that secrets module is used for random generation."""
@@ -468,7 +468,7 @@ class TestSecurityBestPractices:
         """Test that password verification is resistant to timing attacks."""
         security_manager = SecurityManager()
 
-        password = "test_password"  # nosec B105 - test fixture, not a real credential
+        password = "test_password"
         hashed = security_manager.hash_password(password)
 
         import time

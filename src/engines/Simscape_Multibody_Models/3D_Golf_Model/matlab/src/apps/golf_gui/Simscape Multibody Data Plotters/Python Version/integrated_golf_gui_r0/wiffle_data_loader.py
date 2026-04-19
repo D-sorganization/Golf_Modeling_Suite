@@ -628,7 +628,9 @@ class MotionDataLoader:
                     diff = _to_numpy(prov1_df[prov1_col]) - wiffle_interp
 
                     # Store in DELTAQ format
-                    gui_col = f"{component.upper().replace('_', '')[:2]}{axis[-1].upper()}"  # noqa: E501
+                    gui_col = (
+                        f"{component.upper().replace('_', '')[:2]}{axis[-1].upper()}"  # noqa: E501
+                    )
                     deltaq_data[gui_col] = diff
                 else:
                     deltaq_data[
@@ -666,7 +668,7 @@ def main() -> None:
     try:
         # Create loader and load data
         loader = MotionDataLoader()
-        excel_data = loader.load_excel_data(excel_file)  # type: ignore[arg-type]
+        excel_data = loader.load_excel_data(excel_file)
 
         # Convert to GUI format
         baseq, ztcfq, deltaq = loader.convert_to_gui_format(excel_data)

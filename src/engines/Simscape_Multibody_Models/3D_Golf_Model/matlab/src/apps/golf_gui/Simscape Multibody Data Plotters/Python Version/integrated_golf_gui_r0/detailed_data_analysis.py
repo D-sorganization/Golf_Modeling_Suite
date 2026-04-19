@@ -55,9 +55,7 @@ def deep_analyze_matlab_file(filename) -> bool:
                         # If it's an object array, try to explore further
                         if hasattr(
                             field_data, "dtype"
-                        ) and field_data.dtype == np.dtype(
-                            "O"
-                        ):  # noqa: E501
+                        ) and field_data.dtype == np.dtype("O"):  # noqa: E501
                             logger.info(
                                 f"      Object array with {len(field_data)} elements"
                             )  # noqa: E501
@@ -218,7 +216,7 @@ def main() -> None:
         logger.info("❌ Could not extract usable data from the files")
         logger.info("The data structure may need special handling in the GUI")
 
-    return  # noqa: RET502
+    return len(extracted_data) > 0
 
 
 if __name__ == "__main__":
