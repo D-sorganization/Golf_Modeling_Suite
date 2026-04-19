@@ -353,7 +353,7 @@ class ForceTorqueSensor(ContractChecker):
         Assumes a single point contact and estimates where
         the contact force is applied.
         """
-        if not (wrench is not None):
+        if wrench is None:
             raise ValueError("wrench must be provided")
         wrench = np.asarray(wrench, dtype=np.float64)
         force = wrench[:3]
@@ -414,8 +414,17 @@ def create_realistic_sensor(
     quality: str = "industrial",
     seed: int | None = None,
 ) -> ForceTorqueSensor:
-    """Create a force/torque sensor with realistic noise."""
-    if not (sensor_id is not None):
+    """Create a force/torque sensor with realistic noise.
+
+    Args:
+        sensor_id: Sensor identifier.
+        quality: Sensor quality level ('research', 'industrial', 'consumer').
+        seed: Random seed.
+
+    Returns:
+        ForceTorqueSensor with appropriate noise characteristics.
+    """
+    if sensor_id is None:
         raise ValueError("sensor_id must be provided")
 
     noise_params = {

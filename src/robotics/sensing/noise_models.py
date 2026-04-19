@@ -111,7 +111,7 @@ class GaussianNoise(NoiseModel):
         Returns:
             Signal with additive Gaussian noise.
         """
-        if not (signal is not None):
+        if signal is None:
             raise ValueError("signal must be provided")
         noise = self._rng.normal(self.mean, self.std, signal.shape)
         return signal + noise
@@ -208,7 +208,8 @@ class BrownianNoise(NoiseModel):
         Returns:
             Signal with additive drifting bias.
         """
-        if not (signal is not None):
+        # Update bias with random walk
+        if signal is None:
             raise ValueError("signal must be provided")
 
         signal_array = np.asarray(signal, dtype=np.float64)
@@ -275,7 +276,7 @@ class QuantizationNoise(NoiseModel):
         Returns:
             Quantized signal.
         """
-        if not (signal is not None):
+        if signal is None:
             raise ValueError("signal must be provided")
         shifted = np.asarray(signal, dtype=np.float64) - self.offset
         quantized = np.round(shifted / self.resolution) * self.resolution
@@ -374,7 +375,7 @@ class BandwidthLimitedNoise(NoiseModel):
         Returns:
             Filtered signal.
         """
-        if not (signal is not None):
+        if signal is None:
             raise ValueError("signal must be provided")
 
         result = np.asarray(signal, dtype=np.float64).copy()
@@ -416,7 +417,7 @@ class CompositeNoise(NoiseModel):
         Returns:
             Signal with all noise sources applied.
         """
-        if not (signal is not None):
+        if signal is None:
             raise ValueError("signal must be provided")
         result = np.asarray(signal, dtype=np.float64).copy()
         for model in self.models:
