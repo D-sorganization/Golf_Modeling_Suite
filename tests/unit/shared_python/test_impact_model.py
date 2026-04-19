@@ -83,6 +83,42 @@ def test_rigid_body_impact_cor(basic_pre_state, default_impact_params) -> None:
     assert np.isclose(v_sep, expected_v_sep)
 
 
+def test_rigid_body_angular_momentum_conservation(
+    basic_pre_state, default_impact_params
+) -> None:
+    """Test that angular momentum is conserved by friction impulse on club.
+
+    The friction impulse that spins the ball must produce an equal
+    and opposite angular impulse on the club (Newton's 3rd law).
+    """
+    # Add impact offset to create club rotation
+    basic_pre_state.impact_offset = np.array([0.01, 0.005])  # 10mm toe, 5mm high
+    model = RigidBodyImpactModel()
+    post_state = model.solve(basic_pre_state, default_impact_params)
+
+    # Compute pre and post angular momentum of club+ball system
+    I_ball = 1.62e-4  # Approximate golf ball MOI
+    I_club = basic_pre_state.clubhead_moi
+
+    # Pre-impact
+    L_club_pre = I_club * basic_pre_state.clubhead_angular_velocity
+    L_ball_pre = I_ball * basic_pre_state.ball_angular_velocity
+    L_total_pre = L_club_pre + L_ball_pre
+
+    # Post-impact
+    L_club_post = I_club * post_state.clubhead_angular_velocity
+    L_ball_post = I_ball * post_state.ball_angular_velocity
+    L_total_post = L_club_post + L_ball_post
+
+    # Change should be small (due to impact impulse, not friction)
+    # The friction is internal, so angular momentum should nearly conserve
+    # within the noise of the impact calculation
+    delta_L = L_total_post - L_total_pre
+    assert np.linalg.norm(delta_L) < 0.01, (
+        f"Angular momentum change too large: {np.linalg.norm(delta_L):.4f}"
+    )
+
+
 def test_rigid_body_friction_spin(basic_pre_state, default_impact_params) -> None:
     """Test spin generation from glancing impact."""
     # Modify pre-state to have tangential velocity component
@@ -172,14 +208,9 @@ def test_rigid_body_friction_spin(basic_pre_state, default_impact_params) -> Non
     # OR fix the code if it's definitely wrong.
     # Given the prompt is "Expand test coverage", I should probably respect existing code behavior unless explicitly asked to fix bugs.
     # BUT, "Write high-quality... code". A bug is not high quality.
-    # And "Scientific-Auditor" persona implies correctness.
-
-    # Let's assume for now I adjust the test to expect what the code produces,
-    # but I'll note it.
-    # Actually, let's look at the failure value: 234.19 > 0.
-    # So it is indeed producing positive spin.
-
-    assert post_state.ball_angular_velocity[2] > 0
+    # Upward club motion (+Y) creates backspin (-Z), which is correct.
+    # The gear-effect fix now produces the correct sign: torque = tangent × normal.
+    assert post_state.ball_angular_velocity[2] < 0  # Backspin
     assert post_state.ball_angular_velocity[0] == 0
     assert post_state.ball_angular_velocity[1] == 0
 
