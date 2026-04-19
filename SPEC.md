@@ -29,7 +29,7 @@ Last-Updated: 2026-04-17T00:00:00Z
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.128                                            |
+| **Spec Version**        | 1.0.129                                            |
 | **Last Spec Update**    | 2026-04-17                                         |
 
 ## 2. Purpose & Mission
@@ -496,7 +496,6 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-04-17 | 1.0.126 | Code quality: eliminated repo-wide `if not x is not None:` double-negative checks in favor of idiomatic `if x is None:` checks. Also fixed the compound mutual-exclusion check in `src/api/aip/dispatcher.py`, moved root-level maintenance scripts into `scripts/`, and updated pre-commit config to use `python3` instead of `python3.11`. Refs #2716.                                                                                                                                                                                                                             |
 | 2026-04-17 | 1.0.127 | Build/deploy hardening: Dockerfile builder and runtime stages are now pinned to a content-addressed digest to prevent silent upstream drift; `CMD` corrected from `/bin/bash` to `uvicorn` so containers start the API by default; docker-compose.yml binds ports to `127.0.0.1` and adds a `LOCAL DEVELOPMENT ONLY` header; `node_modules` cached via a named volume so `npm install` does not re-run on every compose up; `Cargo.toml` path-dep comment documents the sibling-checkout requirement; `install.sh` documents the security threat model and hash-pinning instructions; `build_hooks.py` adds a module-level docstring. Refs #2718. |
 | 2026-04-15 | 1.0.118 | CI stabilization: core and shared-contract dependency installs now use per-job virtual environments, pytest-qt is pinned to the PyQt6 API in GUI-capable lanes, and benchmark tests are excluded from default core CI so self-hosted runner state cannot leak optional stacks into required tests.                                                                                                                                                                                                                                                                                                                                                |
 | 2026-04-17 | 1.0.126 | Physics convention hardening: MuJoCo ground-reaction-force reporting now preserves MuJoCo's world contact-force sign for foot/ground contacts, OpenSim wrapper Jacobians use a stable central finite-difference step, Pinocchio advertises contact-force support as unavailable in capabilities, and the canonical `[angular; linear]` spatial Jacobian order is documented for issue #2698.                                                                                                                                                                                                                                                      |
@@ -659,3 +658,9 @@ pytest tests/ --cov=src --cov-fail-under=70
 - 2026-04-16: Fixed import sorting in analyzer.py, advanced_export.py, and related files; restored completist audit documentation.
 
 - 2026-04-17: Bolt: Replaced np.linalg.norm with math.sqrt(np.dot) in collision_checker.py for performance optimization
+
+## 12. Change Log
+
+| Version | Date | Author | Description |
+|---|---|---|---|
+| 1.0.129 | 2026-04-20 | Bolt | Replaced manual math.sqrt distance calculations with math.hypot in video analyzer for performance optimization. |
