@@ -258,7 +258,7 @@ def assess_I():
         findings.append("No explicit Ruff config in pyproject.toml.")
         score -= 1
 
-    recs = ["Enforce linting in CI.", "Use black for formatting."]
+    recs = ["Enforce linting in CI.", "Use ruff format for formatting."]
     return generate_markdown_report(
         "I", CATEGORIES["I"], score, "\n".join(findings), recs, DOCS_DIR
     )
