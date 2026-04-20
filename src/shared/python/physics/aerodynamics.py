@@ -285,7 +285,7 @@ class DragModel:
 
         # Golf ball Cd variation with Re (coarse empirical approximation).
         #
-        # TODO(#2803): Replace this 3-segment piecewise with a calibrated
+        # TRACKED(#2803): Replace this 3-segment piecewise with a calibrated
         # Cd(Re) curve over the drag-crisis region. Recommended references
         # for golf-ball specific data:
         #   - Bearman, P. W. & Harvey, J. K. (1976). "Golf ball aerodynamics."

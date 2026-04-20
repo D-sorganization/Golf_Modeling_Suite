@@ -300,7 +300,7 @@ class AerodynamicsCalculator:
         Re = self.air.density * speed * (2 * self.ball.radius) / self.air.viscosity
 
         # Golf ball Cd variation with Re (coarse empirical approximation).
-        # TODO(#2803): Calibrate against Bearman & Harvey (1976) or
+        # TRACKED(#2803): Calibrate against Bearman & Harvey (1976) or
         # Smits & Ogg (2004) golf-ball Cd(Re) data across the drag-crisis
         # region (~Re 4e4-2e5). PR #2732 attempted this but was closed
         # unmerged; its table was not independently verified. Behavior is

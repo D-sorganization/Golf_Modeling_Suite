@@ -58,7 +58,7 @@ def test_drag_coefficient_pinned_across_crisis(
 ) -> None:
     """Pin Cd at representative Reynolds numbers across the drag crisis.
 
-    See module docstring and TODO(#2803) in aerodynamics.py.
+    See module docstring and TRACKED(#2803) in aerodynamics.py.
     """
     model = DragModel(base_coefficient=0.25, reynolds_correction=True)
     speed = _speed_for_reynolds(target_re)
