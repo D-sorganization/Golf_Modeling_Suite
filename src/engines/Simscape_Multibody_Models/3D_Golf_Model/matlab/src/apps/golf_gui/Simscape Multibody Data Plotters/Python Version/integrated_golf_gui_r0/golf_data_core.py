@@ -18,8 +18,6 @@ import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 
-import math
-
 import numpy as np
 import pandas as pd
 import scipy.io
@@ -737,6 +735,7 @@ class GeometryUtils:
         # Normalize input vectors
         if vec1 is None:
             raise ValueError("vec1 must be provided")
+
         v1_norm = math.sqrt(vec1[0] * vec1[0] + vec1[1] * vec1[1] + vec1[2] * vec1[2])
         v2_norm = math.sqrt(vec2[0] * vec2[0] + vec2[1] * vec2[1] + vec2[2] * vec2[2])
 
