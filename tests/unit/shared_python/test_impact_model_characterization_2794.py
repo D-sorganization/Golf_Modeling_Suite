@@ -153,24 +153,23 @@ class TestFrictionSpinCrossProductCharacterization:
 
         # Non-trivial spin produced.
         assert np.linalg.norm(spin) > 0.0
-        # With n = +x and tangent_dir along +z (pointing into the face
-        # tangential component), the current convention
-        # (np.cross(n, tangent_dir)) yields a spin-axis along −y.
-        # Pin that sign.
-        assert spin[1] < 0.0, (
-            "Current convention: spin_axis = n × tangent_dir gives "
-            "negative-y for upward club motion. Issue #2700 argues for "
-            "the opposite sign; do not change without citation."
+        # With n = +x and tangent_dir along +z, the corrected torque
+        # τ = r × F = (-R·n) × (j·tangent_dir) gives spin_axis = tangent_dir × n
+        # = z × x = +y. Fix from #2794 (citing #2700 derivation).
+        assert spin[1] > 0.0, (
+            "Corrected convention: spin_axis = tangent_dir × n gives "
+            "positive-y for upward club motion (τ = r × F derivation)."
         )
 
 
-class TestAngularMomentumConservationKnownDefect:
-    """Document that the rigid-body solver does *not* back-react the
-    friction impulse on the clubhead. This is a known defect flagged in
-    issue #2700 point 2.
+class TestAngularMomentumConservation:
+    """Verify that the rigid-body solver applies the friction-impulse
+    reaction torque to the clubhead for off-center impacts (#2700 point 2,
+    fixed in #2794).
     """
 
-    def test_clubhead_angular_velocity_is_unchanged_by_impact(self) -> None:
+    def test_center_strike_clubhead_angular_velocity_unchanged(self) -> None:
+        """Center strike with no impact offset → no friction torque on club."""
         pre_omega = np.array([1.0, 2.0, 3.0])
         pre = PreImpactState(
             clubhead_velocity=np.array([45.0, 0.0, 2.0]),
@@ -182,12 +181,27 @@ class TestAngularMomentumConservationKnownDefect:
             clubhead_mass=0.200,
         )
         post = RigidBodyImpactModel().solve(pre, ImpactParameters())
-
-        # TRACKED(#2794): when the friction-impulse reaction is
-        # implemented (Newton's third law — see issue #2700 point 2),
-        # this equality must become an inequality bounded by the
-        # impulse magnitude. Cite Cross 1999 for the derivation.
+        # No impact_offset → moment arm is zero → club omega unchanged.
         assert np.allclose(post.clubhead_angular_velocity, pre_omega)
+
+    def test_off_center_strike_modifies_clubhead_angular_velocity(self) -> None:
+        """Off-center strike → friction reaction torque changes club omega."""
+        pre_omega = np.zeros(3)
+        pre = PreImpactState(
+            clubhead_velocity=np.array([45.0, 0.0, 2.0]),
+            clubhead_angular_velocity=pre_omega.copy(),
+            clubhead_orientation=np.array([1.0, 0.0, 0.0]),
+            ball_position=np.zeros(3),
+            ball_velocity=np.zeros(3),
+            ball_angular_velocity=np.zeros(3),
+            clubhead_mass=0.200,
+            impact_offset=np.array([0.02, 0.0]),  # 20 mm toe-side
+        )
+        post = RigidBodyImpactModel().solve(pre, ImpactParameters())
+        # Friction reaction torque must shift club omega away from zero.
+        assert not np.allclose(post.clubhead_angular_velocity, pre_omega), (
+            "Off-center friction impulse must react on club (Newton's 3rd law)."
+        )
 
 
 class TestLoftAndLieUnusedKnownDefect:
