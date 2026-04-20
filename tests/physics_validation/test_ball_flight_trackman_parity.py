@@ -6,13 +6,11 @@ integration is skipped because it requires the upstream-physics Rust
 kernel; those checks are marked ``slow`` and guarded by a skip.
 """
 
-import math
 
 import pytest
 
 from src.shared.python.physics.ball_flight_physics import EnvironmentalConditions
 from src.shared.python.validation_pkg.validation_data import PGA_TOUR_2024
-
 
 _DENVER_ALTITUDE_M = 1609.0  # Denver, CO (~1 mile)
 _DENVER_RHO_EXPECTED = 1.045  # kg/m³ ± 2%
@@ -60,8 +58,8 @@ class TestVelocityDependentSpinDecay:
     @pytest.fixture()
     def engine(self):
         from src.shared.python.physics.aerodynamics import (
-            AerodynamicsEngine,
             AerodynamicsConfig,
+            AerodynamicsEngine,
         )
 
         return AerodynamicsEngine(AerodynamicsConfig())

@@ -111,7 +111,7 @@ class EnvironmentalConditions:
         cls,
         altitude_m: float,
         wind_velocity: np.ndarray | None = None,
-    ) -> "EnvironmentalConditions":
+    ) -> EnvironmentalConditions:
         """Create conditions with ISA-derived air density for the given altitude.
 
         Uses the International Standard Atmosphere (ISA) troposphere model
