@@ -319,8 +319,8 @@ class TestAngularMomentumConservation:
         self, basic_pre_state, default_impact_params
     ):
         from src.shared.python.core.physics_constants import (
-            GOLF_BALL_MOMENT_OF_INERTIA_KG_M2,
             DRIVER_MOI_KG_M2,
+            GOLF_BALL_MOMENT_OF_INERTIA_KG_M2,
         )
 
         model = RigidBodyImpactModel()
