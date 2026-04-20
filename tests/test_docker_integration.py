@@ -118,16 +118,16 @@ class TestDockerRuntimeEntrypoint(unittest.TestCase):
 
     def test_runtime_healthcheck_hits_health_endpoint(self):
         """HEALTHCHECK must probe /health on the same port as CMD."""
-        self.assertIn(
-            "curl -f http://localhost:8001/health", self.content
-        )
+        self.assertIn("curl -f http://localhost:8001/health", self.content)
 
     def test_runtime_does_not_default_to_interactive_shell(self):
         """Runtime stage must not default CMD to /bin/bash."""
         # Extract the runtime stage (between `AS runtime` and the next `FROM`).
         runtime_start = self.content.index("AS runtime")
         next_from = self.content.find("\nFROM ", runtime_start)
-        runtime_block = self.content[runtime_start:next_from if next_from != -1 else None]
+        runtime_block = self.content[
+            runtime_start : next_from if next_from != -1 else None
+        ]
         self.assertNotIn('CMD ["/bin/bash"]', runtime_block)
 
 
