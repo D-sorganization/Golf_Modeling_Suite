@@ -46,14 +46,8 @@ class TestDockerBuild(unittest.TestCase):
         content = dockerfile_path.read_text()
 
         # Check for required components (multi-stage build with pinned version)
-        self.assertIn(
-            "FROM continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b AS builder",
-            content,
-        )
-        self.assertIn(
-            "FROM continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b AS runtime",
-            content,
-        )
+        self.assertIn("FROM python:3.12-slim-bookworm AS builder", content)
+        self.assertIn("FROM python:3.12-slim-bookworm AS runtime", content)
         self.assertIn('ENV PYTHONPATH="/workspace"', content)
         self.assertIn("WORKDIR /workspace", content)
 
@@ -82,6 +76,53 @@ class TestDockerBuild(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0)
         self.assertIn("Docker version", result.stdout)
+
+
+class TestDockerRuntimeEntrypoint(unittest.TestCase):
+    """Regression tests for the hardened runtime API entrypoint (#2786).
+
+    Salvaged from stale PR #2723: the runtime image must default to the
+    FastAPI server (not an interactive shell), bound to 0.0.0.0:8001, and
+    must carry production hardening flags (proxy headers, single worker,
+    access logs) that match the documented SPEC behavior.
+    """
+
+    def setUp(self):
+        self.content = (get_repo_root() / "Dockerfile").read_text()
+
+    def test_runtime_cmd_invokes_uvicorn_api_server(self):
+        """CMD must launch src.api.server:app via uvicorn."""
+        self.assertIn('"python3", "-m", "uvicorn"', self.content)
+        self.assertIn('"src.api.server:app"', self.content)
+
+    def test_runtime_cmd_binds_public_host_and_port(self):
+        """CMD must bind 0.0.0.0:8001 to match EXPOSE/HEALTHCHECK."""
+        self.assertIn('"--host", "0.0.0.0"', self.content)
+        self.assertIn('"--port", "8001"', self.content)
+
+    def test_runtime_cmd_single_worker_for_healthcheck(self):
+        """Single worker keeps in-process state + HEALTHCHECK aligned."""
+        self.assertIn('"--workers", "1"', self.content)
+
+    def test_runtime_cmd_proxy_headers_hardening(self):
+        """Proxy-aware flags must be present for reverse-proxy deployments."""
+        self.assertIn('"--proxy-headers"', self.content)
+        self.assertIn('"--forwarded-allow-ips"', self.content)
+        self.assertIn('"--access-log"', self.content)
+
+    def test_runtime_healthcheck_hits_health_endpoint(self):
+        """HEALTHCHECK must probe /health on the same port as CMD."""
+        self.assertIn("curl -f http://localhost:8001/health", self.content)
+
+    def test_runtime_does_not_default_to_interactive_shell(self):
+        """Runtime stage must not default CMD to /bin/bash."""
+        # Extract the runtime stage (between `AS runtime` and the next `FROM`).
+        runtime_start = self.content.index("AS runtime")
+        next_from = self.content.find("\nFROM ", runtime_start)
+        runtime_block = self.content[
+            runtime_start : next_from if next_from != -1 else None
+        ]
+        self.assertNotIn('CMD ["/bin/bash"]', runtime_block)
 
 
 class TestDockerLaunchCommands(unittest.TestCase):
@@ -438,21 +479,19 @@ class TestContainerEnvironment(unittest.TestCase):
         self.assertIn("mkdir -p /workspace", content)
         self.assertIn("WORKDIR /workspace", content)
 
-    def test_conda_environment_setup(self):
-        """Test conda environment configuration."""
+    def test_slim_environment_setup(self):
+        """Test the slim builder/runtime environment configuration."""
         dockerfile_path = get_repo_root() / "Dockerfile"
         content = dockerfile_path.read_text()
 
-        # Verify base image (pinned version, multi-stage build) and package installation
-        self.assertIn(
-            "FROM continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b AS builder",
-            content,
-        )
-        self.assertIn("conda install", content)
-        self.assertIn("python=3.12", content)
+        # Verify base image (slim multi-stage build) and package installation
+        self.assertIn("FROM python:3.12-slim-bookworm AS builder", content)
+        self.assertNotIn("conda install", content)
+        self.assertIn("python -m venv /opt/venv", content)
+        self.assertIn("pip install --no-cache-dir pip>=25.3 wheel setuptools", content)
 
         # Check for required packages
-        required_packages = ["numpy", "scipy", "matplotlib", "pandas", "pyqt6"]
+        required_packages = ["numpy", "scipy", "matplotlib", "pandas", "defusedxml"]
         for package in required_packages:
             self.assertIn(package, content, f"Should install {package}")
 

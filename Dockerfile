@@ -153,7 +153,17 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8001/health || exit 1
 
 # Default command — starts the FastAPI server on port 8001.
-CMD ["python", "-m", "uvicorn", "src.api.server:app", "--host", "0.0.0.0", "--port", "8001"]
+# Override with `docker run ... /bin/bash` for an interactive shell.
+#
+# Hardening flags keep the runtime aligned with HEALTHCHECK and reverse
+# proxy deployments.
+CMD ["python3", "-m", "uvicorn", "src.api.server:app", \
+     "--host", "0.0.0.0", \
+     "--port", "8001", \
+     "--workers", "1", \
+     "--proxy-headers", \
+     "--forwarded-allow-ips", "*", \
+     "--access-log"]
 
 
 # Stage 3: Training stage for advanced ML workflows
