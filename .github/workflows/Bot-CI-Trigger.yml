@@ -76,7 +76,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          token: ${{ secrets.BOT_PAT || secrets.RUNNER_CHECK_TOKEN }}
+          token: ${{ secrets.BOT_PAT || secrets.RUNNER_CHECK_TOKEN || github.token }}
           fetch-depth: 5
 
       - name: Check Loop Prevention
