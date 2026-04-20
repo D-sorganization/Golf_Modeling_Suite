@@ -57,3 +57,14 @@ class TestTrajectoryFunnelBenchmark:
         bench = TrajectoryFunnelBenchmark(mode="setpoint")
         result = bench.simulate_agent_training_mock()
         assert result["convergence_epochs"] > 10000
+
+
+class TestTrajectoryFunnelBugFixes:
+    """Regression tests for trajectory_funnel_reward bug fixes (#2711 finding #16)."""
+
+    def test_empty_reference_trajectory_raises(self) -> None:
+        bench = TrajectoryFunnelBenchmark(mode="transverse")
+        current = np.array([1.0, 0.0])
+        empty_ref = np.empty((0, 2))
+        with pytest.raises(ValueError, match="empty"):
+            bench.trajectory_funnel_reward(current, empty_ref, 0.5)

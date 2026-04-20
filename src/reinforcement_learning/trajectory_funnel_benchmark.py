@@ -45,6 +45,8 @@ class TrajectoryFunnelBenchmark:
         """
         # Find the geometrically closest point on the reference trajectory manifold
         assert current_state is not None, "current_state must be provided"
+        if len(reference_trajectory) == 0:
+            raise ValueError("reference_trajectory must not be empty")
         # ⚡ Bolt: np.einsum is ~3x faster than np.sum(diff**2, axis=-1)
         # and avoids temporary array allocations
         diff = reference_trajectory - current_state

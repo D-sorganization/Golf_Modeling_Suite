@@ -5,6 +5,7 @@ from __future__ import annotations
 from unittest.mock import MagicMock
 
 import numpy as np
+import pytest
 
 from src.research.multi_robot.coordination import (
     CooperativeManipulation,
@@ -109,3 +110,28 @@ class TestCooperativeManipulation:
             or isinstance(has_closure, (bool, np.bool_))
         )
         assert isinstance(quality, (float, np.floating))
+
+
+class TestQuaternionNormalizationBugFix:
+    """Regression tests for quaternion normalization (#2711 finding #13)."""
+
+    def test_unit_quaternion_produces_identity(self) -> None:
+        config = FormationConfig.line_formation(2)
+        fc = FormationController(robots=["r0", "r1"], formation=config)
+        identity_quat = np.array([1.0, 0.0, 0.0, 0.0])
+        R = fc._quat_to_rotation(identity_quat)
+        np.testing.assert_allclose(R, np.eye(3), atol=1e-12)
+
+    def test_unnormalized_quaternion_still_produces_rotation(self) -> None:
+        config = FormationConfig.line_formation(2)
+        fc = FormationController(robots=["r0", "r1"], formation=config)
+        unnorm = np.array([2.0, 0.0, 0.0, 0.0])
+        R = fc._quat_to_rotation(unnorm)
+        # After normalization this should still be identity
+        np.testing.assert_allclose(R, np.eye(3), atol=1e-12)
+
+    def test_zero_quaternion_raises(self) -> None:
+        config = FormationConfig.line_formation(2)
+        fc = FormationController(robots=["r0", "r1"], formation=config)
+        with pytest.raises(ValueError, match="near-zero norm"):
+            fc._quat_to_rotation(np.zeros(4))

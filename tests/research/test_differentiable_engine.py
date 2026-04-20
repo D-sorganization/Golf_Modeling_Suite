@@ -87,3 +87,65 @@ class TestOptimizationResult:
         )
         assert result.success is True
         assert result.iterations == 10
+
+
+class TestDifferentiableEngineBugFixes:
+    """Regression tests for bug fixes in differentiable engine (#2711)."""
+
+    def test_engine_missing_get_joint_positions_raises(self) -> None:
+        """Engine without get_joint_positions must raise, not silently fall back."""
+        engine = MagicMock(
+            spec=[
+                "n_q",
+                "n_v",
+                "set_joint_positions",
+                "set_joint_velocities",
+                "set_joint_torques",
+                "step",
+                "get_joint_velocities",
+            ]
+        )
+        engine.n_q = 2
+        engine.n_v = 2
+        engine.get_joint_velocities.return_value = np.zeros(2)
+        de = DifferentiableEngine(engine, backend="numpy")
+        with pytest.raises(NotImplementedError, match="get_joint_positions"):
+            de.simulate_trajectory(np.zeros(4), np.zeros((3, 2)), dt=0.01)
+
+    def test_engine_missing_get_joint_velocities_raises(self) -> None:
+        """Engine without get_joint_velocities must raise, not silently fall back."""
+        engine = MagicMock(
+            spec=[
+                "n_q",
+                "n_v",
+                "set_joint_positions",
+                "set_joint_velocities",
+                "set_joint_torques",
+                "step",
+                "get_joint_positions",
+            ]
+        )
+        engine.n_q = 2
+        engine.n_v = 2
+        engine.get_joint_positions.return_value = np.zeros(2)
+        de = DifferentiableEngine(engine, backend="numpy")
+        with pytest.raises(NotImplementedError, match="get_joint_velocities"):
+            de.simulate_trajectory(np.zeros(4), np.zeros((3, 2)), dt=0.01)
+
+    def test_compute_gradient_uses_central_difference(
+        self, mock_engine: MagicMock
+    ) -> None:
+        """Gradient computation uses central difference (symmetric around control value)."""
+        de = DifferentiableEngine(mock_engine, backend="numpy")
+        initial = np.zeros(6)
+        controls = np.zeros((2, 3))
+        call_count = {"n": 0}
+
+        def loss_fn(traj: np.ndarray) -> float:
+            call_count["n"] += 1
+            return float(np.sum(traj**2))
+
+        grad = de.compute_gradient(initial, controls, loss_fn)
+        assert grad.shape == controls.shape
+        # Central difference evaluates 2 perturbed trajectories per element (no baseline)
+        assert call_count["n"] == 2 * controls.size
