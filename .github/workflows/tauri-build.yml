@@ -62,9 +62,9 @@ jobs:
     runs-on: self-hosted
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
       - name: Checkout Tools (tools-core dependency)
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           repository: D-sorganization/Tools
           path: _tools_dep
@@ -133,9 +133,9 @@ jobs:
     runs-on: ${{ matrix.platform }}
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
       - name: Checkout Tools (tools-core dependency)
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           repository: D-sorganization/Tools
           path: _tools_dep

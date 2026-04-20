@@ -27,7 +27,7 @@ jobs:
   generate-ideas:
     runs-on: d-sorg-fleet
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 

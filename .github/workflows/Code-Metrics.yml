@@ -40,7 +40,7 @@ jobs:
     name: Complexity Analysis (radon)
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -119,7 +119,7 @@ jobs:
     name: Duplication Analysis (jscpd)
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
