@@ -145,7 +145,7 @@ jobs:
           pip install --upgrade pip
           # Force-reinstall sortedcontainers before pip-audit: the shared runner toolcache
           # can carry a half-installed sortedcontainers that makes cyclonedx (pip-audit dep) fail.
-          pip install --force-reinstall --no-deps "sortedcontainers>=2.4.0"
+          pip install --ignore-installed --no-deps "sortedcontainers>=2.4.0"
           pip install pip-audit
           # Audit only the project's declared dependency set (requirements-dev.lock)
           # rather than all ambient packages in the shared runner toolcache.
