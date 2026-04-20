@@ -94,6 +94,13 @@ class RigidBodyImpactModel(ImpactModel):
             float(friction_coefficient * j),
             float(GOLF_BALL_MASS_KG * tangent_mag * 0.4),
         )
+        # TODO(#2794 / #2700): verify spin-axis sign. Issue #2700
+        # argues the torque tau = r x F with r = -R*n and
+        # F = -j*tangent_dir yields a spin axis along
+        # tangent_dir x n (opposite of current convention). Do not
+        # flip without a textbook citation (Cochran & Stobbs 1968,
+        # Cross 1999). Characterization tests pin current behavior
+        # in tests/unit/shared_python/test_impact_model_characterization_2794.py.
         spin_axis = np.cross(n, tangent_dir)
         spin_magnitude = j_friction / (
             GOLF_BALL_MOMENT_OF_INERTIA_KG_M2 / GOLF_BALL_RADIUS_M
@@ -181,6 +188,11 @@ class RigidBodyImpactModel(ImpactModel):
             ball_velocity=v_ball_post,
             ball_angular_velocity=ball_spin,
             clubhead_velocity=v_club_post,
+            # TODO(#2794 / #2700, point 2): apply Newton's-third-law
+            # reaction of the friction impulse on the clubhead so
+            # angular momentum is conserved. Currently the pre-impact
+            # angular velocity is copied verbatim. See
+            # test_impact_model_characterization_2794.TestAngularMomentumConservationTODO.
             clubhead_angular_velocity=pre_state.clubhead_angular_velocity.copy(),
             contact_duration=0.0,
             energy_transfer=energy_transfer,

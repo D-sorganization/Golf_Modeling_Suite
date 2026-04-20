@@ -128,6 +128,12 @@ def validate_energy_balance(
 
     # Energy loss
     energy_lost = total_ke_pre - total_ke_post
+    # TODO(#2794 / #2700, point 4): this is the wrong formula. The
+    # Newton-impact energy loss is mu * (1 - e**2) / (1 + mu)**2
+    # with mu = m_club / m_ball. See Cross, "Impact of a ball with a
+    # bat or racket," Am. J. Phys. 67, 692 (1999). Characterization
+    # test pins current behavior in
+    # tests/unit/shared_python/test_impact_model_characterization_2794.py.
     expected_loss_factor = 1 - params.cor**2  # COR relates velocities, not energy
 
     return {
