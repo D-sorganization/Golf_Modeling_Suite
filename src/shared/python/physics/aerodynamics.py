@@ -1069,19 +1069,37 @@ class AerodynamicsEngine:
         self,
         spin: np.ndarray,
         dt: float,
+        velocity_magnitude: float | None = None,
     ) -> np.ndarray:
         """Compute spin decay over time step.
 
-        Spin decays exponentially due to air resistance.
+        Spin decays exponentially due to air resistance.  When
+        *velocity_magnitude* is provided the effective decay rate scales
+        linearly with ball speed (viscous-drag physics: dω/dt ∝ -v·ω),
+        normalised to the calibration reference speed of 70 m/s so that
+        the existing `spin_decay_rate` constant remains unchanged at that
+        speed.
 
         Args:
             spin: Current angular velocity [rad/s]
             dt: Time step [s]
+            velocity_magnitude: Ball speed [m/s].  If *None* the constant
+                ``spin_decay_rate`` is used (legacy behaviour).
 
         Returns:
             Updated spin after decay [rad/s]
         """
         require_finite(spin, "spin")
         require(dt >= 0, "dt must be non-negative", dt)
-        decay_factor = math.exp(-self.config.spin_decay_rate * dt)
+        if velocity_magnitude is not None:
+            require(
+                velocity_magnitude >= 0,
+                "velocity_magnitude must be non-negative",
+                velocity_magnitude,
+            )
+            _V_REF = 70.0  # m/s — speed at which spin_decay_rate was calibrated
+            effective_rate = self.config.spin_decay_rate * velocity_magnitude / _V_REF
+        else:
+            effective_rate = self.config.spin_decay_rate
+        decay_factor = math.exp(-effective_rate * dt)
         return spin * decay_factor
