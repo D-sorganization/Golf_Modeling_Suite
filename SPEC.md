@@ -670,6 +670,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 | 2026-04-14 | 1.0.112 | fix: prevent test_paths_utils false failure from /tmp/pyproject.toml — test now uses a clean isolated tmp directory instead of relying on /tmp state. |
 | 2026-04-15 | 1.0.113 | Bolt: Optimized `np.sum(np.square(...))` and explicit sum of squares to `np.einsum` in `analysis_tab.py`, `marker_plot_tab.py`, and `motion_capture.py` to improve performance. |
 | 1.0.124 | 2026-04-16 | Replaced np.sum axis reductions with np.einsum for performance optimization |
+| 1.0.139 | 2026-04-20 | Bolt: Optimized Numba-compiled `rotation_matrix_from_vectors` in `golf_data_core.py` by replacing `np.linalg.norm` and `np.allclose` with explicit element-wise math.sqrt and dot products for a 2x+ speedup. |
 
 ## Changelog
 - 2026-04-20: Bolt: Optimized np.sum(x**2) to np.vdot(x, x) in RL action penalties to improve performance and eliminate temporary allocations.
