@@ -235,22 +235,19 @@ def test_gear_effect_spin() -> None:
     v_club = np.array([45.0, 0.0, 0.0])
     normal = np.array([1.0, 0.0, 0.0])
 
-    # Toe impact (positive horizontal offset) -> Draw spin (counter-clockwise from top?)
-    # Implementation: horizontal_spin = -factor * h_offset * speed
+    # Toe impact (positive horizontal offset) -> Draw spin (counter-clockwise from top)
+    # Implementation: horizontal_spin = factor * h_offset * speed
     # Vertical axis is Z.
     offset_toe = np.array([0.02, 0.0])  # 2cm toe
     spin_toe = compute_gear_effect_spin(offset_toe, v_club, normal)
 
-    # Should have negative Z component? Or positive?
-    # horizontal_spin = -k * 0.02 * 45 * 100 < 0.
-    # spin = horizontal_spin * up (Z).
-    # So spin Z < 0.
-    assert spin_toe[2] < 0
+    # Should have positive Z component for draw/hook spin
+    assert spin_toe[2] > 0
 
-    # Heel impact -> Fade spin
+    # Heel impact -> Fade spin (clockwise from top, -Z)
     offset_heel = np.array([-0.02, 0.0])
     spin_heel = compute_gear_effect_spin(offset_heel, v_club, normal)
-    assert spin_heel[2] > 0
+    assert spin_heel[2] < 0
 
 
 def test_validate_energy_balance(basic_pre_state, default_impact_params) -> None:

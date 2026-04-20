@@ -281,12 +281,18 @@ class ImpactSolverAPI:
             v_scale=self.params.gear_effect_v_scale,
         )
 
+        from src.shared.python.core.physics_constants import GOLF_BALL_MOMENT_OF_INERTIA_KG_M2
+        club_moi = 0.005  # Default MOI if unknown
+        # Angular momentum conservation: delta_L_club = -delta_L_ball
+        # I_club * delta_omega_club = - I_ball * gear_spin
+        club_delta_spin = -(GOLF_BALL_MOMENT_OF_INERTIA_KG_M2 / club_moi) * gear_spin
+
         # Create modified post-state with gear effect
         modified_post = PostImpactState(
             ball_velocity=post_state.ball_velocity,
             ball_angular_velocity=post_state.ball_angular_velocity + gear_spin,
             clubhead_velocity=post_state.clubhead_velocity,
-            clubhead_angular_velocity=post_state.clubhead_angular_velocity,
+            clubhead_angular_velocity=post_state.clubhead_angular_velocity + club_delta_spin,
             contact_duration=post_state.contact_duration,
             energy_transfer=post_state.energy_transfer,
             impact_location=np.asarray(impact_offset),
