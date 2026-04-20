@@ -157,12 +157,14 @@ class BehaviorCloning(ImitationLearner):
         self,
         dataset: DemonstrationDataset,
         validation_split: float = 0.1,
+        rng: np.random.Generator | None = None,
     ) -> dict[str, list[float]]:
         """Train behavior cloning policy.
 
         Args:
             dataset: Demonstration dataset.
             validation_split: Fraction for validation.
+            rng: Optional seeded random generator for reproducible splits.
 
         Returns:
             Training history.
@@ -177,10 +179,12 @@ class BehaviorCloning(ImitationLearner):
         if len(observations) == 0:
             raise ValueError("Dataset has no state-action pairs")
 
+        _rng = rng if rng is not None else np.random.default_rng()
+
         # Split data
         n = len(observations)
         n_val = int(n * validation_split)
-        indices = np.random.permutation(n)
+        indices = _rng.permutation(n)
 
         train_idx = indices[n_val:]
         val_idx = indices[:n_val]
@@ -196,7 +200,7 @@ class BehaviorCloning(ImitationLearner):
 
         for _epoch in range(self.config.epochs):
             # Shuffle training data
-            perm = np.random.permutation(len(train_obs))
+            perm = _rng.permutation(len(train_obs))
             train_obs = train_obs[perm]
             train_act = train_act[perm]
 

@@ -266,3 +266,96 @@ class TestGAIL:
 
         reward = gail.get_reward(state, action)
         assert isinstance(reward, float)
+
+
+class TestImitationBugFixes:
+    """Regression tests for imitation learning bugs from issue #2710."""
+
+    def _make_dataset(self, n_demos: int = 3, n_frames: int = 20) -> object:
+        from src.learning.imitation import Demonstration, DemonstrationDataset
+
+        dataset = DemonstrationDataset()
+        for _ in range(n_demos):
+            dataset.add(
+                Demonstration(
+                    timestamps=np.arange(n_frames) * 0.01,
+                    joint_positions=np.random.randn(n_frames, 4),
+                    joint_velocities=np.random.randn(n_frames, 4),
+                    actions=np.random.randn(n_frames, 2),
+                )
+            )
+        return dataset
+
+    def test_sigmoid_clipping_prevents_overflow(self) -> None:
+        """Bug #11: sigmoid must not overflow for large negative inputs."""
+        from src.learning.imitation import GAIL
+
+        gail = GAIL(observation_dim=8, action_dim=2)
+        # Very large negative values would overflow 1/(1+exp(-x)) without clipping
+        state = np.full((1, 8), -1000.0)
+        action = np.full((1, 2), -1000.0)
+        result = gail._forward_discriminator(state, action)
+        assert np.all(np.isfinite(result)), (
+            "sigmoid output must be finite for extreme inputs"
+        )
+
+    def test_discriminator_trains_toward_targets(self) -> None:
+        """Bug #9: discriminator update must be gradient descent, not weight decay."""
+        from src.learning.imitation import GAIL, TrainingConfig
+
+        rng = np.random.default_rng(0)
+        n = 20
+        expert_states = rng.standard_normal((n, 8))
+        expert_actions = rng.standard_normal((n, 2))
+
+        gail = GAIL(
+            observation_dim=8,
+            action_dim=2,
+            config=TrainingConfig(epochs=1, learning_rate=0.1),
+        )
+        # Targets: expert=1
+        targets = np.ones((n, 1))
+        before = gail._forward_discriminator(expert_states, expert_actions).mean()
+        grads = gail._backward_discriminator(expert_states, expert_actions, targets)
+        # Apply one gradient step
+        for layer, grad in zip(gail._discriminator, grads, strict=True):
+            layer["W"] -= 0.1 * grad["W"]
+            layer["b"] -= 0.1 * grad["b"]
+        after = gail._forward_discriminator(expert_states, expert_actions).mean()
+        # After gradient step toward 1, predictions should increase
+        assert after > before, (
+            "discriminator predictions should increase toward expert target"
+        )
+
+    def test_batch_reward_does_not_raise(self) -> None:
+        """Bug #10: get_reward must not raise for non-scalar discriminator output."""
+        from src.learning.imitation import GAIL
+
+        gail = GAIL(observation_dim=8, action_dim=2)
+        # Batched input (multiple rows) previously caused .item() to fail
+        state = np.random.randn(5, 8)
+        action = np.random.randn(5, 2)
+        reward = gail.get_reward(state, action)
+        assert isinstance(reward, float), "get_reward must return a scalar float"
+
+    def test_bc_train_reproducible_with_seed(self) -> None:
+        """Bug #8: BC training must produce same split with same RNG seed."""
+        from src.learning.imitation import BehaviorCloning, TrainingConfig
+
+        dataset = self._make_dataset(n_demos=5, n_frames=30)
+        config = TrainingConfig(epochs=2, batch_size=8)
+
+        bc1 = BehaviorCloning(observation_dim=8, action_dim=2, config=config)
+        bc2 = BehaviorCloning(observation_dim=8, action_dim=2, config=config)
+        # Copy identical initial weights so only RNG difference matters
+        for l1, l2 in zip(bc1._policy, bc2._policy, strict=True):
+            l2["W"] = l1["W"].copy()
+            l2["b"] = l1["b"].copy()
+
+        seed = 42
+        h1 = bc1.train(dataset, rng=np.random.default_rng(seed))
+        h2 = bc2.train(dataset, rng=np.random.default_rng(seed))
+
+        assert h1["train_loss"] == h2["train_loss"], (
+            "same seed must produce identical training loss curves"
+        )
