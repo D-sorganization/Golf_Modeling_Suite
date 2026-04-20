@@ -47,7 +47,6 @@ RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/wh
     pin-pink \
     qpsolvers \
     osqp \
-    myosuite \
     mediapipe>=0.10.0 \
     "imageio[ffmpeg]>=2.31.0" \
     trimesh>=4.0.0 \
