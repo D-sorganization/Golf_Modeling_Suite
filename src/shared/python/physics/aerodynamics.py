@@ -283,19 +283,33 @@ class DragModel:
         diameter = 2 * self.ball_radius
         re = air_density * speed * diameter / viscosity
 
-        # Golf ball Cd variation with Re (empirical)
-        # The base_coefficient is used as the turbulent value, with
-        # higher values at lower Reynolds numbers (laminar flow)
-        laminar_cd = 0.5  # Laminar flow coefficient
-        turbulent_cd = self.base_coefficient  # User-specified turbulent coefficient
+        # Golf ball Cd variation with Re (coarse empirical approximation).
+        #
+        # TODO(#2803): Replace this 3-segment piecewise with a calibrated
+        # Cd(Re) curve over the drag-crisis region. Recommended references
+        # for golf-ball specific data:
+        #   - Bearman, P. W. & Harvey, J. K. (1976). "Golf ball aerodynamics."
+        #     Aeronautical Quarterly 27: 112-122.
+        #   - Smits, A. J. & Ogg, S. (2004). "Aerodynamics of the golf ball."
+        #     In: Biomedical Engineering Principles in Sports, Springer.
+        #   - Choi, J., Jeon, W.-P., & Choi, H. (2006). "Mechanism of drag
+        #     reduction by dimples on a sphere." Physics of Fluids 18: 041702.
+        # The previous salvage attempt (PR #2732) was closed unmerged; its
+        # calibration table was not verified against the citations and is not
+        # vendored here to avoid committing fabricated coefficients. Until a
+        # reviewed Cd(Re) table is available, this code retains the coarse
+        # 3-segment approximation and the behavior is pinned by
+        # tests/unit/test_drag_crisis_calibration.py.
+        laminar_cd = 0.5  # Laminar/pre-crisis coefficient (approximate)
+        turbulent_cd = self.base_coefficient  # User-specified post-crisis coefficient
 
         if re < 8e4:
-            return laminar_cd  # Laminar flow
+            return laminar_cd  # Pre-crisis (laminar boundary layer)
         if re < 2e5:
-            # Transition region - interpolate between laminar and turbulent
+            # Transition through drag-crisis region (linear interpolation).
             fraction = (re - 8e4) / (2e5 - 8e4)
             return laminar_cd - fraction * (laminar_cd - turbulent_cd)
-        return turbulent_cd  # Fully turbulent
+        return turbulent_cd  # Post-crisis (fully turbulent)
 
 
 class LiftModel:
