@@ -40,6 +40,7 @@ RUN grep -v '^#' /tmp/requirements.txt | grep -v '^$' > /tmp/filtered_requiremen
 
 # Install additional physics engines and API server dependencies
 # MyoSuite remains excluded here because it is not Python 3.12-compatible; keep the runtime scan on the slim CPU-only path.
+# Video-analysis extras stay out of the slim runtime image; the API returns 503 when they are absent.
 RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu \
     mujoco>=3.2.3 \
     drake \
@@ -47,7 +48,6 @@ RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/wh
     pin-pink \
     qpsolvers \
     osqp \
-    mediapipe>=0.10.0 \
     "imageio[ffmpeg]>=2.31.0" \
     trimesh>=4.0.0 \
     robot_descriptions>=1.12.0 \
