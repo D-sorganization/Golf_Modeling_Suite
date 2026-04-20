@@ -51,9 +51,9 @@ jobs:
 
       - name: Verify Image Size Budget
         run: |
-          # Set the maximum allowed size in MB (e.g., 16000 MB = 16GB)
-          # Increased to 16GB to accommodate large dependencies (Drake, MuJoCo, PyTorch)
-          MAX_SIZE_MB=16000
+          # Fleet slim-runtime standard: runtime image stays under 4 GB.
+          # See Repository_Management docs/operations/slim_docker_runtime_standard.md.
+          MAX_SIZE_MB=4000
 
           # Get size in bytes
           IMAGE_SIZE_BYTES=$(docker image inspect upstream-drift:runtime --format='{{.Size}}')
@@ -73,8 +73,16 @@ jobs:
 
       - name: Run Basic Health Checks
         run: |
-          # Run a simple Python command importing key libraries to verify the environment works 
-          docker run --rm upstream-drift:runtime python -c "import mujoco, numpy, scipy; print('Core ML/Physics imports successful!')"
+          # Core physics stack imports.
+          docker run --rm upstream-drift:runtime python -c "import mujoco, numpy, scipy; print('physics OK')"
 
-          # We can also check that the API server module is importable
-          docker run --rm upstream-drift:runtime python -c "import fastapi; print('FastAPI imported successfully')"
+          # API framework imports.
+          docker run --rm upstream-drift:runtime python -c "import fastapi, uvicorn; print('api OK')"
+
+          # Pinocchio.
+          docker run --rm upstream-drift:runtime python -c "import pinocchio; print('pinocchio OK')"
+
+          # End-to-end: the API server module must be importable. This catches
+          # pandas/matplotlib/eager-import regressions that a shallower smoke
+          # test would ship broken. See slim-docker runbook.
+          docker run --rm upstream-drift:runtime python -c "from src.api import server; print('server import OK')"

@@ -1,15 +1,22 @@
-# Comprehensive Dockerfile for Golf Modeling Suite
-# Unifies Robotics (MuJoCo, Drake, Pinocchio) and Biomechanics (OpenSim, MyoSim)
+# Slim runtime Dockerfile for UpstreamDrift.
+#
+# Mirrors the fleet-wide slim-runtime standard documented in
+# Repository_Management/docs/operations/slim_docker_runtime_standard.md.
+#
+# - Base: python:3.12-slim (Debian trixie) instead of miniconda3 (~7 GB savings).
+# - Two stages: builder (compiles wheels into /opt/venv) + runtime (ships venv).
+# - Optional training stage extends runtime with CUDA/PyTorch for ML workloads.
+#
+# Budget: runtime stage must stay under 4 GB (enforced in CI).
 
-# Stage 1: Builder stage with full development tools
-# Digest pinned to continuumio/miniconda3:24.11.1-0 (all-platform manifest).
-# To rotate: run `docker manifest inspect continuumio/miniconda3:<new-tag>` and
-# update both the tag and the digest here; review conda/Python release notes.
-FROM continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b AS builder
+# --- Stage 1: builder -------------------------------------------------------
+FROM python:3.12-slim AS builder
 
-ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# System dependencies for building
+# Build toolchain for any wheels that need compilation.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     build-essential \
@@ -22,46 +29,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libassimp-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Create comprehensive environment
-# Install core scientific packages via conda
-RUN conda install -y -c conda-forge \
-    python=3.12 \
-    numpy \
-    scipy \
-    pyqt6 \
-    opencv \
-    pyyaml \
-    h5py \
-    scikit-learn \
-    pillow \
-    ezc3d \
-    && conda clean --all --yes
+# Create an isolated virtualenv we can copy into the runtime stage.
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
-# Install Pinocchio ecosystem via conda-forge (recommended for better compatibility)
-RUN conda install -y -c conda-forge \
-    pinocchio \
-    crocoddyl \
-    && conda clean --all --yes
+# Upgrade pip to a version that carries recent security fixes.
+RUN pip install --upgrade "pip>=25.3" setuptools wheel
 
-# Copy requirements file
+# Install from requirements.lock. Strip comments/blank lines first.
 COPY requirements.lock /tmp/requirements.txt
-
-# Install Python dependencies from requirements.txt
-# Filter out comments, WSL/Linux notes, and blank lines
 RUN grep -v '^#' /tmp/requirements.txt | grep -v '^$' > /tmp/filtered_requirements.txt && \
-    pip install --no-cache-dir -r /tmp/filtered_requirements.txt
+    pip install -r /tmp/filtered_requirements.txt
 
-# Install additional physics engines and API server dependencies
-# Note: opensim is excluded because it is not reliably pip-installable;
-#       install it via conda or from source if needed.
-RUN pip install --no-cache-dir \
+# Physics engines + API server runtime dependencies.
+# simpleeval pinned >=1.0.5 to pick up CVE fix observed in prior Trivy scan.
+RUN pip install \
     mujoco>=3.2.3 \
     drake \
     meshcat \
     pin-pink \
     qpsolvers \
     osqp \
-    myosuite \
     mediapipe>=0.10.0 \
     "imageio[ffmpeg]>=2.31.0" \
     trimesh>=4.0.0 \
@@ -79,30 +67,34 @@ RUN pip install --no-cache-dir \
     aiofiles \
     python-dateutil \
     websockets \
-    simpleeval>=0.9.13 \
+    "simpleeval>=1.0.5" \
     structlog>=24.1.0 \
     colorama>=0.4.6 \
-    && echo "Physics engines and API dependencies installed successfully"
+    # Packages that used to come transitively from the conda base but are
+    # imported at module top level by shared code. Keep explicit until they
+    # land in requirements.lock (see standard doc, section
+    # "Required explicit runtime deps").
+    "pandas>=2.0.0" \
+    "matplotlib>=3.7.0" \
+    "sympy>=1.12" \
+    "defusedxml>=0.7.1"
 
 
-# Stage 2: Runtime stage with minimal footprint
-# Same digest as builder — keep both in sync when rotating.
-FROM continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b AS runtime
+# --- Stage 2: runtime -------------------------------------------------------
+FROM python:3.12-slim AS runtime
 
-ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-# Runtime system dependencies only
-# - GL libraries for MuJoCo/Visualization
-# - X11/XCB libraries for PyQt6
-# - FFmpeg for video processing (OpenPose inputs)
-# - curl for health checks
+# Headless GL/X11 + ffmpeg + curl (for /health probe).
+# Trixie package renames are captured in the fleet runbook.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1-mesa-dev \
-    libgl1-mesa-glx \
-    libosmesa6-dev \
-    libglew-dev \
+    libgl1 \
+    libosmesa6 \
+    libglew2.2 \
     libegl1 \
-    libglib2.0-0 \
+    libglib2.0-0t64 \
     libxkbcommon-x11-0 \
     libxcb-cursor0 \
     libxcb-icccm4 \
@@ -121,7 +113,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user for security
+# Non-root user.
 ARG USER_NAME=golfer
 ARG USER_ID=1000
 ARG GROUP_ID=1000
@@ -129,66 +121,51 @@ ARG GROUP_ID=1000
 RUN groupadd -g ${GROUP_ID} ${USER_NAME} && \
     useradd -m -u ${USER_ID} -g ${GROUP_ID} -s /bin/bash ${USER_NAME}
 
-# Copy conda environment from builder
-COPY --from=builder /opt/conda /opt/conda
+# Copy the prebuilt venv from the builder.
+COPY --from=builder /opt/venv /opt/venv
 
-# Set up Python path for shared modules
-# /workspace is the project root (src/ lives here), enabling "from src.xxx" imports
-ENV PYTHONPATH="/workspace"
-ENV PATH="/opt/conda/bin:$PATH"
+ENV PATH="/opt/venv/bin:$PATH" \
+    PYTHONPATH="/workspace"
 
-# Create workspace directory structure with proper ownership
-RUN mkdir -p /workspace && \
-    chown -R ${USER_NAME}:${USER_NAME} /workspace
+RUN mkdir -p /workspace && chown -R ${USER_NAME}:${USER_NAME} /workspace
 
-# Set working directory
 WORKDIR /workspace
 
-# Copy application source code and configuration
+# Ship only what the API needs at runtime.
 COPY --chown=${USER_NAME}:${USER_NAME} src/ ./src/
 COPY --chown=${USER_NAME}:${USER_NAME} pyproject.toml ./
 COPY --chown=${USER_NAME}:${USER_NAME} launch_golf_suite.py ./
 COPY --chown=${USER_NAME}:${USER_NAME} start_api_server.py ./
-COPY --chown=${USER_NAME}:${USER_NAME} conftest.py ./
-COPY --chown=${USER_NAME}:${USER_NAME} build_hooks.py ./
 COPY --chown=${USER_NAME}:${USER_NAME} .env.example ./.env.example
 
-# Switch to non-root user
 USER ${USER_NAME}
 
-# Expose default port (if running web server)
 EXPOSE 8001
 
-# Health check for container monitoring
-# The core routes register /health on the FastAPI app (src/api/routes/core.py)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8001/health || exit 1
 
-# Default command — starts the FastAPI server on port 8001.
-# Override with `docker run ... /bin/bash` for an interactive shell.
 CMD ["python3", "-m", "uvicorn", "src.api.server:app", "--host", "0.0.0.0", "--port", "8001"]
 
 
-# Stage 3: Training stage for advanced ML workflows
+# --- Stage 3: training (optional) ------------------------------------------
+# Extends runtime with CUDA/PyTorch + RL stack for GPU workloads.
 FROM runtime AS training
 
 USER root
 
-# Install CUDA toolkit via conda for GPU training support
-RUN conda install -y -c pytorch -c nvidia -c conda-forge \
-    cuda-toolkit \
-    cudnn \
-    pytorch \
-    pytorch-cuda=12.4 \
-    && conda clean --all --yes
+# PyTorch CUDA wheels are published on the official index.
+RUN pip install --no-cache-dir \
+    --extra-index-url https://download.pytorch.org/whl/cu121 \
+    "torch" \
+    "torchvision" \
+    "torchaudio"
 
-# Install heavy ML dependencies specifically for training workloads
 RUN pip install --no-cache-dir \
     gymnasium>=0.29.0 \
     stable-baselines3>=2.0.0 \
     "tensorboard>=2.14.0" \
-    "ray[rllib]>=2.9.0" \
-    && echo "Training dependencies installed successfully"
+    "ray[rllib]>=2.9.0"
 
 USER ${USER_NAME}
 

@@ -29,8 +29,8 @@ Last-Updated: 2026-04-20T08:56:58.3577735Z
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.138                                            |
-| **Last Spec Update**    | 2026-04-20                                         |
+| **Spec Version**        | 1.0.139                                            |
+| **Last Spec Update**    | 2026-04-19                                         |
 
 ## 2. Purpose & Mission
 
@@ -671,6 +671,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 ## Changelog
 
+- 2026-04-19: Rebuilt the runtime Docker image on `python:3.12-slim` (multi-stage builder + `/opt/venv`), enforced a 4 GB runtime image budget, added a `from src.api import server` boot smoke step, and switched the Trivy scan to `--target runtime` per the fleet slim-runtime standard.
 - 2026-04-20: Hardened local server asset serving by routing launcher logos and SPA/static-file lookups through traversal-safe path joins, closing path traversal and symlink escape vectors in the local UI shell.
 - 2026-04-20: Lazy-imported the video pose pipeline so the API video analysis route stays registered in slim runtime images and returns a 503 with a video extras hint when cv2/mediapipe is unavailable.
 - 2026-04-20: Guarded Pinocchio energy checks behind complete finite-state verification and aligned RK4 torque sampling test coverage in pendulum engine probes.

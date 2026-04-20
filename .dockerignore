@@ -27,6 +27,10 @@ build
 htmlcov
 .coverage
 *.coveragerc
+tests/
+conftest.py
+build_hooks.py
+requirements-dev.lock
 
 # OS files
 .DS_Store
@@ -47,6 +51,9 @@ docs/
 *.log
 data/
 logs/
+
+# Simscape MATLAB assets (~215 MB, not used at runtime)
+src/engines/Simscape_Multibody_Models/
 
 # Environment files (exclude secrets, keep the example template)
 .env
