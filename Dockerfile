@@ -39,7 +39,7 @@ RUN grep -v '^#' /tmp/requirements.txt | grep -v '^$' > /tmp/filtered_requiremen
     pip install --no-cache-dir -r /tmp/filtered_requirements.txt || true
 
 # Install additional physics engines and API server dependencies
-# We explicitly include runtime packages needed by API import paths: pandas, matplotlib, sympy, and defusedxml
+# MyoSuite remains excluded here because it is not Python 3.12-compatible; keep the runtime scan on the slim CPU-only path.
 RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu \
     mujoco>=3.2.3 \
     drake \
