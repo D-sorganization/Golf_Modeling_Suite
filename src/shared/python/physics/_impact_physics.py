@@ -22,6 +22,33 @@ from ..core.physics_constants import (
     TYPICAL_CONTACT_DURATION_S,
 )
 
+SMASH_FACTOR_PHYSICAL_MAX: float = 1.56
+
+
+def check_smash_factor(ball_speed_post: float, club_speed_pre: float) -> None:
+    """Raise ValueError if smash factor exceeds the physical maximum of 1.56.
+
+    Smash factor is ball_speed_post / club_speed_pre (TrackMan standard definition).
+    Values above 1.56 almost always indicate a unit mismatch between velocity inputs
+    or a coding error (wrong sign, wrong axis) in the impact model.
+
+    Args:
+        ball_speed_post: Ball speed after impact [m/s]
+        club_speed_pre: Clubhead speed before impact [m/s]
+
+    Raises:
+        ValueError: If smash factor exceeds SMASH_FACTOR_PHYSICAL_MAX.
+    """
+    if club_speed_pre > 1e-6:
+        smash = ball_speed_post / club_speed_pre
+        if smash > SMASH_FACTOR_PHYSICAL_MAX:
+            raise ValueError(
+                f"Smash factor {smash:.3f} exceeds the physical maximum of "
+                f"{SMASH_FACTOR_PHYSICAL_MAX} (ball_speed_post={ball_speed_post:.2f} m/s, "
+                f"club_speed_pre={club_speed_pre:.2f} m/s) — likely a unit mismatch "
+                "or unrealistic COR > 1"
+            )
+
 
 class ImpactModelType(Enum):
     """Types of impact physics models."""
@@ -338,6 +365,11 @@ class RigidBodyImpactModel(ImpactModel):
             else np.zeros(2)
         )
 
+        check_smash_factor(
+            float(np.linalg.norm(v_ball_post)),
+            float(np.linalg.norm(pre_state.clubhead_velocity)),
+        )
+
         return PostImpactState(
             ball_velocity=v_ball_post,
             ball_angular_velocity=ball_spin,
@@ -545,12 +577,9 @@ class FiniteTimeImpactModel(ImpactModel):
 
 
 @precondition(
-    lambda impact_offset,
-    clubhead_velocity,
-    clubface_normal,
-    gear_factor=0.5,
-    h_scale=100.0,
-    v_scale=50.0: (0 <= gear_factor <= 1),
+    lambda impact_offset, clubhead_velocity, clubface_normal, gear_factor=0.5, h_scale=100.0, v_scale=50.0: (
+        0 <= gear_factor <= 1
+    ),
     "Gear effect factor must be between 0 and 1",
 )
 def compute_gear_effect_spin(

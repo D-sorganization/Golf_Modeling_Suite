@@ -275,3 +275,84 @@ def test_create_impact_model() -> None:
         # Use a type annotation to tell mypy we're testing invalid input
         invalid_type: ImpactModelType = "invalid_type"  # type: ignore[assignment]
         create_impact_model(invalid_type)
+
+
+class TestAngularMomentumConservation:
+    """Verify that the rigid body impact conserves total angular momentum."""
+
+    def test_l_pre_equals_l_post_within_tolerance(
+        self, basic_pre_state, default_impact_params
+    ):
+        from src.shared.python.core.physics_constants import (
+            DRIVER_MOI_KG_M2,
+            GOLF_BALL_MOMENT_OF_INERTIA_KG_M2,
+        )
+
+        model = RigidBodyImpactModel()
+        post = model.solve(basic_pre_state, default_impact_params)
+
+        r_ball = basic_pre_state.ball_position
+
+        L_club_pre = (
+            DRIVER_MOI_KG_M2 * basic_pre_state.clubhead_angular_velocity
+            + basic_pre_state.clubhead_mass
+            * np.cross(np.zeros(3), basic_pre_state.clubhead_velocity)
+        )
+        L_ball_pre = (
+            GOLF_BALL_MASS_KG * np.cross(r_ball, basic_pre_state.ball_velocity)
+            + GOLF_BALL_MOMENT_OF_INERTIA_KG_M2 * basic_pre_state.ball_angular_velocity
+        )
+
+        L_club_post = (
+            basic_pre_state.clubhead_moi * post.clubhead_angular_velocity
+            + basic_pre_state.clubhead_mass
+            * np.cross(np.zeros(3), post.clubhead_velocity)
+        )
+        L_ball_post = (
+            GOLF_BALL_MASS_KG * np.cross(r_ball, post.ball_velocity)
+            + GOLF_BALL_MOMENT_OF_INERTIA_KG_M2 * post.ball_angular_velocity
+        )
+
+        L_pre = L_club_pre + L_ball_pre
+        L_post = L_club_post + L_ball_post
+        np.testing.assert_allclose(L_pre, L_post, atol=1e-6)
+
+
+class TestSmashFactorBound:
+    """check_smash_factor() enforces the 1.56 physical ceiling.
+
+    Smash factor = ball_speed_post / club_speed_pre (TrackMan standard).
+    Physical hard limit 1.56 is derived from COR=1, m_club → ∞.
+    """
+
+    def test_valid_smash_accepted(self):
+        from src.shared.python.physics.impact_model import check_smash_factor
+
+        check_smash_factor(ball_speed_post=63.0, club_speed_pre=45.0)  # ≈ 1.40
+
+    def test_smash_above_limit_raises(self):
+        from src.shared.python.physics.impact_model import check_smash_factor
+
+        with pytest.raises(ValueError, match="Smash factor"):
+            check_smash_factor(ball_speed_post=100.0, club_speed_pre=45.0)  # ≈ 2.22
+
+    def test_zero_club_speed_no_check(self):
+        from src.shared.python.physics.impact_model import check_smash_factor
+
+        check_smash_factor(ball_speed_post=0.0, club_speed_pre=0.0)
+
+    def test_normal_driver_swing_smash_within_limit(self):
+        model = RigidBodyImpactModel()
+        params = ImpactParameters(cor=0.8, friction_coefficient=0.4)
+        pre = PreImpactState(
+            clubhead_velocity=np.array([45.0, 0.0, 0.0]),
+            clubhead_angular_velocity=np.zeros(3),
+            clubhead_orientation=np.array([1.0, 0.0, 0.0]),
+            ball_position=np.array([0.05, 0.0, 0.0]),
+            ball_velocity=np.zeros(3),
+            ball_angular_velocity=np.zeros(3),
+            clubhead_mass=0.2,
+        )
+        post = model.solve(pre, params)
+        ball_speed = float(np.linalg.norm(post.ball_velocity))
+        assert ball_speed / 45.0 <= 1.56
