@@ -308,12 +308,14 @@ class BehaviorCloning(ImitationLearner):
         self,
         dataset: DemonstrationDataset,
         validation_split: float = 0.1,
+        rng: np.random.Generator | None = None,
     ) -> dict[str, list[float]]:
         """Train behavior cloning policy.
 
         Args:
             dataset: Demonstration dataset.
             validation_split: Fraction for validation.
+            rng: Optional seeded generator for reproducible splits and shuffles.
 
         Returns:
             Training history.
@@ -326,10 +328,12 @@ class BehaviorCloning(ImitationLearner):
         if len(observations) == 0:
             raise ValueError("Dataset has no state-action pairs")
 
+        _rng = rng if rng is not None else np.random.default_rng()
+
         # Split data
         n = len(observations)
         n_val = int(n * validation_split)
-        indices = np.random.permutation(n)
+        indices = _rng.permutation(n)
 
         train_idx = indices[n_val:]
         val_idx = indices[:n_val]
@@ -345,7 +349,7 @@ class BehaviorCloning(ImitationLearner):
 
         for _epoch in range(self.config.epochs):
             # Shuffle training data
-            perm = np.random.permutation(len(train_obs))
+            perm = _rng.permutation(len(train_obs))
             train_obs = train_obs[perm]
             train_act = train_act[perm]
 
@@ -723,6 +727,12 @@ class GAIL(ImitationLearner):
                 x = np.maximum(0, x)  # ReLU
         return x
 
+    @staticmethod
+    def _sigmoid(x: NDArray[np.floating]) -> NDArray[np.floating]:
+        """Numerically stable sigmoid: clips x to avoid overflow."""
+        x = np.clip(x, -50.0, 50.0)
+        return 1.0 / (1.0 + np.exp(-x))
+
     def _forward_discriminator(
         self, state: NDArray[np.floating], action: NDArray[np.floating]
     ) -> NDArray[np.floating]:
@@ -735,8 +745,43 @@ class GAIL(ImitationLearner):
             if i < len(self._discriminator) - 1:
                 x = np.maximum(0, x)  # ReLU
             else:
-                x = 1 / (1 + np.exp(-x))  # Sigmoid
+                x = self._sigmoid(x)
         return x
+
+    def _backward_discriminator(
+        self,
+        states: NDArray[np.floating],
+        actions: NDArray[np.floating],
+        targets: NDArray[np.floating],
+    ) -> list[dict[str, NDArray[np.floating]]]:
+        """Compute discriminator gradients via backpropagation for BCE loss."""
+        batch_size = len(states)
+        x = np.concatenate([states, actions], axis=-1)
+
+        # Forward pass with activation cache
+        activations: list[NDArray[np.floating]] = [x]
+        for i, layer in enumerate(self._discriminator):
+            z = x @ layer["W"] + layer["b"]
+            if i < len(self._discriminator) - 1:
+                x = np.maximum(0, z)
+            else:
+                x = self._sigmoid(z)
+            activations.append(x)
+
+        # Backward pass: d(BCE)/dz = D - target for sigmoid output layer
+        delta: NDArray[np.floating] = (activations[-1] - targets) / batch_size
+        gradients: list[dict[str, NDArray[np.floating]]] = []
+
+        for i in range(len(self._discriminator) - 1, -1, -1):
+            a = activations[i]
+            grad_W: NDArray[np.floating] = a.T @ delta
+            grad_b: NDArray[np.floating] = delta.sum(axis=0)
+            gradients.insert(0, {"W": grad_W, "b": grad_b})
+            if i > 0:
+                delta = delta @ self._discriminator[i]["W"].T
+                delta = delta * (activations[i] > 0)
+
+        return gradients
 
     def train(
         self,
@@ -783,14 +828,24 @@ class GAIL(ImitationLearner):
                 np.log(expert_preds + eps) + np.log(1 - policy_preds + eps)
             )
 
-            # Update discriminator (simplified gradient)
-            # expert_grad = expert_preds - 1  # gradient towards 1
-            # policy_grad = policy_preds  # gradient towards 0
-
-            for _i, layer in enumerate(self._discriminator):
-                # Simplified update
-                layer["W"] -= lr * 0.01 * layer["W"]
-                layer["b"] -= lr * 0.01 * layer["b"]
+            # Expert targets=1, policy targets=0 — combined backprop pass
+            combined_states = np.concatenate([expert_states, policy_states], axis=0)
+            combined_actions = np.concatenate([expert_actions, policy_actions], axis=0)
+            n_expert = len(expert_states)
+            n_policy = len(policy_states)
+            combined_targets = np.concatenate(
+                [
+                    np.ones((n_expert, 1), dtype=np.float64),
+                    np.zeros((n_policy, 1), dtype=np.float64),
+                ],
+                axis=0,
+            )
+            disc_grads = self._backward_discriminator(
+                combined_states, combined_actions, combined_targets
+            )
+            for layer, grad in zip(self._discriminator, disc_grads, strict=True):
+                layer["W"] -= lr * (grad["W"] + self.config.weight_decay * layer["W"])
+                layer["b"] -= lr * grad["b"]
 
             # Policy reward is discriminator output
             policy_reward = -np.log(1 - policy_preds + eps)
@@ -853,8 +908,8 @@ class GAIL(ImitationLearner):
             action = action.reshape(1, -1)
 
         disc_output = self._forward_discriminator(state, action)
-        # Reward is -log(1 - D(s,a))
-        return (-np.log(1 - disc_output + 1e-8)).item()
+        # Reward is -log(1 - D(s,a)); mean over batch so batched inputs don't raise
+        return float(np.mean(-np.log(1 - disc_output + 1e-8)))
 
     def save(self, path: str | Path) -> None:
         """Save GAIL networks."""
