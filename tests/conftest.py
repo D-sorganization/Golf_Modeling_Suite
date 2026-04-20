@@ -199,7 +199,7 @@ class MockPhysicsEngine:
     pass
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def mock_drake_dependencies() -> Generator[tuple[MagicMock, MagicMock], None, None]:
     """Fixture to mock pydrake and interfaces safely.
 
@@ -227,7 +227,7 @@ def mock_drake_dependencies() -> Generator[tuple[MagicMock, MagicMock], None, No
         yield mock_pydrake, mock_interfaces
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def mock_mujoco_dependencies() -> Generator[tuple[MagicMock, MagicMock], None, None]:
     """Fixture to mock mujoco and interfaces safely.
 
