@@ -12,6 +12,36 @@ from src.shared.python.core.physics_constants import (
 
 from .types import ImpactModelType, ImpactParameters, PostImpactState, PreImpactState
 
+# Physical hard limit for smash factor = ball_speed_post / club_speed_pre.
+# Derived from COR=1 (elastic) with m_club → ∞: smash → (1+COR)·m_club/(m_club+m_ball) → 1+COR.
+# The USGA COR limit (0.83) gives smash ≤ ~1.49 for a 200g driver head; 1.56 is the absolute ceiling.
+SMASH_FACTOR_PHYSICAL_MAX: float = 1.56
+
+
+def check_smash_factor(ball_speed_post: float, club_speed_pre: float) -> None:
+    """Raise ValueError if smash factor exceeds the physical maximum of 1.56.
+
+    Smash factor is ball_speed_post / club_speed_pre (TrackMan standard definition).
+    Values above 1.56 almost always indicate a unit mismatch between velocity inputs
+    or a coding error (wrong sign, wrong axis) in the impact model.
+
+    Args:
+        ball_speed_post: Ball speed after impact [m/s]
+        club_speed_pre: Clubhead speed before impact [m/s]
+
+    Raises:
+        ValueError: If smash factor exceeds SMASH_FACTOR_PHYSICAL_MAX.
+    """
+    if club_speed_pre > 1e-6:
+        smash = ball_speed_post / club_speed_pre
+        if smash > SMASH_FACTOR_PHYSICAL_MAX:
+            raise ValueError(
+                f"Smash factor {smash:.3f} exceeds the physical maximum of "
+                f"{SMASH_FACTOR_PHYSICAL_MAX} (ball_speed_post={ball_speed_post:.2f} m/s, "
+                f"club_speed_pre={club_speed_pre:.2f} m/s) — likely a unit mismatch "
+                "or unrealistic COR > 1"
+            )
+
 
 class ImpactModel(ABC):
     """Abstract base class for impact models."""
@@ -203,6 +233,11 @@ class RigidBodyImpactModel(ImpactModel):
             pre_state.impact_offset.copy()
             if pre_state.impact_offset is not None
             else np.zeros(2)
+        )
+
+        check_smash_factor(
+            float(np.linalg.norm(v_ball_post)),
+            float(np.linalg.norm(pre_state.clubhead_velocity)),
         )
 
         return PostImpactState(
