@@ -6,7 +6,6 @@ integration is skipped because it requires the upstream-physics Rust
 kernel; those checks are marked ``slow`` and guarded by a skip.
 """
 
-
 import pytest
 
 from src.shared.python.physics.ball_flight_physics import EnvironmentalConditions
