@@ -641,3 +641,11 @@ To maintain a clean repository root, all development-related documentation (summ
 This repository's specification is defined in `SPEC.md` at the repo root.
 Read SPEC.md before making any changes. Update it when your changes
 affect documented functionality, features, or architecture.
+
+## ?? NETWORK & API HYGIENE (CRITICAL)
+
+- **NO MASS POLLING**: Agents MUST NEVER use gh pr list, gh issue list, or arbitrary REST/GraphQL loops to "scan" or "sweep" the repository fleet. 
+- **LOCAL FIRST**: You must rely on local .md files, previously generated issues.json artifacts, or user assistance to find task context.
+- **NO PARALLELIZED GITHUB CLI**: Never write or execute Bash/PowerShell scripts that loop over multiple repositories to perform gh operations (e.g., automated PR merge scripts running in loops).
+- **BATCHING**: If extracting remote information is absolutely necessary, use a single, focused, and batched query. 
+- **SILENT FAILURES**: If an API rate limit is hit, HALT NETWORK ACTIVITY IMMEDIATELY. Do not write retry-loops that further punish the API endpoint. Alert the user and pivot to local technical-debt resolution.
