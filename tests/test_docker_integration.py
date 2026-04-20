@@ -46,14 +46,8 @@ class TestDockerBuild(unittest.TestCase):
         content = dockerfile_path.read_text()
 
         # Check for required components (multi-stage build with pinned version)
-        self.assertIn(
-            "FROM continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b AS builder",
-            content,
-        )
-        self.assertIn(
-            "FROM continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b AS runtime",
-            content,
-        )
+        self.assertIn("FROM python:3.12-slim-bookworm AS builder", content)
+        self.assertIn("FROM python:3.12-slim-bookworm AS runtime", content)
         self.assertIn('ENV PYTHONPATH="/workspace"', content)
         self.assertIn("WORKDIR /workspace", content)
 
@@ -485,21 +479,19 @@ class TestContainerEnvironment(unittest.TestCase):
         self.assertIn("mkdir -p /workspace", content)
         self.assertIn("WORKDIR /workspace", content)
 
-    def test_conda_environment_setup(self):
-        """Test conda environment configuration."""
+    def test_slim_environment_setup(self):
+        """Test the slim builder/runtime environment configuration."""
         dockerfile_path = get_repo_root() / "Dockerfile"
         content = dockerfile_path.read_text()
 
-        # Verify base image (pinned version, multi-stage build) and package installation
-        self.assertIn(
-            "FROM continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b AS builder",
-            content,
-        )
-        self.assertIn("conda install", content)
-        self.assertIn("python=3.12", content)
+        # Verify base image (slim multi-stage build) and package installation
+        self.assertIn("FROM python:3.12-slim-bookworm AS builder", content)
+        self.assertNotIn("conda install", content)
+        self.assertIn("python -m venv /opt/venv", content)
+        self.assertIn("pip install --no-cache-dir pip>=25.3 wheel setuptools", content)
 
         # Check for required packages
-        required_packages = ["numpy", "scipy", "matplotlib", "pandas", "pyqt6"]
+        required_packages = ["numpy", "scipy", "matplotlib", "pandas", "defusedxml"]
         for package in required_packages:
             self.assertIn(package, content, f"Should install {package}")
 
