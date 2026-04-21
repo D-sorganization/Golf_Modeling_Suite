@@ -96,7 +96,7 @@ class ProcessCleanupWorker(QRunnable):
             for key, proc in list(self.running_processes.items()):
                 if proc.poll() is not None:
                     finished_keys.append(key)
-        self.finished.emit(finished_keys)
+        self.signals.finished.emit(finished_keys)
 
 
 class GolfLauncher(
