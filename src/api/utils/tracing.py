@@ -22,7 +22,7 @@ from __future__ import annotations
 import contextvars
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, cast
+from typing import Any
 
 from src.shared.python.logging_pkg.logging_config import get_logger
 
@@ -93,7 +93,7 @@ def get_request_id() -> str:
     Returns:
         Current request ID or empty string if not set.
     """
-    return cast(str, _request_id_var.get())
+    return _request_id_var.get()
 
 
 def set_request_id(request_id: str) -> contextvars.Token[str]:
@@ -114,7 +114,7 @@ def get_trace_context() -> TraceContext | None:
     Returns:
         Current TraceContext or None if not set.
     """
-    return cast("TraceContext | None", _trace_context_var.get())
+    return _trace_context_var.get()
 
 
 def set_trace_context(context: TraceContext) -> contextvars.Token[TraceContext | None]:
