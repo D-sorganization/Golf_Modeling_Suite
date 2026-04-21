@@ -642,7 +642,8 @@ class GolfLauncher(
     def _cleanup_processes(self) -> None:
         """Legacy cleanup method — synchronous for callers that need immediate results."""
         finished_keys = [
-            key for key, proc in list(self.running_processes.items())
+            key
+            for key, proc in list(self.running_processes.items())
             if proc.poll() is not None
         ]
         self._on_cleanup_finished(finished_keys)
