@@ -29,7 +29,7 @@ Last-Updated: 2026-04-20T08:56:58.3577735Z
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.139                                            |
+| **Spec Version**        | 1.0.140                                            |
 | **Last Spec Update**    | 2026-04-20                                         |
 
 ## 2. Purpose & Mission
@@ -670,6 +670,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 | 2026-04-15 | 1.0.113 | Bolt: Optimized `np.sum(np.square(...))` and explicit sum of squares to `np.einsum` in `analysis_tab.py`, `marker_plot_tab.py`, and `motion_capture.py` to improve performance. |
 | 1.0.124 | 2026-04-16 | Replaced np.sum axis reductions with np.einsum for performance optimization |
 | 1.0.139 | 2026-04-20 | Bolt: Optimized Numba-compiled `rotation_matrix_from_vectors` in `golf_data_core.py` by replacing `np.linalg.norm` and `np.allclose` with explicit element-wise math.sqrt and dot products for a 2x+ speedup. |
+| 1.0.140 | 2026-04-21 | Bolt: Optimized `np.sum(forces * velocities, axis=1)` to `np.einsum` in `dynamics_quantities.py` for performance. |
 
 ## Changelog
 
