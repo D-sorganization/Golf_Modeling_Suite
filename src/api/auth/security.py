@@ -13,7 +13,7 @@ try:
     from datetime import timezone
 except ImportError:
     timezone.utc = timezone.utc  # noqa: UP017
-from typing import Any
+from typing import Any, cast
 
 import bcrypt
 import jwt
@@ -88,7 +88,7 @@ def compute_prefix_hash(prefix: str) -> str:
     """
     import hashlib
 
-    return hashlib.sha256(prefix.encode()).hexdigest()
+    return cast(str, hashlib.sha256(prefix.encode()).hexdigest())
 
 
 class SecurityManager:
@@ -503,7 +503,7 @@ class AuthCache:
 
         # Use SHA-256 for a deterministic, process-stable lookup key.
         # PYTHONHASHSEED does not affect hashlib, so this is safe across workers.
-        return hashlib.sha256(token_value.encode()).hexdigest()
+        return cast(str, hashlib.sha256(token_value.encode()).hexdigest())
 
 
 auth_cache = AuthCache()
