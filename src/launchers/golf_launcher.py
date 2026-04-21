@@ -24,7 +24,7 @@ import sys
 from typing import Any
 
 # Add current directory to path so we can import ui_components if needed locally
-from PyQt6.QtCore import QEventLoop, QRunnable, QThreadPool, QTimer, pyqtSignal
+from PyQt6.QtCore import QEventLoop, QObject, QRunnable, QThreadPool, QTimer, pyqtSignal
 from PyQt6.QtGui import QCloseEvent, QIcon
 from PyQt6.QtWidgets import QApplication, QMainWindow, QMessageBox
 
@@ -71,18 +71,21 @@ __all__ = [
 ]
 
 
+class ProcessCleanupWorkerSignals(QObject):
+    finished = pyqtSignal(list)
+
+
 class ProcessCleanupWorker(QRunnable):
     """Worker thread for process cleanup (issue #2715).
 
     Runs process polling in a background thread to prevent UI blocking.
     """
 
-    finished = pyqtSignal(list)  # type: ignore[attr-defined]
-
     def __init__(self, running_processes: dict, process_lock) -> None:
         super().__init__()
         self.running_processes = running_processes
         self.process_lock = process_lock
+        self.signals = ProcessCleanupWorkerSignals()
 
     def run(self) -> None:
         """Poll processes for completion without blocking UI."""
@@ -91,7 +94,7 @@ class ProcessCleanupWorker(QRunnable):
             for key, proc in list(self.running_processes.items()):
                 if proc.poll() is not None:
                     finished_keys.append(key)
-        self.finished.emit(finished_keys)
+        self.signals.finished.emit(finished_keys)
 
 
 class GolfLauncher(
@@ -622,7 +625,7 @@ class GolfLauncher(
         worker = ProcessCleanupWorker(
             self.running_processes, self.process_manager._process_lock
         )
-        worker.finished.connect(self._on_cleanup_finished)
+        worker.signals.finished.connect(self._on_cleanup_finished)
         QThreadPool.globalInstance().start(worker)
 
     def _on_cleanup_finished(self, finished_keys: list[str]) -> None:
