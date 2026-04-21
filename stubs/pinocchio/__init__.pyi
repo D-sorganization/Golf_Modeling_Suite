@@ -16,13 +16,20 @@ class Model:
     nv: int
     njoints: int
     nframes: int
+    frames: list[Any]
+    joints: list[Any]
     def __init__(self) -> None: ...
+    def createData(self) -> Data: ...
+    def existJointName(self, name: str) -> bool: ...
+    def getJointId(self, name: str) -> int: ...
+    def getFrameId(self, name: str) -> int: ...
 
 class Data:
     oMi: Any
     oMf: Any
     J: Any
     dJ: Any
+    Minv: np.ndarray
     v: Any
     a: Any
     tau: Any
@@ -30,12 +37,20 @@ class Data:
 
 class GeometryModel:
     def __init__(self) -> None: ...
+    def createData(self) -> GeometryData: ...
 
 class GeometryData:
     def __init__(self, geom_model: GeometryModel) -> None: ...
 
 class VisualModel(GeometryModel): ...
 class CollisionModel(GeometryModel): ...
+
+class RobotWrapper:
+    model: Model
+    data: Data
+    q0: np.ndarray
+    @staticmethod
+    def BuildFromURDF(filename: str) -> RobotWrapper: ...
 
 # SE3 / spatial algebra
 class SE3:
@@ -94,6 +109,13 @@ def getFrameJacobian(
     frame_id: int,
     reference_frame: int,
 ) -> np.ndarray: ...
+def computeFrameJacobian(
+    model: Model,
+    data: Data,
+    q: np.ndarray,
+    frame_id: int,
+    reference_frame: int,
+) -> np.ndarray: ...
 def getJointJacobian(
     model: Model,
     data: Data,
@@ -114,6 +136,7 @@ def rnea(
     q: np.ndarray,
     v: np.ndarray,
     a: np.ndarray,
+    f_ext: Any = ...,
 ) -> np.ndarray: ...
 def aba(
     model: Model,
@@ -134,6 +157,11 @@ def computeCoriolisMatrix(
     q: np.ndarray,
     v: np.ndarray,
 ) -> np.ndarray: ...
+def computeMinverse(
+    model: Model,
+    data: Data,
+    q: np.ndarray,
+) -> None: ...
 def nle(
     model: Model,
     data: Data,

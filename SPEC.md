@@ -1,6 +1,6 @@
 # SPEC.md — Repository Specification Document
 
-Last-Updated: 2026-04-20T08:56:58.3577735Z
+Last-Updated: 2026-04-21T21:20:34.4694689Z
 
 <!--
   TEMPLATE VERSION: 1.0.0
@@ -29,8 +29,8 @@ Last-Updated: 2026-04-20T08:56:58.3577735Z
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.140                                            |
-| **Last Spec Update**    | 2026-04-20                                         |
+| **Spec Version**        | 1.0.142                                            |
+| **Last Spec Update**    | 2026-04-21                                         |
 
 ## 2. Purpose & Mission
 
@@ -502,6 +502,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-04-20 | 1.0.141 | Bolt: Optimized `linear_power_series` in `src/shared/python/pendulum_simulator/dynamics_quantities.py` by replacing `np.sum(forces * velocities, axis=1)` with `np.einsum('...i,...i->...', forces, velocities)`. This avoids temporary array allocations and yields a ~3x performance improvement in physics simulation loops. |
+| 2026-04-21 | 1.0.142 | PR #2942 follow-up hardening: added Pinocchio stubs to preserve the three-value `buildModelsFromUrdf` type contract, made optional API/C3D test annotations safe when dependencies are skipped, and archived the reviewed follow-up comments for issues #2914, #2915, #2921, #2923, #2924, and #2925.                                                                                                                                                                                                                                                                                    |
 | 2026-04-20 | 1.0.140 | Bolt: Replaced `np.linalg.norm` with `math.hypot` for 2D/3D physics vectors in aerodynamics and ball flight simulation for a ~5x performance speedup.                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | 2026-04-20 | 1.0.139 | Issue #2786 — Salvaged Docker runtime API entrypoint hardening from stale PR #2723. The `CMD` now carries production-ready uvicorn flags: `--workers 1` (aligns in-process state with HEALTHCHECK), `--proxy-headers` + `--forwarded-allow-ips *` (X-Forwarded-* awareness behind reverse proxies so client IP rate limiting and access logs are accurate), and `--access-log` (stdout request logging). Added regression tests that pin the CMD shape and a runtime smoke-test script (`scripts/smoke_test_docker_entrypoint.sh`) that builds the image and curls `/health`.                                                                      |
 | 2026-04-20 | 1.0.138 | Lazy-imported the video pose pipeline so the FastAPI video analysis route registers in slim runtime images without cv2/mediapipe and surfaces a 503 with a dependency hint when the video extras are unavailable.                                                                                                                                                                                                                                                                                                                                                                                                                                 |
