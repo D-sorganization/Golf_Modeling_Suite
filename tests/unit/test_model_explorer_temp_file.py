@@ -79,7 +79,9 @@ class TestIssue2502TempFileHandling:
 
         assert not (tmp_path / "_temp_fixed_model.urdf").exists()
 
-    @pytest.mark.xfail(strict=False, reason="load_urdf_file API changed in current impl")
+    @pytest.mark.xfail(
+        strict=False, reason="load_urdf_file API changed in current impl"
+    )
     def test_temp_filename_is_not_fixed_string(
         self, offscreen_renderer_class, tmp_path
     ) -> None:
@@ -108,6 +110,6 @@ class TestIssue2502TempFileHandling:
                 renderer.load_urdf_file(str(urdf_file))
 
         assert len(captured_names) == 1
-        assert (
-            captured_names[0] != "_temp_fixed_model.urdf"
-        ), f"Expected a unique temp name; got {captured_names[0]!r}"
+        assert captured_names[0] != "_temp_fixed_model.urdf", (
+            f"Expected a unique temp name; got {captured_names[0]!r}"
+        )
