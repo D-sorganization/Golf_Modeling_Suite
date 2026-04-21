@@ -404,11 +404,11 @@ class TestRealTimeControllerSimulationBackend:
             mode=ControlMode.TORQUE,
             torque_commands=np.zeros(3),
         )
+        import contextlib
+
         # Must not raise NotImplementedError (RuntimeError accepted for unimplemented HW)
-        try:
+        with contextlib.suppress(RuntimeError):
             controller._send_command(cmd)  # Logs warning, drops command
-        except RuntimeError:
-            pass  # Hardware backend not implemented — acceptable
 
     def test_control_loop_runs_without_crashing_on_simulation(self) -> None:
         """Full control loop must complete without NotImplementedError for simulation."""
