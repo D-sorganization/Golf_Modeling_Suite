@@ -71,16 +71,20 @@ __all__ = [
 ]
 
 
+class ProcessCleanupWorkerSignals(QObject):
+    """Signals for ProcessCleanupWorker."""
+    finished = pyqtSignal(list)
+
+
 class ProcessCleanupWorker(QRunnable):
     """Worker thread for process cleanup (issue #2715).
 
     Runs process polling in a background thread to prevent UI blocking.
     """
 
-    finished = pyqtSignal(list)  # type: ignore[attr-defined]
-
     def __init__(self, running_processes: dict, process_lock) -> None:
         super().__init__()
+        self.signals = ProcessCleanupWorkerSignals()
         self.running_processes = running_processes
         self.process_lock = process_lock
 
@@ -622,7 +626,7 @@ class GolfLauncher(
         worker = ProcessCleanupWorker(
             self.running_processes, self.process_manager._process_lock
         )
-        worker.finished.connect(self._on_cleanup_finished)
+        worker.signals.finished.connect(self._on_cleanup_finished)
         QThreadPool.globalInstance().start(worker)
 
     def _on_cleanup_finished(self, finished_keys: list[str]) -> None:
