@@ -640,9 +640,12 @@ class GolfLauncher(
             self.lbl_status.setStyleSheet(Styles.STATUS_INACTIVE)
 
     def _cleanup_processes(self) -> None:
-        """Legacy cleanup method. Use _schedule_cleanup instead."""
-        # Kept for backward compatibility with mixins
-        self._schedule_cleanup()
+        """Legacy cleanup method — synchronous for callers that need immediate results."""
+        finished_keys = [
+            key for key, proc in list(self.running_processes.items())
+            if proc.poll() is not None
+        ]
+        self._on_cleanup_finished(finished_keys)
 
     def closeEvent(self, event: QCloseEvent | None) -> None:
         """Handle window close event to save layout."""
