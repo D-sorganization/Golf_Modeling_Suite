@@ -32,7 +32,7 @@ def manager():
         patch.object(
             ProcessManager,
             "_validate_context_path",
-            side_effect=lambda p: Path(str(p)),
+            side_effect=lambda p: p,
         ),
     ):
         yield ProcessManager(repo_root=PureWindowsPath("/fake/repo"))  # type: ignore[arg-type]
