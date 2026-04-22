@@ -340,7 +340,6 @@ UpstreamDrift employs a comprehensive test pyramid with multiple specialized cat
 
 | Tool       | Version | Purpose                | Blocking? |
 | ---------- | ------- | ---------------------- | --------- |
-| 2026-04-22 | 1.0.144 | Launcher subprocess validation now permits launcher-managed Python scripts under `src/` while preserving suite-root containment checks. |
 | ruff       | latest  | Linting and formatting | Yes       |
 | mypy       | 1.7+    | Static type checking   | Yes       |
 | pytest     | 7.0+    | Testing framework      | Yes       |
@@ -409,7 +408,6 @@ Beyond standard tools, CI enforces custom checks:
 
 | Package    | Version | Purpose                |
 | ---------- | ------- | ---------------------- |
-| 2026-04-22 | 1.0.144 | Launcher subprocess validation now permits launcher-managed Python scripts under `src/` while preserving suite-root containment checks. |
 | pytest     | 7.0+    | Testing framework      |
 | pytest-cov | 4.0+    | Coverage measurement   |
 | hypothesis | 6.0+    | Property-based testing |
@@ -503,7 +501,6 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-04-22 | 1.0.144 | Launcher subprocess validation now permits launcher-managed Python scripts under `src/` while preserving suite-root containment checks. |
 | 2026-04-21 | 1.0.144 | Launcher security: subprocess script validation now allows repository-local scripts under `src/` so launcher handlers can execute valid source-tree scripts while preserving the existing suite-root and top-level allowlist checks. |
 | 2026-04-21 | 1.0.143 | Test governance: `tests/test_urdf_tools.py::test_urdf_scanning_logic` is a blocking assertion again, so shared URDF discovery regressions fail CI instead of being masked by a non-strict xfail. |
 | 2026-04-21 | 1.0.142 | Physics validation: altitude-density correction now rejects altitudes outside the documented ISA troposphere range of 0 to 11000 m in both shared flight-model options and common air-property construction. |
