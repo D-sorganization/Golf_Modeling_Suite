@@ -29,6 +29,7 @@ _BEARMAN_HARVEY_RE_MIN = 2e4
 _BEARMAN_HARVEY_RE_MAX = 5e5
 _DRAG_CD_MIN = 0.10
 _DRAG_CD_MAX = 0.50
+_REFERENCE_BASE_COEFFICIENT = float(GOLF_BALL_DRAG_COEFFICIENT)
 
 
 @lru_cache(maxsize=1)
@@ -45,11 +46,9 @@ def _load_bearman_harvey_spline() -> CubicSpline:
     return CubicSpline(re_values, cd_values, bc_type="natural", extrapolate=False)
 
 
-def _scale_drag_coefficient(
-    coefficient: float, base_coefficient: float, anchor_coefficient: float
-) -> float:
+def _scale_drag_coefficient(coefficient: float, base_coefficient: float) -> float:
     """Scale calibrated drag coefficients while preserving empirical bounds."""
-    cd_effective = coefficient * (base_coefficient / anchor_coefficient)
+    cd_effective = coefficient * (base_coefficient / _REFERENCE_BASE_COEFFICIENT)
     return float(np.clip(cd_effective, _DRAG_CD_MIN, _DRAG_CD_MAX))
 
 
@@ -134,16 +133,11 @@ class DragModel:
             return self.base_coefficient
 
         spline = _load_bearman_harvey_spline()
-        cd_at_max_re = float(spline(_BEARMAN_HARVEY_RE_MAX))
         if re <= _BEARMAN_HARVEY_RE_MIN:
-            return _scale_drag_coefficient(
-                _DRAG_CD_MAX, self.base_coefficient, cd_at_max_re
-            )
+            return _scale_drag_coefficient(_DRAG_CD_MAX, self.base_coefficient)
 
         cd_calibrated = float(spline(re))
-        return _scale_drag_coefficient(
-            cd_calibrated, self.base_coefficient, cd_at_max_re
-        )
+        return _scale_drag_coefficient(cd_calibrated, self.base_coefficient)
 
 
 class LiftModel:
