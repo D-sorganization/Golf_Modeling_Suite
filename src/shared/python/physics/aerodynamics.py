@@ -806,9 +806,11 @@ class EnvironmentRandomizer:
         if not self.config.enabled or self.config.air_density_variance <= 0:
             return base_density
 
-        # Gaussian perturbation
+        # Gaussian perturbation — clamp to a physical minimum to prevent
+        # negative densities that would flip force directions and crash the
+        # DragModel.calculate() air_density > 0 precondition.  (Fixes #3012)
         std = base_density * self.config.air_density_variance
-        return float(self._rng.normal(base_density, std))
+        return max(0.01, float(self._rng.normal(base_density, std)))
 
     def randomize_temperature(self, base_temperature: float) -> float:
         """Randomize temperature.

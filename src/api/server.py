@@ -62,6 +62,19 @@ API_VERSION = "v1"
 API_PREFIX = f"/api/{API_VERSION}"
 
 
+def _get_package_version() -> str:
+    """Read the package version from installed metadata.
+
+    Falls back to a hardcoded default if the package is not installed
+    in the environment (e.g. editable development install).  (Fixes #3013)
+    """
+    try:
+        from importlib.metadata import version as get_version
+        return get_version("upstream-drift")
+    except Exception:
+        return "0.0.0-dev"
+
+
 def _init_video_pipeline() -> Any:
     """Initialize the video pose pipeline, returning None on failure.
 
@@ -175,7 +188,7 @@ app = FastAPI(
         f"All endpoints are available under `{API_PREFIX}/` prefix.\n"
         "Legacy un-prefixed routes are maintained for backward compatibility."
     ),
-    version="3.0.0",
+    version=_get_package_version(),
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_tags=[

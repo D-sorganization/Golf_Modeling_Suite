@@ -77,14 +77,21 @@ from src.api.services.chat_service import ChatService  # noqa: E402
 from src.shared.python.engine_core.engine_manager import EngineManager  # noqa: E402
 from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
 
-logger = logging.getLogger(__name__)
-
 logger = get_logger(__name__)
 
 # API versioning constants (#2070)
 API_VERSION = "v1"
 API_PREFIX = f"/api/{API_VERSION}"
 LAUNCHER_CSRF_HEADER = "X-Launcher-CSRF-Token"
+
+
+def _get_local_package_version() -> str:
+    """Read the package version from installed metadata.  (Fixes #3013)"""
+    try:
+        from importlib.metadata import version as get_version
+        return get_version("upstream-drift")
+    except Exception:
+        return "0.0.0-dev"
 
 
 # Track startup metrics for diagnostics
@@ -717,7 +724,7 @@ def create_local_app() -> FastAPI:
             f"All endpoints are available under `{API_PREFIX}/` prefix.\n"
             "Legacy `/api/` routes are maintained for backward compatibility."
         ),
-        version="2.0.0",
+        version=_get_local_package_version(),
         docs_url="/api/docs",  # Swagger UI available locally
         redoc_url="/api/redoc",
     )
@@ -731,6 +738,14 @@ def create_local_app() -> FastAPI:
     # Store in app state for dependency injection
     app.state.engine_manager = engine_manager
     app.state.chat_service = ChatService()
+
+    # Initialize simulation and analysis services (Fixes #3011: these were missing,
+    # causing all simulation routes to return 503 via get_simulation_service dependency)
+    from src.api.services.simulation_service import SimulationService  # noqa: E402
+    from src.api.services.analysis_service import AnalysisService  # noqa: E402
+
+    app.state.simulation_service = SimulationService(engine_manager)
+    app.state.analysis_service = AnalysisService(engine_manager)
 
     # Register routes (no auth required in local mode)
     _register_api_routers(app)
