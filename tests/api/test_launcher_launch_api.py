@@ -74,7 +74,10 @@ def client(_reset_startup_metrics):
         mock_registry.get_handler.return_value = mock_handler
 
         app = local_server.create_local_app()
-        with TestClient(app) as tc:
+        headers = {
+            local_server.LOCAL_LAUNCHER_TOKEN_HEADER: app.state.local_launcher_token
+        }
+        with TestClient(app, headers=headers) as tc:
             # Expose mocks for assertion access
             tc._mock_process_manager = app.state.process_manager
             tc._mock_handler_registry = mock_registry
@@ -105,6 +108,36 @@ def manifest(manifest_path: Path) -> dict[str, Any]:
 
 class TestLaunchEndpoint:
     """Test POST /api/launcher/launch/{tile_id}."""
+
+    def test_manifest_exposes_local_launcher_capability(self, client) -> None:
+        """Manifest tells the local UI which capability header to use."""
+        resp = client.get("/api/launcher/manifest")
+        assert resp.status_code == 200
+        security = resp.json()["launcher_security"]
+        assert security["capability_header"] == local_server.LOCAL_LAUNCHER_TOKEN_HEADER
+        assert security["capability_token"] == client.app.state.local_launcher_token
+
+    def test_launch_without_capability_token_returns_403(self, client) -> None:
+        """Cross-site form posts cannot launch subprocesses without the token."""
+        from fastapi.testclient import TestClient
+
+        with TestClient(client.app) as raw_client:
+            resp = raw_client.post("/api/launcher/launch/mujoco_unified")
+
+        assert resp.status_code == 403
+        assert "capability" in resp.json()["detail"].lower()
+
+    def test_launch_rejects_unsafe_origin_even_with_token(self, client) -> None:
+        """A hostile browser origin cannot use a stolen or guessed token."""
+        resp = client.post(
+            "/api/launcher/launch/mujoco_unified",
+            headers={
+                local_server.LOCAL_LAUNCHER_TOKEN_HEADER: client.app.state.local_launcher_token,
+                "Origin": "https://evil.example",
+            },
+        )
+        assert resp.status_code == 403
+        assert "origin" in resp.json()["detail"].lower()
 
     def test_launch_mujoco_success(self, client) -> None:
         """Launching MuJoCo by tile ID returns 200 with status=launched."""
@@ -247,6 +280,16 @@ class TestProcessesEndpoint:
 
 class TestStopEndpoint:
     """Test POST /api/launcher/stop/{name}."""
+
+    def test_stop_without_capability_token_returns_403(self, client) -> None:
+        """Cross-site form posts cannot stop subprocesses without the token."""
+        from fastapi.testclient import TestClient
+
+        with TestClient(client.app) as raw_client:
+            resp = raw_client.post("/api/launcher/stop/MuJoCo Humanoid Golf")
+
+        assert resp.status_code == 403
+        assert "capability" in resp.json()["detail"].lower()
 
     def test_stop_running_process(self, client) -> None:
         """Stopping a running process returns 200 with status=stopped."""

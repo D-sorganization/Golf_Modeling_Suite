@@ -29,7 +29,7 @@ Last-Updated: 2026-04-22T00:00:00-07:00
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.159                                            |
+| **Spec Version**        | 1.0.160                                            |
 | **Last Spec Update**    | 2026-04-22                                         |
 
 ## 2. Purpose & Mission
@@ -249,7 +249,8 @@ UpstreamDrift/
 
 Configuration is managed through:
 
-- **Environment Variables**: `UPSTREAM_DRIFT_ENGINE` (default: mujoco), `UPSTREAM_DRIFT_API_PORT` (default: 8000), `GOLF_SUITE_MODE` (local server defaults to `local`), and `GOLF_AUTH_DISABLED` (local server defaults to `true` only when `GOLF_SUITE_MODE=local`; non-local modes default to `false` unless deployment configuration explicitly overrides authentication)
+- **Environment Variables**: `UPSTREAM_DRIFT_ENGINE` (default: mujoco), `UPSTREAM_DRIFT_API_PORT` (default: 8000), `GOLF_SUITE_MODE` (local server defaults to `local`), and `GOLF_AUTH_DISABLED` (local server defaults to `true` only when `GOLF_SUITE_MODE=local`; non-local modes default to `false` unless deployment configuration explicitly overrides account authentication)
+- **Local Launcher Capability**: the local server generates a per-process launcher capability token at startup, exposes the header name and token through `/api/launcher/manifest` for the served UI, and requires that token plus safe local `Origin`/`Referer` values before `POST /api/launcher/launch/{tile_id}` or `POST /api/launcher/stop/{name}` can mutate subprocess state
 - **YAML Config Files**: `~/.upstream_drift/config.yaml` with engine-specific sections
 - **Model Pack Manifests**: versioned YAML manifests in `src/shared/python/config/model_pack_manifest.py` shape, with compatibility support for legacy `config/models.yaml` registries during migration
 - **Launcher Source Metadata**: model entries may optionally declare `provider`, `source_root`, `working_dir`, and `python_paths` so launcher processes can execute from external provider repos without assuming all assets live inside `UpstreamDrift`
@@ -508,6 +509,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-22 | 1.0.160 | Issue #2982: localhost launcher subprocess launch/stop endpoints now require a per-process capability header and reject unsafe browser origins while keeping read-only launcher metadata available to the local UI. |
 | 2026-04-22 | 1.0.159 | Issue #2988: model registry loading now supports explicit strict validation for CI/cross-engine paths, including malformed legacy entries, malformed provider manifests, missing required model IDs, and nightly cross-engine validation env wiring. |
 | 2026-04-22 | 1.0.158 | Issue #2986 follow-up: Rust and Python `ContactParameters` defaults now use the same z-up surface normal as ball-flight gravity/height conventions, while explicit y-up contact tests continue to pass with explicit normals. |
 | 2026-04-22 | 1.0.157 | Issue #2984 follow-up: URDF/MJCF model discovery and serving now reject symlink escapes outside approved model roots while preserving contained nested models, and tuned drag coefficients remain continuous across the Reynolds transition. |

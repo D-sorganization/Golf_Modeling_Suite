@@ -5,7 +5,9 @@
 """
 Local-first API server for Golf Modeling Suite.
 
-Runs entirely on localhost with NO authentication required.
+Runs entirely on localhost with no account authentication required.
+Mutating launcher subprocess endpoints still require a per-process local
+capability token so cross-site browser requests cannot launch or stop tools.
 This is the default mode - free, offline, no accounts needed.
 
 API Versioning (#2070):
@@ -24,9 +26,11 @@ from __future__ import annotations
 import logging
 import mimetypes
 import os
+import secrets
 import time
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 # Fix MIME types for JavaScript modules on Windows
 # Windows registry often has incorrect/missing MIME types for .js files
@@ -41,7 +45,8 @@ mimetypes.add_type("image/x-icon", ".ico")
 # Ensure we're running in local mode with explicit security configuration
 os.environ.setdefault("GOLF_SUITE_MODE", "local")
 # Auth is disabled ONLY in local mode for development convenience.
-# This is an intentional security boundary: local servers have NO auth by design.
+# This is an intentional security boundary: local servers have no account auth by design.
+# Launcher subprocess mutations still require a local capability token.
 # Production servers MUST NOT use local_server.py and MUST enforce authentication.
 # See issue #2714 for security hardening requirements.
 if os.environ.get("GOLF_SUITE_MODE") == "local":
@@ -53,7 +58,7 @@ else:
 
 # NOTE: These imports are placed after env setup intentionally
 # The environment variables must be set before FastAPI initialization
-from fastapi import FastAPI, Request  # noqa: E402
+from fastapi import FastAPI, HTTPException, Request  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.responses import HTMLResponse, JSONResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
@@ -81,6 +86,18 @@ logger = get_logger(__name__)
 # API versioning constants (#2070)
 API_VERSION = "v1"
 API_PREFIX = f"/api/{API_VERSION}"
+LOCAL_LAUNCHER_TOKEN_HEADER = "X-UpstreamDrift-Launcher-Token"
+LOCAL_LAUNCHER_TOKEN_BYTES = 32
+_LOCAL_UI_ORIGINS = {
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:8001",
+    "http://localhost:8080",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:8001",
+    "http://127.0.0.1:8080",
+}
 
 
 # Track startup metrics for diagnostics
@@ -107,20 +124,45 @@ def _configure_cors(app: FastAPI) -> None:
     """Configure CORS middleware for local origins."""
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            "http://localhost:3000",  # Vite dev server
-            "http://localhost:5173",  # Vite default
-            "http://localhost:8080",  # Production UI
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:5173",
-            "http://127.0.0.1:8001",
-            "http://127.0.0.1:8080",
-            "http://localhost:8001",
-        ],
+        allow_origins=sorted(_LOCAL_UI_ORIGINS),
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+
+def _generate_local_launcher_token() -> str:
+    """Generate a high-entropy per-process launcher capability token."""
+    return secrets.token_urlsafe(LOCAL_LAUNCHER_TOKEN_BYTES)
+
+
+def _origin_from_referer(referer: str | None) -> str | None:
+    """Extract an origin from a browser Referer header."""
+    if not referer:
+        return None
+    parsed = urlsplit(referer)
+    if not parsed.scheme or not parsed.netloc:
+        return None
+    return f"{parsed.scheme}://{parsed.netloc}"
+
+
+def _validate_local_launcher_request(request: Request, expected_token: str) -> None:
+    """Require local UI capability proof before mutating launcher processes."""
+    origin = request.headers.get("origin")
+    referer_origin = _origin_from_referer(request.headers.get("referer"))
+    browser_origin = origin or referer_origin
+    if browser_origin is not None and browser_origin not in _LOCAL_UI_ORIGINS:
+        raise HTTPException(
+            status_code=403,
+            detail="Launcher mutation rejected for unsafe browser origin",
+        )
+
+    provided_token = request.headers.get(LOCAL_LAUNCHER_TOKEN_HEADER)
+    if not provided_token or not secrets.compare_digest(provided_token, expected_token):
+        raise HTTPException(
+            status_code=403,
+            detail="Launcher mutation requires a local capability token",
+        )
 
 
 def _register_api_routers(app: FastAPI) -> None:
@@ -314,11 +356,17 @@ def _register_launcher_endpoints(app: FastAPI) -> None:
     _repo_root = Path(__file__).parent.parent.parent
     _launcher_service = LauncherService(repo_root=_repo_root)
     app.state.process_manager = _launcher_service.process_manager
+    app.state.local_launcher_token = _generate_local_launcher_token()
 
     @app.get("/api/launcher/manifest")
     async def get_launcher_manifest() -> dict[str, Any]:
         """Return the launcher manifest (tile configuration) for the web UI."""
-        return _load_launcher_manifest()
+        manifest = _load_launcher_manifest()
+        manifest["launcher_security"] = {
+            "capability_header": LOCAL_LAUNCHER_TOKEN_HEADER,
+            "capability_token": app.state.local_launcher_token,
+        }
+        return manifest
 
     @app.get("/api/launcher/logos/{logo_name:path}")
     async def get_launcher_logo(logo_name: str) -> Any:
@@ -333,12 +381,15 @@ def _register_launcher_endpoints(app: FastAPI) -> None:
         )
 
     @app.post("/api/launcher/launch/{tile_id}", response_model=None)
-    async def launch_tile(tile_id: str) -> dict[str, Any] | JSONResponse:
+    async def launch_tile(
+        request: Request, tile_id: str
+    ) -> dict[str, Any] | JSONResponse:
         """Launch an engine or tool by tile ID.
 
         Looks up the tile in the launcher manifest and uses the model
         handler registry to spawn it as a subprocess.
         """
+        _validate_local_launcher_request(request, app.state.local_launcher_token)
         logger.info("[launch] Received launch request for tile_id=%s", tile_id)
 
         manifest, tile = _find_tile_in_manifest(tile_id)
@@ -362,8 +413,11 @@ def _register_launcher_endpoints(app: FastAPI) -> None:
         return {"processes": _launcher_service.get_running_processes()}
 
     @app.post("/api/launcher/stop/{name}", response_model=None)
-    async def stop_process(name: str) -> dict[str, Any] | JSONResponse:
+    async def stop_process(
+        request: Request, name: str
+    ) -> dict[str, Any] | JSONResponse:
         """Stop a running engine/tool process by name."""
+        _validate_local_launcher_request(request, app.state.local_launcher_token)
         if not _launcher_service.stop_process(name):
             logger.warning("[stop] Process not found: %s", name)
             return JSONResponse(
@@ -590,7 +644,7 @@ def _get_ui_not_built_html() -> str:
             </div>
             <p>Then restart the server.</p>
             <p style="color: #888; margin-top: 30px;">
-                <strong>API is working!</strong> Check:
+                <strong>API is working!</strong> Launcher actions require the local capability token from the manifest. Check:
             </p>
             <p>
                 <a href="/api/health">/api/health</a> |
@@ -756,7 +810,7 @@ def print_server_info(host: str, port: int) -> None:
     │  Running at: http://{host}:{port:<5}                       │
     │  API Docs:   http://{host}:{port}/api/docs               │
     │                                                         │
-    │  Mode: LOCAL (no auth required)                         │
+    │  Mode: LOCAL (no account auth; launcher token required) │
     │  Press Ctrl+C to stop.                                  │
     └─────────────────────────────────────────────────────────┘{RESET}
     """)
@@ -764,7 +818,7 @@ def print_server_info(host: str, port: int) -> None:
         logger.info("\n    Golf Modeling Suite - Local Server")
         logger.info("    Running at: http://%s:%s", host, port)
         logger.info("    API Docs:   http://%s:%s/api/docs", host, port)
-        logger.info("    Mode: LOCAL (no auth required)")
+        logger.info("    Mode: LOCAL (no account auth; launcher token required)")
         logger.info("    Press Ctrl+C to stop.\n")
 
 
