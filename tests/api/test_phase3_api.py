@@ -686,8 +686,8 @@ class TestModelDiscoveryContainment:
         tmp_path: Path,
     ) -> None:
         """Discovery should not advertise symlinks that resolve outside the root."""
-        import src.api.utils.path_validation as path_validation
         import src.api.routes.models as models_route
+        import src.api.utils.path_validation as path_validation
 
         models_dir = tmp_path / "models"
         models_dir.mkdir()
@@ -724,8 +724,8 @@ class TestModelDiscoveryContainment:
         tmp_path: Path,
     ) -> None:
         """Serving should reject a model path whose resolved target escapes the root."""
-        import src.api.utils.path_validation as path_validation
         import src.api.routes.models as models_route
+        import src.api.utils.path_validation as path_validation
 
         models_dir = tmp_path / "models"
         models_dir.mkdir()
