@@ -9,7 +9,7 @@ from pathlib import Path
 try:
     import tomllib
 except ImportError:  # pragma: no cover - Python <3.11 fallback
-    import tomli as tomllib  # type: ignore[no-redef]
+    import tomli as tomllib
 
 
 @lru_cache(maxsize=1)
