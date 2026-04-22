@@ -23,8 +23,8 @@ import re
 import shlex
 import subprocess
 import sys
-import threading
 import tempfile
+import threading
 from collections.abc import Callable
 from pathlib import Path
 from typing import TYPE_CHECKING
