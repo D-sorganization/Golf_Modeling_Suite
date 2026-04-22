@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import importlib
 import pkgutil
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 from fastapi import Depends
@@ -70,7 +71,7 @@ _REGISTRATION_ORDER: tuple[str, ...] = (
     "motion_capture",
 )
 
-_ROUTE_DEPENDENCIES: dict[str, tuple[Depends, ...]] = {
+_ROUTE_DEPENDENCIES: dict[str, tuple[Callable[..., object], ...]] = {
     "simulation": (CheckSimulationQuota,),
     "video": (CheckVideoQuota,),
 }
@@ -172,7 +173,9 @@ def register_routes(
         app.include_router(
             router,
             prefix=prefix,
-            dependencies=list(_ROUTE_DEPENDENCIES.get(module_name, ())),
+            dependencies=[
+                Depends(dep) for dep in _ROUTE_DEPENDENCIES.get(module_name, ())
+            ],
         )
         logger.debug("Registered router from %s with prefix '%s'", module_name, prefix)
     return len(routes)
