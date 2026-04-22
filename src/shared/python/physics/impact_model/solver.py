@@ -1,5 +1,4 @@
 import numpy as np
-
 from src.shared.python.core.contracts import precondition
 from src.shared.python.logging_pkg.logging_config import get_logger
 
@@ -161,15 +160,25 @@ class ImpactSolverAPI:
         self.recorder = ImpactRecorder()
 
     @precondition(  # fmt: skip
-        lambda self, timestamp, clubhead_velocity, clubhead_orientation, ball_velocity=None, ball_angular_velocity=None, clubhead_mass=0.200, record=True: (
-            clubhead_mass > 0
-        ),
+        lambda self,
+        timestamp,
+        clubhead_velocity,
+        clubhead_orientation,
+        ball_velocity=None,
+        ball_angular_velocity=None,
+        clubhead_mass=0.200,
+        record=True: (clubhead_mass > 0),
         "Clubhead mass must be positive",
     )
     @precondition(  # fmt: skip
-        lambda self, timestamp, clubhead_velocity, clubhead_orientation, ball_velocity=None, ball_angular_velocity=None, clubhead_mass=0.200, record=True: (
-            timestamp >= 0
-        ),
+        lambda self,
+        timestamp,
+        clubhead_velocity,
+        clubhead_orientation,
+        ball_velocity=None,
+        ball_angular_velocity=None,
+        clubhead_mass=0.200,
+        record=True: (timestamp >= 0),
         "Timestamp must be non-negative",
     )
     def solve_impact(

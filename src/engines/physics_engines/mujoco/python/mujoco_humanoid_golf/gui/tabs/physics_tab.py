@@ -10,7 +10,6 @@ import typing
 from pathlib import Path
 
 from PyQt6 import QtCore, QtWidgets
-
 from src.shared.python.data_io.common_utils import get_shared_urdf_path
 from src.shared.python.logging_pkg.logging_config import get_logger
 
@@ -383,7 +382,9 @@ class PhysicsTab(QtWidgets.QWidget):
                 display_name = f"{config['category']}: {display_name}"
             elif config["name"] in desc_map:
                 prefix = "Golf" if config["name"] in golf_names else "Musculoskeletal"
-                display_name = f"{prefix}: {display_name} ({len(config['actuators'])} DOF)"  # noqa: E501
+                display_name = (
+                    f"{prefix}: {display_name} ({len(config['actuators'])} DOF)"  # noqa: E501
+                )
 
             self.model_combo.addItem(display_name)
 

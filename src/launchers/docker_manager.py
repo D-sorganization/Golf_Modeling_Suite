@@ -11,7 +11,6 @@ import subprocess
 from pathlib import Path
 
 from PyQt6.QtCore import QThread, pyqtSignal
-
 from src.launchers.launcher_constants import validate_docker_stage
 from src.shared.python.docker_config import (
     DOCKER_IMAGE_ENGINE,
@@ -258,9 +257,7 @@ class DockerLauncher:
 
         # Port mapping for MeshCat (Drake/Pinocchio)
         if model_type in ("drake", "pinocchio"):
-            cmd.extend(
-                ["-p", "7000:7000", "-e", "MESHCAT_HOST=0.0.0.0"]
-            )  # nosec: Docker container networking requires 0.0.0.0
+            cmd.extend(["-p", "7000:7000", "-e", "MESHCAT_HOST=0.0.0.0"])  # nosec: Docker container networking requires 0.0.0.0
 
         # Working Directory
         work_dir = (

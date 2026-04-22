@@ -25,7 +25,6 @@ from __future__ import annotations
 
 import numpy as np
 from matplotlib.figure import Figure
-
 from src.shared.python.plotting.renderers.base import BaseRenderer
 
 # ── Force type color configuration ────────────────────────────────────
@@ -152,9 +151,9 @@ class ForceVectorRenderer(BaseRenderer):
         total_forces = np.asarray(total_forces)
         ztcf_forces = np.asarray(ztcf_forces)
 
-        assert (
-            total_forces.shape == ztcf_forces.shape
-        ), f"Shape mismatch: total {total_forces.shape} vs ztcf {ztcf_forces.shape}"
+        assert total_forces.shape == ztcf_forces.shape, (
+            f"Shape mismatch: total {total_forces.shape} vs ztcf {ztcf_forces.shape}"
+        )
 
         delta = total_forces - ztcf_forces
         self._render_quiver_overlay(

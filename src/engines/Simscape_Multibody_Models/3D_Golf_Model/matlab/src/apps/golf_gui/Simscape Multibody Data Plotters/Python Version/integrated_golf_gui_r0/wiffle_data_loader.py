@@ -25,10 +25,9 @@ def _to_numpy(series: Any) -> np.ndarray:
     """Convert pandas Series, numpy array, or ExtensionArray to numpy array safely"""
     if hasattr(series, "to_numpy"):
         return series.to_numpy()
-    elif hasattr(series, "values"):
+    if hasattr(series, "values"):
         return series.values
-    else:
-        return np.asarray(series)
+    return np.asarray(series)
 
 
 @dataclass
@@ -628,7 +627,9 @@ class MotionDataLoader:
                     diff = _to_numpy(prov1_df[prov1_col]) - wiffle_interp
 
                     # Store in DELTAQ format
-                    gui_col = f"{component.upper().replace('_', '')[:2]}{axis[-1].upper()}"  # noqa: E501
+                    gui_col = (
+                        f"{component.upper().replace('_', '')[:2]}{axis[-1].upper()}"  # noqa: E501
+                    )
                     deltaq_data[gui_col] = diff
                 else:
                     deltaq_data[

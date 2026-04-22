@@ -14,15 +14,14 @@ sys.modules["hatchling.builders"] = MagicMock()
 sys.modules["hatchling.builders.hooks"] = MagicMock()
 sys.modules["hatchling.builders.hooks.plugin"] = MagicMock()
 sys.modules["hatchling.builders.hooks.plugin.interface"] = MagicMock()
-sys.modules["hatchling.builders.hooks.plugin.interface"].BuildHookInterface = (
-    DummyHookInterface
-)
+sys.modules[
+    "hatchling.builders.hooks.plugin.interface"
+].BuildHookInterface = DummyHookInterface
 
 import subprocess  # noqa: E402
 
-import pytest  # noqa: E402
-
 import build_hooks  # noqa: E402
+import pytest  # noqa: E402
 
 
 class DummyConfig:

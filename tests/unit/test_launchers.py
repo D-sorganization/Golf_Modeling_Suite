@@ -8,7 +8,6 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
-
 from src.shared.python.data_io.path_utils import get_repo_root
 
 
@@ -20,6 +19,7 @@ class TestLauncherModule:
         # Test main launch script
         try:
             import launch_golf_suite
+
             from src.shared.python import launcher_factory
 
             assert hasattr(launch_golf_suite, "main")
@@ -54,6 +54,7 @@ class TestLauncherModule:
         """Test main launcher script structure."""
         try:
             import launch_golf_suite
+
             from src.shared.python import launcher_factory
 
             # main is in launch_golf_suite
@@ -120,9 +121,9 @@ class TestLauncherUtilities:
         for dir_name in expected_dirs_either:
             root_path = project_root / dir_name
             src_path = project_root / "src" / dir_name
-            assert (
-                root_path.exists() or src_path.exists()
-            ), f"Directory {dir_name} should exist at root or under src/"
+            assert root_path.exists() or src_path.exists(), (
+                f"Directory {dir_name} should exist at root or under src/"
+            )
 
         for dir_name in expected_src_dirs:
             dir_path = project_root / "src" / dir_name
@@ -201,6 +202,7 @@ class TestLauncherIntegration:
         ):
             try:
                 import launch_golf_suite
+
                 import src.launchers.golf_suite_launcher
 
                 # Both modules should be importable

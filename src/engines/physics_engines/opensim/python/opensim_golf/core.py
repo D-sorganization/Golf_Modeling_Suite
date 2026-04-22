@@ -11,7 +11,6 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-
 from src.shared.python.core import constants
 from src.shared.python.logging_pkg.logging_config import get_logger
 
@@ -135,9 +134,7 @@ class GolfSwingModel:
                 # Some versions might need setInitialTime
 
             logger.info(f"Loaded OpenSim model from {self.model_path}")
-        except (
-            Exception
-        ) as e:  # noqa: BLE001 — convert any error to OpenSimModelLoadError
+        except Exception as e:  # noqa: BLE001 — convert any error to OpenSimModelLoadError
             raise OpenSimModelLoadError(
                 f"Failed to load OpenSim model: {self.model_path}\n"
                 f"Error: {e}\n"

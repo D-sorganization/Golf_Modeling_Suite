@@ -16,7 +16,6 @@ import math
 from typing import TYPE_CHECKING, Any
 
 from fastapi import APIRouter, Depends
-
 from src.api.middleware.error_handler import handle_api_errors
 from src.shared.python.core.constants import GRAVITY
 from src.shared.python.core.contracts import precondition
@@ -381,9 +380,13 @@ def _get_sim_time(engine_manager: EngineManager) -> float:
     response_model=ForceOverlayResponse,
 )
 @precondition(  # fmt: skip
-    lambda force_types="applied", color_by_magnitude=True, body_filter=None, show_labels=False, scale_factor=0.01, engine_manager=None, logger=None: (
-        scale_factor > 0 and len(force_types.strip()) > 0
-    ),
+    lambda force_types="applied",
+    color_by_magnitude=True,
+    body_filter=None,
+    show_labels=False,
+    scale_factor=0.01,
+    engine_manager=None,
+    logger=None: (scale_factor > 0 and len(force_types.strip()) > 0),
     "Scale factor must be positive and force_types must be non-empty",
 )
 @handle_api_errors

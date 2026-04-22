@@ -4,7 +4,6 @@ from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
-
 from src.shared.python.core.constants import GRAVITY_M_S2
 from src.shared.python.engine_core.engine_manager import EngineManager, EngineType
 from src.shared.python.logging_pkg.logging_config import get_logger
@@ -96,9 +95,9 @@ def test_mujoco_pendulum_accuracy():
     logger.info(f"Max Energy Error (MuJoCo): {max_energy_error:.6f} J")
 
     # Allow small numerical integration error
-    assert (
-        max_energy_error < 0.01
-    ), f"MuJoCo pendulum drifted! Max error: {max_energy_error}"
+    assert max_energy_error < 0.01, (
+        f"MuJoCo pendulum drifted! Max error: {max_energy_error}"
+    )
 
 
 def test_drake_pendulum_accuracy():

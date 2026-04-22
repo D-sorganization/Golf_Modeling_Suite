@@ -9,7 +9,6 @@ from __future__ import annotations
 import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-
 from src.shared.python.plotting.renderers.base import BaseRenderer
 
 
@@ -438,7 +437,11 @@ class KinematicsRenderer(BaseRenderer):
             unit = (
                 "deg"
                 if dt == "position"
-                else "deg/s" if dt == "velocity" else "Nm" if dt == "torque" else ""
+                else "deg/s"
+                if dt == "velocity"
+                else "Nm"
+                if dt == "torque"
+                else ""
             )
             labels.append(f"{name} {dt[:3]} ({unit})")
 
