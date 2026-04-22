@@ -29,7 +29,7 @@ Last-Updated: 2026-04-22T15:02:00-07:00
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.163                                            |
+| **Spec Version**        | 1.0.164                                            |
 | **Last Spec Update**    | 2026-04-22                                         |
 
 ## 2. Purpose & Mission
@@ -511,6 +511,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-22 | 1.0.164 | Added adversarial review assessment tracking and docs-governance coverage for `docs/assessments/adversarial_review_2026-04-22.md`, plus import grouping cleanup across perturbation analyzers, data export, C3D workflow, golf launcher, and launcher integration tests so the assessment PR passes current CI quality gates. |
 | 2026-04-22 | 1.0.163 | Issue #3015: tooling route modules now mount relative to the API registry prefix instead of hardcoding an extra `/api` segment, restoring versioned data-explorer, terrain, putting-green, motion-capture, and launcher endpoints under `/api/v1/...` without double-prefixed `/api/v1/api/...` paths. |
 | 2026-04-22 | 1.0.162 | Issue #3011: `create_local_app()` now initializes `SimulationService` and `AnalysisService` in app state, aligning local-server startup with dependency-injection requirements so simulation/analysis dependencies no longer raise 503 due to missing service wiring. Added a local-server regression test that resolves both services via dependency helpers. |
 | 2026-04-22 | 1.0.161 | Issue #3016: `GET /dataset/features` now accepts omitted/null `category` query parameters as intended by the route signature, removing contradictory route-level `ValueError` guards and adding route regression coverage for default and explicit `category=None` handling. |
@@ -705,6 +706,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 ## Changelog
 
+- 2026-04-22: Added adversarial review assessment tracking and docs-governance coverage for `docs/assessments/adversarial_review_2026-04-22.md`, and refreshed import grouping in perturbation/export/launcher modules so CI quality gates match the assessment PR.
 - 2026-04-22: Removed the duplicate `logging.getLogger(__name__)` assignment from `src/api/local_server.py` so the local server consistently uses the shared structured logger, with regression coverage guarding against logger shadowing.
 - 2026-04-22: Added release-mode validation for Rust upstream-physics public RK4, aerodynamic, and ball-flight inputs so Python/WASM constructors return typed boundary errors and invalid simulation parameters fail before producing NaNs or repeated states.
 - 2026-04-22: Guarded MuJoCo contact-force body lookups against negative non-geom contact IDs so flex or other non-geom contacts are skipped instead of indexing the wrong `geom_bodyid` entry.
