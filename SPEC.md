@@ -29,7 +29,7 @@ Last-Updated: 2026-04-22T00:00:00-07:00
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.156                                            |
+| **Spec Version**        | 1.0.157                                            |
 | **Last Spec Update**    | 2026-04-22                                         |
 
 ## 2. Purpose & Mission
@@ -201,6 +201,7 @@ UpstreamDrift/
 - `GET /api/launcher/logos/{logo_name}` — Serve launcher logos only from approved asset roots using traversal-safe path resolution
 - SPA/static asset fallback serving under `ui/dist` resolves requested paths through traversal-safe joins and refuses absolute paths, `..` escapes, NUL bytes, and symlink escapes
 - URDF/MJCF model discovery and `/models/{model_name}/urdf` serving resolve candidates through approved model roots, reject symlink escapes outside those roots, and re-check containment immediately before reading file contents
+- Pinocchio adapter vector APIs fail fast on dimension mismatch. `set_control`, `compute_control_acceleration`, `compute_ztcf`, and `compute_zvcf` raise `ValueError` before mutating or dispatching when vector lengths do not match the loaded model, and the message names the vector plus the expected and actual dimensions.
 
 **GUI Interface (PyQt6)**:
 
@@ -506,6 +507,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-22 | 1.0.157 | Issue #2984 follow-up: URDF/MJCF model discovery and serving now reject symlink escapes outside approved model roots while preserving contained nested models, and tuned drag coefficients remain continuous across the Reynolds transition. |
 | 2026-04-22 | 1.0.156 | Issue #2968 follow-up: added CI regression coverage in `tests/test_ci_infrastructure.py` to prevent reintroducing global mypy stub-path injection (`mypy_path` / `mypypath`) that can make incomplete Pinocchio stubs authoritative outside scoped checks. |
 | 2026-04-22 | 1.0.155 | Putting-green ball physics now normalizes BallState position, velocity, and spin inputs to 1D arrays so row and column vector inputs preserve speed and direction calculations. |
 | 2026-04-22 | 1.0.154 | Bolt: Optimize ball roll physics vector magnitudes using math.hypot. |
