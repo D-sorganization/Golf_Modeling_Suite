@@ -10,7 +10,6 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-
 from src.api.middleware.error_handler import handle_api_errors
 from src.shared.python.core.contracts import precondition
 from src.shared.python.engine_core.engine_manager import EngineManager
