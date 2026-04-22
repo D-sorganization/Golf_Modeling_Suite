@@ -144,7 +144,9 @@ class TestUploadRouteContracts:
         monkeypatch.setattr(
             video_module,
             "_load_video_pipeline_classes",
-            lambda: (_ for _ in ()).throw(AssertionError("pipeline load should not run")),
+            lambda: (_ for _ in ()).throw(
+                AssertionError("pipeline load should not run")
+            ),
         )
 
         upload = FakeUploadFile(
@@ -172,7 +174,9 @@ class TestUploadRouteContracts:
         monkeypatch.setattr(
             video_module,
             "_load_video_pipeline_classes",
-            lambda: (_ for _ in ()).throw(AssertionError("pipeline load should not run")),
+            lambda: (_ for _ in ()).throw(
+                AssertionError("pipeline load should not run")
+            ),
         )
 
         upload = FakeUploadFile(

@@ -159,7 +159,9 @@ class TestProductionRouteProtection:
 
         assert response.status_code in [401, 403]
 
-    def test_video_analysis_requires_auth_in_cloud_mode(self, client: TestClient) -> None:
+    def test_video_analysis_requires_auth_in_cloud_mode(
+        self, client: TestClient
+    ) -> None:
         """POST /api/v1/analyze/video returns 401/403 without credentials in cloud mode."""
         with patch.dict(
             os.environ,

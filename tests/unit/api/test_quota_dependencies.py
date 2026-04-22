@@ -47,9 +47,14 @@ class TestQuotaDependencyDefaults:
         current_user.video_analyses_this_month = 0
         db = MagicMock()
 
-        with patch("src.api.auth.dependencies.is_local_mode", return_value=False), patch(
-            "src.api.auth.dependencies.usage_tracker.check_quota", return_value=False
-        ), pytest.raises(HTTPException) as excinfo:
+        with (
+            patch("src.api.auth.dependencies.is_local_mode", return_value=False),
+            patch(
+                "src.api.auth.dependencies.usage_tracker.check_quota",
+                return_value=False,
+            ),
+            pytest.raises(HTTPException) as excinfo,
+        ):
             dependency(current_user=current_user, db=db)
 
         assert excinfo.value.status_code == 429
