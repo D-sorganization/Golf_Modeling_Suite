@@ -704,6 +704,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 | 1.0.140 | 2026-04-21 | Bolt: Optimized `np.sum(forces * velocities, axis=1)` to `np.einsum` in `dynamics_quantities.py` for performance. |
 
 ## Changelog
+- 2026-04-22: Removed duplicate `/api` prefixes from engine probe/load route decorators so endpoints resolve once under the API router base path, with regression coverage preventing reintroduction.
 
 - 2026-04-22: Removed the duplicate `logging.getLogger(__name__)` assignment from `src/api/local_server.py` so the local server consistently uses the shared structured logger, with regression coverage guarding against logger shadowing.
 - 2026-04-22: Added release-mode validation for Rust upstream-physics public RK4, aerodynamic, and ball-flight inputs so Python/WASM constructors return typed boundary errors and invalid simulation parameters fail before producing NaNs or repeated states.
