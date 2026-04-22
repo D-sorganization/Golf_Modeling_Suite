@@ -25,9 +25,10 @@ import mimetypes
 import os
 import secrets
 import time
+from collections.abc import Callable
 from pathlib import Path
 from secrets import compare_digest
-from typing import Any, Callable
+from typing import Any
 from urllib.parse import urlparse
 
 # Fix MIME types for JavaScript modules on Windows
