@@ -191,6 +191,23 @@ class RandomizationConfig:
 # =============================================================================
 
 
+def _as_3d_vector(value: np.ndarray, name: str) -> np.ndarray:
+    """Normalize supported vector shapes to a 1D 3-element array.
+
+    Accepts canonical vectors with shape (3,), and common row/column vectors
+    with shape (1, 3) or (3, 1). Other shapes are rejected to avoid ambiguous
+    behavior in force-model math.
+    """
+    arr = np.asarray(value)
+    if arr.ndim == 1 and arr.shape == (3,):
+        return arr
+    if arr.ndim == 2 and arr.shape in ((1, 3), (3, 1)):
+        return arr.reshape(3)
+    raise ValueError(
+        f"{name} must be a 3-element vector with shape (3,), (1, 3), or (3, 1); got {arr.shape}"
+    )
+
+
 class DragModel:
     """Model for aerodynamic drag force.
 
@@ -240,16 +257,17 @@ class DragModel:
         """
         require_finite(velocity, "velocity")
         require(air_density > 0, "air_density must be positive", air_density)
+        velocity_vec = _as_3d_vector(velocity, "velocity")
         # ⚡ Bolt: math.hypot(*vec) is ~5x faster than np.linalg.norm(vec) for 3D magnitudes
-        speed = math.hypot(*velocity)
+        speed = math.hypot(*velocity_vec)
         if speed < 1e-10:
             return np.zeros(3)
 
-        cd = self.get_effective_coefficient(velocity, air_density)
+        cd = self.get_effective_coefficient(velocity_vec, air_density)
         force_magnitude = 0.5 * air_density * cd * self.ball_area * speed**2
 
         # Drag opposes velocity
-        return -force_magnitude * velocity / speed
+        return -force_magnitude * velocity_vec / speed
 
     def get_effective_coefficient(
         self,
@@ -272,11 +290,12 @@ class DragModel:
         """
         if velocity is None:
             raise ValueError("velocity must be provided")
+        velocity_vec = _as_3d_vector(velocity, "velocity")
         if not self.reynolds_correction:
             return self.base_coefficient
 
         # ⚡ Bolt: math.hypot(*vec) is ~5x faster than np.linalg.norm(vec) for 3D magnitudes
-        speed = math.hypot(*velocity)
+        speed = math.hypot(*velocity_vec)
         if speed < 1e-10:
             return self.base_coefficient
 
@@ -354,17 +373,19 @@ class LiftModel:
         require_finite(velocity, "velocity")
         require_finite(spin, "spin")
         require(air_density > 0, "air_density must be positive", air_density)
+        velocity_vec = _as_3d_vector(velocity, "velocity")
+        spin_vec = _as_3d_vector(spin, "spin")
         # ⚡ Bolt: math.hypot(*vec) is ~5x faster than np.linalg.norm(vec) for 3D magnitudes
-        speed = math.hypot(*velocity)
+        speed = math.hypot(*velocity_vec)
         # ⚡ Bolt: math.hypot is ~5x faster than np.linalg.norm for small arrays
-        spin_magnitude = math.hypot(*spin)
+        spin_magnitude = math.hypot(*spin_vec)
 
         if speed < 1e-10 or spin_magnitude < 1e-10:
             return np.zeros(3)
 
         # Lift direction: perpendicular to velocity, in spin plane
-        spin_axis = spin / spin_magnitude
-        lift_dir = np.cross(spin_axis, velocity)
+        spin_axis = spin_vec / spin_magnitude
+        lift_dir = np.cross(spin_axis, velocity_vec)
         lift_norm = float(np.linalg.norm(lift_dir))
 
         if lift_norm < 1e-10:
@@ -444,16 +465,18 @@ class MagnusModel:
         require_finite(velocity, "velocity")
         require_finite(spin, "spin")
         require(air_density > 0, "air_density must be positive", air_density)
+        velocity_vec = _as_3d_vector(velocity, "velocity")
+        spin_vec = _as_3d_vector(spin, "spin")
         # ⚡ Bolt: math.hypot(*vec) is ~5x faster than np.linalg.norm(vec) for 3D magnitudes
-        speed = math.hypot(*velocity)
+        speed = math.hypot(*velocity_vec)
         # ⚡ Bolt: math.hypot is ~5x faster than np.linalg.norm for small arrays
-        spin_magnitude = math.hypot(*spin)
+        spin_magnitude = math.hypot(*spin_vec)
 
         if speed < 1e-10 or spin_magnitude < 1e-10:
             return np.zeros(3)
 
         # Magnus direction: spin x velocity
-        magnus_dir = np.cross(spin, velocity)
+        magnus_dir = np.cross(spin_vec, velocity_vec)
         magnus_norm = float(np.linalg.norm(magnus_dir))
 
         if magnus_norm < 1e-10:

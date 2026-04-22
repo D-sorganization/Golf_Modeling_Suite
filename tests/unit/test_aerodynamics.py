@@ -293,6 +293,30 @@ class TestDragModel:
         # At high Re (turbulent), golf ball has lower Cd
         assert cd_high < cd_low
 
+    @pytest.mark.parametrize(
+        "velocity",
+        [
+            np.array([[50.0], [0.0], [0.0]]),
+            np.array([[50.0, 0.0, 0.0]]),
+        ],
+    )
+    def test_drag_accepts_non_1d_vector_shapes(
+        self, velocity: NDArray[np.floating]
+    ) -> None:
+        """Supported row/column vectors should be normalized and processed."""
+        model = DragModel()
+        drag = model.calculate(velocity, air_density=1.225)
+        assert drag.shape == (3,)
+        assert np.all(np.isfinite(drag))
+
+    def test_drag_rejects_invalid_velocity_shape(self) -> None:
+        """Invalid velocity shape should raise a clear validation error."""
+        model = DragModel()
+        with pytest.raises(ValueError, match="velocity must be a 3-element vector"):
+            model.calculate(
+                np.array([[50.0, 0.0], [0.0, 0.0], [0.0, 0.0]]), air_density=1.225
+            )
+
 
 # =============================================================================
 # LiftModel Tests
@@ -351,6 +375,27 @@ class TestLiftModel:
 
         assert lift_high > lift_low
 
+    def test_lift_accepts_column_vectors(self) -> None:
+        """Column-vector velocity/spin inputs should be handled safely."""
+        model = LiftModel()
+        lift = model.calculate(
+            np.array([[50.0], [0.0], [0.0]]),
+            np.array([[0.0], [-260.0], [0.0]]),
+            air_density=1.225,
+        )
+        assert lift.shape == (3,)
+        assert np.all(np.isfinite(lift))
+
+    def test_lift_rejects_invalid_spin_shape(self) -> None:
+        """Invalid spin shape should raise a clear validation error."""
+        model = LiftModel()
+        with pytest.raises(ValueError, match="spin must be a 3-element vector"):
+            model.calculate(
+                np.array([50.0, 0.0, 0.0]),
+                np.array([[0.0, -260.0], [0.0, 0.0]]),
+                air_density=1.225,
+            )
+
 
 # =============================================================================
 # MagnusModel Tests
@@ -401,6 +446,17 @@ class TestMagnusModel:
         )
 
         assert mag_high > mag_low
+
+    def test_magnus_accepts_row_vectors(self) -> None:
+        """Row-vector velocity/spin inputs should be handled safely."""
+        model = MagnusModel()
+        magnus = model.calculate(
+            np.array([[50.0, 0.0, 0.0]]),
+            np.array([[0.0, 0.0, 200.0]]),
+            air_density=1.225,
+        )
+        assert magnus.shape == (3,)
+        assert np.all(np.isfinite(magnus))
 
 
 # =============================================================================
