@@ -89,6 +89,7 @@ def _get_local_package_version() -> str:
     """Read the package version from installed metadata.  (Fixes #3013)"""
     try:
         from importlib.metadata import version as get_version
+
         return get_version("upstream-drift")
     except Exception:
         return "0.0.0-dev"
@@ -775,8 +776,8 @@ def create_local_app() -> FastAPI:
 
     # Initialize simulation and analysis services (Fixes #3011: these were missing,
     # causing all simulation routes to return 503 via get_simulation_service dependency)
-    from src.api.services.simulation_service import SimulationService  # noqa: E402
     from src.api.services.analysis_service import AnalysisService  # noqa: E402
+    from src.api.services.simulation_service import SimulationService  # noqa: E402
 
     app.state.simulation_service = SimulationService(engine_manager)
     app.state.analysis_service = AnalysisService(engine_manager)

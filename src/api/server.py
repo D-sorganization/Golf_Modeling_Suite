@@ -70,6 +70,7 @@ def _get_package_version() -> str:
     """
     try:
         from importlib.metadata import version as get_version
+
         return get_version("upstream-drift")
     except Exception:
         return "0.0.0-dev"
