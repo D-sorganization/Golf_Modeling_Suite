@@ -201,6 +201,7 @@ UpstreamDrift/
 - `GET /api/launcher/logos/{logo_name}` — Serve launcher logos only from approved asset roots using traversal-safe path resolution
 - SPA/static asset fallback serving under `ui/dist` resolves requested paths through traversal-safe joins and refuses absolute paths, `..` escapes, NUL bytes, and symlink escapes
 - URDF/MJCF model discovery and `/models/{model_name}/urdf` serving resolve candidates through approved model roots, reject symlink escapes outside those roots, and re-check containment immediately before reading file contents
+- Pinocchio adapter vector APIs fail fast on dimension mismatch. `set_control`, `compute_control_acceleration`, `compute_ztcf`, and `compute_zvcf` raise `ValueError` before mutating or dispatching when vector lengths do not match the loaded model, and the message names the vector plus the expected and actual dimensions.
 
 **GUI Interface (PyQt6)**:
 
