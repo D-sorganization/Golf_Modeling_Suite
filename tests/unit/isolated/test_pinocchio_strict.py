@@ -132,9 +132,7 @@ class TestPinocchioStrict:
             ),
         ],
     )
-    def test_compute_ztcf_rejects_invalid_dimensions(
-        self, q, v, match
-    ) -> None:
+    def test_compute_ztcf_rejects_invalid_dimensions(self, q, v, match) -> None:
         engine = self.make_engine()
         self.mod.pin.aba = MagicMock(
             side_effect=AssertionError("pin.aba should not be called")
