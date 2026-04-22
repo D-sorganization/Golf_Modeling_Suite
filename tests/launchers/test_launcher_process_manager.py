@@ -177,6 +177,7 @@ def test_launch_script_accepts_src_script_path(mock_secure_popen, tmp_path):
     assert process is mock_secure_popen.return_value
     mock_secure_popen.assert_called_once()
 
+
 @patch(_VALIDATE_SCRIPT)
 @patch(_SECURE_POPEN)
 def test_launch_script_unified_passes_extra_python_paths(
