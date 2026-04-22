@@ -33,11 +33,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
-
 from src.shared.python.engine_core.engine_availability import is_engine_available
-from src.shared.python.perturbation.analyzer_base import ComparisonReport  # noqa: F401
 from src.shared.python.perturbation.analyzer_base import (  # noqa: F401  re-exported for test imports
     MANDATORY_METRICS,
+    ComparisonReport,  # noqa: F401
     PerturbationAnalyzerBase,
     build_joint_polys,
     compute_ee_velocity_fd,
@@ -209,12 +208,12 @@ class DrakePerturbationAnalyzer(PerturbationAnalyzerBase):
             else:
                 import tempfile
 
-                tmp = tempfile.NamedTemporaryFile(
+                with tempfile.NamedTemporaryFile(
                     suffix=".urdf", mode="w", delete=False
-                )
-                tmp.write(self._MINIMAL_URDF)
-                tmp.close()
-                Parser(plant).AddModels(tmp.name)
+                ) as tmp:
+                    tmp.write(self._MINIMAL_URDF)
+                    tmp_name = tmp.name
+                Parser(plant).AddModels(tmp_name)
 
         plant.Finalize()
         self._plant = plant
@@ -372,17 +371,21 @@ class DrakePerturbationAnalyzer(PerturbationAnalyzerBase):
         import tempfile
 
         if hasattr(self, "_urdf_str"):
-            tmp = tempfile.NamedTemporaryFile(suffix=".urdf", mode="w", delete=False)
-            tmp.write(self._urdf_str)
-            tmp.close()
-            Parser(plant).AddModels(tmp.name)
+            with tempfile.NamedTemporaryFile(
+                suffix=".urdf", mode="w", delete=False
+            ) as tmp:
+                tmp.write(self._urdf_str)
+                tmp_name = tmp.name
+            Parser(plant).AddModels(tmp_name)
         else:
             # Re-finalize fresh from existing plant's URDF path stored at init
             # Fall back to minimal URDF
-            tmp = tempfile.NamedTemporaryFile(suffix=".urdf", mode="w", delete=False)
-            tmp.write(self._MINIMAL_URDF)
-            tmp.close()
-            Parser(plant).AddModels(tmp.name)
+            with tempfile.NamedTemporaryFile(
+                suffix=".urdf", mode="w", delete=False
+            ) as tmp:
+                tmp.write(self._MINIMAL_URDF)
+                tmp_name = tmp.name
+            Parser(plant).AddModels(tmp_name)
 
         plant.Finalize()
         diagram = builder.Build()
