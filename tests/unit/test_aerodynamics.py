@@ -263,8 +263,8 @@ class TestDragModel:
 
         boundary_re = 8e4
         diameter = 2 * model_tuned.ball_radius
-        boundary_speed = boundary_re * float(AIR_VISCOSITY_KG_M_S) / (
-            air_density * diameter
+        boundary_speed = (
+            boundary_re * float(AIR_VISCOSITY_KG_M_S) / (air_density * diameter)
         )
         just_below = np.array([boundary_speed * 0.999999, 0.0, 0.0])
         just_above = np.array([boundary_speed * 1.000001, 0.0, 0.0])
