@@ -14,7 +14,6 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-
 from src.shared.python.core.contracts import precondition
 from src.shared.python.engine_core.engine_availability import (
     C3D_AVAILABLE,

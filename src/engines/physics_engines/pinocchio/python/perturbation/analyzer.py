@@ -35,7 +35,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
-
 from src.shared.python.engine_core.engine_availability import PINOCCHIO_AVAILABLE
 
 # Shared noise / perturbation helpers
