@@ -53,6 +53,20 @@ class TestBallState:
         )
         assert np.isclose(state.speed, 5.0)
 
+    def test_ball_state_normalizes_column_velocity(self) -> None:
+        """Column-shaped vectors should be flattened safely."""
+        state = BallState(
+            position=np.array([[0.0], [1.0]]),
+            velocity=np.array([[3.0], [4.0]]),
+            spin=np.array([[0.0], [0.0], [100.0]]),
+        )
+
+        assert state.position.shape == (2,)
+        assert state.velocity.shape == (2,)
+        assert state.spin.shape == (3,)
+        assert np.isclose(state.speed, 5.0)
+        assert np.allclose(state.direction, [0.6, 0.8])
+
     def test_ball_state_is_moving(self) -> None:
         """Should detect if ball is moving."""
         moving = BallState(
