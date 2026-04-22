@@ -1,6 +1,6 @@
 # SPEC.md — Repository Specification Document
 
-Last-Updated: 2026-04-21T17:36:00-07:00
+Last-Updated: 2026-04-22T00:00:00-07:00
 
 <!--
   TEMPLATE VERSION: 1.0.0
@@ -30,7 +30,7 @@ Last-Updated: 2026-04-21T17:36:00-07:00
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
 | **Spec Version**        | 1.0.144                                            |
-| **Last Spec Update**    | 2026-04-21                                         |
+| **Last Spec Update**    | 2026-04-22                                         |
 
 ## 2. Purpose & Mission
 
@@ -340,6 +340,7 @@ UpstreamDrift employs a comprehensive test pyramid with multiple specialized cat
 
 | Tool       | Version | Purpose                | Blocking? |
 | ---------- | ------- | ---------------------- | --------- |
+| 2026-04-22 | 1.0.144 | Launcher subprocess validation now permits launcher-managed Python scripts under `src/` while preserving suite-root containment checks. |
 | ruff       | latest  | Linting and formatting | Yes       |
 | mypy       | 1.7+    | Static type checking   | Yes       |
 | pytest     | 7.0+    | Testing framework      | Yes       |
@@ -408,6 +409,7 @@ Beyond standard tools, CI enforces custom checks:
 
 | Package    | Version | Purpose                |
 | ---------- | ------- | ---------------------- |
+| 2026-04-22 | 1.0.144 | Launcher subprocess validation now permits launcher-managed Python scripts under `src/` while preserving suite-root containment checks. |
 | pytest     | 7.0+    | Testing framework      |
 | pytest-cov | 4.0+    | Coverage measurement   |
 | hypothesis | 6.0+    | Property-based testing |
@@ -501,6 +503,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-22 | 1.0.144 | Launcher subprocess validation now permits launcher-managed Python scripts under `src/` while preserving suite-root containment checks. |
 | 2026-04-21 | 1.0.144 | Launcher security: subprocess script validation now allows repository-local scripts under `src/` so launcher handlers can execute valid source-tree scripts while preserving the existing suite-root and top-level allowlist checks. |
 | 2026-04-21 | 1.0.143 | Test governance: `tests/test_urdf_tools.py::test_urdf_scanning_logic` is a blocking assertion again, so shared URDF discovery regressions fail CI instead of being masked by a non-strict xfail. |
 | 2026-04-21 | 1.0.142 | Physics validation: altitude-density correction now rejects altitudes outside the documented ISA troposphere range of 0 to 11000 m in both shared flight-model options and common air-property construction. |
@@ -682,6 +685,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 ## Changelog
 
+- 2026-04-22: Allowed launcher-managed Python scripts under `src/` through secure subprocess path validation while preserving suite-root containment checks.
 - 2026-04-20: Hardened local server asset serving by routing launcher logos and SPA/static-file lookups through traversal-safe path joins, closing path traversal and symlink escape vectors in the local UI shell.
 - 2026-04-20: Lazy-imported the video pose pipeline so the API video analysis route stays registered in slim runtime images and returns a 503 with a video extras hint when cv2/mediapipe is unavailable.
 - 2026-04-20: Guarded Pinocchio energy checks behind complete finite-state verification and aligned RK4 torque sampling test coverage in pendulum engine probes.
