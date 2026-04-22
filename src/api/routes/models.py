@@ -26,8 +26,8 @@ from ..models.responses import (
     URDFLinkGeometry,
     URDFModelResponse,
 )
-from ._route_utils import find_project_root
 from ..utils.path_validation import resolve_contained_path
+from ._route_utils import find_project_root
 
 router = APIRouter()
 
