@@ -148,23 +148,27 @@ class TestEvaluateCompressionResult:
 
         result = evaluate_compression_result(compression_result)
 
-        assert "High final temperature may cause material degradation" in result[
-            "concerns"
-        ]
-        assert "High pressure requires special equipment and safety measures" in result[
-            "concerns"
-        ]
-        assert "High power requirement - consider multiple compressors" in result[
-            "concerns"
-        ]
+        assert (
+            "High final temperature may cause material degradation"
+            in result["concerns"]
+        )
+        assert (
+            "High pressure requires special equipment and safety measures"
+            in result["concerns"]
+        )
+        assert (
+            "High power requirement - consider multiple compressors"
+            in result["concerns"]
+        )
         assert "Low compression efficiency detected" in result["concerns"]
-        assert "CRITICAL: Temperature exceeds safe operating limits" in result[
-            "warnings"
-        ]
+        assert (
+            "CRITICAL: Temperature exceeds safe operating limits" in result["warnings"]
+        )
         assert "Water dropout detected: 0.20 mol%" in result["warnings"]
-        assert "Install water knockout drums and drainage systems" in result[
-            "recommendations"
-        ]
+        assert (
+            "Install water knockout drums and drainage systems"
+            in result["recommendations"]
+        )
         assert result["total_water_dropout"] == 0.2
         assert result["average_efficiency"] == 0.6
 
