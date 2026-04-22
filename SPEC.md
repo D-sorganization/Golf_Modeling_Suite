@@ -29,7 +29,7 @@ Last-Updated: 2026-04-22T00:00:00-07:00
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.159                                            |
+| **Spec Version**        | 1.0.160                                            |
 | **Last Spec Update**    | 2026-04-22                                         |
 
 ## 2. Purpose & Mission
@@ -509,6 +509,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-22 | 1.0.160 | Local-mode account authentication bypass now applies before simulation/video quota dependencies evaluate bearer credentials, preserving no-account local API behavior while keeping non-local JWT/API-key enforcement intact. |
 | 2026-04-22 | 1.0.159 | Issue #2988: model registry loading now supports explicit strict validation for CI/cross-engine paths, including malformed legacy entries, malformed provider manifests, missing required model IDs, and nightly cross-engine validation env wiring. |
 | 2026-04-22 | 1.0.158 | Issue #2986 follow-up: Rust and Python `ContactParameters` defaults now use the same z-up surface normal as ball-flight gravity/height conventions, while explicit y-up contact tests continue to pass with explicit normals. |
 | 2026-04-22 | 1.0.157 | Issue #2984 follow-up: URDF/MJCF model discovery and serving now reject symlink escapes outside approved model roots while preserving contained nested models, and tuned drag coefficients remain continuous across the Reynolds transition. |
@@ -708,6 +709,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 - 2026-04-22: Corrected MuJoCo ground-reaction force sign handling for both world contact orderings and made humanoid URDF contract parsing tolerant of invalid path-like XML strings.
 - 2026-04-22: Allowed launcher-managed Python scripts under `src/` through secure subprocess path validation while preserving suite-root containment checks.
 - 2026-04-22: Protected local launcher subprocess mutations with a startup capability token and loopback `Origin`/`Referer` checks so cross-site browser posts cannot launch or stop local processes while local account auth stays disabled.
+- 2026-04-22: Restored local-mode account-auth bypass for simulation/video quota dependencies before bearer credentials are required, while preserving non-local auth enforcement.
 - 2026-04-22: Rejected unsupported explicit Pinocchio step integrators instead of falling back to the default RK4 mode.
 - 2026-04-20: Hardened local server asset serving by routing launcher logos and SPA/static-file lookups through traversal-safe path joins, closing path traversal and symlink escape vectors in the local UI shell.
 - 2026-04-22: Hardened URDF/MJCF model discovery and serving so model endpoints only list and read files that resolve inside approved model roots, rejecting symlink escapes both during discovery and immediately before file reads.
