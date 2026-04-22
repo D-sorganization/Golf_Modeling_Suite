@@ -29,7 +29,7 @@ Last-Updated: 2026-04-22T00:00:00-07:00
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.159                                            |
+| **Spec Version**        | 1.0.160                                            |
 | **Last Spec Update**    | 2026-04-22                                         |
 
 ## 2. Purpose & Mission
@@ -509,6 +509,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-04-22 | 1.0.159 | Issue #2988: model registry loading now supports explicit strict validation for CI/cross-engine paths, including malformed legacy entries, malformed provider manifests, missing required model IDs, and nightly cross-engine validation env wiring. |
+| 2026-04-22 | 1.0.160 | Issue #2987: upstream physics public constructor/API preconditions now validate in release mode (not debug-only), rejecting invalid RK4 config, invalid aerodynamic properties, and non-physical ball-flight inputs with focused regression tests. |
 | 2026-04-22 | 1.0.158 | Issue #2986 follow-up: Rust and Python `ContactParameters` defaults now use the same z-up surface normal as ball-flight gravity/height conventions, while explicit y-up contact tests continue to pass with explicit normals. |
 | 2026-04-22 | 1.0.157 | Issue #2984 follow-up: URDF/MJCF model discovery and serving now reject symlink escapes outside approved model roots while preserving contained nested models, and tuned drag coefficients remain continuous across the Reynolds transition. |
 | 2026-04-22 | 1.0.156 | Issue #2968 follow-up: added CI regression coverage in `tests/test_ci_infrastructure.py` to prevent reintroducing global mypy stub-path injection (`mypy_path` / `mypypath`) that can make incomplete Pinocchio stubs authoritative outside scoped checks. |
@@ -699,6 +700,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 ## Changelog
 
+- 2026-04-22: Hardened upstream-physics release-mode validation so exposed RK4 and aerodynamics/ball-flight APIs reject invalid non-finite or non-physical constructor/simulation inputs instead of relying on debug-only assertions.
 - 2026-04-22: Guarded MuJoCo contact-force body lookups against negative non-geom contact IDs so flex or other non-geom contacts are skipped instead of indexing the wrong `geom_bodyid` entry.
 - 2026-04-22: Updated humanoid URDF contract parseroot behavior to preserve real filesystem/permission I/O errors for existing path inputs while retaining raw-XML fallback for non-path-like or non-existent path inputs.
 - 2026-04-22: Added a launcher/archivist workflow token fallback for runner discovery and branch cleanup, and bounded property-based rotation/skew/numerical tests to reduce CI timeout risk.

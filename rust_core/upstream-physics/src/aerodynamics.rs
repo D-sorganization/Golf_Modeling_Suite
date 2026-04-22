@@ -84,6 +84,45 @@ pub struct AeroForces {
     pub magnus: Vector3,
 }
 
+fn check_vector_finite(name: &str, v: &Vector3) -> Result<(), String> {
+    if !(v.x.is_finite() && v.y.is_finite() && v.z.is_finite()) {
+        return Err(format!("{name} must be finite"));
+    }
+    Ok(())
+}
+
+fn check_air(air: &AirProperties) -> Result<(), &'static str> {
+    if !(air.density.is_finite() && air.density >= 0.0) {
+        return Err("air density must be finite and >= 0");
+    }
+    if !(air.viscosity.is_finite() && air.viscosity > 0.0) {
+        return Err("air viscosity must be finite and > 0");
+    }
+    if !(air.temperature.is_finite() && air.pressure.is_finite()) {
+        return Err("air temperature/pressure must be finite");
+    }
+    Ok(())
+}
+
+fn check_ball(ball: &AeroBallProperties) -> Result<(), &'static str> {
+    if !(ball.mass.is_finite() && ball.mass > 0.0) {
+        return Err("ball mass must be finite and > 0");
+    }
+    if !(ball.radius.is_finite() && ball.radius > 0.0) {
+        return Err("ball radius must be finite and > 0");
+    }
+    if !(ball.area.is_finite() && ball.area > 0.0) {
+        return Err("ball area must be finite and > 0");
+    }
+    if !(ball.drag_coefficient.is_finite() && ball.drag_coefficient >= 0.0) {
+        return Err("drag_coefficient must be finite and >= 0");
+    }
+    if !(ball.spin_decay_rate.is_finite() && ball.spin_decay_rate >= 0.0) {
+        return Err("spin_decay_rate must be finite and >= 0");
+    }
+    Ok(())
+}
+
 /// Compute all aerodynamic forces on a golf ball.
 ///
 /// # Design by Contract
@@ -102,16 +141,18 @@ pub fn compute_aero_forces(
     ball: &AeroBallProperties,
     air: &AirProperties,
 ) -> AeroForces {
-    debug_assert!(
-        velocity.x.is_finite() && velocity.y.is_finite() && velocity.z.is_finite(),
-        "DbC: velocity must be finite"
-    );
-    debug_assert!(
-        spin.x.is_finite() && spin.y.is_finite() && spin.z.is_finite(),
-        "DbC: spin must be finite"
-    );
-    debug_assert!(air.density >= 0.0, "DbC: air density must be non-negative");
-    debug_assert!(ball.area > 0.0, "DbC: ball area must be positive");
+    if let Err(msg) = check_vector_finite("velocity", velocity) {
+        panic!("{msg}");
+    }
+    if let Err(msg) = check_vector_finite("spin", spin) {
+        panic!("{msg}");
+    }
+    if let Err(msg) = check_air(air) {
+        panic!("{msg}");
+    }
+    if let Err(msg) = check_ball(ball) {
+        panic!("{msg}");
+    }
 
     let drag = compute_drag(velocity, ball, air);
     let lift = compute_lift(velocity, spin, ball, air);
@@ -262,7 +303,14 @@ pub fn compute_magnus_coefficient(spin_param: f64) -> f64 {
 /// - `dt` must be positive
 #[must_use]
 pub fn compute_spin_decay(spin: &Vector3, dt: f64, spin_decay_rate: f64) -> Vector3 {
-    debug_assert!(dt > 0.0, "DbC: dt must be positive");
+    if let Err(msg) = check_vector_finite("spin", spin) {
+        panic!("{msg}");
+    }
+    assert!(dt.is_finite() && dt > 0.0, "dt must be finite and > 0");
+    assert!(
+        spin_decay_rate.is_finite() && spin_decay_rate >= 0.0,
+        "spin_decay_rate must be finite and >= 0"
+    );
     let decay = (-spin_decay_rate * dt).exp();
     Vector3::new(spin.x * decay, spin.y * decay, spin.z * decay)
 }
@@ -295,13 +343,20 @@ pub fn air_from_altitude(altitude_m: f64) -> AirProperties {
 impl AirProperties {
     #[new]
     #[pyo3(signature = (density=1.225, viscosity=1.81e-5, temperature=288.15, pressure=101325.0))]
-    fn py_new(density: f64, viscosity: f64, temperature: f64, pressure: f64) -> Self {
-        Self {
+    fn py_new(
+        density: f64,
+        viscosity: f64,
+        temperature: f64,
+        pressure: f64,
+    ) -> pyo3::PyResult<Self> {
+        let candidate = Self {
             density,
             viscosity,
             temperature,
             pressure,
-        }
+        };
+        check_air(&candidate).map_err(pyo3::exceptions::PyValueError::new_err)?;
+        Ok(candidate)
     }
 
     #[staticmethod]
@@ -315,15 +370,22 @@ impl AirProperties {
 impl AeroBallProperties {
     #[new]
     #[pyo3(signature = (mass=0.04593, radius=0.02135, drag_coefficient=0.25, spin_decay_rate=0.1))]
-    fn py_new(mass: f64, radius: f64, drag_coefficient: f64, spin_decay_rate: f64) -> Self {
+    fn py_new(
+        mass: f64,
+        radius: f64,
+        drag_coefficient: f64,
+        spin_decay_rate: f64,
+    ) -> pyo3::PyResult<Self> {
         let area = std::f64::consts::PI * radius * radius;
-        Self {
+        let candidate = Self {
             mass,
             radius,
             area,
             drag_coefficient,
             spin_decay_rate,
-        }
+        };
+        check_ball(&candidate).map_err(pyo3::exceptions::PyValueError::new_err)?;
+        Ok(candidate)
     }
 }
 
@@ -679,5 +741,27 @@ mod tests {
 
         let forces = compute_aero_forces(&velocity, &spin, &ball, &air);
         assert!(forces.magnus.magnitude() < 1e-10, "Zero spin → zero Magnus");
+    }
+
+    #[test]
+    #[should_panic(expected = "air density must be finite and >= 0")]
+    fn test_compute_aero_forces_rejects_invalid_air_density() {
+        let ball = default_ball();
+        let air = AirProperties {
+            density: f64::NAN,
+            ..AirProperties::default()
+        };
+        let _ = compute_aero_forces(
+            &Vector3::new(10.0, 0.0, 0.0),
+            &Vector3::new(0.0, 100.0, 0.0),
+            &ball,
+            &air,
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "dt must be finite and > 0")]
+    fn test_compute_spin_decay_rejects_non_positive_dt() {
+        let _ = compute_spin_decay(&Vector3::new(0.0, 100.0, 0.0), 0.0, 0.1);
     }
 }

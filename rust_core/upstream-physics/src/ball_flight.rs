@@ -144,17 +144,32 @@ pub fn simulate_ball_trajectory(
     air: &AirProperties,
     config: &IntegratorConfig,
 ) -> BallTrajectoryResult {
-    debug_assert!(
+    assert!(
         pos0.iter().all(|v| v.is_finite()),
         "DbC: initial position must be finite"
     );
-    debug_assert!(
+    assert!(
         vel0.iter().all(|v| v.is_finite()),
         "DbC: initial velocity must be finite"
     );
-    debug_assert!(omega0 >= 0.0, "DbC: omega0 must be non-negative");
-    debug_assert!(ball.mass > 0.0, "DbC: ball mass must be positive");
-    debug_assert!(air.density >= 0.0, "DbC: air density must be non-negative");
+    assert!(
+        spin_axis.iter().all(|v| v.is_finite()),
+        "DbC: spin_axis must be finite"
+    );
+    assert!(
+        gravity.iter().all(|v| v.is_finite()),
+        "DbC: gravity must be finite"
+    );
+    assert!(wind.iter().all(|v| v.is_finite()), "DbC: wind must be finite");
+    assert!(omega0.is_finite() && omega0 >= 0.0, "DbC: omega0 must be finite and non-negative");
+    assert!(
+        ball.mass.is_finite() && ball.mass > 0.0,
+        "DbC: ball mass must be finite and positive"
+    );
+    assert!(
+        air.density.is_finite() && air.density >= 0.0,
+        "DbC: air density must be finite and non-negative"
+    );
 
     // State: [x, y, z, vx, vy, vz, omega]
     let y0 = [pos0[0], pos0[1], pos0[2], vel0[0], vel0[1], vel0[2], omega0];
@@ -438,6 +453,24 @@ mod tests {
         assert!(
             headwind_range < base_range,
             "Headwind range {headwind_range:.2} should be less than no-wind range {base_range:.2}"
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "DbC: ball mass must be finite and positive")]
+    fn test_simulate_rejects_non_positive_mass() {
+        let mut bad_ball = AeroBallProperties::default();
+        bad_ball.mass = 0.0;
+        let _ = simulate_ball_trajectory(
+            [0.0, 0.0, 0.0],
+            [10.0, 0.0, 10.0],
+            [0.0, 1.0, 0.0],
+            100.0,
+            [0.0, 0.0, -9.81],
+            [0.0, 0.0, 0.0],
+            &bad_ball,
+            &AirProperties::default(),
+            &default_config(),
         );
     }
 }

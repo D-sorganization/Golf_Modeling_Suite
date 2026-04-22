@@ -29,6 +29,19 @@ pub struct IntegratorConfig {
     pub max_steps: usize,
 }
 
+impl IntegratorConfig {
+    /// Construct a validated integrator configuration.
+    pub fn try_new(dt: f64, max_steps: usize) -> Result<Self, &'static str> {
+        if !dt.is_finite() || dt <= 0.0 {
+            return Err("dt must be finite and > 0");
+        }
+        if max_steps == 0 {
+            return Err("max_steps must be > 0");
+        }
+        Ok(Self { dt, max_steps })
+    }
+}
+
 impl Default for IntegratorConfig {
     fn default() -> Self {
         Self {
@@ -43,8 +56,9 @@ impl Default for IntegratorConfig {
 impl IntegratorConfig {
     #[new]
     #[pyo3(signature = (dt=0.001, max_steps=100_000))]
-    fn py_new(dt: f64, max_steps: usize) -> Self {
-        Self { dt, max_steps }
+    fn py_new(dt: f64, max_steps: usize) -> pyo3::PyResult<Self> {
+        Self::try_new(dt, max_steps)
+            .map_err(|msg| pyo3::exceptions::PyValueError::new_err(msg))
     }
 }
 
@@ -88,8 +102,8 @@ impl IntegrationResult {
 impl IntegratorConfig {
     /// Create integrator configuration.
     #[wasm_bindgen(constructor)]
-    pub fn wasm_new(dt: f64, max_steps: usize) -> Self {
-        Self { dt, max_steps }
+    pub fn wasm_new(dt: f64, max_steps: usize) -> Result<Self, wasm_bindgen::JsValue> {
+        Self::try_new(dt, max_steps).map_err(wasm_bindgen::JsValue::from_str)
     }
 }
 
@@ -117,10 +131,12 @@ where
     F: Fn(f64, &[f64]) -> Vec<f64>,
     T: Fn(f64, &[f64]) -> bool,
 {
-    // DbC: Precondition validation
-    debug_assert!(config.dt > 0.0, "Time step must be positive");
-    debug_assert!(t_end > t_start, "t_end must be greater than t_start");
-    debug_assert!(
+    if let Err(msg) = IntegratorConfig::try_new(config.dt, config.max_steps) {
+        panic!("Invalid IntegratorConfig: {msg}");
+    }
+    assert!(t_start.is_finite() && t_end.is_finite(), "Times must be finite");
+    assert!(t_end > t_start, "t_end must be greater than t_start");
+    assert!(
         y0.iter().all(|v| v.is_finite()),
         "Initial state must be finite"
     );
@@ -438,5 +454,30 @@ mod tests {
 
         assert!(result.times.len() >= 2); // At least initial + 1 step
         assert!((result.states[0] - 42.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_try_new_rejects_invalid_dt_and_steps() {
+        assert!(IntegratorConfig::try_new(0.0, 10).is_err());
+        assert!(IntegratorConfig::try_new(-0.1, 10).is_err());
+        assert!(IntegratorConfig::try_new(f64::NAN, 10).is_err());
+        assert!(IntegratorConfig::try_new(0.01, 0).is_err());
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid IntegratorConfig")]
+    fn test_integrate_panics_on_invalid_config_in_release_mode() {
+        let bad = IntegratorConfig {
+            dt: 0.0,
+            max_steps: 100,
+        };
+        let _ = integrate(
+            |_t, _y| vec![1.0],
+            0.0,
+            1.0,
+            &[0.0],
+            &bad,
+            None::<fn(f64, &[f64]) -> bool>,
+        );
     }
 }
