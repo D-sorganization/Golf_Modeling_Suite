@@ -15,9 +15,12 @@ Tests cover:
 
 from __future__ import annotations
 
+from unittest.mock import MagicMock
+
 import pytest
 from pydantic import ValidationError
 
+from src.api.dependencies import get_engine_manager
 from src.api.models.requests import (
     VALID_CAMERA_PRESETS,
     VALID_CONTROL_STRATEGIES,
@@ -38,6 +41,8 @@ from src.api.models.responses import (
     SpeedControlResponse,
     TrajectoryRecordResponse,
 )
+from src.shared.python.engine_core.engine_manager import EngineManager
+from src.shared.python.engine_core.mock_engine import MockPhysicsEngine
 
 try:
     from fastapi.testclient import TestClient
@@ -291,6 +296,25 @@ def client():
         yield c
 
 
+@pytest.fixture()
+def loaded_engine_client():
+    """Create a test client with an active mock physics engine."""
+    if not HAS_FASTAPI:
+        pytest.skip("FastAPI not available")
+
+    engine = MockPhysicsEngine(num_joints=4)
+    engine.load_from_string("<mock/>")
+    mock_manager = MagicMock(spec=EngineManager)
+    mock_manager.get_active_physics_engine.return_value = engine
+
+    app.dependency_overrides[get_engine_manager] = lambda: mock_manager
+    try:
+        with TestClient(app) as c:
+            yield c
+    finally:
+        app.dependency_overrides.pop(get_engine_manager, None)
+
+
 class TestCameraPresetAPI:
     """Test camera preset endpoint."""
 
@@ -482,3 +506,15 @@ class TestControlFeaturesEndpoints:
         """GET /simulation/control-features returns 400 when no engine loaded."""
         resp = client.get("/simulation/control-features")
         assert resp.status_code == 400
+
+    def test_list_features_defaults_without_category(
+        self, loaded_engine_client
+    ) -> None:
+        """GET /dataset/features should accept omitted optional query params."""
+        resp = loaded_engine_client.get("/dataset/features")
+        assert resp.status_code == 200
+
+        data = resp.json()
+        assert isinstance(data, list)
+        assert len(data) > 0
+        assert all("category" in feature for feature in data)
