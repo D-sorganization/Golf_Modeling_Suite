@@ -29,7 +29,7 @@ Last-Updated: 2026-04-22T00:00:00-07:00
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.152                                            |
+| **Spec Version**        | 1.0.154                                            |
 | **Last Spec Update**    | 2026-04-22                                         |
 
 ## 2. Purpose & Mission
@@ -162,6 +162,7 @@ UpstreamDrift/
 | Provider Compatibility Harness | `src/launchers/launcher_provider_compatibility.py`         | Validates that launcher model entries expose resolvable provider roots, artifacts, working directories, and import paths                  |
 | Humanoid URDF Generator        | `src/shared/python/humanoid_character_builder/generators/` | Generates humanoid URDFs via a thin public orchestrator backed by focused model-building and XML-emission helpers                         |
 | URDF Models                    | `shared/models/`                                           | Canonical model definitions (URDF format) for golf swings, human body, pendulums                                                          |
+| Development Audit Notes        | `docs/development/`                                        | Captures bounded audit findings, including justified generated or vendored documentation asset hotspots                                   |
 
 ## 5. Desired Functionality
 
@@ -499,11 +500,12 @@ pytest tests/ --cov=src --cov-fail-under=70
 - Performance scaling beyond 100-muscle models not yet tested
 
 ## 12. Change Log
+| 2026-04-22 | 1.0.153 | Performance optimization: Replaced `np.linalg.norm(x)` with `np.sqrt(np.vdot(x, x))` and updated `np.sqrt(sum of squares)` to `math.hypot(*x)` for faster array reduction computations. |
 | 2026-04-20 | 1.0.95  | Performance optimization: Replaced generator expression `math.sqrt(sum(...))` with `math.dist(a,b)` for distance calculations to push execution entirely into C, resulting in an ~8x speedup.  |
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2024-05-24 | 1.0.152 | Bolt: Optimize ball roll physics vector magnitudes using math.hypot |
+| 2026-04-22 | 1.0.154 | Bolt: Optimize ball roll physics vector magnitudes using math.hypot. |
 | 2026-04-22 | 1.0.151 | Issue #2956 duplicate filename cluster review: documented the intentional `__main__`, analyzer/base, `code_quality_check`, and MATLAB `codeIssuesGUI` filename clusters and added unit regression coverage for shared code-quality delegation plus mirrored MATLAB GUI copies. |
 | 2026-04-22 | 1.0.147 | Type-check configuration cleanup: removed the global `mypy_path = "stubs"` setting so repository-local stubs are no longer injected into every mypy invocation after the Pinocchio follow-up branch was reduced to configuration cleanup. |
 | 2026-04-22 | 1.0.146 | Issue #2918/#2919/#2922/#2928 follow-up: MuJoCo contact-force accumulation now uses contact geom body ownership to return the force on the modeled system for either world-as-geom ordering, and humanoid URDF contract parsing now safely falls back from invalid filesystem paths to raw XML text parsing. |
