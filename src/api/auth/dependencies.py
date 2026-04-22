@@ -16,6 +16,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from src.api.database import get_db
+from src.shared.python.config.environment import is_auth_disabled
 
 from .models import APIKey, User, UserRole
 from .security import (
@@ -25,15 +26,38 @@ from .security import (
     usage_tracker,
 )
 
-# Security scheme
-security = HTTPBearer()
+# Security scheme. Auth dependencies decide whether missing credentials are
+# allowed so local-mode routes can bypass auth before FastAPI emits a 401.
+security = HTTPBearer(auto_error=False)
+
+
+def _missing_credentials_exception() -> HTTPException:
+    return HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Not authenticated",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+
+def _local_admin_user() -> User:
+    user = User()
+    user.id = 0
+    user.email = "local@localhost"
+    user.role = UserRole.ADMIN.value
+    user.is_active = True
+    user.api_calls_this_month = 0
+    user.video_analyses_this_month = 0
+    user.simulations_this_month = 0
+    return user
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    credentials: HTTPAuthorizationCredentials | None = Depends(security),
     db: Session = Depends(get_db),
 ) -> User:
     """Get current authenticated user from JWT token."""
+    if credentials is None:
+        raise _missing_credentials_exception()
 
     # Verify JWT token
     payload = security_manager.verify_token(credentials.credentials, "access")
@@ -159,7 +183,7 @@ def _update_api_key_usage(api_key_record: APIKey, db: Session) -> None:
 
 
 async def get_current_user_from_api_key(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    credentials: HTTPAuthorizationCredentials | None = Depends(security),
     db: Session = Depends(get_db),
 ) -> User:
     """Get current user from API key.
@@ -169,7 +193,7 @@ async def get_current_user_from_api_key(
     """
 
     if credentials is None:
-        raise ValueError("credentials must be provided")
+        raise _missing_credentials_exception()
     api_key = credentials.credentials
     _validate_api_key_format(api_key)
 
@@ -188,13 +212,15 @@ async def get_current_user_from_api_key(
 
 
 async def get_current_user_flexible(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    credentials: HTTPAuthorizationCredentials | None = Depends(security),
     db: Session = Depends(get_db),
 ) -> User:
     """Get current user from either JWT token or API key."""
 
     if credentials is None:
-        raise ValueError("credentials must be provided")
+        if is_auth_disabled():
+            return _local_admin_user()
+        raise _missing_credentials_exception()
     token = credentials.credentials
 
     # Try API key first (if it starts with gms_)
@@ -232,6 +258,9 @@ def check_usage_quota(resource_type: str) -> Callable[[User, Session], User]:
         db: Session = Depends(get_db),
     ) -> User:
         """Enforce usage quota for the given resource type."""
+        if is_auth_disabled():
+            return current_user
+
         if not usage_tracker.check_quota(current_user, resource_type):
             user_role = UserRole(current_user.role)
             from .models import SUBSCRIPTION_QUOTAS

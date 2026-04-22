@@ -12,7 +12,7 @@
 //! ## Design Principles
 //!
 //! - **TDD**: Tests written before implementation
-//! - **DbC**: Precondition validation via `debug_assert!`
+//! - **DbC**: Public precondition validation runs in release and debug builds
 //! - **DRY**: Consumes `tools-core` for math primitives
 
 pub mod aerodynamics;
@@ -133,6 +133,14 @@ pub fn wasm_compute_aero_forces(
 ) -> Result<JsValue, JsValue> {
     let velocity = Vector3::new(vx, vy, vz);
     let spin = Vector3::new(sx, sy, sz);
+    if ![vx, vy, vz, sx, sy, sz]
+        .iter()
+        .all(|value| value.is_finite())
+    {
+        return Err(JsValue::from_str(
+            "velocity and spin components must be finite",
+        ));
+    }
     let ball = aerodynamics::AeroBallProperties::default();
     let mut air = aerodynamics::AirProperties::default();
     air.density = air_density;

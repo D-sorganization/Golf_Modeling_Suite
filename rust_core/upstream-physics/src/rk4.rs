@@ -263,6 +263,46 @@ where
 mod tests {
     use super::*;
 
+    #[test]
+    fn test_integrator_config_rejects_invalid_public_values() {
+        assert!(IntegratorConfig {
+            dt: 0.0,
+            max_steps: 1,
+        }
+        .validate()
+        .is_err());
+        assert!(IntegratorConfig {
+            dt: f64::NAN,
+            max_steps: 1,
+        }
+        .validate()
+        .is_err());
+        assert!(IntegratorConfig {
+            dt: 0.001,
+            max_steps: 0,
+        }
+        .validate()
+        .is_err());
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid RK4 integrator configuration")]
+    fn test_integrate_rejects_zero_dt_in_release_mode() {
+        let config = IntegratorConfig {
+            dt: 0.0,
+            max_steps: 10,
+        };
+        let f = |_t: f64, y: &[f64]| vec![-y[0]];
+        integrate(
+            f,
+            0.0,
+            1.0,
+            &[1.0],
+            &config,
+            None::<fn(f64, &[f64]) -> bool>,
+        );
+    }
+
     /// Test 1: Simple exponential decay dy/dt = -y, y(0) = 1.
     /// Exact solution: y(t) = exp(-t).
     #[test]

@@ -167,12 +167,13 @@ pub fn compute_aero_forces(
         velocity.x.is_finite() && velocity.y.is_finite() && velocity.z.is_finite(),
         "DbC: velocity must be finite"
     );
-    debug_assert!(
+    assert!(
         spin.x.is_finite() && spin.y.is_finite() && spin.z.is_finite(),
         "DbC: spin must be finite"
     );
-    debug_assert!(air.density >= 0.0, "DbC: air density must be non-negative");
-    debug_assert!(ball.area > 0.0, "DbC: ball area must be positive");
+    ball.validate()
+        .expect("invalid aerodynamic ball properties");
+    air.validate().expect("invalid air properties");
 
     let drag = compute_drag(velocity, ball, air);
     let lift = compute_lift(velocity, spin, ball, air);
@@ -441,6 +442,63 @@ mod tests {
 
     fn default_air() -> AirProperties {
         AirProperties::default()
+    }
+
+    #[test]
+    fn test_air_properties_reject_invalid_public_values() {
+        assert!(AirProperties {
+            density: f64::NAN,
+            ..AirProperties::default()
+        }
+        .validate()
+        .is_err());
+        assert!(AirProperties {
+            viscosity: 0.0,
+            ..AirProperties::default()
+        }
+        .validate()
+        .is_err());
+        assert!(AirProperties {
+            temperature: -1.0,
+            ..AirProperties::default()
+        }
+        .validate()
+        .is_err());
+    }
+
+    #[test]
+    fn test_aero_ball_properties_reject_invalid_public_values() {
+        assert!(AeroBallProperties {
+            mass: 0.0,
+            ..AeroBallProperties::default()
+        }
+        .validate()
+        .is_err());
+        assert!(AeroBallProperties {
+            radius: -0.1,
+            area: 0.01,
+            ..AeroBallProperties::default()
+        }
+        .validate()
+        .is_err());
+        assert!(AeroBallProperties {
+            spin_decay_rate: f64::INFINITY,
+            ..AeroBallProperties::default()
+        }
+        .validate()
+        .is_err());
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid aerodynamic ball properties")]
+    fn test_compute_aero_forces_rejects_invalid_ball_in_release_mode() {
+        let velocity = Vector3::new(10.0, 0.0, 0.0);
+        let spin = Vector3::new(0.0, 0.0, 100.0);
+        let ball = AeroBallProperties {
+            mass: 0.0,
+            ..AeroBallProperties::default()
+        };
+        let _ = compute_aero_forces(&velocity, &spin, &ball, &AirProperties::default());
     }
 
     // ── Drag Tests ───────────────────────────────────────────────────────

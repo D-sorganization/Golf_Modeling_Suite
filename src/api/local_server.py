@@ -21,11 +21,11 @@ Diagnostic Features:
 
 from __future__ import annotations
 
-import logging
 import mimetypes
 import os
 import secrets
 import time
+from collections.abc import Callable
 from pathlib import Path
 from secrets import compare_digest
 from typing import Any
@@ -77,8 +77,6 @@ from src.api.services.chat_service import ChatService  # noqa: E402
 from src.shared.python.engine_core.engine_manager import EngineManager  # noqa: E402
 from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
 
-logger = logging.getLogger(__name__)
-
 logger = get_logger(__name__)
 
 # API versioning constants (#2070)
@@ -95,6 +93,34 @@ _startup_metrics: dict[str, Any] = {
     "engines_loaded": [],
     "errors": [],
 }
+
+
+class _LazyServiceProxy:
+    """Lazily instantiate heavy API services on first attribute access."""
+
+    def __init__(self, factory: Callable[[], Any]) -> None:
+        self._factory = factory
+        self._service: Any | None = None
+
+    def _resolve(self) -> Any:
+        if self._service is None:
+            self._service = self._factory()
+        return self._service
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._resolve(), name)
+
+
+def _create_simulation_service(engine_manager: EngineManager) -> Any:
+    from src.api.services.simulation_service import SimulationService
+
+    return SimulationService(engine_manager)
+
+
+def _create_analysis_service(engine_manager: EngineManager) -> Any:
+    from src.api.services.analysis_service import AnalysisService
+
+    return AnalysisService(engine_manager)
 
 
 def _resolve_ui_dist_path() -> Path:
@@ -730,6 +756,12 @@ def create_local_app() -> FastAPI:
 
     # Store in app state for dependency injection
     app.state.engine_manager = engine_manager
+    app.state.simulation_service = _LazyServiceProxy(
+        lambda: _create_simulation_service(engine_manager)
+    )
+    app.state.analysis_service = _LazyServiceProxy(
+        lambda: _create_analysis_service(engine_manager)
+    )
     app.state.chat_service = ChatService()
 
     # Register routes (no auth required in local mode)

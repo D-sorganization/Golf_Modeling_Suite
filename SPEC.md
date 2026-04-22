@@ -1,6 +1,6 @@
 # SPEC.md — Repository Specification Document
 
-Last-Updated: 2026-04-22T00:00:00-07:00
+Last-Updated: 2026-04-22T15:02:00-07:00
 
 <!--
   TEMPLATE VERSION: 1.0.0
@@ -29,7 +29,7 @@ Last-Updated: 2026-04-22T00:00:00-07:00
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.160                                            |
+| **Spec Version**        | 1.0.163                                            |
 | **Last Spec Update**    | 2026-04-22                                         |
 
 ## 2. Purpose & Mission
@@ -200,6 +200,7 @@ UpstreamDrift/
 - `GET /api/launcher/manifest` — Return launcher tile metadata for the UI shell
 - `GET /api/launcher/logos/{logo_name}` — Serve launcher logos only from approved asset roots using traversal-safe path resolution
 - Local launcher account authentication remains disabled in local mode, but mutating launcher subprocess endpoints (`POST /api/launcher/launch/{tile_id}` and `POST /api/launcher/stop/{name}`) require the startup launcher capability token in the custom header advertised by `/api/launcher/manifest`; browser requests with non-loopback `Origin` or `Referer` values are rejected before launch/stop side effects.
+- Local server startup and request diagnostics use the shared structured logger from `src/shared/python/logging_pkg/logging_config.py`; `src/api/local_server.py` keeps a single module logger binding to avoid silently shadowing handlers or log levels.
 - SPA/static asset fallback serving under `ui/dist` resolves requested paths through traversal-safe joins and refuses absolute paths, `..` escapes, NUL bytes, and symlink escapes
 - URDF/MJCF model discovery and `/models/{model_name}/urdf` serving resolve candidates through approved model roots, reject symlink escapes outside those roots, and re-check containment immediately before reading file contents
 - Pinocchio adapter vector APIs fail fast on dimension mismatch. `set_control`, `compute_control_acceleration`, `compute_ztcf`, and `compute_zvcf` raise `ValueError` before mutating or dispatching when vector lengths do not match the loaded model, and the message names the vector plus the expected and actual dimensions.
@@ -511,6 +512,9 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-22 | 1.0.163 | Local-mode API quota dependencies now use optional bearer parsing and return a local admin user when authentication is disabled, preserving no-auth simulation/video test behavior while keeping cloud-mode routes protected by 401 responses for missing credentials. |
+| 2026-04-22 | 1.0.162 | Issue #3011: `create_local_app()` now initializes `SimulationService` and `AnalysisService` in app state, aligning local-server startup with dependency-injection requirements so simulation/analysis dependencies no longer raise 503 due to missing service wiring. Added a local-server regression test that resolves both services via dependency helpers. |
+| 2026-04-22 | 1.0.161 | Issue #3016: `GET /dataset/features` now accepts omitted/null `category` query parameters as intended by the route signature, removing contradictory route-level `ValueError` guards and adding route regression coverage for default and explicit `category=None` handling. |
 | 2026-04-22 | 1.0.160 | Issue #2987: Rust physics public boundaries now validate RK4 configuration, integration spans, finite state vectors, aerodynamics properties, spin decay, and ball-flight inputs in release builds, with Python `ValueError` and WASM `JsValue` errors for invalid calls. |
 | 2026-04-22 | 1.0.159 | Issue #2988: model registry loading now supports explicit strict validation for CI/cross-engine paths, including malformed legacy entries, malformed provider manifests, missing required model IDs, and nightly cross-engine validation env wiring. |
 | 2026-04-22 | 1.0.158 | Issue #2986 follow-up: Rust and Python `ContactParameters` defaults now use the same z-up surface normal as ball-flight gravity/height conventions, while explicit y-up contact tests continue to pass with explicit normals. |
@@ -703,6 +707,8 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 ## Changelog
 
+- 2026-04-22: Removed the duplicate `logging.getLogger(__name__)` assignment from `src/api/local_server.py` so the local server consistently uses the shared structured logger, with regression coverage guarding against logger shadowing.
+- 2026-04-22: Added release-mode validation for Rust upstream-physics public RK4, aerodynamic, and ball-flight inputs so Python/WASM constructors return typed boundary errors and invalid simulation parameters fail before producing NaNs or repeated states.
 - 2026-04-22: Guarded MuJoCo contact-force body lookups against negative non-geom contact IDs so flex or other non-geom contacts are skipped instead of indexing the wrong `geom_bodyid` entry.
 - 2026-04-22: Updated humanoid URDF contract parseroot behavior to preserve real filesystem/permission I/O errors for existing path inputs while retaining raw-XML fallback for non-path-like or non-existent path inputs.
 - 2026-04-22: Added a launcher/archivist workflow token fallback for runner discovery and branch cleanup, and bounded property-based rotation/skew/numerical tests to reduce CI timeout risk.
