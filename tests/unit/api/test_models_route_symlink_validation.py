@@ -16,7 +16,7 @@ def _write_urdf(path: Path, robot_name: str) -> None:
         (
             f'<robot name="{robot_name}">'
             '<link name="base_link">'
-            "<visual><geometry><box size=\"1 1 1\"/></geometry></visual>"
+            '<visual><geometry><box size="1 1 1"/></geometry></visual>'
             "</link>"
             "</robot>"
         ),
@@ -61,9 +61,7 @@ def test_discover_models_skips_escape_symlink_and_keeps_internal_symlink(
     assert "models/escape.urdf" not in paths
 
 
-def test_get_model_urdf_serves_nested_model(
-    tmp_path, monkeypatch
-) -> None:
+def test_get_model_urdf_serves_nested_model(tmp_path, monkeypatch) -> None:
     """A normal nested model should still be discovered and served."""
     models_dir = tmp_path / "models"
     nested_dir = models_dir / "nested"
@@ -75,9 +73,7 @@ def test_get_model_urdf_serves_nested_model(
     monkeypatch.setattr(models_module, "_find_project_root", lambda: tmp_path)
     monkeypatch.setattr(models_module, "_MODEL_DIRS", [Path("models")])
 
-    response = asyncio.run(
-        models_module.get_model_urdf("nested_leg", logger=None)
-    )
+    response = asyncio.run(models_module.get_model_urdf("nested_leg", logger=None))
 
     assert response.model_name == "nested_leg"
     assert response.root_link == "base_link"
