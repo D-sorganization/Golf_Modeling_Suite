@@ -262,15 +262,15 @@ class TestDragModel:
     def test_cd_continuity(self) -> None:
         """Test effective coefficient is continuous (Issue #2969)."""
         model = DragModel(reynolds_correction=True, base_coefficient=0.20)
-        
+
         speeds = np.linspace(5.0, 80.0, 500)
         cds = [
             model.get_effective_coefficient(np.array([s, 0.0, 0.0]), air_density=1.225)
             for s in speeds
         ]
-        
+
         # Max change between adjacent finely-spaced samples should be very small
-        max_diff = max(abs(cds[i] - cds[i-1]) for i in range(1, len(cds)))
+        max_diff = max(abs(cds[i] - cds[i - 1]) for i in range(1, len(cds)))
         assert max_diff < 0.01, f"Found discontinuity in Cd: max jump {max_diff}"
 
 
