@@ -50,6 +50,7 @@ from .services.analysis_service import AnalysisService
 from .services.simulation_service import SimulationService
 from .task_manager import TaskManager
 from .utils.tracing import RequestTracer
+from .versioning import get_app_version
 
 setup_logging()
 logger = get_logger(__name__)
@@ -60,20 +61,6 @@ limiter = Limiter(key_func=get_remote_address)
 # API version constant
 API_VERSION = "v1"
 API_PREFIX = f"/api/{API_VERSION}"
-
-
-def _get_package_version() -> str:
-    """Read the package version from installed metadata.
-
-    Falls back to a hardcoded default if the package is not installed
-    in the environment (e.g. editable development install).  (Fixes #3013)
-    """
-    try:
-        from importlib.metadata import version as get_version
-
-        return get_version("upstream-drift")
-    except Exception:
-        return "0.0.0-dev"
 
 
 def _init_video_pipeline() -> Any:
@@ -189,7 +176,7 @@ app = FastAPI(
         f"All endpoints are available under `{API_PREFIX}/` prefix.\n"
         "Legacy un-prefixed routes are maintained for backward compatibility."
     ),
-    version=_get_package_version(),
+    version=get_app_version(),
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_tags=[
