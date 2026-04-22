@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 
 from src.api.database import get_db
 
+from .middleware import is_local_mode
 from .models import APIKey, User, UserRole
 from .security import (
     RoleChecker,
@@ -232,6 +233,9 @@ def check_usage_quota(resource_type: str) -> Callable[[User, Session], User]:
         db: Session = Depends(get_db),
     ) -> User:
         """Enforce usage quota for the given resource type."""
+        if is_local_mode():
+            return current_user
+
         if not usage_tracker.check_quota(current_user, resource_type):
             user_role = UserRole(current_user.role)
             from .models import SUBSCRIPTION_QUOTAS
