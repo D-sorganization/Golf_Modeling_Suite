@@ -25,9 +25,9 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 from fastapi import Depends
-from src.shared.python.logging_pkg.logging_config import get_logger
 
 from src.api.auth.dependencies import CheckSimulationQuota, CheckVideoQuota
+from src.shared.python.logging_pkg.logging_config import get_logger
 
 if TYPE_CHECKING:
     from fastapi import APIRouter, FastAPI

@@ -22,6 +22,7 @@ from typing import Any
 
 from model_generation.converters.urdf_parser import ParsedModel, URDFParser
 from model_generation.core.contracts import postcondition, precondition
+
 from src.shared.python.security.security_utils import validate_url_https_only
 
 logger = logging.getLogger(__name__)
@@ -625,7 +626,9 @@ class ModelLibrary:
         try:
             import urllib.request
 
-            with urllib.request.urlopen(api_url) as response:  # nosec B310 - GitHub API URL from trusted constants
+            with urllib.request.urlopen(
+                api_url
+            ) as response:  # nosec B310 - GitHub API URL from trusted constants
                 contents = json.loads(response.read().decode())
 
             # Look for URDF and MJCF files
@@ -654,7 +657,9 @@ class ModelLibrary:
                     # Check subdirectory for model files
                     subdir_url = item["url"]
                     try:
-                        with urllib.request.urlopen(subdir_url) as sub_response:  # nosec B310 - URL from GitHub API response
+                        with urllib.request.urlopen(
+                            subdir_url
+                        ) as sub_response:  # nosec B310 - URL from GitHub API response
                             sub_contents = json.loads(sub_response.read().decode())
                         for sub_item in sub_contents:
                             if sub_item["type"] != "file":
@@ -733,7 +738,9 @@ class ModelLibrary:
             urdf_filename = source_url.split("/")[-1]
             local_path = cache_dir / urdf_filename
 
-            urllib.request.urlretrieve(source_url, local_path)  # nosec B310 - URL validated above
+            urllib.request.urlretrieve(
+                source_url, local_path
+            )  # nosec B310 - URL validated above
 
             entry.urdf_path = local_path
             entry.is_cached = True

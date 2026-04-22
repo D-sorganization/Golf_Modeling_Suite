@@ -24,6 +24,7 @@ from pathlib import Path
 
 import mujoco
 import numpy as np
+
 from src.shared.python.engine_core.engine_availability import PINOCCHIO_AVAILABLE
 from src.shared.python.logging_pkg.logging_config import get_logger
 
@@ -74,9 +75,7 @@ class PinocchioWrapper:
             ImportError: If Pinocchio is not installed
         """
         if not PINOCCHIO_AVAILABLE:
-            msg = (
-                "Pinocchio is required but not installed. Install with: pip install pin"  # noqa: E501
-            )
+            msg = "Pinocchio is required but not installed. Install with: pip install pin"  # noqa: E501
             raise ImportError(msg)
 
         self.model = model

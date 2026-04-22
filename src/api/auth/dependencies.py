@@ -14,6 +14,7 @@ except ImportError:
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
+
 from src.api.database import get_db
 
 from .middleware import is_local_mode

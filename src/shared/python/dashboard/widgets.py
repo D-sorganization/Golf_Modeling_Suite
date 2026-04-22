@@ -16,13 +16,13 @@ from typing import Any, cast
 import numpy as np
 from matplotlib.axes import Axes
 from PyQt6 import QtCore, QtGui, QtWidgets
+
 from src.shared.python.dashboard.advanced_analysis import AdvancedAnalysisDialog
+from src.shared.python.data_io.export import export_recording_all_formats
 from src.shared.python.engine_core.interfaces import RecorderInterface
 from src.shared.python.logging_pkg.logging_config import get_logger
-from src.shared.python.signal_toolkit.signal_processing import compute_psd
-
-from src.shared.python.data_io.export import export_recording_all_formats
 from src.shared.python.plotting import MplCanvas
+from src.shared.python.signal_toolkit.signal_processing import compute_psd
 
 logger = get_logger(__name__)
 
@@ -713,9 +713,7 @@ class LivePlotWidget(QtWidgets.QWidget):
                 label = (
                     dim_label
                     if n_dims == 1
-                    else f"{dim_label} {i}"
-                    if plot_mode != "Norm"
-                    else "Norm"
+                    else f"{dim_label} {i}" if plot_mode != "Norm" else "Norm"
                 )
                 if plot_mode == "All Dimensions":
                     label = f"Dim {i}"

@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi import HTTPException
+
 from src.api.auth.models import User
 
 
@@ -14,9 +15,8 @@ class TestQuotaDependencyDefaults:
 
     def test_local_mode_bypasses_quota_enforcement(self) -> None:
         """Local mode should return the current user without checking quota."""
-        from src.api.auth.middleware import LocalUser
-
         from src.api.auth.dependencies import check_usage_quota
+        from src.api.auth.middleware import LocalUser
 
         dependency = check_usage_quota("simulations")
         current_user = LocalUser()

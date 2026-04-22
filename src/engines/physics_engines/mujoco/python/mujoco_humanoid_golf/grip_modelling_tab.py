@@ -17,6 +17,7 @@ from typing import Any
 import mujoco
 import numpy as np
 from PyQt6 import QtCore, QtGui, QtWidgets
+
 from src.shared.python.logging_pkg.logging_config import get_logger
 from src.shared.python.physics.grip_contact_model import (
     GripContactExporter,
@@ -693,7 +694,9 @@ class GripModellingTab(QtWidgets.QWidget):
         for i in range(model.njnt):
             self._add_joint_control_row(i, model)
 
-    def _add_joint_control_row(self, i: int, model: mujoco.MjModel) -> None:  # noqa: PLR0915
+    def _add_joint_control_row(
+        self, i: int, model: mujoco.MjModel
+    ) -> None:  # noqa: PLR0915
         """Create a control row for a single joint."""
         if i is None:
             raise ValueError("i must be provided")

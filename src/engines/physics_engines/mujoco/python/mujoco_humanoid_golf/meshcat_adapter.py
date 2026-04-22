@@ -10,6 +10,7 @@ from typing import Any
 
 import mujoco
 import numpy as np
+
 from src.shared.python.biomechanics.biomechanics_data import BiomechanicalData
 from src.shared.python.logging_pkg.logging_config import get_logger
 
@@ -50,7 +51,9 @@ class MuJoCoMeshcatAdapter:
         logger.info(f"Meshcat initialized at {self.url}")
 
         # Determine host-accessible URL if in Docker
-        if os.environ.get("MESHCAT_HOST") == "0.0.0.0":  # nosec B104 - comparing env var value, not binding to an address
+        if (
+            os.environ.get("MESHCAT_HOST") == "0.0.0.0"
+        ):  # nosec B104 - comparing env var value, not binding to an address
             try:
                 port = self.url.split(":")[-1].split("/")[0]
                 host_url = f"http://127.0.0.1:{port}/static/"

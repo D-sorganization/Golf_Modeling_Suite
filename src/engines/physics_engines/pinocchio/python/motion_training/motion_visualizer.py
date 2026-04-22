@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
+
 from src.shared.python.engine_core.engine_availability import PINOCCHIO_AVAILABLE
 
 if TYPE_CHECKING:
@@ -448,7 +449,9 @@ class MotionVisualizer:
         else:
             indices = np.linspace(
                 0, trajectory.num_frames - 1, num_frames_to_show
-            ).astype(int)  # noqa: E501
+            ).astype(
+                int
+            )  # noqa: E501
 
         for i, idx in enumerate(indices):
             frame = trajectory.frames[idx]

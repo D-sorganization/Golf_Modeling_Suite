@@ -10,6 +10,7 @@ from enum import Enum
 from xml.dom import minidom
 
 import numpy as np
+
 from src.shared.python.logging_pkg.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -222,7 +223,9 @@ class URDFBuilder:
 
         # Pretty print the XML
         rough_string = ET.tostring(robot, encoding="unicode")
-        reparsed = minidom.parseString(rough_string)  # nosec B318 - parsing internally generated ET output
+        reparsed = minidom.parseString(
+            rough_string
+        )  # nosec B318 - parsing internally generated ET output
         return str(reparsed.toprettyxml(indent="  "))
 
     def _create_empty_urdf(self) -> str:
@@ -240,7 +243,9 @@ class URDFBuilder:
         ET.SubElement(geometry, "box", size="0.1 0.1 0.1")
 
         rough_string = ET.tostring(robot, encoding="unicode")
-        reparsed = minidom.parseString(rough_string)  # nosec B318 - parsing internally generated ET output
+        reparsed = minidom.parseString(
+            rough_string
+        )  # nosec B318 - parsing internally generated ET output
         return str(reparsed.toprettyxml(indent="  "))
 
     def _add_materials(self, robot: ET.Element) -> None:

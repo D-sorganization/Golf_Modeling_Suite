@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
+
 from src.shared.python.core.constants import GRAVITY_M_S2
 from src.shared.python.engine_core.engine_manager import EngineManager, EngineType
 from src.shared.python.logging_pkg.logging_config import get_logger
@@ -88,6 +89,7 @@ def test_pinocchio_energy_check():
         pytest.skip("Pinocchio not installed")
 
     import pinocchio
+
     from src.engines.physics_engines.pinocchio.python.pinocchio_physics_engine import (
         PinocchioPhysicsEngine,
     )
@@ -172,9 +174,9 @@ def test_pinocchio_energy_check():
     relative_error = max_error / abs(initial_energy)
     logger.info(f"Max Energy Error (Pinocchio RK4): {relative_error:.6%}")
 
-    assert relative_error < 1e-3, (
-        f"Pinocchio energy check failed. Relative error: {relative_error:.6%}"
-    )
+    assert (
+        relative_error < 1e-3
+    ), f"Pinocchio energy check failed. Relative error: {relative_error:.6%}"
 
 
 def test_drake_energy_conservation():
