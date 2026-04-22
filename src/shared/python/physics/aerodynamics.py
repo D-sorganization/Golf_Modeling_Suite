@@ -35,7 +35,6 @@ from dataclasses import dataclass, field, replace
 from typing import Any
 
 import numpy as np
-
 from src.shared.python.contracts import require, require_finite
 from src.shared.python.core.contracts import precondition
 from src.shared.python.core.physics_constants import (

@@ -19,8 +19,8 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
-
 from src.shared.python.core.constants import AIR_VISCOSITY_KG_M_S
+
 from src.shared.python.physics.aerodynamics import (
     AerodynamicsConfig,
     AerodynamicsEngine,
