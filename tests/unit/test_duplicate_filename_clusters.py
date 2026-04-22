@@ -26,7 +26,7 @@ def test_code_quality_check_wrappers_delegate_to_shared_implementation() -> None
     for relative_path in wrapper_paths:
         content = _read_text(relative_path)
         assert "from src.tools.code_quality_check import main" in content
-        assert "if __name__ == \"__main__\":" in content
+        assert 'if __name__ == "__main__":' in content
         assert content.count("def ") == 0
         assert content.count("main()") == 1
 
