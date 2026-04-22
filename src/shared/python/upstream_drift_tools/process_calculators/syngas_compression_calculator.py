@@ -101,23 +101,20 @@ else:
     except ImportError:
         from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
-# Import existing syngas water content utility
-# ruff: noqa: E402
+from .analysis_utils import evaluate_compression_result
 from .constants import (
     ATOL_ZERO,
     BAR_TO_PA,
     CELSIUS_TO_KELVIN_OFFSET,
-    COMPRESSION_HIGH_POWER_HP,
-    COMPRESSION_HIGH_PRESSURE_BAR,
-    COMPRESSION_MIN_EFFICIENCY,
-    COMPRESSION_TEMP_CRITICAL_K,
-    COMPRESSION_TEMP_WARNING_K,
     DEFAULT_GAMMA_DIATOMIC,
     INTERCOOLER_OUTLET_TEMP_K,
     R_GAS_J_MOL_K,
     SECONDS_PER_HOUR,
     WATTS_PER_HP,
 )
+
+# Import existing syngas water content utility
+# ruff: noqa: E402
 from .syngas_water_calculator import SyngasWaterCalculator  # noqa: E402
 
 # Import BaseCalculatorWidget for state management
@@ -432,75 +429,7 @@ class SyngasCompressionEngine:
         compression_result: dict[str, Any],
     ) -> dict[str, Any]:
         """Analyze process conditions and potential concerns"""
-        if compression_result is None:
-            raise ValueError("compression_result must be provided")
-        concerns = []
-        warnings = []
-        recommendations = []
-
-        final_temp = compression_result["final_temperature"]
-        final_pressure = compression_result["final_pressure"]
-        total_power = compression_result["total_power_hp"]
-
-        # Temperature concerns
-        if final_temp > COMPRESSION_TEMP_WARNING_K:  # 200 deg C
-            concerns.append("High final temperature may cause material degradation")
-            recommendations.append(
-                "Consider additional intercooling or heat exchangers",
-            )
-
-        if final_temp > COMPRESSION_TEMP_CRITICAL_K:  # 250 deg C
-            warnings.append("CRITICAL: Temperature exceeds safe operating limits")
-
-        # Pressure concerns
-        if final_pressure > COMPRESSION_HIGH_PRESSURE_BAR:
-            concerns.append(
-                "High pressure requires special equipment and safety measures",
-            )
-            recommendations.append(
-                "Verify equipment pressure ratings and safety systems",
-            )
-
-        # Power concerns
-        # Power concerns
-        if total_power > COMPRESSION_HIGH_POWER_HP:
-            concerns.append("High power requirement - consider multiple compressors")
-            recommendations.append("Evaluate economic feasibility of compression train")
-
-        # Water dropout analysis
-        total_water_dropout = sum(
-            stage["water_dropout"]["water_dropout"]
-            for stage in compression_result["stages"]
-        )
-        if total_water_dropout > ATOL_ZERO:
-            warnings.append(f"Water dropout detected: {total_water_dropout:.2f} mol%")
-            recommendations.append("Install water knockout drums and drainage systems")
-
-        # Efficiency analysis
-        isentropic_stages = [
-            stage
-            for stage in compression_result["stages"]
-            if stage["work_isentropic"] is not None
-        ]
-        if isentropic_stages:
-            efficiencies = [
-                stage["work_actual"] / stage["work_isentropic"]
-                for stage in isentropic_stages
-            ]
-            avg_efficiency = sum(efficiencies) / len(efficiencies)
-            if avg_efficiency < COMPRESSION_MIN_EFFICIENCY:
-                concerns.append("Low compression efficiency detected")
-                recommendations.append("Consider compressor maintenance or replacement")
-        else:
-            avg_efficiency = None
-
-        return {
-            "concerns": concerns,
-            "warnings": warnings,
-            "recommendations": recommendations,
-            "total_water_dropout": total_water_dropout,
-            "average_efficiency": avg_efficiency,
-        }
+        return evaluate_compression_result(compression_result)
 
 
 class CompressionCalculationWorker(QThread):
