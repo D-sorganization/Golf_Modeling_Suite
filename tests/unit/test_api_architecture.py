@@ -104,7 +104,9 @@ class TestRouteRegistry:
             r for r in test_app.routes if getattr(r, "path", "") == "/test/simulate"
         )
         video_route = next(
-            r for r in test_app.routes if getattr(r, "path", "") == "/test/analyze/video"
+            r
+            for r in test_app.routes
+            if getattr(r, "path", "") == "/test/analyze/video"
         )
 
         simulation_dependencies = [
