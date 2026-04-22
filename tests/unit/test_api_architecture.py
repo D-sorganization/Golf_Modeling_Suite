@@ -90,6 +90,16 @@ class TestRouteRegistry:
         prefixed = [p for p in route_paths if p.startswith("/api/v1")]
         assert len(prefixed) > 0
 
+    def test_engine_probe_load_routes_do_not_double_api_prefix(self) -> None:
+        """Engine routes should be relative so prefixes don't produce `/api/api/...` paths."""
+        from pathlib import Path
+
+        source = Path("src/api/routes/engines.py").read_text(encoding="utf-8")
+        assert '@router.get("/engines/{engine_name}/probe")' in source
+        assert '@router.post("/engines/{engine_name}/load")' in source
+        assert '@router.get("/api/engines/{engine_name}/probe")' not in source
+        assert '@router.post("/api/engines/{engine_name}/load")' not in source
+
     def test_expensive_route_modules_receive_quota_dependencies(self) -> None:
         """Simulation and video routes receive quota dependencies at registration."""
         from fastapi import FastAPI

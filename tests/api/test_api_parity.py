@@ -93,20 +93,20 @@ class TestEngineEndpoints:
         ["mujoco", "drake", "pinocchio", "putting_green"],
     )
     def test_probe_known_engine(self, client: TestClient, engine_name: str) -> None:
-        """GET /api/engines/{name}/probe returns probe data for known engines."""
-        response = client.get(f"/api/engines/{engine_name}/probe")
+        """GET /engines/{name}/probe returns probe data for known engines."""
+        response = client.get(f"/engines/{engine_name}/probe")
         assert response.status_code == 200
         data = response.json()
         assert "available" in data
 
     def test_probe_unknown_engine(self, client: TestClient) -> None:
-        """GET /api/engines/{name}/probe handles unknown engines gracefully."""
-        response = client.get("/api/engines/totally_fake_engine/probe")
+        """GET /engines/{name}/probe handles unknown engines gracefully."""
+        response = client.get("/engines/totally_fake_engine/probe")
         assert response.status_code in [200, 400, 404]
 
     def test_load_engine_via_api_path(self, client: TestClient) -> None:
-        """POST /api/engines/{name}/load accepts valid engine name."""
-        response = client.post("/api/engines/putting_green/load")
+        """POST /engines/{name}/load accepts valid engine name."""
+        response = client.post("/engines/putting_green/load")
         # May succeed (200) or fail due to missing module (400/500)
         assert response.status_code in [200, 400, 500]
 
