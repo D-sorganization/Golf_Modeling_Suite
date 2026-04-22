@@ -29,7 +29,7 @@ Last-Updated: 2026-04-22T00:00:00-07:00
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.154                                            |
+| **Spec Version**        | 1.0.155                                            |
 | **Last Spec Update**    | 2026-04-22                                         |
 
 ## 2. Purpose & Mission
@@ -691,6 +691,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 ## Changelog
 
+- 2026-04-22: Updated humanoid URDF contract parseroot behavior to preserve real filesystem/permission I/O errors for existing path inputs while retaining raw-XML fallback for non-path-like or non-existent path inputs.
 - 2026-04-22: Added a launcher/archivist workflow token fallback for runner discovery and branch cleanup, and bounded property-based rotation/skew/numerical tests to reduce CI timeout risk.
 - 2026-04-22: Hardened launcher process cwd validation so Windows path test doubles and temp-directory launch targets are handled without relying on `Path.resolve()`, preserving immediate-death launch diagnostics while rejecting out-of-policy paths.
 - 2026-04-22: Removed global mypy `stubs` path injection after Pinocchio follow-up cleanup so type-checking uses default import resolution unless a caller opts in.
