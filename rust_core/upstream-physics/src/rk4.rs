@@ -13,9 +13,13 @@
 //! # Design by Contract
 //!
 //! - `dt > 0` (positive time step)
+//! - `max_steps > 0` (non-zero safety limit)
 //! - `t_end > t_start` (forward integration)
 //! - State vector must be finite (no NaN/Inf)
 
+use crate::validation::{
+    finite_scalar, finite_slice, positive_finite, positive_steps, PhysicsResult,
+};
 use serde::{Deserialize, Serialize};
 
 /// Configuration for the RK4 integrator.
@@ -38,13 +42,28 @@ impl Default for IntegratorConfig {
     }
 }
 
+impl IntegratorConfig {
+    /// Create a validated RK4 configuration for all public build modes.
+    pub fn try_new(dt: f64, max_steps: usize) -> PhysicsResult<Self> {
+        positive_finite("dt", dt)?;
+        positive_steps(max_steps)?;
+        Ok(Self { dt, max_steps })
+    }
+
+    /// Validate a configuration received through serde or a struct literal.
+    pub fn validate(&self) -> PhysicsResult<()> {
+        positive_finite("dt", self.dt)?;
+        positive_steps(self.max_steps)
+    }
+}
+
 #[cfg(feature = "python")]
 #[pyo3::prelude::pymethods]
 impl IntegratorConfig {
     #[new]
     #[pyo3(signature = (dt=0.001, max_steps=100_000))]
-    fn py_new(dt: f64, max_steps: usize) -> Self {
-        Self { dt, max_steps }
+    fn py_new(dt: f64, max_steps: usize) -> pyo3::PyResult<Self> {
+        Self::try_new(dt, max_steps).map_err(pyo3::exceptions::PyValueError::new_err)
     }
 }
 
@@ -88,8 +107,8 @@ impl IntegrationResult {
 impl IntegratorConfig {
     /// Create integrator configuration.
     #[wasm_bindgen(constructor)]
-    pub fn wasm_new(dt: f64, max_steps: usize) -> Self {
-        Self { dt, max_steps }
+    pub fn wasm_new(dt: f64, max_steps: usize) -> Result<Self, wasm_bindgen::JsValue> {
+        Self::try_new(dt, max_steps).map_err(|e| wasm_bindgen::JsValue::from_str(&e))
     }
 }
 
@@ -103,8 +122,9 @@ impl IntegratorConfig {
 /// * `config` - Integrator configuration
 /// * `terminate` - Optional early termination: `terminate(t, state) -> bool`
 ///
-/// # Panics (debug only)
-/// Panics if `dt <= 0`, `t_end <= t_start`, or initial state contains NaN.
+/// # Panics
+/// Panics if public preconditions fail. Use [`try_integrate`] to handle
+/// validation errors without panicking.
 pub fn integrate<F, T>(
     f: F,
     t_start: f64,
@@ -117,6 +137,33 @@ where
     F: Fn(f64, &[f64]) -> Vec<f64>,
     T: Fn(f64, &[f64]) -> bool,
 {
+    try_integrate(f, t_start, t_end, y0, config, terminate)
+        .unwrap_or_else(|err| panic!("invalid RK4 integration inputs: {err}"))
+}
+
+/// Integrate an ODE using RK4 after runtime precondition validation.
+pub fn try_integrate<F, T>(
+    f: F,
+    t_start: f64,
+    t_end: f64,
+    y0: &[f64],
+    config: &IntegratorConfig,
+    terminate: Option<T>,
+) -> PhysicsResult<IntegrationResult>
+where
+    F: Fn(f64, &[f64]) -> Vec<f64>,
+    T: Fn(f64, &[f64]) -> bool,
+{
+    config.validate()?;
+    finite_scalar("t_start", t_start)?;
+    finite_scalar("t_end", t_end)?;
+    if t_end <= t_start {
+        return Err(format!(
+            "t_end must be greater than t_start, got {t_end} <= {t_start}"
+        ));
+    }
+    finite_slice("initial state", y0)?;
+
     // DbC: Precondition validation
     debug_assert!(config.dt > 0.0, "Time step must be positive");
     debug_assert!(t_end > t_start, "t_end must be greater than t_start");
@@ -190,24 +237,24 @@ where
         // Check termination
         if let Some(ref term) = terminate {
             if term(t, &y) {
-                return IntegrationResult {
+                return Ok(IntegrationResult {
                     times,
                     states,
                     state_dim,
                     steps_taken: steps,
                     completed: false,
-                };
+                });
             }
         }
     }
 
-    IntegrationResult {
+    Ok(IntegrationResult {
         times,
         states,
         state_dim,
         steps_taken: steps,
         completed: t >= t_end - 1e-12,
-    }
+    })
 }
 
 // ── Tests (TDD) ─────────────────────────────────────────────────────────────
@@ -347,6 +394,42 @@ mod tests {
 
         assert!(!result.completed, "Should not complete with max_steps=10");
         assert_eq!(result.steps_taken, 10);
+    }
+
+    #[test]
+    fn test_integrator_config_rejects_invalid_dt() {
+        assert!(IntegratorConfig::try_new(0.0, 100).is_err());
+        assert!(IntegratorConfig::try_new(-0.01, 100).is_err());
+        assert!(IntegratorConfig::try_new(f64::NAN, 100).is_err());
+    }
+
+    #[test]
+    fn test_integrator_config_rejects_zero_max_steps() {
+        assert!(IntegratorConfig::try_new(0.01, 0).is_err());
+    }
+
+    #[test]
+    fn test_try_integrate_rejects_invalid_runtime_inputs() {
+        let config = IntegratorConfig::default();
+
+        assert!(try_integrate(
+            |_t, y| vec![y[0]],
+            1.0,
+            1.0,
+            &[1.0],
+            &config,
+            None::<fn(f64, &[f64]) -> bool>,
+        )
+        .is_err());
+        assert!(try_integrate(
+            |_t, y| vec![y[0]],
+            0.0,
+            1.0,
+            &[f64::NAN],
+            &config,
+            None::<fn(f64, &[f64]) -> bool>,
+        )
+        .is_err());
     }
 
     /// Test 6: Verify state history is recorded correctly.

@@ -20,6 +20,7 @@ pub mod ball_flight;
 pub mod contact;
 pub mod rk4;
 pub mod swing_plane;
+mod validation;
 
 // Re-export primary types from tools-core for convenience.
 pub use tools_core::Vector3;
@@ -56,10 +57,11 @@ fn simulate_ball_trajectory_py(
     ball: aerodynamics::AeroBallProperties,
     air: aerodynamics::AirProperties,
     config: rk4::IntegratorConfig,
-) -> ball_flight::BallTrajectoryResult {
-    ball_flight::simulate_ball_trajectory(
+) -> PyResult<ball_flight::BallTrajectoryResult> {
+    ball_flight::try_simulate_ball_trajectory(
         pos0, vel0, spin_axis, omega0, gravity, wind, &ball, &air, &config,
     )
+    .map_err(pyo3::exceptions::PyValueError::new_err)
 }
 
 #[cfg(feature = "python")]
@@ -98,10 +100,8 @@ use wasm_bindgen::prelude::*;
 #[cfg(feature = "wasm")]
 #[wasm_bindgen(js_name = "createIntegratorConfig")]
 pub fn create_integrator_config(dt: f64, max_steps: u32) -> Result<JsValue, JsValue> {
-    let config = rk4::IntegratorConfig {
-        dt,
-        max_steps: max_steps as usize,
-    };
+    let config = rk4::IntegratorConfig::try_new(dt, max_steps as usize)
+        .map_err(|e| JsValue::from_str(&e))?;
     serde_wasm_bindgen::to_value(&config)
         .map_err(|e| JsValue::from_str(&format!("Failed to serialize IntegratorConfig: {e}")))
 }
@@ -134,10 +134,10 @@ pub fn wasm_compute_aero_forces(
     let velocity = Vector3::new(vx, vy, vz);
     let spin = Vector3::new(sx, sy, sz);
     let ball = aerodynamics::AeroBallProperties::default();
-    let air = aerodynamics::AirProperties {
-        density: air_density,
-        ..Default::default()
-    };
+    let mut air = aerodynamics::AirProperties::default();
+    air.density = air_density;
+    aerodynamics::validate_aero_inputs(&velocity, &spin, &ball, &air)
+        .map_err(|e| JsValue::from_str(&e))?;
     let forces = aerodynamics::compute_aero_forces(&velocity, &spin, &ball, &air);
     serde_wasm_bindgen::to_value(&forces)
         .map_err(|e| JsValue::from_str(&format!("Failed to serialize AeroForces: {e}")))

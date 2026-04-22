@@ -29,7 +29,7 @@ Last-Updated: 2026-04-22T00:00:00-07:00
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.159                                            |
+| **Spec Version**        | 1.0.160                                            |
 | **Last Spec Update**    | 2026-04-22                                         |
 
 ## 2. Purpose & Mission
@@ -265,6 +265,7 @@ Configuration is managed through:
 - **Provider Onboarding Guide**: `docs/development/external_provider_onboarding.md` documents the sibling-repo layout, explicit override roots, unavailable-runtime status behavior, the utility-provider compatibility rules, and the packaged-distribution bridge for future installer work
 - **Discovery Mode Flag**: `UPSTREAM_DRIFT_DISCOVERY_MODE` explicitly controls launcher model discovery during migration via `local-only`, `hybrid` (default), and `provider-first` rollout modes
 - **Strict Model Registry Validation**: `UPSTREAM_DRIFT_MODEL_REGISTRY_STRICT=true` or `ModelRegistry(..., strict=True)` makes malformed legacy entries, malformed provider manifests, missing registry files, missing `models` roots, and absent caller-required model IDs fail fast with actionable `ModelRegistryLoadError` diagnostics; launcher/UI discovery remains lenient unless strict mode is explicitly enabled
+- **Rust Physics Boundary Validation**: `rust_core/upstream-physics/` rejects invalid RK4, aerodynamics, and ball-flight public inputs in all build modes; Python bindings map invalid inputs to `ValueError`, and WASM helpers return `JsValue` errors instead of relying on debug-only assertions
 - **Provider-Backed Engine Discovery**: `EngineManager` consults provider-backed model packs from `src/config/models.yaml` so external engine repos can surface availability and validation paths without being copied into `src/engines`
 - **API Request Parameters**: Engine selection, model path, solver options passed as JSON
 - **GUI Settings**: Stored in `~/.upstream_drift/gui_settings.json` (viewport, window size, recent files)
@@ -510,6 +511,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-22 | 1.0.160 | Issue #2987: Rust physics public boundaries now validate RK4 configuration, integration spans, finite state vectors, aerodynamics properties, spin decay, and ball-flight inputs in release builds, with Python `ValueError` and WASM `JsValue` errors for invalid calls. |
 | 2026-04-22 | 1.0.159 | Issue #2988: model registry loading now supports explicit strict validation for CI/cross-engine paths, including malformed legacy entries, malformed provider manifests, missing required model IDs, and nightly cross-engine validation env wiring. |
 | 2026-04-22 | 1.0.158 | Issue #2986 follow-up: Rust and Python `ContactParameters` defaults now use the same z-up surface normal as ball-flight gravity/height conventions, while explicit y-up contact tests continue to pass with explicit normals. |
 | 2026-04-22 | 1.0.157 | Issue #2984 follow-up: URDF/MJCF model discovery and serving now reject symlink escapes outside approved model roots while preserving contained nested models, and tuned drag coefficients remain continuous across the Reynolds transition. |
@@ -709,6 +711,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 - 2026-04-22: Corrected MuJoCo ground-reaction force sign handling for both world contact orderings and made humanoid URDF contract parsing tolerant of invalid path-like XML strings.
 - 2026-04-22: Allowed launcher-managed Python scripts under `src/` through secure subprocess path validation while preserving suite-root containment checks.
 - 2026-04-22: Protected local launcher subprocess mutations with a startup capability token and loopback `Origin`/`Referer` checks so cross-site browser posts cannot launch or stop local processes while local account auth stays disabled.
+- 2026-04-22: Replaced debug-only Rust physics preconditions with release-mode validation for RK4, aerodynamics, and ball-flight public boundaries.
 - 2026-04-22: Rejected unsupported explicit Pinocchio step integrators instead of falling back to the default RK4 mode.
 - 2026-04-20: Hardened local server asset serving by routing launcher logos and SPA/static-file lookups through traversal-safe path joins, closing path traversal and symlink escape vectors in the local UI shell.
 - 2026-04-22: Hardened URDF/MJCF model discovery and serving so model endpoints only list and read files that resolve inside approved model roots, rejecting symlink escapes both during discovery and immediately before file reads.

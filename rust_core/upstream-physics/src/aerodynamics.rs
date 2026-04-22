@@ -5,7 +5,8 @@
 //!
 //! # Design by Contract
 //! - All velocity/spin inputs must be finite (no NaN/Inf)
-//! - Air density must be positive
+//! - Air density must be non-negative
+//! - Air viscosity must be positive
 //! - Ball radius and area must be positive
 //! - All force outputs are guaranteed finite
 //!
@@ -13,6 +14,7 @@
 //! - Smits, A.J., & Ogg, S. (2004). Golf Ball Aerodynamics. Physics Today.
 //! - Jorgensen, T. (1999). The Physics of Golf. Springer.
 
+use crate::validation::{finite_vector, non_negative_finite, positive_finite, PhysicsResult};
 use serde::{Deserialize, Serialize};
 use tools_core::Vector3;
 
@@ -39,6 +41,33 @@ impl Default for AirProperties {
             temperature: 288.15,
             pressure: 101_325.0,
         }
+    }
+}
+
+impl AirProperties {
+    /// Create validated atmospheric properties for public APIs.
+    pub fn try_new(
+        density: f64,
+        viscosity: f64,
+        temperature: f64,
+        pressure: f64,
+    ) -> PhysicsResult<Self> {
+        let air = Self {
+            density,
+            viscosity,
+            temperature,
+            pressure,
+        };
+        air.validate()?;
+        Ok(air)
+    }
+
+    /// Validate an instance received through serde or a struct literal.
+    pub fn validate(&self) -> PhysicsResult<()> {
+        non_negative_finite("air.density", self.density)?;
+        positive_finite("air.viscosity", self.viscosity)?;
+        positive_finite("air.temperature", self.temperature)?;
+        positive_finite("air.pressure", self.pressure)
     }
 }
 
@@ -72,6 +101,36 @@ impl Default for AeroBallProperties {
     }
 }
 
+impl AeroBallProperties {
+    /// Create validated golf-ball aerodynamic properties.
+    pub fn try_new(
+        mass: f64,
+        radius: f64,
+        drag_coefficient: f64,
+        spin_decay_rate: f64,
+    ) -> PhysicsResult<Self> {
+        let area = std::f64::consts::PI * radius * radius;
+        let ball = Self {
+            mass,
+            radius,
+            area,
+            drag_coefficient,
+            spin_decay_rate,
+        };
+        ball.validate()?;
+        Ok(ball)
+    }
+
+    /// Validate an instance received through serde or a struct literal.
+    pub fn validate(&self) -> PhysicsResult<()> {
+        positive_finite("ball.mass", self.mass)?;
+        positive_finite("ball.radius", self.radius)?;
+        positive_finite("ball.area", self.area)?;
+        non_negative_finite("ball.drag_coefficient", self.drag_coefficient)?;
+        non_negative_finite("ball.spin_decay_rate", self.spin_decay_rate)
+    }
+}
+
 /// Result of an aerodynamics force computation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass)]
@@ -102,6 +161,8 @@ pub fn compute_aero_forces(
     ball: &AeroBallProperties,
     air: &AirProperties,
 ) -> AeroForces {
+    validate_aero_inputs(velocity, spin, ball, air)
+        .unwrap_or_else(|err| panic!("invalid aerodynamics inputs: {err}"));
     debug_assert!(
         velocity.x.is_finite() && velocity.y.is_finite() && velocity.z.is_finite(),
         "DbC: velocity must be finite"
@@ -118,6 +179,19 @@ pub fn compute_aero_forces(
     let magnus = compute_magnus(velocity, spin, ball, air);
 
     AeroForces { drag, lift, magnus }
+}
+
+/// Validate aerodynamic force inputs before release-mode calculations run.
+pub fn validate_aero_inputs(
+    velocity: &Vector3,
+    spin: &Vector3,
+    ball: &AeroBallProperties,
+    air: &AirProperties,
+) -> PhysicsResult<()> {
+    finite_vector("velocity", velocity)?;
+    finite_vector("spin", spin)?;
+    ball.validate()?;
+    air.validate()
 }
 
 /// Compute drag force opposing motion.
@@ -262,6 +336,10 @@ pub fn compute_magnus_coefficient(spin_param: f64) -> f64 {
 /// - `dt` must be positive
 #[must_use]
 pub fn compute_spin_decay(spin: &Vector3, dt: f64, spin_decay_rate: f64) -> Vector3 {
+    finite_vector("spin", spin).unwrap_or_else(|err| panic!("invalid spin decay inputs: {err}"));
+    positive_finite("dt", dt).unwrap_or_else(|err| panic!("invalid spin decay inputs: {err}"));
+    non_negative_finite("spin_decay_rate", spin_decay_rate)
+        .unwrap_or_else(|err| panic!("invalid spin decay inputs: {err}"));
     debug_assert!(dt > 0.0, "DbC: dt must be positive");
     let decay = (-spin_decay_rate * dt).exp();
     Vector3::new(spin.x * decay, spin.y * decay, spin.z * decay)
@@ -295,13 +373,14 @@ pub fn air_from_altitude(altitude_m: f64) -> AirProperties {
 impl AirProperties {
     #[new]
     #[pyo3(signature = (density=1.225, viscosity=1.81e-5, temperature=288.15, pressure=101325.0))]
-    fn py_new(density: f64, viscosity: f64, temperature: f64, pressure: f64) -> Self {
-        Self {
-            density,
-            viscosity,
-            temperature,
-            pressure,
-        }
+    fn py_new(
+        density: f64,
+        viscosity: f64,
+        temperature: f64,
+        pressure: f64,
+    ) -> pyo3::PyResult<Self> {
+        Self::try_new(density, viscosity, temperature, pressure)
+            .map_err(pyo3::exceptions::PyValueError::new_err)
     }
 
     #[staticmethod]
@@ -315,15 +394,14 @@ impl AirProperties {
 impl AeroBallProperties {
     #[new]
     #[pyo3(signature = (mass=0.04593, radius=0.02135, drag_coefficient=0.25, spin_decay_rate=0.1))]
-    fn py_new(mass: f64, radius: f64, drag_coefficient: f64, spin_decay_rate: f64) -> Self {
-        let area = std::f64::consts::PI * radius * radius;
-        Self {
-            mass,
-            radius,
-            area,
-            drag_coefficient,
-            spin_decay_rate,
-        }
+    fn py_new(
+        mass: f64,
+        radius: f64,
+        drag_coefficient: f64,
+        spin_decay_rate: f64,
+    ) -> pyo3::PyResult<Self> {
+        Self::try_new(mass, radius, drag_coefficient, spin_decay_rate)
+            .map_err(pyo3::exceptions::PyValueError::new_err)
     }
 }
 
@@ -492,6 +570,31 @@ mod tests {
         assert!(magnus.magnitude() < 1e-10);
     }
 
+    #[test]
+    fn test_air_properties_reject_invalid_public_values() {
+        assert!(AirProperties::try_new(f64::NAN, 1.81e-5, 288.15, 101_325.0).is_err());
+        assert!(AirProperties::try_new(-1.0, 1.81e-5, 288.15, 101_325.0).is_err());
+        assert!(AirProperties::try_new(1.225, 0.0, 288.15, 101_325.0).is_err());
+    }
+
+    #[test]
+    fn test_ball_properties_reject_invalid_public_values() {
+        assert!(AeroBallProperties::try_new(0.0, 0.02135, 0.25, 0.1).is_err());
+        assert!(AeroBallProperties::try_new(0.04593, -0.1, 0.25, 0.1).is_err());
+        assert!(AeroBallProperties::try_new(0.04593, 0.02135, -0.25, 0.1).is_err());
+    }
+
+    #[test]
+    fn test_aero_input_validation_rejects_invalid_struct_literals() {
+        let mut ball = default_ball();
+        ball.area = 0.0;
+        let air = default_air();
+        let velocity = Vector3::new(10.0, 0.0, 0.0);
+        let spin = Vector3::zero();
+
+        assert!(validate_aero_inputs(&velocity, &spin, &ball, &air).is_err());
+    }
+
     // ── Combined Forces Tests ────────────────────────────────────────────
 
     #[test]
@@ -607,6 +710,13 @@ mod tests {
 
         assert!((ratio_x - ratio_y).abs() < 1e-10, "Decay should be uniform");
         assert!((ratio_y - ratio_z).abs() < 1e-10, "Decay should be uniform");
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid spin decay inputs")]
+    fn test_spin_decay_rejects_invalid_dt_in_release() {
+        let spin = Vector3::new(0.0, 300.0, 0.0);
+        let _ = compute_spin_decay(&spin, 0.0, 0.1);
     }
 
     // ── Air from Altitude ────────────────────────────────────────────────

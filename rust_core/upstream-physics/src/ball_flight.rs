@@ -13,7 +13,8 @@
 //! The spin axis direction is constant; only the magnitude decays.
 
 use crate::aerodynamics::{compute_aero_forces, AeroBallProperties, AirProperties};
-use crate::rk4::{integrate, IntegratorConfig};
+use crate::rk4::{try_integrate, IntegratorConfig};
+use crate::validation::{finite_slice, non_negative_finite, PhysicsResult};
 use serde::{Deserialize, Serialize};
 use tools_core::Vector3;
 
@@ -144,6 +145,28 @@ pub fn simulate_ball_trajectory(
     air: &AirProperties,
     config: &IntegratorConfig,
 ) -> BallTrajectoryResult {
+    try_simulate_ball_trajectory(
+        pos0, vel0, spin_axis, omega0, gravity, wind, ball, air, config,
+    )
+    .unwrap_or_else(|err| panic!("invalid ball trajectory inputs: {err}"))
+}
+
+/// Simulate a ball trajectory after validating public physics inputs.
+#[allow(clippy::too_many_arguments)]
+pub fn try_simulate_ball_trajectory(
+    pos0: [f64; 3],
+    vel0: [f64; 3],
+    spin_axis: [f64; 3],
+    omega0: f64,
+    gravity: [f64; 3],
+    wind: [f64; 3],
+    ball: &AeroBallProperties,
+    air: &AirProperties,
+    config: &IntegratorConfig,
+) -> PhysicsResult<BallTrajectoryResult> {
+    validate_trajectory_inputs(
+        pos0, vel0, spin_axis, omega0, gravity, wind, ball, air, config,
+    )?;
     debug_assert!(
         pos0.iter().all(|v| v.is_finite()),
         "DbC: initial position must be finite"
@@ -195,7 +218,7 @@ pub fn simulate_ball_trajectory(
     let terminate = |t: f64, state: &[f64]| -> bool { t > 0.05 && state[2] <= 0.0 };
 
     let max_time = config.max_steps as f64 * config.dt;
-    let result = integrate(derivative, 0.0, max_time, &y0, config, Some(terminate));
+    let result = try_integrate(derivative, 0.0, max_time, &y0, config, Some(terminate))?;
 
     // Convert IntegrationResult to BallTrajectoryResult
     let state_dim = result.state_dim;
@@ -214,11 +237,34 @@ pub fn simulate_ball_trajectory(
         })
         .collect();
 
-    BallTrajectoryResult {
+    Ok(BallTrajectoryResult {
         completed: result.completed,
         steps: result.steps_taken,
         points,
-    }
+    })
+}
+
+#[allow(clippy::too_many_arguments)]
+fn validate_trajectory_inputs(
+    pos0: [f64; 3],
+    vel0: [f64; 3],
+    spin_axis: [f64; 3],
+    omega0: f64,
+    gravity: [f64; 3],
+    wind: [f64; 3],
+    ball: &AeroBallProperties,
+    air: &AirProperties,
+    config: &IntegratorConfig,
+) -> PhysicsResult<()> {
+    finite_slice("initial position", &pos0)?;
+    finite_slice("initial velocity", &vel0)?;
+    finite_slice("spin axis", &spin_axis)?;
+    finite_slice("gravity", &gravity)?;
+    finite_slice("wind", &wind)?;
+    non_negative_finite("omega0", omega0)?;
+    ball.validate()?;
+    air.validate()?;
+    config.validate()
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -439,5 +485,37 @@ mod tests {
             headwind_range < base_range,
             "Headwind range {headwind_range:.2} should be less than no-wind range {base_range:.2}"
         );
+    }
+
+    #[test]
+    fn test_try_simulate_rejects_invalid_public_inputs() {
+        let ball = AeroBallProperties::default();
+        let air = AirProperties::default();
+        let config = default_config();
+
+        assert!(try_simulate_ball_trajectory(
+            [f64::NAN, 0.0, 0.0],
+            [25.0, 0.0, 15.0],
+            [0.0, 1.0, 0.0],
+            100.0,
+            [0.0, 0.0, -9.81],
+            [0.0, 0.0, 0.0],
+            &ball,
+            &air,
+            &config,
+        )
+        .is_err());
+        assert!(try_simulate_ball_trajectory(
+            [0.0, 0.0, 0.0],
+            [25.0, 0.0, 15.0],
+            [0.0, 1.0, 0.0],
+            -1.0,
+            [0.0, 0.0, -9.81],
+            [0.0, 0.0, 0.0],
+            &ball,
+            &air,
+            &config,
+        )
+        .is_err());
     }
 }
