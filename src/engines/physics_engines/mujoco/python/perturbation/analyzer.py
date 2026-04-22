@@ -32,6 +32,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
+
 from src.shared.python.engine_core.engine_availability import MUJOCO_AVAILABLE
 from src.shared.python.perturbation.analyzer_base import (  # noqa: F401  re-exported for test imports
     MANDATORY_METRICS,
