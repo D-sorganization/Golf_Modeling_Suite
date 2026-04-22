@@ -202,6 +202,23 @@ class TestPuttingGreenSimulator:
         assert np.allclose(new_q, q)
         assert np.allclose(new_v, v)
 
+    def test_set_state_flattens_column_vector_velocity(
+        self, configured_simulator: PuttingGreenSimulator
+    ) -> None:
+        """set_state should accept column-vector velocity inputs."""
+        configured_simulator.set_state(
+            np.array([[8.0], [12.0]]),
+            np.array([[1.5], [0.5]]),
+        )
+
+        new_q, new_v = configured_simulator.get_state()
+
+        assert new_q.shape == (2,)
+        assert new_v.shape == (2,)
+        assert np.allclose(new_q, [8.0, 12.0])
+        assert np.allclose(new_v, [1.5, 0.5])
+        configured_simulator.step()
+
     def test_simulate_putt_returns_result(
         self, configured_simulator: PuttingGreenSimulator
     ) -> None:

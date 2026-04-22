@@ -53,6 +53,17 @@ class TestBallState:
         )
         assert np.isclose(state.speed, 5.0)
 
+    def test_ball_state_flattens_column_vector_velocity(self) -> None:
+        """Column-vector velocity should still produce scalar speed."""
+        state = BallState(
+            position=np.array([[0.0], [0.0]]),
+            velocity=np.array([[3.0], [4.0]]),
+            spin=np.zeros((3, 1)),
+        )
+
+        assert state.velocity.shape == (2,)
+        assert np.isclose(state.speed, 5.0)
+
     def test_ball_state_is_moving(self) -> None:
         """Should detect if ball is moving."""
         moving = BallState(

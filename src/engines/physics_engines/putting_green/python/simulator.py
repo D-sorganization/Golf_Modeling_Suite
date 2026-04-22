@@ -424,8 +424,11 @@ class PuttingGreenSimulator:
         """Set current state."""
         if q is None:
             raise ValueError("q must be provided")
-        self._ball_state.position = np.array(q)
-        self._ball_state.velocity = np.array(v)
+        self._ball_state = BallState(
+            position=q,
+            velocity=v,
+            spin=self._ball_state.spin,
+        )
 
     def set_control(self, u: np.ndarray) -> None:
         """Apply control input (force on ball)."""
@@ -453,7 +456,11 @@ class PuttingGreenSimulator:
 
     def set_ball_velocity(self, velocity: np.ndarray) -> None:
         """Set ball velocity."""
-        self._ball_state.velocity = np.array(velocity[:2])
+        self._ball_state = BallState(
+            position=self._ball_state.position,
+            velocity=velocity[:2],
+            spin=self._ball_state.spin,
+        )
 
     def simulate_putt(
         self,
