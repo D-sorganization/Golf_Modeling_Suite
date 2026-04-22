@@ -273,11 +273,109 @@ adds confusion.
 | Severity | Count |
 |----------|-------|
 | 🔴 CRITICAL | 1 |
-| 🟠 HIGH | 4 |
-| 🟡 MEDIUM | 4 |
-| 🟢 LOW | 3 |
+| 🟠 HIGH | 7 |
+| 🟡 MEDIUM | 5 |
+| 🟢 LOW | 4 |
 
-Total findings: **12**
+Total findings: **17**
+
+---
+
+## Addendum — Findings 13–17 (second pass)
+
+### 13 — 🟠 HIGH: 5 router modules have hardcoded `/api/` prefix — entire tooling API unreachable
+
+**Files:** `data_explorer.py`, `terrain.py`, `putting_green.py`, `motion_capture.py`, `launcher.py`
+
+Same class of bug as Finding #3 but systemic — five modules hardcode
+`/api/` in their `APIRouter(prefix=...)`. When registered via
+`register_routes()` with `prefix="/api/v1"`, all routes get a double
+`/api/v1/api/...` prefix and are unreachable.
+
+**Impact:** Data explorer, terrain API, putting green simulator, motion
+capture, and launcher management are ALL dead endpoints.
+
+**Fix:** Remove `/api` from each router prefix. ✅ Fixed in this PR.
+
+---
+
+### 14 — 🟠 HIGH: `list_features` raises ValueError for optional query parameter
+
+**File:** `src/api/routes/dataset.py` lines 375–378
+
+```python
+if available_only is None:
+    raise ValueError("available_only must be provided")
+if category is None:
+    raise ValueError("category must be provided")
+```
+
+Both are defined as optional params (`category: str | None = None`,
+`available_only: bool = False`). The function signature explicitly allows
+`None` for `category`, but the body immediately raises.
+
+**Impact:** `GET /dataset/features` without a `category` param always crashes.
+
+**Fix:** Remove the contradictory None checks. ✅ Fixed in this PR.
+
+---
+
+### 15 — 🟡 MEDIUM: `contracts.py` module-level `DBC_LEVEL` alias is stale after runtime change
+
+**File:** `src/shared/python/contracts.py` lines 93–94 and 180–183
+
+```python
+DBC_LEVEL: ContractLevel = _ContractState.level      # line 93 — evaluated once at import time
+CONTRACTS_ENABLED: bool = ...                         # line 94
+
+def _handle_violation(condition_type, message, value=None):
+    if DBC_LEVEL == ContractLevel.ENFORCE:             # line 180 — reads the stale alias
+```
+
+The module defines `DBC_LEVEL` and `CONTRACTS_ENABLED` as simple name
+bindings at import time. `set_contract_level()` (line 97) does update
+`sys.modules[__name__].DBC_LEVEL`, but `_handle_violation` captures the
+*original* name at definition time — not the module-level attribute.
+
+In practice, calling `set_contract_level(ContractLevel.OFF)` at runtime
+does NOT disable contract enforcement in the `require()` / `ensure()`
+hot path because `_handle_violation` still reads the stale local binding.
+
+**Impact:** Contracts cannot be disabled at runtime despite the documented
+API. Production deployments that rely on `DBC_LEVEL=off` for performance
+may still be running all checks.
+
+---
+
+### 16 — 🟡 MEDIUM: `BallFlightSimulator.simulate_trajectory` hard-fails without Rust
+
+**File:** `src/shared/python/physics/ball_flight_physics.py` lines 174–177
+
+```python
+if not is_rust_available():
+    raise RuntimeError(
+        "upstream-physics Rust kernel not found! Strict Rust Parity Enforced."
+    )
+```
+
+The module docstring says "falls back to pure-Python physics" but the
+actual implementation raises `RuntimeError`. Meanwhile, the
+`EnhancedBallFlightSimulator` next to it in the same file contains a
+fully working Python RK4 loop. This creates a confusing inconsistency.
+
+**Impact:** Environments without the Rust wheel cannot use the primary
+simulator class despite a working Python fallback existing in the same file.
+
+---
+
+### 17 — 🟢 LOW: `_startup_metrics` written from local server but never exposed via health endpoint
+
+**File:** `src/api/local_server.py`
+
+The `_startup_metrics` dict is populated during `create_local_app()` but
+the health/diagnostic endpoints registered by
+`_register_health_and_diagnostic_endpoints()` construct their own response
+dicts rather than reading from `_startup_metrics`.
 
 ---
 
