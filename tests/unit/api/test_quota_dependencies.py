@@ -6,7 +6,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi import HTTPException
-
 from src.api.auth.models import User
 
 
@@ -26,8 +25,9 @@ class TestQuotaDependencyDefaults:
                 "src.api.auth.dependencies.usage_tracker.check_quota",
                 return_value=True,
             ) as check_quota,
-            patch("src.api.auth.dependencies.usage_tracker.increment_usage")
-            as increment_usage,
+            patch(
+                "src.api.auth.dependencies.usage_tracker.increment_usage"
+            ) as increment_usage,
         ):
             result = dependency(current_user=current_user, db=db)
 
@@ -53,8 +53,9 @@ class TestQuotaDependencyDefaults:
                 "src.api.auth.dependencies.usage_tracker.check_quota",
                 return_value=False,
             ),
-            patch("src.api.auth.dependencies.usage_tracker.increment_usage")
-            as increment_usage,
+            patch(
+                "src.api.auth.dependencies.usage_tracker.increment_usage"
+            ) as increment_usage,
             pytest.raises(HTTPException) as excinfo,
         ):
             dependency(current_user=current_user, db=db)
