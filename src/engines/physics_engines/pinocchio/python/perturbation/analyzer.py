@@ -35,12 +35,13 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
+
 from src.shared.python.engine_core.engine_availability import PINOCCHIO_AVAILABLE
 
 # Shared noise / perturbation helpers
 from src.shared.python.perturbation.analyzer_base import (  # noqa: F401  re-exported for test imports
-    MANDATORY_METRICS,
     ComparisonReport,  # noqa: F401
+    MANDATORY_METRICS,
     PerturbationAnalyzerBase,
     build_joint_polys,
     compute_ee_velocity_fd,
