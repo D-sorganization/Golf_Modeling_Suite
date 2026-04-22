@@ -511,7 +511,7 @@ mod tests {
             mass: 0.0,
             ..AeroBallProperties::default()
         };
-        compute_aero_forces(&velocity, &spin, &ball, &AirProperties::default());
+        let _ = compute_aero_forces(&velocity, &spin, &ball, &AirProperties::default());
     }
 
     // ── Drag Tests ───────────────────────────────────────────────────────

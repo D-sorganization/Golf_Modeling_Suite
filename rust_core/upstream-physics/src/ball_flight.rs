@@ -262,7 +262,7 @@ mod tests {
             mass: 0.0,
             ..AeroBallProperties::default()
         };
-        simulate_ball_trajectory(
+        let _ = simulate_ball_trajectory(
             [0.0, 0.0, 0.5],
             [10.0, 0.0, 10.0],
             [0.0, 1.0, 0.0],
