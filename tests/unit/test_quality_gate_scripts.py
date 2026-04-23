@@ -30,3 +30,34 @@ def test_file_size_exception_active_handles_valid_and_expired_dates():
 
     assert module._exception_is_active({"expires_on": "2999-01-01"}) is True
     assert module._exception_is_active({"expires_on": "2000-01-01"}) is False
+
+
+def test_check_root_level_scripts_flags_net_new_root_python_file():
+    module = _load_script_module("check_root_level_scripts")
+
+    violations = module.find_disallowed_root_python_files(
+        ["new_tool.py", "scripts/new_tool.py", "nested/helper.py"],
+        allowlisted={"build_hooks.py"},
+    )
+
+    assert violations == ["new_tool.py"]
+
+
+def test_check_root_level_scripts_ignores_allowlisted_root_python_files():
+    module = _load_script_module("check_root_level_scripts")
+
+    violations = module.find_disallowed_root_python_files(
+        [
+            "build_hooks.py",
+            "conftest.py",
+            "launch_golf_suite.py",
+            ".ci_trigger.py",
+        ],
+        allowlisted={
+            "build_hooks.py",
+            "conftest.py",
+            "launch_golf_suite.py",
+        },
+    )
+
+    assert violations == [".ci_trigger.py"]

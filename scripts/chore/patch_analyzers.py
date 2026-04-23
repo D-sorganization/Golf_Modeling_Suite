@@ -1,4 +1,4 @@
-"""Patch perturbation analyzers to inherit shared base helpers."""
+"""Patch perturbation analyzers when the shared analyzer base changes."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ BASE_IMPORT = """from src.shared.python.perturbation.analyzer_base import (
 
 def resolve_repo_root() -> Path:
     """Return the repository root for this maintenance script."""
-    return Path(__file__).resolve().parent
+    return Path(__file__).resolve().parents[2]
 
 
 def iter_analyzer_files(repo_root: Path) -> list[Path]:
@@ -116,7 +116,7 @@ def patch_analyzer(content: str, engine: str) -> str:
 
 
 def main() -> None:
-    """Patch all supported perturbation analyzer files in place."""
+    """Patch supported perturbation analyzer files in place."""
     repo_root = resolve_repo_root()
     for analyzer_file in iter_analyzer_files(repo_root):
         content = analyzer_file.read_text(encoding="utf-8")
