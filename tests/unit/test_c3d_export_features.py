@@ -10,9 +10,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import typing
+
 try:
     from c3d_reader import SCHEMA_VERSION, C3DDataReader  # noqa: E402
 except (ImportError, ModuleNotFoundError):
+    C3DDataReader = typing.Any  # type: ignore
     pytest.skip(
         "c3d_reader module not available (requires c3d/ezc3d)",
         allow_module_level=True,
