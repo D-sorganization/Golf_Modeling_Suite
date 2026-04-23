@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 import json
+import typing
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd
 import pytest
-
-import typing
 
 try:
     from c3d_reader import SCHEMA_VERSION, C3DDataReader  # noqa: E402
