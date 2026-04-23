@@ -14,10 +14,9 @@ Fixes #1119
 from __future__ import annotations
 
 import time
+import typing
 
 import pytest
-
-import typing
 
 try:
     from fastapi.testclient import TestClient
