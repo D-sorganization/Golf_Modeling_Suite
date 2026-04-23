@@ -15,11 +15,3 @@ waivers:
     package: pygments
     reason: No fixed release is available yet.
     expires_at: 2026-06-30
-  - id: CVE-2026-40192
-    package: pillow
-    reason: This remains transitive via opencv and imageio until the upstream stacks publish a compatible fix.
-    expires_at: 2026-06-30
-  - id: CVE-2026-28684
-    package: pillow
-    reason: This remains transitive via opencv and imageio until the upstream stacks publish a compatible fix.
-    expires_at: 2026-06-30
