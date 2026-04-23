@@ -24,7 +24,9 @@ def _assert_contains(text: str, needle: str, message: str, errors: list[str]) ->
         errors.append(message)
 
 
-def _assert_not_contains(text: str, needle: str, message: str, errors: list[str]) -> None:
+def _assert_not_contains(
+    text: str, needle: str, message: str, errors: list[str]
+) -> None:
     if needle in text:
         errors.append(message)
 

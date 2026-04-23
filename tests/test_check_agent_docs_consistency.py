@@ -34,7 +34,10 @@ def test_agent_docs_consistency_passes_for_aligned_files(
         "Format with Ruff.\n",
     )
     _write(pyproject, '[project]\nname = "upstream-drift"\n')
-    _write(changelog, "All notable changes to UpstreamDrift will be documented in this file.\n")
+    _write(
+        changelog,
+        "All notable changes to UpstreamDrift will be documented in this file.\n",
+    )
     _write(ci_standard, "--cov-fail-under=30\n")
 
     monkeypatch.setattr(checker, "README", readme)
@@ -61,7 +64,10 @@ def test_agent_docs_consistency_fails_on_black_and_old_coverage(
     _write(claude, "NOT Black\n**10% coverage minimum**\n")
     _write(contributing, "Golf Modeling Suite\nBlack (default settings)\n")
     _write(pyproject, '"black>=26.3.1"\n[tool.black]\n')
-    _write(changelog, "All notable changes to the Golf Modeling Suite will be documented in this file.\n")
+    _write(
+        changelog,
+        "All notable changes to the Golf Modeling Suite will be documented in this file.\n",
+    )
     _write(ci_standard, "--cov-fail-under=30\n")
 
     monkeypatch.setattr(checker, "README", readme)
