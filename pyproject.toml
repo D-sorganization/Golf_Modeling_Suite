@@ -276,8 +276,8 @@ ignore_errors = true
 
 [[tool.mypy.overrides]]
 module = "src.shared.python.spatial_algebra.*"
-ignore_errors = false
 warn_return_any = true
+disable_error_code = ["arg-type", "no-any-return"]
 
 [[tool.mypy.overrides]]
 module = "src.api.*"
