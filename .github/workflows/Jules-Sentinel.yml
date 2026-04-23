@@ -190,8 +190,10 @@ jobs:
           file_pattern: ".jules/sentinel.md"
 
       - name: Upload Security Reports
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: security-audit-reports
           path: reports/
+          if-no-files-found: ignore
           retention-days: 30
