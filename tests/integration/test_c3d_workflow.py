@@ -3,7 +3,7 @@
 TEST-004: Added @pytest.mark.integration markers for test categorization.
 """
 
-from unittest.mock import patch
+from unittest.mock import patch  # noqa: I001
 
 import numpy as np
 import pandas as pd

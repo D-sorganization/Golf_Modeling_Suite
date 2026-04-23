@@ -7,7 +7,7 @@ Supports:
 - JSON/CSV
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: I001
 
 from dataclasses import dataclass, field
 from pathlib import Path

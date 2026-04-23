@@ -31,7 +31,7 @@ actions.  For robustness, a fallback pure-MuJoCo integration path is provided
 for environments that expose the underlying ``model`` and ``data`` attributes.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: I001
 
 import logging
 from dataclasses import dataclass

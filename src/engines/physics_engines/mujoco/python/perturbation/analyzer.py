@@ -25,7 +25,7 @@ Delegates noise generation and coefficient perturbation to the shared
 ``src.shared.python.perturbation`` package.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: I001
 
 import logging
 from dataclasses import dataclass
