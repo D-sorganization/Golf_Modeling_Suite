@@ -1,21 +1,21 @@
 # Review Comments Archive - 2026-04-22
 
-Generated: 2026-04-22T05:32:13.446175
+Generated: 2026-04-22T17:51:41.467565
 
 ## Reviewer (chatgpt-codex-connector[bot]) (1 comments)
 
-### PR #2965: src/engines/physics_engines/putting_green/python/ball_roll_physics.py:81
+### PR #3038: src/engines/physics_engines/mujoco/python/mujoco_humanoid_golf/kinematic_forces/analyzer.py:288
 
 Actionable: Yes
 Has Suggestion: No
 
 ```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Handle non-1D velocity inputs before using math.hypot**
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Keep time-step denominator fixed for mixed clamping cases**
 
-`BallState.__post_init__` converts inputs to `np.array` but does not enforce a 1-D shape, and callers like `PuttingGreenSimulator.set_state` can pass column vectors. With a `(2,1)` velocity, `self.velocity[0]`/`[1]` are 1-D arrays, so `math.hypot(...)` raises `TypeError` (`only 0-dimensional arrays can be converted to Python scalars`), whereas the previ...
+The new `effective_step` projection assumes all joints are scaled by a single post-clamp factor, but that is not true when only some joints hit limits. In that mixed case, `np.dot(qpos_forward - qpos_backward, qvel) / ||qvel||^2` reduces the denominator for **all** Jacobian terms, so even unclamped joints are over-amplified. Example: with `qvel=[1,1...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/2965#discussion_r3123828302)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3038#discussion_r3127675075)
 
 ---
 
