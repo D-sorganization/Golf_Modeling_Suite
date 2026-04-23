@@ -1,7 +1,7 @@
 import pytest
+
 from src.shared.python.contracts import (
     ContractLevel,
-    DBC_LEVEL,
     PreconditionError,
     _evaluate_precondition,
     precondition,
@@ -19,7 +19,7 @@ def test_evaluate_precondition_fails_closed_on_broken_lambda():
     # A broken lambda with wrong parameter names cannot be evaluated
     broken_condition = lambda wrong_name: wrong_name > 0  # noqa: E731
 
-    with pytest.raises(PreconditionError, match="could not be evaluated"):
+    with pytest.raises(PreconditionError, match="Precondition evaluation failed"):
         _evaluate_precondition(broken_condition, example_func, (1, 2), {})
 
 
