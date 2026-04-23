@@ -78,7 +78,8 @@ class BallState:
     def speed(self) -> float:
         """Ball speed magnitude."""
         # ⚡ Bolt: math.hypot is ~5x faster than np.linalg.norm for small 2D vectors
-        return math.hypot(self.velocity[0], self.velocity[1])
+        v = np.ravel(self.velocity)
+        return math.hypot(v[0], v[1])
 
     @property
     def is_moving(self) -> bool:
@@ -265,7 +266,8 @@ class BallRollPhysics:
         )
 
         # ⚡ Bolt: math.hypot avoids array allocation overhead
-        slip_speed = math.hypot(slip_velocity[0], slip_velocity[1])
+        v_slip = np.ravel(slip_velocity)
+        slip_speed = math.hypot(v_slip[0], v_slip[1])
         if slip_speed < 1e-10:
             return self.compute_rolling_friction(state)
 
@@ -394,7 +396,8 @@ class BallRollPhysics:
 
         # Rotational: 0.5 * I * ω²
         # ⚡ Bolt: math.hypot is faster than np.linalg.norm for 3D vectors
-        spin_mag = math.hypot(state.spin[0], state.spin[1], state.spin[2])
+        s = np.ravel(state.spin)
+        spin_mag = math.hypot(s[0], s[1], s[2])
         rotational = 0.5 * self._moment_of_inertia * spin_mag**2
 
         return float(translational + rotational)
@@ -427,7 +430,8 @@ class BallRollPhysics:
             # Check if slope would cause movement
             accel = self.compute_slope_acceleration(state.position)
             # ⚡ Bolt: Use math.hypot for 2D magnitude optimization
-            if math.hypot(accel[0], accel[1]) < 0.01:  # Threshold for starting
+            a = np.ravel(accel)
+            if math.hypot(a[0], a[1]) < 0.01:  # Threshold for starting
                 return state.copy()
 
         # Compute acceleration
@@ -448,7 +452,8 @@ class BallRollPhysics:
 
         # Check for stopping
         # ⚡ Bolt: math.hypot for 2D magnitude
-        new_speed = math.hypot(new_velocity[0], new_velocity[1])
+        v = np.ravel(new_velocity)
+        new_speed = math.hypot(v[0], v[1])
         if new_speed < self.STOP_VELOCITY_THRESHOLD:
             new_velocity = np.zeros(2)
 
@@ -493,7 +498,8 @@ class BallRollPhysics:
         new_velocity = vel + (dt / 6.0) * (k1_a + 2 * k2_a + 2 * k3_a + k4_a)
 
         # Check stopping
-        if math.hypot(new_velocity[0], new_velocity[1]) < self.STOP_VELOCITY_THRESHOLD:
+        v_new = np.ravel(new_velocity)
+        if math.hypot(v_new[0], v_new[1]) < self.STOP_VELOCITY_THRESHOLD:
             new_velocity = np.zeros(2)
 
         # Update spin
@@ -524,7 +530,8 @@ class BallRollPhysics:
 
         # Check stopping
         # ⚡ Bolt: math.hypot for 2D magnitude
-        if math.hypot(new_velocity[0], new_velocity[1]) < self.STOP_VELOCITY_THRESHOLD:
+        v_new = np.ravel(new_velocity)
+        if math.hypot(v_new[0], v_new[1]) < self.STOP_VELOCITY_THRESHOLD:
             new_velocity = np.zeros(2)
 
         # Update spin
