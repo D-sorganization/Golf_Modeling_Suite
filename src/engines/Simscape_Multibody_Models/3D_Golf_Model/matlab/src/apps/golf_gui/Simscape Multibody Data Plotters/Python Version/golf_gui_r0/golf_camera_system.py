@@ -324,9 +324,8 @@ class CameraController(QObject):
         if eye is None:
             raise ValueError("eye must be provided")
         f = target - eye
-        f_norm = np.sqrt(
-            np.vdot(f, f)
-        )  # ⚡ Bolt: np.sqrt(np.vdot(x, x)) is ~30% faster than np.linalg.norm for 3D arrays
+        # ⚡ Bolt: np.sqrt(np.vdot(x, x)) is faster than np.linalg.norm
+        f_norm = np.sqrt(np.vdot(f, f))
         f = f / f_norm if f_norm > 1e-06 else np.array([0, 0, -1], dtype=np.float32)
 
         s = np.cross(f, up)

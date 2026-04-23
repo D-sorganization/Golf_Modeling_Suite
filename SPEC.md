@@ -1,6 +1,6 @@
 # SPEC.md — Repository Specification Document
 
-Last-Updated: 2026-04-23T03:58:28-07:00
+Last-Updated: 2026-04-23T07:12:00-07:00
 
 <!--
   TEMPLATE VERSION: 1.0.0
@@ -511,7 +511,6 @@ pytest tests/ --cov=src --cov-fail-under=70
 | 2026-04-23 | 1.0.173 | Performance optimization: Replaced `np.linalg.norm(x)` with `np.sqrt(np.vdot(x, x))` in `golf_camera_system.py` for faster 3D array reduction computations. |
 
 | 2026-04-22 | 1.0.153 | Performance optimization: Replaced `np.linalg.norm(x)` with `np.sqrt(np.vdot(x, x))` and updated `np.sqrt(sum of squares)` to `math.hypot(*x)` for faster array reduction computations. |
-| 2026-04-23 | 1.0.173 | Performance optimization: Replaced `np.linalg.norm` with `math.hypot` for small 2D vectors in putting green engine. |
 | 2026-04-20 | 1.0.95 | Performance optimization: Replaced generator expression `math.sqrt(sum(...))` with `math.dist(a,b)` for distance calculations to push execution entirely into C, resulting in an ~8x speedup. |
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
@@ -717,7 +716,6 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 ## Changelog
 
-- 2026-04-23: Replaced the Rust workspace's sibling `../Tools` path dependency with a pinned git dependency on `tools-core`, documented clean-clone `cargo build` and `maturin develop` steps, added ADR 0005, and removed Rust/Tauri CI symlink workarounds in favor of a clean-clone Rust quickstart lane.
 - 2026-04-23: Moved `pip-audit` waivers into `.github/security/pip-audit-ignore.yml` and added `scripts/check_pip_audit_waivers.py` so CI fails on expired waivers before generating `--ignore-vuln` flags.
 - 2026-04-23: Removed tracked generated analysis artifacts and added a forbidden-artifact guard so CI rejects regenerated reports, coverage dumps, temp IDs, and NumPy scratch outputs before they can re-enter version control.
 - 2026-04-22: Removed the duplicate `logging.getLogger(__name__)` assignment from `src/api/local_server.py` so the local server consistently uses the shared structured logger, with regression coverage guarding against logger shadowing.
