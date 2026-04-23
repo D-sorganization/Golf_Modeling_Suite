@@ -333,6 +333,7 @@ module = [
     "src.engines.physics_engines.mujoco.python.mujoco_humanoid_golf.gui.tabs.visualization_tab",
     "src.engines.physics_engines.mujoco.python.mujoco_humanoid_golf.physics_engine",
     "src.engines.physics_engines.mujoco.python.mujoco_humanoid_golf.urdf_io",
+    "src.engines.physics_engines.mujoco.python.mujoco_humanoid_golf.video_export",
     "src.engines.physics_engines.pinocchio.python.pinocchio_golf.gui",
     "src.engines.physics_engines.pinocchio.python.pinocchio_golf.gui_ui_setup",
     "src.engines.physics_engines.pinocchio.python.pinocchio_golf.ui.analysis_mixin",
