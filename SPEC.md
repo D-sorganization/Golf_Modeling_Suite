@@ -1,6 +1,6 @@
 # SPEC.md — Repository Specification Document
 
-Last-Updated: 2026-04-23T08:35:00-07:00
+Last-Updated: 2026-04-23T08:44:59-07:00
 
 <!--
   TEMPLATE VERSION: 1.0.0
@@ -29,7 +29,7 @@ Last-Updated: 2026-04-23T08:35:00-07:00
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.176                                            |
+| **Spec Version**        | 1.0.177                                            |
 | **Last Spec Update**    | 2026-04-23                                         |
 
 ## 2. Purpose & Mission
@@ -508,6 +508,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 ## 12. Change Log
 
+| 2026-04-23 | 1.0.177 | fix(ci): Synced `requirements-dev.lock` with `requirements.lock` for `python-dotenv==1.2.2`, clearing the `pip-audit` CVE-2026-28684 failure on the workflow-pruning branch. |
 | 2026-04-23 | 1.0.176 | chore(ci): Pruned `Jules-Assessment-AutoFix.yml` and `archived/auto-remediate-issues.yml.disabled` to reduce CI workflow bloat and prevent automated bot-loop conflicts. |
 | 2026-04-23 | 1.0.175 | fix(ci): Shrunk `pyproject.toml` mypy exclusion list by promoting previously suppressed modules to per-file overrides, reducing the global `ignore_errors` footprint from ~46 files toward zero. |
 | 2026-04-22 | 1.0.153 | Performance optimization: Replaced `np.linalg.norm(x)` with `np.sqrt(np.vdot(x, x))` and updated `np.sqrt(sum of squares)` to `math.hypot(*x)` for faster array reduction computations. |
