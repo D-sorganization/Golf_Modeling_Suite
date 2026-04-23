@@ -188,12 +188,18 @@ class PerturbationAnalyzerBase(ABC):
         config: PerturbationConfig,
         metric_lists: dict[str, list[float]],
     ) -> list[TrialFailure]:
+        if self._base_coeffs is None:
+            raise ValueError(
+                "set_base_torque_profile() must be called before _collect_batch_metrics()"
+            )
+
+        base_coeffs = self._base_coeffs
         base_seed = config.seed if config.seed is not None else 0
         failures: list[TrialFailure] = []
 
         for trial_index in range(config.n_trials):
             perturbed = perturb_torque_coeffs(
-                self._base_coeffs,
+                base_coeffs,
                 noise_amplitude=config.noise_amplitude,
                 noise_type=config.noise_type,
                 seed=base_seed + trial_index,
@@ -313,6 +319,12 @@ class PerturbationAnalyzerBase(ABC):
         config: PerturbationConfig,
     ) -> tuple[np.ndarray, list[TrialFailure]]:
         self.set_base_torque_profile(profile)
+        if self._base_coeffs is None:
+            raise ValueError(
+                "set_base_torque_profile() must populate _base_coeffs before compare_profiles()"
+            )
+
+        base_coeffs = self._base_coeffs
         values: list[float] = []
         failures: list[TrialFailure] = []
         base_seed = config.seed if config.seed is not None else 0
@@ -320,7 +332,7 @@ class PerturbationAnalyzerBase(ABC):
         for trial_index in range(config.n_trials):
             seed = base_seed + trial_index
             perturbed = perturb_torque_coeffs(
-                self._base_coeffs,  # type: ignore[arg-type]
+                base_coeffs,
                 noise_amplitude=config.noise_amplitude,
                 noise_type=config.noise_type,
                 seed=seed,
