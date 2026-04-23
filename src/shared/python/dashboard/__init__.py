@@ -25,7 +25,9 @@ def __getattr__(name: str) -> Any:
         from .window import UnifiedDashboardWindow as _cls
 
         return _cls
-    raise AttributeError(f"module 'src.shared.python.dashboard' has no attribute {name!r}")
+    raise AttributeError(
+        f"module 'src.shared.python.dashboard' has no attribute {name!r}"
+    )
 
 
 if TYPE_CHECKING:
