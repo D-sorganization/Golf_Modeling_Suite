@@ -690,7 +690,7 @@ class PuttingGreenSimulator:
         )
 
         # Generate feedback
-        feedback = {
+        feedback: dict[str, float | bool | str] = {
             "distance_from_hole": distance_from_hole,
             "holed": result.holed,
             "total_distance": result.total_distance,
