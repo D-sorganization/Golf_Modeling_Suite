@@ -142,11 +142,11 @@ jobs:
           fi
 
           CHANGED_PY_FILES=$(git diff --diff-filter=AM --name-only "$BASE_SHA" HEAD -- '*.py' || true)
-          CHANGED_SRC_PY_FILES=$(printf '%s\n' "$CHANGED_PY_FILES" | grep '^src/' || true)
+          CHANGED_SRC_PY_FILES=$(printf '%s\n' "$CHANGED_PY_FILES" | grep '^src/' | grep -v ' ' || true)
           if [ -n "$CHANGED_SRC_PY_FILES" ]; then
             echo "Changed source files:"
             echo "$CHANGED_SRC_PY_FILES"
-            mypy $CHANGED_SRC_PY_FILES --config-file pyproject.toml
+            echo "$CHANGED_SRC_PY_FILES" | xargs mypy --config-file pyproject.toml
           else
             echo "No changed source files detected — skipping baseline mypy."
           fi
@@ -170,11 +170,11 @@ jobs:
           fi
 
           CHANGED_PY_FILES=$(git diff --diff-filter=AM --name-only "$BASE_SHA" HEAD -- '*.py' || true)
-          CHANGED_API_PY_FILES=$(printf '%s\n' "$CHANGED_PY_FILES" | grep '^src/api/' || true)
+          CHANGED_API_PY_FILES=$(printf '%s\n' "$CHANGED_PY_FILES" | grep '^src/api/' | grep -v ' ' || true)
           if [ -n "$CHANGED_API_PY_FILES" ]; then
             echo "Changed API files:"
             echo "$CHANGED_API_PY_FILES"
-            mypy $CHANGED_API_PY_FILES --strict --follow-imports=silent --config-file pyproject.toml
+            echo "$CHANGED_API_PY_FILES" | xargs mypy --strict --follow-imports=silent --config-file pyproject.toml
           else
             echo "No changed src/api files detected — skipping strict mypy."
           fi
