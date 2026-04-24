@@ -250,7 +250,7 @@ def _register_inverse_dynamics_tool(registry: ToolRegistry) -> None:
             engine: Physics engine to use (mujoco, drake, pinocchio).
 
         Returns:
-            Simulation results summary.
+            Simulation results summary with computed torques.
         """
         if not (file_path is not None):
             raise ValueError("file_path must be provided")
@@ -263,23 +263,143 @@ def _register_inverse_dynamics_tool(registry: ToolRegistry) -> None:
                 "error": f"Invalid engine. Choose from: {valid_engines}",
             }
 
-        # This implementation requires integration with the physics engines.
-        # 1. Load the C3D data
-        # 2. Create/load the model
-        # 3. Run inverse dynamics
-        # 4. Return results
+        try:
+            import numpy as np
+            from pathlib import Path
 
-        return {
-            "success": True,
-            "status": "simulation_pending",
-            "engine": engine,
-            "file": file_path,
-            "message": (
-                f"Inverse dynamics simulation queued using {engine}. "
-                "This would normally take 30-60 seconds for a typical swing."
-            ),
-            "note": ("Implementation requires physics engine integration."),
-        }
+            # Load C3D data
+            file_path_obj = Path(file_path)
+            if not file_path_obj.exists():
+                return {
+                    "success": False,
+                    "error": f"File not found: {file_path}",
+                }
+
+            if file_path_obj.suffix.lower() != ".c3d":
+                return {
+                    "success": False,
+                    "error": "File must be a .c3d file",
+                }
+
+            from src.shared.python.data_io.data_utils import load_c3d_data
+
+            try:
+                c3d_data = load_c3d_data(file_path_obj)
+                markers = c3d_data.get("markers", {})
+                metadata = c3d_data.get("metadata", {})
+
+                if not markers:
+                    return {
+                        "success": False,
+                        "error": "No marker data found in C3D file",
+                    }
+
+                # Extract marker positions and compute joint accelerations
+                # For now, use a simplified approach: compute accelerations from
+                # marker positions using numerical differentiation
+                n_markers = len(markers)
+                n_frames = metadata.get("n_frames", 0)
+
+                if n_frames < 3:
+                    return {
+                        "success": False,
+                        "error": "C3D file must have at least 3 frames for acceleration",
+                    }
+
+                # Compute numerical derivatives for accelerations
+                frame_rate = metadata.get("frame_rate", 120.0)
+                dt = 1.0 / frame_rate
+
+                # Get all marker positions as array
+                marker_list = sorted(markers.keys())
+                marker_array = np.array([markers[m] for m in marker_list])
+
+                # Compute velocity (first derivative)
+                velocity = np.diff(marker_array, axis=1) / dt
+
+                # Compute acceleration (second derivative)
+                acceleration = np.diff(velocity, axis=1) / dt
+
+                # Use mean acceleration magnitude as joint acceleration estimate
+                joint_accelerations = np.mean(
+                    np.linalg.norm(acceleration, axis=0), axis=0
+                )
+                joint_accelerations = np.reshape(
+                    joint_accelerations, (-1,)
+                )  # Ensure 1D
+
+                # Load physics engine and compute inverse dynamics
+                from src.shared.python.engine_core.engine_manager import EngineManager
+                from src.shared.python.engine_core.engine_registry import EngineType
+
+                manager = EngineManager()
+                engine_type_map = {
+                    "mujoco": EngineType.MUJOCO,
+                    "drake": EngineType.DRAKE,
+                    "pinocchio": EngineType.PINOCCHIO,
+                }
+                engine_type = engine_type_map.get(engine.lower())
+
+                if not engine_type or engine_type not in manager.get_available_engines():
+                    return {
+                        "success": False,
+                        "error": f"Engine {engine} is not available",
+                    }
+
+                # Switch to the requested engine
+                if not manager.switch_engine(engine_type):
+                    return {
+                        "success": False,
+                        "error": f"Failed to switch to engine {engine}",
+                    }
+
+                physics_engine = manager.get_active_physics_engine()
+                if physics_engine is None:
+                    return {
+                        "success": False,
+                        "error": f"No active physics engine for {engine}",
+                    }
+
+                # Check if engine supports inverse dynamics
+                from src.shared.python.engine_core.capabilities import Capability
+
+                if not physics_engine.has_capability(Capability.INVERSE_DYNAMICS):
+                    return {
+                        "success": False,
+                        "error": f"Engine {engine} does not support inverse dynamics",
+                    }
+
+                # Compute inverse dynamics
+                torques = physics_engine.compute_inverse_dynamics(joint_accelerations)
+
+                return {
+                    "success": True,
+                    "status": "completed",
+                    "engine": engine,
+                    "file": str(file_path),
+                    "torques": torques.tolist(),
+                    "joint_count": len(torques),
+                    "marker_count": n_markers,
+                    "frame_count": n_frames,
+                    "frame_rate": frame_rate,
+                    "message": (
+                        f"Inverse dynamics computed successfully using {engine}. "
+                        f"Computed {len(torques)} joint torques from {n_markers} markers."
+                    ),
+                }
+
+            except ImportError:
+                return {
+                    "success": False,
+                    "error": "c3d library not installed. Install with: pip install c3d",
+                }
+
+        except (RuntimeError, ValueError, OSError) as e:
+            logger.exception("Error in run_inverse_dynamics")
+            return {
+                "success": False,
+                "error": f"Inverse dynamics computation failed: {e}",
+            }
 
 
 def _register_interpret_torques_tool(registry: ToolRegistry) -> None:

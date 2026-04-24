@@ -22,7 +22,7 @@ from src.shared.python.core.error_utils import InvalidRequestError
 from src.shared.python.logging_pkg.logging_config import get_logger
 
 if TYPE_CHECKING:
-    from src.shared.python.ai.adapters.base import BaseAgentAdapter
+    from src.shared.python.ai.adapters.base import BaseAgentAdapter, ToolDeclaration
     from src.shared.python.ai.types import ConversationContext
 
 logger = get_logger(__name__)
@@ -46,8 +46,10 @@ class ChatService:
         self._sessions: OrderedDict[str, ConversationContext] = OrderedDict()
         self._timestamps: dict[str, float] = {}
         self._adapter: BaseAgentAdapter | None = None
+        self._tools: list[ToolDeclaration] = []
         self._lock = threading.Lock()
         self._load_adapter()
+        self._register_tools()
 
     def _load_adapter(self) -> None:
         """Load AI adapter from persisted user settings."""
@@ -116,6 +118,34 @@ class ChatService:
             logger.info("ChatService using default OllamaAdapter")
         except ImportError as e:
             logger.error("ChatService: could not create fallback adapter: %s", e)
+
+    def _register_tools(self) -> None:
+        """Register Golf Suite tools with the registry and convert to adapter format."""
+        try:
+            from src.shared.python.ai.sample_tools import register_golf_suite_tools
+            from src.shared.python.ai.tool_registry import get_global_registry
+            from src.shared.python.ai.adapters.base import ToolDeclaration
+
+            # Register tools with the global registry
+            registry = get_global_registry()
+            register_golf_suite_tools(registry)
+
+            # Convert registry tools to adapter format
+            self._tools = []
+            for tool in registry.list_tools():
+                schema = tool.to_json_schema()
+                tool_decl = ToolDeclaration(
+                    name=schema["name"],
+                    description=schema["description"],
+                    parameters=schema["parameters"].get("properties", {}),
+                    required=schema["parameters"].get("required", []),
+                )
+                self._tools.append(tool_decl)
+
+            logger.info("ChatService registered %d Golf Suite tools", len(self._tools))
+        except ImportError as e:
+            logger.warning("ChatService: failed to register tools: %s", e)
+            self._tools = []
 
     def get_or_create_session(self, session_id: str | None) -> ConversationContext:
         """Return existing session or create a new one."""
@@ -234,7 +264,7 @@ class ChatService:
             for chunk in self._adapter.stream_response(  # type: ignore[union-attr]
                 temp_ctx.messages[-1].content if temp_ctx.messages else "",
                 temp_ctx,
-                [],  # No tools for now
+                self._tools,
             ):
                 if chunk.content:
                     chunks.append(chunk.content)
@@ -251,7 +281,7 @@ class ChatService:
                 for chunk in self._adapter.stream_response(  # type: ignore[union-attr]
                     "",  # message already in context
                     temp_ctx,
-                    [],
+                    self._tools,
                 ):
                     if chunk.content:
                         chunk_queue.put(chunk.content)
