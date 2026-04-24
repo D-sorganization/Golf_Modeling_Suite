@@ -50,6 +50,7 @@ if DRAKE_AVAILABLE:
     from pydrake.multibody.tree import JointActuatorIndex
 
 from src.shared.python.core import constants
+from src.shared.python.core.numerical_constants import EPSILON_TIME_STEP
 from src.shared.python.engine_core.interfaces import PhysicsEngine
 
 logger = get_logger(__name__)
@@ -216,7 +217,14 @@ class DrakePhysicsEngine(PhysicsEngine):
         lambda self, dt=None: self.is_initialized, "Engine must be initialized"
     )
     def step(self, dt: float | None = None) -> None:
-        """Advance the simulation by one time step."""
+        """Advance the simulation by one time step.
+
+        Args:
+            dt: Time step [s]. Must be > EPSILON_TIME_STEP if provided.
+
+        Raises:
+            ValueError: If dt is not positive.
+        """
         self._ensure_finalized()
 
         if not self.simulator or not self.context:
@@ -225,6 +233,14 @@ class DrakePhysicsEngine(PhysicsEngine):
 
         current_time = self.context.get_time()
         step_size = dt if dt is not None else self.plant.time_step()
+
+        # Guard against invalid time steps (Issue #3054)
+        if step_size <= EPSILON_TIME_STEP:
+            raise ValueError(
+                f"dt must be positive, got {step_size}. "
+                f"Minimum supported: {EPSILON_TIME_STEP}"
+            )
+
         self.simulator.AdvanceTo(current_time + step_size)
 
     @precondition(lambda self: self.is_initialized, "Engine must be initialized")
