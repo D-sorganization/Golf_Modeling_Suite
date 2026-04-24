@@ -5,13 +5,15 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from src.shared.python.engine_core.engine_manager import (
     EngineManager,
     EngineStatus,
     EngineType,
     GolfModelingError,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

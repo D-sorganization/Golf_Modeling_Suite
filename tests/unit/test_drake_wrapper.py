@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from src.shared.python.engine_core.engine_availability import DRAKE_AVAILABLE
+
 pytestmark = pytest.mark.unit
 
 if DRAKE_AVAILABLE:

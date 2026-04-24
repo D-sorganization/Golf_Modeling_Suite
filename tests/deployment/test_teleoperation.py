@@ -5,8 +5,6 @@ from unittest.mock import MagicMock
 import numpy as np
 import pytest
 
-pytestmark = pytest.mark.integration
-
 from src.deployment.realtime import ControlMode
 from src.deployment.teleoperation.devices import (
     HapticDeviceInput,
@@ -18,6 +16,8 @@ from src.deployment.teleoperation.interface import (
     TeleoperationInterface,
     TeleoperationMode,
 )
+
+pytestmark = pytest.mark.integration
 
 
 @pytest.fixture

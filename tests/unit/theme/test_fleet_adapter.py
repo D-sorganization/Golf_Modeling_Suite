@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from src.shared.python.theme.fleet_adapter import (
     FLEET_THEMES,
     _adjust_color_brightness,
@@ -11,7 +13,7 @@ from src.shared.python.theme.fleet_adapter import (
     is_fleet_available,
     is_valid_hex_color,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

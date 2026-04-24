@@ -10,6 +10,7 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 pytestmark = pytest.mark.unit
 
 # Ensure offscreen platform

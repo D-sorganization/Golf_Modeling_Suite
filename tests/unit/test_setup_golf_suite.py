@@ -3,10 +3,11 @@ from __future__ import annotations
 import pathlib
 from unittest.mock import patch
 
+import pytest
 from PIL import Image
 
 import setup_golf_suite
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

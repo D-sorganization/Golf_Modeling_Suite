@@ -28,6 +28,7 @@ from src.shared.python.physics.flexible_shaft import (
     create_shaft_model,
     create_standard_shaft,
 )
+
 pytestmark = pytest.mark.unit
 
 

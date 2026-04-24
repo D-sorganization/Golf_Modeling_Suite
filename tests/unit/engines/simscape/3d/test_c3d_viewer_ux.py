@@ -4,6 +4,7 @@ import typing
 from unittest.mock import MagicMock, call, patch
 
 import pytest
+
 pytestmark = pytest.mark.unit
 
 # Gracefully skip if PyQt6 is not installed (e.g. in CI environments)

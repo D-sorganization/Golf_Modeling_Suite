@@ -6,8 +6,6 @@ Tests cover:
     - ContactManager functionality
     - Grasp analysis
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
@@ -27,6 +25,8 @@ from src.robotics.contact.grasp_analysis import (
     compute_grasp_quality,
 )
 from src.robotics.core.types import ContactState
+
+pytestmark = pytest.mark.unit
 
 
 class TestContactState:

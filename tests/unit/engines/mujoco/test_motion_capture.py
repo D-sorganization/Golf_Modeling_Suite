@@ -17,6 +17,7 @@ from mujoco_humanoid_golf.motion_capture import (
     MotionCaptureValidator,
     MotionRetargeting,
 )
+
 pytestmark = pytest.mark.unit
 
 

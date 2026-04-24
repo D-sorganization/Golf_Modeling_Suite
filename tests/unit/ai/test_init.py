@@ -1,5 +1,7 @@
 """Unit tests for AI package init."""
+
 import pytest
+
 pytestmark = pytest.mark.unit
 
 

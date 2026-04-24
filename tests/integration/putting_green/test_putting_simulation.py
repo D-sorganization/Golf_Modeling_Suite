@@ -15,8 +15,6 @@ import tempfile
 import numpy as np
 import pytest
 
-pytestmark = pytest.mark.integration
-
 from src.engines.physics_engines.putting_green.python.ball_roll_physics import (
     BallRollPhysics,
     BallState,
@@ -37,6 +35,8 @@ from src.engines.physics_engines.putting_green.python.simulator import (
 from src.engines.physics_engines.putting_green.python.turf_properties import (
     TurfProperties,
 )
+
+pytestmark = pytest.mark.integration
 
 
 class TestEndToEndPutting:

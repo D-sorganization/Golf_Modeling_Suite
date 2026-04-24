@@ -6,6 +6,7 @@ import pytest
 from matplotlib.figure import Figure
 
 from src.shared.python.plotting import GolfSwingPlotter
+
 pytestmark = pytest.mark.unit
 
 # Check if 3D projection is available (broken on some numpy/matplotlib combos)

@@ -21,6 +21,7 @@ from src.shared.python.spatial_algebra.pose6dof import (
     rotation_matrix_to_quaternion,
     slerp,
 )
+
 pytestmark = pytest.mark.unit
 
 

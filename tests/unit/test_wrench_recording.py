@@ -12,9 +12,10 @@ from __future__ import annotations
 from unittest.mock import MagicMock
 
 import numpy as np
+import pytest
 
 from src.shared.python.dashboard.recorder import GenericPhysicsRecorder
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

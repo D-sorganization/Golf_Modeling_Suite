@@ -6,12 +6,14 @@ import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from src.shared.python.engine_core.engine_manager import (
     EngineManager,
     EngineStatus,
     EngineType,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

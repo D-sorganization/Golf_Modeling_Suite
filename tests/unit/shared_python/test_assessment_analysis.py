@@ -16,6 +16,7 @@ from src.shared.python.assessment.analysis import (
     get_python_metrics,
     grep_count,
 )
+
 pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------

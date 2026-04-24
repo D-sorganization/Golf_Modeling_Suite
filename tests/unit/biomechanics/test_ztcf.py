@@ -22,6 +22,7 @@ from src.shared.python.biomechanics.ztcf import (
 from src.shared.python.core.contracts.exceptions import (
     PreconditionError,
 )
+
 pytestmark = pytest.mark.unit
 
 # ============================================================================

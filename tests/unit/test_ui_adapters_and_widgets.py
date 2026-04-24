@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from src.shared.python.ui.adapters.canvas import CanvasAdapter, CanvasProtocol
 from src.shared.python.ui.adapters.thread import BackgroundWorker, QtWorker
 from src.shared.python.ui.widgets import LogPanel, SignalBlocker
@@ -12,7 +14,7 @@ from src.shared.python.upstream_drift_tools.ui.widgets.unit_aware_input import (
     UnitAwareDisplay,
     UnitAwareInput,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

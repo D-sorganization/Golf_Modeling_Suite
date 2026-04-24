@@ -14,6 +14,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from src.shared.python.calc_backend.routers.pressure_drop import router
+
 pytestmark = pytest.mark.unit
 
 _app = FastAPI()

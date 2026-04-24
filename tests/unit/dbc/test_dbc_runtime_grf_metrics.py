@@ -14,6 +14,7 @@ from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
+
 pytestmark = pytest.mark.unit
 
 

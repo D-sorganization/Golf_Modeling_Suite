@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from src.shared.python.core.contracts.validators import (
     check_finite,
@@ -12,7 +13,7 @@ from src.shared.python.core.contracts.validators import (
     check_shape,
     check_symmetric,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

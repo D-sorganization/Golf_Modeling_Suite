@@ -8,14 +8,14 @@ Two bugs:
    but when piped via `curl | bash` there is no local checkout. The script must either
    clone the repo first or install from a remote URL.
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
 from pathlib import Path
 
 import pytest
+
+pytestmark = pytest.mark.unit
 
 
 class TestUIBuildHookMissingDist:

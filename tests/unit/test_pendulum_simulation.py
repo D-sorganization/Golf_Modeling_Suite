@@ -10,6 +10,7 @@ from src.shared.python.pendulum_simulator.simulation import (
     SimulationResult,
     run_simulation,
 )
+
 pytestmark = pytest.mark.unit
 
 

@@ -17,6 +17,7 @@ from src.shared.python.biomechanics.myosuite_adapter import (
     MuscleDrivenEnv,
     train_muscle_policy,
 )
+
 pytestmark = pytest.mark.unit
 
 

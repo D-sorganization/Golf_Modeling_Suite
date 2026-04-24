@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from src.shared.python.biomechanics.swing_plane_analysis import SwingPlaneAnalyzer
+
 pytestmark = pytest.mark.unit
 
 

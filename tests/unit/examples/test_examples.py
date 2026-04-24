@@ -3,7 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
+
 import pytest
+
 pytestmark = pytest.mark.unit
 
 EXAMPLES_DIR = Path(__file__).resolve().parent.parent.parent.parent / "examples"

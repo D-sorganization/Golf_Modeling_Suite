@@ -18,8 +18,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-pytestmark = pytest.mark.unit
-
 from src.engines.common.capabilities import CapabilityLevel, EngineCapabilities
 from src.engines.common.export import DatasetExporter, DatasetRecord, VideoConfig
 from src.engines.common.simulation_control import (
@@ -29,6 +27,8 @@ from src.engines.common.simulation_control import (
     SimulationMode,
 )
 from src.shared.python.core.contracts.exceptions import PreconditionError
+
+pytestmark = pytest.mark.unit
 
 # =============================================================================
 # EngineCapabilities Tests

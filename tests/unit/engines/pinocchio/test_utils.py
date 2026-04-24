@@ -11,6 +11,7 @@ import pytest
 from src.engines.physics_engines.pinocchio.python.dtack.utils.gears_parser import (
     GearsParser,
 )
+
 pytestmark = pytest.mark.unit
 
 

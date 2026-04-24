@@ -11,8 +11,6 @@ Bugs covered:
 Unit tests use helper functions extracted from simulation_ws and do NOT require
 httpx. Integration tests (TestClient) are skipped when httpx is not installed.
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
@@ -28,6 +26,8 @@ from src.api.routes.simulation_ws import (
     _engine_type_from_str,
 )
 from src.shared.python.engine_core.engine_registry import EngineType
+
+pytestmark = pytest.mark.unit
 
 try:
     _HAS_TESTCLIENT = True

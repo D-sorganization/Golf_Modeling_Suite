@@ -8,6 +8,7 @@ from src.shared.python.physics.physics_parameters import (
     PhysicsParameterRegistry,
     get_registry,
 )
+
 pytestmark = pytest.mark.unit
 
 

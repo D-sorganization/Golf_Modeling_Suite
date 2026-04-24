@@ -5,8 +5,6 @@ Tests cover:
     - QP problem formulation and solving
     - Whole-body controller functionality
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
@@ -35,6 +33,8 @@ from src.robotics.control.whole_body.wbc_controller import (
     WBCSolution,
     WholeBodyController,
 )
+
+pytestmark = pytest.mark.unit
 
 
 class TestTask:

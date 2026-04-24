@@ -7,14 +7,15 @@ Tests the require()/ensure() contracts added to:
   postcondition: finite)
 - compute_equilibrium_state (preconditions + postconditions)
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
 import unittest
 
 import numpy as np
+import pytest
+
+pytestmark = pytest.mark.unit
 
 
 def _make_muscle() -> object:

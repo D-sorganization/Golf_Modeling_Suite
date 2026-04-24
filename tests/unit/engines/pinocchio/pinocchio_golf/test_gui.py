@@ -1,6 +1,7 @@
 """Tests for src.engines.physics_engines.pinocchio.python.pinocchio_golf.gui."""
 
 import pytest
+
 pytestmark = pytest.mark.unit
 
 

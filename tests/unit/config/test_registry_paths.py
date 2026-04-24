@@ -8,10 +8,12 @@ Three bugs:
 3. src/launchers/ModelRegistry defaults to "config/models.yaml"; when load() is called
    with the repo root, it looks at root/"config/models.yaml" which doesn't exist.
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
+
+import pytest
+
+pytestmark = pytest.mark.unit
 
 
 class TestStandardModelManagerPaths:

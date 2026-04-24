@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-from src.shared.python.interfaces import PhysicsEngine, RecorderInterface
 import pytest
+
+from src.shared.python.interfaces import PhysicsEngine, RecorderInterface
+
 pytestmark = pytest.mark.unit
 
 

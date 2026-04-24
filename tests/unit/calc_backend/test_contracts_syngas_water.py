@@ -11,6 +11,7 @@ from src.shared.python.calc_backend.contracts.syngas_water import (
     SyngasWaterResponse,
     WaterContentOut,
 )
+
 pytestmark = pytest.mark.unit
 
 

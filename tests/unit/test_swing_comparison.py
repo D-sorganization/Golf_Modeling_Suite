@@ -4,6 +4,7 @@ import unittest
 from unittest.mock import patch
 
 import numpy as np
+import pytest
 
 from src.shared.python.biomechanics.swing_comparison import (
     ComparisonMetric,
@@ -11,7 +12,7 @@ from src.shared.python.biomechanics.swing_comparison import (
     SwingComparator,
 )
 from src.shared.python.validation_pkg.statistical_analysis import StatisticalAnalyzer
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

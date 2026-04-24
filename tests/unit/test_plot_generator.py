@@ -20,6 +20,7 @@ from src.shared.python.gui_pkg.plot_generator import (
     PlotType,
     SimulationData,
 )
+
 pytestmark = pytest.mark.unit
 
 # ---- Fixtures ----

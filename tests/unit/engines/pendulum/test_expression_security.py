@@ -5,6 +5,7 @@ from double_pendulum_model.physics.double_pendulum import (
     DoublePendulumState,
     ExpressionFunction,
 )
+
 pytestmark = pytest.mark.unit
 
 

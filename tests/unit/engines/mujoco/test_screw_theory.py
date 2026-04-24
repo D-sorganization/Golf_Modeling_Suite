@@ -15,6 +15,7 @@ from mujoco_humanoid_golf.screw_theory import (
     twist_to_spatial,
     wrench_to_spatial,
 )
+
 pytestmark = pytest.mark.unit
 
 

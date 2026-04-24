@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-from src.shared.python.ai.glossary_data_core import get_core_entries
 import pytest
+
+from src.shared.python.ai.glossary_data_core import get_core_entries
+
 pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------

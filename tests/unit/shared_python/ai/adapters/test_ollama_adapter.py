@@ -23,6 +23,7 @@ from src.shared.python.ai.types import (
     Message,
     ProviderCapability,
 )
+
 pytestmark = pytest.mark.unit
 
 

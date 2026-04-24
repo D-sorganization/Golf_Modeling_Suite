@@ -9,8 +9,6 @@ from __future__ import annotations
 import json
 
 import pytest
-
-pytestmark = pytest.mark.unit
 from plot_engine.specs import (
     AxisSpec,
     ContourPlotSpec,
@@ -25,6 +23,8 @@ from plot_engine.specs import (
     TrendlineSpec,
 )
 from pydantic import ValidationError
+
+pytestmark = pytest.mark.unit
 
 # ── SeriesStyle ──────────────────────────────────────────────────────────────
 

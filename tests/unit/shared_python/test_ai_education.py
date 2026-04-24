@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import pytest
+
 from src.shared.python.ai.education import EducationSystem, GlossaryEntry
 from src.shared.python.ai.types import ExpertiseLevel
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

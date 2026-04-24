@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 
 from src.api.routes.engines import _sanitize_for_json
+
 pytestmark = pytest.mark.unit
 
 

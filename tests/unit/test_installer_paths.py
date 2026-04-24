@@ -6,13 +6,15 @@ Two bugs:
 2. installer/windows/setup.py hard-codes project_root / "launchers" / ..., "api" / ...,
    "shared" / "urdf" / ..., etc. — all the real paths are under "src/".
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
 import ast
 from pathlib import Path
+
+import pytest
+
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # setup_golf_suite.py

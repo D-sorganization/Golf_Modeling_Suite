@@ -11,6 +11,7 @@ from src.shared.python.core.contracts.exceptions import (
     PreconditionError,
     StateError,
 )
+
 pytestmark = pytest.mark.unit
 
 

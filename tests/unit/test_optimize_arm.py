@@ -15,6 +15,7 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
+
 pytestmark = pytest.mark.unit
 
 # Install casadi/pinocchio mocks for the duration of this module's collection+execution.

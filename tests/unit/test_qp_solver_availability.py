@@ -5,8 +5,10 @@ from __future__ import annotations
 import builtins
 from typing import Any
 
-from src.robotics.control.whole_body.qp_solver import ScipyQPSolver
 import pytest
+
+from src.robotics.control.whole_body.qp_solver import ScipyQPSolver
+
 pytestmark = pytest.mark.unit
 
 

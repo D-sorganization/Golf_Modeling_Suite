@@ -17,6 +17,7 @@ from src.shared.python.data_io.io_utils import (
     save_json,
     write_text,
 )
+
 pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------

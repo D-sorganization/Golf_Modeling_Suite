@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from src.shared.python.pose_estimation.interface import (
     PoseEstimationResult,
     PoseEstimator,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

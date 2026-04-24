@@ -13,6 +13,7 @@ from src.shared.python.spatial_algebra.joints import (
     S_RZ,
     jcalc,
 )
+
 pytestmark = pytest.mark.unit
 
 

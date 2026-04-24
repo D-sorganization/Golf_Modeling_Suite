@@ -25,6 +25,7 @@ from src.shared.python.cli_utils import (
     resolve_output_path,
     validate_input_files,
 )
+
 pytestmark = pytest.mark.unit
 
 

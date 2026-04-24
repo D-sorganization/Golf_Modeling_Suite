@@ -21,6 +21,7 @@ from src.shared.python.physics.ground_reaction_forces import (
     extract_grf_from_contacts,
     validate_grf_cross_engine,
 )
+
 pytestmark = pytest.mark.unit
 
 

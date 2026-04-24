@@ -6,8 +6,6 @@ Tests cover:
     - Gait state machine
     - Footstep planning
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
@@ -37,6 +35,8 @@ from src.robotics.locomotion.gait_types import (
 from src.robotics.locomotion.zmp_computer import (
     ZMPComputer,
 )
+
+pytestmark = pytest.mark.unit
 
 
 class TestGaitTypes:

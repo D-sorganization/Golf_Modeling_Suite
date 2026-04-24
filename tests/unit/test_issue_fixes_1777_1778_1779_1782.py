@@ -7,8 +7,6 @@ Covers:
           NotImplementedError for simulation/loopback backends
 - #1777: motion_training __getattr__ must return real objects, not None
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
@@ -19,6 +17,8 @@ from typing import Any
 
 import numpy as np
 import pytest
+
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Issue #1779 – SECRET_KEY fallback must be random, not a known static string

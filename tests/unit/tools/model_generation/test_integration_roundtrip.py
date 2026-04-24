@@ -10,8 +10,6 @@ entire build-parse-validate cycle produces consistent results.
 References:
   - GitHub issue #1694 (end-to-end integration tests)
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
@@ -31,6 +29,8 @@ from model_generation.core.types import (
     Material,
     Origin,
 )
+
+pytestmark = pytest.mark.unit
 
 
 class TestManualBuilderRoundtrip:

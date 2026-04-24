@@ -11,6 +11,7 @@ from src.shared.python.signal_toolkit.noise import (
     NoiseType,
     add_noise_to_signal,
 )
+
 pytestmark = pytest.mark.unit
 
 

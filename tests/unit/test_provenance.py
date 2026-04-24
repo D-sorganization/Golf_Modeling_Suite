@@ -5,13 +5,14 @@ from datetime import datetime
 from unittest.mock import mock_open, patch
 
 import numpy as np
+import pytest
 
 from src.shared.python.data_io.provenance import (
     ProvenanceInfo,
     add_provenance_header_file,
     add_provenance_to_csv,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

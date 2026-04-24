@@ -23,6 +23,7 @@ from src.shared.python.gui_pkg.ellipsoid_visualization import (
     export_ellipsoid_stl,
     generate_ellipsoid_mesh,
 )
+
 pytestmark = pytest.mark.unit
 
 if TYPE_CHECKING:

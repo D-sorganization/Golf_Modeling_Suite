@@ -15,6 +15,7 @@ from src.shared.python.ai.types import (
     ToolCall,
     ToolResult,
 )
+
 pytestmark = pytest.mark.unit
 
 

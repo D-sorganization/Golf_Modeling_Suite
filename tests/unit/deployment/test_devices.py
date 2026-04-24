@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from src.deployment.teleoperation.devices import (
     BaseInputDevice,
@@ -7,7 +8,7 @@ from src.deployment.teleoperation.devices import (
     SpaceMouseInput,
     VRControllerInput,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

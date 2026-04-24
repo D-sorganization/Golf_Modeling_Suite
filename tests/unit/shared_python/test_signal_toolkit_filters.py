@@ -24,6 +24,7 @@ from src.shared.python.signal_toolkit.filters import (
     create_moving_average_filter,
     create_savgol_filter,
 )
+
 pytestmark = pytest.mark.unit
 
 

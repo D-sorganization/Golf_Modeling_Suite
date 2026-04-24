@@ -3,9 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 from unittest.mock import Mock, patch
 
+import pytest
+
 from src.shared.python.ai.sample_tools import register_golf_suite_tools
 from src.shared.python.ai.tool_registry import ToolRegistry
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

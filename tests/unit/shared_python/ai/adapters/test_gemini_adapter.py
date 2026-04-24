@@ -8,6 +8,7 @@ from collections.abc import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 pytestmark = pytest.mark.unit
 
 # Install google.generativeai mock for the duration of this module's

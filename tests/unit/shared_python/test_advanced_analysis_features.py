@@ -12,6 +12,7 @@ from src.shared.python.dashboard.advanced_analysis import (
     SwingPlaneTab,
     WaveletTab,
 )
+
 pytestmark = pytest.mark.unit
 
 

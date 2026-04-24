@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import logging
 
-from src.shared.python.core._core import get_logger, setup_logging
 import pytest
+
+from src.shared.python.core._core import get_logger, setup_logging
+
 pytestmark = pytest.mark.unit
 
 

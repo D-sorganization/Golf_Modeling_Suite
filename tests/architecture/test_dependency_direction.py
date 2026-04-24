@@ -18,10 +18,11 @@ from __future__ import annotations
 
 import ast
 import logging
+from pathlib import Path
+
 import pytest
 
 pytestmark = pytest.mark.unit
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 

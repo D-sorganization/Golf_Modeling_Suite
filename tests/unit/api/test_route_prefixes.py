@@ -11,12 +11,12 @@ The fix: remove "/api/" from each router prefix so:
 The server must also change the root-level registration to use prefix="/api"
 so that legacy "/api/launcher/..." clients still work.
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
 import pytest
+
+pytestmark = pytest.mark.unit
 
 
 class TestRouterPrefixesNoHardcodedApiSegment:

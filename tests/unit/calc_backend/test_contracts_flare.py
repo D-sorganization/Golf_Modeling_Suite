@@ -11,6 +11,7 @@ from src.shared.python.calc_backend.contracts.flare import (
     FlareResponse,
     RadiationZonesOut,
 )
+
 pytestmark = pytest.mark.unit
 
 

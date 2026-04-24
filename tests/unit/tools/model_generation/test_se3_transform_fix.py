@@ -13,16 +13,17 @@ Fix: Compose SE(3) transforms properly:
     new_position = parent_pos + R(parent_rpy) @ child_pos
     new_rotation = compose(parent_rpy, child_rpy)
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
 import math
 
 import numpy as np
+import pytest
 from model_generation.core.types import Joint
 from model_generation.editor import FrankensteinEditor
+
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Helper: build a 3-link chain  A --[j_ab]--> B --[j_bc]--> C

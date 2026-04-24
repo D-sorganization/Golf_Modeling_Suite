@@ -11,6 +11,7 @@ import math
 import pytest
 
 from src.tools.video_analyzer.types import Landmark
+
 pytestmark = pytest.mark.unit
 
 

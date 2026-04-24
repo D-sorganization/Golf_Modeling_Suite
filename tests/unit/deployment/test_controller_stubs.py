@@ -17,6 +17,7 @@ from src.deployment.realtime import (
     RobotConfig,
 )
 from src.deployment.realtime.controller import CommunicationType, RealTimeController
+
 pytestmark = pytest.mark.unit
 
 

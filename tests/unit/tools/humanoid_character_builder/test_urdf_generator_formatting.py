@@ -16,6 +16,7 @@ from humanoid_character_builder.generators.urdf_generator import (
     HumanoidURDFGenerator,
     URDFGeneratorConfig,
 )
+
 pytestmark = pytest.mark.unit
 
 

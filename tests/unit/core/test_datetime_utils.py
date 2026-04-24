@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
+import pytest
+
 from src.shared.python.core.datetime_utils import (
     format_datetime,
     format_duration,
@@ -18,7 +20,7 @@ from src.shared.python.core.datetime_utils import (
     timestamp_filename,
     timestamp_iso,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

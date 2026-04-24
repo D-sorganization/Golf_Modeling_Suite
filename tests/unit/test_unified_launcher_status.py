@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import logging
 
-from src.launchers.unified_launcher import UnifiedLauncher
 import pytest
+
+from src.launchers.unified_launcher import UnifiedLauncher
+
 pytestmark = pytest.mark.unit
 
 

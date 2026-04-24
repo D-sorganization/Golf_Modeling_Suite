@@ -9,6 +9,7 @@ from src.shared.python.engine_core.engine_availability import (
     PYQT6_AVAILABLE,
     PYTEST_QT_AVAILABLE,
 )
+
 pytestmark = pytest.mark.unit
 
 # Now we can import apps.*

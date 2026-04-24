@@ -4,9 +4,11 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
+import pytest
+
 from src.shared.python.engine_core.engine_registry import EngineType
 from src.shared.python.engine_core.workflow_adapter import EngineWorkflowAdapter
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

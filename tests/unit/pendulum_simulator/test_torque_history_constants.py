@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+import pytest
+
 from src.shared.python.pendulum_simulator.gui.torque_history_constants import (
     get_drive_colors,
     get_friction_colors,
     get_total_colors,
     set_colorblind_mode,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

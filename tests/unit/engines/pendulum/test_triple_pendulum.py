@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import numpy as np  # noqa: TID253
+import pytest
 from double_pendulum_model.physics.triple_pendulum import (
     TriplePendulumDynamics,
     TriplePendulumState,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

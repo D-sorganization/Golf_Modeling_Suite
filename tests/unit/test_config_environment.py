@@ -15,6 +15,7 @@ from src.shared.python.config.environment import (
     get_env_int,
     get_env_list,
 )
+
 pytestmark = pytest.mark.unit
 
 _TEST_VAR = "_UPSTREAM_DRIFT_TEST_VAR"

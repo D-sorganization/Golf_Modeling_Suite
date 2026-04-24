@@ -5,8 +5,6 @@ Tests contracts added to:
   ratio non-negative, X-factor stretch peak non-negative
 - PhaseDetectionMixin: phase durations non-negative, start <= end
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
@@ -14,6 +12,9 @@ import unittest
 from unittest.mock import MagicMock
 
 import numpy as np
+import pytest
+
+pytestmark = pytest.mark.unit
 
 
 def _make_swing_mixin(n: int = 200, n_joints: int = 4) -> object:

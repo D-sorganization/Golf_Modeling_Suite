@@ -6,8 +6,6 @@ Tests contracts added to:
 - Power/Work: positive_work >= 0, negative_work <= 0, finite values,
   duration >= 0, path length >= 0
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
@@ -15,6 +13,9 @@ import unittest
 from unittest.mock import MagicMock
 
 import numpy as np
+import pytest
+
+pytestmark = pytest.mark.unit
 
 
 def _make_pca_mixin(n: int = 100, n_joints: int = 3) -> object:

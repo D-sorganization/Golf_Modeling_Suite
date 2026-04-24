@@ -16,6 +16,7 @@ from mujoco_humanoid_golf.power_flow import (
     PowerFlowAnalyzer,
     PowerFlowResult,
 )
+
 pytestmark = pytest.mark.unit
 
 

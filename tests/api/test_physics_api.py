@@ -20,8 +20,6 @@ from collections.abc import Generator
 import pytest
 from pydantic import ValidationError
 
-pytestmark = pytest.mark.integration
-
 from src.api.models.requests import (
     VALID_CAMERA_PRESETS,
     VALID_CONTROL_STRATEGIES,
@@ -42,6 +40,8 @@ from src.api.models.responses import (
     SpeedControlResponse,
     TrajectoryRecordResponse,
 )
+
+pytestmark = pytest.mark.integration
 
 try:
     from fastapi.testclient import TestClient

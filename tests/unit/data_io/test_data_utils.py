@@ -17,6 +17,7 @@ from src.shared.python.data_io.data_utils import (
     save_json_data,
     save_numpy_data,
 )
+
 pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------

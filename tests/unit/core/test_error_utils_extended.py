@@ -29,6 +29,7 @@ from src.shared.python.core.error_utils import (
     format_validation_error,
     handle_import_error,
 )
+
 pytestmark = pytest.mark.unit
 
 # ============================================================================

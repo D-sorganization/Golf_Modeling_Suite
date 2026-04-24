@@ -7,7 +7,9 @@ does NOT trigger its heavy physics engine import at module level.
 
 import sys
 from unittest.mock import MagicMock, patch
+
 import pytest
+
 pytestmark = pytest.mark.unit
 
 

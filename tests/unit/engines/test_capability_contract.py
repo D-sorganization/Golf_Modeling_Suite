@@ -8,8 +8,6 @@ Design by Contract:
     Invariant: if Capability.X in engine.capabilities(), then the corresponding
     method must be callable without raising NotImplementedError.
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
@@ -17,6 +15,8 @@ import numpy as np
 import pytest
 
 from src.shared.python.engine_core.capabilities import Capability
+
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Tests for the Capability enum itself

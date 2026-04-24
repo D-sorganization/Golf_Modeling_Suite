@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from src.shared.python.physics.terrain import ElevationMap, Terrain, TerrainType
 from src.shared.python.physics.terrain_mixin import TerrainMixin
-import pytest
+
 pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------

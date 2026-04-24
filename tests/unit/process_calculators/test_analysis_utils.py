@@ -9,6 +9,7 @@ import pytest
 from src.shared.python.upstream_drift_tools.process_calculators.analysis_utils import (
     evaluate_output,
 )
+
 pytestmark = pytest.mark.unit
 
 

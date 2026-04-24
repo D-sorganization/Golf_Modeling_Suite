@@ -6,6 +6,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 import numpy as np
+import pytest
 
 from src.shared.python.engine_core.base_physics_engine import (
     BasePhysicsEngine,
@@ -15,7 +16,7 @@ from src.shared.python.engine_core.checkpoint import (
     CheckpointManager,
     StateCheckpoint,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

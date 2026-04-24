@@ -18,6 +18,7 @@ from mujoco_humanoid_golf.spatial_algebra import (
     xrot,
     xtrans,
 )
+
 pytestmark = pytest.mark.unit
 
 

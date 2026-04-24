@@ -11,6 +11,7 @@ from src.shared.python.biomechanics.kinematic_sequence import (
     SegmentTimingAnalyzer,
     SegmentTimingResult,
 )
+
 pytestmark = pytest.mark.unit
 
 

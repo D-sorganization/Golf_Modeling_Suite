@@ -11,6 +11,7 @@ from src.shared.python.upstream_drift_tools.process_calculators.scrubber.models.
     ScrubberInputs,
     ScrubberResults,
 )
+
 pytestmark = pytest.mark.unit
 
 

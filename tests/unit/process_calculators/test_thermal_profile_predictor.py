@@ -9,6 +9,7 @@ from src.shared.python.upstream_drift_tools.process_calculators.thermal_profile_
     fit_heating_parameters,
     predict_temperature_profile,
 )
+
 pytestmark = pytest.mark.unit
 
 

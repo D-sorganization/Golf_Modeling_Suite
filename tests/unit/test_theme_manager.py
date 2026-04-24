@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from src.shared.python.theme.theme_manager import (
     BUILTIN_THEMES,
     ThemeManager,
@@ -9,7 +11,7 @@ from src.shared.python.theme.theme_manager import (
     get_theme_manager,
     normalise_hex_color,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

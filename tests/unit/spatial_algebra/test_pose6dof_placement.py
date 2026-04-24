@@ -22,6 +22,7 @@ from src.shared.python.spatial_algebra.pose6dof import (
     quaternion_to_euler,
     rotation_matrix_to_euler,
 )
+
 pytestmark = pytest.mark.unit
 
 

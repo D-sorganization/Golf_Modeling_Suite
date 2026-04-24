@@ -13,8 +13,6 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-pytestmark = pytest.mark.integration
-
 from src.api.models.requests import (
     VALID_ANALYSIS_TYPES,
     VALID_ENGINE_TYPES,
@@ -27,6 +25,8 @@ from src.api.models.responses import (
     SimulationResponse,
 )
 from src.shared.python.engine_core.engine_registry import EngineType
+
+pytestmark = pytest.mark.integration
 
 
 # ──────────────────────────────────────────────────────────────

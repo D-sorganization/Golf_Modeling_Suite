@@ -1,6 +1,7 @@
 from typing import Any
 
 import numpy as np
+import pytest
 from numpy.typing import NDArray
 
 from src.deployment.realtime import ControlMode
@@ -8,7 +9,7 @@ from src.deployment.teleoperation.interface import (
     TeleoperationInterface,
     TeleoperationMode,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

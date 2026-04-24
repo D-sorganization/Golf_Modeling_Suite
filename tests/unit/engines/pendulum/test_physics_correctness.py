@@ -1,5 +1,6 @@
 import math
 
+import pytest
 from double_pendulum_model.physics.double_pendulum import (
     DoublePendulumDynamics,
     DoublePendulumParameters,
@@ -10,7 +11,7 @@ from double_pendulum_model.physics.triple_pendulum import (  # noqa: E402
     TriplePendulumDynamics,
     TriplePendulumState,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

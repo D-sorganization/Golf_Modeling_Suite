@@ -9,8 +9,6 @@ Bugs covered:
 4. PyQt app: _safe_eval() silently returns 0.0 on expression errors; the run
    continues with wrong torques, and no error is surfaced to the user.
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
@@ -25,6 +23,8 @@ from double_pendulum_model.physics.triple_pendulum import TriplePendulumState
 from double_pendulum_model.ui.pendulum_pyqt_app import PendulumController
 
 from src.shared.python.ui.qt.utils import get_qapp
+
+pytestmark = pytest.mark.unit
 
 
 @pytest.fixture(scope="module")

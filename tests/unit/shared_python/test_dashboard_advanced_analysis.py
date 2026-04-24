@@ -12,6 +12,7 @@ from src.shared.python.dashboard.advanced_analysis import (
     PhasePlaneTab,
     SpectrogramTab,
 )
+
 pytestmark = pytest.mark.unit
 
 

@@ -12,6 +12,7 @@ from typing import Any
 from unittest.mock import patch
 
 import pytest
+
 pytestmark = pytest.mark.unit
 
 # Skip entire module if PyQt6 is not installed

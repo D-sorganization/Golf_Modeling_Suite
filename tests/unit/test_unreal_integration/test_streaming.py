@@ -27,6 +27,7 @@ from src.unreal_integration.streaming import (  # noqa: E402
     StreamingState,
     UnrealStreamingServer,
 )
+
 pytestmark = pytest.mark.unit
 
 # Ensure pytest-asyncio is available for async test classes;

@@ -4,6 +4,7 @@ import typing
 
 import numpy as np
 import pytest
+
 pytestmark = pytest.mark.unit
 
 pin = pytest.importorskip("pinocchio")

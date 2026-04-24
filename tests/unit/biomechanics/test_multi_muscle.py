@@ -12,6 +12,7 @@ from src.shared.python.biomechanics.multi_muscle import (
     create_elbow_muscle_system,
 )
 from src.shared.python.core.contracts import PreconditionError
+
 pytestmark = pytest.mark.unit
 
 

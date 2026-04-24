@@ -23,6 +23,7 @@ from src.shared.python.core.physics_constants import (
     SPATIAL_LIN_DIM,
     PhysicalConstant,
 )
+
 pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------

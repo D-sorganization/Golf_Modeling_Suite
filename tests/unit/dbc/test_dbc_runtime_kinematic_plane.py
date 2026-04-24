@@ -6,14 +6,15 @@ Tests contracts added to:
 - SwingPlaneAnalyzer: require() >= 3 points for fit_plane,
   ensure() unit normal, rmse >= 0, max_deviation >= 0, steepness in [0,180]
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
 import unittest
 
 import numpy as np
+import pytest
+
+pytestmark = pytest.mark.unit
 
 # ==================== Kinematic Sequence Tests ====================
 

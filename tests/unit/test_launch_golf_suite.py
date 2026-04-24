@@ -1,8 +1,10 @@
 import argparse
 from unittest.mock import patch
 
-import launch_golf_suite
 import pytest
+
+import launch_golf_suite
+
 pytestmark = pytest.mark.unit
 
 

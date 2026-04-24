@@ -1,7 +1,8 @@
 """Tests for humanoid anthropometry helpers."""
 
-from humanoid_character_builder.core.anthropometry import estimate_segment_masses
 import pytest
+from humanoid_character_builder.core.anthropometry import estimate_segment_masses
+
 pytestmark = pytest.mark.unit
 
 

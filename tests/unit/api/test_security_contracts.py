@@ -8,6 +8,7 @@ import os
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 pytestmark = pytest.mark.unit
 
 # All tests require GOLF_API_SECRET_KEY to be set

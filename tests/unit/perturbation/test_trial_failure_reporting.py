@@ -8,8 +8,6 @@ Verifies that:
   threshold (> 5%).
 - Successful trials still return correct results in partial-failure scenarios.
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
@@ -26,6 +24,8 @@ from src.shared.python.perturbation.perturbation_base import (
     PerturbationAnalyzerBase,
     TrialFailure,
 )
+
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Shared stub infrastructure (mirrors test_perturbation_base.py)

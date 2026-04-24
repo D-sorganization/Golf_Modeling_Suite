@@ -9,6 +9,7 @@ from mujoco_humanoid_golf.biomechanics import (
     SwingRecorder,
 )
 from mujoco_humanoid_golf.models import DOUBLE_PENDULUM_XML
+
 pytestmark = pytest.mark.unit
 
 

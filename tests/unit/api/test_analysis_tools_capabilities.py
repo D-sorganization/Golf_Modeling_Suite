@@ -8,6 +8,7 @@ fabricated success or zero-value measurements.
 from unittest.mock import MagicMock
 
 import pytest
+
 pytestmark = pytest.mark.unit
 
 

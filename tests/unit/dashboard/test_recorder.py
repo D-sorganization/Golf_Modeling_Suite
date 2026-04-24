@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from src.shared.python.dashboard.recorder import GenericPhysicsRecorder
 from src.shared.python.engine_core.checkpoint import StateCheckpoint
 from src.shared.python.engine_core.interfaces import PhysicsEngine
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

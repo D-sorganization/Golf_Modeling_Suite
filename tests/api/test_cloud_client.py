@@ -6,9 +6,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-pytestmark = pytest.mark.integration
-
 from src.api.cloud_client import CloudClient
+
+pytestmark = pytest.mark.integration
 
 
 @pytest.fixture

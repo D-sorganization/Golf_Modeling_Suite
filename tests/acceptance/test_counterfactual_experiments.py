@@ -18,9 +18,9 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 
-pytestmark = pytest.mark.integration
-
 from src.shared.python.logging_pkg.logging_config import get_logger
+
+pytestmark = pytest.mark.integration
 
 # Check if pendulum engine dependencies are available
 try:

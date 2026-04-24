@@ -18,6 +18,7 @@ from src.launchers.settings_dialog import (
     validate_tab_index,
 )
 from src.launchers.startup import StartupResults
+
 pytestmark = pytest.mark.unit
 
 

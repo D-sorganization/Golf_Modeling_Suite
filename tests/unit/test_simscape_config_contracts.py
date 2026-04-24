@@ -9,12 +9,14 @@ Three bugs:
 3. createSimulationConfig.m validation warns on invalid config and returns the broken
    struct anyway — callers receive a config that cannot run.
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
 from pathlib import Path
+
+import pytest
+
+pytestmark = pytest.mark.unit
 
 _CREATE_CONFIG = Path(
     "src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/src/"

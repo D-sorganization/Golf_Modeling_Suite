@@ -3,7 +3,6 @@
 from unittest.mock import MagicMock, patch  # noqa: E402
 
 import pytest
-
 from PyQt6.QtWidgets import QMenu, QWidget  # noqa: E402
 
 pytestmark = pytest.mark.integration

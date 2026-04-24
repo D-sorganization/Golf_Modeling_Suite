@@ -11,9 +11,9 @@ from typing import Any
 import numpy as np
 import pytest
 
-pytestmark = pytest.mark.integration
-
 from src.shared.python.logging_pkg.logging_config import get_logger
+
+pytestmark = pytest.mark.integration
 
 logger = get_logger(__name__)
 

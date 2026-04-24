@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from src.shared.python.biomechanics.biomechanics_data import BiomechanicalData
-import pytest
+
 pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------

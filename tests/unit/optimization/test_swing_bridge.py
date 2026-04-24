@@ -23,6 +23,7 @@ from src.shared.python.optimization.swing_bridge import (
     SwingOptimizationConfig,
     SwingOptimizationResult,
 )
+
 pytestmark = pytest.mark.unit
 
 # =========================================================================

@@ -3,11 +3,12 @@
 import unittest
 
 import numpy as np
+import pytest
 
 from src.shared.python.engine_core.cross_engine_validator import (
     CrossEngineValidator,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

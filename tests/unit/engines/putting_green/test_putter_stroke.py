@@ -15,6 +15,7 @@ from src.engines.physics_engines.putting_green.python.putter_stroke import (
     PutterType,
     StrokeParameters,
 )
+
 pytestmark = pytest.mark.unit
 
 

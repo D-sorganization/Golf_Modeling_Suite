@@ -9,13 +9,12 @@ not just hand-picked examples.  Each property is documented with:
 References:
   - GitHub issue #1694 (Hypothesis property-based tests)
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET
 
+import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 from model_generation.builders.manual_builder import ManualBuilder
@@ -28,6 +27,8 @@ from model_generation.core.types import (
     Link,
     Origin,
 )
+
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Hypothesis strategies for valid model parameters

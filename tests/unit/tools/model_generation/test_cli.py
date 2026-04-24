@@ -6,6 +6,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
+
 pytestmark = pytest.mark.unit
 
 SIMPLE_URDF = """<?xml version="1.0"?>

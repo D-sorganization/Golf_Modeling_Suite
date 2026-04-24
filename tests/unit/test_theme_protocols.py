@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+import pytest
+
 from src.shared.python.theme.integration import get_theme_manager
 from src.shared.python.theme.protocols import (
     StylesheetGenerator,
     ThemeProvider,
     ThemeSwitcher,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

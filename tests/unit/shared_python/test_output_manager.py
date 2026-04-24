@@ -13,6 +13,7 @@ from src.shared.python.data_io.output_manager import (
     OutputFormat,
     OutputManager,
 )
+
 pytestmark = pytest.mark.unit
 
 

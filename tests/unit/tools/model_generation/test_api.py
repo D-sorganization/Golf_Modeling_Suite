@@ -5,7 +5,9 @@ Tests for the REST API module.
 from __future__ import annotations
 
 from typing import Any
+
 import pytest
+
 pytestmark = pytest.mark.unit
 
 SIMPLE_URDF = """<?xml version="1.0"?>

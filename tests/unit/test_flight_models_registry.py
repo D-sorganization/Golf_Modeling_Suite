@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import math
 
+import pytest
+
 from src.shared.python.physics.flight_models import (
     FlightModelRegistry,
     UnifiedLaunchConditions,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

@@ -3,14 +3,14 @@
 import pytest
 from pydantic import ValidationError
 
-pytestmark = pytest.mark.integration
-
 from src.api.models.chat import (
     ChatChunkResponse,
     ChatHistoryResponse,
     ChatMessageRequest,
     ChatSessionInfo,
 )
+
+pytestmark = pytest.mark.integration
 
 
 def test_chat_message_request_valid() -> None:

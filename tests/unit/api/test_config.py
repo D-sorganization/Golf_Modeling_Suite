@@ -15,6 +15,7 @@ from src.api.config import (
     get_server_host,
     get_server_port,
 )
+
 pytestmark = pytest.mark.unit
 
 

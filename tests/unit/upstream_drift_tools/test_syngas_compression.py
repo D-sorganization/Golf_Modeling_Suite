@@ -8,6 +8,7 @@ from src.shared.python.upstream_drift_tools.process_calculators.syngas_compressi
     CompressionStage,
     SyngasCompressionEngine,
 )
+
 pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------

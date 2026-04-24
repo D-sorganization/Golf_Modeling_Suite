@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 from src.shared.python.analysis.coordination_metrics import CoordinationMetricsMixin
+
 pytestmark = pytest.mark.unit
 
 

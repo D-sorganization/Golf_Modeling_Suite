@@ -9,6 +9,7 @@ from mujoco_humanoid_golf.drift_control import (
     DriftControlDecomposer,
     DriftControlResult,
 )
+
 pytestmark = pytest.mark.unit
 
 

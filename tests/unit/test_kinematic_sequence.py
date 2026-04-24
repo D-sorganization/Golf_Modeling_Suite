@@ -10,6 +10,7 @@ from src.shared.python.biomechanics.kinematic_sequence import (
     SegmentTimingAnalyzer,
 )
 from src.shared.python.core.contracts import PreconditionError
+
 pytestmark = pytest.mark.unit
 
 

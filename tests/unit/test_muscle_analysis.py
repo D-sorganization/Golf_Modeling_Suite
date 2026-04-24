@@ -16,6 +16,7 @@ from src.shared.python.biomechanics.muscle_analysis import (
 )
 from src.shared.python.core.contracts import PreconditionError
 from src.shared.python.engine_core.engine_availability import skip_if_unavailable
+
 pytestmark = pytest.mark.unit
 
 

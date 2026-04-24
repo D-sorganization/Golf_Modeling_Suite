@@ -12,6 +12,7 @@ from src.shared.python.pendulum_simulator.constants import (
     M_PER_INCH,
     NM_PER_KGFM,
 )
+
 pytestmark = pytest.mark.unit
 
 

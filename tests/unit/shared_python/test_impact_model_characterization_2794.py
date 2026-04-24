@@ -36,8 +36,6 @@ References to chase when rebuilding (issue #2700 body):
 DO NOT "fix" these tests by flipping signs without a citation; see
 issue #2794.
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
@@ -51,6 +49,8 @@ from src.shared.python.physics.impact_model import (
     compute_gear_effect_spin,
     validate_energy_balance,
 )
+
+pytestmark = pytest.mark.unit
 
 
 def _make_pre_state(

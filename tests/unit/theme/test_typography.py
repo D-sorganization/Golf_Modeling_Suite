@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from src.shared.python.theme.typography import (
     CSS_FONT_DISPLAY,
     CSS_FONT_MONO,
@@ -14,7 +16,7 @@ from src.shared.python.theme.typography import (
     Sizes,
     Weights,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

@@ -5,8 +5,6 @@ Tests cover:
     - Force/torque sensor simulation
     - IMU sensor simulation
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
@@ -34,6 +32,8 @@ from src.robotics.sensing.noise_models import (
     QuantizationNoise,
     create_realistic_sensor_noise,
 )
+
+pytestmark = pytest.mark.unit
 
 
 class TestNoiseModels:

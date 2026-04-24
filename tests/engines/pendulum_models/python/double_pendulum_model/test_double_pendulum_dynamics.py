@@ -21,8 +21,6 @@ import math
 import numpy as np
 import pytest
 
-pytestmark = pytest.mark.unit
-
 from src.engines.pendulum_models.python.double_pendulum_model import (
     DoublePendulumDynamics,
     DoublePendulumParameters,
@@ -33,6 +31,8 @@ from src.engines.pendulum_models.python.double_pendulum_model.physics.double_pen
     DEFAULT_DAMPING_SHOULDER,
     DEFAULT_DAMPING_WRIST,
 )
+
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Fixtures

@@ -21,14 +21,14 @@ These tests cover:
 - All three axis orientations (x, y, z)
 - Physical properties: positive definiteness, triangle inequality
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
 import math
 
 import pytest
+
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Helpers to compute the *correct* capsule inertia from first principles so

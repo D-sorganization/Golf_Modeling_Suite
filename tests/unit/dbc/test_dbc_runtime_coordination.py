@@ -7,8 +7,6 @@ Tests the require()/ensure() contracts added to:
 - compute_rolling_correlation: require() window_size >= 2,
   ensure() correlations in [-1, 1]
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
@@ -16,6 +14,9 @@ import unittest
 from unittest.mock import MagicMock
 
 import numpy as np
+import pytest
+
+pytestmark = pytest.mark.unit
 
 
 def _make_mixin(n: int = 200, n_joints: int = 3) -> object:
