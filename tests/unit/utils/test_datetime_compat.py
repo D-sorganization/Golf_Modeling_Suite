@@ -13,7 +13,7 @@ from src.api.utils.datetime_compat import (
     iso_format,
     utc_now,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

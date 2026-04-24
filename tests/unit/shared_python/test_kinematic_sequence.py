@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from src.shared.python.biomechanics.kinematic_sequence import KinematicSequenceAnalyzer
-import pytest
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

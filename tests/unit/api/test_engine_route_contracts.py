@@ -9,8 +9,6 @@ Five bugs:
    the frontend which uses '/api/engines/...'.
 5. ParameterPanel.tsx defines 'myosim' defaults but the engine identifier is 'myosuite'.
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

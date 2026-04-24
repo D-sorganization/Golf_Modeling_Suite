@@ -21,7 +21,7 @@ from model_generation.core.types import (
     Link,
 )
 from model_generation.core.validation import ValidationResult, Validator
-import pytest
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

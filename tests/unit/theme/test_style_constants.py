@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-from src.shared.python.theme.style_constants import Styles
 import pytest
+
+from src.shared.python.theme.style_constants import Styles
+
 pytestmark = pytest.mark.unit
 
 

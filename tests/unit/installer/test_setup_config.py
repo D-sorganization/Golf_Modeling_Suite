@@ -9,6 +9,7 @@ from installer.windows.setup_config import (
     build_setup_configuration,
     detect_available_engines,
 )
+
 pytestmark = pytest.mark.unit
 
 

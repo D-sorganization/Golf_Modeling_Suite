@@ -23,6 +23,7 @@ from src.shared.python.optimization.swing_optimizer import (
     SwingOptimizer,
     SwingTrajectory,
 )
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

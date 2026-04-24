@@ -5,7 +5,7 @@ import pytest
 
 from src.shared.python.biomechanics.biomechanics_data import BiomechanicalData
 from src.shared.python.core.constants import GRAVITY_M_S2
-import pytest
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

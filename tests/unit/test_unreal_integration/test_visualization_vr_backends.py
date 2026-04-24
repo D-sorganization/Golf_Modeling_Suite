@@ -43,6 +43,7 @@ from src.unreal_integration.vr_interaction import (
     VRInteractionManager,
     VRLocomotionMode,
 )
+
 pytestmark = pytest.mark.unit
 
 # ============================================================================

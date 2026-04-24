@@ -8,6 +8,9 @@ import pytest
 
 import start_api_server
 import pytest
+
+import start_api_server
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

@@ -10,6 +10,7 @@ from src.shared.python.physics.terrain_engine import (
     TerrainAwareEngine,
     TerrainContactModel,
 )
+
 pytestmark = pytest.mark.unit
 
 

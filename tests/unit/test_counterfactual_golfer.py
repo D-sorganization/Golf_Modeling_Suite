@@ -10,6 +10,7 @@ from src.shared.python.pendulum_simulator.counterfactual_golfer import (
     zero_torque_joint_forces,
 )
 from src.shared.python.pendulum_simulator.physics_golfer import N_DOF, GolferParams
+
 pytestmark = pytest.mark.unit
 
 

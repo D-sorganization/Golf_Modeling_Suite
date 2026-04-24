@@ -5,6 +5,7 @@ import pytest
 
 from src.shared.python.biomechanics.swing_plane_analysis import SwingPlaneAnalyzer
 from src.shared.python.core.contracts import PreconditionError
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

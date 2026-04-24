@@ -6,6 +6,7 @@ Task 3.4: Handedness Integration tests.
 import pytest
 
 from src.tools.model_explorer.urdf_builder import Handedness, URDFBuilder
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

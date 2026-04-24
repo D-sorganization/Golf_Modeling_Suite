@@ -5,8 +5,6 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-pytestmark = pytest.mark.integration
-
 from src.learning.retargeting import SkeletonConfig
 
 pytestmark = pytest.mark.integration

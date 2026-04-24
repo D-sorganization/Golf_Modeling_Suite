@@ -22,6 +22,7 @@ from src.unreal_integration.mesh_loader import (
     MeshVertex,
     UnsupportedFormatError,
 )
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

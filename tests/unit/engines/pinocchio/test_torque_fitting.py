@@ -11,6 +11,7 @@ from src.engines.physics_engines.pinocchio.python.pinocchio_golf.torque_fitting 
     fit_torque_poly,
     main,
 )
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

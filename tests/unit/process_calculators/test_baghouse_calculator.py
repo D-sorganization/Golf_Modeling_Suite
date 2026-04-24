@@ -8,6 +8,7 @@ from src.shared.python.upstream_drift_tools.process_calculators.baghouse_calcula
     BaghouseCalculator,
     BaghouseResult,
 )
+
 pytestmark = pytest.mark.unit
 
 _SYNGAS = {"CO": 0.4, "H2": 0.3, "CO2": 0.2, "H2O": 0.05, "N2": 0.05}

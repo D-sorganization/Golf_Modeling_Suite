@@ -10,6 +10,7 @@ from mujoco_humanoid_golf.club_configurations import (
     ClubSpecification,
     get_recommended_flex,
 )
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

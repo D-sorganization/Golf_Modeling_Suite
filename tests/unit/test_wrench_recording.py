@@ -15,7 +15,7 @@ import numpy as np
 import pytest
 
 from src.shared.python.dashboard.recorder import GenericPhysicsRecorder
-import pytest
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

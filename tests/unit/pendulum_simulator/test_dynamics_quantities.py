@@ -13,6 +13,7 @@ from src.shared.python.pendulum_simulator.dynamics_quantities import (
     linear_power_at,
     linear_power_series,
 )
+
 pytestmark = pytest.mark.unit
 
 

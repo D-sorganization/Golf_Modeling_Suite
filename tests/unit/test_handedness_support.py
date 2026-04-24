@@ -22,6 +22,7 @@ from src.shared.python.config.handedness_support import (
     validate_energy_conservation,
     validate_mirror_trajectory,
 )
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

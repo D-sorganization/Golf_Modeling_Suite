@@ -11,6 +11,7 @@ from src.shared.python.pendulum_simulator.model_registry import (
     list_models,
     register_model,
 )
+
 pytestmark = pytest.mark.unit
 
 

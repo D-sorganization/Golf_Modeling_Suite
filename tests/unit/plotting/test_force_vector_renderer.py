@@ -20,6 +20,7 @@ from src.shared.python.core.contracts.exceptions import PreconditionError
 from src.shared.python.plotting.renderers.force_vectors import (
     ForceVectorRenderer,
 )
+
 pytestmark = pytest.mark.unit
 
 # ============================================================================

@@ -27,6 +27,7 @@ from model_generation.core.types import (
     Material,
     Origin,
 )
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

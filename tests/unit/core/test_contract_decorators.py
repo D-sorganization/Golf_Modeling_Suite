@@ -22,6 +22,7 @@ from src.shared.python.core.contracts.level import (
     get_contract_level,
     set_contract_level,
 )
+
 pytestmark = pytest.mark.unit
 
 

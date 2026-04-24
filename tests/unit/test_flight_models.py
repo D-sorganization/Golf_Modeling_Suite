@@ -25,6 +25,7 @@ from src.shared.python.physics.flight_models import (
     WaterlooPennerModel,
     compare_models,
 )
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

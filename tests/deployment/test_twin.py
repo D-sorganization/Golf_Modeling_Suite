@@ -5,8 +5,6 @@ from unittest.mock import MagicMock
 import numpy as np
 import pytest
 
-pytestmark = pytest.mark.integration
-
 from src.deployment.digital_twin.twin import AnomalyReport, AnomalyType, DigitalTwin
 from src.deployment.realtime.state import RobotState
 

@@ -13,6 +13,7 @@ from src.shared.python.theme.api import (
     ThemeListResponse,
     ThemeOperationResponse,
 )
+
 pytestmark = pytest.mark.unit
 
 _COLORS = {

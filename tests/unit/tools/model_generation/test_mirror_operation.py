@@ -21,6 +21,7 @@ from model_generation.core.types import (
     Link,
     Origin,
 )
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

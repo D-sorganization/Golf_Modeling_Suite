@@ -2,8 +2,6 @@
 
 import numpy as np
 import pytest
-
-pytestmark = pytest.mark.unit
 from model_generation.core.contracts import (
     InvariantError,
     PostconditionError,

@@ -19,8 +19,6 @@ from pathlib import Path
 
 import pytest
 
-pytestmark = pytest.mark.unit
-
 from src.config.launcher_manifest_loader import (
     ASSETS_DIR,
     MANIFEST_PATH,

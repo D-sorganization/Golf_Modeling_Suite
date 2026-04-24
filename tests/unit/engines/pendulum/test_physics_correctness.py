@@ -11,7 +11,7 @@ from double_pendulum_model.physics.triple_pendulum import (  # noqa: E402
     TriplePendulumDynamics,
     TriplePendulumState,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

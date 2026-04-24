@@ -12,6 +12,7 @@ from src.shared.python.pendulum_simulator.jacobians import (
     jacobian_double,
     jacobian_triple,
 )
+
 pytestmark = pytest.mark.unit
 
 

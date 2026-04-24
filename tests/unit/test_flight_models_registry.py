@@ -10,7 +10,7 @@ from src.shared.python.physics.flight_models import (
     FlightModelRegistry,
     UnifiedLaunchConditions,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

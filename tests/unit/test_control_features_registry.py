@@ -15,6 +15,7 @@ from src.shared.python.control_features_registry import (
     FeatureCategory,
 )
 from src.shared.python.engine_core.mock_engine import MockPhysicsEngine
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

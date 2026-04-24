@@ -10,6 +10,7 @@ from mujoco_humanoid_golf.interactive_manipulation import (
     InteractiveManipulator,
 )
 from mujoco_humanoid_golf.models import DOUBLE_PENDULUM_XML
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

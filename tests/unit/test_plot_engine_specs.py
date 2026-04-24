@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from src.shared.python.plot_engine.specs import (
     HistogramSpec,
@@ -13,7 +14,7 @@ from src.shared.python.plot_engine.specs import (
     TrendlineSpec,
 )
 from src.shared.python.plot_engine.trendline import TrendlineResult, compute_trendline
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

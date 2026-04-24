@@ -6,8 +6,6 @@ Tests contracts added to:
 - Power/Work: positive_work >= 0, negative_work <= 0, finite values,
   duration >= 0, path length >= 0
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

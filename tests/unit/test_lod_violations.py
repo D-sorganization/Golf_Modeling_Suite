@@ -8,8 +8,6 @@ Three violations:
 3. launcher_utils.py duplicates the same 4-level chain.
    Fix: import SUITE_ROOT from src.shared.python.
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

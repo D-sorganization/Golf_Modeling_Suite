@@ -9,6 +9,7 @@ from src.shared.python.calc_backend.contracts.flow_rate import (
     FlowRateConvertRequest,
     FlowRateConvertResponse,
 )
+
 pytestmark = pytest.mark.unit
 
 

@@ -10,6 +10,7 @@ from src.shared.python.physics.flight_model_options import (
     compute_air_density_at_altitude,
     compute_spin_decay,
 )
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

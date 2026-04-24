@@ -18,6 +18,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from src.shared.python.engine_core.engine_manager import EngineManager
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

@@ -3,7 +3,7 @@ from double_pendulum_model.ui.validation import (
     validate_polynomial_text,
     validate_torque_text,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

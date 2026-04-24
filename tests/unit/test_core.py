@@ -16,6 +16,7 @@ from src.shared.python.core import (
     setup_logging,
     setup_structured_logging,
 )
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

@@ -19,6 +19,7 @@ from src.shared.python.signal_toolkit.series import (
     sin_series,
     sinh_series,
 )
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

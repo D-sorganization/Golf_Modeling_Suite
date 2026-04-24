@@ -12,6 +12,7 @@ from src.shared.python.spatial_algebra.reference_frames import (
     fit_instantaneous_swing_plane,
     transform_wrench_to_frame,
 )
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

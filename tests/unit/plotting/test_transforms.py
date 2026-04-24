@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 from src.shared.python.plotting.transforms import DataManager
+
 pytestmark = pytest.mark.unit
 
 

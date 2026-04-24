@@ -5,8 +5,6 @@ Tests cover:
     - Force/torque sensor simulation
     - IMU sensor simulation
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

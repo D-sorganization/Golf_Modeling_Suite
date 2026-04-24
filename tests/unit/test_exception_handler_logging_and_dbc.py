@@ -7,8 +7,6 @@ Issue #1774: Missing DbC preconditions on AerodynamicsEngine.
   - compute_forces() input shape validation (velocity and spin must be 1-D, length 3).
   - compute_acceleration() mass > 0 (already implemented; regression test only).
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

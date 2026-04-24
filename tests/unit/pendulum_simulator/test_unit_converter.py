@@ -15,6 +15,7 @@ from src.shared.python.pendulum_simulator.gui.unit_converter import (
     get_unit_label,
     to_si,
 )
+
 pytestmark = pytest.mark.unit
 
 

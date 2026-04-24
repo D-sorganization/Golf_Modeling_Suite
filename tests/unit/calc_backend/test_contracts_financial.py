@@ -10,6 +10,7 @@ from src.shared.python.calc_backend.contracts.financial import (
     FinancialResponse,
     FinancialResultsOut,
 )
+
 pytestmark = pytest.mark.unit
 
 

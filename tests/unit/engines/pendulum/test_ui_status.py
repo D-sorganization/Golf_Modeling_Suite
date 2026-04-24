@@ -9,6 +9,7 @@ from double_pendulum_model.ui.pendulum_pyqt_app import PendulumController
 from PyQt6 import QtWidgets
 
 from src.shared.python.ui.qt.utils import get_qapp
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

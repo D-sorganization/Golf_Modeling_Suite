@@ -21,6 +21,7 @@ from src.shared.python.spatial_algebra.manipulability import (
     compute_manipulability_index,
     get_jacobian_conditioning,
 )
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

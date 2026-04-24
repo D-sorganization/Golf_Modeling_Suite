@@ -7,8 +7,6 @@ Covers:
           NotImplementedError for simulation/loopback backends
 - #1777: motion_training __getattr__ must return real objects, not None
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

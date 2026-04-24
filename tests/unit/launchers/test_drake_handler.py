@@ -1,7 +1,9 @@
 """Regression tests for Drake model handler."""
 
-from src.launchers.launcher_model_handlers import ModelHandlerRegistry, ModuleHandler
 import pytest
+
+from src.launchers.launcher_model_handlers import ModelHandlerRegistry, ModuleHandler
+
 pytestmark = pytest.mark.unit
 
 

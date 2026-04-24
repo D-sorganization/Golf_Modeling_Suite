@@ -14,7 +14,7 @@ from src.shared.python.core.numerical_constants import (
     TOLERANCE_ENERGY_CONSERVATION,
     TOLERANCE_WORK_ENERGY_MISMATCH,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

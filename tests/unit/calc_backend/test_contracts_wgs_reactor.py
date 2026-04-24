@@ -11,6 +11,7 @@ from src.shared.python.calc_backend.contracts.wgs_reactor import (
     WGSReactorResponse,
     WGSSizingOut,
 )
+
 pytestmark = pytest.mark.unit
 
 

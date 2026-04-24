@@ -4,9 +4,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from src.shared.python.ai.tool_registry import ToolRegistry
 from src.shared.python.ai.tools.file_ops import register_file_tools
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

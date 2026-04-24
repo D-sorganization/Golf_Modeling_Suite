@@ -17,8 +17,6 @@ import pytest
 from fastapi import HTTPException
 from pydantic import ValidationError
 
-pytestmark = pytest.mark.integration
-
 from src.api.models.requests import (
     BodyPositionUpdateRequest,
     DataExportRequest,

@@ -10,6 +10,7 @@ from src.shared.python.pendulum_simulator.club_forces import (
     moment_of_net_force,
     net_force_on_club,
 )
+
 pytestmark = pytest.mark.unit
 
 

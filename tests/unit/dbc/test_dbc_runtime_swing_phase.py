@@ -5,8 +5,6 @@ Tests contracts added to:
   ratio non-negative, X-factor stretch peak non-negative
 - PhaseDetectionMixin: phase durations non-negative, start <= end
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

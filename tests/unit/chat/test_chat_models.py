@@ -11,6 +11,7 @@ from src.shared.python.chat.models import (
     ChatMessageRequest,
     ChatSessionInfo,
 )
+
 pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------

@@ -1,6 +1,7 @@
 """Test that all modules can be imported."""
 
 import pytest
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

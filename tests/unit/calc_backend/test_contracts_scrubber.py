@@ -9,6 +9,7 @@ from src.shared.python.calc_backend.contracts.scrubber import (
     ScrubberRequest,
     ScrubberResponse,
 )
+
 pytestmark = pytest.mark.unit
 
 

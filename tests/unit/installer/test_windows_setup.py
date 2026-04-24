@@ -12,7 +12,7 @@ import pytest
 
 from installer.windows import setup_config
 from installer.windows.packaging_profiles import get_packaging_profile
-import pytest
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from src.shared.python.analysis.power_work_metrics import PowerWorkMetricsMixin
-import pytest
+
 pytestmark = pytest.mark.unit
 
 

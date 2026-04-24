@@ -11,8 +11,6 @@ Verifies that:
 
 Issue #2078: Add database migration tooling.
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 
@@ -22,6 +20,8 @@ from types import ModuleType
 from unittest.mock import patch
 
 import pytest
+
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Helpers

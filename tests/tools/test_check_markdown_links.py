@@ -4,8 +4,6 @@ from pathlib import Path
 
 import pytest
 
-pytestmark = pytest.mark.integration
-
 from src.shared.python.contracts import PreconditionError
 from src.tools.check_markdown_links import (
     check_links,

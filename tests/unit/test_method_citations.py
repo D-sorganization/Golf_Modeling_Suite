@@ -14,7 +14,7 @@ from src.shared.python.analysis.dataclasses import (
     validate_angle_cross_engine,
     validate_timing_cross_engine,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

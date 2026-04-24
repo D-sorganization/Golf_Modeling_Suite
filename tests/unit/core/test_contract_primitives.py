@@ -16,6 +16,7 @@ from src.shared.python.core.contracts.level import (
     set_contract_level,
 )
 from src.shared.python.core.contracts.primitives import ensure, require
+
 pytestmark = pytest.mark.unit
 
 

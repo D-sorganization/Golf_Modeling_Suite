@@ -8,7 +8,7 @@ import pytest
 
 from src.shared.python.engine_core.engine_availability import PYQT6_AVAILABLE
 from src.shared.python.gui_pkg.gui_utils import get_qapp
-import pytest
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

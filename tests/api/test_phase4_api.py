@@ -14,8 +14,6 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-pytestmark = pytest.mark.integration
-
 from src.api.models.requests import (
     ActuatorBatchCommandRequest,
     ActuatorCommandRequest,

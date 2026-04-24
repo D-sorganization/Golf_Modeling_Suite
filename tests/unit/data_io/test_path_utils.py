@@ -17,7 +17,7 @@ from src.shared.python.data_io.path_utils import (
     get_shared_dir,
     get_src_root,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

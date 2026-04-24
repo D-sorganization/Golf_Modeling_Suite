@@ -20,6 +20,7 @@ from src.shared.python.biomechanics.myoconverter_integration import (
 from src.shared.python.engine_core.engine_availability import (
     skip_if_unavailable,
 )
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

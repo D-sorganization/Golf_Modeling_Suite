@@ -10,8 +10,6 @@ entire build-parse-validate cycle produces consistent results.
 References:
   - GitHub issue #1694 (end-to-end integration tests)
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

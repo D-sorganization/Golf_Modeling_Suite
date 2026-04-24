@@ -14,6 +14,7 @@ from src.shared.python.spatial_algebra.manipulability import (
     compute_manipulability_ellipsoid,
     compute_manipulability_index,
 )
+
 pytestmark = pytest.mark.unit
 
 

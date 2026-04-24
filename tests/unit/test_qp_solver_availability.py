@@ -9,6 +9,9 @@ import pytest
 
 from src.robotics.control.whole_body.qp_solver import ScipyQPSolver
 import pytest
+
+from src.robotics.control.whole_body.qp_solver import ScipyQPSolver
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

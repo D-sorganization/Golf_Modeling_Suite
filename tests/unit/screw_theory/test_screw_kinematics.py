@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 
 import numpy as np
+import pytest
 
 from src.shared.python.screw_theory.kinematics import (
     ScrewAxis,
@@ -12,7 +13,7 @@ from src.shared.python.screw_theory.kinematics import (
     compute_screw_axis,
     compute_screw_endpoints,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------

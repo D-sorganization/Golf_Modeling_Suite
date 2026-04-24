@@ -13,6 +13,7 @@ from src.shared.python.validation_pkg.validation_helpers import (
     validate_magnitude,
     validate_model_parameters,
 )
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

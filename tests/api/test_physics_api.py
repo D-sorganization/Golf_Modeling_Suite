@@ -20,8 +20,6 @@ from collections.abc import Generator
 import pytest
 from pydantic import ValidationError
 
-pytestmark = pytest.mark.integration
-
 from src.api.models.requests import (
     VALID_CAMERA_PRESETS,
     VALID_CONTROL_STRATEGIES,

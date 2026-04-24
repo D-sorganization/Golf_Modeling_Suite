@@ -8,6 +8,7 @@ import pytest
 from src.shared.python.pendulum_simulator.simulation_result_base import (
     TrajectoryResultMixin,
 )
+
 pytestmark = pytest.mark.unit
 
 

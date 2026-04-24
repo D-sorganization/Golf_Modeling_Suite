@@ -10,6 +10,7 @@ from src.shared.python.injury.spinal_load_analysis import (
     SpinalLoadResult,
     SpinalRiskLevel,
 )
+
 pytestmark = pytest.mark.unit
 
 

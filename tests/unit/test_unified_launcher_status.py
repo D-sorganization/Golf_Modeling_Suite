@@ -8,6 +8,9 @@ import pytest
 
 from src.launchers.unified_launcher import UnifiedLauncher
 import pytest
+
+from src.launchers.unified_launcher import UnifiedLauncher
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

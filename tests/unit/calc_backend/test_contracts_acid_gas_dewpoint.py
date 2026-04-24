@@ -10,6 +10,7 @@ from src.shared.python.calc_backend.contracts.acid_gas_dewpoint import (
     AcidGasDewpointResponse,
     DewpointComponentOut,
 )
+
 pytestmark = pytest.mark.unit
 
 

@@ -9,6 +9,7 @@ from src.shared.python.calc_backend.contracts.baghouse import (
     BaghouseRequest,
     BaghouseResponse,
 )
+
 pytestmark = pytest.mark.unit
 
 

@@ -14,8 +14,6 @@ Tests cover:
 - validation_data.py: DataSource, ValidationDataPoint, PGA_TOUR_2024,
   AMATEUR_AVERAGES, ALL_VALIDATION_DATA, get_validation_data_for_club
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

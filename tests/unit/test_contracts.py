@@ -18,6 +18,7 @@ from src.shared.python.contracts import (
     require_positive,
     set_contract_level,
 )
+
 pytestmark = pytest.mark.unit
 
 _needs_contracts = pytest.mark.skipif(

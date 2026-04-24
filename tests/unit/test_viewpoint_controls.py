@@ -23,6 +23,7 @@ from src.shared.python.gui_pkg.viewpoint_controls import (
     interpolate_camera_states,
     spherical_to_cartesian,
 )
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

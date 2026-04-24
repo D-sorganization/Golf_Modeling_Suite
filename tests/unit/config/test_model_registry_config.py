@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 import yaml
 
 from src.shared.python.config.model_registry import ModelConfig, ModelRegistry
-import pytest
+
 pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------

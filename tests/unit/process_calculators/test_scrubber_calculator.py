@@ -10,6 +10,7 @@ from src.shared.python.upstream_drift_tools.process_calculators.scrubber_calcula
     calculate_gas_viscosity,
     calculate_ntu_removal,
 )
+
 pytestmark = pytest.mark.unit
 
 

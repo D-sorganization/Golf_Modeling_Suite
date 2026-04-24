@@ -9,8 +9,6 @@ Bugs covered:
 4. PyQt app: _safe_eval() silently returns 0.0 on expression errors; the run
    continues with wrong torques, and no error is surfaced to the user.
 """
-import pytest
-pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

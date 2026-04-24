@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+import pytest
+
 from src.shared.python.injury.swing_modifications import (
     ModificationPlan,
     SwingModification,
     SwingModificationRecommender,
     SwingStyle,
 )
-import pytest
+
 pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------

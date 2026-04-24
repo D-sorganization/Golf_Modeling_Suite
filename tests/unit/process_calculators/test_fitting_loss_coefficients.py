@@ -12,6 +12,7 @@ from src.shared.python.upstream_drift_tools.process_calculators.pressure_drop_ca
     k_to_equivalent_length,
     list_available_fittings,
 )
+
 pytestmark = pytest.mark.unit
 
 

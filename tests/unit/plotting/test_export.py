@@ -13,6 +13,7 @@ from src.shared.python.plotting.export import (
     export_figure,
     export_plot_data,
 )
+
 pytestmark = pytest.mark.unit
 
 

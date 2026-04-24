@@ -20,6 +20,7 @@ from src.shared.python.data_io.output_manager import (
     load_results,
     save_results,
 )
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

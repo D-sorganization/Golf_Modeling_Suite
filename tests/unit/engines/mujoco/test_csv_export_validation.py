@@ -6,6 +6,7 @@ from mujoco_humanoid_golf.inverse_dynamics import (
     InverseDynamicsResult,
     export_inverse_dynamics_to_csv,
 )
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

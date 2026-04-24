@@ -27,6 +27,7 @@ from src.unreal_integration.streaming import (  # noqa: E402
     StreamingState,
     UnrealStreamingServer,
 )
+
 pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit

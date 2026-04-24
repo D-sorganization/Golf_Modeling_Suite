@@ -11,6 +11,7 @@ from src.shared.python.upstream_drift_tools.process_calculators.optimization imp
     find_optimal_on_surface,
     run_adam_optimization,
 )
+
 pytestmark = pytest.mark.unit
 
 
