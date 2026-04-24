@@ -123,7 +123,7 @@ def _request_time_quota_dependency(
     return dependency
 
 
-_SIMULATION_QUOTA_DEPENDENCY = _request_time_quota_dependency(
+SIMULATION_QUOTA_DEPENDENCY = _request_time_quota_dependency(
     "simulations",
     CheckSimulationQuota.dependency,
 )
@@ -133,7 +133,6 @@ _VIDEO_QUOTA_DEPENDENCY = _request_time_quota_dependency(
 )
 
 _ROUTE_DEPENDENCIES: dict[str, tuple[Callable[..., object], ...]] = {
-    "simulation": (_SIMULATION_QUOTA_DEPENDENCY,),
     "video": (_VIDEO_QUOTA_DEPENDENCY,),
 }
 
