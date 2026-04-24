@@ -10,8 +10,8 @@ import pytest
 
 from src.shared.python.physics.flexible_shaft import (
     FiniteElementShaftModel,
-    ShaftProperties,
     ShaftMaterial,
+    ShaftProperties,
 )
 
 
