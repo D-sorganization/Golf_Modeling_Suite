@@ -27,6 +27,7 @@ from src.engines.physics_engines.putting_green.python.simulator import (
 from src.engines.physics_engines.putting_green.python.turf_properties import (
     TurfProperties,
 )
+pytestmark = pytest.mark.unit
 
 
 class TestSimulationConfig:

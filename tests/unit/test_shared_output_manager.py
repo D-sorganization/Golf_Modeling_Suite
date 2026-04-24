@@ -11,6 +11,8 @@ import numpy as np
 import pandas as pd
 
 from src.shared.python.data_io.output_manager import OutputFormat, OutputManager
+import pytest
+pytestmark = pytest.mark.unit
 
 # Python 3.10 compatibility: datetime.UTC is only available in 3.11+
 UTC = timezone.utc  # noqa: UP017

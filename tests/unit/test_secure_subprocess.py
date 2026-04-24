@@ -15,6 +15,8 @@ from src.shared.python.security.secure_subprocess import (
     validate_executable,
     validate_script_path,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestSecureSubprocess(unittest.TestCase):

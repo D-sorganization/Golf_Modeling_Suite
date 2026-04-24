@@ -10,6 +10,7 @@ from src.shared.python.calc_backend.contracts.thermal_profile import (
     ThermalProfileRequest,
     ThermalProfileResponse,
 )
+pytestmark = pytest.mark.unit
 
 
 class TestThermalProfileRequest:

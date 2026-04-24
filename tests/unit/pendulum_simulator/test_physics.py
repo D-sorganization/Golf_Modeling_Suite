@@ -19,6 +19,7 @@ from src.shared.python.pendulum_simulator.physics import (
     potential_energy,
     total_energy,
 )
+pytestmark = pytest.mark.unit
 
 
 def _make_params() -> PendulumParams:

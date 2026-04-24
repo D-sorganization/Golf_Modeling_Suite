@@ -11,6 +11,7 @@ from src.shared.python.pendulum_simulator.model_registry import (
     list_models,
     register_model,
 )
+pytestmark = pytest.mark.unit
 
 
 def _make_config(name: str = "TestModel", n_dof: int = 2) -> ModelConfig:

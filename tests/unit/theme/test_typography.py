@@ -14,6 +14,8 @@ from src.shared.python.theme.typography import (
     Sizes,
     Weights,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestFontSizes:

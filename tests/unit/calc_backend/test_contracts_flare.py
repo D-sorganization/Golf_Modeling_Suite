@@ -11,6 +11,7 @@ from src.shared.python.calc_backend.contracts.flare import (
     FlareResponse,
     RadiationZonesOut,
 )
+pytestmark = pytest.mark.unit
 
 
 def _valid_request(**kwargs) -> FlareRequest:

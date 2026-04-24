@@ -11,6 +11,7 @@ import math
 import pytest
 
 from src.tools.video_analyzer.types import Landmark
+pytestmark = pytest.mark.unit
 
 
 def _make_landmark(x: float, y: float, z: float) -> Landmark:

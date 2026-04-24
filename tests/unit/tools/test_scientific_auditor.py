@@ -6,6 +6,8 @@ import textwrap
 from pathlib import Path
 
 from src.shared.python.tools.scientific_auditor import ScienceAuditor, run_audit
+import pytest
+pytestmark = pytest.mark.unit
 
 
 def _audit_code(source: str) -> list[dict]:

@@ -13,6 +13,8 @@ from src.shared.python.logging_pkg.logger_utils import (
     set_seeds,
     setup_logging,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Constants

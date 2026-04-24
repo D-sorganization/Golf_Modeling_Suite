@@ -10,6 +10,8 @@ from src.shared.python.upstream_drift_tools.process_calculators.electrode_advanc
 from src.shared.python.upstream_drift_tools.process_calculators.thermal_profile_predictor import (
     predict_temperature_profile,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # ElectrodeAdvancementCalculator

@@ -6,6 +6,8 @@ import importlib.util
 import types
 from datetime import datetime
 from pathlib import Path
+import pytest
+pytestmark = pytest.mark.unit
 
 SCRIPT_PATH = (
     Path(__file__).resolve().parents[2] / "scripts" / "analyze_completist_data.py"

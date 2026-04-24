@@ -18,6 +18,8 @@ from src.shared.python.core.datetime_utils import (
     timestamp_filename,
     timestamp_iso,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestNowFunctions:

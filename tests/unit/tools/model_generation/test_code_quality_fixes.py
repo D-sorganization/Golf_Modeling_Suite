@@ -23,6 +23,7 @@ from model_generation.core.types import (
     JointType,
     Link,
 )
+pytestmark = pytest.mark.unit
 
 # ============================================================
 # Issue 1: Deque optimization - _get_descendants()

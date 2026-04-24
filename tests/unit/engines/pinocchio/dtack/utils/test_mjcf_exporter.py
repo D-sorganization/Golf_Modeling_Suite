@@ -1,6 +1,7 @@
 """Tests for src.engines.physics_engines.pinocchio.python.dtack.utils.mjcf_exporter."""
 
 import pytest
+pytestmark = pytest.mark.unit
 
 
 def test_import() -> None:

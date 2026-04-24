@@ -15,6 +15,7 @@ from mujoco_humanoid_golf.inverse_dynamics import (
     export_inverse_dynamics_to_csv,
 )
 from mujoco_humanoid_golf.models import DOUBLE_PENDULUM_XML
+pytestmark = pytest.mark.unit
 
 
 class TestInverseDynamicsResult:

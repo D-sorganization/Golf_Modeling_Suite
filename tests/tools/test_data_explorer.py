@@ -17,6 +17,8 @@ from pathlib import Path
 
 import pytest
 
+pytestmark = pytest.mark.integration
+
 from src.tools.data_explorer.data_explorer_app import (
     SUPPORTED_EXTENSIONS,
     discover_datasets,

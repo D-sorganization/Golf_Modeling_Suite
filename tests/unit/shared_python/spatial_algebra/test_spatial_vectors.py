@@ -12,6 +12,7 @@ from src.shared.python.spatial_algebra.spatial_vectors import (
     skew,
     spatial_cross,
 )
+pytestmark = pytest.mark.unit
 
 
 class TestSpatialVectors:

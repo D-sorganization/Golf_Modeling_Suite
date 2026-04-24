@@ -8,6 +8,7 @@ from src.shared.python.spatial_algebra.indexed_acceleration import (
     IndexedAcceleration,
     compute_indexed_acceleration_from_engine,
 )
+pytestmark = pytest.mark.unit
 
 
 class TestIndexedAcceleration:

@@ -6,6 +6,8 @@ from unittest.mock import MagicMock
 
 from src.shared.python.engine_core.engine_registry import EngineType
 from src.shared.python.engine_core.workflow_adapter import EngineWorkflowAdapter
+import pytest
+pytestmark = pytest.mark.unit
 
 
 def test_probe_returns_unknown_for_invalid_engine_name() -> None:

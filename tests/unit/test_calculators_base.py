@@ -7,6 +7,7 @@ import pytest
 from src.shared.python.upstream_drift_tools.calculators.base import (
     BaseCalculationEngine,
 )
+pytestmark = pytest.mark.unit
 
 
 class _ConcreteEngine(BaseCalculationEngine):

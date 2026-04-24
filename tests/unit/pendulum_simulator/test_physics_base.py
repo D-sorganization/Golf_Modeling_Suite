@@ -12,6 +12,7 @@ from src.shared.python.pendulum_simulator.physics_base import (
     potential_energy_chain,
     total_energy_from_parts,
 )
+pytestmark = pytest.mark.unit
 
 
 class TestKineticEnergyFromM:

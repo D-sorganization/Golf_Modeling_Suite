@@ -22,6 +22,8 @@ Key behaviours tested:
 - Above data range (Re > 5e5): returns user-supplied base_coefficient.
 - With reynolds_correction=False: always returns base_coefficient.
 """
+import pytest
+pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

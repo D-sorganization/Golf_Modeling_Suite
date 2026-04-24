@@ -15,6 +15,7 @@ from collections.abc import Generator
 from typing import Any
 
 import pytest
+pytestmark = pytest.mark.unit
 
 # ── Route Registry Tests ─────────────────────────────────────────
 

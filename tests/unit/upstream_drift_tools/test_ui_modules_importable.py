@@ -14,6 +14,8 @@ from src.shared.python.upstream_drift_tools.ui.mixins.base_calculator_mixin impo
 from src.shared.python.upstream_drift_tools.ui.widgets.mixins.data_processor_ops import (
     DataProcessorOpsMixin,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestScubberModulesImportable:

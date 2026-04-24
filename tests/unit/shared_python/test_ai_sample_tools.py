@@ -5,6 +5,8 @@ from unittest.mock import Mock, patch
 
 from src.shared.python.ai.sample_tools import register_golf_suite_tools
 from src.shared.python.ai.tool_registry import ToolRegistry
+import pytest
+pytestmark = pytest.mark.unit
 
 
 def test_register_golf_suite_tools() -> None:

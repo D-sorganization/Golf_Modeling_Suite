@@ -9,6 +9,7 @@ from src.shared.python.spatial_algebra.indexed_acceleration import (
     AccelerationClosureError,
     IndexedAcceleration,
 )
+pytestmark = pytest.mark.unit
 
 
 def _make_accel(

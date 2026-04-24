@@ -8,6 +8,7 @@ video-pose-pipeline package is unavailable.
 from __future__ import annotations
 
 import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestVideoRouteImportFallback:

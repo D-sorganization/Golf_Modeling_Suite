@@ -12,6 +12,7 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # 1. REST API security tests (issue #1695)

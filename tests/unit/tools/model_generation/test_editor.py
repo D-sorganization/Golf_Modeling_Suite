@@ -4,6 +4,8 @@ Tests for the editor module (Frankenstein Editor and Text Editor).
 
 import tempfile
 from pathlib import Path
+import pytest
+pytestmark = pytest.mark.unit
 
 # Sample URDF for testing
 SIMPLE_URDF = """<?xml version="1.0"?>

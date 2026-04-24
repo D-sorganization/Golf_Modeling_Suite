@@ -7,6 +7,8 @@ Tests the require()/ensure() contracts added to:
   postcondition: finite)
 - compute_equilibrium_state (preconditions + postconditions)
 """
+import pytest
+pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

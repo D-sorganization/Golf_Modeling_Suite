@@ -8,6 +8,7 @@ from tests.fixtures.fixtures_lib import (
     EngineProbeStatus,
     _probe_engine_instance,
 )
+pytestmark = pytest.mark.unit
 
 
 def test_probe_engine_instance_marks_missing_dependency() -> None:

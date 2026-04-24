@@ -9,6 +9,8 @@ not just hand-picked examples.  Each property is documented with:
 References:
   - GitHub issue #1694 (Hypothesis property-based tests)
 """
+import pytest
+pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

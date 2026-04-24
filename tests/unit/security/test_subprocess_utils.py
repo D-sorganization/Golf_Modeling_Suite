@@ -12,6 +12,7 @@ from src.shared.python.security.subprocess_utils import (
     ProcessManager,
     run_command,
 )
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # run_command

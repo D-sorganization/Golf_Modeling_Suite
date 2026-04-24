@@ -10,6 +10,7 @@ import pytest
 
 from src.shared.python.physics._shaft_fem import FiniteElementShaftModel
 from src.shared.python.physics.flexible_shaft import create_standard_shaft
+pytestmark = pytest.mark.unit
 
 
 @pytest.fixture()

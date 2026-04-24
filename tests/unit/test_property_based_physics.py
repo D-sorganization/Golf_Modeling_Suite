@@ -29,6 +29,7 @@ from src.shared.python.physics.ball_flight_physics import (
     EnvironmentalConditions,
     LaunchConditions,
 )
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Reusable strategies

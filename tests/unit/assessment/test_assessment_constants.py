@@ -8,6 +8,8 @@ from src.shared.python.assessment.constants import (
     GROUP_WEIGHTS,
     PRAGMATIC_PRINCIPLES,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # CATEGORIES

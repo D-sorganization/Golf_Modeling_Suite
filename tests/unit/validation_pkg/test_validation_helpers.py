@@ -13,6 +13,7 @@ from src.shared.python.validation_pkg.validation_helpers import (
     validate_finite,
     validate_magnitude,
 )
+pytestmark = pytest.mark.unit
 
 
 class TestValidateFinite:

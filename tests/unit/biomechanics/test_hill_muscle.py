@@ -10,6 +10,7 @@ from src.shared.python.biomechanics.hill_muscle import (
     MuscleParameters,
     MuscleState,
 )
+pytestmark = pytest.mark.unit
 
 
 def _default_params() -> MuscleParameters:

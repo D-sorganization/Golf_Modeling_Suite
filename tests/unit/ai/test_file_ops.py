@@ -6,6 +6,8 @@ from pathlib import Path
 
 from src.shared.python.ai.tool_registry import ToolRegistry
 from src.shared.python.ai.tools.file_ops import register_file_tools
+import pytest
+pytestmark = pytest.mark.unit
 
 
 def _make_registry() -> ToolRegistry:

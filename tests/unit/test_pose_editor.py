@@ -12,6 +12,8 @@ from src.shared.python.pose_editor.library import (
     list_preset_poses,
     list_preset_poses_by_category,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestJointType:

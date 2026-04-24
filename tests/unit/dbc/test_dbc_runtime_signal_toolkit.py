@@ -27,6 +27,8 @@ from src.shared.python.signal_toolkit.noise import (
     NoiseGenerator,
     NoiseType,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 def _make_signal(

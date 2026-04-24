@@ -6,6 +6,8 @@ import sys
 from pathlib import Path
 
 from src.shared.python.upstream_drift_tools.bootstrap import ensure_paths
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestEnsurePaths:

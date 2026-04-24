@@ -24,6 +24,7 @@ from src.shared.python.data_io.dataset_generator import (
     TrainingDataset,
 )
 from src.shared.python.engine_core.mock_engine import MockPhysicsEngine
+pytestmark = pytest.mark.unit
 
 # ---- Fixtures ----
 

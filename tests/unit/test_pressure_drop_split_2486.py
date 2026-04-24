@@ -9,6 +9,7 @@ import importlib.util
 from pathlib import Path
 
 import pytest
+pytestmark = pytest.mark.unit
 
 _upstream_tools_available = importlib.util.find_spec("sympy") is not None
 

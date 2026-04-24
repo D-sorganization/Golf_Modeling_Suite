@@ -11,6 +11,8 @@ from src.shared.python.data_io.provenance import (
     add_provenance_header_file,
     add_provenance_to_csv,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestProvenance(unittest.TestCase):

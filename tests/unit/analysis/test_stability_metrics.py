@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 from src.shared.python.analysis.stability_metrics import StabilityMetricsMixin
+pytestmark = pytest.mark.unit
 
 
 class _Concrete(StabilityMetricsMixin):

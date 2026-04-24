@@ -8,6 +8,8 @@ from src.shared.python.assessment.reporting import (
     generate_issue_document,
     generate_markdown_report,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestGenerateMarkdownReport:

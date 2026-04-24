@@ -8,6 +8,8 @@ Verifies that:
   threshold (> 5%).
 - Successful trials still return correct results in partial-failure scenarios.
 """
+import pytest
+pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

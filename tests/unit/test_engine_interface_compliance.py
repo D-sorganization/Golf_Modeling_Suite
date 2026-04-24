@@ -13,6 +13,7 @@ import importlib
 from typing import Any
 
 import pytest
+pytestmark = pytest.mark.unit
 
 # ---- Engine class references ------------------------------------------------
 # Each entry: (module_path, class_name, optional_deps)

@@ -15,6 +15,8 @@ from src.shared.python.engine_core.checkpoint import (
     CheckpointManager,
     StateCheckpoint,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestStateCheckpoint(unittest.TestCase):

@@ -6,6 +6,8 @@ from src.shared.python.theme.stylesheets import (
     generate_minimal_stylesheet,
     generate_stylesheet,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 _THEME: dict[str, str] = {
     "bg": "#1e1e2e",

@@ -9,6 +9,7 @@ from double_pendulum_model.physics.double_pendulum import (
     LowerSegmentProperties,
     SegmentProperties,
 )
+pytestmark = pytest.mark.unit
 
 
 def test_expression_function_allows_state_variables() -> None:

@@ -8,6 +8,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+pytestmark = pytest.mark.unit
 
 REPO = Path(__file__).parents[2]
 

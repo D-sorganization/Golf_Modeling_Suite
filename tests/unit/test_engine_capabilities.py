@@ -8,6 +8,7 @@ from src.shared.python.engine_core.capabilities import (
     CapabilityLevel,
     EngineCapabilities,
 )
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # CapabilityLevel enum

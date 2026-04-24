@@ -14,6 +14,7 @@ from src.shared.python.plot_theme.themes import (
     get_theme_names,
     register_theme,
 )
+pytestmark = pytest.mark.unit
 
 
 class TestPlotTheme:

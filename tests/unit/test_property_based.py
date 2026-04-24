@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+pytestmark = pytest.mark.unit
 
 hypothesis = pytest.importorskip("hypothesis")
 from hypothesis import assume, given, settings  # noqa: E402

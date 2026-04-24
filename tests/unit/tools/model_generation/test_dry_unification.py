@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import types
 from unittest.mock import MagicMock, patch
+import pytest
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Helper to reload the module cleanly for each test that inspects globals

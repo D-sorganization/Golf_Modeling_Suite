@@ -8,6 +8,8 @@ if dependencies are missing rather than using extensive mocking.
 """
 
 import os
+import pytest
+pytestmark = pytest.mark.unit
 
 # Ensure offscreen platform BEFORE any Qt imports so that a QApplication can be
 # created even when no X server / Wayland display is available (headless CI).

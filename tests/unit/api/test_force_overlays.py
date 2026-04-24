@@ -8,6 +8,8 @@ from src.api.routes.force_overlays import (
     _resolve_joint_names,
     _should_include_force_type,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 def test_magnitude_to_color() -> None:

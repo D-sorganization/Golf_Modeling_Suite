@@ -4,6 +4,8 @@ import numpy as np
 
 from src.shared.python.biomechanics.biomechanics_data import BiomechanicalData
 from src.shared.python.core.constants import GRAVITY_M_S2
+import pytest
+pytestmark = pytest.mark.unit
 
 
 def test_biomechanical_data_initialization() -> None:

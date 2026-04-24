@@ -9,6 +9,8 @@ from src.shared.python.upstream_drift_tools.calculators.thermo.thermo_properties
     ThermoPropertiesCalculator,
     ThermoResult,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Constants

@@ -5,6 +5,7 @@ not the non-existent APIKey.prefix_hash.
 """
 
 import pytest
+pytestmark = pytest.mark.unit
 
 try:
     import sqlalchemy  # noqa: F401

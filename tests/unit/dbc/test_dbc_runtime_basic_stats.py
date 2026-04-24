@@ -11,6 +11,8 @@ import numpy as np
 
 from src.shared.python.analysis.basic_stats import BasicStatsMixin
 from src.shared.python.core.contracts import PreconditionError
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class _StubAnalyzer(BasicStatsMixin):

@@ -12,6 +12,7 @@ from src.shared.python.pendulum_simulator.hub_options import (
     make_massless_hub_params,
 )
 from src.shared.python.pendulum_simulator.physics_golfer import GolferParams
+pytestmark = pytest.mark.unit
 
 
 def _make_params() -> GolferParams:

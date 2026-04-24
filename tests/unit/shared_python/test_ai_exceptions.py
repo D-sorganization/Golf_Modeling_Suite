@@ -10,6 +10,8 @@ from src.shared.python.ai.exceptions import (
     ToolExecutionError,
     WorkflowError,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 def test_aierror_init() -> None:

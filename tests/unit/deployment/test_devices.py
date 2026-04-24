@@ -7,6 +7,8 @@ from src.deployment.teleoperation.devices import (
     SpaceMouseInput,
     VRControllerInput,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class DummyDevice(BaseInputDevice):

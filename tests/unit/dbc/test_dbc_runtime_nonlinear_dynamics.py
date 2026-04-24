@@ -13,6 +13,8 @@ import unittest
 from unittest.mock import MagicMock
 
 import numpy as np
+import pytest
+pytestmark = pytest.mark.unit
 
 
 def _make_mixin(n: int = 500, n_joints: int = 3, dt: float = 0.01) -> object:

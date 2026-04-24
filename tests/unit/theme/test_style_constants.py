@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from src.shared.python.theme.style_constants import Styles
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestStatusConstants:

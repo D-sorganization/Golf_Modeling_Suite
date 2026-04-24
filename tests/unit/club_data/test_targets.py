@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 from src.shared.python.club_data.targets import TargetTrajectory
+pytestmark = pytest.mark.unit
 
 
 def _make_trajectory(n: int = 10) -> TargetTrajectory:

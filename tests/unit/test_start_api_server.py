@@ -5,6 +5,8 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import start_api_server
+import pytest
+pytestmark = pytest.mark.unit
 
 
 def test_validate_security_no_issues(monkeypatch) -> None:

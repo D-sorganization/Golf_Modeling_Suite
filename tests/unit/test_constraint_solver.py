@@ -10,6 +10,8 @@ from src.shared.python.pendulum_simulator.constraint_solver import (
     equations_of_motion,
 )
 from src.shared.python.pendulum_simulator.physics_golfer import N_DOF, GolferParams
+import pytest
+pytestmark = pytest.mark.unit
 
 
 def _make_params() -> GolferParams:

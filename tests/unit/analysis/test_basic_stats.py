@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 from src.shared.python.analysis.basic_stats import BasicStatsMixin
+pytestmark = pytest.mark.unit
 
 
 class _Concrete(BasicStatsMixin):

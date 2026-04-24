@@ -21,6 +21,7 @@ from src.robotics.planning.motion import (
     RRTStarConfig,
     RRTStarPlanner,
 )
+pytestmark = pytest.mark.unit
 
 # =============================================================================
 # Mock Collision Checker for Testing

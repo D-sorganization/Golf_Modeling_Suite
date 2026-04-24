@@ -12,6 +12,7 @@ import ast
 from pathlib import Path
 
 import pytest
+pytestmark = pytest.mark.unit
 
 REPO = Path(__file__).parent.parent.parent
 

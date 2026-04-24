@@ -9,6 +9,7 @@ from src.shared.python.screw_theory.kinematics import ScrewAxis, compute_screw_e
 from src.shared.python.screw_theory.visualization import (
     compute_screw_endpoints as viz_compute,
 )
+pytestmark = pytest.mark.unit
 
 
 def _make_screw(

@@ -8,6 +8,8 @@ from src.shared.python.physics.flight_models import (
     FlightModelRegistry,
     UnifiedLaunchConditions,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 def test_all_models_generate_trajectory() -> None:

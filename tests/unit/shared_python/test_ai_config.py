@@ -28,6 +28,7 @@ from src.shared.python.ai.config import (
     get_openai_timeout,
 )
 from src.shared.python.config.environment import EnvironmentError
+pytestmark = pytest.mark.unit
 
 
 def test_ollama_config_defaults() -> None:

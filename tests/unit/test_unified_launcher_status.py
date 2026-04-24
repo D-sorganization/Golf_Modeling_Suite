@@ -5,6 +5,8 @@ from __future__ import annotations
 import logging
 
 from src.launchers.unified_launcher import UnifiedLauncher
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class _FakeEngineType:

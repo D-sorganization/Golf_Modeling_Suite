@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 from src.shared.python.pendulum_simulator.simulation_core import integrate_ode
+pytestmark = pytest.mark.unit
 
 
 def _linear_decay(t, y) -> np.ndarray:

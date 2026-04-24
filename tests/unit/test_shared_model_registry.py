@@ -6,6 +6,8 @@ from unittest.mock import mock_open, patch
 import yaml
 
 from src.shared.python.config.model_registry import ModelConfig, ModelRegistry
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestModelRegistry(unittest.TestCase):

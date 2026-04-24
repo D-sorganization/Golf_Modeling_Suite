@@ -6,6 +6,8 @@ from src.shared.python.pendulum_simulator.native_backend import (
     get_native_backend_info,
     golfer_native_available,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestNativeBackend:

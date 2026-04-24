@@ -16,6 +16,7 @@ from typing import NoReturn
 from unittest.mock import MagicMock, patch
 
 import pytest
+pytestmark = pytest.mark.unit
 
 
 def _make_qt_stubs() -> dict[str, ModuleType]:

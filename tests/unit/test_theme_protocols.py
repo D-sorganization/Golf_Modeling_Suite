@@ -8,6 +8,8 @@ from src.shared.python.theme.protocols import (
     ThemeProvider,
     ThemeSwitcher,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestThemeProtocols:

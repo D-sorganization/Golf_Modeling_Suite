@@ -43,6 +43,7 @@ from src.shared.python.spatial_algebra.transforms import (
     xrot,
     xtrans,
 )
+pytestmark = pytest.mark.unit
 
 # ============================================================================
 # Helpers

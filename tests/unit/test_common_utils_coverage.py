@@ -14,6 +14,7 @@ from src.shared.python.data_io.common_utils import (
     save_golf_data,
     standardize_joint_angles,
 )
+pytestmark = pytest.mark.unit
 
 
 @pytest.mark.parametrize(

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from src.shared.python.ai.glossary_data_extended import get_extended_entries
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestGetExtendedEntries:

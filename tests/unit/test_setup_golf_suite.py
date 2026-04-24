@@ -6,6 +6,8 @@ from unittest.mock import patch
 from PIL import Image
 
 import setup_golf_suite
+import pytest
+pytestmark = pytest.mark.unit
 
 
 def test_apply_icon_optimizations() -> None:

@@ -8,6 +8,8 @@ Four bugs:
    doesn't exist; the current file is 'review.json'.
 4. maintain_workflows.py __main__ block is a silent no-op (ends in `pass`).
 """
+import pytest
+pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

@@ -1,6 +1,7 @@
 import pytest
 
 from src.shared.python.injury.injury_risk import InjuryRiskScorer, InjuryType, RiskLevel
+pytestmark = pytest.mark.unit
 
 
 class MockSpinalResult:

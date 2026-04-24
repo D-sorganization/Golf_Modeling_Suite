@@ -9,6 +9,8 @@ from src.shared.python.injury.injury_risk import (
     RiskFactor,
     RiskLevel,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestRiskLevel:

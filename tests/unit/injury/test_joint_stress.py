@@ -10,6 +10,8 @@ from src.shared.python.injury.joint_stress import (
     JointStressResult,
     StressType,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 def _make_analyzer(body_weight: float = 80.0) -> JointStressAnalyzer:

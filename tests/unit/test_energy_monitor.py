@@ -23,6 +23,7 @@ from src.shared.python.tests.mock_physics_engine import (
     MockPhysicsEngine,
     as_physics_engine,
 )
+pytestmark = pytest.mark.unit
 
 
 class TestEnergySnapshot:

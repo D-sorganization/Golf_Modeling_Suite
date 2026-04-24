@@ -26,6 +26,8 @@ from src.shared.python.engine_core.plugin_registry import (
     PluginRegistry,
     discover_entry_point_plugins,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Stub engine for testing

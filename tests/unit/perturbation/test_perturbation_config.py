@@ -8,6 +8,7 @@ from src.shared.python.perturbation.config import (
     PerturbationConfig,
     PerturbationSummary,
 )
+pytestmark = pytest.mark.unit
 
 
 class TestPerturbationConfig:

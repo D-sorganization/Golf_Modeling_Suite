@@ -29,6 +29,7 @@ from src.shared.python.physics.topography import (
     create_sloped_terrain,
     create_undulating_terrain,
 )
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # TopographyBounds

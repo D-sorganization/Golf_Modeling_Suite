@@ -7,6 +7,8 @@ Two bugs:
 2. resampleDataToFrequency.m rebuilds time as 0:dt:sim_time (always starts at 0),
    then uses interp1(..., 'extrap'), fabricating values outside the recorded data span.
 """
+import pytest
+pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

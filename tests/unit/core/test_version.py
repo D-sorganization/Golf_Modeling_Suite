@@ -13,6 +13,8 @@ from src.shared.python.core.version import (
     __version__,
     __version_info__,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Version string

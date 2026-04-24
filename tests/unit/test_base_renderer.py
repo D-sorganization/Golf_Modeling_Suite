@@ -15,6 +15,7 @@ from src.shared.python.plotting.renderers.base import (
     DEFAULT_TITLE_FONTSIZE,
     BaseRenderer,
 )
+pytestmark = pytest.mark.unit
 
 
 @pytest.fixture()

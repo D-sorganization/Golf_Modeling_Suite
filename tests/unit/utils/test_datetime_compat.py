@@ -11,6 +11,8 @@ from src.api.utils.datetime_compat import (
     iso_format,
     utc_now,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestUTC:

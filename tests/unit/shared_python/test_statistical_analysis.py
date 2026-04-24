@@ -13,6 +13,7 @@ from src.shared.python.validation_pkg.statistical_analysis import (
     SummaryStatistics,
     SwingPhase,
 )
+pytestmark = pytest.mark.unit
 
 
 class TestStatisticalAnalyzer:

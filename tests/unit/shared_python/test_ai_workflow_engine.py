@@ -19,6 +19,7 @@ from src.shared.python.ai.workflow_engine import (
     WorkflowExecution,
     WorkflowStep,
 )
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Fixtures

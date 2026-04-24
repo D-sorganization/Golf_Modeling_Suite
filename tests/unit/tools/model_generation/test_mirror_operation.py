@@ -21,6 +21,7 @@ from model_generation.core.types import (
     Link,
     Origin,
 )
+pytestmark = pytest.mark.unit
 
 
 def _make_builder_with_two_links() -> ManualBuilder:

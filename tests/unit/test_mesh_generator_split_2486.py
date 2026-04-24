@@ -9,6 +9,7 @@ import importlib.util
 from pathlib import Path
 
 import pytest
+pytestmark = pytest.mark.unit
 
 REPO = Path(__file__).parents[2]
 GENERATORS_DIR = REPO / "src/shared/python/humanoid_character_builder/generators"

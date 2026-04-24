@@ -11,6 +11,8 @@ from src.shared.python.engine_core.engine_manager import (
     EngineType,
     GolfModelingError,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestEngineManager(unittest.TestCase):

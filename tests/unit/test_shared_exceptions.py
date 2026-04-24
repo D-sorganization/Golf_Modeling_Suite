@@ -9,6 +9,8 @@ from src.shared.python.core.error_utils import (
 from src.shared.python.core.exceptions import (
     ArrayDimensionError,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 def test_exception_inheritance() -> None:

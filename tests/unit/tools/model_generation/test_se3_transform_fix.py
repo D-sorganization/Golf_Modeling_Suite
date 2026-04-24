@@ -13,6 +13,8 @@ Fix: Compose SE(3) transforms properly:
     new_position = parent_pos + R(parent_rpy) @ child_pos
     new_rotation = compose(parent_rpy, child_rpy)
 """
+import pytest
+pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

@@ -8,6 +8,8 @@ from src.shared.python.engine_core.unified_engine_interface import (
     UnifiedEngineInterface,
     create_unified_interface,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestEngineType:

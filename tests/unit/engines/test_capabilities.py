@@ -6,6 +6,8 @@ from src.shared.python.engine_core.capabilities import (
     CapabilityLevel,
     EngineCapabilities,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestCapabilityLevel:

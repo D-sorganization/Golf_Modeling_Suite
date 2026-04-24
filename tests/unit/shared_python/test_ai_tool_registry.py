@@ -12,6 +12,7 @@ from src.shared.python.ai.tool_registry import (
     ToolRegistry,
     get_global_registry,
 )
+pytestmark = pytest.mark.unit
 
 
 def test_tool_parameter_to_json() -> None:

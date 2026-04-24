@@ -6,6 +6,8 @@ Tests cover:
     - Gait state machine
     - Footstep planning
 """
+import pytest
+pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

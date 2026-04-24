@@ -14,6 +14,7 @@ from src.shared.python.signal_toolkit.calculus import (
     compute_integral,
 )
 from src.shared.python.signal_toolkit.core import Signal
+pytestmark = pytest.mark.unit
 
 
 def _make_signal(n: int = 100, amp: float = 1.0) -> Signal:

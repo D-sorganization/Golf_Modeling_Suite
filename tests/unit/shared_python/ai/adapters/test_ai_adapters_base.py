@@ -10,6 +10,8 @@ from src.shared.python.ai.types import (
     Message,
     ProviderCapabilities,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class DummyAdapter(BaseAgentAdapter):

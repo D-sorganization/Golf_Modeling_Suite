@@ -9,6 +9,7 @@ import importlib.util
 from pathlib import Path
 
 import pytest
+pytestmark = pytest.mark.unit
 
 REPO = Path(__file__).parents[2]
 GRIP_DIR = REPO / "src/engines/physics_engines/mujoco/python/mujoco_humanoid_golf"

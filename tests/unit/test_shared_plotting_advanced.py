@@ -6,6 +6,8 @@ from unittest.mock import MagicMock
 import matplotlib
 import matplotlib.backend_bases
 import numpy as np
+import pytest
+pytestmark = pytest.mark.unit
 
 matplotlib.use("Agg")
 from matplotlib import pyplot as plt

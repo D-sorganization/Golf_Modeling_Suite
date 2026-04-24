@@ -11,6 +11,7 @@ import pytest
 
 from src.shared.python.biomechanics.activation_dynamics import ActivationDynamics
 from src.shared.python.core.contracts import PreconditionError
+pytestmark = pytest.mark.unit
 
 
 class TestActivationDynamicsInitialization:

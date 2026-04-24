@@ -26,6 +26,7 @@ from src.shared.python.ai.config import (
     get_openai_organization,
     get_openai_timeout,
 )
+pytestmark = pytest.mark.unit
 
 
 class TestOllamaConfig:

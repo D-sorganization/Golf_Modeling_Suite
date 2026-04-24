@@ -13,6 +13,7 @@ from src.shared.python.validation_pkg.data_fitting import (
     SensitivityResult,
     convert_poses_to_markers,
 )
+pytestmark = pytest.mark.unit
 
 
 def test_body_segment_params() -> None:

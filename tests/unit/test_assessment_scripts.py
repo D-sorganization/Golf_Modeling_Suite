@@ -4,6 +4,8 @@ from unittest.mock import patch
 
 from scripts.assess_repository import assess_J
 from scripts.generate_assessment_summary import extract_score_from_report
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestAssessmentScripts(unittest.TestCase):

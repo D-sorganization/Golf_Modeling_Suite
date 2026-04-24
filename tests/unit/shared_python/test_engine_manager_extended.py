@@ -14,6 +14,7 @@ from src.shared.python.engine_core.engine_manager import (
     EngineType,
     GolfModelingError,
 )
+pytestmark = pytest.mark.unit
 
 # --- Fixtures ---
 

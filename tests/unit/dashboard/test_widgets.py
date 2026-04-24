@@ -12,6 +12,7 @@ from src.shared.python.dashboard.widgets import (
     LivePlotWidget,
 )
 from src.shared.python.engine_core.interfaces import RecorderInterface
+pytestmark = pytest.mark.unit
 
 
 class MockRecorder(RecorderInterface):

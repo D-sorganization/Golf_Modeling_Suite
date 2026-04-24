@@ -11,6 +11,7 @@ from src.shared.python.safe_eval import (
     safe_eval_math,
     validate_expression,
 )
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # validate_expression

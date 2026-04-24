@@ -1,6 +1,7 @@
 """Comprehensive tests for motion optimization module."""
 
 import pytest
+pytestmark = pytest.mark.unit
 
 pytest.importorskip("mujoco_humanoid_golf", reason="mujoco_humanoid_golf is required")
 

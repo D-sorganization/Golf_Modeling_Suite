@@ -16,6 +16,7 @@ from src.engines.physics_engines.opensim.python.opensim_golf.core import (
     OpenSimModelLoadError,
     OpenSimNotInstalledError,
 )
+pytestmark = pytest.mark.unit
 
 
 @pytest.fixture

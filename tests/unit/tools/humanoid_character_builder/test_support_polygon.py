@@ -11,6 +11,7 @@ import math
 
 import pytest
 from humanoid_character_builder.core.model import SupportPolygon
+pytestmark = pytest.mark.unit
 
 
 @pytest.fixture()

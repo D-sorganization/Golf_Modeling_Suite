@@ -8,6 +8,7 @@ import pytest
 from src.shared.python.upstream_drift_tools.process_calculators.ode_solver import (
     ODESolver,
 )
+pytestmark = pytest.mark.unit
 
 
 class TestODESolverConstruction:

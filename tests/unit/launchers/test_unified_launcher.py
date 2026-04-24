@@ -6,6 +6,7 @@ import pytest
 
 # Cleaned up global sys.modules mutation
 from src.launchers.unified_launcher import UnifiedLauncher, launch  # noqa: E402
+pytestmark = pytest.mark.unit
 
 
 @pytest.fixture(autouse=True)

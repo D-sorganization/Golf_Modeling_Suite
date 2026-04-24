@@ -7,6 +7,8 @@ import numpy as np
 from src.shared.python.dashboard.recorder import GenericPhysicsRecorder
 from src.shared.python.engine_core.checkpoint import StateCheckpoint
 from src.shared.python.engine_core.interfaces import PhysicsEngine
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class MockPhysicsEngine(PhysicsEngine):

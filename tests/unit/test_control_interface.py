@@ -16,6 +16,7 @@ from src.shared.python.control_interface import (
     ControlStrategy,
 )
 from src.shared.python.engine_core.mock_engine import MockPhysicsEngine
+pytestmark = pytest.mark.unit
 
 # ---- Fixtures ----
 

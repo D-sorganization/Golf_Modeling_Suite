@@ -17,6 +17,7 @@ from src.shared.python.physics.impact_model import (
     create_impact_model,
     validate_energy_balance,
 )
+pytestmark = pytest.mark.unit
 
 
 @pytest.fixture
