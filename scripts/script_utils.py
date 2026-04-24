@@ -152,7 +152,7 @@ def run_command(
         raise ValueError("cmd must be provided")
     if not isinstance(cmd, list):
         raise TypeError("cmd must be a list")
-    if cwd is not None and not isinstance(cwd, (Path, str)):
+    if cwd is not None and not isinstance(cwd, Path | str):
         raise TypeError("cwd must be a Path or str")
 
     if logger:
