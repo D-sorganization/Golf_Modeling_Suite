@@ -7,8 +7,6 @@ import pytest
 
 from src.shared.python.biomechanics.activation_dynamics import ActivationDynamics
 
-pytestmark = pytest.mark.unit
-
 
 class TestActivationDynamicsInit:
     def test_default_params(self) -> None:

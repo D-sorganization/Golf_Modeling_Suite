@@ -19,8 +19,6 @@ from mujoco_humanoid_golf.spatial_algebra import (
     xtrans,
 )
 
-pytestmark = pytest.mark.unit
-
 
 class TestSpatialCrossProducts:
     """Tests for spatial cross product operators."""

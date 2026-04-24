@@ -6,29 +6,9 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 
-def _has_abstractmethod_decorator(
-    node: ast.FunctionDef | ast.AsyncFunctionDef,
-) -> bool:
-    """Return True if the function node is decorated with @abstractmethod."""
-    for decorator in node.decorator_list:
-        if isinstance(decorator, ast.Name) and decorator.id == "abstractmethod":
-            return True
-        if isinstance(decorator, ast.Attribute) and decorator.attr == "abstractmethod":
-            return True
-    return False
-
-
 def is_stub(node: Any) -> bool:
-    """Check if a function node is a stub.
-
-    Postcondition: Returns False for functions decorated with @abstractmethod,
-    which are intentional stubs defined by the abstract interface contract.
-    """
+    """Check if a function node is a stub."""
     if not isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
-        return False
-
-    # Abstract methods are intentional stubs - not implementation gaps
-    if _has_abstractmethod_decorator(node):
         return False
 
     body = node.body
@@ -146,8 +126,6 @@ def main() -> None:
         "build",
         "dist",
         "docs",
-        "vendor",
-        "scripts",
     }
 
     with (

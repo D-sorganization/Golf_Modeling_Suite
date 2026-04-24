@@ -3,16 +3,12 @@
 import os
 import sys
 import tempfile
-from collections.abc import Generator
 from pathlib import Path
-from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from src.shared.python.config.model_registry import ModelRegistry
-
-pytestmark = pytest.mark.integration
 
 # Mock PyQt6 for headless/CI environment where DLLs are broken/missing
 # This must happen BEFORE importing modules that use PyQt6
@@ -30,40 +26,40 @@ class MockQtBase:
     def __getattr__(self, name):
         return MagicMock()
 
-    def setWindowTitle(self, title) -> None:
+    def setWindowTitle(self, title):
         pass
 
-    def resize(self, *args) -> None:
+    def resize(self, *args):
         pass
 
-    def setStyleSheet(self, s) -> None:
+    def setStyleSheet(self, s):
         pass
 
-    def setWindowIcon(self, i) -> None:
+    def setWindowIcon(self, i):
         pass
 
-    def show(self) -> None:
+    def show(self):
         pass
 
-    def setCentralWidget(self, w) -> None:
+    def setCentralWidget(self, w):
         pass
 
-    def setLayout(self, layout) -> None:
+    def setLayout(self, layout):
         pass
 
-    def exec(self) -> None:
+    def exec(self):
         pass
 
-    def setFixedSize(self, w, h) -> None:
+    def setFixedSize(self, w, h):
         pass
 
-    def setAlignment(self, a) -> None:
+    def setAlignment(self, a):
         pass
 
-    def setWordWrap(self, b) -> None:
+    def setWordWrap(self, b):
         pass
 
-    def font(self) -> MagicMock:
+    def font(self):
         return MagicMock()
 
 
@@ -72,10 +68,10 @@ class MockQWidget(MockQtBase):
         super().__init__(*args, **kwargs)
         self._enabled = True
 
-    def setEnabled(self, b) -> None:
+    def setEnabled(self, b):
         self._enabled = bool(b)
 
-    def isEnabled(self) -> bool:
+    def isEnabled(self):
         if isinstance(self._enabled, bool):
             return self._enabled
         return False
@@ -103,30 +99,30 @@ class MockQLayout(MockQtBase):
     MagicMock.
     """
 
-    def count(self) -> int:
+    def count(self):
         return 0
 
-    def addWidget(self, *args) -> None:
+    def addWidget(self, *args):
         pass
 
-    def addLayout(self, *args) -> None:
+    def addLayout(self, *args):
         pass
 
-    def setSpacing(self, s) -> None:
+    def setSpacing(self, s):
         pass
 
-    def setContentsMargins(self, *args) -> None:
+    def setContentsMargins(self, *args):
         pass
 
 
 class MockQThread(MockQtBase):
-    def start(self) -> None:
+    def start(self):
         pass
 
-    def wait(self) -> None:
+    def wait(self):
         pass
 
-    def run(self) -> None:
+    def run(self):
         pass
 
 
@@ -168,7 +164,7 @@ mock_widgets.QLineEdit = MockQWidget
 
 
 @pytest.fixture(scope="module", autouse=True)
-def mock_pyqt_modules() -> Generator[None, None, None]:
+def mock_pyqt_modules():
     """Patch PyQt6 modules in sys.modules for the duration of this test module."""
     with patch.dict(
         sys.modules,
@@ -188,7 +184,7 @@ def mock_pyqt_modules() -> Generator[None, None, None]:
 
 
 @pytest.fixture(scope="session")
-def qapp() -> Generator[Any, None, None]:
+def qapp():
     """Create QApplication instance."""
     app = mock_widgets.QApplication.instance()
     if app is None:
@@ -197,7 +193,7 @@ def qapp() -> Generator[Any, None, None]:
 
 
 @pytest.fixture
-def launcher_env(qapp) -> Generator[Any, None, None]:
+def launcher_env(qapp):
     """Setup launcher environment with temp config."""
 
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -285,7 +281,7 @@ models:
         # QDockWidget) that are not covered by the module-level PyQt6 mocks,
         # causing a SIGABRT when Qt tries to initialise them without a display.
         # We provide stub attributes that downstream code expects.
-        def _mock_setup_process_console(self_arg) -> None:
+        def _mock_setup_process_console(self_arg):
             self_arg._console_text = MagicMock()
             self_arg._console_dock = MagicMock()
 
@@ -300,7 +296,7 @@ models:
         # In the full test suite, launcher_ui_setup is already imported with
         # real C++ Qt classes cached at module scope, so the sys.modules mock
         # for PyQt6 has no effect on those cached references.
-        def _mock_init_ui(self_arg) -> None:
+        def _mock_init_ui(self_arg):
             self_arg.grid_layout = MockQLayout()
             self_arg.btn_launch = MagicMock()
             self_arg.lbl_status = MagicMock()
@@ -347,7 +343,7 @@ models:
             context_help_patcher.stop()
 
 
-def test_launcher_detects_real_model_files(launcher_env) -> None:
+def test_launcher_detects_real_model_files(launcher_env):
     """Test that launcher correctly loads and identifies valid/invalid paths."""
     # Skip in CI environments where Qt might crash
     is_ci = os.environ.get("CI") == "true" or os.environ.get("GITHUB_ACTIONS") == "true"
@@ -379,7 +375,7 @@ def test_launcher_detects_real_model_files(launcher_env) -> None:
     assert Path(model_config.path).resolve() == model_path.resolve()
 
 
-def test_launcher_handles_missing_file_on_launch(launcher_env) -> None:
+def test_launcher_handles_missing_file_on_launch(launcher_env):
     """Test launching a model where the file was deleted after load."""
     launcher, model_path = launcher_env
 

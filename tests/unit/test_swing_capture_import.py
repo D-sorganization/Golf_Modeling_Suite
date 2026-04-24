@@ -21,8 +21,6 @@ from src.shared.python.data_io.swing_capture_import import (
     SwingPhaseLabels,
 )
 
-pytestmark = pytest.mark.unit
-
 # ---- Fixtures ----
 
 

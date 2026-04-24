@@ -27,8 +27,6 @@ from src.shared.python.analysis.grf_metrics import GRFMetricsMixin
 from src.shared.python.analysis.pca_analysis import PCAAnalysisMixin
 from src.shared.python.analysis.stability_metrics import StabilityMetricsMixin
 
-pytestmark = pytest.mark.unit
-
 # ============================================================================
 # Stub classes for mixin testing
 # ============================================================================

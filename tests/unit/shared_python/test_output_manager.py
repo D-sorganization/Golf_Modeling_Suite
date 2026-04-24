@@ -14,8 +14,6 @@ from src.shared.python.data_io.output_manager import (
     OutputManager,
 )
 
-pytestmark = pytest.mark.unit
-
 
 @pytest.fixture
 def temp_output_dir(tmp_path) -> OutputManager:

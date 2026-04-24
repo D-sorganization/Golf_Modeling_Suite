@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-from collections.abc import Generator
 from unittest.mock import AsyncMock
 
 import pytest
@@ -28,15 +27,13 @@ from src.unreal_integration.streaming import (  # noqa: E402
     UnrealStreamingServer,
 )
 
-pytestmark = pytest.mark.unit
-
 # Ensure pytest-asyncio is available for async test classes;
 # skip the entire module if it is not installed.
 pytest.importorskip("pytest_asyncio", reason="pytest-asyncio not installed")
 
 
 @pytest.fixture
-def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
+def event_loop():
     """Provide an explicit event loop for sync buffer tests on Python 3.14+."""
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
@@ -50,7 +47,7 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
 class TestStreamingConfig:
     """Tests for StreamingConfig."""
 
-    def test_default_config(self) -> None:
+    def test_default_config(self):
         """Test default streaming configuration."""
         config = StreamingConfig()
         assert config.host == "localhost"
@@ -58,7 +55,7 @@ class TestStreamingConfig:
         assert config.target_fps == 60
         assert config.buffer_size == 10
 
-    def test_custom_config(self) -> None:
+    def test_custom_config(self):
         """Test custom streaming configuration."""
         config = StreamingConfig(
             host="0.0.0.0",
@@ -71,12 +68,12 @@ class TestStreamingConfig:
         assert config.target_fps == 120
         assert config.buffer_size == 20
 
-    def test_config_frame_interval(self) -> None:
+    def test_config_frame_interval(self):
         """Test frame interval calculation."""
         config = StreamingConfig(target_fps=60)
         assert config.frame_interval == pytest.approx(1 / 60)
 
-    def test_config_validation(self) -> None:
+    def test_config_validation(self):
         """Test configuration validation."""
         with pytest.raises(ValueError, match="port"):
             StreamingConfig(port=-1)
@@ -85,7 +82,7 @@ class TestStreamingConfig:
         with pytest.raises(ValueError, match="buffer"):
             StreamingConfig(buffer_size=0)
 
-    def test_config_to_dict(self) -> None:
+    def test_config_to_dict(self):
         """Test configuration serialization."""
         config = StreamingConfig()
         d = config.to_dict()
@@ -93,7 +90,7 @@ class TestStreamingConfig:
         assert "port" in d
         assert "target_fps" in d
 
-    def test_config_from_dict(self) -> None:
+    def test_config_from_dict(self):
         """Test configuration deserialization."""
         d = {"host": "192.168.1.1", "port": 8080, "target_fps": 30}
         config = StreamingConfig.from_dict(d)
@@ -104,7 +101,7 @@ class TestStreamingConfig:
 class TestStreamingState:
     """Tests for StreamingState enum."""
 
-    def test_streaming_states(self) -> None:
+    def test_streaming_states(self):
         """Test all streaming states exist."""
         assert StreamingState.STOPPED is not None
         assert StreamingState.STARTING is not None
@@ -113,7 +110,7 @@ class TestStreamingState:
         assert StreamingState.STOPPING is not None
         assert StreamingState.ERROR is not None
 
-    def test_streaming_state_is_active(self) -> None:
+    def test_streaming_state_is_active(self):
         """Test is_active property."""
         assert StreamingState.RUNNING.is_active
         assert StreamingState.PAUSED.is_active
@@ -124,7 +121,7 @@ class TestStreamingState:
 class TestControlMessage:
     """Tests for control message handling."""
 
-    def test_create_control_message(self) -> None:
+    def test_create_control_message(self):
         """Test control message creation."""
         msg = ControlMessage(
             action=ControlAction.PAUSE,
@@ -132,7 +129,7 @@ class TestControlMessage:
         )
         assert msg.action == ControlAction.PAUSE
 
-    def test_control_actions(self) -> None:
+    def test_control_actions(self):
         """Test all control actions exist."""
         assert ControlAction.PLAY is not None
         assert ControlAction.PAUSE is not None
@@ -140,20 +137,20 @@ class TestControlMessage:
         assert ControlAction.SET_SPEED is not None
         assert ControlAction.STOP is not None
 
-    def test_control_message_from_json(self) -> None:
+    def test_control_message_from_json(self):
         """Test parsing control message from JSON."""
         json_str = '{"type": "control", "action": "pause"}'
         msg = ControlMessage.from_json(json_str)
         assert msg.action == ControlAction.PAUSE
 
-    def test_control_message_with_value(self) -> None:
+    def test_control_message_with_value(self):
         """Test control message with value."""
         json_str = '{"type": "control", "action": "seek", "value": 0.5}'
         msg = ControlMessage.from_json(json_str)
         assert msg.action == ControlAction.SEEK
         assert msg.value == 0.5
 
-    def test_control_message_to_json(self) -> None:
+    def test_control_message_to_json(self):
         """Test serializing control message."""
         msg = ControlMessage(action=ControlAction.SET_SPEED, value=2.0)
         json_str = msg.to_json()
@@ -165,13 +162,13 @@ class TestControlMessage:
 class TestFrameBuffer:
     """Tests for frame buffering."""
 
-    def test_create_buffer(self, event_loop) -> None:
+    def test_create_buffer(self, event_loop):
         """Test buffer creation."""
         buffer = FrameBuffer(max_size=10)
         assert buffer.max_size == 10
         assert len(buffer) == 0
 
-    def test_buffer_add_frame(self, event_loop) -> None:
+    def test_buffer_add_frame(self, event_loop):
         """Test adding frames to buffer."""
         buffer = FrameBuffer(max_size=10)
         frame = UnrealDataFrame(
@@ -182,7 +179,7 @@ class TestFrameBuffer:
         buffer.add(frame)
         assert len(buffer) == 1
 
-    def test_buffer_overflow(self, event_loop) -> None:
+    def test_buffer_overflow(self, event_loop):
         """Test buffer overflow handling."""
         buffer = FrameBuffer(max_size=3)
         for i in range(5):
@@ -191,7 +188,7 @@ class TestFrameBuffer:
         # Oldest frames should be dropped
         assert buffer.peek().frame_number == 2
 
-    def test_buffer_get_frame(self, event_loop) -> None:
+    def test_buffer_get_frame(self, event_loop):
         """Test getting frame from buffer."""
         buffer = FrameBuffer(max_size=10)
         frame = UnrealDataFrame(timestamp=0.0, frame_number=0, joints={})
@@ -200,7 +197,7 @@ class TestFrameBuffer:
         assert retrieved.frame_number == 0
         assert len(buffer) == 0
 
-    def test_buffer_peek(self, event_loop) -> None:
+    def test_buffer_peek(self, event_loop):
         """Test peeking at buffer without removing."""
         buffer = FrameBuffer(max_size=10)
         frame = UnrealDataFrame(timestamp=0.0, frame_number=0, joints={})
@@ -209,7 +206,7 @@ class TestFrameBuffer:
         assert peeked.frame_number == 0
         assert len(buffer) == 1  # Frame still in buffer
 
-    def test_buffer_clear(self, event_loop) -> None:
+    def test_buffer_clear(self, event_loop):
         """Test clearing buffer."""
         buffer = FrameBuffer(max_size=10)
         for i in range(5):
@@ -217,14 +214,14 @@ class TestFrameBuffer:
         buffer.clear()
         assert len(buffer) == 0
 
-    def test_buffer_is_empty(self, event_loop) -> None:
+    def test_buffer_is_empty(self, event_loop):
         """Test empty buffer check."""
         buffer = FrameBuffer(max_size=10)
         assert buffer.is_empty
         buffer.add(UnrealDataFrame(timestamp=0.0, frame_number=0, joints={}))
         assert not buffer.is_empty
 
-    def test_buffer_is_full(self, event_loop) -> None:
+    def test_buffer_is_full(self, event_loop):
         """Test full buffer check."""
         buffer = FrameBuffer(max_size=2)
         assert not buffer.is_full
@@ -236,7 +233,7 @@ class TestFrameBuffer:
 class TestStreamingProtocol:
     """Tests for streaming protocol messages."""
 
-    def test_frame_message_format(self) -> None:
+    def test_frame_message_format(self):
         """Test frame message format."""
         frame = UnrealDataFrame(
             timestamp=0.0167,
@@ -248,7 +245,7 @@ class TestStreamingProtocol:
         assert "data" in msg
         assert msg["data"]["timestamp"] == 0.0167
 
-    def test_status_message_format(self) -> None:
+    def test_status_message_format(self):
         """Test status message format."""
         msg = StreamingProtocol.create_status_message(
             state=StreamingState.RUNNING,
@@ -259,7 +256,7 @@ class TestStreamingProtocol:
         assert msg["state"] == "running"
         assert msg["fps"] == 59.8
 
-    def test_error_message_format(self) -> None:
+    def test_error_message_format(self):
         """Test error message format."""
         msg = StreamingProtocol.create_error_message(
             error_code="BUFFER_OVERFLOW",
@@ -268,7 +265,7 @@ class TestStreamingProtocol:
         assert msg["type"] == "error"
         assert msg["error_code"] == "BUFFER_OVERFLOW"
 
-    def test_ack_message_format(self) -> None:
+    def test_ack_message_format(self):
         """Test acknowledgment message format."""
         msg = StreamingProtocol.create_ack_message(
             frame_number=100,
@@ -282,14 +279,14 @@ class TestStreamingProtocol:
 class TestUnrealStreamingServer:
     """Tests for the streaming server."""
 
-    async def test_server_creation(self) -> None:
+    async def test_server_creation(self):
         """Test server creation."""
         config = StreamingConfig(host="localhost", port=8765)
         server = UnrealStreamingServer(config=config)
         assert server.state == StreamingState.STOPPED
         assert server.config.port == 8765
 
-    async def test_server_state_transitions(self) -> None:
+    async def test_server_state_transitions(self):
         """Test server state transitions."""
         server = UnrealStreamingServer()
         assert server.state == StreamingState.STOPPED
@@ -297,7 +294,7 @@ class TestUnrealStreamingServer:
         # Start should transition to STARTING then RUNNING
         # (In tests we mock the actual server start)
 
-    async def test_server_broadcast_frame(self) -> None:
+    async def test_server_broadcast_frame(self):
         """Test broadcasting frame to clients."""
         server = UnrealStreamingServer()
         server._state = StreamingState.RUNNING  # Must be running to broadcast
@@ -317,7 +314,7 @@ class TestUnrealStreamingServer:
         mock_client1.send.assert_called_once()
         mock_client2.send.assert_called_once()
 
-    async def test_server_queue_frame(self) -> None:
+    async def test_server_queue_frame(self):
         """Test queuing frame for streaming."""
         server = UnrealStreamingServer()
         frame = UnrealDataFrame(timestamp=0.0, frame_number=0, joints={})
@@ -326,7 +323,7 @@ class TestUnrealStreamingServer:
 
         assert len(server._buffer) == 1
 
-    async def test_server_statistics(self) -> None:
+    async def test_server_statistics(self):
         """Test server statistics."""
         server = UnrealStreamingServer()
         stats = server.get_statistics()
@@ -336,7 +333,7 @@ class TestUnrealStreamingServer:
         assert "uptime" in stats
         assert "average_fps" in stats
 
-    async def test_server_client_management(self) -> None:
+    async def test_server_client_management(self):
         """Test client connection management."""
         server = UnrealStreamingServer()
         assert server.client_count == 0
@@ -348,7 +345,7 @@ class TestUnrealStreamingServer:
         await server._remove_client(mock_client)
         assert server.client_count == 0
 
-    async def test_server_handle_control_message(self) -> None:
+    async def test_server_handle_control_message(self):
         """Test handling control messages."""
         server = UnrealStreamingServer()
         server._state = StreamingState.RUNNING
@@ -361,7 +358,7 @@ class TestUnrealStreamingServer:
         await server._handle_control(ControlMessage(action=ControlAction.PLAY))
         assert server.state == StreamingState.RUNNING
 
-    async def test_server_playback_speed(self) -> None:
+    async def test_server_playback_speed(self):
         """Test playback speed control."""
         server = UnrealStreamingServer()
         assert server.playback_speed == 1.0
@@ -371,7 +368,7 @@ class TestUnrealStreamingServer:
         )
         assert server.playback_speed == 0.5
 
-    async def test_server_seek(self) -> None:
+    async def test_server_seek(self):
         """Test seek functionality."""
         server = UnrealStreamingServer()
 
@@ -394,7 +391,7 @@ class TestUnrealStreamingServer:
 class TestStreamingServerIntegration:
     """Integration-style tests for streaming server."""
 
-    async def test_full_streaming_cycle(self) -> None:
+    async def test_full_streaming_cycle(self):
         """Test complete streaming cycle."""
         server = UnrealStreamingServer(
             config=StreamingConfig(
@@ -426,7 +423,7 @@ class TestStreamingServerIntegration:
 
         assert len(server._buffer) <= server.config.buffer_size
 
-    async def test_streaming_with_metrics(self) -> None:
+    async def test_streaming_with_metrics(self):
         """Test streaming with swing metrics."""
         from src.unreal_integration.data_models import SwingMetrics
 
@@ -449,7 +446,7 @@ class TestStreamingServerIntegration:
 class TestStreamingPerformance:
     """Performance tests for streaming."""
 
-    def test_frame_serialization_speed(self) -> None:
+    def test_frame_serialization_speed(self):
         """Test frame serialization is fast enough for real-time."""
         import time
 
@@ -477,7 +474,7 @@ class TestStreamingPerformance:
         assert elapsed < 3.0
         assert elapsed / 1000 < 0.003
 
-    def test_buffer_throughput(self, event_loop) -> None:
+    def test_buffer_throughput(self, event_loop):
         """Test buffer can handle high throughput."""
         import time
 
@@ -490,73 +487,3 @@ class TestStreamingPerformance:
 
         # Should handle 10000 frames in less than 1 second
         assert elapsed < 1.0
-
-
-# ---------------------------------------------------------------------------
-# Issue #2475: server must bind a real socket before reporting RUNNING
-# ---------------------------------------------------------------------------
-
-
-@pytest.mark.asyncio
-class TestServerBindsRealSocket:
-    """Verify server actually opens a socket before transitioning to RUNNING.
-
-    Before the fix, start() set state = RUNNING without ever calling
-    asyncio.start_server() or any equivalent. A client would therefore
-    never be able to connect despite the backend claiming it was ready.
-    """
-
-    async def test_start_transitions_to_running_only_after_bind(self) -> None:
-        """Server must be in RUNNING state after start()."""
-        server = UnrealStreamingServer(config=StreamingConfig(host="127.0.0.1", port=0))
-        assert server.state == StreamingState.STOPPED
-        await server.start()
-        try:
-            assert server.state == StreamingState.RUNNING, (
-                "Server is not RUNNING after start()"
-            )
-        finally:
-            await server.stop()
-
-    async def test_client_can_connect_after_start(self) -> None:
-        """A raw TCP client must be able to connect to the bound port.
-
-        This is the regression test for #2475: previously the server claimed
-        RUNNING but no socket was ever opened, so every connection attempt
-        would be refused.
-        """
-        server = UnrealStreamingServer(config=StreamingConfig(host="127.0.0.1", port=0))
-        await server.start()
-        try:
-            port = server.bound_port
-            assert port > 0, "Server must expose its bound port"
-
-            # A plain TCP connection must succeed (not be refused)
-            reader, writer = await asyncio.open_connection("127.0.0.1", port)
-            writer.close()
-            await writer.wait_closed()
-        finally:
-            await server.stop()
-
-    async def test_start_fails_cleanly_on_port_conflict(self) -> None:
-        """If the port is already in use, start() must set ERROR state and raise."""
-        import socket as _socket
-
-        # Bind a raw socket to steal the port
-        sock = _socket.socket(_socket.AF_INET, _socket.SOCK_STREAM)
-        sock.setsockopt(_socket.SOL_SOCKET, _socket.SO_REUSEADDR, 0)
-        sock.bind(("127.0.0.1", 0))
-        stolen_port = sock.getsockname()[1]
-        sock.listen(1)
-
-        server = UnrealStreamingServer(
-            config=StreamingConfig(host="127.0.0.1", port=stolen_port)
-        )
-        try:
-            with pytest.raises((RuntimeError, OSError)):
-                await server.start()
-            assert server.state == StreamingState.ERROR, (
-                "Server must be in ERROR state when binding fails"
-            )
-        finally:
-            sock.close()

@@ -1,9 +1,5 @@
 """Tests for the base AI adapter module."""
 
-from collections.abc import Iterator
-
-import pytest
-
 from src.shared.python.ai.adapters.base import BaseAgentAdapter, ToolDeclaration
 from src.shared.python.ai.types import (
     AgentChunk,
@@ -12,8 +8,6 @@ from src.shared.python.ai.types import (
     Message,
     ProviderCapabilities,
 )
-
-pytestmark = pytest.mark.unit
 
 
 class DummyAdapter(BaseAgentAdapter):
@@ -26,7 +20,7 @@ class DummyAdapter(BaseAgentAdapter):
 
     def stream_response(
         self, message: str, context: ConversationContext, tools: list[ToolDeclaration]
-    ) -> Iterator[AgentChunk]:
+    ):
         yield AgentChunk(content="test")
 
     @property
@@ -37,7 +31,7 @@ class DummyAdapter(BaseAgentAdapter):
         return True, "OK"
 
 
-def test_tool_declaration_init() -> None:
+def test_tool_declaration_init():
     """Test ToolDeclaration initialization."""
     tool = ToolDeclaration(
         name="test_tool",
@@ -56,7 +50,7 @@ def test_tool_declaration_init() -> None:
     assert tool2.required == []
 
 
-def test_tool_declaration_openai_format() -> None:
+def test_tool_declaration_openai_format():
     """Test converting ToolDeclaration to OpenAI format."""
     tool = ToolDeclaration(
         name="weather_tool",
@@ -79,7 +73,7 @@ def test_tool_declaration_openai_format() -> None:
     }
 
 
-def test_tool_declaration_anthropic_format() -> None:
+def test_tool_declaration_anthropic_format():
     """Test converting ToolDeclaration to Anthropic format."""
     tool = ToolDeclaration(
         name="calc_tool",
@@ -99,7 +93,7 @@ def test_tool_declaration_anthropic_format() -> None:
     }
 
 
-def test_format_messages_for_provider() -> None:
+def test_format_messages_for_provider():
     """Test formatting conversation history."""
     adapter = DummyAdapter()
 
@@ -121,7 +115,7 @@ def test_format_messages_for_provider() -> None:
     assert formatted[2] == {"role": "user", "content": "next message"}
 
 
-def test_build_system_prompt() -> None:
+def test_build_system_prompt():
     """Test building a basic system prompt."""
     adapter = DummyAdapter()
 

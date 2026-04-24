@@ -11,8 +11,6 @@ from src.shared.python.validation_pkg.statistical_analysis import (
     SwingPhase,
 )
 
-pytestmark = pytest.mark.integration
-
 
 class MockRecorder(RecorderInterface):
     """Mock recorder for testing."""

@@ -7,8 +7,6 @@ import time
 import numpy as np
 import pytest
 
-pytestmark = pytest.mark.integration
-
 
 class TestRobotState:
     """Tests for RobotState dataclass."""

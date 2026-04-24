@@ -1,9 +1,5 @@
 """Unit tests for AI package init."""
 
-import pytest
-
-pytestmark = pytest.mark.unit
-
 
 class TestAIPackageInit:
     """Tests for AI package exports."""

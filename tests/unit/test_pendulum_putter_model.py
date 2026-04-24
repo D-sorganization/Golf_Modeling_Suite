@@ -18,8 +18,6 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-pytestmark = pytest.mark.unit
-
 if TYPE_CHECKING:
     pass
 
@@ -34,7 +32,7 @@ pytest.importorskip(
 class TestPendulumPutterModelConstruction:
     """Test model construction and structure."""
 
-    def test_model_builds_successfully(self) -> None:
+    def test_model_builds_successfully(self):
         """Model should build without errors."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,
@@ -46,7 +44,7 @@ class TestPendulumPutterModelConstruction:
         assert result.success, f"Build failed: {result.error_message}"
         assert result.urdf_xml is not None
 
-    def test_model_has_correct_link_count(self) -> None:
+    def test_model_has_correct_link_count(self):
         """Model should have expected number of links."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,
@@ -59,7 +57,7 @@ class TestPendulumPutterModelConstruction:
         # pendulum_arm, club_mount, plus club links (grip, shaft, head)
         assert len(result.links) >= 6, "Should have at least 6 links"
 
-    def test_model_has_single_dof_pendulum_joint(self) -> None:
+    def test_model_has_single_dof_pendulum_joint(self):
         """Model should have exactly 1 DOF for pendulum motion."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,
@@ -74,7 +72,7 @@ class TestPendulumPutterModelConstruction:
         assert len(revolute_joints) == 1, "Should have exactly 1 revolute joint"
         assert result.get_total_dof() == 1, "Total DOF should be 1"
 
-    def test_pendulum_joint_rotates_about_y_axis(self) -> None:
+    def test_pendulum_joint_rotates_about_y_axis(self):
         """Pendulum joint should rotate about Y-axis for X-Z plane swing."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,
@@ -93,7 +91,7 @@ class TestPendulumPutterModelConstruction:
 class TestPendulumPutterModelPhysics:
     """Test physical properties of the model."""
 
-    def test_model_has_reasonable_total_mass(self) -> None:
+    def test_model_has_reasonable_total_mass(self):
         """Total mass should be reasonable for a putting robot."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,
@@ -107,7 +105,7 @@ class TestPendulumPutterModelPhysics:
         # Perfy-style robot: ~5-15 kg total
         assert 1.0 < total_mass < 30.0, f"Mass {total_mass} kg seems unreasonable"
 
-    def test_base_is_heaviest_component(self) -> None:
+    def test_base_is_heaviest_component(self):
         """Base should be heavy for stability."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,
@@ -124,7 +122,7 @@ class TestPendulumPutterModelPhysics:
         total_mass = result.get_total_mass()
         assert base_mass > 0.3 * total_mass, "Base should be heavy for stability"
 
-    def test_all_inertias_are_physically_valid(self) -> None:
+    def test_all_inertias_are_physically_valid(self):
         """All inertia tensors should be positive definite."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,
@@ -139,7 +137,7 @@ class TestPendulumPutterModelPhysics:
                     f"Link {link.name} has non-positive-definite inertia"
                 )
 
-    def test_pendulum_joint_has_appropriate_limits(self) -> None:
+    def test_pendulum_joint_has_appropriate_limits(self):
         """Pendulum joint should have reasonable angle limits."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,
@@ -156,7 +154,7 @@ class TestPendulumPutterModelPhysics:
         assert joint.limits.lower >= -math.pi / 2, "Lower limit too extreme"
         assert joint.limits.upper <= math.pi / 2, "Upper limit too extreme"
 
-    def test_pendulum_joint_has_low_damping(self) -> None:
+    def test_pendulum_joint_has_low_damping(self):
         """Pendulum should have low damping for free swing."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,
@@ -175,7 +173,7 @@ class TestPendulumPutterModelPhysics:
 class TestPendulumPutterModelConfiguration:
     """Test model configuration and customization."""
 
-    def test_can_set_arm_length(self) -> None:
+    def test_can_set_arm_length(self):
         """Should be able to configure arm length."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,
@@ -197,7 +195,7 @@ class TestPendulumPutterModelConfiguration:
         assert short_arm is not None
         assert long_arm is not None
 
-    def test_can_set_shoulder_height(self) -> None:
+    def test_can_set_shoulder_height(self):
         """Should be able to configure shoulder height."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,
@@ -208,7 +206,7 @@ class TestPendulumPutterModelConfiguration:
 
         assert result.success
 
-    def test_can_set_pendulum_damping(self) -> None:
+    def test_can_set_pendulum_damping(self):
         """Should be able to configure pendulum damping."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,
@@ -224,7 +222,7 @@ class TestPendulumPutterModelConfiguration:
 class TestInterchangeableClub:
     """Test club interchangeability feature."""
 
-    def test_default_club_is_attached(self) -> None:
+    def test_default_club_is_attached(self):
         """Model should have a default putter attached."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,
@@ -245,7 +243,7 @@ class TestInterchangeableClub:
         ]
         assert len(club_links) >= 1, "Should have club links attached"
 
-    def test_can_build_without_club(self) -> None:
+    def test_can_build_without_club(self):
         """Should be able to build model without a club."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,
@@ -260,7 +258,7 @@ class TestInterchangeableClub:
         club_mount = result.get_link("club_mount")
         assert club_mount is not None
 
-    def test_can_attach_custom_club(self) -> None:
+    def test_can_attach_custom_club(self):
         """Should be able to attach a custom club configuration."""
         from model_generation.models.pendulum_putter import (
             ClubConfig,
@@ -282,7 +280,7 @@ class TestInterchangeableClub:
 class TestURDFGeneration:
     """Test URDF generation and compatibility."""
 
-    def test_generates_valid_urdf_xml(self) -> None:
+    def test_generates_valid_urdf_xml(self):
         """Generated URDF should be valid XML."""
         import defusedxml.ElementTree as ET
         from model_generation.models.pendulum_putter import (
@@ -297,7 +295,7 @@ class TestURDFGeneration:
         assert root.tag == "robot"
         assert root.attrib["name"] == "pendulum_putter"
 
-    def test_urdf_has_all_required_elements(self) -> None:
+    def test_urdf_has_all_required_elements(self):
         """URDF should have all required elements for physics engines."""
         import defusedxml.ElementTree as ET
         from model_generation.models.pendulum_putter import (
@@ -326,7 +324,7 @@ class TestURDFGeneration:
                     f"Link {link.attrib['name']} missing inertial"
                 )
 
-    def test_can_save_to_file(self, tmp_path: Path) -> None:
+    def test_can_save_to_file(self, tmp_path: Path):
         """Should be able to save URDF to file."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,
@@ -346,7 +344,7 @@ class TestURDFGeneration:
 class TestModelPortability:
     """Test that model can be moved around environments."""
 
-    def test_world_link_is_root(self) -> None:
+    def test_world_link_is_root(self):
         """World link should be the root for attachment."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,
@@ -359,7 +357,7 @@ class TestModelPortability:
         assert root is not None
         assert root.name == "world"
 
-    def test_base_attached_to_world_via_fixed_joint(self) -> None:
+    def test_base_attached_to_world_via_fixed_joint(self):
         """Base should be attached to world via fixed joint for positioning."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,
@@ -379,7 +377,7 @@ class TestModelPortability:
 class TestPendulumPhysicsAnalytical:
     """Test analytical physics properties of the pendulum model."""
 
-    def test_natural_frequency_calculable(self) -> None:
+    def test_natural_frequency_calculable(self):
         """Should be able to calculate natural frequency from model params."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,
@@ -403,7 +401,7 @@ class TestPendulumPhysicsAnalytical:
 class TestValidation:
     """Test model validation."""
 
-    def test_validation_passes_for_default_model(self) -> None:
+    def test_validation_passes_for_default_model(self):
         """Default model should pass all validations."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,
@@ -417,7 +415,7 @@ class TestValidation:
             f"Validation failed: {result.validation.get_error_messages()}"
         )
 
-    def test_validation_catches_invalid_parameters(self) -> None:
+    def test_validation_catches_invalid_parameters(self):
         """Should catch invalid configuration parameters."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,
@@ -435,7 +433,7 @@ class TestValidation:
 class TestMetadata:
     """Test model metadata for documentation and traceability."""
 
-    def test_metadata_includes_model_name(self) -> None:
+    def test_metadata_includes_model_name(self):
         """Metadata should include model identification."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,
@@ -447,7 +445,7 @@ class TestMetadata:
         assert "robot_name" in result.metadata
         assert result.metadata["robot_name"] == "pendulum_putter"
 
-    def test_metadata_includes_configuration(self) -> None:
+    def test_metadata_includes_configuration(self):
         """Metadata should include configuration parameters."""
         from model_generation.models.pendulum_putter import (
             PendulumPutterModelBuilder,

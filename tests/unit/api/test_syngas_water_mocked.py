@@ -8,7 +8,6 @@ internal mathematical logic.
 
 from __future__ import annotations
 
-from collections.abc import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -17,15 +16,13 @@ from fastapi.testclient import TestClient
 
 from src.shared.python.calc_backend.routers.syngas_water import router
 
-pytestmark = pytest.mark.unit
-
 _app = FastAPI()
 _app.include_router(router)
 client = TestClient(_app)
 
 
 @pytest.fixture
-def mock_calculator() -> Generator[MagicMock, None, None]:
+def mock_calculator():
     """Mock the SyngasWaterCalculator securely from Tools."""
     with patch(
         "upstream_drift_tools.process_calculators.syngas_water_calculator.SyngasWaterCalculator"
@@ -36,7 +33,7 @@ def mock_calculator() -> Generator[MagicMock, None, None]:
 
 
 @pytest.fixture
-def mock_estimate_risk() -> Generator[MagicMock, None, None]:
+def mock_estimate_risk():
     """Mock the estimate_condensation_risk function."""
     with patch(
         "upstream_drift_tools.process_calculators.syngas_water_calculator.estimate_condensation_risk"

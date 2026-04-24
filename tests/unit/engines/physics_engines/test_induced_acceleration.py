@@ -5,8 +5,6 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-pytestmark = pytest.mark.unit
-
 
 # --- PINOCCHIO ---
 def test_pinocchio_iaa() -> None:

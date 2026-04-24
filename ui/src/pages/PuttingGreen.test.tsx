@@ -1,12 +1,12 @@
 /**
  * Tests for PuttingGreen page.
  *
- * WIP: backend not yet implemented. Tracked in #3166.
+ * See issue #1206
  */
 
 import { describe, it, expect } from 'vitest';
 
-import type { PuttResult, GreenReading, ScatterResult } from './_wip/PuttingGreen';
+import type { PuttResult, GreenReading, ScatterResult } from './PuttingGreen';
 
 describe('PuttingGreen data structures', () => {
   it('should parse a putt simulation result', () => {

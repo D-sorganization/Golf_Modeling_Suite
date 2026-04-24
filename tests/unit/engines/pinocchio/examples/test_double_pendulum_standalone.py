@@ -2,10 +2,8 @@
 
 import pytest
 
-pytestmark = pytest.mark.unit
 
-
-def test_import() -> None:
+def test_import():
     """Verify the module can be imported."""
     try:
         import src.engines.physics_engines.pinocchio.python.examples.double_pendulum_standalone

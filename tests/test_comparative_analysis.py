@@ -15,8 +15,6 @@ from src.shared.python.validation_pkg.comparative_analysis import (
 )
 from src.shared.python.validation_pkg.comparative_plotting import ComparativePlotter
 
-pytestmark = pytest.mark.integration
-
 
 class MockRecorder(RecorderInterface):
     """Mock recorder for testing."""

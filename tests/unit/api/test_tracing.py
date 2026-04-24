@@ -5,7 +5,6 @@ principles to ensure proper request tracking across the API.
 """
 
 import re
-from typing import NoReturn
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -15,7 +14,7 @@ pytestmark = pytest.mark.anyio
 
 
 @pytest.fixture(scope="module")
-def anyio_backend() -> str:
+def anyio_backend():
     """Use asyncio backend only (trio not installed)."""
     return "asyncio"
 
@@ -23,21 +22,21 @@ def anyio_backend() -> str:
 class TestGenerateRequestIdContract:
     """Design by Contract tests for generate_request_id function."""
 
-    def test_returns_string(self) -> None:
+    def test_returns_string(self):
         """Postcondition: Returns a string."""
         from src.api.utils.tracing import generate_request_id
 
         result = generate_request_id()
         assert isinstance(result, str)
 
-    def test_returns_non_empty(self) -> None:
+    def test_returns_non_empty(self):
         """Postcondition: Returns non-empty string."""
         from src.api.utils.tracing import generate_request_id
 
         result = generate_request_id()
         assert len(result) > 0
 
-    def test_starts_with_prefix(self) -> None:
+    def test_starts_with_prefix(self):
         """Postcondition: Starts with 'req_' prefix."""
         from src.api.utils.tracing import generate_request_id
 
@@ -48,14 +47,14 @@ class TestGenerateRequestIdContract:
 class TestGenerateRequestId:
     """Functional tests for generate_request_id."""
 
-    def test_generates_unique_ids(self) -> None:
+    def test_generates_unique_ids(self):
         """Test that each call generates a unique ID."""
         from src.api.utils.tracing import generate_request_id
 
         ids = {generate_request_id() for _ in range(100)}
         assert len(ids) == 100  # All unique
 
-    def test_id_format(self) -> None:
+    def test_id_format(self):
         """Test that ID has expected format."""
         from src.api.utils.tracing import generate_request_id
 
@@ -67,14 +66,14 @@ class TestGenerateRequestId:
 class TestGenerateCorrelationIdContract:
     """Design by Contract tests for generate_correlation_id function."""
 
-    def test_returns_string(self) -> None:
+    def test_returns_string(self):
         """Postcondition: Returns a string."""
         from src.api.utils.tracing import generate_correlation_id
 
         result = generate_correlation_id()
         assert isinstance(result, str)
 
-    def test_starts_with_prefix(self) -> None:
+    def test_starts_with_prefix(self):
         """Postcondition: Starts with 'cor_' prefix."""
         from src.api.utils.tracing import generate_correlation_id
 
@@ -85,14 +84,14 @@ class TestGenerateCorrelationIdContract:
 class TestGenerateCorrelationId:
     """Functional tests for generate_correlation_id."""
 
-    def test_generates_unique_ids(self) -> None:
+    def test_generates_unique_ids(self):
         """Test that each call generates a unique ID."""
         from src.api.utils.tracing import generate_correlation_id
 
         ids = {generate_correlation_id() for _ in range(100)}
         assert len(ids) == 100  # All unique
 
-    def test_id_format(self) -> None:
+    def test_id_format(self):
         """Test that ID has expected format."""
         from src.api.utils.tracing import generate_correlation_id
 
@@ -104,14 +103,14 @@ class TestGenerateCorrelationId:
 class TestRequestIdContextContract:
     """Design by Contract tests for request ID context management."""
 
-    def test_get_returns_string(self) -> None:
+    def test_get_returns_string(self):
         """Postcondition: get_request_id returns a string."""
         from src.api.utils.tracing import get_request_id
 
         result = get_request_id()
         assert isinstance(result, str)
 
-    def test_set_returns_token(self) -> None:
+    def test_set_returns_token(self):
         """Postcondition: set_request_id returns a context token."""
         from src.api.utils.tracing import set_request_id
 
@@ -122,7 +121,7 @@ class TestRequestIdContextContract:
 class TestRequestIdContext:
     """Functional tests for request ID context management."""
 
-    def test_get_returns_empty_when_not_set(self) -> None:
+    def test_get_returns_empty_when_not_set(self):
         """Test that get returns empty string when not set."""
         from src.api.utils.tracing import (
             _request_id_var,
@@ -137,7 +136,7 @@ class TestRequestIdContext:
         finally:
             _request_id_var.reset(token)
 
-    def test_set_and_get_round_trip(self) -> None:
+    def test_set_and_get_round_trip(self):
         """Test that set and get work together."""
         from src.api.utils.tracing import get_request_id, set_request_id
 
@@ -150,7 +149,7 @@ class TestRequestIdContext:
 
             _request_id_var.reset(token)
 
-    def test_token_can_reset_value(self) -> None:
+    def test_token_can_reset_value(self):
         """Test that token can reset to previous value."""
         from src.api.utils.tracing import (
             _request_id_var,
@@ -177,7 +176,7 @@ class TestRequestIdContext:
 class TestTraceContextContract:
     """Design by Contract tests for TraceContext dataclass."""
 
-    def test_to_dict_returns_dict(self) -> None:
+    def test_to_dict_returns_dict(self):
         """Postcondition: to_dict returns a dictionary."""
         from src.api.utils.tracing import TraceContext
 
@@ -188,7 +187,7 @@ class TestTraceContextContract:
         result = context.to_dict()
         assert isinstance(result, dict)
 
-    def test_to_dict_has_required_fields(self) -> None:
+    def test_to_dict_has_required_fields(self):
         """Postcondition: to_dict includes required fields."""
         from src.api.utils.tracing import TraceContext
 
@@ -207,7 +206,7 @@ class TestTraceContextContract:
 class TestTraceContext:
     """Functional tests for TraceContext dataclass."""
 
-    def test_default_values(self) -> None:
+    def test_default_values(self):
         """Test default values for optional fields."""
         from src.api.utils.tracing import TraceContext
 
@@ -220,7 +219,7 @@ class TestTraceContext:
         assert context.start_time == 0.0
         assert context.metadata == {}
 
-    def test_custom_operation(self) -> None:
+    def test_custom_operation(self):
         """Test setting custom operation."""
         from src.api.utils.tracing import TraceContext
 
@@ -232,7 +231,7 @@ class TestTraceContext:
 
         assert context.operation == "GET /api/health"
 
-    def test_to_dict_values(self) -> None:
+    def test_to_dict_values(self):
         """Test that to_dict returns correct values."""
         from src.api.utils.tracing import TraceContext
 
@@ -253,7 +252,7 @@ class TestTraceContext:
 class TestTraceContextManagement:
     """Functional tests for trace context management."""
 
-    def test_get_returns_none_when_not_set(self) -> None:
+    def test_get_returns_none_when_not_set(self):
         """Test that get returns None when not set."""
         from src.api.utils.tracing import (
             _trace_context_var,
@@ -268,7 +267,7 @@ class TestTraceContextManagement:
         finally:
             _trace_context_var.reset(token)
 
-    def test_set_and_get_round_trip(self) -> None:
+    def test_set_and_get_round_trip(self):
         """Test that set and get work together."""
         from src.api.utils.tracing import (
             TraceContext,
@@ -292,14 +291,14 @@ class TestTraceContextManagement:
 class TestRequestTracerContract:
     """Design by Contract tests for RequestTracer middleware."""
 
-    def test_instantiates(self) -> None:
+    def test_instantiates(self):
         """Postcondition: RequestTracer can be instantiated."""
         from src.api.utils.tracing import RequestTracer
 
         tracer = RequestTracer()
         assert tracer is not None
 
-    def test_has_trace_request_method(self) -> None:
+    def test_has_trace_request_method(self):
         """Postcondition: RequestTracer has trace_request method."""
         from src.api.utils.tracing import RequestTracer
 
@@ -311,7 +310,7 @@ class TestRequestTracerContract:
 class TestRequestTracer:
     """Functional tests for RequestTracer middleware."""
 
-    async def test_adds_headers_to_response(self) -> None:
+    async def test_adds_headers_to_response(self):
         """Test that tracer adds tracing headers to response."""
         from src.api.utils.tracing import (
             CORRELATION_ID_HEADER,
@@ -335,7 +334,7 @@ class TestRequestTracer:
         mock_response.status_code = 200
 
         # Mock call_next
-        async def mock_call_next(request: MagicMock) -> MagicMock:
+        async def mock_call_next(request):
             return mock_response
 
         with patch("src.api.utils.tracing.logger"):
@@ -345,7 +344,7 @@ class TestRequestTracer:
         assert CORRELATION_ID_HEADER in response.headers
         assert "X-Response-Time-Ms" in response.headers
 
-    async def test_preserves_incoming_correlation_id(self) -> None:
+    async def test_preserves_incoming_correlation_id(self):
         """Test that tracer preserves incoming correlation ID."""
         from src.api.utils.tracing import (
             CORRELATION_ID_HEADER,
@@ -366,7 +365,7 @@ class TestRequestTracer:
         mock_response.headers = {}
         mock_response.status_code = 200
 
-        async def mock_call_next(request: MagicMock) -> MagicMock:
+        async def mock_call_next(request):
             return mock_response
 
         with patch("src.api.utils.tracing.logger"):
@@ -374,7 +373,7 @@ class TestRequestTracer:
 
         assert response.headers[CORRELATION_ID_HEADER] == incoming_correlation
 
-    async def test_handles_exception(self) -> None:
+    async def test_handles_exception(self):
         """Test that tracer handles exceptions properly."""
         from src.api.utils.tracing import RequestTracer
 
@@ -387,7 +386,7 @@ class TestRequestTracer:
         mock_request.client = MagicMock()
         mock_request.client.host = "127.0.0.1"
 
-        async def mock_call_next_error(request) -> NoReturn:
+        async def mock_call_next_error(request):
             raise ValueError("Test error")
 
         with (
@@ -400,7 +399,7 @@ class TestRequestTracer:
 class TestTracedLogContract:
     """Design by Contract tests for traced_log function."""
 
-    def test_does_not_raise(self) -> None:
+    def test_does_not_raise(self):
         """Postcondition: traced_log does not raise exceptions."""
         from src.api.utils.tracing import traced_log
 
@@ -413,7 +412,7 @@ class TestTracedLogContract:
 class TestTracedLog:
     """Functional tests for traced_log function."""
 
-    def test_injects_request_id(self) -> None:
+    def test_injects_request_id(self):
         """Test that traced_log injects request_id when available."""
         from src.api.utils.tracing import (
             _request_id_var,
@@ -432,7 +431,7 @@ class TestTracedLog:
 
         _request_id_var.reset(token)
 
-    def test_injects_correlation_id_from_context(self) -> None:
+    def test_injects_correlation_id_from_context(self):
         """Test that traced_log injects correlation_id from context."""
         from src.api.utils.tracing import (
             TraceContext,
@@ -454,7 +453,7 @@ class TestTracedLog:
 
         _trace_context_var.reset(token)
 
-    def test_passes_kwargs_to_extra(self) -> None:
+    def test_passes_kwargs_to_extra(self):
         """Test that kwargs are passed to extra."""
         from src.api.utils.tracing import traced_log
 
@@ -465,7 +464,7 @@ class TestTracedLog:
             assert call_args[1]["extra"]["engine"] == "mujoco"
             assert call_args[1]["extra"]["model"] == "arm.urdf"
 
-    def test_supports_different_log_levels(self) -> None:
+    def test_supports_different_log_levels(self):
         """Test that different log levels are supported."""
         from src.api.utils.tracing import traced_log
 
@@ -483,7 +482,7 @@ class TestTracedLog:
 class TestAllExports:
     """Tests for module __all__ exports."""
 
-    def test_all_exports_importable(self) -> None:
+    def test_all_exports_importable(self):
         """Test that all __all__ exports are importable."""
         import src.api.utils.tracing as tracing
         from src.api.utils.tracing import __all__
@@ -491,7 +490,7 @@ class TestAllExports:
         for name in __all__:
             assert hasattr(tracing, name), f"Missing export: {name}"
 
-    def test_expected_exports_present(self) -> None:
+    def test_expected_exports_present(self):
         """Test that expected exports are in __all__."""
         from src.api.utils.tracing import __all__
 

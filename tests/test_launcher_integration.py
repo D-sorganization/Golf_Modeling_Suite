@@ -10,20 +10,16 @@ import sys
 import unittest
 from pathlib import Path
 
-import pytest
-
-pytestmark = pytest.mark.integration
-
 
 class TestLauncherIntegration(unittest.TestCase):
     """Integration tests for launcher functionality."""
 
-    def test_launcher_script_exists(self) -> None:
+    def test_launcher_script_exists(self):
         """Test that main launcher script exists."""
         script_path = Path("launch_golf_suite.py")
         self.assertTrue(script_path.exists(), "Main launcher script should exist")
 
-    def test_launcher_help_command(self) -> None:
+    def test_launcher_help_command(self):
         """Test that launcher help command works."""
         result = subprocess.run(
             [sys.executable, "launch_golf_suite.py", "--help"],
@@ -37,7 +33,7 @@ class TestLauncherIntegration(unittest.TestCase):
         self.assertIn("--engine", result.stdout)
         self.assertIn("--classic", result.stdout)
 
-    def test_urdf_generator_files_exist(self) -> None:
+    def test_urdf_generator_files_exist(self):
         """Test that URDF generator files exist."""
         urdf_dir = Path("src/tools/model_explorer")
         self.assertTrue(urdf_dir.exists(), "URDF generator directory should exist")
@@ -54,7 +50,7 @@ class TestLauncherIntegration(unittest.TestCase):
                 file_path.exists(), f"Required file {file_name} should exist"
             )
 
-    def test_shared_modules_importable(self) -> None:
+    def test_shared_modules_importable(self):
         """Test that shared modules can be imported."""
         try:
             from src.shared.python.process_worker import ProcessWorker
@@ -79,7 +75,7 @@ class TestLauncherIntegration(unittest.TestCase):
         except ImportError as e:
             self.fail(f"Failed to import shared modules: {e}")
 
-    def test_engine_discovery(self) -> None:
+    def test_engine_discovery(self):
         """Test that engines are discovered correctly."""
         try:
             from src.shared.python.engine_core.engine_manager import EngineManager
@@ -103,7 +99,7 @@ class TestLauncherIntegration(unittest.TestCase):
         except Exception as e:  # noqa: BLE001
             self.fail(f"Engine discovery failed: {e}")
 
-    def test_grid_constants(self) -> None:
+    def test_grid_constants(self):
         """Test that grid constants are set correctly."""
         try:
             from src.launchers.golf_launcher import GRID_COLUMNS
@@ -119,7 +115,7 @@ class TestLauncherIntegration(unittest.TestCase):
         except ImportError as e:
             self.skipTest(f"Golf launcher not available: {e}")
 
-    def test_urdf_generator_engine_support(self) -> None:
+    def test_urdf_generator_engine_support(self):
         """Test URDF generator multi-engine support."""
         try:
             from src.tools.model_explorer.segment_manager import SegmentManager
@@ -141,7 +137,7 @@ class TestLauncherIntegration(unittest.TestCase):
         except Exception as e:  # noqa: BLE001
             self.fail(f"URDF generator engine support test failed: {e}")
 
-    def test_dockerfile_configuration(self) -> None:
+    def test_dockerfile_configuration(self):
         """Test that Dockerfile has correct configuration."""
         dockerfile_path = Path("Dockerfile")
         self.assertTrue(dockerfile_path.exists(), "Dockerfile should exist")
@@ -159,7 +155,7 @@ class TestLauncherIntegration(unittest.TestCase):
 class TestLauncherCommands(unittest.TestCase):
     """Test launcher command functionality."""
 
-    def test_engine_launch_commands(self) -> None:
+    def test_engine_launch_commands(self):
         """Test individual engine launch commands."""
         engines = ["mujoco", "drake", "pinocchio"]
 

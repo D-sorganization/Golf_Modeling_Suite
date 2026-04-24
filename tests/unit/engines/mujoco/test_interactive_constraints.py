@@ -11,8 +11,6 @@ from mujoco_humanoid_golf.interactive_manipulation import (
 )
 from mujoco_humanoid_golf.models import DOUBLE_PENDULUM_XML
 
-pytestmark = pytest.mark.unit
-
 
 @pytest.mark.parametrize(
     "body_name",

@@ -8,8 +8,6 @@ import pytest
 from src.shared.python.engine_core.engine_manager import EngineManager, EngineType
 from src.shared.python.logging_pkg.logging_config import get_logger
 
-pytestmark = pytest.mark.integration
-
 logger = get_logger(__name__)
 
 
@@ -20,7 +18,7 @@ def is_engine_available(engine_type: EngineType) -> bool:
     return bool(probe_result.is_available())
 
 
-def test_mujoco_momentum_conservation() -> None:
+def test_mujoco_momentum_conservation():
     """Verify linear momentum conservation in zero-gravity MuJoCo simulation."""
     if not is_engine_available(EngineType.MUJOCO):
         pytest.skip("MuJoCo not installed")
@@ -103,7 +101,7 @@ def test_mujoco_momentum_conservation() -> None:
     )
 
 
-def test_pinocchio_momentum_conservation() -> None:
+def test_pinocchio_momentum_conservation():
     """Verify momentum conservation for Pinocchio free floating bodies."""
     if not is_engine_available(EngineType.PINOCCHIO):
         pytest.skip("Pinocchio not installed")

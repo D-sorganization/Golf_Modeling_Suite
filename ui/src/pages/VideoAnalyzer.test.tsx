@@ -1,12 +1,12 @@
 /**
  * Tests for VideoAnalyzer page.
  *
- * WIP: backend not yet implemented. Tracked in #3166.
+ * See issue #1206
  */
 
 import { describe, it, expect } from 'vitest';
 
-import type { VideoAnalysisResult, PoseFrame, TaskStatus } from './_wip/VideoAnalyzer';
+import type { VideoAnalysisResult, PoseFrame, TaskStatus } from './VideoAnalyzer';
 
 describe('VideoAnalyzer data structures', () => {
   it('should parse video analysis result', () => {

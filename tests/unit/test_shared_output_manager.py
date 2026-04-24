@@ -9,11 +9,8 @@ from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from src.shared.python.data_io.output_manager import OutputFormat, OutputManager
-
-pytestmark = pytest.mark.unit
 
 # Python 3.10 compatibility: datetime.UTC is only available in 3.11+
 UTC = timezone.utc  # noqa: UP017
@@ -22,7 +19,7 @@ UTC = timezone.utc  # noqa: UP017
 class TestOutputManager(unittest.TestCase):
     """Test cases for OutputManager."""
 
-    def setUp(self) -> None:
+    def setUp(self):
         """Set up test fixtures."""
         self.test_dir = Path.cwd() / "tests" / "output_test_temp"
         if self.test_dir.exists():
@@ -30,13 +27,13 @@ class TestOutputManager(unittest.TestCase):
         self.manager = OutputManager(self.test_dir)
         self.manager.create_output_structure()
 
-    def tearDown(self) -> None:
+    def tearDown(self):
         """Clean up test fixtures."""
         if self.test_dir.exists():
             with contextlib.suppress(PermissionError, OSError):
                 shutil.rmtree(self.test_dir)
 
-    def test_initialization_directory_creation(self) -> None:
+    def test_initialization_directory_creation(self):
         """Test that directory structure is created."""
         self.manager.create_output_structure()
 
@@ -44,7 +41,7 @@ class TestOutputManager(unittest.TestCase):
         self.assertTrue((self.test_dir / "analysis" / "biomechanics").exists())
         self.assertTrue((self.test_dir / "reports").exists())
 
-    def test_save_load_csv(self) -> None:
+    def test_save_load_csv(self):
         """Test saving and loading CSV files."""
         data = {"col1": [1, 2, 3], "col2": [4, 5, 6]}
         df = pd.DataFrame(data)
@@ -60,7 +57,7 @@ class TestOutputManager(unittest.TestCase):
         assert isinstance(loaded_df, pd.DataFrame)
         pd.testing.assert_frame_equal(df, loaded_df)
 
-    def test_save_load_json(self) -> None:
+    def test_save_load_json(self):
         """Test saving and loading JSON files."""
         data = {"key": "value", "list": [1, 2, 3], "nested": {"a": 1}}
 
@@ -74,7 +71,7 @@ class TestOutputManager(unittest.TestCase):
         )
         self.assertEqual(loaded_data, data)
 
-    def test_save_load_pickle(self) -> None:
+    def test_save_load_pickle(self):
         """Test that Pickle format raises security error."""
         data = {"key": "value", "array": np.array([1, 2, 3])}
 
@@ -83,7 +80,7 @@ class TestOutputManager(unittest.TestCase):
                 data, "test_pickle", format_type=OutputFormat.PICKLE
             )
 
-    def test_save_json_numpy_serialization(self) -> None:
+    def test_save_json_numpy_serialization(self):
         """Test JSON serialization of NumPy types."""
         data = {
             "array": np.array([1, 2, 3]),
@@ -104,7 +101,7 @@ class TestOutputManager(unittest.TestCase):
         self.assertEqual(loaded_data["float"], 1.5)  # type: ignore[call-overload]
         self.assertEqual(loaded_data["int"], 10)  # type: ignore[call-overload]
 
-    def test_get_simulation_list(self) -> None:
+    def test_get_simulation_list(self):
         """Test retrieving list of simulations."""
         # Manually create files to verify list logic independent of save logic
         sim_dir = self.manager.directories["simulations"] / "mujoco"
@@ -118,7 +115,7 @@ class TestOutputManager(unittest.TestCase):
         self.assertIn("sim1.csv", sims)
         self.assertIn("sim2.json", sims)
 
-    def test_export_analysis_report_html(self) -> None:
+    def test_export_analysis_report_html(self):
         """Test exporting HTML report."""
         data = {"summary": "test", "value": 123}
         path = self.manager.export_analysis_report(
@@ -132,7 +129,7 @@ class TestOutputManager(unittest.TestCase):
             self.assertIn("test", content)
             self.assertIn("123", content)
 
-    def test_cleanup_old_files(self) -> None:
+    def test_cleanup_old_files(self):
         """Test cleaning up old files."""
 
         self.manager.create_output_structure()
@@ -148,7 +145,7 @@ class TestOutputManager(unittest.TestCase):
         fixed_now = datetime(2099, 1, 10, 12, 0, 0, tzinfo=UTC)
         with (
             patch(
-                "src.shared.python.data_io._simulation_store.now_local",
+                "src.shared.python.data_io.output_manager.now_local",
                 return_value=fixed_now,
             ),
             # Also mock unlink to verify it was called and avoid actual deletion

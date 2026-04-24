@@ -16,11 +16,9 @@ from src.shared.python.engine_core.engine_probes import (
     ProbeStatus,
 )
 
-pytestmark = pytest.mark.unit
-
 
 # Test base classes and data structures
-def test_engine_probe_result() -> None:
+def test_engine_probe_result():
     res = EngineProbeResult(
         engine_name="TestEngine",
         status=ProbeStatus.AVAILABLE,
@@ -42,7 +40,7 @@ def test_engine_probe_result() -> None:
     assert "Install TestEngine binaries" in res_missing.get_fix_instructions()
 
 
-def test_engine_probe_base() -> None:
+def test_engine_probe_base():
     probe = EngineProbe("Base", Path("."))
     result = probe.probe()
     assert result.status == ProbeStatus.NOT_INSTALLED
@@ -50,7 +48,7 @@ def test_engine_probe_base() -> None:
 
 
 # Test MuJoCoProbe
-def test_mujoco_probe_success(tmp_path) -> None:
+def test_mujoco_probe_success(tmp_path):
     # Mock suite root structure
     engine_dir = tmp_path / "engines/physics_engines/mujoco"
     (engine_dir / "python/mujoco_humanoid_golf").mkdir(parents=True)
@@ -73,9 +71,7 @@ def test_mujoco_probe_success(tmp_path) -> None:
     ],
     ids=["mujoco_missing_package", "mujoco_dll_error"],
 )
-def test_mujoco_probe_import_errors(
-    tmp_path, error_type, error_msg, expected_status
-) -> None:
+def test_mujoco_probe_import_errors(tmp_path, error_type, error_msg, expected_status):
     with patch.dict(sys.modules):
         if "mujoco" in sys.modules:
             del sys.modules["mujoco"]
@@ -85,7 +81,7 @@ def test_mujoco_probe_import_errors(
             assert result.status == expected_status
 
 
-def test_mujoco_probe_missing_assets(tmp_path) -> None:
+def test_mujoco_probe_missing_assets(tmp_path):
     # Setup directory but no assets
     engine_dir = tmp_path / "engines/physics_engines/mujoco"
     (engine_dir / "python/mujoco_humanoid_golf").mkdir(parents=True)
@@ -99,7 +95,7 @@ def test_mujoco_probe_missing_assets(tmp_path) -> None:
 
 
 # Test DrakeProbe
-def test_drake_probe_success(tmp_path) -> None:
+def test_drake_probe_success(tmp_path):
     engine_dir = tmp_path / "engines/physics_engines/drake"
     (engine_dir / "python/src").mkdir(parents=True)
     (engine_dir / "python/src/golf_gui.py").touch()
@@ -123,7 +119,7 @@ def test_drake_probe_success(tmp_path) -> None:
             assert result.status == ProbeStatus.AVAILABLE
 
 
-def test_drake_probe_port_blocked(tmp_path) -> None:
+def test_drake_probe_port_blocked(tmp_path):
     engine_dir = tmp_path / "engines/physics_engines/drake"
     (engine_dir / "python/src").mkdir(parents=True)
     (engine_dir / "python/src/golf_gui.py").touch()
@@ -140,7 +136,7 @@ def test_drake_probe_port_blocked(tmp_path) -> None:
             assert result.status == ProbeStatus.CONFIGURATION_ERROR
 
 
-def test_drake_probe_missing_module(tmp_path) -> None:
+def test_drake_probe_missing_module(tmp_path):
     with (
         patch.dict(sys.modules, {"pydrake": MagicMock()}),
         # Mock import pydrake.multibody failing
@@ -163,7 +159,7 @@ def test_drake_probe_missing_module(tmp_path) -> None:
 
 
 # Test PinocchioProbe
-def test_pinocchio_probe_success(tmp_path) -> None:
+def test_pinocchio_probe_success(tmp_path):
     engine_dir = tmp_path / "engines/physics_engines/pinocchio"
     (engine_dir / "python/pinocchio_golf").mkdir(parents=True)
 
@@ -173,7 +169,7 @@ def test_pinocchio_probe_success(tmp_path) -> None:
         assert result.status == ProbeStatus.AVAILABLE
 
 
-def test_pinocchio_probe_missing_dir(tmp_path) -> None:
+def test_pinocchio_probe_missing_dir(tmp_path):
     with patch.dict(sys.modules, {"pinocchio": MagicMock(__version__="2.0")}):
         probe = PinocchioProbe(tmp_path)
         result = probe.probe()
@@ -203,7 +199,7 @@ def test_pinocchio_probe_rejects_wrong_package(tmp_path):
     ],
     ids=["pendulum_success", "pendulum_missing"],
 )
-def test_pendulum_probe(tmp_path, setup_dirs, expected_status) -> None:
+def test_pendulum_probe(tmp_path, setup_dirs, expected_status):
     if setup_dirs:
         engine_dir = tmp_path / "engines/pendulum_models"
         (engine_dir / "python/src").mkdir(parents=True)
@@ -216,7 +212,7 @@ def test_pendulum_probe(tmp_path, setup_dirs, expected_status) -> None:
 
 
 # Test MatlabProbe
-def test_matlab_probe_success(tmp_path) -> None:
+def test_matlab_probe_success(tmp_path):
     engine_dir = tmp_path / "engines/Simscape_Multibody_Models/2D_Golf_Model"
     engine_dir.mkdir(parents=True)
     (engine_dir / "model.slx").touch()
@@ -232,7 +228,7 @@ def test_matlab_probe_success(tmp_path) -> None:
         assert result.status == ProbeStatus.AVAILABLE
 
 
-def test_matlab_probe_missing_files(tmp_path) -> None:
+def test_matlab_probe_missing_files(tmp_path):
     engine_dir = tmp_path / "engines/Simscape_Multibody_Models/3D_Golf_Model"
     engine_dir.mkdir(parents=True)
 
@@ -248,7 +244,7 @@ def test_matlab_probe_missing_files(tmp_path) -> None:
         assert "Simulink/MATLAB files" in result.missing_dependencies
 
 
-def test_matlab_probe_not_installed(tmp_path) -> None:
+def test_matlab_probe_not_installed(tmp_path):
     with patch.dict(sys.modules):
         if "matlab.engine" in sys.modules:
             del sys.modules["matlab.engine"]
@@ -259,7 +255,7 @@ def test_matlab_probe_not_installed(tmp_path) -> None:
 
 
 # Test OpenSimProbe
-def _setup_opensim_dirs(tmp_path) -> None:
+def _setup_opensim_dirs(tmp_path):
     """Helper to set up OpenSim engine directories."""
     engine_dir = tmp_path / "engines/physics_engines/opensim"
     (engine_dir / "python/opensim_golf").mkdir(parents=True)
@@ -275,7 +271,7 @@ def _setup_opensim_dirs(tmp_path) -> None:
     ],
     ids=["opensim_success", "opensim_missing_dir", "opensim_not_installed"],
 )
-def test_opensim_probe(tmp_path, setup_dirs, mock_installed, expected_status) -> None:
+def test_opensim_probe(tmp_path, setup_dirs, mock_installed, expected_status):
     from src.shared.python.engine_core.engine_probes import OpenSimProbe
 
     if setup_dirs:

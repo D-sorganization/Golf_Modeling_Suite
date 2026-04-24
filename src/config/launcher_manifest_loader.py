@@ -79,8 +79,7 @@ def _build_provider_tile(model: ModelConfig) -> LauncherTile:
     )
     if source_root is not None and not source_root.exists():
         status = "provider_unavailable"
-    elif not is_engine_runtime_available(model.engine_type) and not metadata.status:
-        # Only override status if not explicitly set in manifest
+    elif not is_engine_runtime_available(model.engine_type):
         status = "runtime_unavailable"
 
     return LauncherTile(

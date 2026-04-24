@@ -20,8 +20,6 @@ from src.shared.python.spatial_algebra.reference_frames import (
     transform_wrench_to_frame,
 )
 
-pytestmark = pytest.mark.unit
-
 
 class TestRotationMatrix:
     """Tests for rotation matrix computation."""

@@ -5,8 +5,6 @@ import pytest
 
 from src.tools.model_explorer.urdf_builder import URDFBuilder
 
-pytestmark = pytest.mark.integration
-
 
 class TestURDFBuilder:
     """Test suite for the URDFBuilder class."""

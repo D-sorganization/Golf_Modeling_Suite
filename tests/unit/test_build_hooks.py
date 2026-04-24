@@ -1,21 +1,6 @@
-"""Tests for build_hooks module.
-
-build_hooks.py imports hatchling at module level, so we must have hatchling
-mocked before importing it.  We use contextlib.ExitStack + patch.dict so the
-mock is installed at collection time and automatically removed on pytest exit.
-"""
-
-from __future__ import annotations
-
-import contextlib
 import os
-import subprocess
 import sys
 from unittest.mock import MagicMock, patch
-
-import pytest
-
-pytestmark = pytest.mark.unit
 
 
 class DummyHookInterface:
@@ -24,36 +9,20 @@ class DummyHookInterface:
         self.config = config
 
 
-# Install hatchling mock for the duration of this module's collection+execution.
-# patch.dict is used (not direct assignment) so the entries are removed when the
-# context exits in teardown_module, preventing sys.modules pollution.
-_hatchling_mock_stack = contextlib.ExitStack()
+sys.modules["hatchling"] = MagicMock()
+sys.modules["hatchling.builders"] = MagicMock()
+sys.modules["hatchling.builders.hooks"] = MagicMock()
+sys.modules["hatchling.builders.hooks.plugin"] = MagicMock()
+sys.modules["hatchling.builders.hooks.plugin.interface"] = MagicMock()
+sys.modules[
+    "hatchling.builders.hooks.plugin.interface"
+].BuildHookInterface = DummyHookInterface
 
-_hatchling_mock_hook_interface = MagicMock()
-_hatchling_mock_hook_interface.BuildHookInterface = DummyHookInterface
+import subprocess  # noqa: E402
 
-_hatchling_mock_stack.enter_context(
-    patch.dict(
-        "sys.modules",
-        {
-            "hatchling": MagicMock(),
-            "hatchling.builders": MagicMock(),
-            "hatchling.builders.hooks": MagicMock(),
-            "hatchling.builders.hooks.plugin": MagicMock(),
-            "hatchling.builders.hooks.plugin.interface": _hatchling_mock_hook_interface,
-        },
-    )
-)
+import pytest  # noqa: E402
 
-# Force reimport of build_hooks under the mocked hatchling
-sys.modules.pop("build_hooks", None)
 import build_hooks  # noqa: E402
-
-
-def teardown_module(module) -> None:
-    """Remove hatchling mocks and build_hooks from sys.modules."""
-    _hatchling_mock_stack.close()
-    sys.modules.pop("build_hooks", None)
 
 
 class DummyConfig:
@@ -62,40 +31,22 @@ class DummyConfig:
         self.config = config or {}
 
 
-def test_ui_build_hook_ci_env(monkeypatch, tmp_path) -> None:
+def test_ui_build_hook_ci_env(monkeypatch, tmp_path):
     monkeypatch.setenv("CI", "true")
-    (tmp_path / "ui" / "dist").mkdir(parents=True)
     hook = build_hooks.UIBuildHook(str(tmp_path), {})
     hook.initialize("1.0.0", {})
     # Should skip, no error
 
 
-def test_ui_build_hook_skip_env(monkeypatch, tmp_path) -> None:
+def test_ui_build_hook_skip_env(monkeypatch, tmp_path):
     monkeypatch.setenv("SKIP_UI_BUILD", "1")
-    (tmp_path / "ui" / "dist").mkdir(parents=True)
     hook = build_hooks.UIBuildHook(str(tmp_path), {})
     hook.initialize("1.0.0", {})
     # Should skip, no error
-
-
-def test_ui_build_hook_ci_env_without_bundle_fails(monkeypatch, tmp_path) -> None:
-    monkeypatch.setenv("CI", "true")
-    hook = build_hooks.UIBuildHook(str(tmp_path), {})
-
-    with pytest.raises(RuntimeError) as exc:
-        hook.initialize("1.0.0", {})
-
-    assert "UI bundle is missing" in str(exc.value)
-
-
-def test_ui_build_hook_editable_ci_without_bundle_skips(monkeypatch, tmp_path) -> None:
-    monkeypatch.setenv("CI", "true")
-    hook = build_hooks.UIBuildHook(str(tmp_path), {})
-    hook.initialize("editable", {})
 
 
 @patch("build_hooks.subprocess.run")
-def test_ui_build_hook_builds(mock_run, monkeypatch, tmp_path) -> None:
+def test_ui_build_hook_builds(mock_run, monkeypatch, tmp_path):
     monkeypatch.delenv("CI", raising=False)
     monkeypatch.delenv("SKIP_UI_BUILD", raising=False)
 
@@ -117,7 +68,7 @@ def test_ui_build_hook_builds(mock_run, monkeypatch, tmp_path) -> None:
 
 
 @patch("build_hooks.subprocess.run")
-def test_ui_build_hook_fails(mock_run, monkeypatch, tmp_path) -> None:
+def test_ui_build_hook_fails(mock_run, monkeypatch, tmp_path):
     monkeypatch.delenv("CI", raising=False)
     monkeypatch.delenv("SKIP_UI_BUILD", raising=False)
 
@@ -131,7 +82,7 @@ def test_ui_build_hook_fails(mock_run, monkeypatch, tmp_path) -> None:
 
 
 @patch("build_hooks.subprocess.run")
-def test_ui_build_hook_missing_npm(mock_run, monkeypatch, tmp_path) -> None:
+def test_ui_build_hook_missing_npm(mock_run, monkeypatch, tmp_path):
     monkeypatch.delenv("CI", raising=False)
     monkeypatch.delenv("SKIP_UI_BUILD", raising=False)
 

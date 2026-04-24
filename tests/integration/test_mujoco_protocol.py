@@ -5,16 +5,13 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 import numpy as np
-import pytest
-
-pytestmark = pytest.mark.integration
 
 # We used to mock at module level, but that restores sys.modules before tests run.
 # Now we will rely on setUp to patch and import the engine.
 
 
 class TestMuJoCoProtocol(unittest.TestCase):
-    def setUp(self) -> None:
+    def setUp(self):
         # 1. Patch sys.modules to mock 'mujoco'
         self.patcher = patch.dict("sys.modules", {"mujoco": MagicMock()})
         self.patcher.start()
@@ -60,10 +57,10 @@ class TestMuJoCoProtocol(unittest.TestCase):
         self.engine.model = self.mock_model
         self.engine.data = self.mock_data
 
-    def tearDown(self) -> None:
+    def tearDown(self):
         self.patcher.stop()
 
-    def test_set_control_size_check(self) -> None:
+    def test_set_control_size_check(self):
         # Correct size
         u_correct = np.array([1.0, 2.0])
         self.engine.set_control(u_correct)
@@ -74,7 +71,7 @@ class TestMuJoCoProtocol(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.engine.set_control(u_bad)
 
-    def test_set_state_calls_forward(self) -> None:
+    def test_set_state_calls_forward(self):
         q = np.array([1, 2, 3])
         v = np.array([4, 5, 6])
 

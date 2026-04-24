@@ -1,13 +1,10 @@
 """Tests for startup.py."""
 
 import builtins  # noqa: E402
-from collections.abc import Generator  # noqa: E402
 from pathlib import Path  # noqa: E402
 from unittest.mock import MagicMock, patch  # noqa: E402
 
 import pytest  # noqa: E402
-
-pytestmark = pytest.mark.integration
 from PyQt6.QtGui import QFont, QPainter  # noqa: E402
 
 from src.launchers.startup import (  # noqa: E402
@@ -19,7 +16,7 @@ from src.launchers.startup import (  # noqa: E402
 
 
 @pytest.fixture
-def mock_theme_available() -> Generator[None, None, None]:
+def mock_theme_available():
     import types
 
     colors = types.SimpleNamespace(
@@ -46,28 +43,26 @@ def mock_theme_available() -> Generator[None, None, None]:
 
 
 @pytest.fixture
-def mock_theme_unavailable() -> Generator[None, None, None]:
+def mock_theme_unavailable():
     with patch("src.launchers.startup.THEME_AVAILABLE", False):
         yield
 
 
-def test_get_theme_colors_available(mock_theme_available) -> None:
+def test_get_theme_colors_available(mock_theme_available):
     with patch("src.shared.python.theme.get_current_colors", create=True) as mock_get:
         mock_get.return_value = "mock_theme"
         assert _get_theme_colors() == "mock_theme"
         mock_get.assert_called_once()
 
 
-def test_get_theme_colors_not_available() -> None:
+def test_get_theme_colors_not_available():
     # Force import error
     with patch("src.launchers.startup.THEME_AVAILABLE", False):
         # Even if theme isn't available, the fallback to DARK_THEME should happen if get_current_colors raises ImportError
 
         real_import = builtins.__import__
 
-        def mock_import(
-            name, globals=None, locals=None, fromlist=(), level=0
-        ) -> object:
+        def mock_import(name, globals=None, locals=None, fromlist=(), level=0):
             if name == "src.shared.python.theme" and "get_current_colors" in fromlist:
                 raise ImportError("Mocked error")
             return real_import(name, globals, locals, fromlist, level)
@@ -77,7 +72,7 @@ def test_get_theme_colors_not_available() -> None:
             assert res is not None  # Returns DARK_THEME
 
 
-def test_startup_results_init() -> None:
+def test_startup_results_init():
     res = StartupResults()
     assert res.registry is None
     assert res.engine_manager is None
@@ -87,7 +82,7 @@ def test_startup_results_init() -> None:
     assert res.startup_time_ms == 0
 
 
-def test_startup_results_from_dict() -> None:
+def test_startup_results_from_dict():
     data = {
         "registry": "mock_registry",
         "engine_manager": "mock_engine",
@@ -105,7 +100,7 @@ def test_startup_results_from_dict() -> None:
     assert res.startup_time_ms == 1234
 
 
-def test_startup_results_from_dict_empty() -> None:
+def test_startup_results_from_dict_empty():
     res = StartupResults.from_dict({})
     assert res.registry is None
     assert res.engine_manager is None
@@ -118,7 +113,7 @@ def test_startup_results_from_dict_empty() -> None:
 # ==== GolfSplashScreen Tests ====
 
 
-def test_splash_screen_init_theme_unavailable(mock_theme_unavailable, qapp) -> None:
+def test_splash_screen_init_theme_unavailable(mock_theme_unavailable, qapp):
     with patch("src.launchers.startup.Path.exists", return_value=False):
         splash = GolfSplashScreen()
         assert splash.loading_message == "Initializing UpstreamDrift..."
@@ -126,24 +121,24 @@ def test_splash_screen_init_theme_unavailable(mock_theme_unavailable, qapp) -> N
         assert splash.logo_pixmap is None
 
 
-def test_splash_screen_init_theme_available(mock_theme_available, qapp) -> None:
+def test_splash_screen_init_theme_available(mock_theme_available, qapp):
     # Pass a valid path so it tries to load, but it won't exist so isNull will be True
     with patch("src.launchers.startup.Path.exists", return_value=False):
         splash = GolfSplashScreen()
         assert splash.loading_message == "Initializing UpstreamDrift..."
 
 
-def test_splash_screen_resolve_theme_colors(mock_theme_available) -> None:
+def test_splash_screen_resolve_theme_colors(mock_theme_available):
     res = GolfSplashScreen._resolve_theme_colors()
     assert res == ("1", "2", "3", "4", "5")
 
 
-def test_splash_screen_resolve_theme_colors_fallback(mock_theme_unavailable) -> None:
+def test_splash_screen_resolve_theme_colors_fallback(mock_theme_unavailable):
     res = GolfSplashScreen._resolve_theme_colors()
     assert res == ("#FFFFFF", "#A0A0A0", "#0A84FF", "#2D2D2D", "#666666")
 
 
-def test_drawContents(mock_theme_available, qapp) -> None:
+def test_drawContents(mock_theme_available, qapp):
     splash = GolfSplashScreen()
     splash.logo_pixmap = None
     splash.progress = 50
@@ -169,14 +164,14 @@ def test_drawContents(mock_theme_available, qapp) -> None:
         painter.drawText.assert_called()
 
 
-def test_drawContents_none(qapp) -> None:
+def test_drawContents_none(qapp):
     splash = GolfSplashScreen()
     # Shouldn"t throw when painter is None
     splash.drawContents(None)
 
 
 @patch("src.launchers.startup.QApplication.processEvents")
-def test_splash_show_message(mock_process_events, qapp) -> None:
+def test_splash_show_message(mock_process_events, qapp):
     splash = GolfSplashScreen()
     splash.showMessage = MagicMock()
     splash.repaint = MagicMock()
@@ -193,7 +188,7 @@ def test_splash_show_message(mock_process_events, qapp) -> None:
 # ==== AsyncStartupWorker Tests ====
 
 
-def test_startup_worker_init() -> None:
+def test_startup_worker_init():
     root = Path("fake_root")
     worker = AsyncStartupWorker(root)
     assert worker.repos_root == root
@@ -203,9 +198,7 @@ def test_startup_worker_init() -> None:
 @patch("src.launchers.startup.secure_run")
 @patch("src.shared.python.engine_core.engine_manager.EngineManager", autospec=True)
 @patch("src.shared.python.config.model_registry.ModelRegistry", autospec=True)
-def test_startup_worker_run_success(
-    mock_registry, mock_engine_mgr, mock_secure_run
-) -> None:
+def test_startup_worker_run_success(mock_registry, mock_engine_mgr, mock_secure_run):
     root = Path("fake_root")
     worker = AsyncStartupWorker(root)
 
@@ -228,7 +221,7 @@ def test_startup_worker_run_success(
 @patch("src.shared.python.config.model_registry.ModelRegistry")
 def test_startup_worker_run_engine_import_error(
     mock_registry, mock_engine_mgr, mock_secure_run
-) -> None:
+):
     root = Path("fake_root")
     worker = AsyncStartupWorker(root)
     worker.progress_signal = MagicMock()
@@ -252,7 +245,7 @@ def test_startup_worker_run_engine_import_error(
 )
 def test_startup_worker_run_critical_import_error(
     mock_registry, mock_engine_mgr, mock_secure_run
-) -> None:
+):
     root = Path("fake_root")
     worker = AsyncStartupWorker(root)
     worker.progress_signal = MagicMock()
@@ -270,7 +263,7 @@ def test_startup_worker_run_critical_import_error(
 @patch("src.shared.python.config.model_registry.ModelRegistry")
 def test_startup_worker_run_docker_error(
     mock_registry, mock_engine_mgr, mock_secure_run
-) -> None:
+):
     root = Path("fake_root")
     worker = AsyncStartupWorker(root)
     worker.progress_signal = MagicMock()

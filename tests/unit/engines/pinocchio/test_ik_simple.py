@@ -5,8 +5,6 @@ import pytest
 
 from src.shared.python.logging_pkg.logging_config import get_logger, setup_logging
 
-pytestmark = pytest.mark.unit
-
 pin = pytest.importorskip("pinocchio")
 
 try:

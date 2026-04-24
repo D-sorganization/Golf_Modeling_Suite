@@ -1,7 +1,5 @@
 """Unit tests for shared exceptions."""
 
-import pytest
-
 from src.shared.python.core.error_utils import (
     DataFormatError,
     EngineNotAvailableError,
@@ -11,8 +9,6 @@ from src.shared.python.core.error_utils import (
 from src.shared.python.core.exceptions import (
     ArrayDimensionError,
 )
-
-pytestmark = pytest.mark.unit
 
 
 def test_exception_inheritance() -> None:

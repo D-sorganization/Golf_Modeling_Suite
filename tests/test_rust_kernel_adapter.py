@@ -17,8 +17,6 @@ from src.shared.python.physics.rust_kernel import (
     is_rust_available,
 )
 
-pytestmark = pytest.mark.integration
-
 
 class TestRustKernelAvailability:
     """Test kernel availability detection."""

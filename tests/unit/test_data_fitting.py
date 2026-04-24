@@ -22,13 +22,11 @@ from src.shared.python.validation_pkg.data_fitting import (
     convert_poses_to_markers,
 )
 
-pytestmark = pytest.mark.unit
-
 
 class TestBodySegmentParams:
     """Tests for BodySegmentParams dataclass."""
 
-    def test_default_values(self) -> None:
+    def test_default_values(self):
         """Test default parameter values."""
         params = BodySegmentParams(
             name="upper_arm",
@@ -42,7 +40,7 @@ class TestBodySegmentParams:
         assert params.com_position == 0.5  # Default
         assert params.radius_gyration == 0.3  # Default
 
-    def test_to_dict(self) -> None:
+    def test_to_dict(self):
         """Test serialization to dictionary."""
         params = BodySegmentParams(
             name="forearm",
@@ -60,7 +58,7 @@ class TestBodySegmentParams:
         assert d["com_position"] == 0.43
         assert d["inertia"] == [0.01, 0.01, 0.001]
 
-    def test_from_dict(self) -> None:
+    def test_from_dict(self):
         """Test deserialization from dictionary."""
         d = {
             "name": "hand",
@@ -80,7 +78,7 @@ class TestBodySegmentParams:
 class TestInverseKinematicsSolver:
     """Tests for inverse kinematics solver."""
 
-    def test_init(self) -> None:
+    def test_init(self):
         """Test solver initialization."""
         solver = InverseKinematicsSolver(
             segment_lengths={"upper_arm": 0.3, "forearm": 0.25},
@@ -90,7 +88,7 @@ class TestInverseKinematicsSolver:
         assert len(solver.segment_lengths) == 2
         assert len(solver.joint_names) == 2
 
-    def test_analytical_2d_reachable(self) -> None:
+    def test_analytical_2d_reachable(self):
         """Test 2D analytical IK for reachable target."""
         solver = InverseKinematicsSolver(
             segment_lengths={},
@@ -109,7 +107,7 @@ class TestInverseKinematicsSolver:
         assert abs(x - target[0]) < 1e-6
         assert abs(y - target[1]) < 1e-6
 
-    def test_analytical_2d_unreachable(self) -> None:
+    def test_analytical_2d_unreachable(self):
         """Test 2D analytical IK for unreachable target."""
         solver = InverseKinematicsSolver(
             segment_lengths={},
@@ -122,7 +120,7 @@ class TestInverseKinematicsSolver:
         with pytest.raises(ValueError, match="unreachable"):
             solver.solve_analytical_2d(target, L1, L2)
 
-    def test_numerical_ik(self) -> None:
+    def test_numerical_ik(self):
         """Test numerical IK optimization."""
         solver = InverseKinematicsSolver(
             segment_lengths={"seg1": 0.3, "seg2": 0.25},
@@ -143,20 +141,20 @@ class TestInverseKinematicsSolver:
 class TestParameterEstimator:
     """Tests for parameter estimation."""
 
-    def test_init_dempster(self) -> None:
+    def test_init_dempster(self):
         """Test initialization with Dempster model."""
         estimator = ParameterEstimator(anthropometric_model="dempster")
 
         assert estimator.anthropometric_model == "dempster"
         assert "upper_arm" in estimator.coefficients
 
-    def test_init_winter(self) -> None:
+    def test_init_winter(self):
         """Test initialization with Winter model."""
         estimator = ParameterEstimator(anthropometric_model="winter")
 
         assert estimator.anthropometric_model == "winter"
 
-    def test_estimate_segment_length(self) -> None:
+    def test_estimate_segment_length(self):
         """Test segment length estimation from markers."""
         estimator = ParameterEstimator()
 
@@ -174,7 +172,7 @@ class TestParameterEstimator:
         assert abs(mean_length - true_length) < 0.01
         assert std_length < 0.02
 
-    def test_estimate_segment_params(self) -> None:
+    def test_estimate_segment_params(self):
         """Test segment parameter estimation."""
         estimator = ParameterEstimator()
 
@@ -191,7 +189,7 @@ class TestParameterEstimator:
         assert 0 < params.com_position < 1  # Should be between 0 and 1
         assert np.all(params.inertia > 0)  # All inertias should be positive
 
-    def test_fit_parameters_no_data(self) -> None:
+    def test_fit_parameters_no_data(self):
         """Test fitting with no data."""
         estimator = ParameterEstimator()
 
@@ -203,7 +201,7 @@ class TestParameterEstimator:
 
         assert result.success is False
 
-    def test_fit_parameters_with_data(self) -> None:
+    def test_fit_parameters_with_data(self):
         """Test fitting with kinematic data."""
         estimator = ParameterEstimator()
 
@@ -230,18 +228,18 @@ class TestParameterEstimator:
 class TestSensitivityAnalyzer:
     """Tests for sensitivity analysis."""
 
-    def test_init(self) -> None:
+    def test_init(self):
         """Test analyzer initialization."""
         analyzer = SensitivityAnalyzer(perturbation_size=0.01)
 
         assert analyzer.perturbation_size == 0.01
 
-    def test_compute_sensitivity(self) -> None:
+    def test_compute_sensitivity(self):
         """Test sensitivity computation."""
         analyzer = SensitivityAnalyzer()
 
         # Simple linear model: output = 2 * param
-        def model_func(params) -> dict:
+        def model_func(params):
             return {"output": 2 * params["param"]}
 
         result = analyzer.compute_sensitivity(
@@ -255,7 +253,7 @@ class TestSensitivityAnalyzer:
         assert result.parameter_name == "param"
         assert abs(result.partial_derivative - 2.0) < 0.1  # Should be close to 2
 
-    def test_sensitivity_report(self) -> None:
+    def test_sensitivity_report(self):
         """Test sensitivity report generation."""
         analyzer = SensitivityAnalyzer()
 
@@ -289,7 +287,7 @@ class TestSensitivityAnalyzer:
 class TestConvertPosesToMarkers:
     """Tests for pose-to-marker conversion."""
 
-    def test_basic_conversion(self) -> None:
+    def test_basic_conversion(self):
         """Test basic pose to marker conversion."""
         keypoints = np.array(
             [
@@ -306,7 +304,7 @@ class TestConvertPosesToMarkers:
         assert "LSHO" in names
         assert "RSHO" in names
 
-    def test_2d_to_3d_conversion(self) -> None:
+    def test_2d_to_3d_conversion(self):
         """Test that 2D keypoints get z=0 added."""
         keypoints = np.array([[0.5, 0.3]])
         keypoint_names = ["left_shoulder"]
@@ -316,7 +314,7 @@ class TestConvertPosesToMarkers:
         assert markers.shape[1] == 3
         assert markers[0, 2] == 0.0
 
-    def test_filter_by_target(self) -> None:
+    def test_filter_by_target(self):
         """Test filtering to specific target markers."""
         keypoints = np.array(
             [
@@ -338,7 +336,7 @@ class TestConvertPosesToMarkers:
 class TestA3FittingPipeline:
     """Tests for the complete A3 pipeline."""
 
-    def test_init(self) -> None:
+    def test_init(self):
         """Test pipeline initialization."""
         pipeline = A3FittingPipeline()
 
@@ -346,7 +344,7 @@ class TestA3FittingPipeline:
         assert pipeline.sensitivity_analyzer is not None
         assert len(pipeline.segment_names) > 0
 
-    def test_fit_from_markers(self) -> None:
+    def test_fit_from_markers(self):
         """Test fitting from marker data."""
         pipeline = A3FittingPipeline()
 

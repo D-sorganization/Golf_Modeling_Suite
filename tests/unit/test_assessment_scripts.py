@@ -2,16 +2,12 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
-
 from scripts.assess_repository import assess_J
 from scripts.generate_assessment_summary import extract_score_from_report
 
-pytestmark = pytest.mark.unit
-
 
 class TestAssessmentScripts(unittest.TestCase):
-    def test_extract_score_from_report(self) -> None:
+    def test_extract_score_from_report(self):
         # Create a dummy report file
         dummy_report = Path("dummy_report.md")
         dummy_report.write_text(
@@ -24,7 +20,7 @@ class TestAssessmentScripts(unittest.TestCase):
             if dummy_report.exists():
                 dummy_report.unlink()
 
-    def test_assess_J_logic(self) -> None:
+    def test_assess_J_logic(self):
         # We can't easily mock the file system for the whole function without heavy mocking,
         # but we can verify that the function runs without error and returns a report path.
         # This assumes REPO_ROOT is set correctly in the imported module.

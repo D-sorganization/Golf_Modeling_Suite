@@ -15,8 +15,6 @@ from src.shared.python.data_io.common_utils import (
     standardize_joint_angles,
 )
 
-pytestmark = pytest.mark.unit
-
 
 @pytest.mark.parametrize(
     "value,from_unit,to_unit,expected",
@@ -30,18 +28,18 @@ pytestmark = pytest.mark.unit
     ],
     ids=["deg_to_rad", "rad_to_deg", "m_to_mm", "mm_to_m", "mps_to_mph", "mph_to_mps"],
 )
-def test_convert_units(value, from_unit, to_unit, expected) -> None:
+def test_convert_units(value, from_unit, to_unit, expected):
     """Test unit conversion utility."""
     assert convert_units(value, from_unit, to_unit) == pytest.approx(expected, rel=1e-4)
 
 
-def test_convert_units_unsupported() -> None:
+def test_convert_units_unsupported():
     """Test unit conversion with unsupported units."""
     with pytest.raises(ValueError, match="not supported"):
         convert_units(1, "furlongs", "fortnights")
 
 
-def test_ensure_output_dir(tmp_path) -> None:
+def test_ensure_output_dir(tmp_path):
     """Test output directory creation."""
     with patch(
         "src.shared.python.data_io.common_utils.OUTPUT_ROOT", tmp_path / "outputs"
@@ -52,7 +50,7 @@ def test_ensure_output_dir(tmp_path) -> None:
         assert path.parent.name == "test_engine"
 
 
-def test_load_save_golf_data(tmp_path) -> None:
+def test_load_save_golf_data(tmp_path):
     """Test loading and saving golf data."""
     df = pd.DataFrame({"col1": [1, 2], "col2": [3, 4]})
 
@@ -88,7 +86,7 @@ def test_load_save_golf_data(tmp_path) -> None:
         load_golf_data(tmp_path / "test.txt")
 
 
-def test_standardize_joint_angles() -> None:
+def test_standardize_joint_angles():
     """Test joint angle standardization."""
     angles = np.array([[0, 1], [0.1, 1.1]])
     df = standardize_joint_angles(angles)
@@ -98,7 +96,7 @@ def test_standardize_joint_angles() -> None:
     assert len(df) == 2
 
 
-def test_plot_joint_trajectories() -> None:
+def test_plot_joint_trajectories():
     """Test plotting function."""
     df = pd.DataFrame({"time": [0, 1], "joint_0": [0, 1], "joint_1": [2, 3]})
 
@@ -122,7 +120,7 @@ def test_plot_joint_trajectories() -> None:
         assert fig is mock_fig
 
 
-def test_get_shared_urdf_path() -> None:
+def test_get_shared_urdf_path():
     """Test URDF path resolution."""
     # This relies on the actual filesystem of the repo, might return None or Path
     path = get_shared_urdf_path()

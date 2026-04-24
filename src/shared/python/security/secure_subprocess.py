@@ -20,7 +20,6 @@ ALLOWED_SCRIPT_DIRECTORIES = [
     "src",
     "engines",
     "launchers",
-    "src",
     "tools",
     "shared",
     "examples",

@@ -26,8 +26,6 @@ from src.shared.python.cli_utils import (
     validate_input_files,
 )
 
-pytestmark = pytest.mark.unit
-
 
 class TestCreateBaseParser:
     """Tests for create_base_parser function."""

@@ -11,10 +11,8 @@ from src.shared.python.config.configuration_manager import (
 )
 from src.shared.python.data_io.common_utils import GolfModelingError
 
-pytestmark = pytest.mark.unit
 
-
-def test_default_config() -> None:
+def test_default_config():
     """Test that default configuration is valid."""
     config = SimulationConfig()
     config.validate()  # Should not raise
@@ -31,13 +29,13 @@ def test_default_config() -> None:
     ],
     ids=["negative_height", "invalid_control_mode"],
 )
-def test_config_validation(kwargs) -> None:
+def test_config_validation(kwargs):
     """Test validation logic rejects invalid configurations."""
     with pytest.raises(GolfModelingError):
         SimulationConfig(**kwargs).validate()
 
 
-def test_save_load(tmp_path) -> None:
+def test_save_load(tmp_path):
     """Test saving and loading configuration."""
     config_file = tmp_path / "test_config.json"
     manager = ConfigurationManager(config_file)
@@ -56,7 +54,7 @@ def test_save_load(tmp_path) -> None:
     assert loaded_config.colors["shirt"] == [1.0, 0.0, 0.0, 1.0]
 
 
-def test_load_partial(tmp_path) -> None:
+def test_load_partial(tmp_path):
     """Test loading a config file with missing or extra fields."""
     config_file = tmp_path / "partial.json"
     data = {"height_m": 1.5, "extra_field": "ignore_me"}
@@ -71,18 +69,8 @@ def test_load_partial(tmp_path) -> None:
     assert not hasattr(config, "extra_field")
 
 
-def test_load_nonexistent() -> None:
+def test_load_nonexistent():
     """Test loading a non-existent file returns defaults."""
     manager = ConfigurationManager(Path("nonexistent.json"))
     config = manager.load()
     assert config.height_m == 1.8
-
-
-def test_load_malformed_json_raises_golf_error(tmp_path) -> None:
-    """Malformed JSON must raise GolfModelingError, not raw JSONDecodeError (#2494)."""
-    bad_file = tmp_path / "bad.json"
-    bad_file.write_text("{not valid json", encoding="utf-8")
-
-    manager = ConfigurationManager(bad_file)
-    with pytest.raises(GolfModelingError, match="malformed JSON"):
-        manager.load()

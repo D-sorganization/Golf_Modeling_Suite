@@ -16,8 +16,6 @@ from src.shared.python.plotting.renderers.base import (
     BaseRenderer,
 )
 
-pytestmark = pytest.mark.unit
-
 
 @pytest.fixture()
 def mock_data_manager() -> MagicMock:

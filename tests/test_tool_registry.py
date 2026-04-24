@@ -2,15 +2,13 @@ import pytest
 
 from src.shared.python.ai.tool_registry import ToolCategory, ToolRegistry
 
-pytestmark = pytest.mark.unit
-
 
 class TestToolRegistry:
     @pytest.fixture
-    def registry(self) -> ToolRegistry:
+    def registry(self):
         return ToolRegistry()
 
-    def test_decorator_registration(self, registry) -> None:
+    def test_decorator_registration(self, registry):
         @registry.register("test_tool", "Description")
         def my_tool(arg1: int, arg2: str = "default") -> str:
             return f"{arg1}-{arg2}"
@@ -31,7 +29,7 @@ class TestToolRegistry:
         assert p2.required is False
         assert p2.default == "default"
 
-    def test_execution_success(self, registry) -> None:
+    def test_execution_success(self, registry):
         @registry.register("add", "Add nums")
         def add(a: int, b: int) -> int:
             return a + b
@@ -40,9 +38,9 @@ class TestToolRegistry:
         assert result.success is True
         assert result.result == 8
 
-    def test_execution_param_validation(self, registry) -> None:
+    def test_execution_param_validation(self, registry):
         @registry.register("echo", "Echo")
-        def echo(msg: str) -> str:
+        def echo(msg: str):
             return msg
 
         # Missing required
@@ -55,9 +53,9 @@ class TestToolRegistry:
         assert res2.success is False
         assert "Unknown parameter" in res2.error
 
-    def test_json_schema_generation(self, registry) -> None:
+    def test_json_schema_generation(self, registry):
         @registry.register("complex", "Complex tool")
-        def complex_tool(req: int, opt: str | None = None) -> None:
+        def complex_tool(req: int, opt: str | None = None):
             pass
 
         tool = registry.get_tool("complex")
@@ -68,9 +66,9 @@ class TestToolRegistry:
         assert "req" in schema["parameters"]["required"]
         assert "opt" not in schema["parameters"]["required"]
 
-    def test_provider_formats(self, registry) -> None:
+    def test_provider_formats(self, registry):
         @registry.register("tool", "desc")
-        def tool(a: int) -> None:
+        def tool(a: int):
             pass
 
         # OpenAI
@@ -83,13 +81,13 @@ class TestToolRegistry:
         assert "input_schema" in anth
         assert "name" in anth
 
-    def test_list_filtering(self, registry) -> None:
+    def test_list_filtering(self, registry):
         @registry.register("t1", "desc", category=ToolCategory.ANALYSIS)
-        def t1() -> None:
+        def t1():
             pass
 
         @registry.register("t2", "desc", category=ToolCategory.VISUALIZATION)
-        def t2() -> None:
+        def t2():
             pass
 
         assert len(registry.list_tools(category=ToolCategory.ANALYSIS)) == 1

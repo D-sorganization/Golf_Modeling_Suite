@@ -4,13 +4,11 @@ import pytest
 
 from src.tools.model_explorer.urdf_builder import URDFBuilder
 
-pytestmark = pytest.mark.unit
-
 
 class TestPhysicalValidation:
     """Test physical parameter validation in URDF builder."""
 
-    def test_positive_mass_required(self) -> None:
+    def test_positive_mass_required(self):
         """Mass must be positive."""
         builder = URDFBuilder()
 
@@ -34,7 +32,7 @@ class TestPhysicalValidation:
                 }
             )
 
-    def test_positive_inertia_diagonal_required(self) -> None:
+    def test_positive_inertia_diagonal_required(self):
         """Inertia diagonal elements must be positive."""
         builder = URDFBuilder()
 
@@ -68,7 +66,7 @@ class TestPhysicalValidation:
                 }
             )
 
-    def test_positive_definite_inertia_required(self) -> None:
+    def test_positive_definite_inertia_required(self):
         """Inertia matrix must be positive-definite."""
         builder = URDFBuilder()
 
@@ -93,7 +91,7 @@ class TestPhysicalValidation:
                 }
             )
 
-    def test_valid_inertia_passes(self) -> None:
+    def test_valid_inertia_passes(self):
         """Valid inertia matrix should pass validation."""
         builder = URDFBuilder()
 
@@ -111,7 +109,7 @@ class TestPhysicalValidation:
 
         assert builder.get_segment_count() == 1
 
-    def test_realistic_inertia_passes(self) -> None:
+    def test_realistic_inertia_passes(self):
         """Realistic inertia from a rod should pass."""
         builder = URDFBuilder()
 

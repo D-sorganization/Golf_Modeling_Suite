@@ -2,7 +2,6 @@
 Unit tests for URDF I/O module.
 """
 
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import defusedxml.ElementTree as ET
@@ -27,7 +26,7 @@ if MUJOCO_AVAILABLE:
 
 
 @pytest.fixture
-def sample_urdf(tmp_path) -> Path:
+def sample_urdf(tmp_path):
     """Create a sample URDF file."""
     urdf_content = """<?xml version="1.0" ?>
 <robot name="test_robot">
@@ -72,7 +71,7 @@ def sample_urdf(tmp_path) -> Path:
 
 
 @pytest.fixture
-def mock_mujoco_model() -> MagicMock:
+def mock_mujoco_model():
     """Create a mock MuJoCo model."""
     # Since we can't easily construct a valid MjModel without XML parsing,
     # we'll mock the attributes needed by URDFExporter.
@@ -111,7 +110,7 @@ def mock_mujoco_model() -> MagicMock:
 class TestURDFImporter:
     """Test suite for URDFImporter."""
 
-    def test_import_from_urdf(self, sample_urdf) -> None:
+    def test_import_from_urdf(self, sample_urdf):
         """Test importing URDF to MJCF XML."""
         importer = URDFImporter()
         mjcf_xml = importer.import_from_urdf(sample_urdf)
@@ -143,7 +142,7 @@ class TestURDFImporter:
 class TestURDFExporter:
     """Test suite for URDFExporter."""
 
-    def test_export_to_urdf(self, tmp_path) -> None:
+    def test_export_to_urdf(self, tmp_path):
         """Test exporting MJCF to URDF."""
         # Import the target module directly so we can use patch.object
         # instead of dotted-string patching (avoids InvalidSpecError when
@@ -160,7 +159,7 @@ class TestURDFExporter:
         mock_mujoco.mjtObj.mjOBJ_MODEL = 3
         mock_mujoco.mjtJoint.mjJNT_HINGE = 0
 
-        def id2name_side_effect(model, obj_type, obj_id) -> str | None:
+        def id2name_side_effect(model, obj_type, obj_id):
             if hasattr(obj_type, "value"):
                 obj_type = obj_type.value
             elif not isinstance(obj_type, int):
@@ -206,7 +205,7 @@ class TestURDFExporter:
             assert 'joint name="joint_0"' in urdf_str
 
 
-def test_convenience_functions(sample_urdf, mock_mujoco_model, tmp_path) -> None:
+def test_convenience_functions(sample_urdf, mock_mujoco_model, tmp_path):
     """Test convenience functions."""
     import src.engines.physics_engines.mujoco.python.mujoco_humanoid_golf.urdf_io as urdf_io_mod
 

@@ -6,7 +6,6 @@ import tempfile
 from pathlib import Path
 
 import defusedxml.ElementTree as ET
-import pytest
 from humanoid_character_builder.core.body_parameters import BodyParameters
 from humanoid_character_builder.generators.urdf_generator import (
     HumanoidURDFGenerator,
@@ -14,8 +13,6 @@ from humanoid_character_builder.generators.urdf_generator import (
     generate_humanoid_urdf,
 )
 from humanoid_character_builder.mesh.inertia_calculator import InertiaMode
-
-pytestmark = pytest.mark.unit
 
 
 class TestURDFGeneratorConfig:
