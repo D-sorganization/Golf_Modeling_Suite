@@ -117,7 +117,7 @@ jobs:
           if [ -n "$CHANGED_PY_FILES" ]; then
             echo "Changed Python files:"
             echo "$CHANGED_PY_FILES"
-            ruff format --check $CHANGED_PY_FILES
+            echo "$CHANGED_PY_FILES" | xargs -d '\n' ruff format --check
           else
             echo "No changed Python files detected — skipping ruff format check."
           fi
@@ -146,7 +146,7 @@ jobs:
           if [ -n "$CHANGED_SRC_PY_FILES" ]; then
             echo "Changed source files:"
             echo "$CHANGED_SRC_PY_FILES"
-            mypy $CHANGED_SRC_PY_FILES --config-file pyproject.toml
+            echo "$CHANGED_SRC_PY_FILES" | xargs -d '\n' mypy --config-file pyproject.toml
           else
             echo "No changed source files detected — skipping baseline mypy."
           fi
@@ -174,7 +174,7 @@ jobs:
           if [ -n "$CHANGED_API_PY_FILES" ]; then
             echo "Changed API files:"
             echo "$CHANGED_API_PY_FILES"
-            mypy $CHANGED_API_PY_FILES --strict --follow-imports=silent --config-file pyproject.toml
+            echo "$CHANGED_API_PY_FILES" | xargs -d '\n' mypy --strict --follow-imports=silent --config-file pyproject.toml
           else
             echo "No changed src/api files detected — skipping strict mypy."
           fi
