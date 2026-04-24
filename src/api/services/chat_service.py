@@ -17,6 +17,7 @@ from datetime import timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from src.shared.python.ai.adapters.base import ToolDeclaration
 from src.shared.python.ai.rag.simple_rag import SimpleRAGStore
 from src.shared.python.ai.sample_tools import register_golf_suite_tools
 from src.shared.python.ai.tool_registry import ToolRegistry
@@ -267,7 +268,15 @@ class ChatService:
         import queue
 
         chunk_queue: queue.Queue[str | None] = queue.Queue()
-        tools = self._tool_registry.declarations()
+        tools = [
+            ToolDeclaration(
+                name=t.name,
+                description=t.description,
+                parameters={p.name: p.to_json_schema() for p in t.parameters},
+                required=[p.name for p in t.parameters if p.required],
+            )
+            for t in self._tool_registry.list_tools()
+        ]
 
         def _stream_to_queue() -> None:
             """Stream adapter chunks into queue; execute any tool calls inline."""
