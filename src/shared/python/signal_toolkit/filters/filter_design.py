@@ -142,7 +142,7 @@ def _normalize_cutoff(
     else:
         wn = (
             cutoff / nyquist
-            if isinstance(cutoff, (int, float))
+            if isinstance(cutoff, int | float)
             else cutoff[0] / nyquist
         )
 
