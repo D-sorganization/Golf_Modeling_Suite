@@ -269,10 +269,11 @@ def check_api_server() -> tuple[bool, str]:
                 try:
                     import requests
 
-                    requests.get("http://127.0.0.1:8001/health", timeout=1)
-                    process.terminate()
-                    process.wait(timeout=2)
-                    return True, "✓ API Server: Started and healthy (port 8001)"
+                    response = requests.get("http://127.0.0.1:8001/health", timeout=1)
+                    if response.ok:
+                        process.terminate()
+                        process.wait(timeout=2)
+                        return True, "✓ API Server: Started and healthy (port 8001)"
                 except Exception:
                     time.sleep(0.5)
 
