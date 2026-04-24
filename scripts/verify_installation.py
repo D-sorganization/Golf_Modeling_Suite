@@ -453,7 +453,7 @@ def main() -> int:
     logger.info("=" * 70)
 
     # SUMMARY
-    logger.info("Summary:")
+    logger.info("Verification Summary:")
     logger.info("-" * 70)
 
     def count_results(results_list: list[bool]) -> tuple[int, int]:
@@ -468,14 +468,28 @@ def main() -> int:
     files_passed, files_total = count_results(results["files"])
     api_passed, api_total = count_results(results["api"])
 
-    logger.info("Environment:       %d/%d", env_passed, env_total)
-    logger.info("Core dependencies: %d/%d", core_passed, core_total)
-    logger.info("Deep checks:       %d/%d", deep_passed, deep_total)
-    logger.info("Suite modules:     %d/%d", suite_passed, suite_total)
-    logger.info("Physics engines:   %d/%d available", physics_passed, physics_total)
-    logger.info("Required files:    %d/%d", files_passed, files_total)
-    logger.info("API server:        %d/%d", api_passed, api_total)
+    logger.info("  Environment:       %d/%d", env_passed, env_total)
+    logger.info("  Core dependencies: %d/%d", core_passed, core_total)
+    logger.info("  Deep checks:       %d/%d", deep_passed, deep_total)
+    logger.info("  Suite modules:     %d/%d", suite_passed, suite_total)
+    logger.info("  Physics engines:   %d/%d available", physics_passed, physics_total)
+    logger.info("  Required files:    %d/%d", files_passed, files_total)
+    logger.info("  API server:        %d/%d", api_passed, api_total)
     logger.info("")
+
+    # Calculate total critical and all checks
+    critical_count = (
+        env_passed
+        + core_passed
+        + deep_passed
+        + suite_passed
+        + files_passed
+    )
+    critical_total = (
+        env_total + core_total + deep_total + suite_total + files_total
+    )
+    all_count = critical_count + physics_passed + api_passed
+    all_total = critical_total + physics_total + api_total
 
     # Determine overall pass/fail
     critical_results = (
@@ -486,26 +500,44 @@ def main() -> int:
         and files_passed == files_total
     )
 
+    logger.info("Exit Status Report:")
+    logger.info("-" * 70)
+
     if critical_results:
-        logger.info("✓ Installation verified successfully!")
+        logger.info("✓ All critical checks passed (%d/%d)", critical_count, critical_total)
         logger.info("")
-        logger.info("Physics engines available:")
+        logger.info("Optional Checks:")
+        logger.info("  Physics engines:   %d/%d available", physics_passed, physics_total)
+        logger.info("  API server:        %d/%d", api_passed, api_total)
+        logger.info("")
+        logger.info("Installation Status: SUCCESS")
+        logger.info("")
+        logger.info("Next Steps:")
         if physics_passed == 0:
-            logger.info("  (None - install optional physics engine packages)")
-        else:
-            logger.info("  %d/%d engines installed", physics_passed, physics_total)
-        logger.info("")
-        logger.info("You can now run:")
-        logger.info("  python examples/01_basic_simulation.py")
-        logger.info("  python -m uvicorn src.api.server:create_app --reload")
+            logger.info(
+                "  Optional: Install physics engine packages with "
+                "pip install -e '.[engines]'"
+            )
+        logger.info("  Run example: python examples/01_basic_simulation.py")
+        logger.info(
+            "  Start API server: python -m uvicorn "
+            "src.api.server:create_app --reload"
+        )
         logger.info("")
         return 0
 
-    logger.warning("✗ Some critical checks failed.")
+    # Count failures
+    failed_critical = critical_total - critical_count
+    logger.warning("✗ Critical checks failed: %d issues found", failed_critical)
+    logger.warning(
+        "  (%d/%d critical checks passed)", critical_count, critical_total
+    )
+    logger.info("")
+    logger.info("Installation Status: FAILED")
     logger.info("")
     logger.info("Troubleshooting:")
-    logger.info("  1. Check Python version: python --version (need 3.10+)")
-    logger.info("  2. Install dependencies: pip install -e '.[dev]'")
+    logger.info("  1. Check Python version: python3 --version (need 3.10+)")
+    logger.info("  2. Install/upgrade dependencies: pip install -e '.[dev]'")
     logger.info("  3. For physics engines: pip install -e '.[engines]'")
     logger.info("  4. See docs/troubleshooting/installation.md")
     logger.info("")
