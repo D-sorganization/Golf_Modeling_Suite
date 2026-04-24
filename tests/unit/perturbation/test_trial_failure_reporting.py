@@ -163,9 +163,9 @@ class TestRunBatchFailureReporting:
         warning_messages = [
             r.message for r in caplog.records if r.levelno >= logging.WARNING
         ]
-        assert any("failed" in m.lower() for m in warning_messages), (
-            f"No failure WARNING found. Records: {warning_messages}"
-        )
+        assert any(
+            "failed" in m.lower() for m in warning_messages
+        ), f"No failure WARNING found. Records: {warning_messages}"
 
     def test_successful_trials_return_correct_results(self) -> None:
         """Partial failures must not corrupt the results of successful trials."""
@@ -208,9 +208,9 @@ class TestRunBatchFailureReporting:
         partial_warnings = [
             w for w in caught if issubclass(w.category, PartialResultsWarning)
         ]
-        assert partial_warnings == [], (
-            f"Unexpected PartialResultsWarning at or below threshold: {partial_warnings}"
-        )
+        assert (
+            partial_warnings == []
+        ), f"Unexpected PartialResultsWarning at or below threshold: {partial_warnings}"
 
     def test_failure_rate_threshold_value(self) -> None:
         """The threshold constant must be 5%."""
