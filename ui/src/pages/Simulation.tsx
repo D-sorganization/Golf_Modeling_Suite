@@ -10,6 +10,7 @@ import { Scene3D } from '@/components/visualization/Scene3D';
 import { ForceOverlayPanel } from '@/components/visualization/ForceOverlayPanel';
 import type { ForceVector3D } from '@/components/visualization/ForceOverlay';
 import { LivePlot } from '@/components/analysis/LivePlot';
+import { SummaryPanel } from '@/components/analysis/SummaryPanel';
 import { ConnectionStatus } from '@/components/ui/ConnectionStatus';
 import { useToast } from '@/components/ui/Toast';
 
@@ -54,21 +55,36 @@ export function SimulationPage() {
     currentFrame,
     frames,
     connectionStatus,
+    runSummary,
     start,
     stop,
     pause,
     resume,
   } = useSimulation(activeEngine);
 
+  const [showSummary, setShowSummary] = useState(false);
+
+  // Show summary panel when a new run summary arrives
+  useEffect(() => {
+    if (runSummary) {
+      setShowSummary(true);
+    }
+  }, [runSummary]);
+
   // ── Event handlers ────────────────────────────────────────────────────
 
   const handleLoadEngine = useCallback(
     async (engineName: string) => {
       showInfo(`Loading ${engineName}...`);
-      await requestLoad(engineName);
-      showSuccess(`${engineName} engine loaded`);
+      try {
+        await requestLoad(engineName);
+        showSuccess(`${engineName} engine loaded`);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : `Failed to load ${engineName}`;
+        showError(message);
+      }
     },
-    [requestLoad, showInfo, showSuccess]
+    [requestLoad, showInfo, showSuccess, showError]
   );
 
   const handleUnloadEngine = useCallback(
@@ -237,6 +253,16 @@ export function SimulationPage() {
             isRunning={isRunning}
           />
         </div>
+
+        {/* Post-simulation summary (issue #3174) */}
+        {showSummary && runSummary && (
+          <div className="mb-4">
+            <SummaryPanel
+              summary={runSummary}
+              onDismiss={() => setShowSummary(false)}
+            />
+          </div>
+        )}
 
         <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Live Analysis</h3>
 

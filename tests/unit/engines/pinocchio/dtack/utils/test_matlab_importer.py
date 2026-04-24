@@ -2,8 +2,10 @@
 
 import pytest
 
+pytestmark = pytest.mark.unit
 
-def test_import():
+
+def test_import() -> None:
     """Verify the module can be imported."""
     try:
         import src.engines.physics_engines.pinocchio.python.dtack.utils.matlab_importer

@@ -12,9 +12,13 @@ from __future__ import annotations
 
 import os
 import unittest
+from typing import Any
 from unittest.mock import MagicMock
 
 import numpy as np
+import pytest
+
+pytestmark = pytest.mark.unit
 
 os.environ["DBC_LEVEL"] = "enforce"
 
@@ -59,7 +63,7 @@ class TestZMPComputerInvariants(unittest.TestCase):
 class TestComputeZMPPostconditions(unittest.TestCase):
     """compute_zmp() postconditions."""
 
-    def _make_computer(self):  # type: ignore[no-untyped-def]
+    def _make_computer(self) -> Any:
         from src.robotics.locomotion.zmp_computer import ZMPComputer
 
         return ZMPComputer(_make_mock_engine())

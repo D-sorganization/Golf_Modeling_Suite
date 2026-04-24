@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from src.deployment.teleoperation.devices import (
     BaseInputDevice,
@@ -8,13 +9,15 @@ from src.deployment.teleoperation.devices import (
     VRControllerInput,
 )
 
+pytestmark = pytest.mark.unit
+
 
 class DummyDevice(BaseInputDevice):
-    def update(self):
+    def update(self) -> None:
         pass
 
 
-def test_base_input_device():
+def test_base_input_device() -> None:
     dev = DummyDevice()
     assert not dev.is_connected
     assert dev.connect()
@@ -37,7 +40,7 @@ def test_base_input_device():
     assert not dev.is_connected
 
 
-def test_spacemouse_input():
+def test_spacemouse_input() -> None:
     dev = SpaceMouseInput(0)
     assert not dev.is_connected
     assert dev.connect()
@@ -55,7 +58,7 @@ def test_spacemouse_input():
     dev.update()
 
 
-def test_vr_controller_input():
+def test_vr_controller_input() -> None:
     dev = VRControllerInput("left", "steamvr")
     assert dev._hand == "left"
     assert dev._tracking_system == "steamvr"
@@ -72,7 +75,7 @@ def test_vr_controller_input():
     dev.update()
 
 
-def test_haptic_device_input():
+def test_haptic_device_input() -> None:
     dev = HapticDeviceInput("phantom")
     assert dev.connect()
 
@@ -89,7 +92,7 @@ def test_haptic_device_input():
     dev.set_force_feedback(wrench)
 
 
-def test_keyboard_mouse_input():
+def test_keyboard_mouse_input() -> None:
     dev = KeyboardMouseInput()
     assert dev.connect()
 
