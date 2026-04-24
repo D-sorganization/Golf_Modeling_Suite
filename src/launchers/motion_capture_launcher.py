@@ -13,7 +13,6 @@ from pathlib import Path
 
 from src.launchers.base import REPO_ROOT, BaseLauncher, LaunchItem, run_launcher
 from src.shared.python.security.secure_subprocess import (
-    SecureSubprocessError,
     secure_popen,
 )
 

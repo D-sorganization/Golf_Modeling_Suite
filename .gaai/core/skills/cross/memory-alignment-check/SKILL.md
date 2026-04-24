@@ -41,6 +41,7 @@ This skill checks that both remain consistent after each delivery.
 ### 1. Extract Implementation Footprint
 
 From `{id}.impl-report.md`:
+
 ## Confirmed Entries
 
 - memory_id: PATTERNS-001
@@ -64,8 +65,10 @@ From `{id}.impl-report.md`:
   description: New retry pattern introduced in services/api/client.ts — not yet in memory.
   suggested_tags: [api, resilience, patterns]
   ingestion_priority: high | medium | low
+
 ```
 
 ---
 
 ## Verdict Logic
+```

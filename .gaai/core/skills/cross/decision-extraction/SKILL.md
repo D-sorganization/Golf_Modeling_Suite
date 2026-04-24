@@ -28,16 +28,24 @@ Activate after:
 supersedes: null # or DEC-{old-id} if replacing
 superseded_by: null
 tags:
-  - { relevant tags }
-related_to: [] # optional — max 5 DEC IDs
+
+- { relevant tags }
+  related_to: [] # optional — max 5 DEC IDs
+
 ---
+
 # DEC-{N} — Decision Title
 
 ## Context
+
 ---
+
 ## Decision
+
 ---
+
 ## Impact
+
 ```
 
 ---
@@ -54,3 +62,4 @@ related_to: [] # optional — max 5 DEC IDs
 ## Non-Goals
 
 This skill must NOT:
+```

@@ -45,7 +45,6 @@ def _sanitize_for_json(obj: Any) -> Any:
     return obj
 
 
-
 def _sanitize_for_json(obj: Any) -> Any:
     """Recursively convert numpy arrays and other non-JSON types to native Python."""
     import numpy as np

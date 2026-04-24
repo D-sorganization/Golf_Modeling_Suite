@@ -23,9 +23,9 @@ Found critical incomplete implementation in `./src/shared/python/physics/flexibl
 
 > > > > > > > > origin/staging:docs/assessments/issues/Issue_2153_Incomplete_Stub_in_flexible_shaft_py_365.md
 
-````python
+```python
 apply_load
-````
+```
 
 ## Audit Metrics
 

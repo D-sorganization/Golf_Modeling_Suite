@@ -19,7 +19,6 @@ generate_humanoid_urdf) is fully preserved.
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
 
@@ -46,7 +45,6 @@ from humanoid_character_builder.generators._link_generation import (
 )
 from humanoid_character_builder.generators._xml_builder import build_urdf_xml
 from humanoid_character_builder.mesh.inertia_calculator import (
-    InertiaMode,
     MeshInertiaCalculator,
 )
 from humanoid_character_builder.mesh.primitive_inertia import PrimitiveInertiaCalculator

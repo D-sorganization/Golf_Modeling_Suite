@@ -38,7 +38,6 @@ __all__ = [
 ]
 
 
-
 @dataclass
 class RenderConfig:
     """Complete rendering configuration"""

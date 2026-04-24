@@ -2,7 +2,8 @@
     "Feature Requests (TRACKED_TASK)" : 1
     "Technical Debt (TRACKED_DEFECT)" : 27
     "Doc Gaps" : 610
-```
+
+````
 
 ### Top Impacted Modules
 
@@ -13,7 +14,7 @@ pie title Issues by Module
     "scripts" : 4
     ".gaai" : 4
     "tests" : 3
-```
+````
 
 ## Critical Incomplete (Top 50)
 
@@ -108,13 +109,12 @@ pie title Issues by Module
 | `./tests/unit/utils/test_error_codes.py`                                           | 39   | """Every error code must follow GMS-XXX-NNN pattern."""                                              | XXX  |
 | `./tests/unit/utils/test_error_codes.py`                                           | 42   | assert len(parts) == 3, f"{code.name} doesn't follow GMS-XXX-NNN"                                    | XXX  |
 
-
 ## Recommended Implementation Order
 
 Prioritized by Impact (High) and Complexity (Low).
 | Priority | File | Issue | Metrics (I/C/C) |
 |---|---|---|---|
-| 1 | `./src/api/auth/security.py` | __init__ | 5/2/4 |
+| 1 | `./src/api/auth/security.py` | **init** | 5/2/4 |
 | 2 | `./src/shared/python/physics/flexible_shaft.py` | initialize | 5/3/4 |
 | 3 | `./src/shared/python/physics/flexible_shaft.py` | get_state | 5/3/4 |
 | 4 | `./src/shared/python/physics/flexible_shaft.py` | apply_load | 5/3/4 |
@@ -125,17 +125,18 @@ Prioritized by Impact (High) and Complexity (Low).
 | 9 | `./src/shared/python/physics/flight_models.py` | reference | 5/3/4 |
 | 10 | `./src/shared/python/physics/flight_models.py` | simulate | 5/3/4 |
 | 11 | `./src/shared/python/physics/impact_model/models.py` | solve | 5/3/4 |
-| 12 | `./src/shared/python/pendulum_simulator/gui/controls_widget_base.py` | _apply_preset | 5/3/4 |
+| 12 | `./src/shared/python/pendulum_simulator/gui/controls_widget_base.py` | \_apply_preset | 5/3/4 |
 | 13 | `./src/shared/python/pendulum_simulator/gui/controls_widget_base.py` | get_params | 5/3/4 |
-| 14 | `./src/shared/python/pendulum_simulator/gui/controls_widget_base.py` | _get_joint_names | 5/3/4 |
-| 15 | `./src/shared/python/pendulum_simulator/gui/controls_widget_base.py` | _get_torque_inputs | 5/3/4 |
+| 14 | `./src/shared/python/pendulum_simulator/gui/controls_widget_base.py` | \_get_joint_names | 5/3/4 |
+| 15 | `./src/shared/python/pendulum_simulator/gui/controls_widget_base.py` | \_get_torque_inputs | 5/3/4 |
 | 16 | `./src/shared/python/pendulum_simulator/gui/matrix_widget_base.py` | get_matrix_size | 5/3/4 |
 | 17 | `./src/shared/python/pendulum_simulator/gui/matrix_widget_base.py` | get_matrix_entries | 5/3/4 |
 | 18 | `./src/shared/python/pendulum_simulator/gui/matrix_widget_base.py` | get_column_labels | 5/3/4 |
-| 19 | `./src/shared/python/pendulum_simulator/gui/matrix_widget_base.py` | _draw_coupling_ratio | 5/3/4 |
-| 20 | `./src/shared/python/pendulum_simulator/gui/base_pendulum_widget.py` | _get_total_length | 5/3/4 |
+| 19 | `./src/shared/python/pendulum_simulator/gui/matrix_widget_base.py` | \_draw_coupling_ratio | 5/3/4 |
+| 20 | `./src/shared/python/pendulum_simulator/gui/base_pendulum_widget.py` | \_get_total_length | 5/3/4 |
 
 ## Issues Created
+
 - Created `docs/assessments/issues/Issue_2274_Incomplete_Stub_in_security_py_339.md`
 - Created `docs/assessments/issues/Issue_2279_Incomplete_Stub_in_flexible_shaft_py_325.md`
 - Created `docs/assessments/issues/Issue_2280_Incomplete_Stub_in_flexible_shaft_py_329.md`
@@ -186,4 +187,7 @@ Prioritized by Impact (High) and Complexity (Low).
 - Created `docs/assessments/issues/Issue_2357_Incomplete_Stub_in_analyzer_base_py_61.md`
 - Created `docs/assessments/issues/Issue_2358_Incomplete_Stub_in_analyzer_base_py_65.md`
 - Created `docs/assessments/issues/Issue_2359_Incomplete_Stub_in_protocols_py_35.md`
+
+```
+
 ```

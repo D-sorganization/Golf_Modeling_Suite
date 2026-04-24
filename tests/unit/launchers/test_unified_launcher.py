@@ -15,6 +15,7 @@ def mock_pyqt6_available() -> Generator[None, None, None]:
     with patch("src.launchers.unified_launcher._is_pyqt6_available", return_value=True):
         yield
 
+
 pytestmark = pytest.mark.unit
 
 

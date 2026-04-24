@@ -32,11 +32,8 @@ from typing import TYPE_CHECKING
 
 from ._equations_popup_dynamics_html import (
     _DELTA_HTML,
-    _EOM_HTML,
-    _MASS_MATRIX_HTML,
 )
 from ._equations_popup_jacobians_html import (
-    _CONSTRAINT_JACOBIAN_HTML,
     _JACOBIAN_HTML,
     _ZTCF_HTML,
 )

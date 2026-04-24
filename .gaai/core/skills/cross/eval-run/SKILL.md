@@ -23,31 +23,29 @@ outputs:
 ## Purpose / When to Activate
 
 Activate when:
-  output_file: { path }
-  evals_file: { path }
-  run_date: { ISO 8601 }
-  score:
-    passed: 4
-    total: 5
-    ratio: "4/5"
-  results:
-    - id: A01
-      type: code
-      description: "Word count within ±15% of target"
-      result: PASS
-      details: "1247 words (range: 1020–1380)"
-    - id: A02
-      type: code
-      description: "Kill list word 'leverage' absent"
-      result: FAIL
-      details: "2 matches found"
-  failed_assertions:
-    - id: A02
-      description: "Kill list word 'leverage' absent"
-      type: code
-      check: regex_not_match
-      pattern: "\\bleverag(e|ing|ed)\\b"
-      details: "2 matches found at positions [line 4, line 11]"
+output_file: { path }
+evals_file: { path }
+run_date: { ISO 8601 }
+score:
+passed: 4
+total: 5
+ratio: "4/5"
+results: - id: A01
+type: code
+description: "Word count within ±15% of target"
+result: PASS
+details: "1247 words (range: 1020–1380)" - id: A02
+type: code
+description: "Kill list word 'leverage' absent"
+result: FAIL
+details: "2 matches found"
+failed_assertions: - id: A02
+description: "Kill list word 'leverage' absent"
+type: code
+check: regex_not_match
+pattern: "\\bleverag(e|ing|ed)\\b"
+details: "2 matches found at positions [line 4, line 11]"
+
 ```
 
 ---
@@ -55,3 +53,4 @@ Activate when:
 ## Non-Goals
 
 This skill must NOT:
+```

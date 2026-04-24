@@ -17,7 +17,6 @@ from typing import TYPE_CHECKING, Any, Protocol
 
 from src.launchers.launcher_model_sources import (
     get_model_python_paths,
-    get_model_source_root,
     get_model_working_directory,
     resolve_model_artifact_path,
 )

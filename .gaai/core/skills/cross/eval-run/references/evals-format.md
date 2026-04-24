@@ -34,8 +34,9 @@ assertions:
   description: { string } # Human-readable description of what is being checked
   check: { check-type } # One of: word_count, char_count, regex_match, regex_not_match, structure_present, structure_absent
   params:
-    { param-key }: { param-value } # Parameters required by the check type (see below)
+  { param-key }: { param-value } # Parameters required by the check type (see below)
   expected: { pass-condition } # Description of the condition that constitutes PASS
+
 ```
 
 #### Supported `check` Values and Their `params`

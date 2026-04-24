@@ -31,19 +31,23 @@ description: { one sentence } # WHAT it does + WHEN to activate
 license: MIT
 compatibility: Works with any filesystem-based AI coding agent
 metadata:
-  author: { author }
-  version: "1.0"
-  category: { discovery|delivery|cross }
-  track: { discovery|delivery|cross-cutting }
-  id: SKILL-{CAT}-{NNN}
-  updated_at: { YYYY-MM-DD }
-  status: stable|experimental # use experimental for new/unproven skills
+author: { author }
+version: "1.0"
+category: { discovery|delivery|cross }
+track: { discovery|delivery|cross-cutting }
+id: SKILL-{CAT}-{NNN}
+updated_at: { YYYY-MM-DD }
+status: stable|experimental # use experimental for new/unproven skills
 inputs:
-  - { input_1 }: { description }
-  - { input_2 }: { description }
-outputs:
-  - { output_path_or_description }
+
+- { input_1 }: { description }
+- { input_2 }: { description }
+  outputs:
+- { output_path_or_description }
+
 ---
+
 ```
 
 **Description rule:** Must be one sentence, ≤ 1024 characters. Format:
+```

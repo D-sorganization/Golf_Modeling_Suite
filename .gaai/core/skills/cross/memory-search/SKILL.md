@@ -33,8 +33,9 @@ Activate when an agent needs to **find** relevant memory but does not know the e
 This skill **locates** memory — it does not **load** it. After results are returned, the agent invokes `memory-retrieve` to load the specific files.
 
 Use cases:
-  relevance: related_to_inbound # or: frontmatter_match | content_match | direct_mention | related_to_outbound
-  excerpt: "prevents connection exhaustion under load" # ~50 tokens max, absent in Mode A
+relevance: related_to_inbound # or: frontmatter_match | content_match | direct_mention | related_to_outbound
+excerpt: "prevents connection exhaustion under load" # ~50 tokens max, absent in Mode A
+
 ```
 
 Agent receives this list and decides which files to load via `memory-retrieve`.
@@ -44,3 +45,4 @@ Agent receives this list and decides which files to load via `memory-retrieve`.
 ## Non-Goals
 
 This skill must NOT:
+```
