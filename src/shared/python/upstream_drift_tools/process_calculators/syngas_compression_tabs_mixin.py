@@ -34,7 +34,7 @@ try:
 except ImportError:
     try:
         from matplotlib.backends.backend_agg import (
-            FigureCanvasAgg as FigureCanvas,  # type: ignore[assignment]
+            FigureCanvasAgg as FigureCanvas,  # type: ignore[assignment,no-redef]
         )
     except ImportError:
         FigureCanvas = None  # type: ignore[assignment,misc]

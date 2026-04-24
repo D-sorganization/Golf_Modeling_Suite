@@ -38,7 +38,7 @@ def create_viewer(
     if backend_type == BackendType.PYVISTA:
         from .viewer_backends_pyvista import PyVistaBackend
 
-        return PyVistaBackend(config)
+        return PyVistaBackend(config)  # type: ignore[arg-type]
     if backend_type == BackendType.UNREAL_BRIDGE:
         return UnrealBridgeBackend(config)
     raise ValueError(f"Unknown backend type: {backend_type}")

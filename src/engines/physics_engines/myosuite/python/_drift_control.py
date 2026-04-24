@@ -16,10 +16,10 @@ class DriftControlMixin:
         sim: Any
         is_initialized: bool
 
-    def compute_mass_matrix(self) -> np.ndarray: ...  # provided by sibling mixin
+    def compute_mass_matrix(self) -> np.ndarray: ...  # type: ignore[empty-body]  # provided by sibling mixin
     def get_state(
         self,
-    ) -> tuple[np.ndarray, np.ndarray]: ...  # provided by sibling mixin
+    ) -> tuple[np.ndarray, np.ndarray]: ...  # type: ignore[empty-body]  # provided by sibling mixin
     def set_state(
         self, q: np.ndarray, v: np.ndarray
     ) -> None: ...  # provided by sibling mixin

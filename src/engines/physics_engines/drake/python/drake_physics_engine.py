@@ -338,7 +338,7 @@ class DrakePhysicsEngine(PhysicsEngine):
 
                     # Decay spin
                     new_spin = self.aero_engine.compute_spin_decay(
-                        ball_spin, dt, np.linalg.norm(ball_vel)
+                        ball_spin, dt, float(np.linalg.norm(ball_vel))
                     )
                     v_new[spin_indices] = new_spin
 
