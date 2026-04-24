@@ -34,6 +34,8 @@ from src.robotics.control.whole_body.wbc_controller import (
     WholeBodyController,
 )
 
+pytestmark = pytest.mark.unit
+
 
 class TestTask:
     """Tests for Task class."""
@@ -772,3 +774,155 @@ class TestIntegration:
 
         solution = wbc.solve()
         assert solution.success
+
+
+class TestIssue2501NullspaceAndTorqueLimits:
+    """Issue #2501: NullspaceQPSolver must respect variable bounds; torque limits enforced."""
+
+    def test_nullspace_solver_respects_variable_bounds(self) -> None:
+        """NullspaceQPSolver must clamp x to [x_lb, x_ub] after solving."""
+        # Unconstrained solution would be [-100, 100]; bounds are [-1, 1]
+        n = 2
+        H = np.eye(n)
+        g = np.array([100.0, -100.0])  # unconstrained min at [-100, 100]
+        x_lb = np.array([-1.0, -1.0])
+        x_ub = np.array([1.0, 1.0])
+
+        problem = QPProblem(H=H, g=g, x_lb=x_lb, x_ub=x_ub)
+        solver = NullspaceQPSolver()
+        solution = solver.solve(problem)
+
+        assert solution.success
+        assert solution.x is not None
+        assert np.all(solution.x >= x_lb - 1e-9), (
+            f"x={solution.x} violates lb={x_lb}: NullspaceQPSolver must clamp to bounds"
+        )
+        assert np.all(solution.x <= x_ub + 1e-9), (
+            f"x={solution.x} violates ub={x_ub}: NullspaceQPSolver must clamp to bounds"
+        )
+
+    def test_torque_limits_enforced_in_wbc_solution(self) -> None:
+        """WBC with torque_limits set must clip joint_torques to those limits."""
+        n_v = 3
+        engine = MockEngine(n_v=n_v)
+        max_tau = 5.0
+        config = WBCConfig(
+            torque_limits=np.full(n_v, max_tau),
+            regularization=1e-3,
+        )
+        wbc = WholeBodyController(engine, config=config)
+
+        # Large tracking error -> large unconstrained torques
+        task = create_posture_task(
+            n_v=n_v,
+            q_target=np.full(n_v, 100.0),
+            q_current=np.zeros(n_v),
+            v_current=np.zeros(n_v),
+            gains=TaskGains(weight=1.0, priority=1, gain_p=1000.0, gain_d=0.0),
+        )
+        wbc.add_task(task)
+        solution = wbc.solve()
+
+        assert solution.success
+        assert solution.joint_torques is not None
+        assert np.all(np.abs(solution.joint_torques) <= max_tau + 1e-9), (
+            f"Torques {solution.joint_torques} exceed limit {max_tau}. "
+            "torque_limits must be enforced."
+        )
+
+    def test_wbc_without_torque_limits_unconstrained(self) -> None:
+        """WBC without torque_limits must not clip torques."""
+        n_v = 3
+        engine = MockEngine(n_v=n_v)
+        config = WBCConfig(regularization=1e-3)
+        wbc = WholeBodyController(engine, config=config)
+
+        task = create_posture_task(
+            n_v=n_v,
+            q_target=np.full(n_v, 100.0),
+            q_current=np.zeros(n_v),
+            v_current=np.zeros(n_v),
+            gains=TaskGains(weight=1.0, priority=1, gain_p=1000.0, gain_d=0.0),
+        )
+        wbc.add_task(task)
+        solution = wbc.solve()
+
+        assert solution.success
+        assert solution.joint_torques is not None
+
+
+class TestWBCBugFixes:
+    """Regression tests for bug fixes in wbc_controller.py (#2705)."""
+
+    def test_nullspace_projector_bounded_near_singularity(self) -> None:
+        """Damped nullspace projector must not blow up near a rank-deficient A."""
+        n_v = 4
+        engine = MockEngine(n_v=n_v)
+        config = WBCConfig(nullspace_damping=1e-3)
+        wbc = WholeBodyController(engine, config=config)
+
+        # Nearly singular A: two identical rows → rank-1
+        A = np.array([[1.0, 0.0, 0.0, 0.0], [1.0 + 1e-10, 0.0, 0.0, 0.0]])
+        N = wbc._compute_nullspace_projector(A, n_v)
+
+        # Operator norm (largest singular value) must be ≤ 1 + small tolerance
+        sv_max = np.linalg.norm(N, ord=2)
+        assert sv_max <= 1.0 + 1e-6, (
+            f"Nullspace projector norm {sv_max} > 1 near singularity"
+        )
+
+    def test_jacobian_column_mismatch_reported_not_dropped(self) -> None:
+        """Tasks with Jacobian width != n_v must report the error in solution status."""
+        n_v = 4
+        engine = MockEngine(n_v=n_v)
+        wbc = WholeBodyController(engine)
+
+        task = create_posture_task(
+            n_v=n_v,
+            q_target=np.zeros(n_v),
+            q_current=np.zeros(n_v),
+            v_current=np.zeros(n_v),
+        )
+        task.jacobian = np.eye(3, n_v + 2)  # wrong column count
+        wbc.add_task(task)
+
+        # solve() catches ValueError internally; the mismatch must surface in status
+        solution = wbc.solve()
+        assert not solution.success, "Should fail when Jacobian width mismatches n_v"
+        assert solution.status is not None
+        assert "Jacobian column width" in solution.status
+
+    def test_acceleration_bounds_not_inverted_after_velocity_reversal(self) -> None:
+        """Velocity-limit bounds must stay lb <= ub when qd is outside [-v_lim, v_lim]."""
+        n_v = 2
+        engine = MockEngine(n_v=n_v)
+        v_lim = np.array([1.0, 1.0])
+        config = WBCConfig(velocity_limits=v_lim, dt=0.01, use_hierarchical=False)
+        wbc = WholeBodyController(engine, config=config)
+
+        # Joint 0 velocity greatly exceeds the limit
+        x_lb, x_ub = wbc._build_variable_bounds(n_v, 0, np.array([5.0, 0.0]))
+        assert np.all(x_lb[:n_v] <= x_ub[:n_v]), (
+            f"Bounds inverted: lb={x_lb[:n_v]}, ub={x_ub[:n_v]}"
+        )
+
+    def test_hqp_infeasibility_sets_status(self) -> None:
+        """HQP failure must return success=False with a non-empty status string."""
+        n_v = 2
+        engine = MockEngine(n_v=n_v)
+        config = WBCConfig(use_hierarchical=True)
+        wbc = WholeBodyController(engine, config=config)
+
+        task = create_posture_task(
+            n_v=n_v,
+            q_target=np.full(n_v, 1e6),
+            q_current=np.zeros(n_v),
+            v_current=np.zeros(n_v),
+            gains=TaskGains(weight=1.0, priority=1, gain_p=1e10, gain_d=0.0),
+        )
+        wbc.add_task(task)
+
+        solution = wbc.solve()
+        assert isinstance(solution, WBCSolution)
+        if not solution.success:
+            assert solution.status is not None and len(solution.status) > 0

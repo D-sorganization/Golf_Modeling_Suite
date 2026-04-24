@@ -7,11 +7,14 @@ that the API layer correctly implements the contract boundaries.
 
 from __future__ import annotations
 
+from collections.abc import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+
+pytestmark = pytest.mark.unit
 
 # Skip this module if the rotation_converter package is not installed
 pytest.importorskip(
@@ -29,7 +32,7 @@ client = TestClient(_app)
 
 
 @pytest.fixture
-def mock_rotation_class():
+def mock_rotation_class() -> Generator[tuple[MagicMock, MagicMock], None, None]:
     """Mock the Rotation class from rotation_converter.converter."""
     with patch(
         "src.shared.python.calc_backend.routers.rotation_converter.Rotation"

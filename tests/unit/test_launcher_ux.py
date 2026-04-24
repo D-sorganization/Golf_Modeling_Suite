@@ -4,8 +4,12 @@
 import unittest
 from unittest.mock import Mock, patch  # noqa: F401
 
+import pytest
+
 from src.shared.python.engine_core.engine_availability import PYQT6_AVAILABLE
 from src.shared.python.gui_pkg.gui_utils import get_qapp
+
+pytestmark = pytest.mark.unit
 
 if PYQT6_AVAILABLE:
     from PyQt6.QtCore import Qt  # noqa: F401
@@ -23,7 +27,7 @@ class TestGolfLauncherUX(unittest.TestCase):
         """Set up QApplication for GUI tests."""
         get_qapp()  # Simplified with utility
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures."""
         self.mock_registry = Mock()
         self.mock_models = []
@@ -38,7 +42,7 @@ class TestGolfLauncherUX(unittest.TestCase):
         self.mock_registry.get_all_models.return_value = self.mock_models
         self.mock_registry.__iter__ = lambda x: iter(self.mock_models)
 
-        def mock_get_model(model_id):
+        def mock_get_model(model_id) -> Mock | None:
             for model in self.mock_models:
                 if model.id == model_id:
                     return model
@@ -50,7 +54,7 @@ class TestGolfLauncherUX(unittest.TestCase):
         "GolfLauncher initialization pipeline was refactored - "
         "model_order depends on LayoutManager which requires deep mocking"
     )
-    def test_empty_state_ux(self):
+    def test_empty_state_ux(self) -> None:
         """Test that empty search state shows actionable UI.
 
         Skipped: GolfLauncher.__init__ was refactored to use LayoutManager,

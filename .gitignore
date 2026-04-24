@@ -86,11 +86,6 @@ quality_report*.txt
 black_report*.txt
 coverage.xml
 coverage.json
-bandit_results.json
-reports/bandit.json
-temp_id.txt
-matlab_quality_report.txt
-test.npz
 htmlcov/
 
 # Test output debris (prevent accumulation at root)
