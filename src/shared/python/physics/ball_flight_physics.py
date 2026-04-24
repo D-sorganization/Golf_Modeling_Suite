@@ -155,11 +155,13 @@ class BallFlightSimulator:
         self.environment = env or environment or EnvironmentalConditions()
 
         # Wire aerodynamics module into force calculations (issue #3167).
-        # AerodynamicsEngine is invoked in _calculate_forces_single via
-        # compute_forces(), ensuring the shared aerodynamics models are
-        # not orphaned from the simulation step.
+        # Pass ball-specific drag/lift/radius so non-default setups are respected.
         self._aero_engine = AerodynamicsEngine(
-            config=AerodynamicsConfig(),
+            config=AerodynamicsConfig(
+                drag_coefficient=self.ball.cd0,
+                lift_coefficient=self.ball.cl0,
+                ball_radius=self.ball.radius,
+            ),
             wind_model=None,
             randomization=None,
             air_density=self.environment.air_density,
@@ -443,9 +445,10 @@ class BallFlightSimulator:
         if vel is None:
             raise ValueError("vel must be provided")
 
-        # Compose spin vector and invoke shared AerodynamicsEngine.
+        # Apply wind: compute relative velocity before passing to AerodynamicsEngine.
+        rel_vel = vel - self.environment.wind_velocity
         spin = omega * launch.spin_axis
-        aero_forces = self._aero_engine.compute_forces(vel, spin)
+        aero_forces = self._aero_engine.compute_forces(rel_vel, spin)
 
         drag = aero_forces["drag"]
         magnus = aero_forces["magnus"]
