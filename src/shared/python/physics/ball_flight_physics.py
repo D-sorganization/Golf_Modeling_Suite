@@ -133,7 +133,12 @@ class TrajectoryPoint:
 @invariant(lambda self: self.ball.mass > 0, "Ball mass must be positive")
 @invariant(lambda self: self.environment.gravity > 0, "Gravity must be positive")
 class BallFlightSimulator:
-    """Refactored Ball Flight Simulator (Orthogonality-focused)."""
+    """Refactored Ball Flight Simulator (Orthogonality-focused).
+
+    Aerodynamics are computed via the shared AerodynamicsEngine from
+    ``src.shared.python.physics.aerodynamics`` and invoked on every
+    simulation step through ``_calculate_forces``.
+    """
 
     def __init__(
         self,
@@ -141,8 +146,29 @@ class BallFlightSimulator:
         env: EnvironmentalConditions | None = None,
         environment: EnvironmentalConditions | None = None,
     ) -> None:
+        from src.shared.python.physics.aerodynamics import (
+            AerodynamicsConfig,
+            AerodynamicsEngine,
+        )
+
         self.ball = ball or BallProperties()
         self.environment = env or environment or EnvironmentalConditions()
+
+        # Wire aerodynamics module into force calculations (issue #3167).
+        # AerodynamicsEngine is invoked in _calculate_forces_single via
+        # compute_forces(), ensuring the shared aerodynamics models are
+        # not orphaned from the simulation step.
+        self._aero_engine = AerodynamicsEngine(
+            config=AerodynamicsConfig(),
+            wind_model=None,
+            randomization=None,
+            air_density=self.environment.air_density,
+        )
+        logger.debug(
+            "BallFlightSimulator initialised with AerodynamicsEngine "
+            "(air_density=%.4f kg/m^3)",
+            self.environment.air_density,
+        )
 
     @precondition(
         lambda self, launch, max_time=10.0, dt=0.01: (
@@ -409,33 +435,26 @@ class BallFlightSimulator:
         omega: float,
         launch: LaunchConditions,
     ) -> tuple[np.ndarray, np.ndarray]:
-        """Scalar force calculation for a single velocity vector (3,)."""
+        """Scalar force calculation for a single velocity vector (3,).
+
+        Delegates to the shared AerodynamicsEngine so that the aerodynamics
+        module is invoked on every simulation step (issue #3167).
+        """
         if vel is None:
             raise ValueError("vel must be provided")
-        rel_vel = vel - self.environment.wind_velocity
-        # ⚡ Bolt: math.hypot(*vec) is ~5x faster than np.linalg.norm(vec) for 3D magnitudes
-        speed = math.hypot(*rel_vel)
 
-        drag = np.zeros(vel.shape)
-        magnus = np.zeros(vel.shape)
+        # Compose spin vector and invoke shared AerodynamicsEngine.
+        spin = omega * launch.spin_axis
+        aero_forces = self._aero_engine.compute_forces(vel, spin)
 
-        if speed <= MIN_SPEED_THRESHOLD:
-            return drag, magnus
+        drag = aero_forces["drag"]
+        magnus = aero_forces["magnus"]
 
-        s_ratio = (omega * self.ball.radius) / speed
-        cd = self.ball.calculate_cd(s_ratio)
-        cl = self.ball.calculate_cl(s_ratio)
-        aero_prefix = (
-            0.5 * self.environment.air_density * self.ball.cross_sectional_area
+        logger.debug(
+            "step aero: drag_mag=%.4f magnus_mag=%.4f",
+            math.hypot(*drag),
+            math.hypot(*magnus),
         )
-
-        drag = -(aero_prefix * cd * speed**2) * (rel_vel / speed)
-
-        cross = np.cross(launch.spin_axis, rel_vel / speed)
-        # ⚡ Bolt: math.hypot is much faster than np.linalg.norm for small arrays
-        cross_norm = math.hypot(*cross)
-        if cross_norm > NUMERICAL_EPSILON:
-            magnus = (aero_prefix * cl * speed**2) * (cross / cross_norm)
 
         return drag, magnus
 
