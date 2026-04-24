@@ -29,7 +29,7 @@ Last-Updated: 2026-04-23T12:49:00-07:00
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.174                                            |
+| **Spec Version**        | 1.0.175                                            |
 | **Last Spec Update**    | 2026-04-23                                         |
 
 ## 2. Purpose & Mission
@@ -737,6 +737,8 @@ pytest tests/ --cov=src --cov-fail-under=70
 - 2026-04-20: Lazy-imported the video pose pipeline so the API video analysis route stays registered in slim runtime images and returns a 503 with a video extras hint when cv2/mediapipe is unavailable.
 - 2026-04-20: Guarded Pinocchio energy checks behind complete finite-state verification and aligned RK4 torque sampling test coverage in pendulum engine probes.
 - 2026-04-16: Fixed import sorting in analyzer.py, advanced_export.py, and related files; restored completist audit documentation.
+
+- 2026-04-24: Replaced `np.sum(x**2)` with `np.vdot(x, x)` for computing sum of squares on real arrays to leverage BLAS directly and reduce temporary memory allocations.
 
 ## API Governance Update (2026-04-22)
 
