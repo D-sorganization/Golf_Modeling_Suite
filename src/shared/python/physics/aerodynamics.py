@@ -50,6 +50,15 @@ from src.shared.python.core.physics_constants import (
 )
 
 # =============================================================================
+# Module-level constants
+# =============================================================================
+
+# Time constant for the exponential spin-ratio → lift-coefficient relationship.
+# Controls how quickly Cl saturates as spin ratio increases; matches empirical
+# tuning previously expressed as the literal 0.1 in _compute_lift_coefficient.
+_SPIN_RATIO_TIME_CONSTANT = 0.1
+
+# =============================================================================
 # Configuration Classes
 # =============================================================================
 
