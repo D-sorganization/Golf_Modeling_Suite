@@ -1,7 +1,7 @@
 /**
  * useChat — WebSocket hook for AI assistant chat streaming.
  *
- * Connects to /ws/chat/{sessionId}, handles chunk streaming with
+ * Connects to /api/ws/chat/{sessionId}, handles chunk streaming with
  * exponential-backoff reconnection, and syncs into useChatStore.
  *
  * Protocol (server → client):
@@ -81,7 +81,7 @@ export function useChat() {
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.host;
-    const wsUrl = `${protocol}//${host}/ws/chat/new`;
+    const wsUrl = `${protocol}//${host}/api/ws/chat/new`;
 
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
@@ -187,12 +187,12 @@ export function useChat() {
   }, []);
 
   const sendMessage = useCallback(
-    (content: string) => {
+    (content: string): boolean => {
       const trimmed = content.trim();
-      if (!trimmed) return;
+      if (!trimmed) return false;
 
       const ws = wsRef.current;
-      if (!ws || ws.readyState !== WebSocket.OPEN) return;
+      if (!ws || ws.readyState !== WebSocket.OPEN) return false;
 
       addMessage('user', trimmed);
       ws.send(
@@ -201,6 +201,7 @@ export function useChat() {
           message: trimmed,
         }),
       );
+      return true;
     },
     [addMessage],
   );
