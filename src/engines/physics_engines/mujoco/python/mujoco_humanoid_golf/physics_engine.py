@@ -24,6 +24,8 @@ from src.shared.python.core.contracts import (
 from src.shared.python.core.numerical_constants import EPSILON_TIME_STEP
 from src.shared.python.engine_core.interfaces import PhysicsEngine
 from src.shared.python.logging_pkg.logging_config import get_logger
+from src.shared.python.physics.aerodynamics._config import AerodynamicsConfig
+from src.shared.python.physics.aerodynamics._engine import AerodynamicsEngine
 from src.shared.python.security.security_utils import validate_path
 
 logger = get_logger(__name__)
@@ -69,6 +71,7 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         self.model: mujoco.MjModel | None = None
         self.data: mujoco.MjData | None = None
         self.xml_path: str | None = None
+        self.aero_engine: AerodynamicsEngine | None = None
 
     @property
     def is_initialized(self) -> bool:
@@ -177,6 +180,8 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
     def step(self, dt: float | None = None) -> None:
         """Step the simulation forward.
 
+        Integrates aerodynamic forces after the main physics step.
+
         Args:
             dt: Time step [s]. Must be > EPSILON_TIME_STEP if provided.
 
@@ -202,6 +207,9 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
                 self.model.opt.timestep = old_dt
             else:
                 mujoco.mj_step(self.model, self.data)
+
+            # Apply aerodynamics if configured (Issue #3167)
+            self._apply_aerodynamics(effective_dt)
 
     @precondition(lambda self: self.is_initialized, "Engine must be initialized")
     def forward(self) -> None:
@@ -259,6 +267,67 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         if self.data is None:
             return 0.0
         return float(self.data.time)
+
+    def enable_aerodynamics(self, config: AerodynamicsConfig | None = None) -> None:
+        """Enable aerodynamic force simulation (Issue #3167).
+
+        Args:
+            config: Aerodynamics configuration. If None, uses defaults.
+        """
+        self.aero_engine = AerodynamicsEngine(config)
+        logger.debug("Aerodynamics enabled in MuJoCo engine")
+
+    def disable_aerodynamics(self) -> None:
+        """Disable aerodynamic force simulation."""
+        self.aero_engine = None
+        logger.debug("Aerodynamics disabled in MuJoCo engine")
+
+    def _apply_aerodynamics(self, dt: float) -> None:
+        """Apply aerodynamic forces to ball state.
+
+        This method applies aerodynamic damping to generalized velocities.
+        For a full implementation with ball-specific tracking, extend to
+        identify ball body and apply forces directly (TODO: #3167).
+
+        Args:
+            dt: Time step [s]
+        """
+        if self.aero_engine is None or self.data is None or self.model is None:
+            return
+
+        try:
+            # Get velocity from generalized velocities
+            # TODO: Add body name lookup to get ball-specific velocities (#3167)
+            if self.data.nv >= 6:
+                # First 6: [v_x, v_y, v_z, omega_x, omega_y, omega_z]
+                vel_indices = slice(0, 3)
+                spin_indices = slice(3, 6)
+
+                ball_vel = self.data.qvel[vel_indices].copy()
+                ball_spin = self.data.qvel[spin_indices].copy()
+                t = self.data.time
+
+                # Compute aerodynamic forces
+                forces = self.aero_engine.compute_forces(
+                    ball_vel, ball_spin, t, np.zeros(3)
+                )
+                total_force = forces["total"]
+
+                # Apply as damping to velocities (simplified)
+                # For full accuracy: add forces and re-integrate
+                if np.linalg.norm(ball_vel) > 1e-6:
+                    ball_mass = 0.04593  # Standard golf ball mass [kg]
+                    aero_accel = total_force / ball_mass
+                    self.data.qvel[vel_indices] += aero_accel * dt
+
+                # Decay spin
+                new_spin = self.aero_engine.compute_spin_decay(
+                    ball_spin, dt, np.linalg.norm(ball_vel)
+                )
+                self.data.qvel[spin_indices] = new_spin
+
+        except Exception as e:
+            logger.warning("Aerodynamics application failed: %s", e)
 
     def get_joint_names(self) -> list[str]:
         """Get list of joint names."""
