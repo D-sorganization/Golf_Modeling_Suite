@@ -8,6 +8,8 @@ import pytest
 from src.shared.python.engine_core.engine_manager import EngineManager, EngineType
 from src.shared.python.logging_pkg.logging_config import get_logger
 
+pytestmark = pytest.mark.integration
+
 logger = get_logger(__name__)
 
 # Locate the repository root
@@ -21,7 +23,7 @@ def is_engine_available(engine_type: EngineType) -> bool:
     return bool(probe_result.is_available())
 
 
-def test_pinocchio_golfer_stability():
+def test_pinocchio_golfer_stability() -> None:
     """Verify the Pinocchio golfer URDF loads and simulates without exploding."""
     if not is_engine_available(EngineType.PINOCCHIO):
         pytest.skip("Pinocchio not installed")
@@ -77,7 +79,7 @@ def test_pinocchio_golfer_stability():
     logger.info("Golfer URDF stability check passed.")
 
 
-def test_mujoco_myoarm_stability():
+def test_mujoco_myoarm_stability() -> None:
     """Verify the MuJoCo MyoArm XML loads and steps safely."""
     if not is_engine_available(EngineType.MUJOCO):
         pytest.skip("MuJoCo not installed")

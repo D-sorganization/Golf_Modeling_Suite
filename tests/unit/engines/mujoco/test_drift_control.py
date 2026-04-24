@@ -10,6 +10,8 @@ from mujoco_humanoid_golf.drift_control import (
     DriftControlResult,
 )
 
+pytestmark = pytest.mark.unit
+
 
 @pytest.fixture
 def simple_pendulum_model() -> mujoco.MjModel:
@@ -200,13 +202,16 @@ class TestDriftControlDecomposer:
 class TestDriftControlPhysics:
     """Integration tests for drift-control physics validation."""
 
+    @pytest.mark.xfail(
+        strict=False,
+        reason="Requires energy calculation utilities - not yet implemented",
+    )
     def test_passive_pendulum_drift_matches_energy_conservation(
         self, simple_pendulum_model
     ) -> None:
         """Test drift component matches energy-conserving motion."""
-        pytest.skip("Requires energy calculation utilities - implement in follow-up")
-
         # (modulo damping losses if present)
+        raise NotImplementedError("Requires energy calculation utilities")
 
     def test_control_enables_upward_swing(self, simple_pendulum_model) -> None:
         """Test that control can drive pendulum upward against gravity."""
