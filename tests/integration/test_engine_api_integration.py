@@ -18,8 +18,6 @@ import typing
 
 import pytest
 
-import typing
-
 try:
     from fastapi.testclient import TestClient
 
