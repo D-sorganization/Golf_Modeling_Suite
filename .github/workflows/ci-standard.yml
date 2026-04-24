@@ -117,7 +117,7 @@ jobs:
           if [ -n "$CHANGED_PY_FILES" ]; then
             echo "Changed Python files:"
             echo "$CHANGED_PY_FILES"
-            ruff format --check $CHANGED_PY_FILES
+            echo "$CHANGED_PY_FILES" | while IFS= read -r f; do ruff format --check "$f"; done
           else
             echo "No changed Python files detected — skipping ruff format check."
           fi
