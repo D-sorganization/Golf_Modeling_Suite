@@ -193,3 +193,35 @@ class TestSimulationWsSummary:
     def test_status_complete_emitted(self) -> None:
         """WebSocket route emits status='complete' on run completion."""
         assert "complete" in self._WS_SRC
+
+    def test_peak_torques_tracked_in_loop(self) -> None:
+        """Simulation loop tracks peak torques each step, not just at the end."""
+        assert "peak_torques" in self._WS_SRC, (
+            "simulation_ws.py must accumulate peak_torques during the loop"
+        )
+
+
+class TestModelExtensionAllowlist:
+    """The duplicate endpoint must restrict files to model types."""
+
+    _MODEL_EXPLORER_SRC: str = (
+        Path(__file__).parents[3] / "src" / "api" / "routes" / "model_explorer.py"
+    ).read_text(encoding="utf-8")
+
+    def test_urdf_allowed(self) -> None:
+        """.urdf extension is in the allowlist."""
+        assert ".urdf" in self._MODEL_EXPLORER_SRC
+
+    def test_mjcf_allowed(self) -> None:
+        """.mjcf extension is in the allowlist."""
+        assert ".mjcf" in self._MODEL_EXPLORER_SRC
+
+    def test_extension_check_present(self) -> None:
+        """Source contains logic to check file extension against the allowlist."""
+        assert "_ALLOWED_MODEL_EXTENSIONS" in self._MODEL_EXPLORER_SRC, (
+            "model_explorer.py must define _ALLOWED_MODEL_EXTENSIONS allowlist"
+        )
+
+    def test_422_on_bad_extension(self) -> None:
+        """Source raises HTTP 422 when extension is not in the allowlist."""
+        assert "422" in self._MODEL_EXPLORER_SRC

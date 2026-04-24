@@ -491,6 +491,8 @@ async def duplicate_model(
     if not (request is not None):
         raise ValueError("request must be provided")
 
+    _ALLOWED_MODEL_EXTENSIONS = frozenset({".urdf", ".mjcf", ".xml", ".sdf"})
+
     project_root = _find_project_root()
     source = (project_root / request.source_path).resolve()
 
@@ -501,6 +503,13 @@ async def duplicate_model(
         raise HTTPException(
             status_code=422, detail="source_path must be within the project directory"
         ) from exc
+
+    # Restrict to model file types only
+    if source.suffix.lower() not in _ALLOWED_MODEL_EXTENSIONS:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Only model files are supported ({', '.join(sorted(_ALLOWED_MODEL_EXTENSIONS))})",
+        )
 
     if not source.exists() or not source.is_file():
         raise HTTPException(

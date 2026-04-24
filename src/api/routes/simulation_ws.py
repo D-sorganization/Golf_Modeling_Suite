@@ -188,7 +188,7 @@ async def _run_simulation_loop(
     websocket: WebSocket,
     engine: object,
     config: dict[str, Any],
-) -> tuple[int, float, list[dict[str, Any]]]:
+) -> tuple[int, float, list[dict[str, Any]], list[float]]:
     """Execute the simulation loop, streaming frames to the client.
 
     Args:
@@ -197,7 +197,8 @@ async def _run_simulation_loop(
         config: Simulation configuration dict.
 
     Returns:
-        Tuple of (frame_count, time_elapsed, trajectory_samples).
+        Tuple of (frame_count, time_elapsed, trajectory_samples, peak_torques).
+        peak_torques holds the per-joint absolute maximum observed over the run.
     """
     if not (websocket is not None):
         raise ValueError("websocket must be provided")
@@ -212,6 +213,7 @@ async def _run_simulation_loop(
     time_elapsed = 0.0
     frame = 0
     trajectory_samples: list[dict[str, Any]] = []
+    peak_torques: list[float] = []
 
     # Calculate frame skip for ~60fps UI updates
     target_fps = 60
@@ -233,6 +235,19 @@ async def _run_simulation_loop(
 
         time_elapsed += timestep
         frame += 1
+
+        # Track peak per-joint torques over the entire run
+        if hasattr(engine, "get_torques"):
+            raw = engine.get_torques()
+            if isinstance(raw, list | np.ndarray):
+                arr = np.asarray(raw, dtype=float)
+                step_abs = [float(abs(v)) for v in arr]
+                if not peak_torques:
+                    peak_torques = step_abs
+                else:
+                    peak_torques = [
+                        max(a, b) for a, b in zip(peak_torques, step_abs, strict=False)
+                    ]
 
         # Collect sparse trajectory samples for the RunSummary
         if frame % _TRAJECTORY_SAMPLE_INTERVAL == 0:
@@ -266,7 +281,7 @@ async def _run_simulation_loop(
 
             await websocket.send_json(frame_data)
 
-    return frame, time_elapsed, trajectory_samples
+    return frame, time_elapsed, trajectory_samples, peak_torques
 
 
 def _build_run_summary(
@@ -275,6 +290,7 @@ def _build_run_summary(
     steps: int,
     engine: object,
     trajectory: list[dict[str, Any]],
+    peak_torques: list[float] | None = None,
 ) -> dict[str, Any]:
     """Build a RunSummary dict from post-loop engine state.
 
@@ -284,16 +300,24 @@ def _build_run_summary(
         steps: Number of simulation steps completed.
         engine: The physics engine instance.
         trajectory: Sparse trajectory sample list.
+        peak_torques: Per-joint absolute peak torques tracked during the run.
+            When provided, used directly; otherwise falls back to a single
+            post-loop sample from the engine.
 
     Returns:
         RunSummary-compatible dict ready for JSON serialisation.
     """
-    max_torques: list[float] = []
-    if hasattr(engine, "get_torques"):
+    if peak_torques is not None:
+        max_torques = peak_torques
+    elif hasattr(engine, "get_torques"):
         raw = engine.get_torques()
         if isinstance(raw, list | np.ndarray):
             arr = np.asarray(raw, dtype=float)
             max_torques = [float(abs(v)) for v in arr]
+        else:
+            max_torques = []
+    else:
+        max_torques = []
 
     energy = 0.0
     if hasattr(engine, "get_energy"):
@@ -365,7 +389,7 @@ async def simulation_stream(
             _apply_initial_state(engine, config["initial_state"])
 
         # Run simulation loop
-        frame, time_elapsed, trajectory = await _run_simulation_loop(
+        frame, time_elapsed, trajectory, peak_torques = await _run_simulation_loop(
             websocket, engine, config
         )
 
@@ -376,6 +400,7 @@ async def simulation_stream(
             steps=frame,
             engine=engine,
             trajectory=trajectory,
+            peak_torques=peak_torques,
         )
 
         # Send completion with embedded RunSummary
