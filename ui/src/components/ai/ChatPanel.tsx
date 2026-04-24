@@ -119,8 +119,8 @@ export function ChatPanel() {
   const handleSend = useCallback(() => {
     const trimmed = inputBuffer.trim();
     if (!trimmed) return;
-    sendMessage(trimmed);
-    setInput('');
+    const sent = sendMessage(trimmed);
+    if (sent) setInput('');
   }, [inputBuffer, sendMessage, setInput]);
 
   const handleKeyDown = useCallback(
