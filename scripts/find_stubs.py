@@ -13,10 +13,7 @@ def _has_abstractmethod_decorator(
     for decorator in node.decorator_list:
         if isinstance(decorator, ast.Name) and decorator.id == "abstractmethod":
             return True
-        if (
-            isinstance(decorator, ast.Attribute)
-            and decorator.attr == "abstractmethod"
-        ):
+        if isinstance(decorator, ast.Attribute) and decorator.attr == "abstractmethod":
             return True
     return False
 
