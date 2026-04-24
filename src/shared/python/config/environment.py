@@ -367,10 +367,9 @@ def get_secret_key(*, required: bool = False) -> str | None:
     Example:
         >>> key = get_secret_key(required=True)
     """
-    key = (
-        _get_with_fallback("HUMANOID_API_SECRET_KEY", "GOLF_API_SECRET_KEY")
-        or os.environ.get("SECRET_KEY")
-    )
+    key = _get_with_fallback(
+        "HUMANOID_API_SECRET_KEY", "GOLF_API_SECRET_KEY"
+    ) or os.environ.get("SECRET_KEY")
 
     if key:
         return key
@@ -444,9 +443,7 @@ def get_api_port(default: int = 8000) -> int:
     if port:
         return get_env_int(
             "HUMANOID_API_PORT", default=default, min_value=1, max_value=65535
-        ) or get_env_int(
-            "GOLF_API_PORT", default=default, min_value=1, max_value=65535
-        )
+        ) or get_env_int("GOLF_API_PORT", default=default, min_value=1, max_value=65535)
     return default
 
 
@@ -555,9 +552,7 @@ def get_golf_suite_mode(default: str = "remote") -> str:
     Returns:
         Mode string (e.g., ``"local"``, ``"remote"``).
     """
-    return (
-        _get_with_fallback("HUMANOID_SUITE_MODE", "GOLF_SUITE_MODE") or default
-    )
+    return _get_with_fallback("HUMANOID_SUITE_MODE", "GOLF_SUITE_MODE") or default
 
 
 def is_auth_disabled() -> bool:
