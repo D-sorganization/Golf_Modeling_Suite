@@ -317,16 +317,23 @@ class ChatService:
                         full_response.append(chunk.content)
                     if chunk.tool_call_delta:
                         delta = chunk.tool_call_delta
-                        tc_id = delta.get("id", "")
-                        if tc_id and tc_id not in pending_tool_calls:
-                            pending_tool_calls[tc_id] = {
-                                "name": delta.get("name", ""),
-                                "arguments_raw": "",
-                            }
-                        elif tc_id:
-                            pending_tool_calls[tc_id]["arguments_raw"] += delta.get(
-                                "arguments", ""
-                            )
+                        # Support both OpenAI-style nested format
+                        # {"tool_calls": [{"id": ..., "name": ..., "arguments": ...}]}
+                        # and flat format {"id": ..., "name": ..., "arguments": ...}.
+                        entries: list[dict[str, Any]] = delta.get("tool_calls") or [
+                            delta
+                        ]
+                        for entry in entries:
+                            tc_id = entry.get("id", "")
+                            if tc_id and tc_id not in pending_tool_calls:
+                                pending_tool_calls[tc_id] = {
+                                    "name": entry.get("name", ""),
+                                    "arguments_raw": entry.get("arguments", ""),
+                                }
+                            elif tc_id:
+                                pending_tool_calls[tc_id]["arguments_raw"] += entry.get(
+                                    "arguments", ""
+                                )
                     if chunk.is_final and pending_tool_calls:
                         for tc_id, tc_data in pending_tool_calls.items():
                             try:
@@ -345,7 +352,12 @@ class ChatService:
                             except ToolExecutionError as te:
                                 logger.warning("Tool not found: %s", tc_data["name"])
                                 result_text = f"Tool error: {te}"
+                            # Persist result to both temp_ctx and real ctx so
+                            # subsequent turns can see it, and stream it to caller.
                             temp_ctx.add_tool_result(tc_id, result_text)
+                            ctx.add_tool_result(tc_id, result_text)
+                            chunk_queue.put(result_text)
+                            full_response.append(result_text)
                             logger.info(
                                 "Tool call executed: %s",
                                 tc_data["name"],
