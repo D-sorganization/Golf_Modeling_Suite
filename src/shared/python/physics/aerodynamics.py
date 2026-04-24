@@ -387,7 +387,9 @@ class LiftModel:
         # Empirical relationship: Cl saturates at high spin
         if spin_ratio is None:
             raise ValueError("spin_ratio must be provided")
-        cl = self.max_coefficient * (1 - math.exp(-spin_ratio / 0.1))
+        cl = self.max_coefficient * (
+            1 - math.exp(-spin_ratio / _SPIN_RATIO_TIME_CONSTANT)
+        )
         return min(cl, self.max_coefficient)
 
 
