@@ -5,6 +5,9 @@
 !.env.docker.example
 !.env.*.example
 
+# Claude Code worktrees
+.claude/worktrees/
+
 # Merge conflict artifacts
 *.ours
 *.theirs
