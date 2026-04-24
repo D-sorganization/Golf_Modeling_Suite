@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from src.shared.python.engine_loaders import LOADER_MAP
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestEngineLoaders:

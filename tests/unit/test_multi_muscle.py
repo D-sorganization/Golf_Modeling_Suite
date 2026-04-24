@@ -7,6 +7,8 @@ import pytest
 
 from src.shared.python.biomechanics.hill_muscle import HillMuscleModel, MuscleParameters
 from src.shared.python.biomechanics.multi_muscle import AntagonistPair, MuscleGroup
+import pytest
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

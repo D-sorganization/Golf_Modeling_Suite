@@ -21,6 +21,7 @@ import sys
 from unittest.mock import patch
 
 import pytest
+pytestmark = pytest.mark.unit
 
 from tests._mocks.physics_stubs import hatchling_stubs
 

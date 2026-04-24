@@ -12,6 +12,8 @@ from src.shared.python.ai.exceptions import (
     ToolExecutionError,
     WorkflowError,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

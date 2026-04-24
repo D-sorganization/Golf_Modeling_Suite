@@ -10,6 +10,8 @@ from src.shared.python.validation_pkg.kaggle_validation import (
     get_clean_shots,
     get_dataset_statistics,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # ShotRecord dataclass

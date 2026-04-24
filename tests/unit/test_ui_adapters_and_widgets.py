@@ -12,6 +12,8 @@ from src.shared.python.upstream_drift_tools.ui.widgets.unit_aware_input import (
     UnitAwareDisplay,
     UnitAwareInput,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestCanvasAdapterImportable:

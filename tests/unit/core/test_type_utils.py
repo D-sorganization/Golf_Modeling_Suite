@@ -18,6 +18,7 @@ from src.shared.python.core.type_utils import (
     safe_str,
     to_numpy_array,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

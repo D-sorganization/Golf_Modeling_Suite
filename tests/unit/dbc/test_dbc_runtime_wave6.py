@@ -17,6 +17,8 @@ import numpy as np
 import pytest
 
 from src.shared.python.core.contracts import PreconditionError
+import pytest
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

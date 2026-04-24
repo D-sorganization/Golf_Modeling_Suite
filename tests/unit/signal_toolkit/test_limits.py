@@ -12,6 +12,7 @@ from src.shared.python.signal_toolkit.limits import (
     apply_rate_limiter,
     apply_saturation,
 )
+pytestmark = pytest.mark.unit
 
 
 def _make_signal(amp: float = 2.0, n: int = 100) -> Signal:

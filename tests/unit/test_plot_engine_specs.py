@@ -13,6 +13,8 @@ from src.shared.python.plot_engine.specs import (
     TrendlineSpec,
 )
 from src.shared.python.plot_engine.trendline import TrendlineResult, compute_trendline
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestSeriesStyle:

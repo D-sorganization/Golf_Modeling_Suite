@@ -22,6 +22,8 @@ from src.shared.python.upstream_drift_tools.utils.unit_constants import (
     UNIT_ALIASES,
     WATT_HOUR_TO_JOULE,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestLengthConversions:

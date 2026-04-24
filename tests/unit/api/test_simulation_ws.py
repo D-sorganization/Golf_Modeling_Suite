@@ -11,6 +11,8 @@ Bugs covered:
 Unit tests use helper functions extracted from simulation_ws and do NOT require
 httpx. Integration tests (TestClient) are skipped when httpx is not installed.
 """
+import pytest
+pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

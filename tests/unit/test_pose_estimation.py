@@ -8,6 +8,8 @@ from src.shared.python.pose_estimation.interface import (
     PoseEstimationResult,
     PoseEstimator,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestPoseEstimationResult:

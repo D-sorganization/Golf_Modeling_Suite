@@ -7,6 +7,8 @@ Tests the require()/ensure() contracts added to:
 - compute_rolling_correlation: require() window_size >= 2,
   ensure() correlations in [-1, 1]
 """
+import pytest
+pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

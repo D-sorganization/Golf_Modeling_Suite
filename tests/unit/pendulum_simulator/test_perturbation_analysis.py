@@ -9,6 +9,7 @@ from src.shared.python.pendulum_simulator.perturbation_analysis import (
     perturb_torque_coeffs,
     variability_summary,
 )
+pytestmark = pytest.mark.unit
 
 
 class TestPerturbTorqueCoeffs:

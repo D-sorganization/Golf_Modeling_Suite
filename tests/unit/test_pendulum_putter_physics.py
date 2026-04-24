@@ -11,6 +11,7 @@ from typing import Any
 
 import numpy as np
 import pytest
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

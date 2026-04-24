@@ -17,6 +17,8 @@ from src.shared.python.core.error_utils import (
     format_file_error,
     format_import_error,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

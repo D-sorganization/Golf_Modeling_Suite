@@ -10,6 +10,7 @@ from src.shared.python.calc_backend.contracts.rotation_converter import (
     ReferenceFrameConversionResponse,
     RotationConverterRequest,
 )
+pytestmark = pytest.mark.unit
 
 
 class TestRotationConverterRequest:

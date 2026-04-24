@@ -8,6 +8,8 @@ from src.shared.python.plotting.animation import AnimationConfig, SwingAnimator
 from src.shared.python.plotting.base import RecorderInterface
 from src.shared.python.plotting.energy import plot_energy_overview
 from src.shared.python.plotting.kinematics import plot_joint_positions
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class _MockRecorder:

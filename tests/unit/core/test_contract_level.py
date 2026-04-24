@@ -10,6 +10,8 @@ from src.shared.python.core.contracts.level import (
     get_contract_level,
     set_contract_level,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestContractLevelEnum:

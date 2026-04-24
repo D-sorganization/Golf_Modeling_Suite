@@ -13,6 +13,8 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
+pytestmark = pytest.mark.integration
+
 from src.api.routes.data_explorer import (
     DatasetFilterRequest,
     DatasetInfo,

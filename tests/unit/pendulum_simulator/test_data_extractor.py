@@ -9,6 +9,7 @@ from src.shared.python.pendulum_simulator.data_extractor import (
     extract_series,
     list_available_series,
 )
+pytestmark = pytest.mark.unit
 
 
 class _MockDoubleResult:

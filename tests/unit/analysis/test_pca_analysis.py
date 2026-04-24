@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 from src.shared.python.analysis.pca_analysis import PCAAnalysisMixin
+pytestmark = pytest.mark.unit
 
 
 class _Concrete(PCAAnalysisMixin):

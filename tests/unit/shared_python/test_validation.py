@@ -12,6 +12,7 @@ from src.shared.python.validation_pkg.validation import (
     validate_physical_bounds,
     validate_timestep,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

@@ -15,6 +15,7 @@ from src.shared.python.biomechanics.muscle_equilibrium import (
     compute_equilibrium_state,
 )
 from src.shared.python.core.contracts import PostconditionError
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

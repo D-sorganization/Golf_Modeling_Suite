@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
+pytestmark = pytest.mark.unit
 
 try:
     import pyarrow  # noqa: F401

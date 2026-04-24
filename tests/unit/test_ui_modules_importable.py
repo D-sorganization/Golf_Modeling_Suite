@@ -7,6 +7,8 @@ from src.shared.python.ui.overlay import OverlayWidget
 from src.shared.python.ui.recent_models import RecentModelItem, RecentModelsPanel
 from src.shared.python.ui.shortcuts_overlay import DEFAULT_SHORTCUTS
 from src.shared.python.ui.toast import Toast, ToastManager, ToastType
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestLoadingButtonModuleImportable:

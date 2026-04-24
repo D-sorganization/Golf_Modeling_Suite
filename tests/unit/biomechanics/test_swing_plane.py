@@ -9,6 +9,7 @@ from src.shared.python.biomechanics.swing_plane_analysis import (
     SwingPlaneAnalyzer,
     SwingPlaneMetrics,
 )
+pytestmark = pytest.mark.unit
 
 
 def _make_planar_points(n: int = 50) -> np.ndarray:

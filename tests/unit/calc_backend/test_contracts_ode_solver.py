@@ -10,6 +10,7 @@ from src.shared.python.calc_backend.contracts.ode_solver import (
     ODESolverResponse,
     ODEVariableSummary,
 )
+pytestmark = pytest.mark.unit
 
 
 class TestODESolverRequest:

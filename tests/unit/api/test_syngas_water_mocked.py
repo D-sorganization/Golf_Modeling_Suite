@@ -16,6 +16,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from src.shared.python.calc_backend.routers.syngas_water import router
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

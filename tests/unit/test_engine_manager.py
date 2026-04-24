@@ -12,6 +12,8 @@ from src.shared.python.engine_core.engine_manager import (
     EngineStatus,
     EngineType,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestEngineManager:

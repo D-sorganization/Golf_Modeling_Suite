@@ -7,6 +7,8 @@ from src.shared.python.upstream_drift_tools.launcher_factory import (
     LauncherError,
     create_launcher_config,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestLauncherConfig:

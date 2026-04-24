@@ -12,6 +12,7 @@ from PyQt6 import QtWidgets
 from src.shared.python.config.environment import is_docker, is_production, is_wsl
 from src.shared.python.dashboard import launcher
 from src.shared.python.engine_core import engine_availability
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

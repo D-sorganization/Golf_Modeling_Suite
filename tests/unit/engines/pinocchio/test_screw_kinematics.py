@@ -16,6 +16,7 @@ from src.engines.physics_engines.pinocchio.python.pinocchio_screw_kinematics imp
     PinocchioScrewKinematics,
 )
 from src.shared.python.screw_theory import ScrewAxis, Twist
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Helpers

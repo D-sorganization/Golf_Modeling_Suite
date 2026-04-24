@@ -9,6 +9,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+pytestmark = pytest.mark.integration
+
 from src.shared.python.physics.ball_launch_conditions import EnvironmentalConditions
 
 pytestmark = pytest.mark.integration

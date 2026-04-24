@@ -5,6 +5,8 @@ from __future__ import annotations
 import importlib.util
 import types
 from pathlib import Path
+import pytest
+pytestmark = pytest.mark.unit
 
 import pytest
 

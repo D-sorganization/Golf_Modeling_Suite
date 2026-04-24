@@ -12,6 +12,8 @@ from src.shared.python.screw_theory.kinematics import (
     compute_screw_axis,
     compute_screw_endpoints,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Twist dataclass

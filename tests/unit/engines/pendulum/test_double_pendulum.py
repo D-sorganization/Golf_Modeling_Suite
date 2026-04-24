@@ -9,6 +9,7 @@ from double_pendulum_model.physics.double_pendulum import (
     LowerSegmentProperties,
     SegmentProperties,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

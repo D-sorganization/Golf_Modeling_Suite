@@ -13,6 +13,7 @@ from src.shared.python.signal_toolkit.noise import (
     add_noise_to_signal,
     generate_disturbance_profile,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

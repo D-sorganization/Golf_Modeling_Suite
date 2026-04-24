@@ -16,6 +16,7 @@ from src.shared.python.signal_toolkit.fitting import (
     PolynomialFitter,
     SinusoidFitter,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

@@ -5,6 +5,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+pytestmark = pytest.mark.integration
+
 from src.launchers.drake_dashboard import main as drake_main
 from src.launchers.matlab_launcher_unified import MatlabLauncher
 from src.launchers.matlab_launcher_unified import main as matlab_main

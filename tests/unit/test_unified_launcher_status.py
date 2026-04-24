@@ -7,6 +7,8 @@ import logging
 import pytest
 
 from src.launchers.unified_launcher import UnifiedLauncher
+import pytest
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

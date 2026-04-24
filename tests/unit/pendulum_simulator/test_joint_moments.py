@@ -12,6 +12,7 @@ from src.shared.python.pendulum_simulator.joint_moments import (
     total_moment_at_joint,
     triple_pendulum_moments,
 )
+pytestmark = pytest.mark.unit
 
 
 class TestCross2d:

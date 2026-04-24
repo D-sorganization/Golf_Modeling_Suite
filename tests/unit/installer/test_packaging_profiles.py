@@ -10,6 +10,7 @@ from installer.windows.packaging_profiles import (
     get_packaging_profile,
     iter_packaging_profile_ids,
 )
+pytestmark = pytest.mark.unit
 
 
 def test_get_packaging_profile_defaults_to_hybrid():

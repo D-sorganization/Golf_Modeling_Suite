@@ -8,6 +8,7 @@ from mujoco_humanoid_golf.screw_kinematics import (
     ScrewKinematicsAnalyzer,
     Twist,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

@@ -13,6 +13,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from src.shared.python.core.error_utils import InvalidRequestError
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

@@ -12,6 +12,7 @@ from src.shared.python.club_data.loader import (
     ClubSpecification,
     load_club_data,
 )
+pytestmark = pytest.mark.unit
 
 
 class TestClubSpecification:

@@ -11,6 +11,7 @@ from src.engines.common.state import (
     SimulationState,
     StateManager,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

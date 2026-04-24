@@ -8,6 +8,8 @@ from src.shared.python.upstream_drift_tools.process_calculators.analysis_utils i
     evaluate_compression_result,
     evaluate_output,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Minimal mock engine

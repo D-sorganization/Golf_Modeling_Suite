@@ -14,6 +14,7 @@ from src.shared.python.pendulum_simulator.segment_geometry import (
     project_3d_to_2d,
     tapered_cylinder_cross_section,
 )
+pytestmark = pytest.mark.unit
 
 
 class TestSegmentStyle:

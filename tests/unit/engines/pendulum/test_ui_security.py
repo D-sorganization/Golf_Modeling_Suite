@@ -4,6 +4,8 @@ from unittest.mock import patch
 
 import pytest
 from double_pendulum_model.ui.pendulum_pyqt_app import PendulumController
+import pytest
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

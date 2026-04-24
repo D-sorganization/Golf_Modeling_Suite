@@ -7,6 +7,8 @@ from unittest.mock import mock_open, patch
 
 import yaml
 
+pytestmark = pytest.mark.unit
+
 from src.shared.python.config.model_registry import (
     ModelConfig,
     ModelRegistry,

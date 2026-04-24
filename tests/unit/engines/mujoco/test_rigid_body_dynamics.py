@@ -15,6 +15,7 @@ from mujoco_humanoid_golf.spatial_algebra.inertia import mci
 from mujoco_humanoid_golf.spatial_algebra.transforms import xlt
 
 from src.shared.python.core import constants
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

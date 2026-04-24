@@ -11,6 +11,8 @@ from src.shared.python.theme.fleet_adapter import (
     is_fleet_available,
     is_valid_hex_color,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestIsFleetAvailable:

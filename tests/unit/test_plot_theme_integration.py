@@ -10,6 +10,8 @@ from src.shared.python.plot_theme.integration import (
     get_theme,
     get_theme_colors,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestGetPlotThemeManager:

@@ -6,6 +6,8 @@ from src.api.routes.actuator_controls import (
     _demo_actuators,
     _get_actuator_info,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

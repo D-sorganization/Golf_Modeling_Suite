@@ -18,6 +18,7 @@ from src.shared.python.physics.terrain import (
     TerrainRegion,
     TerrainType,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

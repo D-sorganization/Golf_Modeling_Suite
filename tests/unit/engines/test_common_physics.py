@@ -13,6 +13,7 @@ from src.engines.common.physics import (
     BallPhysics,
     BallProperties,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

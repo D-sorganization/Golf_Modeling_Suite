@@ -9,6 +9,8 @@ from src.shared.python.gui_launcher.registry import (
     LaunchConfig,
     get_registry,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestGUIType:

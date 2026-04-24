@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from src.shared.python.interfaces import PhysicsEngine, RecorderInterface
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestInterfacesShim:

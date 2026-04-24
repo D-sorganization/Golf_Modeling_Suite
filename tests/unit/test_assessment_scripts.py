@@ -6,6 +6,8 @@ import pytest
 
 from scripts.assess_repository import assess_J
 from scripts.generate_assessment_summary import extract_score_from_report
+import pytest
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

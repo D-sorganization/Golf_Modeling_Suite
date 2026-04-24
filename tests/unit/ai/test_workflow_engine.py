@@ -17,6 +17,7 @@ from src.shared.python.ai.workflow_engine import (
     WorkflowEngine,
     WorkflowStep,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

@@ -5,6 +5,8 @@ from __future__ import annotations
 from src.shared.python.plot_engine.matplotlib_renderer import MatplotlibRenderer
 from src.shared.python.plot_engine.plotly_converter import PlotlyConverter
 from src.shared.python.plot_engine.specs import PlotSpec, SeriesData
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestMatplotlibRenderer:

@@ -10,6 +10,7 @@ from src.shared.python.upstream_drift_tools.calculators.mechanical.trc_geometry 
     VesselDimensions,
     VesselGeometryResult,
 )
+pytestmark = pytest.mark.unit
 
 
 def _make_dims() -> VesselDimensions:

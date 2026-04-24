@@ -10,6 +10,8 @@ Four bugs:
 from __future__ import annotations
 
 from pathlib import Path
+import pytest
+pytestmark = pytest.mark.unit
 
 import pytest
 

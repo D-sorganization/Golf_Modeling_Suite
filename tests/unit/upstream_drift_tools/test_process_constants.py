@@ -12,6 +12,8 @@ from src.shared.python.upstream_drift_tools.process_calculators.constants import
     kelvin_to_celsius,
     kelvin_to_fahrenheit,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Physical constants sanity checks

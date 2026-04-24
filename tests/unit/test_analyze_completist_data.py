@@ -6,6 +6,8 @@ import importlib.util
 import types
 from datetime import datetime
 from pathlib import Path
+import pytest
+pytestmark = pytest.mark.unit
 
 import pytest
 

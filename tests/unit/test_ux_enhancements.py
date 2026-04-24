@@ -2,6 +2,7 @@ import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
+pytestmark = pytest.mark.unit
 
 
 # Mock Qt classes — use __getattr__ catch-all to handle any missing Qt methods

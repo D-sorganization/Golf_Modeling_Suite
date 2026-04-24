@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import types
 from unittest.mock import MagicMock, patch
+import pytest
+pytestmark = pytest.mark.unit
 
 import pytest
 

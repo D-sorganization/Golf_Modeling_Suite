@@ -7,7 +7,6 @@ import matplotlib
 import matplotlib.backend_bases
 import numpy as np
 import pytest
-
 pytestmark = pytest.mark.unit
 
 matplotlib.use("Agg")

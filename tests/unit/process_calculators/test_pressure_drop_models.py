@@ -9,6 +9,7 @@ from src.shared.python.upstream_drift_tools.process_calculators.pressure_drop_ca
     PipeFitting,
     PressureDropInputs,
 )
+pytestmark = pytest.mark.unit
 
 
 def _make_inputs(**kwargs) -> PressureDropInputs:

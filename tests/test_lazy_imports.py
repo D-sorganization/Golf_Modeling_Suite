@@ -8,6 +8,10 @@ import pytest
 
 pytestmark = pytest.mark.unit
 
+import pytest
+
+pytestmark = pytest.mark.unit
+
 
 def test_lazy_imports_engine_manager() -> None:
     """Test that importing EngineManager does NOT import heavy engine libraries."""

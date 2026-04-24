@@ -13,6 +13,7 @@ from src.shared.python.security.env_validator import (
     generate_secure_key_command,
     validate_secret_key_strength,
 )
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # validate_secret_key_strength

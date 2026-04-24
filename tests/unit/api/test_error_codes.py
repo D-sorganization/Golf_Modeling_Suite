@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 import pytest
 from fastapi import HTTPException
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

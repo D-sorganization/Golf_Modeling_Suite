@@ -21,6 +21,7 @@ from src.shared.python.signal_toolkit.calculus import (
     find_inflection_points,
 )
 from src.shared.python.signal_toolkit.core import Signal, SignalGenerator
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

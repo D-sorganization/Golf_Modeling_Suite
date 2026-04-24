@@ -10,6 +10,8 @@ tests that exercise the actual HTTP layer.
 """
 
 from pathlib import Path
+import pytest
+pytestmark = pytest.mark.unit
 
 import pytest
 

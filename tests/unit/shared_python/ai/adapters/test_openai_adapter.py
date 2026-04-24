@@ -16,6 +16,8 @@ import pytest
 
 from src.shared.python.ai.adapters.base import ToolDeclaration
 from src.shared.python.ai.adapters.openai_adapter import OpenAIAdapter
+pytestmark = pytest.mark.unit
+
 from src.shared.python.ai.exceptions import (
     AIConnectionError,
     AIProviderError,

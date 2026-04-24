@@ -4,6 +4,7 @@ import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
+pytestmark = pytest.mark.unit
 
 
 def test_load_mujoco_success(tmp_path: object) -> None:

@@ -13,6 +13,7 @@ import pytest
 
 import src.shared.python.logging_pkg.logger_utils as logger_utils
 from src.shared.python.core import constants
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

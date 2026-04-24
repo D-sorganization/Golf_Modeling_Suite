@@ -7,6 +7,8 @@ import numpy as np
 from src.shared.python.upstream_drift_tools.calculators.electrical.config import (
     ElectrodeConfig,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestElectrodeConfigDefaults:

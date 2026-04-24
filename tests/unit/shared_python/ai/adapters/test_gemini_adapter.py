@@ -13,6 +13,7 @@ import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
+pytestmark = pytest.mark.unit
 
 from src.shared.python.ai.adapters.gemini_adapter import GeminiAdapter
 from src.shared.python.ai.types import (

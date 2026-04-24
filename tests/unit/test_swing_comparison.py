@@ -12,6 +12,8 @@ from src.shared.python.biomechanics.swing_comparison import (
     SwingComparator,
 )
 from src.shared.python.validation_pkg.statistical_analysis import StatisticalAnalyzer
+import pytest
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

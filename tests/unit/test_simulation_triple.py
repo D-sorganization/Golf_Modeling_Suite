@@ -10,6 +10,7 @@ from src.shared.python.pendulum_simulator.simulation_triple import (
     TripleSimulationResult,
     run_simulation,
 )
+pytestmark = pytest.mark.unit
 
 
 def _make_params(**kwargs) -> TriplePendulumParams:

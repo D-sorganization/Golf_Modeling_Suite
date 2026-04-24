@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+
+pytestmark = pytest.mark.unit
 from plot_engine.trendline import TrendlineResult, compute_trendline
 
 pytestmark = pytest.mark.unit

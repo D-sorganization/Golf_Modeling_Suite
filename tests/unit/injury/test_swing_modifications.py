@@ -8,6 +8,8 @@ from src.shared.python.injury.swing_modifications import (
     SwingModificationRecommender,
     SwingStyle,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # SwingStyle enum

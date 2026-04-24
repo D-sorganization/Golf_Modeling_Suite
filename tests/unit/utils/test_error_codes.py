@@ -12,6 +12,7 @@ from src.api.utils.error_codes import (
     ErrorCode,
     raise_api_error,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

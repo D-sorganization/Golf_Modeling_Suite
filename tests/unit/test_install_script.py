@@ -4,6 +4,8 @@ import os
 import subprocess
 import textwrap
 from pathlib import Path
+import pytest
+pytestmark = pytest.mark.unit
 
 import pytest
 

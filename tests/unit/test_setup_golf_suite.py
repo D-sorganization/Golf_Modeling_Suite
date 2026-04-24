@@ -7,6 +7,8 @@ import pytest
 from PIL import Image
 
 import setup_golf_suite
+import pytest
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

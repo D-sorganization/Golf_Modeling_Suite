@@ -12,6 +12,7 @@ from mujoco_humanoid_golf.models import (
     generate_flexible_club_xml,
     generate_rigid_club_xml,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

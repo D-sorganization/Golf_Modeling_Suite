@@ -9,6 +9,8 @@ from src.shared.python.upstream_drift_tools.utils.state_manager import (
     safe_read_json,
     safe_write_json,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # safe_read_json

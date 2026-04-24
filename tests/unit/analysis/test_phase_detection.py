@@ -6,6 +6,8 @@ import numpy as np
 
 from src.shared.python.analysis.dataclasses import SwingPhase
 from src.shared.python.analysis.phase_detection import PhaseDetectionMixin
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class _Concrete(PhaseDetectionMixin):

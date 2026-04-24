@@ -18,6 +18,9 @@ from __future__ import annotations
 
 import ast
 import logging
+import pytest
+
+pytestmark = pytest.mark.unit
 from pathlib import Path
 
 import pytest

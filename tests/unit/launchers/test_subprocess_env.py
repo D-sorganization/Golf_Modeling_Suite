@@ -3,6 +3,8 @@
 from pathlib import Path
 
 from src.launchers.launcher_process_manager import ProcessManager
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestGetSubprocessEnv:

@@ -14,6 +14,7 @@ from mujoco_humanoid_golf.control_system import (
     ControlSystem,
     ControlType,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

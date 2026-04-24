@@ -21,6 +21,8 @@ These tests cover:
 - All three axis orientations (x, y, z)
 - Physical properties: positive definiteness, triangle inequality
 """
+import pytest
+pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

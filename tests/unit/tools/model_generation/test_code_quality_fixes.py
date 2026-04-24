@@ -23,6 +23,7 @@ from model_generation.core.types import (
     JointType,
     Link,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

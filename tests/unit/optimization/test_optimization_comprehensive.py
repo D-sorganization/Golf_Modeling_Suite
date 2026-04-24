@@ -9,6 +9,8 @@ Tests cover:
 - SwingOptimizer initialization, model setup, initial guess generation,
   trajectory conversion, bounds, constraints, objectives, and metrics
 """
+import pytest
+pytestmark = pytest.mark.unit
 
 from __future__ import annotations
 

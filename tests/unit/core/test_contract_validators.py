@@ -12,6 +12,8 @@ from src.shared.python.core.contracts.validators import (
     check_shape,
     check_symmetric,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestCheckFinite:

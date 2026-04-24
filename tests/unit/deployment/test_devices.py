@@ -8,6 +8,8 @@ from src.deployment.teleoperation.devices import (
     SpaceMouseInput,
     VRControllerInput,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

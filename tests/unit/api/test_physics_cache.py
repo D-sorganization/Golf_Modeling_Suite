@@ -9,6 +9,7 @@ from __future__ import annotations
 from unittest.mock import MagicMock
 
 import pytest
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

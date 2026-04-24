@@ -6,6 +6,8 @@ from src.shared.python.upstream_drift_tools.process_calculators.pressure_drop_ca
     calculate_ideal_gas_density,
     calculate_mixture_molecular_weight,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 _SYNGAS = {"H2": 0.4, "CO": 0.3, "CO2": 0.2, "N2": 0.1}
 

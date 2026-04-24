@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 from src.shared.python.biomechanics.activation_dynamics import ActivationDynamics
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

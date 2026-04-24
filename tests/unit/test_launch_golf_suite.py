@@ -3,6 +3,8 @@ import sys
 from unittest.mock import MagicMock, patch
 
 import launch_golf_suite
+import pytest
+pytestmark = pytest.mark.unit
 
 
 def test_parse_arguments():

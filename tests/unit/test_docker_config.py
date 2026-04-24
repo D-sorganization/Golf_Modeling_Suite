@@ -14,6 +14,8 @@ from src.shared.python.docker_config import (
     LEGACY_DOCKER_ALIASES,
     detect_gpu_support,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Image name constants

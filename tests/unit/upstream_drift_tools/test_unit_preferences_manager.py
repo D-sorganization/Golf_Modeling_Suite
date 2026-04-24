@@ -8,6 +8,8 @@ from src.shared.python.upstream_drift_tools.ui.managers.unit_preferences_manager
     UnitPreferencesManager,
     get_unit_preferences_manager,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestUnitCategories:

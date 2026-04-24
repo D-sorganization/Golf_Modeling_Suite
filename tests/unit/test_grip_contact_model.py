@@ -22,6 +22,7 @@ from src.shared.python.physics.grip_contact_model import (
     create_mujoco_grip_contacts,
     decompose_contact_force,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

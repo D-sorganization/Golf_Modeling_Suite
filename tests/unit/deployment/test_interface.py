@@ -9,6 +9,8 @@ from src.deployment.teleoperation.interface import (
     TeleoperationInterface,
     TeleoperationMode,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

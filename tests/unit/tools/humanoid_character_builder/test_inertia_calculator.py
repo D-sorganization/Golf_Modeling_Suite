@@ -17,6 +17,8 @@ from humanoid_character_builder.mesh.primitive_inertia import (
     PrimitiveShape,
     estimate_segment_primitive,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

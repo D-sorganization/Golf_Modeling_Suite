@@ -16,6 +16,8 @@ from src.shared.python.plotting.renderers.signal import SignalRenderer
 from src.shared.python.plotting.renderers.stability import StabilityRenderer
 from src.shared.python.plotting.renderers.vectors import VectorOverlayRenderer
 from src.shared.python.plotting.transforms import DataManager
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class _MockRecorder:

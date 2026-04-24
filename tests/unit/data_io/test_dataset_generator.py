@@ -9,6 +9,7 @@ from src.shared.python.data_io.dataset_generator import (
     ControlProfile,
     ParameterRange,
 )
+pytestmark = pytest.mark.unit
 
 
 class TestParameterRange:

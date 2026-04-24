@@ -8,6 +8,8 @@ if dependencies are missing rather than using extensive mocking.
 """
 
 import os
+import pytest
+pytestmark = pytest.mark.unit
 
 import pytest
 

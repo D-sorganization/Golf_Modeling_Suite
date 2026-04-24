@@ -14,6 +14,8 @@ from src.shared.python.engine_core.sub_protocols import (
     Recordable,
     Steppable,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Protocol structural checks

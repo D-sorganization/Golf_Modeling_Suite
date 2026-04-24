@@ -18,6 +18,7 @@ from src.unreal_integration.skeleton_mapper import (
     SkeletonMapper,
     SkeletonType,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

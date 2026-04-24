@@ -15,6 +15,7 @@ from src.shared.python.engine_core.engine_probes import (
     PinocchioProbe,
     ProbeStatus,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

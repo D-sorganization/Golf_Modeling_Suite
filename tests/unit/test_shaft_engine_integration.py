@@ -14,6 +14,7 @@ from src.shared.python.engine_core.engine_availability import (
     MUJOCO_AVAILABLE,
     skip_if_unavailable,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

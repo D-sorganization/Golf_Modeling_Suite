@@ -16,6 +16,7 @@ from src.engines.physics_engines.mujoco.python.mujoco_humanoid_golf.urdf_io impo
     export_model_to_urdf,
     import_urdf_to_mujoco,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

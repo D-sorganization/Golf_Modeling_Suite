@@ -2,6 +2,8 @@
 
 import pytest
 from humanoid_character_builder.core.anthropometry import estimate_segment_masses
+import pytest
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

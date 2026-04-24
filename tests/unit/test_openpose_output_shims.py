@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from src.shared.python.output_manager import OutputFormat, OutputManager
 from src.shared.python.pose_estimation.openpose_estimator import OpenPoseEstimator
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestOpenPoseEstimatorImportable:

@@ -11,6 +11,7 @@ from src.shared.python.pendulum_simulator.counterfactual import (
 )
 from src.shared.python.pendulum_simulator.physics import PendulumParams
 from src.shared.python.pendulum_simulator.physics_triple import TriplePendulumParams
+pytestmark = pytest.mark.unit
 
 
 def _make_double_params() -> PendulumParams:

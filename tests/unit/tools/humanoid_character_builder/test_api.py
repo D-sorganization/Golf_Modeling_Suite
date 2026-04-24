@@ -19,6 +19,7 @@ from humanoid_character_builder.presets.loader import (
     list_available_presets,
     load_body_preset,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

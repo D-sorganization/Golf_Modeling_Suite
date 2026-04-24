@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from src.shared.python.security.security_utils import validate_path
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

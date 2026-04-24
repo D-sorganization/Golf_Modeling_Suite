@@ -5,6 +5,8 @@ from __future__ import annotations
 from src.shared.python.upstream_drift_tools.calculators.electrical.glass_interface import (
     GlassPropertiesInterface,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestGlassPropertiesInterfaceInit:

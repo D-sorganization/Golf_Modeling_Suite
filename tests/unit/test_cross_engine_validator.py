@@ -8,6 +8,8 @@ import pytest
 from src.shared.python.engine_core.cross_engine_validator import (
     CrossEngineValidator,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

@@ -8,6 +8,8 @@ import pytest
 
 from src.shared.python.engine_core.engine_registry import EngineType
 from src.shared.python.engine_core.workflow_adapter import EngineWorkflowAdapter
+import pytest
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

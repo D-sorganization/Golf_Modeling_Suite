@@ -6,6 +6,7 @@ import mujoco
 import numpy as np
 import pytest
 from mujoco_humanoid_golf.verification import EnergyMonitor, JacobianTester
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

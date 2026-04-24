@@ -12,6 +12,7 @@ from src.shared.python.plotting.config import (
     PlotConfig,
     resolve_figure,
 )
+pytestmark = pytest.mark.unit
 
 
 class TestColors:

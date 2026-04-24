@@ -13,6 +13,7 @@ from src.shared.python.launch_monitor import (
     LaunchMonitorShot,
     TrackManAdapter,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

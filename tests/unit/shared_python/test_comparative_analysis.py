@@ -8,6 +8,7 @@ from src.shared.python.validation_pkg.comparative_analysis import (
     ComparativeSwingAnalyzer,
     RecorderInterface,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

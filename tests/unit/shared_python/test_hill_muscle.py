@@ -8,6 +8,7 @@ from src.shared.python.biomechanics.hill_muscle import (
     MuscleParameters,
     MuscleState,
 )
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

@@ -10,6 +10,7 @@ import numpy as np
 import pytest
 
 from src.shared.python.spatial_algebra.indexed_acceleration import IndexedAcceleration
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

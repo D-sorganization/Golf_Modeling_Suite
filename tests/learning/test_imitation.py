@@ -8,6 +8,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+pytestmark = pytest.mark.integration
+
 from src.learning.imitation import Demonstration
 
 pytestmark = pytest.mark.integration

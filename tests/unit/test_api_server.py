@@ -16,6 +16,7 @@ from collections.abc import Generator
 from pathlib import Path
 
 import pytest
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

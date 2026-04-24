@@ -14,6 +14,7 @@ from src.shared.python.signal_toolkit.filters import (
     apply_savgol,
     create_butterworth_filter,
 )
+pytestmark = pytest.mark.unit
 
 
 def _make_signal(n: int = 200, fs: float = 200.0) -> Signal:

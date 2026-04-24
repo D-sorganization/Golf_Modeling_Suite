@@ -9,6 +9,8 @@ from src.shared.python.upstream_drift_tools.calculators.thermo.steam_engine impo
     SteamCalculationEngine,
     SteamProperties,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 
 class TestSteamCalculationEngineInit:

@@ -11,6 +11,8 @@ from src.shared.python.core.error_utils import (
 from src.shared.python.core.exceptions import (
     ArrayDimensionError,
 )
+import pytest
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

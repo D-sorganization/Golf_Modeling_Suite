@@ -6,6 +6,7 @@ import pytest
 from matplotlib.figure import Figure
 
 from src.shared.python.plotting import GolfSwingPlotter
+pytestmark = pytest.mark.unit
 
 pytestmark = pytest.mark.unit
 

@@ -13,6 +13,7 @@ from src.shared.python.pendulum_simulator.physics_triple import (
     kinetic_energy,
     mass_matrix,
 )
+pytestmark = pytest.mark.unit
 
 
 def _make_params() -> TriplePendulumParams:
