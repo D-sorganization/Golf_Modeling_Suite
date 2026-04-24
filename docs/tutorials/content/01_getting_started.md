@@ -23,7 +23,7 @@ By the end of this tutorial, you will:
 ### Clone the Repository
 
 \`\`\`bash
-git clone https://github.com/dieterolson/UpstreamDrift.git
+git clone https://github.com/D-sorganization/UpstreamDrift.git
 cd UpstreamDrift
 git lfs install && git lfs pull
 \`\`\`
