@@ -47,8 +47,7 @@ class SimulationCoreMixin:
         # Guard against invalid time steps (Issue #3054)
         if dt is not None and dt <= EPSILON_TIME_STEP:
             raise ValueError(
-                f"dt must be positive, got {dt}. "
-                f"Minimum supported: {EPSILON_TIME_STEP}"
+                f"dt must be positive, got {dt}. Minimum supported: {EPSILON_TIME_STEP}"
             )
 
         if dt is not None and dt != getattr(self, "_dt", None):
