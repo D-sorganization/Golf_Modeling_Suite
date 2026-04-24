@@ -188,7 +188,9 @@ class DualHandIKSolver:
         Returns:
             Tuple of (left_hand_target, right_hand_target) as SE3 transforms
         """
-        if frame is None:
+        if not (frame is not None):
+            raise ValueError("frame must be provided")
+        if not (frame is not None):
             raise ValueError("frame must be provided")
         s = self.settings
 
@@ -223,7 +225,9 @@ class DualHandIKSolver:
         Returns:
             IKResult with solved configuration and error metrics
         """
-        if frame is None:
+        if not (frame is not None):
+            raise ValueError("frame must be provided")
+        if not (frame is not None):
             raise ValueError("frame must be provided")
         if q_init is None:
             q_init = self.q_ref.copy()
@@ -267,11 +271,12 @@ class DualHandIKSolver:
             left_current = self.data.oMf[self.left_hand_frame_id]
             right_current = self.data.oMf[self.right_hand_frame_id]
 
-            left_diff = left_current.translation - left_target.translation
-            right_diff = right_current.translation - right_target.translation
-
-            left_error = np.sqrt(np.vdot(left_diff, left_diff))
-            right_error = np.sqrt(np.vdot(right_diff, right_diff))
+            left_error = np.linalg.norm(
+                left_current.translation - left_target.translation
+            )
+            right_error = np.linalg.norm(
+                right_current.translation - right_target.translation
+            )
 
             # Check convergence
             if left_error < s.position_tolerance and right_error < s.position_tolerance:
@@ -308,7 +313,9 @@ class DualHandIKSolver:
         Returns:
             TrajectoryIKResult with all solved configurations
         """
-        if trajectory is None:
+        if not (trajectory is not None):
+            raise ValueError("trajectory must be provided")
+        if not (trajectory is not None):
             raise ValueError("trajectory must be provided")
         result = TrajectoryIKResult()
 
@@ -362,7 +369,9 @@ class DualHandIKSolver:
         Returns:
             Tuple of (left_hand_pos, right_hand_pos)
         """
-        if q is None:
+        if not (q is not None):
+            raise ValueError("q must be provided")
+        if not (q is not None):
             raise ValueError("q must be provided")
         pin.forwardKinematics(self.model, self.data, q)
         pin.updateFramePlacements(self.model, self.data)
@@ -411,7 +420,9 @@ class DualHandIKSolverFallback:
         q_init: NDArray[np.float64] | None = None,
     ) -> IKResult:
         """Solve IK using damped least-squares."""
-        if frame is None:
+        if not (frame is not None):
+            raise ValueError("frame must be provided")
+        if not (frame is not None):
             raise ValueError("frame must be provided")
         if q_init is None:
             q_init = self.q_ref.copy()
@@ -493,7 +504,9 @@ class DualHandIKSolverFallback:
         verbose: bool = False,
     ) -> TrajectoryIKResult:
         """Solve IK for entire trajectory."""
-        if trajectory is None:
+        if not (trajectory is not None):
+            raise ValueError("trajectory must be provided")
+        if not (trajectory is not None):
             raise ValueError("trajectory must be provided")
         result = TrajectoryIKResult()
 
@@ -545,4 +558,4 @@ def create_ik_solver(
         logger.info("Pink not available, using fallback damped least-squares solver")
         return DualHandIKSolverFallback(
             urdf_path, left_hand_frame, right_hand_frame, settings
-        )  # noqa: E501
+        )

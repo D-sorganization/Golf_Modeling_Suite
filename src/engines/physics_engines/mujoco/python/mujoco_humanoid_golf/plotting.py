@@ -36,14 +36,16 @@ class GolfSwingPlotter(SharedGolfSwingPlotter):
             model: Optional MuJoCo model for joint names
         """
         # Create joint names list if model is provided
-        if recorder is None:
+        if not (recorder is not None):
+            raise ValueError("recorder must be provided")
+        if not (recorder is not None):
             raise ValueError("recorder must be provided")
         joint_names = None
         if model is not None:
-            joint_names = [
-                mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, i) or f"Joint {i}"
-                for i in range(model.nq)
-            ]
+            joint_names = []
+            for i in range(model.nq):
+                name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, i)
+                joint_names.append(name if name else f"Joint {i}")
 
         super().__init__(recorder, joint_names)
         self.model = model

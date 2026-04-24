@@ -76,7 +76,7 @@ class PinocchioWrapper:
         """
         if not PINOCCHIO_AVAILABLE:
             msg = (
-                "Pinocchio is required but not installed. Install with: pip install pin"  # noqa: E501
+                "Pinocchio is required but not installed. Install with: pip install pin"
             )
             raise ImportError(msg)
 
@@ -150,7 +150,6 @@ class PinocchioWrapper:
         pin.forwardKinematics(self.pin_model, self.pin_data, q, v)
         pin.computeJointJacobians(self.pin_model, self.pin_data, q)
         pin.updateFramePlacements(self.pin_model, self.pin_data)
-        self.pin_data.q = q
 
     def sync_pinocchio_to_mujoco(self) -> None:
         """Synchronize state from Pinocchio to MuJoCo.
@@ -170,14 +169,11 @@ class PinocchioWrapper:
 
         Handles quaternion conventions (MuJoCo: w,x,y,z vs Pinocchio: x,y,z,w).
         """
-        if q_mj is None:
+        if not (q_mj is not None):
+            raise ValueError("q_mj must be provided")
+        if not (q_mj is not None):
             raise ValueError("q_mj must be provided")
         q_pin = q_mj.copy()
-
-        if self.pin_model.nq != len(q_pin):
-            continuous_q = self._mujoco_scalar_joints_to_pinocchio_q(q_pin)
-            if continuous_q is not None:
-                return continuous_q
 
         # MuJoCo uses freejoint for 7-DOF (3 pos + 4 quat)
         # Pinocchio uses SE3 for 7-DOF with quaternion [x,y,z,w]
@@ -203,35 +199,14 @@ class PinocchioWrapper:
 
         return q_pin
 
-    def _mujoco_scalar_joints_to_pinocchio_q(
-        self, q_mj: np.ndarray
-    ) -> np.ndarray | None:
-        """Expand MuJoCo scalar joints to Pinocchio's URDF configuration layout."""
-        q_values: list[float] = []
-        for joint_id in range(self.model.njnt):
-            qpos_addr = self.model.jnt_qposadr[joint_id]
-            jnt_type = self.model.jnt_type[joint_id]
-            if jnt_type == mujoco.mjtJoint.mjJNT_HINGE:
-                theta = float(q_mj[qpos_addr])
-                if not self.model.jnt_limited[joint_id]:
-                    q_values.extend([np.cos(theta), np.sin(theta)])
-                else:
-                    q_values.append(theta)
-            elif jnt_type == mujoco.mjtJoint.mjJNT_SLIDE:
-                q_values.append(float(q_mj[qpos_addr]))
-            else:
-                return None
-
-        if len(q_values) != self.pin_model.nq:
-            return None
-        return np.asarray(q_values, dtype=np.float64)
-
     def _pinocchio_q_to_mujoco_q(self, q_pin: np.ndarray) -> np.ndarray:
         """Convert Pinocchio configuration to MuJoCo format.
 
         Handles quaternion conventions (Pinocchio: x,y,z,w vs MuJoCo: w,x,y,z).
         """
-        if q_pin is None:
+        if not (q_pin is not None):
+            raise ValueError("q_pin must be provided")
+        if not (q_pin is not None):
             raise ValueError("q_pin must be provided")
         q_mj = q_pin.copy()
 
@@ -291,8 +266,6 @@ class PinocchioWrapper:
         # Use current state if not provided
         if q is None:
             q = self._mujoco_q_to_pinocchio_q(self.data.qpos)
-        else:
-            q = self._mujoco_q_to_pinocchio_q(q)
         if v is None:
             v = self.data.qvel.copy()
 
@@ -330,8 +303,6 @@ class PinocchioWrapper:
         # Use current state if not provided
         if q is None:
             q = self._mujoco_q_to_pinocchio_q(self.data.qpos)
-        else:
-            q = self._mujoco_q_to_pinocchio_q(q)
         if v is None:
             v = self.data.qvel.copy()
         if tau is None:
@@ -359,8 +330,6 @@ class PinocchioWrapper:
         # Use current state if not provided
         if q is None:
             q = self._mujoco_q_to_pinocchio_q(self.data.qpos)
-        else:
-            q = self._mujoco_q_to_pinocchio_q(q)
 
         # Compute mass matrix (CRBA)
         return pin.crba(self.pin_model, self.pin_data, q)  # type: ignore[no-any-return]
@@ -386,8 +355,6 @@ class PinocchioWrapper:
         # Use current state if not provided
         if q is None:
             q = self._mujoco_q_to_pinocchio_q(self.data.qpos)
-        else:
-            q = self._mujoco_q_to_pinocchio_q(q)
         if v is None:
             v = self.data.qvel.copy()
 
@@ -413,8 +380,6 @@ class PinocchioWrapper:
         # Use current state if not provided
         if q is None:
             q = self._mujoco_q_to_pinocchio_q(self.data.qpos)
-        else:
-            q = self._mujoco_q_to_pinocchio_q(q)
 
         # Compute gravity vector
         gravity_vector = pin.computeGeneralizedGravity(self.pin_model, self.pin_data, q)
@@ -444,8 +409,6 @@ class PinocchioWrapper:
         # Use current state if not provided
         if q is None:
             q = self._mujoco_q_to_pinocchio_q(self.data.qpos)
-        else:
-            q = self._mujoco_q_to_pinocchio_q(q)
 
         # Find frame ID
         frame_id = self.pin_model.getFrameId(frame_name)
@@ -501,8 +464,6 @@ class PinocchioWrapper:
         # Use current state if not provided
         if q is None:
             q = self._mujoco_q_to_pinocchio_q(self.data.qpos)
-        else:
-            q = self._mujoco_q_to_pinocchio_q(q)
         if v is None:
             v = self.data.qvel.copy()
         if tau is None:
@@ -547,8 +508,6 @@ class PinocchioWrapper:
         # Use current state if not provided
         if q is None:
             q = self._mujoco_q_to_pinocchio_q(self.data.qpos)
-        else:
-            q = self._mujoco_q_to_pinocchio_q(q)
         if v is None:
             v = self.data.qvel.copy()
 
@@ -577,8 +536,6 @@ class PinocchioWrapper:
         # Use current state if not provided
         if q is None:
             q = self._mujoco_q_to_pinocchio_q(self.data.qpos)
-        else:
-            q = self._mujoco_q_to_pinocchio_q(q)
 
         # Compute potential energy using Pinocchio's built-in function
         # Pinocchio provides computePotentialEnergy for accurate computation

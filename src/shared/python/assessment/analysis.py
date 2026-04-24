@@ -1,13 +1,12 @@
 """Utilities for analyzing Python code quality and structure."""
 
 import ast
+import logging
 import re
 from pathlib import Path
 from typing import Any
 
-from src.shared.python.logging_pkg.logging_config import get_logger
-
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def get_python_metrics(file_path: Path) -> dict[str, Any]:
@@ -61,22 +60,9 @@ def assess_error_handling_content(content: str) -> dict[str, int]:
 
 def assess_logging_content(content: str) -> dict[str, int]:
     """Count logging vs print usage in content."""
-    print_usage = 0
-    try:
-        tree = ast.parse(content)
-        for node in ast.walk(tree):
-            if (
-                isinstance(node, ast.Call)
-                and isinstance(node.func, ast.Name)
-                and node.func.id == "print"
-            ):
-                print_usage += 1
-    except SyntaxError:
-        print_usage = len(re.findall(r"(?<!\w)print\s*\(", content))
-
     return {
         "logging_usage": len(re.findall(r"logging\.|logger\.", content)),
-        "print_usage": print_usage,
+        "print_usage": content.count("print("),
     }
 
 
@@ -111,44 +97,22 @@ def count_files(root: Path, pattern: str) -> int:
     return len(list(root.glob(pattern)))
 
 
-def grep_count(
-    root: Path,
-    pattern: str,
-    file_pattern: str = "**/*.py",
-    exclude_parts: tuple[str, ...] = (),
-) -> int:
-    """Count files where a regex pattern is found.
-
-    Args:
-        root: Directory to search from.
-        pattern: Regex pattern to match in file contents.
-        file_pattern: Glob pattern for files to consider.
-        exclude_parts: Path components that disqualify a file when any match a
-            segment of its path relative to ``root`` (e.g. ``("tests",)`` skips
-            anything under a ``tests`` directory). Comparison is done per path
-            segment so ``"test"`` will not match ``"pytest"``.
-    """
-    if root is None:
+def grep_count(root: Path, pattern: str, file_pattern: str = "**/*.py") -> int:
+    """Count files where a regex pattern is found."""
+    if not (root is not None):
+        raise ValueError("root must be provided")
+    if not (root is not None):
         raise ValueError("root must be provided")
     count = 0
     regex = re.compile(pattern)
-    excluded = {part for part in exclude_parts if part}
     for p in root.glob(file_pattern):
-        if not p.is_file():
-            continue
-        if excluded:
+        if p.is_file():
             try:
-                rel_parts = p.relative_to(root).parts
-            except ValueError:
-                rel_parts = p.parts
-            if any(part in excluded for part in rel_parts):
-                continue
-        try:
-            with p.open(encoding="utf-8", errors="ignore") as f:
-                if regex.search(f.read()):
-                    count += 1
-        except (FileNotFoundError, PermissionError, OSError) as e:
-            logger.debug("Failed to read %s: %s", p, e)
+                with p.open(encoding="utf-8", errors="ignore") as f:
+                    if regex.search(f.read()):
+                        count += 1
+            except (FileNotFoundError, PermissionError, OSError) as e:
+                logger.debug("Failed to read %s: %s", p, e)
     return count
 
 
@@ -162,7 +126,9 @@ def classify_assessment_category(source_name: str, description: str = "") -> str
     Returns:
         A standardized category name.
     """
-    if source_name is None:
+    if not (source_name is not None):
+        raise ValueError("source_name must be provided")
+    if not (source_name is not None):
         raise ValueError("source_name must be provided")
     text = (source_name + " " + description).lower()
 

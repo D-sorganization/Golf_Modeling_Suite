@@ -1,7 +1,3 @@
-# ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
-
 """Humanoid Configuration Tab for AdvancedGolfAnalysisWindow.
 
 Absorbs the settings previously found in the standalone humanoid_launcher.py:
@@ -79,10 +75,10 @@ class HumanoidConfigTab(QWidget):
         # Paths
         self._mujoco_dir = (
             Path(__file__).resolve().parent.parent.parent.parent
-        )  # mujoco/python  # noqa: E501
+        )  # mujoco/python
         self.config_path = (
             self._mujoco_dir / "docker" / "src" / "simulation_config.json"
-        )  # noqa: E501
+        )
 
         # State
         self.config_manager = ConfigurationManager(self.config_path)
@@ -133,7 +129,9 @@ class HumanoidConfigTab(QWidget):
         self.sub_tabs.addTab(scroll, "Docker Simulation")
 
     def _create_sim_settings_group(self, tab_layout: QVBoxLayout) -> None:
-        if tab_layout is None:
+        if not (tab_layout is not None):
+            raise ValueError("tab_layout must be provided")
+        if not (tab_layout is not None):
             raise ValueError("tab_layout must be provided")
         settings_group = QGroupBox("Simulation Settings")
         settings_layout = QGridLayout()
@@ -144,7 +142,7 @@ class HumanoidConfigTab(QWidget):
         self.combo_control.addItems(["pd", "lqr", "poly"])
         self.combo_control.setCurrentText(
             str(getattr(self.config, "control_mode", "pd"))
-        )  # noqa: E501
+        )
         self.combo_control.currentTextChanged.connect(self._on_control_mode_changed)
         settings_layout.addWidget(self.combo_control, 0, 1)
 
@@ -170,7 +168,9 @@ class HumanoidConfigTab(QWidget):
         tab_layout.addWidget(settings_group)
 
     def _create_state_management_group(self, tab_layout: QVBoxLayout) -> None:
-        if tab_layout is None:
+        if not (tab_layout is not None):
+            raise ValueError("tab_layout must be provided")
+        if not (tab_layout is not None):
             raise ValueError("tab_layout must be provided")
         state_group = QGroupBox("State Management")
         state_layout = QGridLayout()
@@ -188,14 +188,16 @@ class HumanoidConfigTab(QWidget):
         btn_browse_save = QPushButton("Browse")
         btn_browse_save.clicked.connect(
             lambda: self._browse_file(self.txt_save_path, save=True)
-        )  # noqa: E501
+        )
         state_layout.addWidget(btn_browse_save, 1, 2)
 
         state_group.setLayout(state_layout)
         tab_layout.addWidget(state_group)
 
     def _create_docker_action_buttons(self, tab_layout: QVBoxLayout) -> None:
-        if tab_layout is None:
+        if not (tab_layout is not None):
+            raise ValueError("tab_layout must be provided")
+        if not (tab_layout is not None):
             raise ValueError("tab_layout must be provided")
         btn_layout = QHBoxLayout()
 
@@ -218,7 +220,9 @@ class HumanoidConfigTab(QWidget):
         tab_layout.addLayout(btn_layout)
 
     def _create_results_section(self, tab_layout: QVBoxLayout) -> None:
-        if tab_layout is None:
+        if not (tab_layout is not None):
+            raise ValueError("tab_layout must be provided")
+        if not (tab_layout is not None):
             raise ValueError("tab_layout must be provided")
         results_layout = QHBoxLayout()
         results_layout.addWidget(QLabel("Results:"))
@@ -237,7 +241,9 @@ class HumanoidConfigTab(QWidget):
         tab_layout.addLayout(results_layout)
 
     def _create_simulation_log(self, tab_layout: QVBoxLayout) -> None:
-        if tab_layout is None:
+        if not (tab_layout is not None):
+            raise ValueError("tab_layout must be provided")
+        if not (tab_layout is not None):
             raise ValueError("tab_layout must be provided")
         log_group = QGroupBox("Simulation Log")
         log_layout = QVBoxLayout()
@@ -284,7 +290,7 @@ class HumanoidConfigTab(QWidget):
         self.lbl_weight_val = QLabel(f"{self.slider_weight.value()}%")
         self.slider_weight.valueChanged.connect(
             lambda v: self.lbl_weight_val.setText(f"{v}%")
-        )  # noqa: E501
+        )
         dim_layout.addWidget(self.slider_weight, 1, 1)
         dim_layout.addWidget(self.lbl_weight_val, 1, 2)
 
@@ -422,7 +428,9 @@ class HumanoidConfigTab(QWidget):
     # ------------------------------------------------------------------
 
     def _on_control_mode_changed(self, mode: str) -> None:
-        if mode is None:
+        if not (mode is not None):
+            raise ValueError("mode must be provided")
+        if not (mode is not None):
             raise ValueError("mode must be provided")
         descriptions = {
             "pd": "Proportional-Derivative control (Target Pose tracking).",
@@ -466,7 +474,9 @@ class HumanoidConfigTab(QWidget):
         log_prefix: str,
     ) -> None:
         """Helper to show a generator dialog."""
-        if title is None:
+        if not (title is not None):
+            raise ValueError("title must be provided")
+        if not (title is not None):
             raise ValueError("title must be provided")
         from PyQt6.QtWidgets import QDialog
 
@@ -479,7 +489,9 @@ class HumanoidConfigTab(QWidget):
             widget.set_joints(self._HUMANOID_JOINTS)
 
         def on_generated(joint_name: str, coefficients: list[float]) -> None:
-            if joint_name is None:
+            if not (joint_name is not None):
+                raise ValueError("joint_name must be provided")
+            if not (joint_name is not None):
                 raise ValueError("joint_name must be provided")
             self.config.polynomial_coefficients[joint_name] = coefficients
             self._save_config()
@@ -500,7 +512,7 @@ class HumanoidConfigTab(QWidget):
 
             target_file = (
                 self._mujoco_dir / "mujoco_humanoid_golf" / "polynomial_generator.py"
-            )  # noqa: E501
+            )
             if not target_file.exists():
                 raise FileNotFoundError(f"File not found: {target_file}")
 
@@ -588,7 +600,7 @@ class HumanoidConfigTab(QWidget):
 
         cmd.extend(
             ["--rm", "-v", f"{mount_path}:/workspace", "-w", "/workspace/docker/src"]
-        )  # noqa: E501
+        )
 
         if self.config.live_view:
             if is_windows:
@@ -629,7 +641,9 @@ class HumanoidConfigTab(QWidget):
             self.simulation_thread.stop()
 
     def _on_simulation_finished(self, code: int, stderr: str) -> None:
-        if code is None:
+        if not (code is not None):
+            raise ValueError("code must be provided")
+        if not (code is not None):
             raise ValueError("code must be provided")
         if code == 0:
             self._log("Simulation finished successfully.")
@@ -701,11 +715,11 @@ class HumanoidConfigTab(QWidget):
         if save:
             path, _ = QFileDialog.getSaveFileName(
                 self, "Save State", "", "JSON State (*.json)"
-            )  # noqa: E501
+            )
         else:
             path, _ = QFileDialog.getOpenFileName(
                 self, "Load State", "", "JSON State (*.json)"
-            )  # noqa: E501
+            )
         if path:
             line_edit.setText(path)
 
@@ -714,7 +728,9 @@ class HumanoidConfigTab(QWidget):
         btn.setStyleSheet(Styles.color_swatch(r, g, b))
 
     def _pick_color(self, key: str, btn: QPushButton) -> None:
-        if key is None:
+        if not (key is not None):
+            raise ValueError("key must be provided")
+        if not (key is not None):
             raise ValueError("key must be provided")
         current = self.config.colors.get(key, [1.0, 1.0, 1.0, 1.0])
         initial = QColor(
@@ -730,7 +746,9 @@ class HumanoidConfigTab(QWidget):
             self._save_config()
 
     def _log(self, msg: str) -> None:
-        if msg is None:
+        if not (msg is not None):
+            raise ValueError("msg must be provided")
+        if not (msg is not None):
             raise ValueError("msg must be provided")
         import datetime
 

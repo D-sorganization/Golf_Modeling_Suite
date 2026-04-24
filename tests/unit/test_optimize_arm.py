@@ -1,22 +1,56 @@
-# Import mocked modules for use in fixtures below
+"""Tests for optimize_arm module.
+
+optimize_arm imports casadi and pinocchio at module level, so we must have them
+mocked before importing the module under test.  We use contextlib.ExitStack +
+patch.dict so the mocks are installed at collection time and cleaned up after
+the test module runs.
+"""
+
+from __future__ import annotations
+
+import contextlib
 import sys
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
 
-# Mock dependencies at test-level via conftest.pytest_configure() and fixtures.
-# Mocking is now handled by @patch.dict decorators at test function level,
-# preventing module-level sys.modules pollution that can affect other tests.
+pytestmark = pytest.mark.unit
+
+# Install casadi/pinocchio mocks for the duration of this module's collection+execution.
+# patch.dict is used so the entries are removed in teardown_module, preventing
+# sys.modules pollution for other test modules.
+_mock_stack = contextlib.ExitStack()
+
+ca = MagicMock()
+pin = MagicMock()
+cpin = MagicMock()
+
+_mock_stack.enter_context(
+    patch.dict(
+        "sys.modules",
+        {
+            "casadi": ca,
+            "pinocchio": pin,
+            "pinocchio.casadi": cpin,
+        },
+    )
+)
+
+# Force reimport of optimize_arm under the mocked dependencies.
+sys.modules.pop("src.shared.python.optimization.examples.optimize_arm", None)
 from src.shared.python.optimization.examples.optimize_arm import main  # noqa: E402
 
-ca = sys.modules.get("casadi", MagicMock())
-pin = sys.modules.get("pinocchio", MagicMock())
-cpin = sys.modules.get("pinocchio.casadi", MagicMock())
+
+def teardown_module(module) -> None:
+    """Remove mocks and cached module from sys.modules."""
+    _mock_stack.close()
+    sys.modules.pop("src.shared.python.optimization.examples.optimize_arm", None)
 
 
 @pytest.fixture
-def mock_casadi():
+def mock_casadi() -> MagicMock:
     opti = MagicMock()
     # Mock variable creation
     mock_var = MagicMock()
@@ -49,7 +83,7 @@ def mock_casadi():
     # Set up value side effect to return appropriate mock data
     call_count = 0
 
-    def value_side_effect(arg):
+    def value_side_effect(arg) -> Any:
         nonlocal call_count
         call_count += 1
         # Return data based on call order: Q, V, U, cost
@@ -74,7 +108,7 @@ def mock_casadi():
 
 
 @pytest.fixture
-def mock_pinocchio():
+def mock_pinocchio() -> MagicMock:
     # Mock model
     model = MagicMock()
     model.nq = 2
@@ -93,11 +127,7 @@ def mock_pinocchio():
     return model
 
 
-@patch.dict(
-    "sys.modules",
-    {"casadi": MagicMock(), "pinocchio": MagicMock(), "pinocchio.casadi": MagicMock()},
-)
-def test_main_execution(mock_casadi, mock_pinocchio):
+def test_main_execution(mock_casadi, mock_pinocchio) -> None:
     with (
         patch("os.path.exists", return_value=True),
         patch(
@@ -116,7 +146,7 @@ def test_main_execution(mock_casadi, mock_pinocchio):
         assert mock_save.call_count == 3
 
 
-def test_main_missing_dependencies():
+def test_main_missing_dependencies() -> None:
     with (
         patch(
             "src.shared.python.optimization.examples.optimize_arm.DEPENDENCIES_AVAILABLE",
@@ -137,12 +167,12 @@ def test_main_missing_dependencies():
         )
 
 
-def test_urdf_not_found():
+def test_urdf_not_found() -> None:
     with patch("os.path.exists", return_value=False), pytest.raises(SystemExit):
         main()
 
 
-def test_optimization_failure(mock_casadi, mock_pinocchio):
+def test_optimization_failure(mock_casadi, mock_pinocchio) -> None:
     mock_casadi.solve.side_effect = RuntimeError("Infeasible")
 
     with patch("os.path.exists", return_value=True), pytest.raises(SystemExit):

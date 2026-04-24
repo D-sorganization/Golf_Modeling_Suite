@@ -233,12 +233,8 @@ class ProvenanceInfo:
         # Analysis parameters
         if self.parameters:
             lines.append("# Analysis parameters:")
-            lines.extend(
-                [
-                    f"#   {key}: {value}"
-                    for (key, value) in sorted(self.parameters.items())
-                ]
-            )
+            for key, value in sorted(self.parameters.items()):
+                lines.append(f"#   {key}: {value}")
 
         # Environment
         lines.append("# Environment:")
@@ -272,7 +268,9 @@ def add_provenance_header_file(file: TextIO, provenance: ProvenanceInfo) -> None
         ...     f.write("time,position,velocity\\n")
         ...     # ... write data
     """
-    if file is None:
+    if not (file is not None):
+        raise ValueError("file must be provided")
+    if not (file is not None):
         raise ValueError("file must be provided")
     file.writelines(line + "\n" for line in provenance.to_header_lines())
     file.write("#\n")  # Blank comment line separator
@@ -300,7 +298,9 @@ def add_provenance_to_csv(
         >>> add_provenance_to_csv('results.csv', parameters={"dt": 0.001})
     """
     # Capture provenance if not provided
-    if filepath is None:
+    if not (filepath is not None):
+        raise ValueError("filepath must be provided")
+    if not (filepath is not None):
         raise ValueError("filepath must be provided")
     if provenance is None:
         provenance = ProvenanceInfo.capture(

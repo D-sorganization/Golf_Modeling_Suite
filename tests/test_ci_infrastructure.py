@@ -14,6 +14,8 @@ from typing import Any
 
 import pytest
 
+pytestmark = pytest.mark.unit
+
 
 class TestCoreDependencies:
     """Test that core dependencies are installed and importable."""

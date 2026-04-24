@@ -26,8 +26,7 @@ from ..models.responses import (
     URDFLinkGeometry,
     URDFModelResponse,
 )
-from ..utils.path_validation import resolve_contained_path
-from ._route_utils import find_project_root
+from ..utils.path_validation import validate_path_within_root
 
 router = APIRouter()
 
@@ -41,7 +40,14 @@ _MODEL_DIRS = [
 
 def _find_project_root() -> Path:
     """Find the project root directory by looking for known markers."""
-    return find_project_root()
+    # Walk up from this file's location
+    current = Path(__file__).resolve()
+    for parent in current.parents:
+        if (parent / "src" / "shared" / "urdf").exists():
+            return parent
+        if (parent / "pyproject.toml").exists():
+            return parent
+    return Path.cwd()
 
 
 def _discover_models() -> list[dict[str, str]]:
@@ -53,12 +59,6 @@ def _discover_models() -> list[dict[str, str]]:
     root = _find_project_root()
     models: list[dict[str, str]] = []
     seen_names: set[str] = set()
-    allowed_roots: list[Path] = []
-
-    for model_dir in _MODEL_DIRS:
-        full_dir = root / model_dir
-        if full_dir.exists():
-            allowed_roots.append(full_dir)
 
     for model_dir in _MODEL_DIRS:
         full_dir = root / model_dir
@@ -67,11 +67,12 @@ def _discover_models() -> list[dict[str, str]]:
 
         for ext in ("*.urdf", "*.xml"):
             for filepath in full_dir.rglob(ext):
+                if not filepath.exists():
+                    continue
                 try:
-                    resolve_contained_path(filepath, allowed_roots)
+                    validate_path_within_root(filepath, root)
                 except HTTPException:
                     continue
-
                 name = filepath.stem
                 if name in seen_names:
                     # Disambiguate with parent directory
@@ -102,9 +103,9 @@ def _parse_urdf_geometry(
     Returns:
         Dictionary with geometry_type, dimensions, origin, rotation, and color.
     """
-    if materials is None:
+    if not (materials is not None):
         raise ValueError("materials must be provided")
-    if visual_elem is None:
+    if not (visual_elem is not None):
         raise ValueError("visual_elem must be provided")
     result: dict[str, Any] = {
         "geometry_type": "box",
@@ -207,9 +208,9 @@ def _parse_urdf_links(
     Returns:
         List of URDFLinkGeometry descriptors for each link with visual data.
     """
-    if materials is None:
+    if not (materials is not None):
         raise ValueError("materials must be provided")
-    if root is None:
+    if not (root is not None):
         raise ValueError("root must be provided")
     links: list[URDFLinkGeometry] = []
     for link_elem in root.findall("link"):
@@ -307,7 +308,7 @@ def _find_root_link(links: list[URDFLinkGeometry], child_links: set[str]) -> str
     Returns:
         Name of the root link, or "base" if none can be determined.
     """
-    if links is None:
+    if not (links is not None):
         raise ValueError("links must be provided")
     all_link_names = {link.link_name for link in links}
     root_candidates = all_link_names - child_links
@@ -431,19 +432,8 @@ async def get_model_urdf(
         )
 
     try:
-        model_roots = [
-            (root / model_dir)
-            for model_dir in _MODEL_DIRS
-            if (root / model_dir).exists()
-        ]
-        try:
-            filepath = resolve_contained_path(filepath, model_roots)
-        except HTTPException as exc:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Model file not found: {model_entry['path']}",
-            ) from exc
-        urdf_content = filepath.read_text(encoding="utf-8")
+        validated_path = validate_path_within_root(filepath, root)
+        urdf_content = validated_path.read_text(encoding="utf-8")
         result = _parse_urdf(urdf_content)
         return result
     except ValueError as exc:

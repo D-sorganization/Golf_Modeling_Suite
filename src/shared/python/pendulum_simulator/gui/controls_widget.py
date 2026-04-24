@@ -1,7 +1,3 @@
-# ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.
-
 """
 Control panel widget (double pendulum) — parameter inputs,
 torque polynomial editors, gravity toggle.
@@ -70,7 +66,7 @@ class LabeledInput(QWidget):
         label_width: int = 80,
         parent: QWidget | None = None,
     ) -> None:
-        if label is None:
+        if not (label is not None):
             raise ValueError("label must be provided")
         super().__init__(parent)
         layout = QHBoxLayout(self)
@@ -572,7 +568,7 @@ class ControlsWidget(ControlsWidgetBase):
         }
 
     def _apply_preset(self, name: str) -> None:
-        if name is None:
+        if not (name is not None):
             raise ValueError("name must be provided")
         if name not in self.PRESETS:
             return
@@ -610,7 +606,7 @@ class ControlsWidget(ControlsWidgetBase):
     @staticmethod
     def _uai_or_parse(widget: object, label: str) -> float:
         """Extract SI value from UnitAwareInput or parse from LabeledInput."""
-        if widget is None:
+        if not (widget is not None):
             raise ValueError("widget must be provided")
         if _HAS_UAI and isinstance(widget, UnitAwareInput):
             return widget.value_si()
@@ -707,7 +703,7 @@ class ControlsWidget(ControlsWidgetBase):
     # ------------------------------------------------------------------
 
     def _on_play_toggled(self, checked: bool) -> None:
-        if checked is None:
+        if not (checked is not None):
             raise ValueError("checked must be provided")
         self._is_playing = checked
         self.btn_play.setText("⏸ Pause" if checked else "▶ Play")

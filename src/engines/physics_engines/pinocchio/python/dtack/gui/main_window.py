@@ -23,7 +23,9 @@ class GuiRecorder(RecorderInterface):
     """Recorder adapter for the GUI data."""
 
     def __init__(self, data_store: list[BiomechanicalData]) -> None:
-        if data_store is None:
+        if not (data_store is not None):
+            raise ValueError("data_store must be provided")
+        if not (data_store is not None):
             raise ValueError("data_store must be provided")
         self.data_store = data_store
         self.engine: Any = None
@@ -35,7 +37,9 @@ class GuiRecorder(RecorderInterface):
 
     def get_time_series(self, field_name: str) -> tuple[np.ndarray, np.ndarray | list]:
         """Extract a named time series from recorded biomechanical data."""
-        if field_name is None:
+        if not (field_name is not None):
+            raise ValueError("field_name must be provided")
+        if not (field_name is not None):
             raise ValueError("field_name must be provided")
         if not self.data_store:
             return np.array([]), np.array([])
@@ -71,7 +75,9 @@ class GuiRecorder(RecorderInterface):
         self, source_name: str | int
     ) -> tuple[np.ndarray, np.ndarray]:
         """Extract induced acceleration time series for a named source."""
-        if source_name is None:
+        if not (source_name is not None):
+            raise ValueError("source_name must be provided")
+        if not (source_name is not None):
             raise ValueError("source_name must be provided")
         if not self.data_store:
             return np.array([]), np.array([])
@@ -94,7 +100,9 @@ class GuiRecorder(RecorderInterface):
 
     def get_counterfactual_series(self, cf_name: str) -> tuple[np.ndarray, np.ndarray]:
         """Extract counterfactual time series by name."""
-        if cf_name is None:
+        if not (cf_name is not None):
+            raise ValueError("cf_name must be provided")
+        if not (cf_name is not None):
             raise ValueError("cf_name must be provided")
         if not self.data_store:
             return np.array([]), np.array([])
@@ -131,9 +139,9 @@ class UnifiedGolfGUI(QtWidgets.QMainWindow):
         self.recorder = GuiRecorder(self.recorded_data)
 
         # Physics Engine
-        self.model: pin.Model | None = None
-        self.data: pin.Data | None = None
-        self.dynamics_engine: DynamicsEngine | None = None
+        self.model = None
+        self.data = None
+        self.dynamics_engine = None
 
         # Create tabs
         self._create_model_viewer_tab()
@@ -376,14 +384,16 @@ class UnifiedGolfGUI(QtWidgets.QMainWindow):
 
     def _run_counterfactual(self, cf_type: str) -> None:
         """Run counterfactual analysis."""
-        if cf_type is None:
+        if not (cf_type is not None):
+            raise ValueError("cf_type must be provided")
+        if not (cf_type is not None):
             raise ValueError("cf_type must be provided")
         logger.info(f"Running {cf_type} counterfactual...")
 
         # Need real data to run real counterfactuals
         if (
             not self.dynamics_engine or not self.recorded_data
-        ) and not self.recorded_data:  # noqa: E501
+        ) and not self.recorded_data:
             QtWidgets.QMessageBox.warning(
                 self,
                 "No Data",
@@ -436,12 +446,12 @@ class UnifiedGolfGUI(QtWidgets.QMainWindow):
         plotter = GolfSwingPlotter(self.recorder)
         plotter.plot_counterfactual_comparison(
             self.cf_plot_canvas.fig, cf_type, metric_idx=0
-        )  # noqa: E501
+        )
         self.cf_plot_canvas.draw()
 
         QtWidgets.QMessageBox.information(
             self, "Success", f"{cf_type.upper()} analysis complete."
-        )  # noqa: E501
+        )
 
     def _update_results_plot(self) -> None:
         """Update the plot in the Results tab."""
@@ -465,7 +475,7 @@ class UnifiedGolfGUI(QtWidgets.QMainWindow):
             if (
                 self.recorded_data
                 and "actuator" in self.recorded_data[0].induced_accelerations
-            ):  # noqa: E501
+            ):
                 # Override for demo
                 self.results_canvas.fig.clear()
                 plotter.plot_induced_acceleration(self.results_canvas.fig, "actuator")

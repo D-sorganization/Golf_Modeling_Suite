@@ -118,7 +118,9 @@ def mirror_position(
     Returns:
         Mirrored position vector
     """
-    if position is None:
+    if not (position is not None):
+        raise ValueError("position must be provided")
+    if not (position is not None):
         raise ValueError("position must be provided")
     if transform is None:
         transform = create_mirror_transform()
@@ -142,7 +144,9 @@ def mirror_velocity(
     Returns:
         Mirrored velocity vector
     """
-    if velocity is None:
+    if not (velocity is not None):
+        raise ValueError("velocity must be provided")
+    if not (velocity is not None):
         raise ValueError("velocity must be provided")
     if transform is None:
         transform = create_mirror_transform()
@@ -170,7 +174,9 @@ def mirror_rotation_matrix(
     Returns:
         Mirrored rotation matrix (3, 3)
     """
-    if rotation is None:
+    if not (rotation is not None):
+        raise ValueError("rotation must be provided")
+    if not (rotation is not None):
         raise ValueError("rotation must be provided")
     if transform is None:
         transform = create_mirror_transform()
@@ -198,7 +204,9 @@ def mirror_angular_velocity(
     Returns:
         Mirrored angular velocity
     """
-    if omega is None:
+    if not (omega is not None):
+        raise ValueError("omega must be provided")
+    if not (omega is not None):
         raise ValueError("omega must be provided")
     if transform is None:
         transform = create_mirror_transform()
@@ -239,7 +247,9 @@ def mirror_joint_configuration(
     Returns:
         Mirrored joint configuration
     """
-    if q is None:
+    if not (q is not None):
+        raise ValueError("q must be provided")
+    if not (q is not None):
         raise ValueError("q must be provided")
     q_mirrored = q.copy()
 
@@ -278,7 +288,9 @@ def mirror_trajectory(
     Returns:
         Dictionary with mirrored trajectories
     """
-    if positions is None:
+    if not (positions is not None):
+        raise ValueError("positions must be provided")
+    if not (positions is not None):
         raise ValueError("positions must be provided")
     transform = create_mirror_transform()
 
@@ -359,22 +371,20 @@ def validate_mirror_trajectory(
         Dictionary with validation results
     """
     # Check coordinate transformations
-    if original_positions is None:
+    if not (original_positions is not None):
+        raise ValueError("original_positions must be provided")
+    if not (original_positions is not None):
         raise ValueError("original_positions must be provided")
     y_flipped = np.allclose(original_positions[:, 1], -mirrored_positions[:, 1])
     x_preserved = np.allclose(original_positions[:, 0], mirrored_positions[:, 0])
     z_preserved = np.allclose(original_positions[:, 2], mirrored_positions[:, 2])
 
     # Check path length preservation
-    diff_orig = np.diff(original_positions, axis=0)
-    # ⚡ Bolt: einsum is ~35% faster than np.linalg.norm(..., axis=1) for small inner dimensions
     original_path_length = np.sum(
-        np.sqrt(np.einsum("...i,...i->...", diff_orig, diff_orig, dtype=float))
+        np.linalg.norm(np.diff(original_positions, axis=0), axis=1)
     )
-
-    diff_mirr = np.diff(mirrored_positions, axis=0)
     mirrored_path_length = np.sum(
-        np.sqrt(np.einsum("...i,...i->...", diff_mirr, diff_mirr, dtype=float))
+        np.linalg.norm(np.diff(mirrored_positions, axis=0), axis=1)
     )
     path_length_preserved = np.isclose(
         original_path_length, mirrored_path_length, rtol=1e-10
@@ -408,31 +418,16 @@ def validate_energy_conservation(
     Returns:
         Dictionary with validation results
     """
-    if original_velocities is None:
+    if not (original_velocities is not None):
+        raise ValueError("original_velocities must be provided")
+    if not (original_velocities is not None):
         raise ValueError("original_velocities must be provided")
     if masses is None:
         masses = np.ones(len(original_velocities))
 
     # Compute kinetic energy at each timestep
-    # ⚡ Bolt: einsum is ~2x faster than np.sum(arr**2, axis=1) for small inner dimensions
-    original_ke = (
-        0.5
-        * masses
-        * np.einsum(
-            "...i,...i->...",
-            original_velocities.astype(float, copy=False),
-            original_velocities.astype(float, copy=False),
-        )
-    )
-    mirrored_ke = (
-        0.5
-        * masses
-        * np.einsum(
-            "...i,...i->...",
-            mirrored_velocities.astype(float, copy=False),
-            mirrored_velocities.astype(float, copy=False),
-        )
-    )
+    original_ke = 0.5 * masses * np.sum(original_velocities**2, axis=1)
+    mirrored_ke = 0.5 * masses * np.sum(mirrored_velocities**2, axis=1)
 
     # Total energy should be preserved
     total_original = np.sum(original_ke)
@@ -461,7 +456,9 @@ class HandednessConverter:
         Args:
             source_handedness: The handedness of the source model
         """
-        if source_handedness is None:
+        if not (source_handedness is not None):
+            raise ValueError("source_handedness must be provided")
+        if not (source_handedness is not None):
             raise ValueError("source_handedness must be provided")
         self.source_handedness = source_handedness
         self.transform = create_mirror_transform()
@@ -486,7 +483,9 @@ class HandednessConverter:
         Returns:
             Dictionary with converted trajectories
         """
-        if target_handedness is None:
+        if not (target_handedness is not None):
+            raise ValueError("target_handedness must be provided")
+        if not (target_handedness is not None):
             raise ValueError("target_handedness must be provided")
         if target_handedness == self.source_handedness:
             # No conversion needed

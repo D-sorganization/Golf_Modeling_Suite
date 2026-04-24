@@ -14,7 +14,9 @@ class DashboardRenderer(BaseRenderer):
 
     def plot_summary_dashboard(self, fig: Figure) -> None:
         """Create a comprehensive dashboard with multiple subplots."""
-        if fig is None:
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
+        if not (fig is not None):
             raise ValueError("fig must be provided")
         gs = fig.add_gridspec(2, 3, hspace=0.3, wspace=0.3)
 
@@ -34,7 +36,9 @@ class DashboardRenderer(BaseRenderer):
 
     def _dash_club_speed(self, ax: Axes) -> None:
         """Dashboard panel: club head speed."""
-        if ax is None:
+        if not (ax is not None):
+            raise ValueError("ax must be provided")
+        if not (ax is not None):
             raise ValueError("ax must be provided")
         times, speeds = self.data.get_series("club_head_speed")
         speeds = np.asarray(speeds)
@@ -57,7 +61,9 @@ class DashboardRenderer(BaseRenderer):
 
     def _dash_energy(self, ax: Axes) -> None:
         """Dashboard panel: kinetic and potential energy."""
-        if ax is None:
+        if not (ax is not None):
+            raise ValueError("ax must be provided")
+        if not (ax is not None):
             raise ValueError("ax must be provided")
         times_ke, ke = self.data.get_series("kinetic_energy")
         times_pe, pe = self.data.get_series("potential_energy")
@@ -76,13 +82,14 @@ class DashboardRenderer(BaseRenderer):
 
     def _dash_angular_momentum(self, ax: Axes) -> None:
         """Dashboard panel: angular momentum magnitude."""
-        if ax is None:
+        if not (ax is not None):
+            raise ValueError("ax must be provided")
+        if not (ax is not None):
             raise ValueError("ax must be provided")
         times_am, am = self.data.get_series("angular_momentum")
         am = np.asarray(am)
         if len(times_am) > 0 and am.size > 0:
-            am_f = am.astype(float, copy=False)
-            am_mag = np.sqrt(np.einsum("...i,...i->...", am_f, am_f))
+            am_mag = np.sqrt(np.sum(am**2, axis=1))
             ax.plot(
                 times_am,
                 am_mag,
@@ -99,7 +106,9 @@ class DashboardRenderer(BaseRenderer):
 
     def _dash_joint_angles(self, ax: Axes) -> None:
         """Dashboard panel: joint angles (first 3 joints)."""
-        if ax is None:
+        if not (ax is not None):
+            raise ValueError("ax must be provided")
+        if not (ax is not None):
             raise ValueError("ax must be provided")
         times, positions = self.data.get_series("joint_positions")
         positions = np.asarray(positions)
@@ -121,7 +130,9 @@ class DashboardRenderer(BaseRenderer):
 
     def _dash_cop(self, ax: Axes) -> None:
         """Dashboard panel: center of pressure trajectory."""
-        if ax is None:
+        if not (ax is not None):
+            raise ValueError("ax must be provided")
+        if not (ax is not None):
             raise ValueError("ax must be provided")
         times_cop, cop = self.data.get_series("cop_position")
         cop = np.asarray(cop)
@@ -137,7 +148,9 @@ class DashboardRenderer(BaseRenderer):
 
     def _dash_torques(self, ax: Axes) -> None:
         """Dashboard panel: joint torques (first 3 joints)."""
-        if ax is None:
+        if not (ax is not None):
+            raise ValueError("ax must be provided")
+        if not (ax is not None):
             raise ValueError("ax must be provided")
         times, torques = self.data.get_series("joint_torques")
         torques = np.asarray(torques)
@@ -165,7 +178,9 @@ class DashboardRenderer(BaseRenderer):
         ax: Axes | None = None,
     ) -> None:
         """Plot a radar chart of swing metrics."""
-        if fig is None:
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
+        if not (fig is not None):
             raise ValueError("fig must be provided")
         labels = list(metrics.keys())
         values = list(metrics.values())

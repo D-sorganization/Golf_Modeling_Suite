@@ -33,8 +33,8 @@ class Colors:
 BANNED_PATTERNS = [
     (re.compile(r"\b" + "TO" + "DO" + r"\b"), "TO" + "DO placeholder found"),
     (re.compile(r"\b" + "FIX" + "ME" + r"\b"), "FIX" + "ME placeholder found"),
-    (re.compile("TRACKED" + "_TASK"), "TRACKED" + "_TASK placeholder found"),
-    (re.compile("TRACKED" + "_DEFECT"), "TRACKED" + "_DEFECT placeholder found"),
+    (re.compile(r"\bTRACKED_TASK\b"), "TRACKED_TASK placeholder found"),
+    (re.compile(r"\bTRACKED_DEFECT\b"), "TRACKED_DEFECT placeholder found"),
     (re.compile(r"^\s*\.\.\.\s*$"), "Ellipsis placeholder"),
     (re.compile(r"NotImplementedError"), "NotImplementedError placeholder"),
     (re.compile(r"your.*here", re.IGNORECASE), "Template placeholder"),
@@ -69,7 +69,9 @@ MAGIC_NUMBERS = [
 
 def is_legitimate_pass_context(lines: list[str], line_num: int) -> bool:
     """Check if a pass statement is in a legitimate context."""
-    if lines is None:
+    if not (lines is not None):
+        raise ValueError("lines must be provided")
+    if not (lines is not None):
         raise ValueError("lines must be provided")
     from src.shared.python.contracts import require
 
@@ -123,7 +125,9 @@ def check_banned_patterns(
     filepath: Path,
 ) -> list[tuple[int, str, str]]:
     """Check for banned patterns in lines."""
-    if lines is None:
+    if not (lines is not None):
+        raise ValueError("lines must be provided")
+    if not (lines is not None):
         raise ValueError("lines must be provided")
     from src.shared.python.contracts import require
 
@@ -165,7 +169,9 @@ def check_banned_patterns(
 
 def check_magic_numbers(lines: list[str], filepath: Path) -> list[tuple[int, str, str]]:
     """Check for magic numbers in lines."""
-    if lines is None:
+    if not (lines is not None):
+        raise ValueError("lines must be provided")
+    if not (lines is not None):
         raise ValueError("lines must be provided")
     from src.shared.python.contracts import require
 
@@ -193,7 +199,9 @@ def check_magic_numbers(lines: list[str], filepath: Path) -> list[tuple[int, str
 
 def check_ast_issues(content: str, filepath: Path) -> list[tuple[int, str, str]]:
     """Check AST for quality issues."""
-    if content is None:
+    if not (content is not None):
+        raise ValueError("content must be provided")
+    if not (content is not None):
         raise ValueError("content must be provided")
     from src.shared.python.contracts import require
 

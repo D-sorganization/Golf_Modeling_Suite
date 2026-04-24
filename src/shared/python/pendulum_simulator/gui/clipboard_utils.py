@@ -28,7 +28,8 @@ def matrix_to_tsv(data: np.ndarray) -> str:
     if not (data.ndim == 2):
         raise ValueError(f"Expected 2D array, got {data.ndim}D")
     lines = []
-    lines.extend(["\t".join(f"{v:.6g}" for v in row) for row in data])
+    for row in data:
+        lines.append("\t".join(f"{v:.6g}" for v in row))
     result = "\n".join(lines)
     if not (result.count("\n") == data.shape[0] - 1):
         raise ValueError("DbC Blocked: Precondition failed.")
@@ -49,7 +50,8 @@ def series_to_tsv(
         raise ValueError(f"Length mismatch: {len(x)} vs {len(y)}")
     header = f"{x_label}\t{y_label}"
     lines = [header]
-    lines.extend([f"{xi:.6g}\t{yi:.6g}" for (xi, yi) in zip(x, y, strict=False)])
+    for xi, yi in zip(x, y, strict=False):
+        lines.append(f"{xi:.6g}\t{yi:.6g}")
     return "\n".join(lines)
 
 
@@ -59,11 +61,12 @@ def scalar_dict_to_text(d: dict[str, float], title: str = "") -> str:
     Pre: all values are numeric.
     Post: returned string contains one line per key-value pair.
     """
-    if d is None:
+    if not (d is not None):
         raise ValueError("d must be provided")
     lines = []
     if title:
         lines.append(title)
         lines.append("=" * len(title))
-    lines.extend([f"{key}: {val:.6g}" for (key, val) in d.items()])
+    for key, val in d.items():
+        lines.append(f"{key}: {val:.6g}")
     return "\n".join(lines)

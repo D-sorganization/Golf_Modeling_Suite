@@ -10,17 +10,9 @@ ball speeds, and shows the effect of toggling individual force components.
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
+import numpy as np
 
-_this_file = Path(__file__).resolve()
-_parents = _this_file.parents
-project_root = _parents[1]
-sys.path.insert(0, str(project_root))
-
-import numpy as np  # noqa: E402
-
-from src.shared.python.physics.aerodynamics import (  # noqa: E402
+from src.shared.python.physics.aerodynamics import (
     AerodynamicsConfig,
     AerodynamicsEngine,
 )
@@ -28,7 +20,7 @@ from src.shared.python.physics.aerodynamics import (  # noqa: E402
 
 def _report_forces(engine: AerodynamicsEngine, speed_ms: float, label: str) -> None:
     """Print force components for a ball travelling at *speed_ms* m/s."""
-    if engine is None:
+    if not (engine is not None):
         raise ValueError("Engine must be provided")
     if not (speed_ms >= 0.0):
         raise ValueError("Speed must be non-negative")

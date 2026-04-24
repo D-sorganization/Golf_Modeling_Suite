@@ -2,6 +2,7 @@
 Unit tests for body parameters module.
 """
 
+from humanoid_character_builder.contracts import ContractViolationError
 from humanoid_character_builder.core.body_parameters import (
     RGBA,
     BodyParameters,
@@ -93,14 +94,16 @@ class TestBodyParameters:
         assert len(errors) == 0
 
     def test_validate_invalid_height(self) -> None:
-        params = BodyParameters(height_m=-1.0)
+        import pytest
 
-        assert "height_m must be positive" in params.validate()
+        with pytest.raises(ContractViolationError, match="positive"):
+            BodyParameters(height_m=-1.0)
 
     def test_validate_invalid_mass(self) -> None:
-        params = BodyParameters(mass_kg=-10.0)
+        import pytest
 
-        assert "mass_kg must be positive" in params.validate()
+        with pytest.raises(ContractViolationError, match="positive"):
+            BodyParameters(mass_kg=-10.0)
 
     def test_segment_override(self) -> None:
         params = BodyParameters()

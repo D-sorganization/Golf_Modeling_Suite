@@ -21,7 +21,9 @@ class InducedAccelerationAnalyzer:
     """
 
     def __init__(self, model: pin.Model, data: pin.Data) -> None:
-        if model is None:
+        if not (model is not None):
+            raise ValueError("model must be provided")
+        if not (model is not None):
             raise ValueError("model must be provided")
         self.model = model
         self.data = data
@@ -32,7 +34,7 @@ class InducedAccelerationAnalyzer:
         self._temp_data = model.createData()
 
     def compute_components(
-        self, q: np.ndarray, v: np.ndarray, tau: np.ndarray, f_ext: dict | None = None
+        self, q: np.ndarray, v: np.ndarray, tau: np.ndarray
     ) -> dict[str, np.ndarray]:
         """
         Compute induced acceleration components.
@@ -51,11 +53,13 @@ class InducedAccelerationAnalyzer:
         # We can use ABA with v=0, tau=0, and gravity enabled.
         # equation: M*a + 0 + G = 0 => M*a = -G
         # Pinocchio ABA: a = aba(model, data, q, v, tau)
-        if q is None:
+        if not (q is not None):
+            raise ValueError("q must be provided")
+        if not (q is not None):
             raise ValueError("q must be provided")
         q_ddot_g = pin.aba(
             self.model, self._temp_data, q, np.zeros(self.nv), np.zeros(self.nv)
-        )  # noqa: E501
+        )
 
         # 2. Velocity Induced Acceleration
         # M * q_ddot_v = -C(q, v)v
@@ -92,47 +96,16 @@ class InducedAccelerationAnalyzer:
         # q_ddot_t = q_ddot_total - q_ddot_gv
         q_ddot_t = q_ddot_total - q_ddot_gv
 
-        q_ddot_ext = np.zeros(self.nv)
-        if f_ext is not None:
-            q_ddot_ext = self.compute_external_acceleration(q, v, f_ext)
-            q_ddot_total += q_ddot_ext
-
         return {
             "gravity": q_ddot_g,
             "velocity": q_ddot_v,
             "control": q_ddot_t,
-            "external": q_ddot_ext,
             "total": q_ddot_total,
         }
 
-    def compute_external_acceleration(
-        self, q: np.ndarray, v: np.ndarray, f_ext: dict
-    ) -> np.ndarray:
-        """Compute acceleration due to external forces only."""
-        # a_ext = M^{-1} @ sum(J_i^T @ f_ext_i)
-        pin.computeAllTerms(self.model, self.data, q, v)
-        M = self.data.M
-        nv = int(self.model.nv)
-        if nv == 0:
-            return np.zeros(0, dtype=float)
-
-        tau_ext = np.zeros(nv, dtype=float)
-        for frame_id, wrench in f_ext.items():
-            # use pin.LOCAL for reference_frame if needed, else try default
-            J = pin.computeFrameJacobian(self.model, self.data, q, frame_id)
-            contribution = np.asarray(J.T @ wrench, dtype=float).reshape(-1)
-            if contribution.size == 0:
-                contribution = np.zeros_like(tau_ext)
-            tau_ext += contribution
-
-        if np.asarray(M).ndim < 2 or np.asarray(M).size == 0:
-            return np.zeros_like(tau_ext)
-
-        return np.linalg.solve(M, tau_ext)
-
     def compute_specific_control(
         self, q: np.ndarray, specific_tau: np.ndarray
-    ) -> np.ndarray:  # noqa: E501
+    ) -> np.ndarray:
         """
         Compute induced acceleration for a specific control torque vector.
 
@@ -151,7 +124,9 @@ class InducedAccelerationAnalyzer:
         # And ABA(q, 0, 0) = M^-1 * (-G(q)).
         # So ABA(q, 0, tau) - ABA(q, 0, 0) = M^-1 * tau.
 
-        if q is None:
+        if not (q is not None):
+            raise ValueError("q must be provided")
+        if not (q is not None):
             raise ValueError("q must be provided")
         a_tau_G: np.ndarray = pin.aba(
             self.model, self._temp_data, q, np.zeros(self.nv), specific_tau
@@ -164,7 +139,7 @@ class InducedAccelerationAnalyzer:
 
     def compute_counterfactuals(
         self, q: np.ndarray, v: np.ndarray
-    ) -> dict[str, np.ndarray]:  # noqa: E501
+    ) -> dict[str, np.ndarray]:
         """
         Decompose acceleration into Zero-Torque (ZTCF) and Zero-Velocity (ZVCF)
         components.
@@ -183,7 +158,9 @@ class InducedAccelerationAnalyzer:
         # ZTCF: Acceleration if tau=0.
         # M*a + C*v + G = 0  => a = -M^-1 * (C*v + G)
         # This is just ABA with tau=0.
-        if q is None:
+        if not (q is not None):
+            raise ValueError("q must be provided")
+        if not (q is not None):
             raise ValueError("q must be provided")
         ztcf_accel = pin.aba(self.model, self._temp_data, q, v, np.zeros(self.nv))
 

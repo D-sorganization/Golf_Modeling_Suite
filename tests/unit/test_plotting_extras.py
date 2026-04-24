@@ -3,23 +3,26 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from src.shared.python.plotting.animation import AnimationConfig, SwingAnimator
 from src.shared.python.plotting.base import RecorderInterface
 from src.shared.python.plotting.energy import plot_energy_overview
 from src.shared.python.plotting.kinematics import plot_joint_positions
 
+pytestmark = pytest.mark.unit
+
 
 class _MockRecorder:
     engine = None
 
-    def get_time_series(self, field_name):
+    def get_time_series(self, field_name) -> tuple[np.ndarray, np.ndarray]:
         return np.linspace(0, 1, 10), np.zeros((10, 3))
 
-    def get_induced_acceleration_series(self, source):
+    def get_induced_acceleration_series(self, source) -> tuple[np.ndarray, np.ndarray]:
         return np.linspace(0, 1, 10), np.zeros((10, 3))
 
-    def set_analysis_config(self, config):
+    def set_analysis_config(self, config) -> None:
         pass
 
 

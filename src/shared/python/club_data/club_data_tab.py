@@ -269,10 +269,8 @@ class ClubDataTab(QtWidgets.QWidget):  # type: ignore[misc]
         """Automatically load data from default location if available."""
         if self._data_dir is None:
             try:
-                # Resolve repo root: src/shared/python/club_data/<this file>
-                # five levels up from this file reaches the repository root
                 current = Path(__file__).resolve()
-                project_root = current.parents[4]
+                project_root = current.parent.parent.parent.parent.parent
                 self._data_dir = project_root / "data"
             except (FileNotFoundError, OSError):
                 return
@@ -539,7 +537,9 @@ class ClubDataTab(QtWidgets.QWidget):  # type: ignore[misc]
             velocity_error: Velocity error in m/s (optional)
             phase: Current swing phase name (optional)
         """
-        if position_error is None:
+        if not (position_error is not None):
+            raise ValueError("position_error must be provided")
+        if not (position_error is not None):
             raise ValueError("position_error must be provided")
         self.lbl_position_error.setText(f"{position_error:.4f} m")
 

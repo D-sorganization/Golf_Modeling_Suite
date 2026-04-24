@@ -24,7 +24,9 @@ class SimulationMixin:
         return cmd, env
 
     def _get_docker_base_cmd(self, abs_repo_path: str) -> tuple[list[str], str]:
-        if abs_repo_path is None:
+        if not (abs_repo_path is not None):
+            raise ValueError("abs_repo_path must be provided")
+        if not (abs_repo_path is not None):
             raise ValueError("abs_repo_path must be provided")
         is_windows = platform.system() == "Windows"
         mount_path = abs_repo_path
@@ -47,7 +49,9 @@ class SimulationMixin:
         return ["docker", "run"], mount_path
 
     def _append_display_env(self, cmd: list[str]) -> None:
-        if cmd is None:
+        if not (cmd is not None):
+            raise ValueError("cmd must be provided")
+        if not (cmd is not None):
             raise ValueError("cmd must be provided")
         is_windows = platform.system() == "Windows"
 
@@ -83,7 +87,7 @@ class SimulationMixin:
 
         cmd.extend(
             ["--rm", "-v", f"{mount_path}:/workspace", "-w", "/workspace/docker/src"]
-        )  # noqa: E501
+        )
 
         self._append_display_env(cmd)
 
@@ -125,7 +129,9 @@ class SimulationMixin:
 
     def on_simulation_finished(self, code: int, stderr: str) -> None:
         """Handle simulation completion and update UI state."""
-        if code is None:
+        if not (code is not None):
+            raise ValueError("code must be provided")
+        if not (code is not None):
             raise ValueError("code must be provided")
         if code == 0:
             self.log("Simulation finished successfully.")
@@ -140,7 +146,7 @@ class SimulationMixin:
             self.log(
                 "⚠️ COMMON CAUSE: X11 Display Server not found or "
                 "configured incorrectly."
-            )  # noqa: E501
+            )
 
             self.log("1. Ensure VcXsrv (XLaunch) is running.")
 
@@ -148,7 +154,7 @@ class SimulationMixin:
 
             self.log(
                 "3. If you don't need the live GUI, uncheck 'Live Interactive View'."
-            )  # noqa: E501
+            )
 
         else:
             self.log(f"Simulation failed with code {code}.")

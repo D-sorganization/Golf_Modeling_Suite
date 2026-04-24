@@ -1,7 +1,3 @@
-# ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
-
 """Drake Pose Editor Tab.
 
 Provides a full-featured pose editing interface for Drake models including:
@@ -101,7 +97,9 @@ class DrakePoseEditor(BasePoseEditor):
             plant: Drake MultibodyPlant instance
             context: Plant context
         """
-        if plant is None:
+        if not (plant is not None):
+            raise ValueError("plant must be provided")
+        if not (plant is not None):
             raise ValueError("plant must be provided")
         self._plant = plant
         self._context = context
@@ -180,7 +178,7 @@ class DrakePoseEditor(BasePoseEditor):
             self._state.joint_positions = self._plant.GetPositions(self._context).copy()
             self._state.joint_velocities = self._plant.GetVelocities(
                 self._context
-            ).copy()  # noqa: E501
+            ).copy()
 
         logger.info("Initialized %d joints for pose editing", len(self._joint_info))
 
@@ -193,17 +191,19 @@ class DrakePoseEditor(BasePoseEditor):
         Returns:
             Group name
         """
-        if name is None:
+        if not (name is not None):
+            raise ValueError("name must be provided")
+        if not (name is not None):
             raise ValueError("name must be provided")
         name_lower = name.lower()
 
         if any(
             x in name_lower for x in ["shoulder", "humerus", "elbow", "wrist", "arm"]
-        ):  # noqa: E501
+        ):
             if (
                 any(x in name_lower for x in ["l_", "left", "l"])
                 and name_lower[0] == "l"
-            ):  # noqa: E501
+            ):
                 return "Left Arm"
             else:
                 return "Right Arm"
@@ -212,7 +212,7 @@ class DrakePoseEditor(BasePoseEditor):
             if (
                 any(x in name_lower for x in ["l_", "left", "l"])
                 and name_lower[0] == "l"
-            ):  # noqa: E501
+            ):
                 return "Left Leg"
             else:
                 return "Right Leg"
@@ -237,7 +237,9 @@ class DrakePoseEditor(BasePoseEditor):
 
     def get_joint_position(self, joint_index: int) -> float | np.ndarray:
         """Get the current position of a joint."""
-        if joint_index is None:
+        if not (joint_index is not None):
+            raise ValueError("joint_index must be provided")
+        if not (joint_index is not None):
             raise ValueError("joint_index must be provided")
         if self._plant is None or self._context is None:
             return 0.0
@@ -252,13 +254,15 @@ class DrakePoseEditor(BasePoseEditor):
                 else:
                     return positions[
                         info.position_index : info.position_index + info.num_positions
-                    ]  # noqa: E501
+                    ]
 
         return 0.0
 
     def set_joint_position(self, joint_index: int, value: float | np.ndarray) -> None:
         """Set the position of a joint."""
-        if joint_index is None:
+        if not (joint_index is not None):
+            raise ValueError("joint_index must be provided")
+        if not (joint_index is not None):
             raise ValueError("joint_index must be provided")
         if self._plant is None or self._context is None:
             return
@@ -273,7 +277,7 @@ class DrakePoseEditor(BasePoseEditor):
                 else:
                     positions[
                         info.position_index : info.position_index + info.num_positions
-                    ] = value  # noqa: E501
+                    ] = value
 
                 self._plant.SetPositions(self._context, positions)
                 self._state.joint_positions = positions
@@ -291,7 +295,9 @@ class DrakePoseEditor(BasePoseEditor):
 
     def set_all_positions(self, positions: np.ndarray) -> None:
         """Set all joint positions."""
-        if positions is None:
+        if not (positions is not None):
+            raise ValueError("positions must be provided")
+        if not (positions is not None):
             raise ValueError("positions must be provided")
         if self._plant is None or self._context is None:
             return
@@ -308,7 +314,9 @@ class DrakePoseEditor(BasePoseEditor):
 
     def set_all_velocities(self, velocities: np.ndarray) -> None:
         """Set all joint velocities."""
-        if velocities is None:
+        if not (velocities is not None):
+            raise ValueError("velocities must be provided")
+        if not (velocities is not None):
             raise ValueError("velocities must be provided")
         if self._plant is None or self._context is None:
             return
@@ -318,7 +326,9 @@ class DrakePoseEditor(BasePoseEditor):
 
     def set_gravity_enabled(self, enabled: bool) -> None:
         """Enable or disable gravity."""
-        if enabled is None:
+        if not (enabled is not None):
+            raise ValueError("enabled must be provided")
+        if not (enabled is not None):
             raise ValueError("enabled must be provided")
         if self._plant is None:
             return
@@ -361,14 +371,17 @@ class DrakePoseEditor(BasePoseEditor):
         if self._plant is None:
             return []
 
-        return [
-            self._plant.get_body(i).name()  # type: ignore[arg-type]
-            for i in range(self._plant.num_bodies())
-        ]
+        names = []
+        for i in range(self._plant.num_bodies()):
+            body = self._plant.get_body(i)  # type: ignore[arg-type]
+            names.append(body.name())
+        return names
 
     def get_body_position(self, body_name: str) -> np.ndarray | None:
         """Get world position of a body."""
-        if body_name is None:
+        if not (body_name is not None):
+            raise ValueError("body_name must be provided")
+        if not (body_name is not None):
             raise ValueError("body_name must be provided")
         if self._plant is None or self._context is None:
             return None
@@ -581,7 +594,9 @@ class DrakePoseEditorTab(QtWidgets.QWidget):  # type: ignore[misc]
             plant: Drake MultibodyPlant
             context: Plant context
         """
-        if plant is None:
+        if not (plant is not None):
+            raise ValueError("plant must be provided")
+        if not (plant is not None):
             raise ValueError("plant must be provided")
         self._editor.set_plant_and_context(plant, context)
         self._build_joint_controls()
@@ -659,7 +674,9 @@ class DrakePoseEditorTab(QtWidgets.QWidget):  # type: ignore[misc]
 
     def _filter_joints(self, text: str = "") -> None:
         """Filter displayed joints."""
-        if text is None:
+        if not (text is not None):
+            raise ValueError("text must be provided")
+        if not (text is not None):
             raise ValueError("text must be provided")
         search_text = self.txt_filter.text().lower()
         selected_group = self.combo_group.currentText()
@@ -693,7 +710,9 @@ class DrakePoseEditorTab(QtWidgets.QWidget):  # type: ignore[misc]
 
     def _on_joint_changed(self, joint_index: int, value: float) -> None:
         """Handle joint value change."""
-        if joint_index is None:
+        if not (joint_index is not None):
+            raise ValueError("joint_index must be provided")
+        if not (joint_index is not None):
             raise ValueError("joint_index must be provided")
         self._editor.set_joint_position(joint_index, value)
         self._editor.update_visualization()
@@ -701,7 +720,9 @@ class DrakePoseEditorTab(QtWidgets.QWidget):  # type: ignore[misc]
 
     def _on_gravity_changed(self, enabled: bool) -> None:
         """Handle gravity toggle."""
-        if enabled is None:
+        if not (enabled is not None):
+            raise ValueError("enabled must be provided")
+        if not (enabled is not None):
             raise ValueError("enabled must be provided")
         self._editor.set_gravity_enabled(enabled)
         self.gravity_changed.emit(enabled)
@@ -727,7 +748,9 @@ class DrakePoseEditorTab(QtWidgets.QWidget):  # type: ignore[misc]
 
     def _on_interpolation(self, pose_a: str, pose_b: str, alpha: float) -> None:
         """Handle interpolation request."""
-        if pose_a is None:
+        if not (pose_a is not None):
+            raise ValueError("pose_a must be provided")
+        if not (pose_a is not None):
             raise ValueError("pose_a must be provided")
         positions = self._library.interpolate(pose_a, pose_b, alpha)
         if positions is not None:
@@ -737,7 +760,9 @@ class DrakePoseEditorTab(QtWidgets.QWidget):  # type: ignore[misc]
 
     def _save_current_pose(self, name: str, description: str) -> None:
         """Save current pose to library."""
-        if name is None:
+        if not (name is not None):
+            raise ValueError("name must be provided")
+        if not (name is not None):
             raise ValueError("name must be provided")
         positions = self._editor.get_all_positions()
         velocities = self._editor.get_all_velocities()
@@ -759,7 +784,9 @@ class DrakePoseEditorTab(QtWidgets.QWidget):  # type: ignore[misc]
 
     def _load_preset(self, preset_name: str) -> None:
         """Load a preset pose by name."""
-        if preset_name is None:
+        if not (preset_name is not None):
+            raise ValueError("preset_name must be provided")
+        if not (preset_name is not None):
             raise ValueError("preset_name must be provided")
         from src.shared.python.pose_editor.library import get_preset_pose
 
@@ -769,7 +796,9 @@ class DrakePoseEditorTab(QtWidgets.QWidget):  # type: ignore[misc]
 
     def _load_preset_from_data(self, name: str, data: dict[str, Any]) -> None:
         """Load preset pose from data dictionary."""
-        if name is None:
+        if not (name is not None):
+            raise ValueError("name must be provided")
+        if not (name is not None):
             raise ValueError("name must be provided")
         joints = self._editor.get_joint_info()
         positions = self._editor.get_all_positions()

@@ -19,7 +19,6 @@ from src.shared.python.core.contracts import precondition
 from ..dependencies import get_logger, get_simulation_service, get_task_manager
 from ..models.requests import SimulationRequest
 from ..models.responses import SimulationResponse
-from ..route_registry import SIMULATION_QUOTA_DEPENDENCY
 
 if TYPE_CHECKING:
     from ..services.simulation_service import SimulationService
@@ -27,11 +26,7 @@ if TYPE_CHECKING:
 router = APIRouter()
 
 
-@router.post(
-    "/simulate",
-    response_model=SimulationResponse,
-    dependencies=[Depends(SIMULATION_QUOTA_DEPENDENCY)],
-)
+@router.post("/simulate", response_model=SimulationResponse)
 @precondition(
     lambda request, service=None, logger=None: request is not None,
     "Simulation request must not be None",
@@ -81,7 +76,7 @@ async def run_simulation(
         ) from exc
 
 
-@router.post("/simulate/async", dependencies=[Depends(SIMULATION_QUOTA_DEPENDENCY)])
+@router.post("/simulate/async")
 async def run_simulation_async(
     request: SimulationRequest,
     background_tasks: BackgroundTasks,
@@ -99,7 +94,7 @@ async def run_simulation_async(
     Returns:
         Task ID and initial status.
     """
-    if request is None:
+    if not (request is not None):
         raise ValueError("request must be provided")
     task_id = str(uuid.uuid4())
 

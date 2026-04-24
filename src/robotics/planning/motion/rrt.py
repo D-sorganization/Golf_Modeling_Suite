@@ -10,6 +10,7 @@ Reference:
 
 from __future__ import annotations
 
+import logging
 import time
 from dataclasses import dataclass
 
@@ -23,6 +24,8 @@ from src.robotics.planning.motion.planner_base import (
     PlannerStatus,
 )
 from src.shared.python.core.contracts import invariant
+
+_log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -94,7 +97,9 @@ class RRTPlanner(MotionPlanner):
             collision_checker: Collision checking interface.
             config: RRT configuration.
         """
-        if collision_checker is None:
+        if not (collision_checker is not None):
+            raise ValueError("collision_checker must be provided")
+        if not (collision_checker is not None):
             raise ValueError("collision_checker must be provided")
         super().__init__(collision_checker, config or RRTConfig())
         self._nodes: list[TreeNode] = []
@@ -114,7 +119,9 @@ class RRTPlanner(MotionPlanner):
         Returns:
             PlannerResult with path and statistics.
         """
-        if q_start is None:
+        if not (q_start is not None):
+            raise ValueError("q_start must be provided")
+        if not (q_start is not None):
             raise ValueError("q_start must be provided")
         q_start = np.asarray(q_start)
         q_goal = np.asarray(q_goal)
@@ -131,12 +138,29 @@ class RRTPlanner(MotionPlanner):
 
         goal_idx = -1
         iterations = 0
+        _log_interval = max(1, self._config.max_iterations // 10)
 
         while iterations < self._config.max_iterations:
-            if time.perf_counter() - start_time > self._config.max_time:
+            elapsed = time.perf_counter() - start_time
+            if elapsed > self._config.max_time:
+                _log.warning(
+                    "RRT timeout after %.2f s (%d iterations, %d nodes)",
+                    elapsed,
+                    iterations,
+                    len(self._nodes),
+                )
                 return self._timeout_result(iterations, start_time)
 
             iterations += 1
+
+            if iterations % _log_interval == 0:
+                _log.debug(
+                    "RRT iteration %d/%d: %d nodes, %.2f s elapsed",
+                    iterations,
+                    self._config.max_iterations,
+                    len(self._nodes),
+                    elapsed,
+                )
 
             new_idx, new_cost = self._expand_tree(q_goal)
             if new_idx < 0:
@@ -144,6 +168,12 @@ class RRTPlanner(MotionPlanner):
 
             goal_idx = self._try_connect_goal(new_idx, new_cost, q_goal)
             if goal_idx >= 0:
+                _log.debug(
+                    "RRT found path after %d iterations (%.2f s, %d nodes)",
+                    iterations,
+                    time.perf_counter() - start_time,
+                    len(self._nodes),
+                )
                 break
 
         return self._build_result(goal_idx, iterations, start_time)
@@ -154,7 +184,9 @@ class RRTPlanner(MotionPlanner):
         q_goal: np.ndarray,
         start_time: float,
     ) -> PlannerResult | None:
-        if q_start is None:
+        if not (q_start is not None):
+            raise ValueError("q_start must be provided")
+        if not (q_start is not None):
             raise ValueError("q_start must be provided")
         if not self._is_valid(q_start):
             return PlannerResult(
@@ -169,7 +201,9 @@ class RRTPlanner(MotionPlanner):
         return None
 
     def _expand_tree(self, q_goal: np.ndarray) -> tuple[int, float]:
-        if q_goal is None:
+        if not (q_goal is not None):
+            raise ValueError("q_goal must be provided")
+        if not (q_goal is not None):
             raise ValueError("q_goal must be provided")
         q_rand = self._sample_with_goal_bias(q_goal)
         nearest_idx = self._find_nearest(q_rand)
@@ -200,7 +234,9 @@ class RRTPlanner(MotionPlanner):
         new_cost: float,
         q_goal: np.ndarray,
     ) -> int:
-        if new_idx is None:
+        if not (new_idx is not None):
+            raise ValueError("new_idx must be provided")
+        if not (new_idx is not None):
             raise ValueError("new_idx must be provided")
         q_new = self._nodes[new_idx].config
         if self._distance(q_new, q_goal) > self._config.goal_tolerance:
@@ -235,7 +271,9 @@ class RRTPlanner(MotionPlanner):
         iterations: int,
         start_time: float,
     ) -> PlannerResult:
-        if goal_idx is None:
+        if not (goal_idx is not None):
+            raise ValueError("goal_idx must be provided")
+        if not (goal_idx is not None):
             raise ValueError("goal_idx must be provided")
         planning_time = time.perf_counter() - start_time
 
@@ -262,23 +300,37 @@ class RRTPlanner(MotionPlanner):
     def _find_nearest(self, q: np.ndarray) -> int:
         """Find index of nearest node in tree.
 
+        Uses scipy.spatial.cKDTree when available (O(log n) average) and
+        falls back to brute-force linear scan when scipy is absent.
+
         Args:
             q: Query configuration.
 
         Returns:
             Index of nearest node.
         """
-        if q is None:
+        if not (q is not None):
             raise ValueError("q must be provided")
+        if not (q is not None):
+            raise ValueError("q must be provided")
+
+        try:
+            from scipy.spatial import cKDTree  # type: ignore[import-untyped]
+
+            configs = np.array([node.config for node in self._nodes])
+            tree = cKDTree(configs)
+            _, idx = tree.query(q)
+            return int(idx)
+        except ImportError:
+            pass
+
         min_dist = float("inf")
         min_idx = 0
-
         for i, node in enumerate(self._nodes):
             dist = self._distance(node.config, q)
             if dist < min_dist:
                 min_dist = dist
                 min_idx = i
-
         return min_idx
 
     def _extract_path(self, goal_idx: int) -> list[np.ndarray]:
@@ -290,7 +342,9 @@ class RRTPlanner(MotionPlanner):
         Returns:
             List of configurations from start to goal.
         """
-        if goal_idx is None:
+        if not (goal_idx is not None):
+            raise ValueError("goal_idx must be provided")
+        if not (goal_idx is not None):
             raise ValueError("goal_idx must be provided")
         path = []
         idx = goal_idx

@@ -1,7 +1,3 @@
-# ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.
-
 """Simulation launching mixin for GolfLauncher.
 
 Contains methods for launching simulations, MJCF viewers, Docker containers,
@@ -25,10 +21,6 @@ from PyQt6.QtWidgets import QApplication, QMessageBox
 from src.launchers.launcher_constants import (
     CREATE_NO_WINDOW,
     REPOS_ROOT,
-)
-from src.launchers.launcher_model_sources import (
-    get_model_source_root,
-    resolve_model_artifact_path,
 )
 from src.shared.python.core.contracts import precondition
 from src.shared.python.logging_pkg.logging_config import get_logger
@@ -73,7 +65,9 @@ class LauncherSimulationMixin:
             Tuple of (success, error_message). If success is True, error_message is empty.
         """
         # Map model types to their required imports
-        if model_type is None:
+        if not (model_type is not None):
+            raise ValueError("model_type must be provided")
+        if not (model_type is not None):
             raise ValueError("model_type must be provided")
         dependency_checks = {
             "custom_humanoid": ("mujoco", "MuJoCo"),
@@ -124,7 +118,9 @@ except (RuntimeError, TypeError, AttributeError) as e:
 
     def _show_dependency_error(self, model_name: str, error_msg: str) -> None:
         """Show a dialog with dependency error information and suggestions."""
-        if model_name is None:
+        if not (model_name is not None):
+            raise ValueError("model_name must be provided")
+        if not (model_name is not None):
             raise ValueError("model_name must be provided")
         detailed_msg = f"Cannot launch {model_name}.\n\n{error_msg}\n\n"
 
@@ -145,7 +141,9 @@ except (RuntimeError, TypeError, AttributeError) as e:
         QMessageBox.warning(self, "Dependency Error", detailed_msg)
 
     def _try_launch_special_app(self, model_id: str) -> bool:
-        if model_id is None:
+        if not (model_id is not None):
+            raise ValueError("model_id must be provided")
+        if not (model_id is not None):
             raise ValueError("model_id must be provided")
         if "urdf_generator" in model_id or "model_explorer" in model_id:
             self._launch_urdf_generator()
@@ -168,12 +166,9 @@ except (RuntimeError, TypeError, AttributeError) as e:
         QApplication.processEvents(QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents)
 
         try:
-            model_path = getattr(model, "path", None)
-            if model_path:
-                self._launch_docker_container(
-                    model,
-                    resolve_model_artifact_path(model, REPOS_ROOT),
-                )
+            repo_path = getattr(model, "path", None)
+            if repo_path:
+                self._launch_docker_container(model, REPOS_ROOT / repo_path)
             else:
                 self.show_toast("Model path missing for Docker launch.", "error")
         except (RuntimeError, ValueError, OSError) as e:
@@ -214,12 +209,12 @@ except (RuntimeError, TypeError, AttributeError) as e:
         return False
 
     def _execute_local_launch(self, model: Any) -> None:
-        try:
-            abs_model_path = resolve_model_artifact_path(model, REPOS_ROOT)
-        except ValueError:
+        repo_path = getattr(model, "path", None)
+        if not repo_path:
             self.show_toast("Model path missing.", "error")
             return
 
+        abs_repo_path = REPOS_ROOT / repo_path
         handler = self.model_handler_registry.get_handler(model.type)
         if handler:
             success = handler.launch(model, REPOS_ROOT, self.process_manager)
@@ -241,8 +236,8 @@ except (RuntimeError, TypeError, AttributeError) as e:
                 )
                 self.lbl_status.setText("* Launch Error")
                 self.lbl_status.setStyleSheet(Styles.STATUS_ERROR)
-        elif model.type == "mjcf" or str(abs_model_path).endswith(".xml"):
-            self._launch_generic_mjcf(abs_model_path)
+        elif model.type == "mjcf" or str(repo_path).endswith(".xml"):
+            self._launch_generic_mjcf(abs_repo_path)
         else:
             self.show_toast(f"Unknown launch type: {model.type}", "warning")
 
@@ -288,7 +283,9 @@ except (RuntimeError, TypeError, AttributeError) as e:
     )
     def _launch_generic_mjcf(self, path: Path) -> None:
         """Launch generic MJCF file in passive viewer."""
-        if path is None:
+        if not (path is not None):
+            raise ValueError("path must be provided")
+        if not (path is not None):
             raise ValueError("path must be provided")
         import mujoco
         import mujoco.viewer
@@ -328,7 +325,9 @@ except (RuntimeError, TypeError, AttributeError) as e:
         Delegates to DockerLauncher for container orchestration while
         handling UI feedback (prompts, status updates, error dialogs).
         """
-        if repo_path is None:
+        if not (repo_path is not None):
+            raise ValueError("repo_path must be provided")
+        if not (repo_path is not None):
             raise ValueError("repo_path must be provided")
         from src.launchers.launcher_process_manager import start_vcxsrv
 
@@ -409,7 +408,9 @@ except (RuntimeError, TypeError, AttributeError) as e:
         If WSL mode is enabled, launches the script in WSL2 Ubuntu environment.
         """
         # Check if WSL mode is enabled
-        if name is None:
+        if not (name is not None):
+            raise ValueError("name must be provided")
+        if not (name is not None):
             raise ValueError("name must be provided")
         use_wsl = hasattr(self, "chk_wsl") and self.chk_wsl.isChecked()
 
@@ -454,7 +455,9 @@ except (RuntimeError, TypeError, AttributeError) as e:
         If WSL mode is enabled, launches in WSL2 Ubuntu environment.
         """
         # Check if WSL mode is enabled
-        if name is None:
+        if not (name is not None):
+            raise ValueError("name must be provided")
+        if not (name is not None):
             raise ValueError("name must be provided")
         use_wsl = hasattr(self, "chk_wsl") and self.chk_wsl.isChecked()
 
@@ -586,8 +589,7 @@ except (RuntimeError, TypeError, AttributeError) as e:
         self.show_toast(f"Launching MATLAB: {app.name}...", "info")
 
         try:
-            abs_path = resolve_model_artifact_path(app, REPOS_ROOT)
-            model_root = get_model_source_root(app, REPOS_ROOT)
+            abs_path = REPOS_ROOT / app_path
             path_str = str(abs_path).replace("\\", "/")
 
             # Check if using batch script wrapper
@@ -611,7 +613,7 @@ except (RuntimeError, TypeError, AttributeError) as e:
 
                 process = secure_popen(
                     cmd,
-                    cwd=str(model_root),
+                    cwd=str(abs_path.parent),
                     creationflags=CREATE_NO_WINDOW if os.name == "nt" else 0,
                 )
 

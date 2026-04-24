@@ -1,5 +1,5 @@
-import sys
-from unittest.mock import MagicMock, patch
+from typing import Any
+from unittest.mock import patch
 
 import pytest
 
@@ -15,38 +15,37 @@ if PYQT6_AVAILABLE:
 
 
 @pytest.fixture
-def launcher():
+def launcher() -> Any:
     """Create a UnifiedLauncher instance."""
     return UnifiedLauncher()
 
 
-def test_initialization(launcher):
+def test_initialization(launcher) -> None:
     """Test UnifiedLauncher initialization succeeds."""
     # UnifiedLauncher now uses lazy initialization - no app/launcher attributes at init
     assert launcher is not None
     assert isinstance(launcher, UnifiedLauncher)
 
 
-def test_mainloop(launcher):
+def test_mainloop(launcher) -> None:
     """Test mainloop execution delegates to golf_launcher.main()."""
+    import sys
+
     # Temporarily remove the legacy module mock that test_unified_launcher.py sets
     # at session level, so _get_golf_main falls through to src.launchers.golf_launcher
     legacy_key = "launchers.golf_launcher"
     legacy_saved = sys.modules.pop(legacy_key, None)
-    mock_module = MagicMock()
-    mock_module.main.return_value = 0
     try:
-        # Use patch.dict to avoid importing the real golf_launcher.py, which has
-        # top-level PyQt6 imports that crash xdist workers in subprocess context.
-        with patch.dict(sys.modules, {"src.launchers.golf_launcher": mock_module}):
+        with patch("src.launchers.golf_launcher.main") as mock_main:
+            mock_main.return_value = 0
             launcher.mainloop()
-            mock_module.main.assert_called_once()
+            mock_main.assert_called_once()
     finally:
         if legacy_saved is not None:
             sys.modules[legacy_key] = legacy_saved
 
 
-def test_show_status(launcher):
+def test_show_status(launcher) -> None:
     """Test show_status method."""
     # Mock the EngineManager to avoid actual engine initialization
     with patch(
@@ -59,7 +58,7 @@ def test_show_status(launcher):
         launcher.show_status()
 
 
-def test_get_version(launcher):
+def test_get_version(launcher) -> None:
     """Test version retrieval.
 
     Design-by-Contract:
@@ -85,14 +84,12 @@ def test_get_version(launcher):
         assert "." in fallback, f"Expected SemVer version, got: {fallback!r}"
 
 
-def test_cli_launch():
+def test_cli_launch() -> None:
     """Test CLI launch function."""
-    # Use patch.dict to avoid importing the real golf_launcher.py, which has
-    # top-level PyQt6 imports that crash xdist workers in subprocess context.
-    mock_module = MagicMock()
-    mock_module.main.return_value = 0
-    with patch.dict(sys.modules, {"src.launchers.golf_launcher": mock_module}):
+    # launch() directly calls golf_launcher.main(), so patch that
+    with patch("src.launchers.golf_launcher.main") as mock_main:
         from src.launchers.unified_launcher import launch
 
+        mock_main.return_value = 0
         launch()
-    mock_module.main.assert_called_once()
+        mock_main.assert_called_once()

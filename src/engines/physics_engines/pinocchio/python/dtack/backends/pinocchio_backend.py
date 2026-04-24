@@ -83,7 +83,7 @@ class PinocchioBackend:
         """
         if not PINOCCHIO_AVAILABLE:
             msg = (
-                "Pinocchio is required but not installed. Install with: pip install pin"  # noqa: E501
+                "Pinocchio is required but not installed. Install with: pip install pin"
             )
             raise ImportError(msg)
 
@@ -96,7 +96,7 @@ class PinocchioBackend:
         if model_path_obj.suffix == ".urdf":
             self.model, self.collision_model, self.visual_model = (
                 pin.buildModelsFromUrdf(str(model_path_obj), "")
-            )  # noqa: E501
+            )
         else:
             msg = f"Unsupported model format: {model_path_obj.suffix}"
             raise ValueError(msg)
@@ -127,7 +127,9 @@ class PinocchioBackend:
         Returns:
             Joint torques [nv]
         """
-        if q is None:
+        if not (q is not None):
+            raise ValueError("q must be provided")
+        if not (q is not None):
             raise ValueError("q must be provided")
         q_arr = np.asarray(q, dtype=np.float64)
         v_arr = np.asarray(v, dtype=np.float64)
@@ -152,7 +154,9 @@ class PinocchioBackend:
         Returns:
             Joint accelerations [nv]
         """
-        if q is None:
+        if not (q is not None):
+            raise ValueError("q must be provided")
+        if not (q is not None):
             raise ValueError("q must be provided")
         q_arr = np.asarray(q, dtype=np.float64)
         v_arr = np.asarray(v, dtype=np.float64)
@@ -163,7 +167,7 @@ class PinocchioBackend:
 
     def compute_mass_matrix(
         self, q: npt.NDArray[np.float64]
-    ) -> npt.NDArray[np.float64]:  # noqa: E501
+    ) -> npt.NDArray[np.float64]:
         """Compute mass matrix (CRBA).
 
         Args:
@@ -172,7 +176,9 @@ class PinocchioBackend:
         Returns:
             Mass matrix [nv x nv]
         """
-        if q is None:
+        if not (q is not None):
+            raise ValueError("q must be provided")
+        if not (q is not None):
             raise ValueError("q must be provided")
         q_arr = np.asarray(q, dtype=np.float64)
         result = pin.crba(self.model, self.data, q_arr)
@@ -192,7 +198,9 @@ class PinocchioBackend:
         Returns:
             Bias forces [nv]
         """
-        if q is None:
+        if not (q is not None):
+            raise ValueError("q must be provided")
+        if not (q is not None):
             raise ValueError("q must be provided")
         q_arr = np.asarray(q, dtype=np.float64)
         v_arr = np.asarray(v, dtype=np.float64)
@@ -208,7 +216,7 @@ class PinocchioBackend:
         self,
         q: npt.NDArray[np.float64],
         frame_id: int | str,
-        reference_frame: pin.ReferenceFrame = pin.ReferenceFrame.LOCAL_WORLD_ALIGNED,
+        reference_frame: int = pin.ReferenceFrame.LOCAL_WORLD_ALIGNED,
     ) -> npt.NDArray[np.float64]:
         """Compute frame Jacobian.
 
@@ -220,7 +228,9 @@ class PinocchioBackend:
         Returns:
             Jacobian matrix [6 x nv]
         """
-        if q is None:
+        if not (q is not None):
+            raise ValueError("q must be provided")
+        if not (q is not None):
             raise ValueError("q must be provided")
         q_arr = np.asarray(q, dtype=np.float64)
 
@@ -231,7 +241,7 @@ class PinocchioBackend:
         pin.updateFramePlacements(self.model, self.data)
         result = pin.computeFrameJacobian(
             self.model, self.data, q_arr, frame_id, reference_frame
-        )  # noqa: E501
+        )
         return np.asarray(result, dtype=np.float64)
 
     def forward_kinematics(self, q: npt.NDArray[np.float64]) -> list[pin.SE3]:
@@ -243,7 +253,9 @@ class PinocchioBackend:
         Returns:
             List of frame placements
         """
-        if q is None:
+        if not (q is not None):
+            raise ValueError("q must be provided")
+        if not (q is not None):
             raise ValueError("q must be provided")
         q_arr = np.asarray(q, dtype=np.float64)
         pin.forwardKinematics(self.model, self.data, q_arr)

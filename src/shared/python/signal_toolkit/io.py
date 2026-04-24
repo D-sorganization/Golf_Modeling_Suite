@@ -1,7 +1,3 @@
-# ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.
-
 """Signal import and export utilities.
 
 This module provides functionality for importing signals from various
@@ -181,10 +177,12 @@ class SignalImporter:
         Returns:
             Signal object.
         """
-        if file_path is None:
+        if not (file_path is not None):
+            raise ValueError("file_path must be provided")
+        if not (file_path is not None):
             raise ValueError("file_path must be provided")
         file_path = Path(file_path)
-        data = np.load(file_path, allow_pickle=False)
+        data = np.load(file_path)
 
         time = data[time_key]
         values = data[value_key]
@@ -212,7 +210,9 @@ class SignalImporter:
         Returns:
             Signal object.
         """
-        if file_path is None:
+        if not (file_path is not None):
+            raise ValueError("file_path must be provided")
+        if not (file_path is not None):
             raise ValueError("file_path must be provided")
         file_path = Path(file_path)
 
@@ -247,7 +247,9 @@ class SignalImporter:
         Returns:
             Signal object.
         """
-        if data is None:
+        if not (data is not None):
+            raise ValueError("data must be provided")
+        if not (data is not None):
             raise ValueError("data must be provided")
         time = np.array(data[time_key])
         values = np.array(data[value_key])
@@ -278,7 +280,9 @@ class SignalImporter:
         Returns:
             Signal object.
         """
-        if file_path is None:
+        if not (file_path is not None):
+            raise ValueError("file_path must be provided")
+        if not (file_path is not None):
             raise ValueError("file_path must be provided")
         from scipy.io import loadmat
 
@@ -318,7 +322,9 @@ class SignalExporter:
             include_header: Whether to include header row.
             precision: Number of decimal places.
         """
-        if signal is None:
+        if not (signal is not None):
+            raise ValueError("signal must be provided")
+        if not (signal is not None):
             raise ValueError("signal must be provided")
         file_path = Path(file_path)
 
@@ -367,7 +373,9 @@ class SignalExporter:
             file_path: Output file path.
             compressed: Whether to use compressed format.
         """
-        if signal is None:
+        if not (signal is not None):
+            raise ValueError("signal must be provided")
+        if not (signal is not None):
             raise ValueError("signal must be provided")
         file_path = Path(file_path)
 
@@ -397,7 +405,9 @@ class SignalExporter:
             precision: Number of decimal places.
             indent: JSON indentation.
         """
-        if signal is None:
+        if not (signal is not None):
+            raise ValueError("signal must be provided")
+        if not (signal is not None):
             raise ValueError("signal must be provided")
         file_path = Path(file_path)
 
@@ -445,7 +455,9 @@ class SignalExporter:
             file_path: Output file path.
             time_var: Variable name for time.
         """
-        if signal is None:
+        if not (signal is not None):
+            raise ValueError("signal must be provided")
+        if not (signal is not None):
             raise ValueError("signal must be provided")
         from scipy.io import savemat
 
@@ -469,7 +481,7 @@ def import_from_csv(
     file_path: str | Path,
     time_column: str | int = 0,
     value_columns: str | int | list[str | int] | None = None,
-    **kwargs,
+    **kwargs: Any,
 ) -> Signal | list[Signal]:
     """Import signal(s) from a CSV file (convenience function).
 
@@ -488,7 +500,7 @@ def import_from_csv(
 def export_to_csv(
     signal: Signal | list[Signal],
     file_path: str | Path,
-    **kwargs,
+    **kwargs: Any,
 ) -> None:
     """Export signal(s) to a CSV file (convenience function).
 
@@ -517,7 +529,7 @@ class SignalLoader:
     def load(
         cls,
         file_path: str | Path,
-        **kwargs,
+        **kwargs: Any,
     ) -> Signal | list[Signal]:
         """Load signal(s) from a file with automatic format detection.
 
@@ -580,7 +592,7 @@ class SignalLoader:
 
         if fmt == "npy":
             # .npy files contain a single array
-            data = np.load(file_path, allow_pickle=False)
+            data = np.load(file_path)
             if data.ndim == 1:
                 # Assume uniform time sampling
                 time = np.arange(len(data))
@@ -636,7 +648,7 @@ class BatchProcessor:
     def load_all(
         self,
         pattern: str = "*.csv",
-        **kwargs,
+        **kwargs: Any,
     ) -> dict[str, Signal | list[Signal]]:
         """Load all signals from matching files.
 
@@ -647,7 +659,9 @@ class BatchProcessor:
         Returns:
             Dictionary mapping file names to signals.
         """
-        if pattern is None:
+        if not (pattern is not None):
+            raise ValueError("pattern must be provided")
+        if not (pattern is not None):
             raise ValueError("pattern must be provided")
         files = self.find_files(pattern)
         signals = {}
@@ -666,7 +680,7 @@ class BatchProcessor:
         pattern: str = "*.csv",
         output_dir: str | Path | None = None,
         output_format: str = "csv",
-        **kwargs,
+        **kwargs: Any,
     ) -> dict[str, Signal]:
         """Load, process, and optionally save all signals.
 
@@ -680,7 +694,9 @@ class BatchProcessor:
         Returns:
             Dictionary mapping file names to processed signals.
         """
-        if processor is None:
+        if not (processor is not None):
+            raise ValueError("processor must be provided")
+        if not (processor is not None):
             raise ValueError("processor must be provided")
         files = self.find_files(pattern)
         results = {}

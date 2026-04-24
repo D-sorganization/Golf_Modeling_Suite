@@ -7,13 +7,15 @@ import pytest
 
 from src.shared.python.pendulum_simulator.simulation_core import integrate_ode
 
+pytestmark = pytest.mark.unit
 
-def _linear_decay(t, y):
+
+def _linear_decay(t, y) -> np.ndarray:
     """dy/dt = -y → y = y0 * exp(-t)."""
     return -y
 
 
-def _harmonic(t, y):
+def _harmonic(t, y) -> np.ndarray:
     """Simple harmonic oscillator: [x, v] → [v, -x]."""
     return np.array([y[1], -y[0]])
 

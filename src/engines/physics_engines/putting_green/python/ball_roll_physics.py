@@ -1,7 +1,3 @@
-# ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.
-
 """Ball Rolling Physics for Putting Simulation.
 
 This module implements the physics of a golf ball rolling on a putting surface,
@@ -28,7 +24,6 @@ References:
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any
@@ -70,17 +65,14 @@ class BallState:
 
     def __post_init__(self) -> None:
         """Ensure arrays are numpy."""
-        # Normalize incoming vectors (including column/row vectors) to 1D so
-        # scalar math (math.hypot) and downstream indexing stay consistent.
-        self.position = np.asarray(self.position, dtype=np.float64).reshape(-1)
-        self.velocity = np.asarray(self.velocity, dtype=np.float64).reshape(-1)
-        self.spin = np.asarray(self.spin, dtype=np.float64).reshape(-1)
+        self.position = np.array(self.position, dtype=np.float64)
+        self.velocity = np.array(self.velocity, dtype=np.float64)
+        self.spin = np.array(self.spin, dtype=np.float64)
 
     @property
     def speed(self) -> float:
         """Ball speed magnitude."""
-        # ⚡ Bolt: math.hypot is ~5x faster than np.linalg.norm for small 2D vectors
-        return math.hypot(self.velocity[0], self.velocity[1])
+        return float(np.linalg.norm(self.velocity))
 
     @property
     def is_moving(self) -> bool:
@@ -146,7 +138,9 @@ class BallRollPhysics:
             ball_radius: Ball radius [m]
             integrator: Integration method ("euler", "rk4", "verlet")
         """
-        if ball_mass is None:
+        if not (ball_mass is not None):
+            raise ValueError("ball_mass must be provided")
+        if not (ball_mass is not None):
             raise ValueError("ball_mass must be provided")
         self.green = green
         self.turf = turf or (green.turf if green else TurfProperties())
@@ -172,7 +166,9 @@ class BallRollPhysics:
         Returns:
             Current RollMode
         """
-        if state is None:
+        if not (state is not None):
+            raise ValueError("state must be provided")
+        if not (state is not None):
             raise ValueError("state must be provided")
         speed = state.speed
 
@@ -218,7 +214,9 @@ class BallRollPhysics:
         Returns:
             Friction force vector [N]
         """
-        if state is None:
+        if not (state is not None):
+            raise ValueError("state must be provided")
+        if not (state is not None):
             raise ValueError("state must be provided")
         if state.speed < 1e-10:
             return np.zeros(2)
@@ -248,7 +246,9 @@ class BallRollPhysics:
         Returns:
             Friction force vector [N]
         """
-        if state is None:
+        if not (state is not None):
+            raise ValueError("state must be provided")
+        if not (state is not None):
             raise ValueError("state must be provided")
         if state.speed < 1e-10:
             return np.zeros(2)
@@ -266,8 +266,7 @@ class BallRollPhysics:
             ]
         )
 
-        # ⚡ Bolt: math.hypot avoids array allocation overhead
-        slip_speed = math.hypot(slip_velocity[0], slip_velocity[1])
+        slip_speed = np.linalg.norm(slip_velocity)
         if slip_speed < 1e-10:
             return self.compute_rolling_friction(state)
 
@@ -286,7 +285,9 @@ class BallRollPhysics:
         Returns:
             Acceleration vector [m/s²]
         """
-        if position is None:
+        if not (position is not None):
+            raise ValueError("position must be provided")
+        if not (position is not None):
             raise ValueError("position must be provided")
         if self.green is None:
             return np.zeros(2)
@@ -309,7 +310,9 @@ class BallRollPhysics:
         Returns:
             New spin vector [rad/s]
         """
-        if state is None:
+        if not (state is not None):
+            raise ValueError("state must be provided")
+        if not (state is not None):
             raise ValueError("state must be provided")
         speed = state.speed
 
@@ -357,7 +360,9 @@ class BallRollPhysics:
         Returns:
             Acceleration vector [m/s²]
         """
-        if state is None:
+        if not (state is not None):
+            raise ValueError("state must be provided")
+        if not (state is not None):
             raise ValueError("state must be provided")
         mode = self.determine_roll_mode(state)
 
@@ -390,13 +395,14 @@ class BallRollPhysics:
             Total kinetic energy [J]
         """
         # Translational: 0.5 * m * v²
-        if state is None:
+        if not (state is not None):
+            raise ValueError("state must be provided")
+        if not (state is not None):
             raise ValueError("state must be provided")
         translational = 0.5 * self.ball_mass * state.speed**2
 
         # Rotational: 0.5 * I * ω²
-        # ⚡ Bolt: math.hypot is faster than np.linalg.norm for 3D vectors
-        spin_mag = math.hypot(state.spin[0], state.spin[1], state.spin[2])
+        spin_mag = np.linalg.norm(state.spin)
         rotational = 0.5 * self._moment_of_inertia * spin_mag**2
 
         return float(translational + rotational)
@@ -411,7 +417,9 @@ class BallRollPhysics:
         Returns:
             New ball state
         """
-        if state is None:
+        if not (state is not None):
+            raise ValueError("state must be provided")
+        if not (state is not None):
             raise ValueError("state must be provided")
         if self.integrator == "rk4":
             return self._step_rk4(state, dt)
@@ -421,15 +429,16 @@ class BallRollPhysics:
 
     def _step_euler(self, state: BallState, dt: float) -> BallState:
         """Euler integration step."""
-        if state is None:
+        if not (state is not None):
+            raise ValueError("state must be provided")
+        if not (state is not None):
             raise ValueError("state must be provided")
         mode = self.determine_roll_mode(state)
 
         if mode == RollMode.STOPPED:
             # Check if slope would cause movement
             accel = self.compute_slope_acceleration(state.position)
-            # ⚡ Bolt: Use math.hypot for 2D magnitude optimization
-            if math.hypot(accel[0], accel[1]) < 0.01:  # Threshold for starting
+            if np.linalg.norm(accel) < 0.01:  # Threshold for starting
                 return state.copy()
 
         # Compute acceleration
@@ -449,8 +458,7 @@ class BallRollPhysics:
             new_velocity += perp_dir * spin_curve_accel * dt
 
         # Check for stopping
-        # ⚡ Bolt: math.hypot for 2D magnitude
-        new_speed = math.hypot(new_velocity[0], new_velocity[1])
+        new_speed = np.linalg.norm(new_velocity)
         if new_speed < self.STOP_VELOCITY_THRESHOLD:
             new_velocity = np.zeros(2)
 
@@ -469,14 +477,18 @@ class BallRollPhysics:
     def _step_rk4(self, state: BallState, dt: float) -> BallState:
         """4th-order Runge-Kutta integration."""
 
-        if state is None:
+        if not (state is not None):
+            raise ValueError("state must be provided")
+        if not (state is not None):
             raise ValueError("state must be provided")
 
         def derivatives(
             pos: np.ndarray, vel: np.ndarray
         ) -> tuple[np.ndarray, np.ndarray]:
             """Compute velocity and acceleration for the given state."""
-            if pos is None:
+            if not (pos is not None):
+                raise ValueError("pos must be provided")
+            if not (pos is not None):
                 raise ValueError("pos must be provided")
             temp_state = BallState(pos, vel, state.spin)
             accel = self.compute_total_acceleration(temp_state)
@@ -495,7 +507,7 @@ class BallRollPhysics:
         new_velocity = vel + (dt / 6.0) * (k1_a + 2 * k2_a + 2 * k3_a + k4_a)
 
         # Check stopping
-        if math.hypot(new_velocity[0], new_velocity[1]) < self.STOP_VELOCITY_THRESHOLD:
+        if np.linalg.norm(new_velocity) < self.STOP_VELOCITY_THRESHOLD:
             new_velocity = np.zeros(2)
 
         # Update spin
@@ -507,7 +519,9 @@ class BallRollPhysics:
     def _step_verlet(self, state: BallState, dt: float) -> BallState:
         """Velocity Verlet integration (better energy conservation)."""
         # Current acceleration
-        if state is None:
+        if not (state is not None):
+            raise ValueError("state must be provided")
+        if not (state is not None):
             raise ValueError("state must be provided")
         accel = self.compute_total_acceleration(state)
 
@@ -525,8 +539,7 @@ class BallRollPhysics:
         new_velocity = state.velocity + 0.5 * (accel + new_accel) * dt
 
         # Check stopping
-        # ⚡ Bolt: math.hypot for 2D magnitude
-        if math.hypot(new_velocity[0], new_velocity[1]) < self.STOP_VELOCITY_THRESHOLD:
+        if np.linalg.norm(new_velocity) < self.STOP_VELOCITY_THRESHOLD:
             new_velocity = np.zeros(2)
 
         # Update spin
@@ -553,7 +566,9 @@ class BallRollPhysics:
         Returns:
             Dictionary with trajectory data
         """
-        if initial_state is None:
+        if not (initial_state is not None):
+            raise ValueError("initial_state must be provided")
+        if not (initial_state is not None):
             raise ValueError("initial_state must be provided")
         positions = [initial_state.position.copy()]
         velocities = [initial_state.velocity.copy()]

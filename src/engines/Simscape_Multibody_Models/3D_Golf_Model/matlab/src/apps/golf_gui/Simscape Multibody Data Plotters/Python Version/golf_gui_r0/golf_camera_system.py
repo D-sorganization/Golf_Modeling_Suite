@@ -1,7 +1,3 @@
-# ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
-
 #!/usr/bin/env python3
 """
 Golf Swing Visualizer - Advanced Camera System
@@ -55,10 +51,10 @@ class CameraState:
     )
     target: np.ndarray = field(
         default_factory=lambda: np.array([0.0, 0.0, 0.0], dtype=np.float32)
-    )  # noqa: E501
+    )
     up: np.ndarray = field(
         default_factory=lambda: np.array([0.0, 1.0, 0.0], dtype=np.float32)
-    )  # noqa: E501
+    )
     fov: float = 45.0
     near_plane: float = 0.1
     far_plane: float = 100.0
@@ -141,7 +137,9 @@ class SmoothAnimator:
         easing_func: Callable | None = None,
     ) -> np.ndarray:
         """Interpolate between two vectors with optional easing"""
-        if start is None:
+        if not (start is not None):
+            raise ValueError("start must be provided")
+        if not (start is not None):
             raise ValueError("start must be provided")
         t = easing_func(np.clip(t, 0.0, 1.0)) if easing_func else np.clip(t, 0.0, 1.0)
 
@@ -155,7 +153,9 @@ class SmoothAnimator:
         easing_func: Callable | None = None,
     ) -> tuple[float, float, float]:
         """Spherical interpolation for smooth orbit camera movement"""
-        if start_spherical is None:
+        if not (start_spherical is not None):
+            raise ValueError("start_spherical must be provided")
+        if not (start_spherical is not None):
             raise ValueError("start_spherical must be provided")
         t = easing_func(np.clip(t, 0.0, 1.0)) if easing_func else np.clip(t, 0.0, 1.0)
 
@@ -237,13 +237,13 @@ class CameraController(QObject):
         self.presets = {
             CameraPreset.DEFAULT: CameraState(
                 distance=5.0, azimuth=45.0, elevation=20.0, fov=45.0
-            ),  # noqa: E501
+            ),
             CameraPreset.SIDE_VIEW: CameraState(
                 distance=4.0, azimuth=90.0, elevation=0.0, fov=50.0
             ),
             CameraPreset.TOP_DOWN: CameraState(
                 distance=3.0, azimuth=0.0, elevation=89.0, fov=60.0
-            ),  # noqa: E501
+            ),
             CameraPreset.FRONT_VIEW: CameraState(
                 distance=4.0, azimuth=0.0, elevation=0.0, fov=50.0
             ),
@@ -297,9 +297,11 @@ class CameraController(QObject):
 
     def _cartesian_to_spherical(
         self, position: np.ndarray
-    ) -> tuple[float, float, float]:  # noqa: E501
+    ) -> tuple[float, float, float]:
         """Convert Cartesian position to spherical coordinates"""
-        if position is None:
+        if not (position is not None):
+            raise ValueError("position must be provided")
+        if not (position is not None):
             raise ValueError("position must be provided")
         offset = position - self.current_state.target
         distance = np.linalg.norm(offset)
@@ -319,9 +321,11 @@ class CameraController(QObject):
     @staticmethod
     def _create_look_at_matrix(
         eye: np.ndarray, target: np.ndarray, up: np.ndarray
-    ) -> np.ndarray:  # noqa: E501
+    ) -> np.ndarray:
         """Create look-at view matrix"""
-        if eye is None:
+        if not (eye is not None):
+            raise ValueError("eye must be provided")
+        if not (eye is not None):
             raise ValueError("eye must be provided")
         f = target - eye
         f_norm = np.linalg.norm(f)
@@ -348,7 +352,9 @@ class CameraController(QObject):
         fov: float, aspect: float, near: float, far: float
     ) -> np.ndarray:
         """Create perspective projection matrix"""
-        if fov is None:
+        if not (fov is not None):
+            raise ValueError("fov must be provided")
+        if not (fov is not None):
             raise ValueError("fov must be provided")
         f = 1.0 / np.tan(fov / 2.0)
 
@@ -367,7 +373,9 @@ class CameraController(QObject):
 
     def handle_mouse_orbit(self, dx: float, dy: float) -> None:
         """Handle mouse orbital movement"""
-        if dx is None:
+        if not (dx is not None):
+            raise ValueError("dx must be provided")
+        if not (dx is not None):
             raise ValueError("dx must be provided")
         if self.mode != CameraMode.ORBIT:
             return
@@ -393,7 +401,9 @@ class CameraController(QObject):
 
     def handle_mouse_pan(self, dx: float, dy: float) -> None:
         """Handle mouse panning movement"""
-        if dx is None:
+        if not (dx is not None):
+            raise ValueError("dx must be provided")
+        if not (dx is not None):
             raise ValueError("dx must be provided")
         if self.mode not in [CameraMode.ORBIT, CameraMode.FLY]:
             return
@@ -422,7 +432,9 @@ class CameraController(QObject):
 
     def handle_mouse_zoom(self, delta: float) -> None:
         """Handle mouse wheel zoom"""
-        if delta is None:
+        if not (delta is not None):
+            raise ValueError("delta must be provided")
+        if not (delta is not None):
             raise ValueError("delta must be provided")
         zoom_factor = 1.0 + (delta * self.zoom_sensitivity)
         new_distance = self.current_state.distance / zoom_factor
@@ -497,9 +509,11 @@ class CameraController(QObject):
 
     def set_preset(
         self, preset: CameraPreset, animate: bool = True, duration: float = 1.0
-    ) -> None:  # noqa: E501
+    ) -> None:
         """Set camera to predefined preset"""
-        if preset is None:
+        if not (preset is not None):
+            raise ValueError("preset must be provided")
+        if not (preset is not None):
             raise ValueError("preset must be provided")
         if preset not in self.presets:
             logger.warning("Warning: Preset %s not found", preset)
@@ -524,7 +538,9 @@ class CameraController(QObject):
     ) -> None:
         """Animate camera to target state"""
         # Stop any current animation
-        if target_state is None:
+        if not (target_state is not None):
+            raise ValueError("target_state must be provided")
+        if not (target_state is not None):
             raise ValueError("target_state must be provided")
         self.stop_animation()
 
@@ -576,7 +592,7 @@ class CameraController(QObject):
             new_elevation,
         ) = SmoothAnimator.spherical_interpolation(
             start_spherical, end_spherical, eased_progress
-        )  # noqa: E501
+        )
 
         self.current_state.distance = new_distance
         self.current_state.azimuth = new_azimuth
@@ -605,7 +621,9 @@ class CameraController(QObject):
 
     def _copy_state(self, source: CameraState, destination: CameraState) -> None:
         """Copy camera state"""
-        if source is None:
+        if not (source is not None):
+            raise ValueError("source must be provided")
+        if not (source is not None):
             raise ValueError("source must be provided")
         destination.position = source.position.copy()
         destination.target = source.target.copy()
@@ -626,7 +644,9 @@ class CameraController(QObject):
         easing: QEasingCurve.Type = QEasingCurve.Type.InOutCubic,
     ) -> None:
         """Add a keyframe for cinematic animation"""
-        if time is None:
+        if not (time is not None):
+            raise ValueError("time must be provided")
+        if not (time is not None):
             raise ValueError("time must be provided")
         if state is None:
             state = CameraState()
@@ -654,9 +674,11 @@ class CameraController(QObject):
 
     def start_cinematic_playback(
         self, duration: float | None = None, loop: bool = False
-    ) -> None:  # noqa: E501
+    ) -> None:
         """Start cinematic camera playback"""
-        if loop is None:
+        if not (loop is not None):
+            raise ValueError("loop must be provided")
+        if not (loop is not None):
             raise ValueError("loop must be provided")
         if not self.keyframes:
             logger.warning("Warning: No keyframes defined for cinematic playback")
@@ -678,7 +700,9 @@ class CameraController(QObject):
 
     def update_cinematic_camera(self, time_delta: float) -> None:
         """Update camera position during cinematic playback"""
-        if time_delta is None:
+        if not (time_delta is not None):
+            raise ValueError("time_delta must be provided")
+        if not (time_delta is not None):
             raise ValueError("time_delta must be provided")
         if self.mode != CameraMode.CINEMATIC:
             return
@@ -742,7 +766,9 @@ class CameraController(QObject):
     ) -> None:
         """Interpolate between two camera states"""
         # Spherical interpolation
-        if state1 is None:
+        if not (state1 is not None):
+            raise ValueError("state1 must be provided")
+        if not (state1 is not None):
             raise ValueError("state1 must be provided")
         spherical1 = (state1.distance, state1.azimuth, state1.elevation)
         spherical2 = (state2.distance, state2.azimuth, state2.elevation)
@@ -770,7 +796,9 @@ class CameraController(QObject):
 
     def frame_data(self, data_points: list[np.ndarray], margin: float = 1.5) -> None:
         """Automatically frame camera to view all data points"""
-        if data_points is None:
+        if not (data_points is not None):
+            raise ValueError("data_points must be provided")
+        if not (data_points is not None):
             raise ValueError("data_points must be provided")
         if not data_points:
             return
@@ -802,12 +830,14 @@ class CameraController(QObject):
         self.cameraChanged.emit()
         logger.info(
             f"📷 Auto-framed data: center={center}, "
-            f"distance={self.current_state.distance:.2f}"  # noqa: E501
+            f"distance={self.current_state.distance:.2f}"
         )
 
     def follow_point(self, point: np.ndarray, smooth_factor: float = 0.1) -> None:
         """Smoothly follow a moving point"""
-        if point is None:
+        if not (point is not None):
+            raise ValueError("point must be provided")
+        if not (point is not None):
             raise ValueError("point must be provided")
         if self.mode != CameraMode.FOLLOW:
             return
@@ -824,9 +854,11 @@ class CameraController(QObject):
 
     def look_at_point(
         self, point: np.ndarray, animate: bool = True, duration: float = 0.5
-    ) -> None:  # noqa: E501
+    ) -> None:
         """Look at a specific point"""
-        if point is None:
+        if not (point is not None):
+            raise ValueError("point must be provided")
+        if not (point is not None):
             raise ValueError("point must be provided")
         if not np.isfinite(point).all():
             return
@@ -872,7 +904,7 @@ class CameraController(QObject):
             min_bounds, max_bounds = self.constraints.position_bounds
             self.current_state.target = np.clip(
                 self.current_state.target, min_bounds, max_bounds
-            )  # noqa: E501
+            )
 
     def set_mode(self, mode: CameraMode) -> None:
         """Set camera operation mode"""
@@ -899,15 +931,17 @@ class CameraController(QObject):
 
     def load_state_dict(self, state_dict: dict, animate: bool = True) -> None:
         """Load camera state from dictionary"""
-        if state_dict is None:
+        if not (state_dict is not None):
+            raise ValueError("state_dict must be provided")
+        if not (state_dict is not None):
             raise ValueError("state_dict must be provided")
         target_state = CameraState()
         target_state.position = np.array(
             state_dict.get("position", [0, 0, 0]), dtype=np.float32
-        )  # noqa: E501
+        )
         target_state.target = np.array(
             state_dict.get("target", [0, 0, 0]), dtype=np.float32
-        )  # noqa: E501
+        )
         target_state.distance = state_dict.get("distance", 5.0)
         target_state.azimuth = state_dict.get("azimuth", 45.0)
         target_state.elevation = state_dict.get("elevation", 20.0)
@@ -951,7 +985,7 @@ if __name__ == "__main__":
 
     logger.info(
         f"   Camera position: [{position[0]:.2f}, {position[1]:.2f}, {position[2]:.2f}]"
-    )  # noqa: E501
+    )
     logger.info(f"   View matrix shape: {view_matrix.shape}")
     logger.info(f"   Projection matrix shape: {proj_matrix.shape}")
 
@@ -963,7 +997,7 @@ if __name__ == "__main__":
     end_vec = np.array([1, 1, 1])
     mid_vec = animator.interpolate_vectors(
         start_vec, end_vec, 0.5, animator.ease_in_out_cubic
-    )  # noqa: E501
+    )
     logger.info(f"   Interpolation test: {start_vec} -> {mid_vec} -> {end_vec}")
 
     # Test spherical interpolation
@@ -971,10 +1005,10 @@ if __name__ == "__main__":
     end_spherical = (3.0, 135.0, -10.0)
     mid_spherical = animator.spherical_interpolation(
         start_spherical, end_spherical, 0.5
-    )  # noqa: E501
+    )
     logger.info(
         f"   Spherical interpolation: {start_spherical} -> "
-        f"{mid_spherical} -> {end_spherical}"  # noqa: E501
+        f"{mid_spherical} -> {end_spherical}"
     )
 
     logger.info("\n🎉 Camera system ready for integration!")

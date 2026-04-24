@@ -10,11 +10,12 @@ The launcher now features:
 - Pre-loaded resources passed to main window (no duplicate loading)
 """
 
+import builtins
 import importlib
 import sys
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from src.shared.python.engine_core.engine_availability import PYQT6_AVAILABLE
 from src.shared.python.logging_pkg.logging_config import get_logger
@@ -30,11 +31,6 @@ else:
 logger = get_logger(__name__)
 
 
-def _emit_stdout(message: str) -> None:
-    """Write a single line to standard output."""
-    sys.stdout.write(f"{message}\n")
-
-
 def _is_pyqt6_available() -> bool:
     """Resolve PyQt availability with legacy module override support."""
     legacy_module = sys.modules.get("launchers.unified_launcher")
@@ -43,7 +39,7 @@ def _is_pyqt6_available() -> bool:
     return bool(PYQT6_AVAILABLE)
 
 
-def _get_golf_main(*, prefer_legacy: bool = False) -> Callable[..., Any] | None:
+def _get_golf_main(*, prefer_legacy: bool = False) -> Callable[..., None]:
     """Resolve golf launcher entry point across legacy/new module paths."""
     if prefer_legacy:
         legacy_module = sys.modules.get("launchers.golf_launcher")
@@ -130,10 +126,10 @@ class UnifiedLauncher:
             for _engine in engines:
                 engine_name = str(getattr(_engine, "value", str(_engine)))
                 logger.info(" - %s", engine_name)
-                _emit_stdout(engine_name.upper())
+                builtins.print(engine_name.upper())  # noqa: T201
         else:
             logger.info("No engines available.")
-            _emit_stdout("NO ENGINES AVAILABLE")
+            builtins.print("NO ENGINES AVAILABLE")  # noqa: T201
 
         # Show suite root — import from the canonical location
         try:

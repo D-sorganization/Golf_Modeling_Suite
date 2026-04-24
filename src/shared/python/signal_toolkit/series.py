@@ -1,7 +1,3 @@
-# ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.
-
 """Taylor and Maclaurin series expansion module.
 
 This module provides functionality for computing Taylor and Maclaurin series
@@ -161,7 +157,9 @@ class SeriesExpansion:
         Returns:
             Array of coefficients [c0, c1, c2, ..., c_{n-1}]
         """
-        if f is None:
+        if not (f is not None):
+            raise ValueError("f must be provided")
+        if not (f is not None):
             raise ValueError("f must be provided")
         n_terms = min(n_terms, self.max_terms)
 
@@ -207,7 +205,9 @@ class SeriesExpansion:
         Returns:
             SeriesResult dataclass with coefficients, function, and metadata
         """
-        if f is None:
+        if not (f is not None):
+            raise ValueError("f must be provided")
+        if not (f is not None):
             raise ValueError("f must be provided")
         coefficients = self.get_coefficients(f, center, n_terms)
         series_func = self.taylor_series(f, center, n_terms)
@@ -245,7 +245,9 @@ class SeriesExpansion:
             - final_error: Error at max_terms
             - errors_by_term: List of errors for each number of terms
         """
-        if f is None:
+        if not (f is not None):
+            raise ValueError("f must be provided")
+        if not (f is not None):
             raise ValueError("f must be provided")
         try:
             exact_value = float(f(x_test))  # type: ignore[arg-type]
@@ -314,7 +316,9 @@ class SeriesExpansion:
         Returns:
             Estimated upper bound on the error
         """
-        if f is None:
+        if not (f is not None):
+            raise ValueError("f must be provided")
+        if not (f is not None):
             raise ValueError("f must be provided")
         if n_terms <= 0:
             return float("inf")
@@ -354,7 +358,9 @@ class SeriesExpansion:
         Returns:
             Approximate value of f^(n)(x)
         """
-        if f is None:
+        if not (f is not None):
+            raise ValueError("f must be provided")
+        if not (f is not None):
             raise ValueError("f must be provided")
         if n == 0:
             return float(f(x))  # type: ignore[arg-type]
@@ -384,7 +390,9 @@ class SeriesExpansion:
             Approximate value of f^(n)(x)
         """
         # Compute derivatives at decreasing step sizes
-        if f is None:
+        if not (f is not None):
+            raise ValueError("f must be provided")
+        if not (f is not None):
             raise ValueError("f must be provided")
         h0 = 0.5  # Initial step size (larger for stability)
         estimates = []
@@ -427,7 +435,9 @@ class SeriesExpansion:
         Returns:
             Approximate derivative value
         """
-        if f is None:
+        if not (f is not None):
+            raise ValueError("f must be provided")
+        if not (f is not None):
             raise ValueError("f must be provided")
         result = 0.0
         for k in range(n + 1):
@@ -457,7 +467,9 @@ class SeriesExpansion:
     @staticmethod
     def _binomial(n: int, k: int) -> int:
         """Compute binomial coefficient C(n, k)."""
-        if n is None:
+        if not (n is not None):
+            raise ValueError("n must be provided")
+        if not (n is not None):
             raise ValueError("n must be provided")
         if k < 0 or k > n:
             return 0

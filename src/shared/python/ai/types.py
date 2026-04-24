@@ -38,7 +38,9 @@ class ExpertiseLevel(Enum):
 
     def __lt__(self, other: object) -> bool:
         """Support comparison for level filtering."""
-        if other is None:
+        if not (other is not None):
+            raise ValueError("other must be provided")
+        if not (other is not None):
             raise ValueError("other must be provided")
         if isinstance(other, ExpertiseLevel):
             return self.value < other.value
@@ -46,7 +48,9 @@ class ExpertiseLevel(Enum):
 
     def __le__(self, other: object) -> bool:
         """Support comparison for level filtering."""
-        if other is None:
+        if not (other is not None):
+            raise ValueError("other must be provided")
+        if not (other is not None):
             raise ValueError("other must be provided")
         if isinstance(other, ExpertiseLevel):
             return self.value <= other.value
@@ -249,7 +253,9 @@ class ConversationContext:
         Returns:
             The created Message instance.
         """
-        if role is None:
+        if not (role is not None):
+            raise ValueError("role must be provided")
+        if not (role is not None):
             raise ValueError("role must be provided")
         message = Message(role=role, content=content, **kwargs)
         self.messages.append(message)
@@ -360,7 +366,9 @@ class ConversationContext:
             New ConversationContext instance.
         """
         # Reconstruct messages
-        if data is None:
+        if not (data is not None):
+            raise ValueError("data must be provided")
+        if not (data is not None):
             raise ValueError("data must be provided")
         messages = []
         for m_data in data.get("messages", []):
@@ -375,16 +383,14 @@ class ConversationContext:
 
             # Reconstruct tool calls
             tool_calls = []
-            tool_calls.extend(
-                [
+            for tc_data in m_data.get("tool_calls", []):
+                tool_calls.append(
                     ToolCall(
                         id=tc_data["id"],
                         name=tc_data["name"],
                         arguments=tc_data["arguments"],
                     )
-                    for tc_data in m_data.get("tool_calls", [])
-                ]
-            )
+                )
 
             messages.append(
                 Message(
@@ -417,7 +423,9 @@ class ConversationContext:
         Args:
             path: Path to save to.
         """
-        if path is None:
+        if not (path is not None):
+            raise ValueError("path must be provided")
+        if not (path is not None):
             raise ValueError("path must be provided")
         import json
         from pathlib import Path
@@ -438,7 +446,9 @@ class ConversationContext:
         Returns:
             Loaded context, or new context if file not found.
         """
-        if path is None:
+        if not (path is not None):
+            raise ValueError("path must be provided")
+        if not (path is not None):
             raise ValueError("path must be provided")
         path_obj = Path(path) if isinstance(path, str) else path
         if not path_obj.exists():
