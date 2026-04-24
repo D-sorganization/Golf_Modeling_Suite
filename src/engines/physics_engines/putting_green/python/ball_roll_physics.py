@@ -36,7 +36,6 @@ from src.engines.physics_engines.putting_green.python.turf_properties import (
 )
 from src.shared.python.core.numerical_constants import (
     EPSILON_TIME_STEP,
-    EPSILON_VELOCITY_THRESHOLD,
 )
 from src.shared.python.core.physics_constants import (
     GOLF_BALL_MASS_KG,
@@ -81,7 +80,7 @@ class BallState:
     @property
     def is_moving(self) -> bool:
         """Check if ball is moving (above threshold)."""
-        return self.speed > EPSILON_VELOCITY_THRESHOLD
+        return self.speed > 0.005
 
     @property
     def direction(self) -> np.ndarray:

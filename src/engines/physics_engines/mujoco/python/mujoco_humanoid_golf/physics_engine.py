@@ -287,7 +287,7 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
 
         This method applies aerodynamic damping to generalized velocities.
         For a full implementation with ball-specific tracking, extend to
-        identify ball body and apply forces directly (TODO: #3167).
+        identify ball body and apply forces directly (tracked in issue #3167).
 
         Args:
             dt: Time step [s]
@@ -296,9 +296,8 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             return
 
         try:
-            # Get velocity from generalized velocities
-            # TODO: Add body name lookup to get ball-specific velocities (#3167)
-            if self.data.nv >= 6:
+            # Get velocity from generalized velocities; nv is on model, not data
+            if self.model.nv >= 6:
                 # First 6: [v_x, v_y, v_z, omega_x, omega_y, omega_z]
                 vel_indices = slice(0, 3)
                 spin_indices = slice(3, 6)

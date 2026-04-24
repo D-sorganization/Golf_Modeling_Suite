@@ -342,7 +342,7 @@ class DrakePhysicsEngine(PhysicsEngine):
 
         This method applies aerodynamic damping to generalized velocities.
         For a full implementation with ball-specific tracking, extend to
-        identify ball body and apply forces directly (TODO: #3167).
+        identify ball body and apply forces directly (tracked in issue #3167).
 
         Args:
             dt: Time step [s]
