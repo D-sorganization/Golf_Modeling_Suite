@@ -58,16 +58,26 @@ def main() -> None:
     trajectory = simulator.simulate_trajectory(launch, max_time=8.0, dt=0.05)
 
     # --- Print summary every 0.5 s ---
-    for _pt in trajectory[::10]:
-        pass
+    print("\n--- Trajectory Summary (every 0.5 s) ---")
+    print(f"{'Time (s)':<10} {'X (m)':<10} {'Z (m)':<10} {'Speed (m/s)':<12}")
+    print("-" * 42)
+    for pt in trajectory[::10]:
+        speed = float(np.linalg.norm(pt.velocity))
+        print(
+            f"{pt.time:<10.2f} {pt.position[0]:<10.2f} {pt.height:<10.2f} {speed:<12.2f}"
+        )
 
     # --- Carry distance: last point before height < 0 ---
     landing_pts = [p for p in trajectory if p.height <= 0.0]
     if len(landing_pts) >= 2:
         carry_m = float(landing_pts[-1].position[0])
-        carry_m * 1.0936
+        carry_yards = carry_m * 1.0936
+        print("\n--- Results ---")
+        print(f"Carry Distance: {carry_m:.1f} m ({carry_yards:.1f} yd)")
+        print(f"Peak Height: {max(p.height for p in trajectory):.2f} m")
     else:
-        pass
+        print("\n--- Results ---")
+        print("No landing detected (ball still in flight at max time)")
 
 
 if __name__ == "__main__":
