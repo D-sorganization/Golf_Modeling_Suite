@@ -1,8 +1,11 @@
 # Stage 1: Builder — install all Python dependencies into an isolated venv
 FROM python:3.12-slim AS builder
 
-ENV DEBIAN_FRONTEND=noninteractive \
-    PIP_NO_CACHE_DIR=1
+# Stage 1: Builder stage with full development tools
+# Digest pinned to continuumio/miniconda3:24.11.1-0 (all-platform manifest).
+# To rotate: run `docker manifest inspect continuumio/miniconda3:<new-tag>` and
+# update both the tag and the digest here; review conda/Python release notes.
+FROM continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b AS builder
 
 # Build tools for packages that compile C extensions (cryptography, etc.)
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -10,8 +13,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+# Create comprehensive environment
+# Install core scientific packages via conda
+RUN conda install -y -c conda-forge \
+    python=3.12 \
+    numpy \
+    scipy \
+    pyqt6 \
+    opencv \
+    pyyaml \
+    h5py \
+    scikit-learn \
+    pillow \
+    ezc3d \
+    && conda clean --all --yes
 
 # Core API + physics stack from lockfile
 COPY requirements.lock /tmp/requirements.lock
@@ -54,8 +69,9 @@ RUN pip install \
     "trimesh>=4.0.0"
 
 
-# Stage 2: Runtime — slim production image for the API server
-FROM python:3.12-slim AS runtime
+# Stage 2: Runtime stage with minimal footprint
+# Same digest as builder — keep both in sync when rotating.
+FROM continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b AS runtime
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -135,9 +151,13 @@ FROM runtime AS training
 
 USER root
 
-# PyTorch cu124 wheels bundle CUDA runtime libs; host driver provides libcuda via nvidia-container-toolkit
-RUN /opt/venv/bin/pip install --no-cache-dir \
-    "torch>=2.3.0" --index-url https://download.pytorch.org/whl/cu124
+# Install CUDA toolkit via conda for GPU training support
+RUN conda install -y -c pytorch -c nvidia -c conda-forge \
+    cuda-toolkit \
+    cudnn \
+    pytorch \
+    pytorch-cuda=12.4 \
+    && conda clean --all --yes
 
 RUN /opt/venv/bin/pip install --no-cache-dir \
     "gymnasium>=0.29.0" \

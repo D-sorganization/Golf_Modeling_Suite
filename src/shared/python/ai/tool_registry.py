@@ -166,9 +166,7 @@ class Tool:
         Returns:
             List of validation error messages (empty if valid).
         """
-        if not (arguments is not None):
-            raise ValueError("arguments must be provided")
-        if not (arguments is not None):
+        if arguments is None:
             raise ValueError("arguments must be provided")
         errors: list[str] = []
 
@@ -206,9 +204,7 @@ class Tool:
         Returns:
             ToolResult with execution outcome.
         """
-        if not (arguments is not None):
-            raise ValueError("arguments must be provided")
-        if not (arguments is not None):
+        if arguments is None:
             raise ValueError("arguments must be provided")
         import time
 
@@ -292,9 +288,7 @@ class ToolRegistry:
             ...     ...
         """
 
-        if not (name is not None):
-            raise ValueError("name must be provided")
-        if not (name is not None):
+        if name is None:
             raise ValueError("name must be provided")
 
         def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
@@ -325,9 +319,7 @@ class ToolRegistry:
         Args:
             tool: Tool to register.
         """
-        if not (tool is not None):
-            raise ValueError("tool must be provided")
-        if not (tool is not None):
+        if tool is None:
             raise ValueError("tool must be provided")
         self._tools[tool.name] = tool
         logger.debug("Registered tool: %s", tool.name)
@@ -343,9 +335,7 @@ class ToolRegistry:
         Returns:
             List of ToolParameter definitions.
         """
-        if not (func is not None):
-            raise ValueError("func must be provided")
-        if not (func is not None):
+        if func is None:
             raise ValueError("func must be provided")
         parameters: list[ToolParameter] = []
         sig = inspect.signature(func)
@@ -396,9 +386,7 @@ class ToolRegistry:
         Returns:
             JSON Schema type string.
         """
-        if not (python_type is not None):
-            raise ValueError("python_type must be provided")
-        if not (python_type is not None):
+        if python_type is None:
             raise ValueError("python_type must be provided")
         type_mapping = {
             str: "string",
@@ -447,9 +435,7 @@ class ToolRegistry:
         Returns:
             List of matching tools.
         """
-        if not (max_expertise is not None):
-            raise ValueError("max_expertise must be provided")
-        if not (max_expertise is not None):
+        if max_expertise is None:
             raise ValueError("max_expertise must be provided")
         tools = list(self._tools.values())
 
@@ -459,6 +445,35 @@ class ToolRegistry:
         tools = [t for t in tools if t.expertise_level <= max_expertise]
 
         return sorted(tools, key=lambda t: t.name)
+
+    def declarations(self, max_expertise: int = 4) -> list[Any]:
+        """Return tools as :class:`~src.shared.python.ai.adapters.base.ToolDeclaration` objects.
+
+        This method bridges the registry to the adapter protocol: adapters
+        expect ``ToolDeclaration`` instances, while the registry stores the
+        richer ``Tool`` dataclass.
+
+        Args:
+            max_expertise: Maximum expertise level of tools to include (1–4).
+
+        Returns:
+            List of ``ToolDeclaration`` instances for all matching tools.
+        """
+        from src.shared.python.ai.adapters.base import ToolDeclaration
+
+        result: list[ToolDeclaration] = []
+        for tool in self.list_tools(max_expertise=max_expertise):
+            schema = tool.to_json_schema()
+            params = schema.get("parameters", {})
+            result.append(
+                ToolDeclaration(
+                    name=tool.name,
+                    description=tool.description,
+                    parameters=params.get("properties", {}),
+                    required=params.get("required", []),
+                )
+            )
+        return result
 
     def get_tools_for_provider(
         self,
@@ -474,9 +489,7 @@ class ToolRegistry:
         Returns:
             List of tool definitions in provider format.
         """
-        if not (provider_format is not None):
-            raise ValueError("provider_format must be provided")
-        if not (provider_format is not None):
+        if provider_format is None:
             raise ValueError("provider_format must be provided")
         tools = self.list_tools(max_expertise=max_expertise)
 
@@ -505,9 +518,7 @@ class ToolRegistry:
         Raises:
             ToolExecutionError: If tool not found.
         """
-        if not (name is not None):
-            raise ValueError("name must be provided")
-        if not (name is not None):
+        if name is None:
             raise ValueError("name must be provided")
         tool = self.get_tool(name)
         if tool is None:
@@ -544,6 +555,6 @@ def get_global_registry() -> ToolRegistry:
         _registry_holder["instance"] = ToolRegistry()
 
     registry = _registry_holder["instance"]
-    if not (registry is not None):  # Ensure it is not None for mypy
+    if registry is None:  # Ensure it is not None for mypy
         raise ValueError("DbC Blocked: Precondition failed.")
     return registry
