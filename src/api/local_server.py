@@ -61,7 +61,6 @@ from src.api.routes import (  # noqa: E402
     data_explorer,
     engines,
     export,
-    glossary,
     model_explorer,
     presets,
     simulation,
