@@ -74,7 +74,7 @@ pyyaml==6.0.2
     # via uvicorn
 scipy==1.13.1
     # via upstream-drift (pyproject.toml)
-simpleeval==1.0.3
+simpleeval==1.0.5
     # via upstream-drift (pyproject.toml)
 sympy==1.14.0
     # via issue #2808 runtime lock

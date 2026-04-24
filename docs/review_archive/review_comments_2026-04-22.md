@@ -18,4 +18,3 @@ Has Suggestion: No
 [View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/2965#discussion_r3123828302)
 
 ---
-
