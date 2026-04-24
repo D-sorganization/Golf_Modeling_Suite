@@ -14,8 +14,6 @@ from typing import Any
 
 import pytest
 
-pytestmark = pytest.mark.unit
-
 # ---- Engine class references ------------------------------------------------
 # Each entry: (module_path, class_name, optional_deps)
 # optional_deps are the imports that must succeed before we can test the engine.

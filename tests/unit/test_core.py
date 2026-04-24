@@ -17,8 +17,6 @@ from src.shared.python.core import (
     setup_structured_logging,
 )
 
-pytestmark = pytest.mark.unit
-
 
 class TestExceptions:
     """Test custom exception classes."""

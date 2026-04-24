@@ -8,9 +8,6 @@ import time
 import unittest
 
 import numpy as np
-import pytest
-
-pytestmark = pytest.mark.benchmark
 
 
 class TestCoriolisPerformance(unittest.TestCase):

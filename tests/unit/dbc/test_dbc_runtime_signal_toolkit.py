@@ -9,7 +9,6 @@ from __future__ import annotations
 import unittest
 
 import numpy as np
-import pytest
 
 from src.shared.python.core.contracts import PreconditionError
 from src.shared.python.signal_toolkit.core import Signal
@@ -28,8 +27,6 @@ from src.shared.python.signal_toolkit.noise import (
     NoiseGenerator,
     NoiseType,
 )
-
-pytestmark = pytest.mark.unit
 
 
 def _make_signal(

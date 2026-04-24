@@ -2,7 +2,6 @@
 Unit tests for shared.python.plotting module.
 """
 
-from typing import Any
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -17,11 +16,9 @@ from matplotlib.figure import Figure
 from src.shared.python.core.constants import GRAVITY_M_S2
 from src.shared.python.plotting import GolfSwingPlotter, RecorderInterface
 
-pytestmark = pytest.mark.unit
-
 
 @pytest.fixture
-def mock_recorder() -> MagicMock:
+def mock_recorder():
     """Create a mock recorder providing time series data."""
     recorder = MagicMock(spec=RecorderInterface)
 
@@ -44,7 +41,7 @@ def mock_recorder() -> MagicMock:
     pe = GRAVITY_M_S2 * club_pos[:, 2]
     te = ke + pe
 
-    def get_data(field_name) -> tuple[Any, Any]:
+    def get_data(field_name):
         field_map = {
             "joint_positions": positions,
             "joint_velocities": velocities,
@@ -64,13 +61,13 @@ def mock_recorder() -> MagicMock:
 
 
 @pytest.fixture
-def plotter(mock_recorder) -> GolfSwingPlotter:
+def plotter(mock_recorder):
     """Create a GolfSwingPlotter instance."""
     return GolfSwingPlotter(mock_recorder, joint_names=["Joint1", "Joint2"])
 
 
 @pytest.fixture
-def mock_figure() -> MagicMock:
+def mock_figure():
     """Create a mock Matplotlib figure."""
     fig = MagicMock()
     # Mock add_subplot to return a mock axes
@@ -87,19 +84,19 @@ def mock_figure() -> MagicMock:
 class TestGolfSwingPlotter:
     """Test suite for GolfSwingPlotter."""
 
-    def test_initialization(self, plotter) -> None:
+    def test_initialization(self, plotter):
         """Test plotter initialization."""
         assert plotter.recorder is not None
         assert plotter.joint_names == ["Joint1", "Joint2"]
         assert "primary" in plotter.colors
 
-    def test_get_joint_name(self, plotter) -> None:
+    def test_get_joint_name(self, plotter):
         """Test joint name retrieval."""
         assert plotter.get_joint_name(0) == "Joint1"
         assert plotter.get_joint_name(1) == "Joint2"
         assert plotter.get_joint_name(99) == "Joint 99"
 
-    def test_get_aligned_label(self, plotter) -> None:
+    def test_get_aligned_label(self, plotter):
         """Test aligned label logic."""
         # Exact match
         assert plotter._get_aligned_label(0, 2) == "Joint1"
@@ -112,7 +109,7 @@ class TestGolfSwingPlotter:
         assert plotter._get_aligned_label(0, 9) == "DoF 0"
         assert plotter._get_aligned_label(7, 9) == "Joint1"
 
-    def test_plot_joint_angles(self, plotter, mock_figure) -> None:
+    def test_plot_joint_angles(self, plotter, mock_figure):
         """Test plotting joint angles."""
         plotter.plot_joint_angles(mock_figure)
         mock_figure.add_subplot.assert_called()
@@ -129,47 +126,47 @@ class TestGolfSwingPlotter:
         ],
         ids=["velocities", "torques", "powers"],
     )
-    def test_plot_2dof_methods(self, plotter, mock_figure, plot_method) -> None:
+    def test_plot_2dof_methods(self, plotter, mock_figure, plot_method):
         """Test plotting methods that create 2 lines for 2 joints."""
         getattr(plotter, plot_method)(mock_figure)
         mock_figure.add_subplot.assert_called()
         ax = mock_figure.add_subplot.return_value
         assert ax.plot.call_count == 2
 
-    def test_plot_energy_analysis(self, plotter, mock_figure) -> None:
+    def test_plot_energy_analysis(self, plotter, mock_figure):
         """Test plotting energy analysis."""
         plotter.plot_energy_analysis(mock_figure)
         mock_figure.add_subplot.assert_called()
         ax = mock_figure.add_subplot.return_value
         assert ax.plot.call_count == 3  # KE, PE, TE
 
-    def test_plot_club_head_speed(self, plotter, mock_figure) -> None:
+    def test_plot_club_head_speed(self, plotter, mock_figure):
         """Test plotting club head speed."""
         plotter.plot_club_head_speed(mock_figure)
         ax = mock_figure.add_subplot.return_value
         ax.plot.assert_called()
         # Should check for mph conversion logic implicitly by success
 
-    def test_plot_club_head_trajectory(self, plotter, mock_figure) -> None:
+    def test_plot_club_head_trajectory(self, plotter, mock_figure):
         """Test 3D trajectory plotting."""
         plotter.plot_club_head_trajectory(mock_figure)
         mock_figure.add_subplot.assert_called_with(111, projection="3d")
         ax = mock_figure.add_subplot.return_value
         ax.scatter.assert_called()
 
-    def test_plot_phase_diagram(self, plotter, mock_figure) -> None:
+    def test_plot_phase_diagram(self, plotter, mock_figure):
         """Test phase diagram plotting."""
         plotter.plot_phase_diagram(mock_figure, joint_idx=0)
         ax = mock_figure.add_subplot.return_value
         ax.scatter.assert_called()
 
-    def test_plot_torque_comparison(self, plotter, mock_figure) -> None:
+    def test_plot_torque_comparison(self, plotter, mock_figure):
         """Test torque comparison plotting (stackplot)."""
         plotter.plot_torque_comparison(mock_figure)
         ax = mock_figure.add_subplot.return_value
         assert ax.stackplot.call_count == 2  # Positive and negative
 
-    def test_plot_frequency_analysis(self, plotter, mock_figure) -> None:
+    def test_plot_frequency_analysis(self, plotter, mock_figure):
         """Test frequency analysis plotting."""
         # This calls scipy or shared signal processing
         with patch(
@@ -179,7 +176,7 @@ class TestGolfSwingPlotter:
             ax = mock_figure.add_subplot.return_value
             ax.semilogy.assert_called()
 
-    def test_plot_spectrogram(self, plotter, mock_figure) -> None:
+    def test_plot_spectrogram(self, plotter, mock_figure):
         """Test spectrogram plotting."""
         with patch(
             "scipy.signal.spectrogram",
@@ -189,14 +186,14 @@ class TestGolfSwingPlotter:
             ax = mock_figure.add_subplot.return_value
             ax.pcolormesh.assert_called()
 
-    def test_plot_summary_dashboard(self, plotter, mock_figure) -> None:
+    def test_plot_summary_dashboard(self, plotter, mock_figure):
         """Test dashboard plotting."""
         plotter.plot_summary_dashboard(mock_figure)
         assert mock_figure.add_gridspec.called
         # Should create 6 subplots (2x3 grid)
         assert mock_figure.add_subplot.call_count == 6
 
-    def test_plot_kinematic_sequence(self, plotter, mock_figure) -> None:
+    def test_plot_kinematic_sequence(self, plotter, mock_figure):
         """Test kinematic sequence plotting."""
         segments = {"Pelvis": 0, "Torso": 1}
         plotter.plot_kinematic_sequence(mock_figure, segments)
@@ -204,18 +201,18 @@ class TestGolfSwingPlotter:
         # 2 lines + 2 peak markers = 4 plot calls
         assert ax.plot.call_count == 4
 
-    def test_plot_3d_phase_space(self, plotter, mock_figure) -> None:
+    def test_plot_3d_phase_space(self, plotter, mock_figure):
         """Test 3D phase space plotting."""
         plotter.plot_3d_phase_space(mock_figure, joint_idx=0)
         mock_figure.add_subplot.assert_called_with(111, projection="3d")
 
-    def test_plot_correlation_matrix(self, plotter, mock_figure) -> None:
+    def test_plot_correlation_matrix(self, plotter, mock_figure):
         """Test correlation matrix plotting."""
         plotter.plot_correlation_matrix(mock_figure)
         ax = mock_figure.add_subplot.return_value
         ax.imshow.assert_called()
 
-    def test_plot_swing_plane(self, plotter, mock_figure) -> None:
+    def test_plot_swing_plane(self, plotter, mock_figure):
         """Test swing plane plotting."""
         # Need to mock SwingPlaneAnalyzer or ensure data is valid for it
         # The default mocked data is a spiral, which should fit something.
@@ -237,7 +234,7 @@ class TestGolfSwingPlotter:
             ax = mock_figure.add_subplot.return_value
             ax.plot_surface.assert_called()
 
-    def test_plot_angular_momentum(self, plotter, mock_figure) -> None:
+    def test_plot_angular_momentum(self, plotter, mock_figure):
         """Test angular momentum plotting."""
         # Setup mock recorder to return some AM data
         times = np.linspace(0, 1, 100)
@@ -254,7 +251,7 @@ class TestGolfSwingPlotter:
         # Should plot 3 components + magnitude
         assert ax.plot.call_count == 4
 
-    def test_plot_cop_trajectory(self, plotter, mock_figure) -> None:
+    def test_plot_cop_trajectory(self, plotter, mock_figure):
         """Test CoP trajectory plotting."""
         times = np.linspace(0, 1, 100)
         cop = np.random.rand(100, 2)
@@ -271,7 +268,7 @@ class TestGolfSwingPlotter:
         assert ax.scatter.call_count >= 1
         assert ax.plot.call_count >= 1
 
-    def test_plot_radar_chart(self, plotter, mock_figure) -> None:
+    def test_plot_radar_chart(self, plotter, mock_figure):
         """Test radar chart plotting."""
         metrics = {"A": 0.5, "B": 0.8, "C": 0.2}
         plotter.plot_radar_chart(mock_figure, metrics)
@@ -280,7 +277,7 @@ class TestGolfSwingPlotter:
         ax.plot.assert_called()
         ax.fill.assert_called()
 
-    def test_plot_power_flow(self, plotter, mock_figure) -> None:
+    def test_plot_power_flow(self, plotter, mock_figure):
         """Test power flow plotting."""
         times = np.linspace(0, 1, 100)
         powers = np.random.rand(100, 3)
@@ -296,7 +293,7 @@ class TestGolfSwingPlotter:
         # 2 stackplots (pos/neg)
         assert ax.stackplot.call_count == 2
 
-    def test_plot_cop_vector_field(self, plotter, mock_figure) -> None:
+    def test_plot_cop_vector_field(self, plotter, mock_figure):
         """Test CoP vector field plotting."""
         times = np.linspace(0, 1, 100)
         cop = np.random.rand(100, 2)
@@ -311,7 +308,7 @@ class TestGolfSwingPlotter:
         ax = mock_figure.add_subplot.return_value
         ax.quiver.assert_called()
 
-    def test_empty_data_handling(self, mock_figure) -> None:
+    def test_empty_data_handling(self, mock_figure):
         """Test handling of empty data."""
         empty_recorder = MagicMock(spec=RecorderInterface)
         empty_recorder.get_time_series.return_value = ([], [])
@@ -332,23 +329,21 @@ class MockRecorder(RecorderInterface):
         self.engine = None
         self.analysis_config = {}
 
-    def get_time_series(self, field_name) -> tuple[np.ndarray, np.ndarray]:
+    def get_time_series(self, field_name):
         return self.data.get(field_name, (np.array([]), np.array([])))
 
-    def get_induced_acceleration_series(
-        self, source_name
-    ) -> tuple[np.ndarray, np.ndarray]:
+    def get_induced_acceleration_series(self, source_name):
         return self.data.get(f"induced_{source_name}", (np.array([]), np.array([])))
 
-    def get_counterfactual_series(self, cf_name) -> tuple[np.ndarray, np.ndarray]:
+    def get_counterfactual_series(self, cf_name):
         return self.data.get(f"cf_{cf_name}", (np.array([]), np.array([])))
 
-    def set_analysis_config(self, config) -> None:
+    def set_analysis_config(self, config):
         self.analysis_config = config
 
 
 @pytest.fixture
-def sample_recorder() -> MockRecorder:
+def sample_recorder():
     times = np.linspace(0, 1, 100)
     torques = np.random.randn(100, 2)
     velocities = np.random.randn(100, 2)
@@ -357,7 +352,7 @@ def sample_recorder() -> MockRecorder:
     return MockRecorder(data)
 
 
-def test_plot_joint_power_curves(sample_recorder) -> None:
+def test_plot_joint_power_curves(sample_recorder):
     fig = Figure()
     plotter = GolfSwingPlotter(sample_recorder, joint_names=["J0", "J1"])
 
@@ -370,7 +365,7 @@ def test_plot_joint_power_curves(sample_recorder) -> None:
     assert len(ax.lines) == 3
 
 
-def test_plot_impulse_accumulation(sample_recorder) -> None:
+def test_plot_impulse_accumulation(sample_recorder):
     fig = Figure()
     plotter = GolfSwingPlotter(sample_recorder, joint_names=["J0", "J1"])
 
@@ -382,7 +377,7 @@ def test_plot_impulse_accumulation(sample_recorder) -> None:
     assert len(ax.lines) == 3
 
 
-def test_plot_joint_power_curves_no_data() -> None:
+def test_plot_joint_power_curves_no_data():
     fig = Figure()
     plotter = GolfSwingPlotter(MockRecorder({}))
     plotter.plot_joint_power_curves(fig)
@@ -390,7 +385,7 @@ def test_plot_joint_power_curves_no_data() -> None:
     assert "No data" in ax.texts[0].get_text()
 
 
-def test_plot_impulse_accumulation_no_data() -> None:
+def test_plot_impulse_accumulation_no_data():
     fig = Figure()
     plotter = GolfSwingPlotter(MockRecorder({}))
     plotter.plot_impulse_accumulation(fig)

@@ -3,10 +3,6 @@
 import unittest
 from unittest.mock import patch
 
-import pytest
-
-pytestmark = pytest.mark.unit
-
 
 class TestAIAdapterBase(unittest.TestCase):
     """Test base AI adapter functionality."""

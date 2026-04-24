@@ -9,7 +9,6 @@ These tests demonstrate proper integration testing:
 """
 
 import sys
-from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -46,7 +45,7 @@ SIMPLE_ARM_URDF = ASSET_DIR / "simple_arm.urdf"
 class TestEngineManagerIntegration:
     """Test EngineManager integration with real filesystem."""
 
-    def test_engine_manager_discovers_real_engines(self) -> None:
+    def test_engine_manager_discovers_real_engines(self):
         """Test that EngineManager discovers engines in actual project structure.
 
         GOOD PRACTICE: Integration test uses real project structure.
@@ -69,7 +68,7 @@ class TestEngineManagerIntegration:
             path = manager.engine_paths[engine]
             assert path.exists(), f"{engine} path should exist: {path}"
 
-    def test_engine_paths_match_filesystem(self) -> None:
+    def test_engine_paths_match_filesystem(self):
         """Test that engine paths in manager match actual filesystem.
 
         GOOD PRACTICE: Verifies configuration matches reality.
@@ -99,7 +98,7 @@ class TestMuJoCoEngineIntegration:
     """
 
     @pytest.fixture
-    def has_real_mujoco(self) -> bool | None:
+    def has_real_mujoco(self):
         """Check if real MuJoCo is available."""
         # Clean up any mocked mujoco from sys.modules
         if is_mock("mujoco"):
@@ -112,7 +111,7 @@ class TestMuJoCoEngineIntegration:
         except (ImportError, OSError):
             pytest.skip("MuJoCo not installed or DLL load failed")
 
-    def test_mujoco_engine_loads_real_urdf(self, has_real_mujoco) -> None:
+    def test_mujoco_engine_loads_real_urdf(self, has_real_mujoco):
         """Test that MuJoCo engine can load and process real URDF.
 
         GOOD PRACTICE: Real integration test that:
@@ -149,7 +148,7 @@ class TestMuJoCoEngineIntegration:
         assert engine.model.nq > 0, "Model should have position DOFs"
         assert engine.model.nv > 0, "Model should have velocity DOFs"
 
-    def test_mujoco_engine_simulation_step(self, has_real_mujoco) -> None:
+    def test_mujoco_engine_simulation_step(self, has_real_mujoco):
         """Test that MuJoCo can actually simulate physics.
 
         GOOD PRACTICE: Tests actual physics simulation, not mocks.
@@ -195,7 +194,7 @@ class TestCrossEngineConsistency:
     """
 
     @pytest.fixture
-    def available_engines(self) -> dict[str, Any]:
+    def available_engines(self):
         """Get list of engines that are actually available (not mocked)."""
         engines = {}
 
@@ -243,7 +242,7 @@ class TestCrossEngineConsistency:
 
         return engines
 
-    def test_engines_agree_on_model_dimensions(self, available_engines) -> None:
+    def test_engines_agree_on_model_dimensions(self, available_engines):
         """Test that different engines agree on basic model properties.
 
         GOOD PRACTICE: Real integration test comparing actual engine outputs.

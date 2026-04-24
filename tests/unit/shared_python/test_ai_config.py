@@ -29,17 +29,15 @@ from src.shared.python.ai.config import (
 )
 from src.shared.python.config.environment import EnvironmentError
 
-pytestmark = pytest.mark.unit
 
-
-def test_ollama_config_defaults() -> None:
+def test_ollama_config_defaults():
     with patch.dict(os.environ, {}, clear=True):
         assert get_ollama_host() == DEFAULT_OLLAMA_HOST
         assert get_ollama_model() == DEFAULT_OLLAMA_MODEL
         assert get_ollama_timeout() == DEFAULT_OLLAMA_TIMEOUT
 
 
-def test_ollama_config_env() -> None:
+def test_ollama_config_env():
     env = {
         "OLLAMA_HOST": "http://my-host",
         "OLLAMA_MODEL": "my-model",
@@ -51,7 +49,7 @@ def test_ollama_config_env() -> None:
         assert get_ollama_timeout() == 50.5
 
 
-def test_openai_config_defaults() -> None:
+def test_openai_config_defaults():
     with patch.dict(os.environ, {}, clear=True):
         assert get_openai_api_key() is None
         assert get_openai_model() == DEFAULT_OPENAI_MODEL
@@ -62,7 +60,7 @@ def test_openai_config_defaults() -> None:
             get_openai_api_key(required=True)
 
 
-def test_openai_config_env() -> None:
+def test_openai_config_env():
     env = {
         "OPENAI_API_KEY": "sk-123",
         "OPENAI_MODEL": "gpt-custom",
@@ -76,7 +74,7 @@ def test_openai_config_env() -> None:
         assert get_openai_organization() == "org-456"
 
 
-def test_anthropic_config_defaults() -> None:
+def test_anthropic_config_defaults():
     with patch.dict(os.environ, {}, clear=True):
         assert get_anthropic_api_key() is None
         assert get_anthropic_model() == DEFAULT_ANTHROPIC_MODEL
@@ -86,7 +84,7 @@ def test_anthropic_config_defaults() -> None:
             get_anthropic_api_key(required=True)
 
 
-def test_anthropic_config_env() -> None:
+def test_anthropic_config_env():
     env = {
         "ANTHROPIC_API_KEY": "sk-ant-123",
         "ANTHROPIC_MODEL": "claude-custom",
@@ -98,7 +96,7 @@ def test_anthropic_config_env() -> None:
         assert get_anthropic_timeout() == 15.0
 
 
-def test_gemini_config_defaults() -> None:
+def test_gemini_config_defaults():
     with patch.dict(os.environ, {}, clear=True):
         assert get_gemini_api_key() is None
         assert get_gemini_model() == DEFAULT_GEMINI_MODEL
@@ -107,7 +105,7 @@ def test_gemini_config_defaults() -> None:
             get_gemini_api_key(required=True)
 
 
-def test_gemini_config_env() -> None:
+def test_gemini_config_env():
     env = {
         "GEMINI_API_KEY": "gx-123",
         "GEMINI_MODEL": "gemini-custom",

@@ -1,10 +1,7 @@
 import importlib  # noqa: E402
-from typing import Any  # noqa: E402
 from unittest.mock import patch  # noqa: E402
 
 import pytest  # noqa: E402
-
-pytestmark = pytest.mark.integration
 
 from src.launchers.launcher_constants import (  # noqa: E402
     _lazy_imports,
@@ -14,7 +11,7 @@ from src.launchers.launcher_constants import (  # noqa: E402
 )
 
 
-def test_validate_docker_stage() -> None:
+def test_validate_docker_stage():
     """Test Docker stage validation."""
     assert validate_docker_stage("all") == "all"
     assert validate_docker_stage("mujoco") == "mujoco"
@@ -23,7 +20,7 @@ def test_validate_docker_stage() -> None:
         validate_docker_stage("invalid")
 
 
-def test_lazy_load_engine_manager() -> None:
+def test_lazy_load_engine_manager():
     """Test lazy loading of engine manager."""
     # Reset lazy imports for testing
     _lazy_imports["EngineManager"] = None
@@ -41,7 +38,7 @@ def test_lazy_load_engine_manager() -> None:
         mock_import.assert_not_called()
 
 
-def test_lazy_load_model_registry() -> None:
+def test_lazy_load_model_registry():
     """Test lazy loading of model registry."""
     # Reset lazy imports for testing
     _lazy_imports["ModelRegistry"] = None
@@ -56,7 +53,7 @@ def test_lazy_load_model_registry() -> None:
         mock_import.assert_not_called()
 
 
-def test_platform_constants_non_win32() -> None:
+def test_platform_constants_non_win32():
     """Test platform constants on non-windows."""
     with patch("sys.platform", "linux"):
         import src.launchers.launcher_constants as lc
@@ -66,7 +63,7 @@ def test_platform_constants_non_win32() -> None:
         assert lc.CREATE_NEW_CONSOLE == 0
 
 
-def test_platform_constants_win32_no_subprocess_attrs() -> None:
+def test_platform_constants_win32_no_subprocess_attrs():
     """Test platform constants on win32 when subprocess lacks attributes."""
     from unittest.mock import MagicMock
 
@@ -88,14 +85,14 @@ def test_platform_constants_win32_no_subprocess_attrs() -> None:
     importlib.reload(lc)
 
 
-def test_optional_imports_failure() -> None:
+def test_optional_imports_failure():
     """Test when optional features fail to import."""
     import src.launchers.launcher_constants as lc
 
     # We mock builtins.__import__ so that it raises ImportError for specific modules
     original_import = __builtins__["__import__"]
 
-    def mock_import(name, *args, **kwargs) -> Any:
+    def mock_import(name, *args, **kwargs):
         if name in (
             "src.shared.python.ai.gui",
             "src.shared.python.help_system",
@@ -114,7 +111,7 @@ def test_optional_imports_failure() -> None:
     importlib.reload(lc)
 
 
-def test_optional_imports_success() -> None:
+def test_optional_imports_success():
     """Test when optional features succeed to import."""
     from unittest.mock import MagicMock
 

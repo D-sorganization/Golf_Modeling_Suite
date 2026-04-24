@@ -13,8 +13,6 @@ from __future__ import annotations
 
 import pytest
 
-pytestmark = pytest.mark.unit
-
 upstream_physics = pytest.importorskip(
     "upstream_physics",
     reason="upstream_physics wheel not installed (run: maturin develop --features python)",

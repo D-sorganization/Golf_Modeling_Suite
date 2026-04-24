@@ -9,11 +9,9 @@ from src.shared.python.spatial_algebra.indexed_acceleration import (
     compute_indexed_acceleration_from_engine,
 )
 
-pytestmark = pytest.mark.unit
-
 
 class TestIndexedAcceleration:
-    def test_total(self) -> None:
+    def test_total(self):
         ia = IndexedAcceleration(
             gravity=np.array([1.0]),
             coriolis=np.array([2.0]),
@@ -26,7 +24,7 @@ class TestIndexedAcceleration:
         ia.centrifugal = np.array([6.0])
         np.testing.assert_array_equal(ia.total, np.array([21.0]))
 
-    def test_assert_closure(self) -> None:
+    def test_assert_closure(self):
         ia = IndexedAcceleration(
             gravity=np.array([1.0]),
             coriolis=np.array([1.0]),
@@ -43,7 +41,7 @@ class TestIndexedAcceleration:
         with pytest.raises(AccelerationClosureError):
             ia.assert_closure(np.array([4.0]))
 
-    def test_get_contribution_percentages(self) -> None:
+    def test_get_contribution_percentages(self):
         ia = IndexedAcceleration(
             gravity=np.array([2.0]),
             coriolis=np.array([0.0]),
@@ -67,7 +65,7 @@ class TestIndexedAcceleration:
         pct2 = ia2.get_contribution_percentages()
         assert pct2["gravity"] == 0.0
 
-    def test_compute_indexed_acceleration_from_engine(self) -> None:
+    def test_compute_indexed_acceleration_from_engine(self):
         engine = MagicMock()
         engine.compute_drift_acceleration.return_value = np.array([5.0])
         engine.compute_control_acceleration.return_value = np.array([2.0])

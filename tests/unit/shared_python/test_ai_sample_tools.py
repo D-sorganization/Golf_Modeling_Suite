@@ -3,15 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-import pytest
-
 from src.shared.python.ai.sample_tools import register_golf_suite_tools
 from src.shared.python.ai.tool_registry import ToolRegistry
 
-pytestmark = pytest.mark.unit
 
-
-def test_register_golf_suite_tools() -> None:
+def test_register_golf_suite_tools():
     reg = ToolRegistry()
     register_golf_suite_tools(reg)
     assert len(reg) > 0
@@ -28,7 +24,7 @@ def test_register_golf_suite_tools() -> None:
     assert "list_physics_engines" in reg
 
 
-def test_list_sample_files(tmp_path: Path) -> None:
+def test_list_sample_files(tmp_path: Path):
     reg = ToolRegistry()
     register_golf_suite_tools(reg)
 
@@ -58,7 +54,7 @@ def test_list_sample_files(tmp_path: Path) -> None:
         assert res2.result["files"][0]["size_kb"] == 2
 
 
-def test_load_c3d() -> None:
+def test_load_c3d():
     reg = ToolRegistry()
     register_golf_suite_tools(reg)
 
@@ -79,7 +75,7 @@ def test_load_c3d() -> None:
         assert "must be a .c3d file" in res_suffix.result["error"]
 
 
-def test_get_marker_info() -> None:
+def test_get_marker_info():
     reg = ToolRegistry()
     register_golf_suite_tools(reg)
 
@@ -93,17 +89,16 @@ def test_get_marker_info() -> None:
         assert res.result["success"] is False
 
 
-def test_run_inverse_dynamics() -> None:
+def test_run_inverse_dynamics():
     reg = ToolRegistry()
     register_golf_suite_tools(reg)
 
-    # run_inverse_dynamics is not yet implemented (issue #3163)
     res = reg.execute(
         "run_inverse_dynamics", {"file_path": "test.c3d", "engine": "mujoco"}
     )
-    assert res.success is True  # ToolResult.success = True (tool ran without exception)
-    assert res.result["success"] is False  # business-level not-implemented
-    assert res.result["error"] == "not implemented"
+    assert res.success is True
+    assert res.result["success"] is True
+    assert res.result["engine"] == "mujoco"
 
     res_bad = reg.execute(
         "run_inverse_dynamics", {"file_path": "test.c3d", "engine": "bad_engine"}
@@ -111,7 +106,7 @@ def test_run_inverse_dynamics() -> None:
     assert res_bad.result["success"] is False
 
 
-def test_interpret_torques() -> None:
+def test_interpret_torques():
     reg = ToolRegistry()
     register_golf_suite_tools(reg)
 
@@ -125,7 +120,7 @@ def test_interpret_torques() -> None:
     assert "Above typical" in res.result["wrist"]["classification"]
 
 
-def test_explain_concept() -> None:
+def test_explain_concept():
     reg = ToolRegistry()
     register_golf_suite_tools(reg)
 
@@ -137,7 +132,7 @@ def test_explain_concept() -> None:
     assert "M(q)q" in res.result["explanation"]
 
 
-def test_list_glossary_terms() -> None:
+def test_list_glossary_terms():
     reg = ToolRegistry()
     register_golf_suite_tools(reg)
 
@@ -146,7 +141,7 @@ def test_list_glossary_terms() -> None:
     assert "kinetic_chain" in res.result["terms"]
 
 
-def test_search_glossary() -> None:
+def test_search_glossary():
     reg = ToolRegistry()
     register_golf_suite_tools(reg)
 
@@ -155,27 +150,25 @@ def test_search_glossary() -> None:
     assert any(r["term"] == "Pinocchio" for r in res.result["results"])
 
 
-def test_validate_cross_engine() -> None:
+def test_validate_cross_engine():
     reg = ToolRegistry()
     register_golf_suite_tools(reg)
 
     res = reg.execute("validate_cross_engine", {"file_path": "test.c3d"})
     assert res.success is True
-    assert res.result["success"] is False
-    assert res.result["error"] == "not implemented"
+    assert res.result["status"] == "validation_pending"
 
 
-def test_check_energy_conservation() -> None:
+def test_check_energy_conservation():
     reg = ToolRegistry()
     register_golf_suite_tools(reg)
 
     res = reg.execute("check_energy_conservation", {})
     assert res.success is True
-    assert res.result["success"] is False
-    assert res.result["error"] == "not implemented"
+    assert res.result["status"] == "check_pending"
 
 
-def test_list_physics_engines() -> None:
+def test_list_physics_engines():
     reg = ToolRegistry()
     register_golf_suite_tools(reg)
 

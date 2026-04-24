@@ -3,11 +3,8 @@
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from src.shared.python.biomechanics.kinematic_sequence import KinematicSequenceAnalyzer
-
-pytestmark = pytest.mark.unit
 
 
 class TestKinematicSequence:

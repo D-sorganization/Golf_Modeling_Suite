@@ -12,13 +12,9 @@ This addresses the API test coverage gap identified in Assessment G.
 """
 
 import io
-from collections.abc import Generator
 from pathlib import Path
-from typing import Any
 
 import pytest
-
-pytestmark = pytest.mark.unit
 
 # Import TestClient with skip if unavailable
 httpx = pytest.importorskip("httpx")
@@ -33,7 +29,7 @@ except ImportError as e:
 
 
 @pytest.fixture
-def client() -> Generator[Any, None, None]:
+def client():
     """Create a test client for the API."""
     with TestClient(app) as test_client:
         yield test_client

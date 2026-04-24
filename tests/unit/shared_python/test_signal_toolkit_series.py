@@ -20,8 +20,6 @@ from src.shared.python.signal_toolkit.series import (
     sinh_series,
 )
 
-pytestmark = pytest.mark.unit
-
 
 @pytest.fixture
 def se() -> SeriesExpansion:

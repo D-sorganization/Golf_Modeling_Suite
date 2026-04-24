@@ -17,8 +17,6 @@ from src.deployment.teleoperation.interface import (
     TeleoperationMode,
 )
 
-pytestmark = pytest.mark.integration
-
 
 @pytest.fixture
 def mock_robot() -> MagicMock:

@@ -9,8 +9,6 @@ from src.shared.python.biomechanics.hill_muscle import (
     MuscleState,
 )
 
-pytestmark = pytest.mark.unit
-
 
 @pytest.fixture
 def muscle_params() -> MuscleParameters:

@@ -51,7 +51,6 @@ import pandas as pd
 if TYPE_CHECKING:
     import matplotlib.pyplot as plt
 
-logger = get_logger(__name__)
 
 # Centralized conversion factors for maintainability (DRY, Orthogonality)
 # Format: (from_unit, to_unit): factor

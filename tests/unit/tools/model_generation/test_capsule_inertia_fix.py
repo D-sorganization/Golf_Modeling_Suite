@@ -28,8 +28,6 @@ import math
 
 import pytest
 
-pytestmark = pytest.mark.unit
-
 # ---------------------------------------------------------------------------
 # Helpers to compute the *correct* capsule inertia from first principles so
 # that we have an independent oracle.

@@ -28,8 +28,6 @@ from src.engines.common.simulation_control import (
 )
 from src.shared.python.core.contracts.exceptions import PreconditionError
 
-pytestmark = pytest.mark.unit
-
 # =============================================================================
 # EngineCapabilities Tests
 # =============================================================================

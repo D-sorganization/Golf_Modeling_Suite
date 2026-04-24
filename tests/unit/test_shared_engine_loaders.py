@@ -22,8 +22,6 @@ from src.shared.python.engine_core.engine_probes import EngineProbe
 from src.shared.python.engine_core.engine_registry import EngineType
 from src.shared.python.engine_core.interfaces import PhysicsEngine
 
-pytestmark = pytest.mark.unit
-
 _PROBE_RESULT_SPEC = [
     "is_available",
     "diagnostic_message",

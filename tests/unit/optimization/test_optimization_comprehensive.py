@@ -28,8 +28,6 @@ from src.shared.python.optimization.swing_optimizer import (
     SwingTrajectory,
 )
 
-pytestmark = pytest.mark.unit
-
 # ============================================================================
 # OptimizationObjective Enum
 # ============================================================================

@@ -8,8 +8,6 @@ import pytest
 
 from src.api.cloud_client import CloudClient
 
-pytestmark = pytest.mark.integration
-
 
 @pytest.fixture
 def temp_cache_dir(tmp_path: Path) -> Generator[Path, None, None]:

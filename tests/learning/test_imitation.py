@@ -10,8 +10,6 @@ import pytest
 
 from src.learning.imitation import Demonstration
 
-pytestmark = pytest.mark.integration
-
 
 class TestDemonstration:
     """Tests for Demonstration dataclass."""

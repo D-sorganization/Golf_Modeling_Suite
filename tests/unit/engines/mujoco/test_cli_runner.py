@@ -9,13 +9,11 @@ import pytest
 
 from src.shared.python.core import constants
 
-pytestmark = pytest.mark.unit
-
 if TYPE_CHECKING:
     from pathlib import Path
 
-from mujoco_humanoid_golf import cli_runner  # noqa: E402
-from mujoco_humanoid_golf.control_system import ControlSystem, ControlType  # noqa: E402
+from mujoco_humanoid_golf import cli_runner
+from mujoco_humanoid_golf.control_system import ControlSystem, ControlType
 
 
 def test_apply_control_preset_updates_control_system() -> None:

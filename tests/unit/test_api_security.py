@@ -14,8 +14,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-pytestmark = pytest.mark.unit
-
 # Python 3.10 compatibility: datetime.UTC is only available in 3.11+
 UTC = timezone.utc  # noqa: UP017
 

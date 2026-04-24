@@ -1,24 +1,21 @@
 """Unit tests for C3D Viewer data models."""
 
-import importlib.util
-
 import numpy as np
 import pytest
 
-_simscape_available = importlib.util.find_spec("apps") is not None
-pytestmark = pytest.mark.skipif(
-    not _simscape_available,
-    reason="Simscape apps module not available",
-)
-
-if _simscape_available:
-    from apps.core.models import AnalogData, C3DDataModel, MarkerData
+try:
+    from apps.core.models import AnalogData, C3DDataModel, MarkerData  # noqa: E402
+except (ImportError, ModuleNotFoundError):
+    pytest.skip(
+        "Simscape apps module not available",
+        allow_module_level=True,
+    )
 
 
 class TestModels:
     """Tests for data model integrity and methods."""
 
-    def test_marker_data_initialization(self) -> None:
+    def test_marker_data_initialization(self):
         """Test MarkerData creation and defaults."""
         pos = np.zeros((10, 3))
         res = np.zeros((10,))
@@ -28,14 +25,14 @@ class TestModels:
         assert np.array_equal(marker.position, pos)
         assert np.array_equal(marker.residuals, res)
 
-    def test_marker_data_optional_residuals(self) -> None:
+    def test_marker_data_optional_residuals(self):
         """Test MarkerData without residuals."""
         pos = np.zeros((10, 3))
         marker = MarkerData(name="TEST", position=pos)
 
         assert marker.residuals is None
 
-    def test_analog_data_initialization(self) -> None:
+    def test_analog_data_initialization(self):
         """Test AnalogData creation and defaults."""
         vals = np.zeros((100,))
         analog = AnalogData(name="EMG1", values=vals, unit="V")
@@ -44,14 +41,14 @@ class TestModels:
         assert np.array_equal(analog.values, vals)
         assert analog.unit == "V"
 
-    def test_analog_data_default_unit(self) -> None:
+    def test_analog_data_default_unit(self):
         """Test AnalogData default unit."""
         vals = np.zeros((100,))
         analog = AnalogData(name="EMG1", values=vals)
 
         assert analog.unit == ""
 
-    def test_c3d_data_model_methods(self) -> None:
+    def test_c3d_data_model_methods(self):
         """Test C3DDataModel helper methods."""
         # Setup
         marker_a = MarkerData("HEAD", np.zeros((10, 3)))
@@ -79,7 +76,7 @@ class TestModels:
         assert len(a_names) == 1
         assert "Force" in a_names
 
-    def test_c3d_data_model_defaults(self) -> None:
+    def test_c3d_data_model_defaults(self):
         """Test C3DDataModel default fields."""
         model = C3DDataModel(filepath="empty.c3d")
 

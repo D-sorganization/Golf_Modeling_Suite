@@ -1,23 +1,19 @@
 from unittest.mock import Mock
 
-import pytest
-
 from src.api.routes.actuator_controls import (
     _demo_actuators,
     _get_actuator_info,
 )
 
-pytestmark = pytest.mark.unit
 
-
-def test_demo_actuators() -> None:
+def test_demo_actuators():
     acts = _demo_actuators()
     assert len(acts) == 6
     assert acts[0].name == "hip_rotation"
     assert acts[0].min_value == -3.14
 
 
-def test_get_actuator_info_no_engine() -> None:
+def test_get_actuator_info_no_engine():
     engine_manager = Mock()
     engine_manager.get_active_engine.return_value = None
     acts = _get_actuator_info(engine_manager)
@@ -25,7 +21,7 @@ def test_get_actuator_info_no_engine() -> None:
     assert acts[0].name == "hip_rotation"
 
 
-def test_get_actuator_info_with_engine() -> None:
+def test_get_actuator_info_with_engine():
     engine_manager = Mock()
     engine = Mock()
     engine.joint_names = ["arm", "leg"]

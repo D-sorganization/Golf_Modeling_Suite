@@ -11,8 +11,6 @@ Refactored to use shared engine availability module (DRY principle).
 
 from __future__ import annotations
 
-from typing import Any
-
 import numpy as np
 import pytest
 
@@ -32,7 +30,7 @@ if OPENSIM_AVAILABLE:
 
 
 @pytest.fixture
-def simple_arm_model() -> Any:
+def simple_arm_model():
     """Create a simple arm model with muscles for testing."""
     if not OPENSIM_AVAILABLE:
         pytest.skip("OpenSim not installed")
@@ -89,7 +87,7 @@ def simple_arm_model() -> Any:
 class TestOpenSimMuscleModels:
     """Test Hill-type muscle model functionality."""
 
-    def test_muscle_force_length_curve(self, simple_arm_model) -> None:
+    def test_muscle_force_length_curve(self, simple_arm_model):
         """Section J: Verify Hill-type F-L relationship."""
         model, state = simple_arm_model
 
@@ -122,7 +120,7 @@ class TestOpenSimMuscleModels:
             f"Muscle force {F_muscle} outside expected range"
         )
 
-    def test_activation_dynamics(self, simple_arm_model) -> None:
+    def test_activation_dynamics(self, simple_arm_model):
         """Section J: Verify activation dynamics (30-50ms delay)."""
         model, state = simple_arm_model
 
@@ -153,7 +151,7 @@ class TestOpenSimMuscleModels:
 class TestOpenSimMuscleAnalysis:
     """Test muscle analysis module."""
 
-    def test_muscle_force_extraction(self, simple_arm_model) -> None:
+    def test_muscle_force_extraction(self, simple_arm_model):
         """Section J: Extract muscle forces."""
         model, state = simple_arm_model
 
@@ -174,7 +172,7 @@ class TestOpenSimMuscleAnalysis:
         assert "biceps" in forces
         assert isinstance(forces["biceps"], float)
 
-    def test_moment_arm_computation(self, simple_arm_model) -> None:
+    def test_moment_arm_computation(self, simple_arm_model):
         """Section J: Compute moment arms."""
         model, state = simple_arm_model
 
@@ -196,7 +194,7 @@ class TestOpenSimMuscleAnalysis:
         # Biceps should have moment arm about shoulder coordinate
         assert len(moment_arms["biceps"]) > 0
 
-    def test_muscle_induced_acceleration(self, simple_arm_model) -> None:
+    def test_muscle_induced_acceleration(self, simple_arm_model):
         """Section J: Compute muscle-induced accelerations."""
         model, state = simple_arm_model
 
@@ -225,7 +223,7 @@ class TestOpenSimMuscleAnalysis:
         # Should produce non-zero acceleration
         assert not np.allclose(induced_accel["biceps"], 0.0)
 
-    def test_comprehensive_muscle_analysis(self, simple_arm_model) -> None:
+    def test_comprehensive_muscle_analysis(self, simple_arm_model):
         """Section J: Full muscle contribution report."""
         model, state = simple_arm_model
 
@@ -255,7 +253,7 @@ class TestOpenSimMuscleAnalysis:
 class TestOpenSimEngine:
     """Test OpenSim engine with muscle integration."""
 
-    def test_bias_force_computation(self) -> None:
+    def test_bias_force_computation(self):
         """Verify bias force computation uses inverse dynamics."""
         try:
             from src.engines.physics_engines.opensim.python.opensim_physics_engine import (
@@ -273,7 +271,7 @@ class TestOpenSimEngine:
         # With a model loaded, we'd test actual computation
         # (requires valid .osim file)
 
-    def test_gravity_force_computation(self) -> None:
+    def test_gravity_force_computation(self):
         """Verify gravity force isolation."""
         try:
             from src.engines.physics_engines.opensim.python.opensim_physics_engine import (
@@ -288,7 +286,7 @@ class TestOpenSimEngine:
         gravity = engine.compute_gravity_forces()
         assert len(gravity) == 0
 
-    def test_muscle_analyzer_integration(self) -> None:
+    def test_muscle_analyzer_integration(self):
         """Verify engine provides muscle analyzer."""
         try:
             from src.engines.physics_engines.opensim.python.opensim_physics_engine import (
@@ -303,7 +301,7 @@ class TestOpenSimEngine:
         analyzer = engine.get_muscle_analyzer()
         assert analyzer is None
 
-    def test_drift_control_with_muscles(self, simple_arm_model) -> None:
+    def test_drift_control_with_muscles(self, simple_arm_model):
         """Section F + J: Verify drift-control works with muscle model."""
         model, state = simple_arm_model
 
@@ -331,7 +329,7 @@ class TestOpenSimEngine:
 class TestOpenSimGripModel:
     """Test grip wrapping geometry."""
 
-    def test_grip_model_creation(self, simple_arm_model) -> None:
+    def test_grip_model_creation(self, simple_arm_model):
         """Section J1: Create grip model interface."""
         model, _ = simple_arm_model
 
@@ -347,7 +345,7 @@ class TestOpenSimGripModel:
         assert grip_model is not None
         assert grip_model.model == model
 
-    def test_cylindrical_wrap_addition(self, simple_arm_model) -> None:
+    def test_cylindrical_wrap_addition(self, simple_arm_model):
         """Section J1: Add cylindrical wrapping surface."""
         model, _ = simple_arm_model
 

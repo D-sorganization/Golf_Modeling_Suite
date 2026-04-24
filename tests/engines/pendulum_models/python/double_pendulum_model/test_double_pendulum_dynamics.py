@@ -32,8 +32,6 @@ from src.engines.pendulum_models.python.double_pendulum_model.physics.double_pen
     DEFAULT_DAMPING_WRIST,
 )
 
-pytestmark = pytest.mark.unit
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

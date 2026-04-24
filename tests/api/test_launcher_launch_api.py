@@ -11,17 +11,11 @@ Covers:
 from __future__ import annotations
 
 import json
-from collections.abc import Generator
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from unittest.mock import MagicMock, patch
 
-if TYPE_CHECKING:
-    from fastapi.testclient import TestClient
-
 import pytest
-
-pytestmark = pytest.mark.integration
 
 # local_server creates app state in create_local_app(), including
 # ProcessManager and ModelHandlerRegistry.  We mock both to avoid
@@ -44,7 +38,7 @@ _HANDLER_SPEC = ["launch", "stop", "get_name"]
 
 
 @pytest.fixture()
-def _reset_startup_metrics() -> None:
+def _reset_startup_metrics():
     """Reset startup metrics before each test."""
     local_server._startup_metrics.update(
         {
@@ -58,7 +52,7 @@ def _reset_startup_metrics() -> None:
 
 
 @pytest.fixture()
-def client(_reset_startup_metrics) -> Generator[TestClient, None, None]:
+def client(_reset_startup_metrics):
     """Create a TestClient for the local FastAPI app with mocked process management."""
     from fastapi.testclient import TestClient
 

@@ -5,8 +5,6 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from src.shared.python.engine_core.engine_manager import (
     EngineManager,
     EngineStatus,
@@ -14,13 +12,11 @@ from src.shared.python.engine_core.engine_manager import (
     GolfModelingError,
 )
 
-pytestmark = pytest.mark.unit
-
 
 class TestEngineManager(unittest.TestCase):
     """Test cases for EngineManager."""
 
-    def setUp(self) -> None:
+    def setUp(self):
         """Set up test fixtures."""
         self.mock_root = Path("/mock/root")
 
@@ -58,7 +54,7 @@ class TestEngineManager(unittest.TestCase):
         )
         self.logging_patcher.start()
 
-    def tearDown(self) -> None:
+    def tearDown(self):
         """Tear down test fixtures."""
         self.mujoco_patcher.stop()
         self.drake_patcher.stop()
@@ -67,7 +63,7 @@ class TestEngineManager(unittest.TestCase):
         self.matlab_patcher.stop()
         self.logging_patcher.stop()
 
-    def test_initialization_discovery(self) -> None:
+    def test_initialization_discovery(self):
         """Test that engines are discovered correctly."""
         with patch.object(EngineManager, "_discover_engines") as mock_discover:
             manager = EngineManager(self.mock_root)
@@ -95,7 +91,7 @@ class TestEngineManager(unittest.TestCase):
             manager.engine_status[EngineType.DRAKE], EngineStatus.UNAVAILABLE
         )
 
-    def test_switch_engine_success(self) -> None:
+    def test_switch_engine_success(self):
         """Test successful engine switch."""
         manager = EngineManager(self.mock_root)
         manager.engine_status[EngineType.MUJOCO] = EngineStatus.AVAILABLE
@@ -107,7 +103,7 @@ class TestEngineManager(unittest.TestCase):
             self.assertEqual(manager.current_engine, EngineType.MUJOCO)
             mock_load.assert_called_with(EngineType.MUJOCO)
 
-    def test_switch_engine_unavailable(self) -> None:
+    def test_switch_engine_unavailable(self):
         """Test switching to unavailable engine."""
         manager = EngineManager(self.mock_root)
         manager.engine_status[EngineType.MUJOCO] = EngineStatus.UNAVAILABLE
@@ -115,7 +111,7 @@ class TestEngineManager(unittest.TestCase):
         success = manager.switch_engine(EngineType.MUJOCO)
         self.assertFalse(success)
 
-    def test_switch_engine_failure(self) -> None:
+    def test_switch_engine_failure(self):
         """Test handling of engine loading failure."""
         manager = EngineManager(self.mock_root)
         manager.engine_status[EngineType.MUJOCO] = EngineStatus.AVAILABLE
@@ -129,7 +125,7 @@ class TestEngineManager(unittest.TestCase):
                 manager.engine_status[EngineType.MUJOCO], EngineStatus.ERROR
             )
 
-    def test_load_mujoco_engine_details(self) -> None:
+    def test_load_mujoco_engine_details(self):
         """Test detailed steps of loading MuJoCo engine."""
         manager = EngineManager(self.mock_root)
         manager.engine_paths[EngineType.MUJOCO] = Path("/mock/mujoco")
@@ -174,7 +170,7 @@ class TestEngineManager(unittest.TestCase):
             )
             self.assertIsNotNone(manager.active_physics_engine)
 
-    def test_get_engine_info(self) -> None:
+    def test_get_engine_info(self):
         """Test information retrieval."""
         manager = EngineManager(self.mock_root)
         manager.engine_status = {EngineType.MUJOCO: EngineStatus.AVAILABLE}
@@ -182,7 +178,7 @@ class TestEngineManager(unittest.TestCase):
         info = manager.get_engine_info()
         self.assertIn("mujoco", info["available_engines"])
 
-    def test_validate_engine_configuration(self) -> None:
+    def test_validate_engine_configuration(self):
         """Test configuration validation."""
         manager = EngineManager(self.mock_root)
         manager.engine_status = {EngineType.MUJOCO: EngineStatus.AVAILABLE}

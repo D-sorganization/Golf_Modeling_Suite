@@ -11,8 +11,6 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-pytestmark = pytest.mark.benchmark
-
 pytest.importorskip("pytest_benchmark")
 
 

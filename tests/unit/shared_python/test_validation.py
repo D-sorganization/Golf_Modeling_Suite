@@ -13,8 +13,6 @@ from src.shared.python.validation_pkg.validation import (
     validate_timestep,
 )
 
-pytestmark = pytest.mark.unit
-
 
 class TestValidation:
     """Tests for physical validation functions."""

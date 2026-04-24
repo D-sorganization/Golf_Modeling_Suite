@@ -23,8 +23,6 @@ from src.shared.python.config.handedness_support import (
     validate_mirror_trajectory,
 )
 
-pytestmark = pytest.mark.unit
-
 
 class TestMirrorPosition:
     """Tests for position mirroring."""

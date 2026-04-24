@@ -14,12 +14,8 @@ from __future__ import annotations
 
 import os
 import unittest
-from collections.abc import Callable
 
 import numpy as np
-import pytest
-
-pytestmark = pytest.mark.unit
 
 os.environ["DBC_LEVEL"] = "enforce"
 
@@ -211,7 +207,7 @@ class TestContractChecker(unittest.TestCase):
             def __init__(self) -> None:
                 self.mass = 1.0
 
-            def _get_invariants(self) -> list[tuple[Callable[[], bool], str]]:
+            def _get_invariants(self):  # type: ignore[no-untyped-def]
                 return [(lambda: self.mass > 0, "mass must be positive")]
 
         checker = TestChecker()
@@ -224,7 +220,7 @@ class TestContractChecker(unittest.TestCase):
             def __init__(self) -> None:
                 self.mass = -1.0
 
-            def _get_invariants(self) -> list[tuple[Callable[[], bool], str]]:
+            def _get_invariants(self):  # type: ignore[no-untyped-def]
                 return [(lambda: self.mass > 0, "mass must be positive")]
 
         checker = TestChecker()

@@ -19,8 +19,6 @@ from src.shared.python.core.type_utils import (
     to_numpy_array,
 )
 
-pytestmark = pytest.mark.unit
-
 
 class TestSafeInt:
     """Tests for safe_int function."""

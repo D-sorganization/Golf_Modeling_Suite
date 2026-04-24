@@ -10,8 +10,6 @@ from src.shared.python.engine_core.engine_manager import EngineManager, EngineTy
 from src.shared.python.logging_pkg.logging_config import get_logger
 from tests.physics_validation.analytical import AnalyticalPendulum
 
-pytestmark = pytest.mark.integration
-
 logger = get_logger(__name__)
 
 
@@ -22,7 +20,7 @@ def is_engine_available(engine_type: EngineType) -> bool:
     return bool(probe_result.is_available())
 
 
-def test_mujoco_pendulum_accuracy() -> None:
+def test_mujoco_pendulum_accuracy():
     """Verify MuJoCo pendulum matches analytical solution."""
     if not is_engine_available(EngineType.MUJOCO):
         pytest.skip("MuJoCo not installed")
@@ -103,7 +101,7 @@ def test_mujoco_pendulum_accuracy() -> None:
     )
 
 
-def test_drake_pendulum_accuracy() -> None:
+def test_drake_pendulum_accuracy():
     """Verify Drake pendulum matches analytical solution."""
     if not is_engine_available(EngineType.DRAKE):
         pytest.skip("Drake not installed")

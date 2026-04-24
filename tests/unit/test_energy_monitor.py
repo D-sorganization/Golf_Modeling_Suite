@@ -6,8 +6,6 @@ for ensuring physical validity of conservative system integrations.
 
 from __future__ import annotations
 
-from typing import NoReturn
-
 import numpy as np
 import pytest
 
@@ -24,13 +22,11 @@ from src.shared.python.tests.mock_physics_engine import (
     as_physics_engine,
 )
 
-pytestmark = pytest.mark.unit
-
 
 class TestEnergySnapshot:
     """Test EnergySnapshot dataclass."""
 
-    def test_initialization(self) -> None:
+    def test_initialization(self):
         """Test basic initialization."""
         snapshot = EnergySnapshot(time=1.0, kinetic=5.0, potential=10.0)
         assert snapshot.time == 1.0
@@ -56,12 +52,12 @@ class TestEnergySnapshot:
             "potential_only",
         ],
     )
-    def test_total_energy(self, kinetic, potential, expected_total) -> None:
+    def test_total_energy(self, kinetic, potential, expected_total):
         """Test that total property returns KE + PE for various inputs."""
         snapshot = EnergySnapshot(time=0.0, kinetic=kinetic, potential=potential)
         assert snapshot.total == expected_total
 
-    def test_total_is_computed_property(self) -> None:
+    def test_total_is_computed_property(self):
         """Test that total is a computed property, not stored."""
         snapshot = EnergySnapshot(time=0.0, kinetic=5.0, potential=5.0)
         assert snapshot.total == 10.0
@@ -75,7 +71,7 @@ class TestEnergySnapshot:
 class TestConservationMonitorInitialization:
     """Test ConservationMonitor initialization."""
 
-    def test_basic_initialization(self) -> None:
+    def test_basic_initialization(self):
         """Test basic monitor initialization."""
         engine = MockPhysicsEngine()
         monitor = ConservationMonitor(as_physics_engine(engine))
@@ -86,7 +82,7 @@ class TestConservationMonitorInitialization:
         assert monitor.max_drift_pct == ENERGY_DRIFT_TOLERANCE_PCT
         assert monitor.critical_drift_pct == ENERGY_DRIFT_CRITICAL_PCT
 
-    def test_custom_drift_thresholds(self) -> None:
+    def test_custom_drift_thresholds(self):
         """Test initialization with custom drift thresholds."""
         engine = MockPhysicsEngine()
         monitor = ConservationMonitor(
@@ -98,7 +94,7 @@ class TestConservationMonitorInitialization:
         assert monitor.max_drift_pct == 0.5
         assert monitor.critical_drift_pct == 2.0
 
-    def test_default_tolerance_values(self) -> None:
+    def test_default_tolerance_values(self):
         """Test that default tolerance values match Guideline O3."""
         engine = MockPhysicsEngine()
         monitor = ConservationMonitor(as_physics_engine(engine))
@@ -111,7 +107,7 @@ class TestConservationMonitorInitialization:
 class TestMonitorInitialize:
     """Test ConservationMonitor.initialize() method."""
 
-    def test_initialize_sets_initial_energy(self) -> None:
+    def test_initialize_sets_initial_energy(self):
         """Test that initialize() sets E_initial."""
         from src.shared.python.core.constants import GRAVITY_M_S2
 
@@ -126,7 +122,7 @@ class TestMonitorInitialize:
         assert monitor.E_initial is not None
         assert isinstance(monitor.E_initial, float)
 
-    def test_initialize_clears_drift_history(self) -> None:
+    def test_initialize_clears_drift_history(self):
         """Test that initialize() clears drift history."""
         engine = MockPhysicsEngine()
         engine.set_state(np.array([0.0, 0.0]), np.array([1.0, 1.0]))
@@ -141,7 +137,7 @@ class TestMonitorInitialize:
         monitor.initialize()
         assert len(monitor.drift_history) == 0
 
-    def test_initialize_computes_correct_energy(self) -> None:
+    def test_initialize_computes_correct_energy(self):
         """Test that initialize() computes energy correctly."""
         engine = MockPhysicsEngine()
 
@@ -164,7 +160,7 @@ class TestMonitorInitialize:
 class TestGetEnergySnapshot:
     """Test ConservationMonitor.get_energy_snapshot() method."""
 
-    def test_snapshot_captures_current_time(self) -> None:
+    def test_snapshot_captures_current_time(self):
         """Test that snapshot captures current simulation time."""
         engine = MockPhysicsEngine()
         engine.time = 5.5
@@ -175,7 +171,7 @@ class TestGetEnergySnapshot:
 
         assert snapshot.time == 5.5
 
-    def test_snapshot_computes_kinetic_energy(self) -> None:
+    def test_snapshot_computes_kinetic_energy(self):
         """Test kinetic energy computation: KE = 0.5 * v^T * M * v."""
         engine = MockPhysicsEngine()
 
@@ -190,7 +186,7 @@ class TestGetEnergySnapshot:
         expected_KE = 0.5 * 2.0 * 3.0**2
         np.testing.assert_allclose(snapshot.kinetic, expected_KE, rtol=1e-10)
 
-    def test_snapshot_computes_potential_energy(self) -> None:
+    def test_snapshot_computes_potential_energy(self):
         """Test potential energy computation: PE = -q^T * g."""
         from src.shared.python.core.constants import GRAVITY_M_S2
 
@@ -207,7 +203,7 @@ class TestGetEnergySnapshot:
         expected_PE = -1.0 * (-GRAVITY_M_S2)
         np.testing.assert_allclose(snapshot.potential, expected_PE, rtol=1e-10)
 
-    def test_snapshot_with_multidof_system(self) -> None:
+    def test_snapshot_with_multidof_system(self):
         """Test energy computation for multi-DOF system."""
         from src.shared.python.core.constants import GRAVITY_M_S2
 
@@ -241,7 +237,7 @@ class TestGetEnergySnapshot:
 class TestCheckAndWarn:
     """Test ConservationMonitor.check_and_warn() method."""
 
-    def test_requires_initialization(self) -> None:
+    def test_requires_initialization(self):
         """Test that check_and_warn() requires initialization first."""
         engine = MockPhysicsEngine()
         monitor = ConservationMonitor(as_physics_engine(engine))
@@ -249,7 +245,7 @@ class TestCheckAndWarn:
         with pytest.raises(StateError, match="not initialized"):
             monitor.check_and_warn()
 
-    def test_zero_drift_returns_zero(self) -> None:
+    def test_zero_drift_returns_zero(self):
         """Test that zero drift returns 0.0%."""
         engine = MockPhysicsEngine()
         engine.set_state(np.array([0.0, 0.0]), np.array([1.0, 1.0]))
@@ -264,7 +260,7 @@ class TestCheckAndWarn:
 
         np.testing.assert_allclose(drift_pct, 0.0, atol=1e-10)
 
-    def test_drift_calculation_positive(self) -> None:
+    def test_drift_calculation_positive(self):
         """Test drift calculation when energy increases."""
         engine = MockPhysicsEngine()
 
@@ -287,7 +283,7 @@ class TestCheckAndWarn:
         expected_drift = (E_new - 0.5) / 0.5 * 100
         np.testing.assert_allclose(drift_pct, expected_drift, rtol=1e-6)
 
-    def test_drift_calculation_negative(self) -> None:
+    def test_drift_calculation_negative(self):
         """Test drift calculation when energy decreases."""
         engine = MockPhysicsEngine()
 
@@ -310,7 +306,7 @@ class TestCheckAndWarn:
         expected_drift = (E_new - 2.0) / 2.0 * 100
         np.testing.assert_allclose(drift_pct, expected_drift, rtol=1e-6)
 
-    def test_drift_history_accumulation(self) -> None:
+    def test_drift_history_accumulation(self):
         """Test that drift history is accumulated."""
         engine = MockPhysicsEngine()
         engine.set_state(np.array([0.0]), np.array([1.0]))
@@ -336,7 +332,7 @@ class TestCheckAndWarn:
         assert monitor.drift_history[1][0] == 2.0  # Second time
         assert monitor.drift_history[2][0] == 3.0  # Third time
 
-    def test_warning_at_tolerance_threshold(self, caplog) -> None:
+    def test_warning_at_tolerance_threshold(self, caplog):
         """Test that warning is logged at 1% drift threshold."""
         engine = MockPhysicsEngine()
 
@@ -364,7 +360,7 @@ class TestCheckAndWarn:
             or "conservation" in caplog.text.lower()
         )
 
-    def test_critical_error_at_5_percent_drift(self) -> None:
+    def test_critical_error_at_5_percent_drift(self):
         """Test that IntegrationFailureError is raised at 5% drift."""
         engine = MockPhysicsEngine()
 
@@ -385,7 +381,7 @@ class TestCheckAndWarn:
         with pytest.raises(IntegrationFailureError, match="INTEGRATION FAILURE"):
             monitor.check_and_warn()
 
-    def test_no_warning_below_tolerance(self, caplog) -> None:
+    def test_no_warning_below_tolerance(self, caplog):
         """Test that no warning is logged below 1% drift."""
         engine = MockPhysicsEngine()
 
@@ -413,7 +409,7 @@ class TestCheckAndWarn:
         ]
         assert len(energy_warnings) == 0
 
-    def test_negative_drift_triggers_warning(self, caplog) -> None:
+    def test_negative_drift_triggers_warning(self, caplog):
         """Test that negative drift (energy loss) also triggers warning."""
         engine = MockPhysicsEngine()
 
@@ -441,7 +437,7 @@ class TestCheckAndWarn:
 class TestEstimateMaxStableTimestep:
     """Test estimate_max_stable_timestep() method."""
 
-    def test_slow_motion_recommendation(self) -> None:
+    def test_slow_motion_recommendation(self):
         """Test timestep recommendation for slow motion."""
         engine = MockPhysicsEngine()
         engine.set_state(q=np.array([0.0, 0.0]), v=np.array([0.1, 0.2]))  # ||v|| < 1.0
@@ -452,7 +448,7 @@ class TestEstimateMaxStableTimestep:
         # For slow motion, should recommend dt = 0.01s
         assert dt_max == 0.01
 
-    def test_normal_motion_recommendation(self) -> None:
+    def test_normal_motion_recommendation(self):
         """Test timestep recommendation for normal motion."""
         engine = MockPhysicsEngine()
         engine.set_state(
@@ -466,7 +462,7 @@ class TestEstimateMaxStableTimestep:
         # For normal motion, should recommend dt = 0.001s
         assert dt_max == 0.001
 
-    def test_high_speed_motion_recommendation(self) -> None:
+    def test_high_speed_motion_recommendation(self):
         """Test timestep recommendation for high-speed motion."""
         engine = MockPhysicsEngine()
         engine.set_state(
@@ -480,7 +476,7 @@ class TestEstimateMaxStableTimestep:
         # For high-speed motion, should recommend dt = 0.0001s
         assert dt_max == 0.0001
 
-    def test_zero_velocity(self) -> None:
+    def test_zero_velocity(self):
         """Test timestep recommendation with zero velocity."""
         engine = MockPhysicsEngine()
         engine.set_state(q=np.array([0.0, 0.0]), v=np.array([0.0, 0.0]))
@@ -495,7 +491,7 @@ class TestEstimateMaxStableTimestep:
 class TestProjectToEnergyManifold:
     """Test project_to_energy_manifold() method."""
 
-    def test_requires_initialization(self) -> None:
+    def test_requires_initialization(self):
         """Test that projection requires initialization first."""
         engine = MockPhysicsEngine()
         monitor = ConservationMonitor(as_physics_engine(engine))
@@ -503,7 +499,7 @@ class TestProjectToEnergyManifold:
         with pytest.raises(StateError, match="not initialized"):
             monitor.project_to_energy_manifold()
 
-    def test_projection_scales_velocity(self) -> None:
+    def test_projection_scales_velocity(self):
         """Test that projection scales velocity to restore energy."""
         engine = MockPhysicsEngine()
 
@@ -527,7 +523,7 @@ class TestProjectToEnergyManifold:
 
         np.testing.assert_allclose(E_restored, 0.5, rtol=1e-6)
 
-    def test_projection_does_not_change_position(self) -> None:
+    def test_projection_does_not_change_position(self):
         """Test that projection only changes velocity, not position."""
         engine = MockPhysicsEngine()
 
@@ -551,7 +547,7 @@ class TestProjectToEnergyManifold:
         q, v = engine.get_state()
         np.testing.assert_allclose(q, q_initial, rtol=1e-10)
 
-    def test_projection_with_near_zero_energy(self, caplog) -> None:
+    def test_projection_with_near_zero_energy(self, caplog):
         """Test projection behavior when current energy is near zero."""
         engine = MockPhysicsEngine()
 
@@ -572,7 +568,7 @@ class TestProjectToEnergyManifold:
         # Should warn about inability to project
         assert "Cannot project to energy manifold" in caplog.text
 
-    def test_projection_preserves_direction(self) -> None:
+    def test_projection_preserves_direction(self):
         """Test that projection preserves velocity direction (only scales magnitude)."""
         engine = MockPhysicsEngine(n_dof=2)
 
@@ -606,16 +602,16 @@ class TestProjectToEnergyManifold:
 class TestIntegrationFailureError:
     """Test IntegrationFailureError exception."""
 
-    def test_exception_is_raised(self) -> NoReturn:
+    def test_exception_is_raised(self):
         """Test that IntegrationFailureError can be raised."""
         with pytest.raises(IntegrationFailureError):
             raise IntegrationFailureError("Test error")
 
-    def test_exception_inherits_from_exception(self) -> None:
+    def test_exception_inherits_from_exception(self):
         """Test that IntegrationFailureError is an Exception."""
         assert issubclass(IntegrationFailureError, Exception)
 
-    def test_exception_message(self) -> None:
+    def test_exception_message(self):
         """Test that exception message is preserved."""
         msg = "Critical energy drift detected"
         try:
@@ -627,7 +623,7 @@ class TestIntegrationFailureError:
 class TestPhysicalRealism:
     """Test physical realism of energy monitoring."""
 
-    def test_conservative_system_maintains_energy(self) -> None:
+    def test_conservative_system_maintains_energy(self):
         """Test that a true conservative system shows zero drift."""
         engine = MockPhysicsEngine()
 
@@ -646,7 +642,7 @@ class TestPhysicalRealism:
         # Should have zero drift
         np.testing.assert_allclose(drift_pct, 0.0, atol=1e-10)
 
-    def test_drift_detection_sensitivity(self) -> None:
+    def test_drift_detection_sensitivity(self):
         """Test that monitor detects small energy changes."""
         engine = MockPhysicsEngine()
 
@@ -670,7 +666,7 @@ class TestPhysicalRealism:
 class TestEdgeCases:
     """Test edge cases and boundary conditions."""
 
-    def test_zero_initial_energy(self) -> None:
+    def test_zero_initial_energy(self):
         """Test behavior with zero initial energy.
 
         Note: This is a pathological case. Division by zero occurs when
@@ -695,7 +691,7 @@ class TestEdgeCases:
         with pytest.raises(ZeroDivisionError):
             monitor.check_and_warn()
 
-    def test_very_large_energy_drift(self) -> None:
+    def test_very_large_energy_drift(self):
         """Test behavior with extremely large drift."""
         engine = MockPhysicsEngine()
 
@@ -714,7 +710,7 @@ class TestEdgeCases:
         with pytest.raises(IntegrationFailureError):
             monitor.check_and_warn()
 
-    def test_negative_energy_total(self) -> None:
+    def test_negative_energy_total(self):
         """Test with negative total energy (PE dominates)."""
         engine = MockPhysicsEngine()
 
@@ -732,7 +728,7 @@ class TestEdgeCases:
 
         assert np.isfinite(drift_pct)
 
-    def test_multiple_initializations(self) -> None:
+    def test_multiple_initializations(self):
         """Test that re-initialization resets the monitor."""
         engine = MockPhysicsEngine()
 

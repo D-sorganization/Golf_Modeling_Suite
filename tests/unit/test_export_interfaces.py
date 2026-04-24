@@ -18,8 +18,6 @@ from src.engines.common.export import (
     VideoExportProtocol,
 )
 
-pytestmark = pytest.mark.unit
-
 
 class TestVideoConfig:
     """Tests for VideoConfig dataclass."""

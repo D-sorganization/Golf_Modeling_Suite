@@ -5,7 +5,6 @@ Unit tests for inertia calculation modules.
 import math
 
 import numpy as np
-import pytest
 from humanoid_character_builder.mesh.inertia_calculator import (
     InertiaMode,
     InertiaResult,
@@ -17,8 +16,6 @@ from humanoid_character_builder.mesh.primitive_inertia import (
     PrimitiveShape,
     estimate_segment_primitive,
 )
-
-pytestmark = pytest.mark.unit
 
 
 class TestInertiaResult:

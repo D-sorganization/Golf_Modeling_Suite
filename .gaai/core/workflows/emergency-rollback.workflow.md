@@ -18,7 +18,6 @@ This workflow handles: unrecoverable failures, out-of-scope drift, corrupted con
 ## When to Use
 
 Activate this workflow when:
-
 - QA fails after 3 remediation attempts
 - Implementation has drifted from product intent
 - A fix requires changing Story scope or design
@@ -31,7 +30,6 @@ Activate this workflow when:
 ## Escalation Signals
 
 The Delivery Agent MUST surface these to a human:
-
 - `ESCALATE: scope-change-required`
 - `ESCALATE: rule-violation-unresolvable`
 - `ESCALATE: context-gap-detected`
@@ -49,7 +47,6 @@ Immediately halt the Delivery Agent. No further code changes.
 ### 2. Assess the Situation
 
 Human reviews:
-
 - What was the last PASS state?
 - What changed since then?
 - Is the change reversible via git?
@@ -92,18 +89,17 @@ git reset --hard <commit>  # only if changes are not pushed
 
 Depending on diagnosis:
 
-| Root Cause                       | Action                                             |
-| -------------------------------- | -------------------------------------------------- |
-| Story was ambiguous              | Return to Discovery — use `refine-scope`           |
-| Acceptance criteria were missing | Return to Discovery — update Story                 |
-| Rule was missing or weak         | Invoke `rules-normalize`, update `contexts/rules/` |
-| Memory was stale or wrong        | Invoke `memory-refresh`, correct memory            |
-| Architectural decision needed    | Surface to human, record in `decision-extraction`  |
+| Root Cause | Action |
+|---|---|
+| Story was ambiguous | Return to Discovery — use `refine-scope` |
+| Acceptance criteria were missing | Return to Discovery — update Story |
+| Rule was missing or weak | Invoke `rules-normalize`, update `contexts/rules/` |
+| Memory was stale or wrong | Invoke `memory-refresh`, correct memory |
+| Architectural decision needed | Surface to human, record in `decision-extraction` |
 
 ### 6. Re-validate Before Resuming
 
 Before restarting Delivery:
-
 - Run `validate-artefacts` on affected Stories
 - Confirm root cause is resolved
 - Update backlog status accordingly
@@ -111,7 +107,6 @@ Before restarting Delivery:
 ### 7. Resume Delivery
 
 Only resume `delivery-loop.workflow.md` when:
-
 - ✅ Root cause is resolved
 - ✅ Artefacts are re-validated
 - ✅ Memory reflects current state

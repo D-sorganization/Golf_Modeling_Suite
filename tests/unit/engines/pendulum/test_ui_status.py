@@ -10,8 +10,6 @@ from PyQt6 import QtWidgets
 
 from src.shared.python.ui.qt.utils import get_qapp
 
-pytestmark = pytest.mark.unit
-
 
 @pytest.fixture(scope="module")
 def app() -> QtWidgets.QApplication:
