@@ -516,8 +516,7 @@ class ClubDataLoader:
             df = pd.read_excel(file_path, sheet_name=sheet_name)
         except (RuntimeError, TypeError, ValueError) as e:
             raise ValueError(
-                f"Failed to read trajectory file: {file_path}\n"
-                f"Error: {e}"
+                f"Failed to read trajectory file: {file_path}\nError: {e}"
             ) from e
 
         # Find time column
