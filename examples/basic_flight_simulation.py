@@ -58,16 +58,27 @@ def main() -> None:
     trajectory = simulator.simulate_trajectory(launch, max_time=8.0, dt=0.05)
 
     # --- Print summary every 0.5 s ---
-    for _pt in trajectory[::10]:
-        pass
+    print("\nTrajectory Summary (every 0.5s):")
+    print("-" * 60)
+    print(f"{'Time (s)':<12} {'X (m)':<12} {'Z (m)':<12} {'Speed (m/s)':<12}")
+    print("-" * 60)
+    for pt in trajectory[::10]:
+        speed = float(np.linalg.norm(pt.velocity))
+        print(
+            f"{pt.time:<12.2f} {pt.position[0]:<12.2f} "
+            f"{pt.height:<12.2f} {speed:<12.2f}"
+        )
 
     # --- Carry distance: last point before height < 0 ---
     landing_pts = [p for p in trajectory if p.height <= 0.0]
     if len(landing_pts) >= 2:
         carry_m = float(landing_pts[-1].position[0])
-        carry_m * 1.0936
+        carry_yards = carry_m * 1.0936
+        print("\n" + "-" * 60)
+        print(f"Carry Distance: {carry_m:.2f} m ({carry_yards:.2f} yards)")
+        print("-" * 60)
     else:
-        pass
+        print("\nWarning: Could not determine carry distance (trajectory did not land)")
 
 
 if __name__ == "__main__":
