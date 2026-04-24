@@ -11,6 +11,8 @@ from src.shared.python.pendulum_simulator.simulation_golfer import (
     run_simulation,
 )
 
+pytestmark = pytest.mark.unit
+
 
 def _make_params() -> GolferParams:
     return GolferParams(
@@ -33,7 +35,7 @@ def _make_params() -> GolferParams:
     )
 
 
-def _zero_torque(t):  # noqa: ARG001
+def _zero_torque(t) -> tuple[float, ...]:  # noqa: ARG001
     return (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 
 

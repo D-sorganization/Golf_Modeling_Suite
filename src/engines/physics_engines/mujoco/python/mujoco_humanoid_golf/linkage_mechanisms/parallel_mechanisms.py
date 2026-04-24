@@ -102,7 +102,9 @@ def _delta_robot_arm_xml(
     arm_length: float,
     forearm_length: float,
 ) -> str:
-    if arm_num is None:
+    if not (arm_num is not None):
+        raise ValueError("arm_num must be provided")
+    if not (arm_num is not None):
         raise ValueError("arm_num must be provided")
     angle_rad = np.radians(angle_deg)
     bx = base_radius * np.cos(angle_rad)
@@ -145,12 +147,10 @@ def _delta_robot_equality_xml(forearm_length: float) -> str:
         )
     lines.append("")
     lines.append("        <!-- Keep forearm pairs parallel -->")
-    lines.extend(
-        [
+    for arm_num in range(1, 4):
+        lines.append(
             f'        <joint joint1="elbow{arm_num}a" joint2="elbow{arm_num}b" polycoef="0 1 0 0 0"/>'
-            for arm_num in range(1, 4)
-        ]
-    )
+        )
     lines.append("    </equality>")
     return "\n".join(lines)
 
@@ -167,7 +167,9 @@ def generate_delta_robot_xml(
     platform_radius : float
         Radius of the moving platform triangle
     """
-    if base_radius is None:
+    if not (base_radius is not None):
+        raise ValueError("base_radius must be provided")
+    if not (base_radius is not None):
         raise ValueError("base_radius must be provided")
     arm_length = 2.0
     forearm_length = 3.0
@@ -340,7 +342,9 @@ def _stewart_leg_xml(
     leg_num: int, base_radius: float, angle: float, leg_min: float, leg_max: float
 ) -> str:
     """Generate XML for a single Stewart platform leg (lower + upper)."""
-    if leg_num is None:
+    if not (leg_num is not None):
+        raise ValueError("leg_num must be provided")
+    if not (leg_num is not None):
         raise ValueError("leg_num must be provided")
     x = base_radius * np.cos(angle)
     y = base_radius * np.sin(angle)
@@ -405,12 +409,11 @@ def _stewart_equality_xml(platform_radius: float) -> str:
 def _stewart_actuator_xml() -> str:
     """Generate XML for the 6 leg motor actuators."""
     lines = []
-    lines.extend(
-        [
-            f'        <motor name="leg{i}_motor" joint="leg{i}_extend" gear="100"\n               ctrllimited="true" ctrlrange="-15 15"/>'
-            for i in range(1, 7)
-        ]
-    )
+    for i in range(1, 7):
+        lines.append(
+            f'        <motor name="leg{i}_motor" joint="leg{i}_extend" gear="100"'
+            f'\n               ctrllimited="true" ctrlrange="-15 15"/>'
+        )
     return "\n".join(lines)
 
 
@@ -426,7 +429,9 @@ def generate_stewart_platform_xml(
     platform_radius : float
         Radius of the platform hexagon
     """
-    if base_radius is None:
+    if not (base_radius is not None):
+        raise ValueError("base_radius must be provided")
+    if not (base_radius is not None):
         raise ValueError("base_radius must be provided")
     leg_min = 1.5
     leg_max = 3.0

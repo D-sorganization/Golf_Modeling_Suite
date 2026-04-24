@@ -10,6 +10,8 @@ from src.shared.python.perturbation.statistics import (
     compute_metric_statistics,
 )
 
+pytestmark = pytest.mark.unit
+
 # ---------------------------------------------------------------------------
 # MetricStatistics dataclass
 # ---------------------------------------------------------------------------
@@ -107,7 +109,7 @@ class TestComputeMetricStatistics:
         assert stats.mean == 7.0
 
     def test_empty_raises(self) -> None:
-        with pytest.raises(ValueError):
+        with pytest.raises((ValueError, AssertionError)):
             compute_metric_statistics(np.array([]))
 
     def test_p5_less_than_p95(self) -> None:

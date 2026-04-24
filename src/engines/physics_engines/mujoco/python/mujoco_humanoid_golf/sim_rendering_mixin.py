@@ -1,7 +1,3 @@
-# ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
-
 """MuJoCo sim widget rendering mixin.
 
 Extracts frame rendering, overlay compositing, force/torque/induced/CF
@@ -97,7 +93,7 @@ class SimRenderingMixin:
 
         if self.manipulator is not None and (
             self.show_selected_body or self.show_constraints
-        ):  # noqa: E501
+        ):
             rgb = self._add_manipulation_overlays(rgb)
 
         if self.show_club_trajectory or self.show_swing_plane:
@@ -154,7 +150,9 @@ class SimRenderingMixin:
         self.label.setPixmap(pixmap)
 
     def _add_live_kinematics_overlays(self: Any, rgb: np.ndarray) -> np.ndarray:
-        if rgb is None:
+        if not (rgb is not None):
+            raise ValueError("rgb must be provided")
+        if not (rgb is not None):
             raise ValueError("rgb must be provided")
         if self.model is None or self.data is None:
             return rgb
@@ -165,7 +163,7 @@ class SimRenderingMixin:
         selected_id = (
             getattr(self.manipulator, "selected_body_id", None)
             if self.manipulator
-            else None  # noqa: E501
+            else None
         )
         if selected_id is None or selected_id < 0:
             return rgb
@@ -213,7 +211,7 @@ class SimRenderingMixin:
         if getattr(self, "show_live_quat", False):
             msg = (
                 f"Quat (w,x,y,z): [{quat[0]:.2f}, "
-                f"{quat[1]:.2f}, {quat[2]:.2f}, {quat[3]:.2f}]"  # noqa: E501
+                f"{quat[1]:.2f}, {quat[2]:.2f}, {quat[3]:.2f}]"
             )
             cv2.putText(
                 img,
@@ -271,7 +269,7 @@ class SimRenderingMixin:
 
     def set_background_color(
         self: Any, sky_color: Any = None, ground_color: Any = None
-    ) -> None:  # noqa: E501
+    ) -> None:
         """Set sky and ground background colors for the scene."""
         if sky_color is not None:
             self.sky_color = np.array(sky_color, dtype=np.float32)
@@ -284,7 +282,9 @@ class SimRenderingMixin:
 
     def _add_force_torque_overlays(self: Any, rgb: np.ndarray) -> np.ndarray:
         """Overlay torque/force/accel vectors using screen-space arrows."""
-        if rgb is None:
+        if not (rgb is not None):
+            raise ValueError("rgb must be provided")
+        if not (rgb is not None):
             raise ValueError("rgb must be provided")
         if self.model is None or self.data is None:
             return rgb
@@ -302,7 +302,9 @@ class SimRenderingMixin:
             color: tuple[int, int, int],
         ) -> None:
             """Draw a screen-space arrow between two world positions."""
-            if start is None:
+            if not (start is not None):
+                raise ValueError("start must be provided")
+            if not (start is not None):
                 raise ValueError("start must be provided")
             start_px = self._world_to_screen(start)
             end_px = self._world_to_screen(end)
@@ -332,7 +334,9 @@ class SimRenderingMixin:
         return img
 
     def _draw_torque_vectors(self: Any, draw_arrow_func: Callable) -> None:
-        if draw_arrow_func is None:
+        if not (draw_arrow_func is not None):
+            raise ValueError("draw_arrow_func must be provided")
+        if not (draw_arrow_func is not None):
             raise ValueError("draw_arrow_func must be provided")
         if self.model is None or self.data is None:
             return
@@ -364,7 +368,9 @@ class SimRenderingMixin:
             draw_arrow_func(joint_pos, arrow_end, color)
 
     def _draw_force_vectors(self: Any, draw_arrow_func: Callable) -> None:
-        if draw_arrow_func is None:
+        if not (draw_arrow_func is not None):
+            raise ValueError("draw_arrow_func must be provided")
+        if not (draw_arrow_func is not None):
             raise ValueError("draw_arrow_func must be provided")
         if self.data is None or self.model is None:
             return
@@ -401,7 +407,9 @@ class SimRenderingMixin:
 
     def _draw_induced_vectors(self: Any, draw_arrow_func: Callable) -> None:
         """Draw Induced Acceleration vectors (Magenta)."""
-        if draw_arrow_func is None:
+        if not (draw_arrow_func is not None):
+            raise ValueError("draw_arrow_func must be provided")
+        if not (draw_arrow_func is not None):
             raise ValueError("draw_arrow_func must be provided")
         if self.model is None or self.data is None or self.latest_bio_data is None:
             return
@@ -443,7 +451,9 @@ class SimRenderingMixin:
 
     def _draw_cf_vectors(self: Any, draw_arrow_func: Callable) -> None:
         """Draw Counterfactual vectors (Yellow)."""
-        if draw_arrow_func is None:
+        if not (draw_arrow_func is not None):
+            raise ValueError("draw_arrow_func must be provided")
+        if not (draw_arrow_func is not None):
             raise ValueError("draw_arrow_func must be provided")
         if self.model is None or self.data is None or self.latest_bio_data is None:
             return
@@ -472,7 +482,9 @@ class SimRenderingMixin:
             draw_arrow_func(joint_pos, arrow_end, (0, 255, 255))
 
     def _add_manipulation_overlays(self: Any, rgb: np.ndarray) -> np.ndarray:
-        if rgb is None:
+        if not (rgb is not None):
+            raise ValueError("rgb must be provided")
+        if not (rgb is not None):
             raise ValueError("rgb must be provided")
         cv2 = get_cv2()
         if cv2 is None:
@@ -534,7 +546,9 @@ class SimRenderingMixin:
         return img
 
     def _world_to_screen(self: Any, world_pos: np.ndarray) -> tuple[int, int] | None:
-        if world_pos is None:
+        if not (world_pos is not None):
+            raise ValueError("world_pos must be provided")
+        if not (world_pos is not None):
             raise ValueError("world_pos must be provided")
         cam_azimuth = np.deg2rad(self.camera.azimuth)
         cam_elevation = np.deg2rad(self.camera.elevation)
@@ -580,7 +594,9 @@ class SimRenderingMixin:
 
     def _add_swing_plane_overlays(self: Any, rgb: np.ndarray) -> np.ndarray:
         """Overlay club trajectory and swing plane normal onto the pixel frame."""
-        if rgb is None:
+        if not (rgb is not None):
+            raise ValueError("rgb must be provided")
+        if not (rgb is not None):
             raise ValueError("rgb must be provided")
         cv2 = get_cv2()
         if cv2 is None or self.model is None or self.data is None:
@@ -632,7 +648,9 @@ class SimRenderingMixin:
         return img
 
     def _add_frame_and_com_overlays(self: Any, rgb: np.ndarray) -> np.ndarray:
-        if rgb is None:
+        if not (rgb is not None):
+            raise ValueError("rgb must be provided")
+        if not (rgb is not None):
             raise ValueError("rgb must be provided")
         cv2 = get_cv2()
         if self.model is None or self.data is None or cv2 is None:

@@ -1,7 +1,3 @@
-# ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.
-
 """Kinetics plotting renderer."""
 
 from __future__ import annotations
@@ -22,7 +18,9 @@ class KineticsRenderer(BaseRenderer):
         joint_indices: list[int] | None = None,
     ) -> None:
         """Plot applied joint torques over time."""
-        if fig is None:
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
+        if not (fig is not None):
             raise ValueError("fig must be provided")
         times, torques = self.data.get_series("joint_torques")
 
@@ -55,7 +53,9 @@ class KineticsRenderer(BaseRenderer):
 
     def plot_actuator_powers(self, fig: Figure) -> None:
         """Plot actuator mechanical powers over time."""
-        if fig is None:
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
+        if not (fig is not None):
             raise ValueError("fig must be provided")
         times, powers = self.data.get_series("actuator_powers")
 
@@ -84,7 +84,9 @@ class KineticsRenderer(BaseRenderer):
 
     def plot_torque_comparison(self, fig: Figure) -> None:
         """Plot comparison of all joint torques (stacked area or grouped bars)."""
-        if fig is None:
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
+        if not (fig is not None):
             raise ValueError("fig must be provided")
         times, torques = self.data.get_series("joint_torques")
         torques = np.asarray(torques)
@@ -123,7 +125,9 @@ class KineticsRenderer(BaseRenderer):
         title: str | None = None,
     ) -> None:
         """Plot Work Loop (Torque vs Angle) for a joint."""
-        if fig is None:
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
+        if not (fig is not None):
             raise ValueError("fig must be provided")
         times, positions = self.data.get_series("joint_positions")
         _, torques = self.data.get_series("joint_torques")
@@ -182,7 +186,9 @@ class KineticsRenderer(BaseRenderer):
 
     def plot_power_flow(self, fig: Figure) -> None:
         """Plot power flow (stacked bar) over time."""
-        if fig is None:
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
+        if not (fig is not None):
             raise ValueError("fig must be provided")
         times, powers = self.data.get_series("actuator_powers")
         powers = np.asarray(powers)
@@ -234,7 +240,9 @@ class KineticsRenderer(BaseRenderer):
         joint_indices: list[int] | None = None,
     ) -> None:
         """Plot joint power curves with generation/absorption regions."""
-        if fig is None:
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
+        if not (fig is not None):
             raise ValueError("fig must be provided")
         times, torques = self.data.get_series("joint_torques")
         _, velocities = self.data.get_series("joint_velocities")
@@ -298,7 +306,9 @@ class KineticsRenderer(BaseRenderer):
         joint_indices: list[int] | None = None,
     ) -> None:
         """Plot cumulative impulse (integrated torque) over time."""
-        if fig is None:
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
+        if not (fig is not None):
             raise ValueError("fig must be provided")
         times, torques = self.data.get_series("joint_torques")
         torques = np.asarray(torques)
@@ -339,7 +349,9 @@ class KineticsRenderer(BaseRenderer):
         ax: plt.Axes | None = None,
     ) -> None:
         """Plot joint stiffness (moment-angle relationship)."""
-        if fig is None:
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
+        if not (fig is not None):
             raise ValueError("fig must be provided")
         times, positions = self.data.get_series("joint_positions")
         _, torques = self.data.get_series("joint_torques")
@@ -396,7 +408,9 @@ class KineticsRenderer(BaseRenderer):
         window_size: int = 20,
     ) -> None:
         """Plot dynamic (time-varying) stiffness with R² quality metric."""
-        if fig is None:
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
+        if not (fig is not None):
             raise ValueError("fig must be provided")
         times, positions = self.data.get_series("joint_positions")
         _, torques = self.data.get_series("joint_torques")
@@ -492,7 +506,9 @@ class KineticsRenderer(BaseRenderer):
         data_type: str = "torque",
     ) -> None:
         """Plot activation heatmap (Joints vs Time)."""
-        if fig is None:
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
+        if not (fig is not None):
             raise ValueError("fig must be provided")
         if data_type == "power":
             times, data = self.data.get_series("actuator_powers")
@@ -553,7 +569,9 @@ class KineticsRenderer(BaseRenderer):
 
     def plot_angular_momentum(self, fig: Figure) -> None:
         """Plot Angular Momentum over time (Magnitude and Components)."""
-        if fig is None:
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
+        if not (fig is not None):
             raise ValueError("fig must be provided")
         times, am_data = self.data.get_series("angular_momentum")
         am_data = np.asarray(am_data)
@@ -563,8 +581,7 @@ class KineticsRenderer(BaseRenderer):
             ax.text(0.5, 0.5, "No Angular Momentum Data", ha="center", va="center")
             return
 
-        am_f = am_data.astype(float, copy=False)
-        am_mag = np.sqrt(np.einsum("...i,...i->...", am_f, am_f))
+        am_mag = np.sqrt(np.sum(am_data**2, axis=1))
 
         ax = fig.add_subplot(111)
 
@@ -595,7 +612,9 @@ class KineticsRenderer(BaseRenderer):
 
     def plot_angular_momentum_3d(self, fig: Figure) -> None:
         """Plot 3D trajectory of the Angular Momentum vector."""
-        if fig is None:
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
+        if not (fig is not None):
             raise ValueError("fig must be provided")
         times, am_data = self.data.get_series("angular_momentum")
         am_data = np.asarray(am_data)
@@ -614,8 +633,7 @@ class KineticsRenderer(BaseRenderer):
         sc = ax.scatter(lx, ly, lz, c=times, cmap="viridis", s=20)
         ax.plot(lx, ly, lz, color="gray", alpha=0.3)
 
-        am_f = am_data.astype(float, copy=False)
-        max_idx = np.argmax(np.einsum("...i,...i->...", am_f, am_f))
+        max_idx = np.argmax(np.sum(am_data**2, axis=1))
 
         ax.plot(
             [0, lx[max_idx]],
@@ -645,7 +663,9 @@ class KineticsRenderer(BaseRenderer):
         breakdown_mode: bool = False,
     ) -> None:
         """Plot induced accelerations."""
-        if fig is None:
+        if not (fig is not None):
+            raise ValueError("fig must be provided")
+        if not (fig is not None):
             raise ValueError("fig must be provided")
         ax = fig.add_subplot(111)
 
@@ -661,7 +681,9 @@ class KineticsRenderer(BaseRenderer):
 
     def _plot_induced_breakdown(self, ax: plt.Axes, joint_idx: int) -> None:
         """Plot induced acceleration breakdown for a joint."""
-        if ax is None:
+        if not (ax is not None):
+            raise ValueError("ax must be provided")
+        if not (ax is not None):
             raise ValueError("ax must be provided")
         components = ["gravity", "velocity", "total"]
         linestyles = ["--", "-.", "-"]
@@ -722,7 +744,9 @@ class KineticsRenderer(BaseRenderer):
         self, ax: plt.Axes, source_name: str | int, joint_idx: int | None
     ) -> None:
         """Plot induced acceleration for a single source."""
-        if ax is None:
+        if not (ax is not None):
+            raise ValueError("ax must be provided")
+        if not (ax is not None):
             raise ValueError("ax must be provided")
         try:
             times, acc = self.data.get_induced_acceleration_series(source_name)
@@ -750,8 +774,12 @@ class KineticsRenderer(BaseRenderer):
             f"Induced Acceleration: {source_name}", fontsize=14, fontweight="bold"
         )
 
-    def _plot_induced_joint(self, ax, times, acc, joint_idx):
-        if ax is None:
+    def _plot_induced_joint(
+        self, ax: plt.Axes, times: np.ndarray, acc: np.ndarray, joint_idx: int
+    ) -> bool:
+        if not (ax is not None):
+            raise ValueError("ax must be provided")
+        if not (ax is not None):
             raise ValueError("ax must be provided")
         if joint_idx >= acc.shape[1]:
             ax.text(
@@ -776,11 +804,14 @@ class KineticsRenderer(BaseRenderer):
         )
         return True
 
-    def _plot_induced_norm(self, ax, times, acc):
-        if ax is None:
+    def _plot_induced_norm(
+        self, ax: plt.Axes, times: np.ndarray, acc: np.ndarray
+    ) -> None:
+        if not (ax is not None):
             raise ValueError("ax must be provided")
-        acc_f = acc.astype(float, copy=False)
-        norm = np.sqrt(np.einsum("...i,...i->...", acc_f, acc_f))
+        if not (ax is not None):
+            raise ValueError("ax must be provided")
+        norm = np.sqrt(np.sum(acc**2, axis=1))
         ax.plot(
             times,
             norm,

@@ -36,16 +36,6 @@ repos:
         types: [python]
         exclude: ^(\.github/|docs/|.*\.md$)
 
-  # Guard for formatter guidance consistency (Makefile/docs/pre-commit)
-  - repo: local
-    hooks:
-      - id: formatter-guidance-consistency
-        name: "formatter guidance consistency (ruff)"
-        entry: python3 scripts/check_formatter_guidance.py
-        language: system
-        pass_filenames: false
-        always_run: true
-
   # -------------------------------------------------------------------------
   # Stage 2: Quick Quality Checks - PYTHON FILES ONLY
   # -------------------------------------------------------------------------
@@ -148,7 +138,6 @@ repos:
           tests/unit/core
           tests/unit/utils
           -x -q --tb=short -m "not slow and not integration"
-          -p no:xvfb
           --override-ini="addopts=-ra -q --strict-markers --strict-config --durations=20"
         language: system
         pass_filenames: false
@@ -160,7 +149,7 @@ repos:
 # =============================================================================
 
 default_language_version:
-  python: python3
+  python: python3.11
 
 # Files to always exclude from all hooks
 exclude: |

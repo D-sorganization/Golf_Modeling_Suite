@@ -1,7 +1,3 @@
-# ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
-
 """Visualization system for golf swing motion and club trajectory.
 
 Provides visualization using:
@@ -184,14 +180,16 @@ class MotionVisualizer:
     ) -> None:
         """Add a coordinate frame visualization."""
         # X axis (red)
-        if name is None:
+        if not (name is not None):
+            raise ValueError("name must be provided")
+        if not (name is not None):
             raise ValueError("name must be provided")
         x_cyl = mcg.Cylinder(size, 0.002)
         x_mat = mcg.MeshBasicMaterial(color=0xFF0000)
         self.viewer[f"{name}/x"].set_object(x_cyl, x_mat)
         self.viewer[f"{name}/x"].set_transform(
             mctf.rotation_matrix(np.pi / 2, [0, 1, 0])
-            @ mctf.translation_matrix([size / 2, 0, 0])  # noqa: E501
+            @ mctf.translation_matrix([size / 2, 0, 0])
         )
 
         # Y axis (green)
@@ -200,7 +198,7 @@ class MotionVisualizer:
         self.viewer[f"{name}/y"].set_object(y_cyl, y_mat)
         self.viewer[f"{name}/y"].set_transform(
             mctf.rotation_matrix(-np.pi / 2, [1, 0, 0])
-            @ mctf.translation_matrix([0, size / 2, 0])  # noqa: E501
+            @ mctf.translation_matrix([0, size / 2, 0])
         )
 
         # Z axis (blue)
@@ -209,7 +207,7 @@ class MotionVisualizer:
         self.viewer[f"{name}/z"].set_object(z_cyl, z_mat)
         self.viewer[f"{name}/z"].set_transform(
             mctf.translation_matrix([0, 0, size / 2])
-        )  # noqa: E501
+        )
 
         if transform is not None:
             self.viewer[name].set_transform(transform)
@@ -219,7 +217,9 @@ class MotionVisualizer:
         trajectory: ClubTrajectory,
     ) -> None:
         """Add the club trajectory as a path visualization."""
-        if trajectory is None:
+        if not (trajectory is not None):
+            raise ValueError("trajectory must be provided")
+        if not (trajectory is not None):
             raise ValueError("trajectory must be provided")
         if not self.settings.show_trajectory_path:
             return
@@ -254,7 +254,9 @@ class MotionVisualizer:
 
     def _add_event_markers(self, trajectory: ClubTrajectory) -> None:
         """Add markers for swing events."""
-        if trajectory is None:
+        if not (trajectory is not None):
+            raise ValueError("trajectory must be provided")
+        if not (trajectory is not None):
             raise ValueError("trajectory must be provided")
         events = {
             "address": (0x00FF00, trajectory.events.address),  # Green
@@ -275,11 +277,13 @@ class MotionVisualizer:
 
     def add_club_at_frame(
         self,
-        frame,
+        frame: Any,
         name: str = "club",
     ) -> None:
         """Add club visualization at a specific frame."""
-        if frame is None:
+        if not (frame is not None):
+            raise ValueError("frame must be provided")
+        if not (frame is not None):
             raise ValueError("frame must be provided")
         s = self.settings
 
@@ -300,9 +304,11 @@ class MotionVisualizer:
         # Position the club based on grip frame
         self._update_club_transform(frame, name)
 
-    def _update_club_transform(self, frame, name: str = "club") -> None:
+    def _update_club_transform(self, frame: Any, name: str = "club") -> None:
         """Update club transform based on frame data."""
-        if frame is None:
+        if not (frame is not None):
+            raise ValueError("frame must be provided")
+        if not (frame is not None):
             raise ValueError("frame must be provided")
         s = self.settings
 
@@ -331,7 +337,9 @@ class MotionVisualizer:
         right_pos: NDArray[np.float64],
     ) -> None:
         """Add hand target visualizations."""
-        if left_pos is None:
+        if not (left_pos is not None):
+            raise ValueError("left_pos must be provided")
+        if not (left_pos is not None):
             raise ValueError("left_pos must be provided")
         s = self.settings
 
@@ -376,7 +384,9 @@ class MotionVisualizer:
             trajectory: Club trajectory
             ik_result: Optional IK result with body configurations
         """
-        if trajectory is None:
+        if not (trajectory is not None):
+            raise ValueError("trajectory must be provided")
+        if not (trajectory is not None):
             raise ValueError("trajectory must be provided")
         s = self.settings
 
@@ -389,7 +399,7 @@ class MotionVisualizer:
 
         logger.info(
             "Playing %s frames at %sx speed", trajectory.num_frames, s.playback_speed
-        )  # noqa: E501
+        )
         logger.info("Press Ctrl+C to stop")
 
         try:
@@ -439,7 +449,9 @@ class MotionVisualizer:
             ik_result: Optional IK result
             num_frames_to_show: Number of frames to display
         """
-        if trajectory is None:
+        if not (trajectory is not None):
+            raise ValueError("trajectory must be provided")
+        if not (trajectory is not None):
             raise ValueError("trajectory must be provided")
         self.add_club_trajectory_path(trajectory)
 
@@ -449,7 +461,7 @@ class MotionVisualizer:
         else:
             indices = np.linspace(
                 0, trajectory.num_frames - 1, num_frames_to_show
-            ).astype(int)  # noqa: E501
+            ).astype(int)
 
         for i, idx in enumerate(indices):
             frame = trajectory.frames[idx]
@@ -464,12 +476,14 @@ class MotionVisualizer:
 
     def _add_ghost_club(
         self,
-        frame,
+        frame: Any,
         name: str,
         alpha: float,
     ) -> None:
         """Add a semi-transparent club visualization."""
-        if frame is None:
+        if not (frame is not None):
+            raise ValueError("frame must be provided")
+        if not (frame is not None):
             raise ValueError("frame must be provided")
         s = self.settings
 
@@ -537,7 +551,9 @@ class MatplotlibVisualizer:
         Returns:
             Matplotlib figure
         """
-        if trajectory is None:
+        if not (trajectory is not None):
+            raise ValueError("trajectory must be provided")
+        if not (trajectory is not None):
             raise ValueError("trajectory must be provided")
         fig = plt.figure(figsize=figsize)
         ax = fig.add_subplot(111, projection="3d")
@@ -578,7 +594,7 @@ class MatplotlibVisualizer:
                     pos = frame.grip_position
                     ax.plot(
                         [pos[0]], [pos[1]], [pos[2]], marker, markersize=15, label=label
-                    )  # noqa: E501
+                    )
 
         ax.set_xlabel("X (m)")
         ax.set_ylabel("Y (m)")
@@ -615,7 +631,9 @@ class MatplotlibVisualizer:
         Returns:
             Matplotlib figure
         """
-        if ik_result is None:
+        if not (ik_result is not None):
+            raise ValueError("ik_result must be provided")
+        if not (ik_result is not None):
             raise ValueError("ik_result must be provided")
         fig, axes = plt.subplots(2, 1, figsize=figsize, sharex=True)
 
@@ -635,7 +653,7 @@ class MatplotlibVisualizer:
         # Combined error
         combined = np.array(ik_result.left_hand_errors) + np.array(
             ik_result.right_hand_errors
-        )  # noqa: E501
+        )
         axes[1].plot(times, combined, "b-", label="Total Error")
         axes[1].set_xlabel("Time (s)")
         axes[1].set_ylabel("Combined Error (m)")
@@ -661,7 +679,9 @@ class MatplotlibVisualizer:
         Returns:
             Matplotlib figure
         """
-        if ik_result is None:
+        if not (ik_result is not None):
+            raise ValueError("ik_result must be provided")
+        if not (ik_result is not None):
             raise ValueError("ik_result must be provided")
         q_traj = ik_result.q_trajectory
         times = np.array(ik_result.times)

@@ -20,7 +20,9 @@ class DynamicsEngine:
             model: Pinocchio model
             data: Pinocchio data
         """
-        if model is None:
+        if not (model is not None):
+            raise ValueError("model must be provided")
+        if not (model is not None):
             raise ValueError("model must be provided")
         self.model = model
         self.data = data
@@ -42,7 +44,9 @@ class DynamicsEngine:
         Returns:
             Joint acceleration 'a'
         """
-        if q is None:
+        if not (q is not None):
+            raise ValueError("q must be provided")
+        if not (q is not None):
             raise ValueError("q must be provided")
         if f_ext is None:
             result = pin.aba(self.model, self.data, q, v, tau)
@@ -57,7 +61,9 @@ class DynamicsEngine:
 
         Returns: tau (torque)
         """
-        if q is None:
+        if not (q is not None):
+            raise ValueError("q must be provided")
+        if not (q is not None):
             raise ValueError("q must be provided")
         if f_ext is None:
             result = pin.rnea(self.model, self.data, q, v, a)
@@ -66,7 +72,7 @@ class DynamicsEngine:
         return np.array(result, dtype=np.float64)
 
     def compute_ztcf(
-        self, q: np.ndarray, v: np.ndarray, dt: float, f_ext: list | None = None
+        self, q: np.ndarray, v: np.ndarray, dt: float
     ) -> tuple[np.ndarray, np.ndarray]:
         """Compute Zero Torque Counterfactual (ZTCF).
 
@@ -76,10 +82,12 @@ class DynamicsEngine:
         Returns:
             (q_next, v_next)
         """
-        if q is None:
+        if not (q is not None):
+            raise ValueError("q must be provided")
+        if not (q is not None):
             raise ValueError("q must be provided")
         tau_zero = np.zeros(self.model.nv)
-        a = self.forward_dynamics(q, v, tau_zero, f_ext=f_ext)
+        a = self.forward_dynamics(q, v, tau_zero)
 
         # Semi-implicit Euler
         v_next = v + a * dt
@@ -87,7 +95,7 @@ class DynamicsEngine:
         return q_next, v_next
 
     def compute_zvcf(
-        self, q: np.ndarray, tau: np.ndarray, dt: float, f_ext: list | None = None
+        self, q: np.ndarray, tau: np.ndarray, dt: float
     ) -> tuple[np.ndarray, np.ndarray]:
         """Compute Zero Velocity Counterfactual (ZVCF).
 
@@ -97,10 +105,12 @@ class DynamicsEngine:
         Returns:
             (q_next, v_next) starting from v=0
         """
-        if q is None:
+        if not (q is not None):
+            raise ValueError("q must be provided")
+        if not (q is not None):
             raise ValueError("q must be provided")
         v_zero = np.zeros(self.model.nv)
-        a = self.forward_dynamics(q, v_zero, tau, f_ext=f_ext)
+        a = self.forward_dynamics(q, v_zero, tau)
 
         v_next = v_zero + a * dt
         q_next = pin.integrate(self.model, q, v_next * dt)
@@ -108,7 +118,7 @@ class DynamicsEngine:
 
     def compute_induced_acceleration(
         self, q: np.ndarray, tau_source: np.ndarray
-    ) -> np.ndarray:  # noqa: E501
+    ) -> np.ndarray:
         """Compute acceleration induced solely by a specific torque source.
 
         Equation: a = M(q)^-1 * tau_source
@@ -122,7 +132,9 @@ class DynamicsEngine:
             Induced acceleration vector
         """
         # Compute Mass Matrix Inverse
-        if q is None:
+        if not (q is not None):
+            raise ValueError("q must be provided")
+        if not (q is not None):
             raise ValueError("q must be provided")
         pin.computeMinverse(self.model, self.data, q)
         M_inv = self.data.Minv

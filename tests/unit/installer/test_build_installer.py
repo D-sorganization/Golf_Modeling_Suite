@@ -1,16 +1,21 @@
+from __future__ import annotations
+
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 import installer.windows.build_installer as bi
 
+pytestmark = pytest.mark.unit
 
-def test_check_prerequisites(monkeypatch):
+
+def test_check_prerequisites(monkeypatch) -> None:
     original_import = __import__
 
     # Test failure
-    def mock_import_fail(name, *args, **kwargs):
+    def mock_import_fail(name, *args, **kwargs) -> Any:
         if name == "cx_Freeze":
             raise ImportError
         return original_import(name, *args, **kwargs)
@@ -23,7 +28,7 @@ def test_check_prerequisites(monkeypatch):
     mock_cx = MagicMock()
     mock_cx.version = "1.0.0"
 
-    def mock_import_success(name, *args, **kwargs):
+    def mock_import_success(name, *args, **kwargs) -> Any:
         if name == "cx_Freeze":
             return mock_cx
         return original_import(name, *args, **kwargs)
@@ -32,12 +37,12 @@ def test_check_prerequisites(monkeypatch):
     assert bi.check_prerequisites() is True
 
 
-def test_check_prerequisites_logs_cx_freeze_version(monkeypatch, caplog):
+def test_check_prerequisites_logs_cx_freeze_version(monkeypatch, caplog) -> None:
     original_import = __import__
     mock_cx = MagicMock()
     mock_cx.version = "9.9.9"
 
-    def mock_import_success(name, *args, **kwargs):
+    def mock_import_success(name, *args, **kwargs) -> Any:
         if name == "cx_Freeze":
             return mock_cx
         return original_import(name, *args, **kwargs)
@@ -50,7 +55,7 @@ def test_check_prerequisites_logs_cx_freeze_version(monkeypatch, caplog):
     assert "cx_Freeze 9.9.9" in caplog.text
 
 
-def test_clean_build_dirs(tmp_path, monkeypatch):
+def test_clean_build_dirs(tmp_path, monkeypatch) -> None:
     build_dir = tmp_path / "build"
     dist_dir = tmp_path / "dist"
 
@@ -68,21 +73,21 @@ def test_clean_build_dirs(tmp_path, monkeypatch):
 
 
 @patch("subprocess.run")
-def test_install_dependencies(mock_run):
+def test_install_dependencies(mock_run) -> None:
     assert bi.install_dependencies() is True
     assert mock_run.call_count == 3
 
 
 @patch("subprocess.run")
-def test_install_dependencies_fail(mock_run):
+def test_install_dependencies_fail(mock_run) -> None:
     from subprocess import CalledProcessError
 
     mock_run.side_effect = CalledProcessError(1, "cmd")
     assert bi.install_dependencies() is False
 
 
-def test_detect_physics_engines(monkeypatch):
-    def mock_import(name, *args, **kwargs):
+def test_detect_physics_engines(monkeypatch) -> None:
+    def mock_import(name, *args, **kwargs) -> Any:
         if name in ("mujoco", "pinocchio"):
             return MagicMock()
         raise ImportError
@@ -95,7 +100,7 @@ def test_detect_physics_engines(monkeypatch):
 @patch("subprocess.run")
 @patch("os.chdir")
 @patch("os.getcwd", return_value="/tmp")
-def test_build_executable(mock_getcwd, mock_chdir, mock_run):
+def test_build_executable(mock_getcwd, mock_chdir, mock_run) -> None:
     mock_run.return_value.returncode = 0
     assert bi.build_executable("hybrid") is True
     assert (
@@ -106,7 +111,7 @@ def test_build_executable(mock_getcwd, mock_chdir, mock_run):
 @patch("subprocess.run")
 @patch("os.chdir")
 @patch("os.getcwd", return_value="/tmp")
-def test_build_msi(mock_getcwd, mock_chdir, mock_run, monkeypatch, tmp_path):
+def test_build_msi(mock_getcwd, mock_chdir, mock_run, monkeypatch, tmp_path) -> None:
     mock_run.return_value.returncode = 0
     monkeypatch.setattr(bi, "DIST_DIR", tmp_path)
     (tmp_path / "installer.msi").touch()
@@ -120,12 +125,12 @@ def test_build_msi(mock_getcwd, mock_chdir, mock_run, monkeypatch, tmp_path):
 @patch("subprocess.run")
 @patch("os.chdir")
 @patch("os.getcwd", return_value="/tmp")
-def test_build_msi_fail(mock_getcwd, mock_chdir, mock_run):
+def test_build_msi_fail(mock_getcwd, mock_chdir, mock_run) -> None:
     mock_run.return_value.returncode = 1
     assert bi.build_msi("hybrid") is False
 
 
-def test_create_installer_info(tmp_path, monkeypatch):
+def test_create_installer_info(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(bi, "DIST_DIR", tmp_path)
     monkeypatch.setattr(bi, "detect_physics_engines", lambda: ["mujoco"])
 
@@ -144,7 +149,7 @@ def test_create_installer_info(tmp_path, monkeypatch):
     assert data["provider_roots"] == [str(Path("C:/repos/MuJoCo_Models"))]
 
 
-def test_log_generated_outputs(caplog, tmp_path):
+def test_log_generated_outputs(caplog, tmp_path) -> None:
     artifact = tmp_path / "installer.msi"
     artifact.write_text("artifact")
 
@@ -175,7 +180,7 @@ def test_main(
     mock_prereq,
     monkeypatch,
     tmp_path,
-):
+) -> None:
     monkeypatch.setattr(bi, "DIST_DIR", tmp_path)
     artifact = tmp_path / "artifact.msi"
     artifact.write_bytes(b"abc")

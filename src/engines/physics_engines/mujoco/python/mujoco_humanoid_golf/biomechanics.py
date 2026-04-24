@@ -1,7 +1,3 @@
-# ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
-
 """Biomechanical analysis module for golf swing simulations.
 
 This module provides comprehensive force, torque, and kinematic analysis
@@ -41,7 +37,9 @@ class BiomechanicalAnalyzer:
             model: MuJoCo model structure
             data: MuJoCo data structure (will be read, not modified)
         """
-        if model is None:
+        if not (model is not None):
+            raise ValueError("model must be provided")
+        if not (model is not None):
             raise ValueError("model must be provided")
         self.model = model
         self.data = data
@@ -87,7 +85,9 @@ class BiomechanicalAnalyzer:
 
     def _find_body_id(self, name_pattern: str) -> int | None:
         """Find body ID by name pattern (case-insensitive, partial match)."""
-        if name_pattern is None:
+        if not (name_pattern is not None):
+            raise ValueError("name_pattern must be provided")
+        if not (name_pattern is not None):
             raise ValueError("name_pattern must be provided")
         for i in range(self.model.nbody):
             body_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_BODY, i)
@@ -97,7 +97,9 @@ class BiomechanicalAnalyzer:
 
     def _find_geom_id(self, name_pattern: str) -> int | None:
         """Find geom ID by name pattern (case-insensitive, partial match)."""
-        if name_pattern is None:
+        if not (name_pattern is not None):
+            raise ValueError("name_pattern must be provided")
+        if not (name_pattern is not None):
             raise ValueError("name_pattern must be provided")
         for i in range(self.model.ngeom):
             geom_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, i)
@@ -145,7 +147,9 @@ class BiomechanicalAnalyzer:
         Returns:
             Acceleration array
         """
-        if source_name is None:
+        if not (source_name is not None):
+            raise ValueError("source_name must be provided")
+        if not (source_name is not None):
             raise ValueError("source_name must be provided")
         comps = self.induced_analyzer.compute_components()
         if source_name == "gravity":
@@ -215,7 +219,7 @@ class BiomechanicalAnalyzer:
         if self._use_shaped_jac:
             mujoco.mj_jacBody(
                 self.model, self.data, self._jacp, self._jacr, self.club_head_id
-            )  # noqa: E501
+            )
             jacp = self._jacp
         else:
             mujoco.mj_jacBody(
@@ -273,7 +277,7 @@ class BiomechanicalAnalyzer:
 
             if self.right_foot_id is not None and (
                 self.right_foot_id in (body1, body2)
-            ):  # noqa: E501
+            ):
                 if right_force is None:
                     right_force = contact_force.copy()
                 else:
@@ -352,7 +356,7 @@ class BiomechanicalAnalyzer:
         if self.club_head_id is not None:
             club_name = mujoco.mj_id2name(
                 self.model, mujoco.mjtObj.mjOBJ_BODY, self.club_head_id
-            )  # noqa: E501
+            )
             if club_name:
                 club_induced = self.induced_analyzer.compute_task_space_components(
                     club_name, qdd_comps=comps
@@ -375,7 +379,9 @@ class BiomechanicalAnalyzer:
         Returns:
             BiomechanicalData object
         """
-        if compute_advanced_metrics is None:
+        if not (compute_advanced_metrics is not None):
+            raise ValueError("compute_advanced_metrics must be provided")
+        if not (compute_advanced_metrics is not None):
             raise ValueError("compute_advanced_metrics must be provided")
         qacc = self.compute_joint_accelerations()
         club_pos, club_vel, club_speed = self.get_club_head_data()
@@ -399,7 +405,7 @@ class BiomechanicalAnalyzer:
         if compute_advanced_metrics:
             induced, club_induced, counterfactuals = (
                 self._compute_advanced_induced_metrics(selected_actuator_name)
-            )  # noqa: E501
+            )
 
         return BiomechanicalData(
             time=float(self.data.time),
@@ -464,7 +470,9 @@ class SwingRecorder:
     )
     def get_time_series(self, field_name: str) -> tuple[np.ndarray, np.ndarray | list]:
         """Return time-aligned arrays for a named data field."""
-        if field_name is None:
+        if not (field_name is not None):
+            raise ValueError("field_name must be provided")
+        if not (field_name is not None):
             raise ValueError("field_name must be provided")
         if not self.frames:
             return np.array([], dtype=np.float64), np.array([], dtype=np.float64)
@@ -497,7 +505,9 @@ class SwingRecorder:
         self, source_name: str | int
     ) -> tuple[np.ndarray, np.ndarray]:
         """Return induced acceleration time series for a source."""
-        if source_name is None:
+        if not (source_name is not None):
+            raise ValueError("source_name must be provided")
+        if not (source_name is not None):
             raise ValueError("source_name must be provided")
         if not self.frames:
             return np.array([], dtype=np.float64), np.array([], dtype=np.float64)
@@ -546,7 +556,9 @@ class SwingRecorder:
 
     def _export_scalar_fields(self, export_data: dict) -> None:
         """Export scalar time-series fields into export_data."""
-        if export_data is None:
+        if not (export_data is not None):
+            raise ValueError("export_data must be provided")
+        if not (export_data is not None):
             raise ValueError("export_data must be provided")
         scalar_fields = [
             "time",
@@ -565,7 +577,9 @@ class SwingRecorder:
 
     def _export_array_fields(self, export_data: dict) -> None:
         """Export vector/array time-series fields into export_data."""
-        if export_data is None:
+        if not (export_data is not None):
+            raise ValueError("export_data must be provided")
+        if not (export_data is not None):
             raise ValueError("export_data must be provided")
         array_fields = [
             "joint_positions",
@@ -601,7 +615,9 @@ class SwingRecorder:
 
     def _export_induced_accelerations(self, export_data: dict) -> None:
         """Export induced and club-induced acceleration series."""
-        if export_data is None:
+        if not (export_data is not None):
+            raise ValueError("export_data must be provided")
+        if not (export_data is not None):
             raise ValueError("export_data must be provided")
         if self.frames and self.frames[0].induced_accelerations:
             all_keys: set[str] = set()
@@ -664,7 +680,9 @@ class SwingRecorder:
         Args:
             component_name: 'gravity', 'velocity', 'control', 'constraint', 'total'
         """
-        if component_name is None:
+        if not (component_name is not None):
+            raise ValueError("component_name must be provided")
+        if not (component_name is not None):
             raise ValueError("component_name must be provided")
         if not self.frames:
             return np.array([], dtype=np.float64), np.array([], dtype=np.float64)
@@ -676,7 +694,7 @@ class SwingRecorder:
             if (
                 f.club_induced_accelerations
                 and component_name in f.club_induced_accelerations
-            ):  # noqa: E501
+            ):
                 times.append(f.time)
                 values.append(f.club_induced_accelerations[component_name])
 
@@ -687,7 +705,9 @@ class SwingRecorder:
 
     def get_counterfactual_series(self, cf_name: str) -> tuple[np.ndarray, np.ndarray]:
         """Return counterfactual analysis time series by name."""
-        if cf_name is None:
+        if not (cf_name is not None):
+            raise ValueError("cf_name must be provided")
+        if not (cf_name is not None):
             raise ValueError("cf_name must be provided")
         if not self.frames:
             return np.array([], dtype=np.float64), np.array([], dtype=np.float64)

@@ -8,7 +8,8 @@ internal mathematical logic directly.
 
 from __future__ import annotations
 
-from unittest.mock import patch
+from collections.abc import Generator
+from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi import FastAPI
@@ -16,13 +17,15 @@ from fastapi.testclient import TestClient
 
 from src.shared.python.calc_backend.routers.scrubber import router
 
+pytestmark = pytest.mark.unit
+
 _app = FastAPI()
 _app.include_router(router)
 client = TestClient(_app)
 
 
 @pytest.fixture
-def mock_tools():
+def mock_tools() -> Generator[tuple[MagicMock, ...], None, None]:
     """Mock the scrubber calculators securely from Tools."""
     with (
         patch(

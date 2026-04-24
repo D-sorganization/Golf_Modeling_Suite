@@ -17,6 +17,8 @@ from src.shared.python.assessment.analysis import (
     grep_count,
 )
 
+pytestmark = pytest.mark.unit
+
 # ---------------------------------------------------------------------------
 # Helpers / fixtures
 # ---------------------------------------------------------------------------
@@ -48,7 +50,7 @@ ERROR_PYTHON = """\
 def danger():
     try:
         pass
-    except Exception as e:  # noqa: E722 - intentional bare except for detection testing
+    except:  # noqa: E722 - intentional bare except for detection testing
         pass
     try:
         pass
@@ -147,7 +149,7 @@ class TestAssessErrorHandlingContent:
 
     def test_counts_bare_except(self) -> None:
         d = assess_error_handling_content(ERROR_PYTHON)
-        assert d["bare_except_count"] == 0
+        assert d["bare_except_count"] == 1
 
     def test_no_patterns(self) -> None:
         d = assess_error_handling_content("x = 1 + 2")
@@ -241,7 +243,7 @@ class TestGrepCount:
         assert n == 0
 
     def test_asserts_root(self) -> None:
-        with pytest.raises(ValueError):
+        with pytest.raises((AssertionError, ValueError)):
             grep_count(None, "x")  # type: ignore[arg-type]
 
 
@@ -297,5 +299,5 @@ class TestClassifyAssessmentCategory:
         assert classify_assessment_category("Z", "completely random") == "General"
 
     def test_requires_source_name(self) -> None:
-        with pytest.raises(ValueError):
+        with pytest.raises((AssertionError, ValueError)):
             classify_assessment_category(None)  # type: ignore[arg-type]

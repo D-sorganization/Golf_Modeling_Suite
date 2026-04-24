@@ -11,9 +11,12 @@ Covers issues:
 from __future__ import annotations
 
 import importlib
+import types
 from unittest.mock import patch
 
 import pytest
+
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Issue #1779 – SECRET_KEY fallback
@@ -173,7 +176,7 @@ class TestAuthCacheCryptoHash:
 class TestMotionTrainingGetattr:
     """Issue #1777: motion_training exports must return real objects, not None."""
 
-    def _import_motion_training(self):
+    def _import_motion_training(self) -> types.ModuleType:
         """Import the motion_training module."""
         return importlib.import_module(
             "src.engines.physics_engines.pinocchio.python.motion_training"
@@ -366,7 +369,7 @@ class TestBarePassExceptionHandlers:
 # ---------------------------------------------------------------------------
 
 PHYSICS_MODULES = [
-    "src/shared/python/physics/aerodynamics.py",
+    "src/shared/python/physics/aerodynamics/__init__.py",
     "src/shared/python/physics/ball_flight_physics.py",
     "src/shared/python/physics/energy_monitor.py",
     "src/shared/python/physics/equipment.py",

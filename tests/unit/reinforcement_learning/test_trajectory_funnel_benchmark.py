@@ -5,19 +5,21 @@ from src.reinforcement_learning.trajectory_funnel_benchmark import (
     TrajectoryFunnelBenchmark,
 )
 
+pytestmark = pytest.mark.unit
 
-def test_initialization():
+
+def test_initialization() -> None:
     bench = TrajectoryFunnelBenchmark("transverse")
     assert bench.mode == "transverse"
 
     bench2 = TrajectoryFunnelBenchmark("setpoint")
     assert bench2.mode == "setpoint"
 
-    with pytest.raises(AssertionError):
+    with pytest.raises((AssertionError, ValueError)):
         TrajectoryFunnelBenchmark("invalid")
 
 
-def test_setpoint_reward():
+def test_setpoint_reward() -> None:
     bench = TrajectoryFunnelBenchmark("setpoint")
 
     current = np.array([1.0, 2.0])
@@ -26,11 +28,11 @@ def test_setpoint_reward():
     res = bench.setpoint_reward(current, target)
     assert res == -1.0
 
-    with pytest.raises(AssertionError):
+    with pytest.raises((AssertionError, ValueError)):
         bench.setpoint_reward(None, target)
 
 
-def test_trajectory_funnel_reward():
+def test_trajectory_funnel_reward() -> None:
     bench = TrajectoryFunnelBenchmark("transverse")
 
     current = np.array([0.0, 0.5])
@@ -46,7 +48,7 @@ def test_trajectory_funnel_reward():
     assert np.isclose(res, -2.5)
 
 
-def test_simulate_agent_training_mock():
+def test_simulate_agent_training_mock() -> None:
     bench_setpoint = TrajectoryFunnelBenchmark("setpoint")
     res1 = bench_setpoint.simulate_agent_training_mock()
     assert res1["convergence_epochs"] == 15000

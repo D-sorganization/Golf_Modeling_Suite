@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from src.shared.python.plot_engine.specs import (
     HistogramSpec,
@@ -13,6 +14,8 @@ from src.shared.python.plot_engine.specs import (
     TrendlineSpec,
 )
 from src.shared.python.plot_engine.trendline import TrendlineResult, compute_trendline
+
+pytestmark = pytest.mark.unit
 
 
 class TestSeriesStyle:
@@ -69,7 +72,7 @@ class TestHistogramSpec:
 
 
 class TestTrendline:
-    def _make_linear_data(self):
+    def _make_linear_data(self) -> tuple[np.ndarray, np.ndarray]:
         x = np.linspace(0.0, 10.0, 20)
         y = 2.0 * x + 1.0 + np.random.default_rng(42).normal(0, 0.1, 20)
         return x, y

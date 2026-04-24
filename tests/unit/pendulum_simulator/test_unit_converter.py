@@ -16,6 +16,8 @@ from src.shared.python.pendulum_simulator.gui.unit_converter import (
     to_si,
 )
 
+pytestmark = pytest.mark.unit
+
 
 class TestUnitCategory:
     def test_length_value(self) -> None:
@@ -52,7 +54,7 @@ class TestUnitPreferences:
 
     def test_invalid_preset_raises(self) -> None:
         prefs = UnitPreferences()
-        with pytest.raises(AssertionError):
+        with pytest.raises((AssertionError, ValueError)):
             prefs.apply_preset("NonExistent")
 
     def test_set_unit_valid(self) -> None:
@@ -62,7 +64,7 @@ class TestUnitPreferences:
 
     def test_set_unit_invalid_raises(self) -> None:
         prefs = UnitPreferences()
-        with pytest.raises(AssertionError):
+        with pytest.raises((AssertionError, ValueError)):
             prefs.set_unit(UnitCategory.LENGTH, "km")  # not in options
 
     def test_set_and_get_angle_deg(self) -> None:

@@ -1,7 +1,3 @@
-# ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.
-
 """
 Local-first API server for Golf Modeling Suite.
 
@@ -21,12 +17,17 @@ Diagnostic Features:
 
 from __future__ import annotations
 
+import json
 import logging
 import mimetypes
 import os
 import time
+from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 # Fix MIME types for JavaScript modules on Windows
 # Windows registry often has incorrect/missing MIME types for .js files
@@ -49,6 +50,7 @@ from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.responses import HTMLResponse, JSONResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 
+from src.api._version import __version__  # noqa: E402
 from src.api.diagnostics import (  # noqa: E402
     APIDiagnostics,
     get_diagnostic_endpoint_html,
@@ -56,12 +58,16 @@ from src.api.diagnostics import (  # noqa: E402
 from src.api.routes import (  # noqa: E402
     analysis,
     chat_ws,
+    data_explorer,
     engines,
     export,
+    model_explorer,
+    presets,
     simulation,
     simulation_ws,
 )
 from src.api.services.chat_service import ChatService  # noqa: E402
+from src.shared.python.ai.rag.simple_rag import SimpleRAGStore  # noqa: E402
 from src.shared.python.engine_core.engine_manager import EngineManager  # noqa: E402
 from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
 
@@ -129,6 +135,11 @@ def _register_api_routers(app: FastAPI) -> None:
     app.include_router(chat_ws.router, prefix=API_PREFIX, tags=["Chat"])
     app.include_router(analysis.router, prefix=API_PREFIX, tags=["Analysis"])
     app.include_router(export.router, prefix=API_PREFIX, tags=["Export"])
+    app.include_router(data_explorer.router, prefix=API_PREFIX, tags=["Data Explorer"])
+    app.include_router(presets.router, prefix=API_PREFIX, tags=["Presets"])
+    app.include_router(
+        model_explorer.router, prefix=API_PREFIX, tags=["Model Explorer"]
+    )
 
     # Legacy routes: /api/... (deprecated aliases for backward compatibility)
     app.include_router(engines.router, prefix="/api", tags=["Engines"])
@@ -139,6 +150,9 @@ def _register_api_routers(app: FastAPI) -> None:
     app.include_router(chat_ws.router, prefix="/api", tags=["Chat"])
     app.include_router(analysis.router, prefix="/api", tags=["Analysis"])
     app.include_router(export.router, prefix="/api", tags=["Export"])
+    app.include_router(data_explorer.router, prefix="/api", tags=["Data Explorer"])
+    app.include_router(presets.router, prefix="/api", tags=["Presets"])
+    app.include_router(model_explorer.router, prefix="/api", tags=["Model Explorer"])
 
 
 def _load_launcher_manifest() -> dict[str, Any]:
@@ -147,13 +161,13 @@ def _load_launcher_manifest() -> dict[str, Any]:
     Returns:
         Parsed manifest dict, or a default empty manifest if not found.
     """
-    from src.config.launcher_manifest_loader import LauncherManifest
 
-    try:
-        return LauncherManifest.load().to_dict()
-    except (FileNotFoundError, ValueError, OSError) as exc:
-        logger.error("[launch] Failed to load launcher manifest: %s", exc)
-        return {"version": "1.0.0", "tiles": []}
+    manifest_path = Path(__file__).parent.parent / "config" / "launcher_manifest.json"
+    if manifest_path.exists():
+        with open(manifest_path, encoding="utf-8") as f:
+            result: dict[str, Any] = json.load(f)
+            return result
+    return {"version": "1.0.0", "tiles": []}
 
 
 def _find_logo_file(logo_name: str) -> Path | None:
@@ -187,10 +201,15 @@ def _find_tile_in_manifest(
     Returns:
         Tuple of (manifest dict, tile dict) or (None, None) if not found.
     """
-    manifest = _load_launcher_manifest()
-    if not manifest.get("tiles"):
-        logger.error("[launch] Manifest not available for tile lookup")
+    import json as _json
+
+    manifest_path = Path(__file__).parent.parent / "config" / "launcher_manifest.json"
+    if not manifest_path.exists():
+        logger.error("[launch] Manifest not found at %s", manifest_path)
         return None, None
+
+    with open(manifest_path, encoding="utf-8") as f:
+        manifest = _json.load(f)
 
     for t in manifest.get("tiles", []):
         if t.get("id") == tile_id:
@@ -211,7 +230,7 @@ def _execute_tile_launch(
     Returns:
         Success dict or JSONResponse with error details.
     """
-    if tile_id is None:
+    if not (tile_id is not None):
         raise ValueError("tile_id must be provided")
     model_type = tile.get("type", "")
     repo_path = Path(__file__).parent.parent.parent
@@ -331,7 +350,7 @@ def _register_health_and_diagnostic_endpoints(
 ) -> None:
     """Register health check and diagnostic endpoints."""
 
-    if app is None:
+    if not (app is not None):
         raise ValueError("app must be provided")
 
     @app.get("/api/health")
@@ -423,7 +442,7 @@ def _mount_assets_directory(app: FastAPI, ui_path: Path) -> None:
         app: The FastAPI application instance.
         ui_path: Path to the UI build directory.
     """
-    if app is None:
+    if not (app is not None):
         raise ValueError("app must be provided")
     assets_path = ui_path / "assets"
     if assets_path.exists():
@@ -445,7 +464,7 @@ def _register_spa_catch_all(app: FastAPI, ui_path: Path) -> None:
         app: The FastAPI application instance.
         ui_path: Path to the UI build directory.
     """
-    if app is None:
+    if not (app is not None):
         raise ValueError("app must be provided")
     index_html = ui_path / "index.html"
     if index_html.exists():
@@ -454,7 +473,7 @@ def _register_spa_catch_all(app: FastAPI, ui_path: Path) -> None:
         @app.get("/{full_path:path}")
         async def serve_spa(request: Request, full_path: str) -> Any:
             """Serve the SPA index.html for all non-API routes."""
-            if request is None:
+            if not (request is not None):
                 raise ValueError("request must be provided")
             if full_path.startswith("api/"):
                 return JSONResponse(
@@ -565,7 +584,7 @@ def _register_error_page_catch_all(app: FastAPI) -> None:
         request: Request, full_path: str
     ) -> HTMLResponse | JSONResponse:
         """Serve a helpful error page when UI is not built."""
-        if request is None:
+        if not (request is not None):
             raise ValueError("request must be provided")
         if full_path.startswith("api/"):
             return JSONResponse(
@@ -593,12 +612,113 @@ def _mount_static_files_and_spa(app: FastAPI) -> None:
         _register_error_page_catch_all(app)
 
 
+def _index_docs_into_rag(rag_store: SimpleRAGStore, repo_root: Path) -> None:
+    """Index documentation files into the RAG store on startup.
+
+    Indexes Markdown files from docs/, data/glossary_core.json, SPEC.md,
+    and README.md to enable retrieval-augmented generation for chat.
+
+    Args:
+        rag_store: The RAG store to populate.
+        repo_root: Root path of the repository.
+    """
+    indexed = 0
+
+    docs_dir = repo_root / "docs"
+    if docs_dir.is_dir():
+        for md_path in docs_dir.rglob("*.md"):
+            try:
+                content = md_path.read_text(encoding="utf-8", errors="ignore")
+                if content.strip():
+                    rel = str(md_path.relative_to(repo_root))
+                    rag_store.add_document(
+                        rel, content, {"source": rel, "type": "docs"}
+                    )
+                    indexed += 1
+            except OSError as exc:
+                logger.warning("RAG: could not read %s: %s", md_path, exc)
+
+    for top_level in ("SPEC.md", "README.md"):
+        path = repo_root / top_level
+        if path.exists():
+            try:
+                content = path.read_text(encoding="utf-8", errors="ignore")
+                if content.strip():
+                    rag_store.add_document(
+                        top_level,
+                        content,
+                        {"source": top_level, "type": "root_doc"},
+                    )
+                    indexed += 1
+            except OSError as exc:
+                logger.warning("RAG: could not read %s: %s", path, exc)
+
+    glossary_path = repo_root / "data" / "glossary_core.json"
+    if not glossary_path.exists():
+        glossary_path = (
+            repo_root
+            / "src"
+            / "shared"
+            / "python"
+            / "ai"
+            / "data"
+            / "glossary_core.json"
+        )
+    if glossary_path.exists():
+        try:
+            raw = glossary_path.read_text(encoding="utf-8", errors="ignore")
+            entries = json.loads(raw)
+            for entry in entries:
+                key = entry.get("key", "")
+                term = entry.get("term", key)
+                parts = [f"Term: {term}"]
+                for field in ("b", "i", "a", "f"):
+                    val = entry.get(field)
+                    if val:
+                        parts.append(str(val))
+                content = "\n".join(parts)
+                doc_id = f"glossary:{key}"
+                rag_store.add_document(
+                    doc_id,
+                    content,
+                    {
+                        "source": str(glossary_path.relative_to(repo_root)),
+                        "type": "glossary",
+                        "key": key,
+                    },
+                )
+                indexed += 1
+        except (OSError, json.JSONDecodeError, KeyError) as exc:
+            logger.warning("RAG: could not index glossary: %s", exc)
+
+    if indexed > 0:
+        rag_store.build_index()
+        logger.info("RAG: indexed %d documents and built index.", indexed)
+    else:
+        logger.warning("RAG: no documents found to index.")
+
+
+@asynccontextmanager
+async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """FastAPI lifespan handler: index docs into RAG store on startup."""
+    repo_root = Path(__file__).parent.parent.parent
+    rag_store: SimpleRAGStore = app.state.rag_store
+    try:
+        _index_docs_into_rag(rag_store, repo_root)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("RAG startup indexing failed: %s", exc)
+    yield
+
+
 def create_local_app() -> FastAPI:
     """Create FastAPI app configured for local use.
 
     Routes are registered at both ``/api/v1/`` (versioned, canonical) and
     ``/api/`` (legacy, deprecated) for backward compatibility (#2070).
     """
+    # Create RAG store and bind lifespan before app construction
+    rag_store = SimpleRAGStore()
+
     app = FastAPI(
         title="Golf Modeling Suite",
         description=(
@@ -608,9 +728,10 @@ def create_local_app() -> FastAPI:
             f"All endpoints are available under `{API_PREFIX}/` prefix.\n"
             "Legacy `/api/` routes are maintained for backward compatibility."
         ),
-        version="2.0.0",
+        version=__version__,
         docs_url="/api/docs",  # Swagger UI available locally
         redoc_url="/api/redoc",
+        lifespan=_lifespan,
     )
 
     # CORS: Allow local origins only
@@ -621,7 +742,8 @@ def create_local_app() -> FastAPI:
 
     # Store in app state for dependency injection
     app.state.engine_manager = engine_manager
-    app.state.chat_service = ChatService()
+    app.state.rag_store = rag_store
+    app.state.chat_service = ChatService(rag_store=rag_store)
 
     # Register routes (no auth required in local mode)
     _register_api_routers(app)
@@ -683,7 +805,7 @@ def print_logo_animated() -> None:
 
 def print_matrix_status(message: str, indent: int = 4) -> None:
     """Print status message in matrix green style."""
-    if message is None:
+    if not (message is not None):
         raise ValueError("message must be provided")
     GREEN = "\033[38;5;46m"  # Bright matrix green
     RESET = "\033[0m"
@@ -692,7 +814,7 @@ def print_matrix_status(message: str, indent: int = 4) -> None:
 
 def print_server_info(host: str, port: int) -> None:
     """Print server info box."""
-    if host is None:
+    if not (host is not None):
         raise ValueError("host must be provided")
     CYAN = "\033[38;5;51m"
     RESET = "\033[0m"

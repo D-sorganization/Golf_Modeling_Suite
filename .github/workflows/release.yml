@@ -9,35 +9,12 @@ permissions:
   contents: write
 
 jobs:
-  # ── Dispatcher: route to self-hosted if available ──────────────────────────
-  pick-runner:
-    runs-on: d-sorg-fleet
-    timeout-minutes: 2
-    outputs:
-      runner: ${{ steps.check.outputs.runner }}
-    steps:
-      - name: Check for self-hosted runner
-        id: check
-        env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
-        run: |
-          ONLINE=$(gh api /orgs/${{ github.repository_owner }}/actions/runners \
-            --jq '[.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length' \
-            2>/dev/null || echo "0")
-          if [[ "$ONLINE" -gt 0 ]]; then
-            echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
-            echo "Self-hosted runner online — routing locally"
-          else
-            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
-            echo "No self-hosted runner — using GitHub-hosted"
-          fi
   build:
-    needs: pick-runner
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@0b93645274ce2973f2fb2b04e521ba9a448e4229 # v5.0.1
         with:
           python-version: "3.11"
 
@@ -60,14 +37,14 @@ jobs:
           path: dist/
 
   publish-pypi:
-    needs: [pick-runner, build]
-    runs-on: self-hosted
+    needs: build
+    runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     environment:
       name: pypi
       url: https://pypi.org/p/upstream-drift
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9c5a7168910dcb17d191cd8f8138177c8eccaa3ee # v4.1.7
         with:
           name: dist
           path: dist/
@@ -79,20 +56,20 @@ jobs:
           skip-existing: true
 
   create-release:
-    needs: [pick-runner, build]
-    runs-on: self-hosted
+    needs: build
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9c5a7168910dcb17d191cd8f8138177c8eccaa3ee # v4.1.7
         with:
           name: dist
           path: dist/
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           files: |

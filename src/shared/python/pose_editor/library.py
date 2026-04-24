@@ -1,7 +1,3 @@
-# ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.
-
 """Pose library with save/load/export/import/interpolate functionality.
 
 Provides a comprehensive pose management system for storing, retrieving,
@@ -80,7 +76,9 @@ class StoredPose:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> StoredPose:
         """Create from dictionary."""
-        if data is None:
+        if not (data is not None):
+            raise ValueError("data must be provided")
+        if not (data is not None):
             raise ValueError("data must be provided")
         category = PresetPoseCategory.CUSTOM
         if "category" in data:
@@ -125,7 +123,9 @@ class PoseInterpolator:
         Returns:
             Interpolated joint positions
         """
-        if pose_a is None:
+        if not (pose_a is not None):
+            raise ValueError("pose_a must be provided")
+        if not (pose_a is not None):
             raise ValueError("pose_a must be provided")
         alpha = np.clip(alpha, 0.0, 1.0)
 
@@ -165,7 +165,9 @@ class PoseInterpolator:
             Interpolated angle
         """
         # Normalize angle difference
-        if angle_a is None:
+        if not (angle_a is not None):
+            raise ValueError("angle_a must be provided")
+        if not (angle_a is not None):
             raise ValueError("angle_a must be provided")
         diff = angle_b - angle_a
 
@@ -197,7 +199,9 @@ class PoseInterpolator:
         Returns:
             Interpolated joint positions
         """
-        if pose_a is None:
+        if not (pose_a is not None):
+            raise ValueError("pose_a must be provided")
+        if not (pose_a is not None):
             raise ValueError("pose_a must be provided")
         alpha = np.clip(alpha, 0.0, 1.0)
         t = alpha
@@ -231,7 +235,9 @@ class PoseInterpolator:
         Returns:
             Interpolated joint positions
         """
-        if poses is None:
+        if not (poses is not None):
+            raise ValueError("poses must be provided")
+        if not (poses is not None):
             raise ValueError("poses must be provided")
         if len(poses) < 2:
             return poses[0].joint_positions if poses else np.array([])
@@ -292,7 +298,9 @@ class PoseLibrary:
             The saved StoredPose
         """
         # Check for existing pose
-        if name is None:
+        if not (name is not None):
+            raise ValueError("name must be provided")
+        if not (name is not None):
             raise ValueError("name must be provided")
         existing = self._poses.get(name)
         created_at = existing.created_at if existing else datetime.now().isoformat()
@@ -333,7 +341,9 @@ class PoseLibrary:
         Returns:
             True if deleted, False if not found
         """
-        if name is None:
+        if not (name is not None):
+            raise ValueError("name must be provided")
+        if not (name is not None):
             raise ValueError("name must be provided")
         if name in self._poses:
             del self._poses[name]
@@ -351,7 +361,9 @@ class PoseLibrary:
         Returns:
             True if renamed successfully
         """
-        if old_name is None:
+        if not (old_name is not None):
+            raise ValueError("old_name must be provided")
+        if not (old_name is not None):
             raise ValueError("old_name must be provided")
         if old_name not in self._poses:
             return False
@@ -424,7 +436,9 @@ class PoseLibrary:
         Returns:
             Interpolated positions or None if poses not found
         """
-        if pose_name_a is None:
+        if not (pose_name_a is not None):
+            raise ValueError("pose_name_a must be provided")
+        if not (pose_name_a is not None):
             raise ValueError("pose_name_a must be provided")
         pose_a = self._poses.get(pose_name_a)
         pose_b = self._poses.get(pose_name_b)
@@ -443,7 +457,9 @@ class PoseLibrary:
         Returns:
             Number of poses exported
         """
-        if file_path is None:
+        if not (file_path is not None):
+            raise ValueError("file_path must be provided")
+        if not (file_path is not None):
             raise ValueError("file_path must be provided")
         file_path = Path(file_path)
         data = {
@@ -472,7 +488,9 @@ class PoseLibrary:
         Returns:
             Number of poses imported
         """
-        if file_path is None:
+        if not (file_path is not None):
+            raise ValueError("file_path must be provided")
+        if not (file_path is not None):
             raise ValueError("file_path must be provided")
         file_path = Path(file_path)
 
@@ -509,7 +527,9 @@ class PoseLibrary:
         Returns:
             Number of poses merged
         """
-        if other is None:
+        if not (other is not None):
+            raise ValueError("other must be provided")
+        if not (other is not None):
             raise ValueError("other must be provided")
         merged = 0
         for name, pose in other._poses.items():

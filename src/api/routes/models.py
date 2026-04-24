@@ -26,6 +26,7 @@ from ..models.responses import (
     URDFLinkGeometry,
     URDFModelResponse,
 )
+from ..utils.path_validation import validate_path_within_root
 
 router = APIRouter()
 
@@ -66,6 +67,12 @@ def _discover_models() -> list[dict[str, str]]:
 
         for ext in ("*.urdf", "*.xml"):
             for filepath in full_dir.rglob(ext):
+                if not filepath.exists():
+                    continue
+                try:
+                    validate_path_within_root(filepath, root)
+                except HTTPException:
+                    continue
                 name = filepath.stem
                 if name in seen_names:
                     # Disambiguate with parent directory
@@ -96,9 +103,9 @@ def _parse_urdf_geometry(
     Returns:
         Dictionary with geometry_type, dimensions, origin, rotation, and color.
     """
-    if materials is None:
+    if not (materials is not None):
         raise ValueError("materials must be provided")
-    if visual_elem is None:
+    if not (visual_elem is not None):
         raise ValueError("visual_elem must be provided")
     result: dict[str, Any] = {
         "geometry_type": "box",
@@ -201,9 +208,9 @@ def _parse_urdf_links(
     Returns:
         List of URDFLinkGeometry descriptors for each link with visual data.
     """
-    if materials is None:
+    if not (materials is not None):
         raise ValueError("materials must be provided")
-    if root is None:
+    if not (root is not None):
         raise ValueError("root must be provided")
     links: list[URDFLinkGeometry] = []
     for link_elem in root.findall("link"):
@@ -301,7 +308,7 @@ def _find_root_link(links: list[URDFLinkGeometry], child_links: set[str]) -> str
     Returns:
         Name of the root link, or "base" if none can be determined.
     """
-    if links is None:
+    if not (links is not None):
         raise ValueError("links must be provided")
     all_link_names = {link.link_name for link in links}
     root_candidates = all_link_names - child_links
@@ -425,7 +432,8 @@ async def get_model_urdf(
         )
 
     try:
-        urdf_content = filepath.read_text(encoding="utf-8")
+        validated_path = validate_path_within_root(filepath, root)
+        urdf_content = validated_path.read_text(encoding="utf-8")
         result = _parse_urdf(urdf_content)
         return result
     except ValueError as exc:

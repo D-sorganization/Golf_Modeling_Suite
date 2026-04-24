@@ -31,49 +31,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # ── Dispatcher: route to self-hosted if available ──────────────────────────
-  pick-runner:
-    runs-on: d-sorg-fleet
-    timeout-minutes: 2
-    outputs:
-      runner: ${{ steps.check.outputs.runner }}
-    steps:
-      - name: Check for self-hosted runner
-        id: check
-        env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
-        run: |
-          ONLINE=$(gh api /orgs/${{ github.repository_owner }}/actions/runners \
-            --jq '[.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length' \
-            2>/dev/null || echo "0")
-          if [[ "$ONLINE" -gt 0 ]]; then
-            echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
-            echo "Self-hosted runner online — routing locally"
-          else
-            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
-            echo "No self-hosted runner — using GitHub-hosted"
-          fi
   # ===========================================================================
   # Check - Fast validation on PRs
   # ===========================================================================
   check:
-    needs: pick-runner
     name: Check (Rust + TypeScript)
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
-      - name: Checkout Tools (tools-core dependency)
-        uses: actions/checkout@v6
-        with:
-          repository: D-sorganization/Tools
-          path: _tools_dep
-          sparse-checkout: |
-            rust_core
-            Cargo.toml
-            rust-toolchain.toml
-      - name: Symlink Tools for Cargo path resolution
-        run: ln -sfn "$GITHUB_WORKSPACE/_tools_dep" "$GITHUB_WORKSPACE/../Tools"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -89,8 +55,8 @@ jobs:
 
       - name: Install Linux dependencies
         run: |
-          sudo apt-get -o DPkg::Lock::Timeout=300 update
-          sudo apt-get -o DPkg::Lock::Timeout=300 install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: Install frontend dependencies
         working-directory: ui
@@ -134,17 +100,6 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
-      - name: Checkout Tools (tools-core dependency)
-        uses: actions/checkout@v6
-        with:
-          repository: D-sorganization/Tools
-          path: _tools_dep
-          sparse-checkout: |
-            rust_core
-            Cargo.toml
-            rust-toolchain.toml
-      - name: Symlink Tools for Cargo path resolution
-        run: ln -sfn "$GITHUB_WORKSPACE/_tools_dep" "$GITHUB_WORKSPACE/../Tools"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -161,8 +116,8 @@ jobs:
       - name: Install Linux dependencies
         if: matrix.platform == 'ubuntu-latest'
         run: |
-          sudo apt-get -o DPkg::Lock::Timeout=300 update
-          sudo apt-get -o DPkg::Lock::Timeout=300 install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: Install frontend dependencies
         working-directory: ui
@@ -175,7 +130,7 @@ jobs:
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
-          GITHUB_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: ui
 

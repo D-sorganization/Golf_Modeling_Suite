@@ -23,7 +23,9 @@ class MuJoCoInducedAccelerationAnalyzer:
 
     def __init__(self, model: mujoco.MjModel, data: mujoco.MjData) -> None:
         """Initialize analyzer."""
-        if model is None:
+        if not (model is not None):
+            raise ValueError("model must be provided")
+        if not (model is not None):
             raise ValueError("model must be provided")
         self.model = model
         self.data = data
@@ -34,7 +36,7 @@ class MuJoCoInducedAccelerationAnalyzer:
 
     def compute_components(
         self, tau_app: np.ndarray | None = None
-    ) -> InducedAccelerationResult:  # noqa: E501
+    ) -> InducedAccelerationResult:
         """Compute acceleration components induced by different forces.
 
         Decomposes Euler-Lagrange equation: M(q)qdd + C(q,qd)qd + G(q) = tau + J^T f_c
@@ -99,7 +101,7 @@ class MuJoCoInducedAccelerationAnalyzer:
         # Stack RHS vectors into a matrix (nv, 4)
         rhs_stack = np.column_stack(
             (-term_G, -term_C, tau_vec, self.data.qfrc_constraint)
-        )  # noqa: E501
+        )
 
         # Solve M * results = rhs_stack
         # This performs one LU/Cholesky decomposition instead of 4
@@ -139,7 +141,9 @@ class MuJoCoInducedAccelerationAnalyzer:
         Returns:
             Dictionary of 3D acceleration vectors (World Frame) or None if not found.
         """
-        if body_name is None:
+        if not (body_name is not None):
+            raise ValueError("body_name must be provided")
+        if not (body_name is not None):
             raise ValueError("body_name must be provided")
         body_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_BODY, body_name)
         if body_id == -1:

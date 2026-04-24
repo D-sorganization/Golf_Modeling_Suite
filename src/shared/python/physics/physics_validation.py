@@ -15,19 +15,18 @@ These tests help catch:
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import numpy as np
-
-from src.shared.python.logging_pkg.logging_config import get_logger
 
 if TYPE_CHECKING:
     import mujoco
 else:
     mujoco = None
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -102,7 +101,9 @@ class PhysicsValidator:
             tolerance_energy: Relative error tolerance for energy conservation
             tolerance_jacobian: Absolute error tolerance for Jacobian validation
         """
-        if model is None:
+        if not (model is not None):
+            raise ValueError("model must be provided")
+        if not (model is not None):
             raise ValueError("model must be provided")
         try:
             import mujoco
@@ -131,7 +132,9 @@ class PhysicsValidator:
         Returns:
             Kinetic energy [J]
         """
-        if qpos is None:
+        if not (qpos is not None):
+            raise ValueError("qpos must be provided")
+        if not (qpos is not None):
             raise ValueError("qpos must be provided")
         self._scratch_data.qpos[:] = qpos
         self._scratch_data.qvel[:] = qvel
@@ -169,7 +172,9 @@ class PhysicsValidator:
         Returns:
             Potential energy [J]
         """
-        if qpos is None:
+        if not (qpos is not None):
+            raise ValueError("qpos must be provided")
+        if not (qpos is not None):
             raise ValueError("qpos must be provided")
         self._scratch_data.qpos[:] = qpos
         self._scratch_data.qvel[:] = 0
@@ -182,13 +187,16 @@ class PhysicsValidator:
             if np.isfinite(potential_energy):
                 return potential_energy
 
-        # PE = sum(m_i * g * h_i) for all bodies (vectorized)
+        # PE = sum(m_i * g * h_i) for all bodies
+        pe = 0.0
         gravity = self.model.opt.gravity[2]  # Z gravity component
-        masses = self.model.body_mass[1:]  # Skip world body
-        heights = self._scratch_data.xipos[1:, 2]  # Z positions
-        pe = float(np.dot(masses, heights) * (-gravity))
 
-        return pe
+        for i in range(1, self.model.nbody):  # Skip world body
+            mass = self.model.body_mass[i]
+            height = self._scratch_data.xipos[i, 2]  # Z position
+            pe += mass * (-gravity) * height
+
+        return float(pe)
 
     def step_forward(
         self,
@@ -208,7 +216,9 @@ class PhysicsValidator:
         Returns:
             Tuple of (new_qpos, new_qvel)
         """
-        if qpos is None:
+        if not (qpos is not None):
+            raise ValueError("qpos must be provided")
+        if not (qpos is not None):
             raise ValueError("qpos must be provided")
         self._scratch_data.qpos[:] = qpos
         self._scratch_data.qvel[:] = qvel
@@ -252,7 +262,9 @@ class PhysicsValidator:
             EnergyValidationResult with pass/fail status
         """
         # Energy at t
-        if qpos is None:
+        if not (qpos is not None):
+            raise ValueError("qpos must be provided")
+        if not (qpos is not None):
             raise ValueError("qpos must be provided")
         KE_t = self.compute_kinetic_energy(qpos, qvel)
         PE_t = self.compute_potential_energy(qpos)
@@ -330,7 +342,9 @@ class PhysicsValidator:
             JacobianValidationResult with pass/fail status
         """
         # Set state
-        if qpos is None:
+        if not (qpos is not None):
+            raise ValueError("qpos must be provided")
+        if not (qpos is not None):
             raise ValueError("qpos must be provided")
         self._scratch_data.qpos[:] = qpos
         self._scratch_data.qvel[:] = 0
@@ -402,7 +416,9 @@ class PhysicsValidator:
         Returns:
             Dictionary mapping check names to pass/fail status
         """
-        if qpos is None:
+        if not (qpos is not None):
+            raise ValueError("qpos must be provided")
+        if not (qpos is not None):
             raise ValueError("qpos must be provided")
         if torques is None:
             torques = np.zeros(self.model.nv)
