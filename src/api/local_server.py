@@ -21,12 +21,15 @@ Diagnostic Features:
 
 from __future__ import annotations
 
-import logging
 import mimetypes
 import os
+import secrets
 import time
+from collections.abc import Callable
 from pathlib import Path
+from secrets import compare_digest
 from typing import Any
+from urllib.parse import urlparse
 
 # Fix MIME types for JavaScript modules on Windows
 # Windows registry often has incorrect/missing MIME types for .js files
@@ -38,13 +41,22 @@ mimetypes.add_type("image/png", ".png")
 mimetypes.add_type("image/jpeg", ".jpg")
 mimetypes.add_type("image/x-icon", ".ico")
 
-# Ensure we're running in local mode
+# Ensure we're running in local mode with explicit security configuration
 os.environ.setdefault("GOLF_SUITE_MODE", "local")
-os.environ.setdefault("GOLF_AUTH_DISABLED", "true")
+# Auth is disabled ONLY in local mode for development convenience.
+# This is an intentional security boundary: local servers have NO auth by design.
+# Production servers MUST NOT use local_server.py and MUST enforce authentication.
+# See issue #2714 for security hardening requirements.
+if os.environ.get("GOLF_SUITE_MODE") == "local":
+    os.environ.setdefault("GOLF_AUTH_DISABLED", "true")
+else:
+    # Production and other modes: auth is REQUIRED unless explicitly overridden
+    # by deployment configuration (e.g., cloud IAM, OAuth2 middleware)
+    os.environ.setdefault("GOLF_AUTH_DISABLED", "false")
 
 # NOTE: These imports are placed after env setup intentionally
 # The environment variables must be set before FastAPI initialization
-from fastapi import FastAPI, Request  # noqa: E402
+from fastapi import FastAPI, HTTPException, Request  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.responses import HTMLResponse, JSONResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
@@ -62,16 +74,16 @@ from src.api.routes import (  # noqa: E402
     simulation_ws,
 )
 from src.api.services.chat_service import ChatService  # noqa: E402
+from src.api.versioning import get_app_version  # noqa: E402
 from src.shared.python.engine_core.engine_manager import EngineManager  # noqa: E402
 from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
-
-logger = logging.getLogger(__name__)
 
 logger = get_logger(__name__)
 
 # API versioning constants (#2070)
 API_VERSION = "v1"
 API_PREFIX = f"/api/{API_VERSION}"
+LAUNCHER_CSRF_HEADER = "X-Launcher-CSRF-Token"
 
 
 # Track startup metrics for diagnostics
@@ -82,6 +94,34 @@ _startup_metrics: dict[str, Any] = {
     "engines_loaded": [],
     "errors": [],
 }
+
+
+class _LazyServiceProxy:
+    """Lazily instantiate heavy API services on first attribute access."""
+
+    def __init__(self, factory: Callable[[], Any]) -> None:
+        self._factory = factory
+        self._service: Any | None = None
+
+    def _resolve(self) -> Any:
+        if self._service is None:
+            self._service = self._factory()
+        return self._service
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._resolve(), name)
+
+
+def _create_simulation_service(engine_manager: EngineManager) -> Any:
+    from src.api.services.simulation_service import SimulationService
+
+    return SimulationService(engine_manager)
+
+
+def _create_analysis_service(engine_manager: EngineManager) -> Any:
+    from src.api.services.analysis_service import AnalysisService
+
+    return AnalysisService(engine_manager)
 
 
 def _resolve_ui_dist_path() -> Path:
@@ -156,23 +196,104 @@ def _load_launcher_manifest() -> dict[str, Any]:
         return {"version": "1.0.0", "tiles": []}
 
 
+def _new_launcher_csrf_token() -> str:
+    """Generate the local launcher capability token for mutating endpoints."""
+    return secrets.token_urlsafe(32)
+
+
+def _is_loopback_origin(value: str) -> bool:
+    """Return True when an Origin/Referer value points at a loopback host."""
+    parsed = urlparse(value)
+    if parsed.scheme not in {"http", "https"}:
+        return False
+    hostname = parsed.hostname
+    return hostname in {"localhost", "127.0.0.1", "::1"}
+
+
+def _enforce_launcher_mutation_guard(request: Request) -> None:
+    """Require a local capability token and reject browser cross-site writes."""
+    if request is None:
+        raise ValueError("request must be provided")
+
+    expected_token = getattr(request.app.state, "launcher_csrf_token", "")
+    provided_token = request.headers.get(LAUNCHER_CSRF_HEADER, "")
+    if not expected_token or not compare_digest(provided_token, expected_token):
+        raise HTTPException(
+            status_code=403,
+            detail="Launcher mutation token is required",
+        )
+
+    for header_name in ("origin", "referer"):
+        header_value = request.headers.get(header_name)
+        if header_value and not _is_loopback_origin(header_value):
+            raise HTTPException(
+                status_code=403,
+                detail="Launcher mutation origin is not allowed",
+            )
+
+
+def _with_launcher_csrf_token(manifest: dict[str, Any], token: str) -> dict[str, Any]:
+    """Attach the local UI capability token without mutating cached manifest data."""
+    response = dict(manifest)
+    response["launcher_csrf_token"] = token
+    response["launcher_csrf_header"] = LAUNCHER_CSRF_HEADER
+    return response
+
+
+def _safe_join(root: Path, user_path: str) -> Path | None:
+    """Join ``user_path`` onto ``root`` while rejecting traversal.
+
+    Normalizes the combined path and verifies it remains within ``root``.
+    Returns ``None`` if the request is unsafe (absolute path, traversal via
+    ``..``, ``NUL`` byte, symlink escape) so the caller can emit a 404.
+
+    Args:
+        root: Trusted root directory the file must live under.
+        user_path: Caller-supplied relative path fragment.
+
+    Returns:
+        The resolved absolute path if it is inside ``root``, else ``None``.
+    """
+    if not user_path or "\x00" in user_path:
+        return None
+    # Reject explicitly absolute requests. ``Path.is_absolute`` catches
+    # POSIX/Windows absolutes; the drive/root checks catch Windows-style
+    # roots that may not register as absolute on POSIX hosts.
+    candidate = Path(user_path)
+    if candidate.is_absolute() or candidate.drive or candidate.root:
+        return None
+    try:
+        resolved_root = root.resolve(strict=False)
+        resolved = (resolved_root / candidate).resolve(strict=False)
+    except (OSError, RuntimeError):
+        return None
+    try:
+        resolved.relative_to(resolved_root)
+    except ValueError:
+        return None
+    return resolved
+
+
 def _find_logo_file(logo_name: str) -> Path | None:
     """Search for a logo file in known asset directories.
+
+    The caller-supplied ``logo_name`` is joined onto each candidate root via
+    :func:`_safe_join` so that ``..`` traversal, absolute paths, and symlink
+    escape are rejected before touching the filesystem.
 
     Args:
         logo_name: Filename of the logo to find.
 
     Returns:
-        Path to the logo file, or None if not found.
+        Path to the logo file, or None if not found or rejected as unsafe.
     """
-    logos_dir = Path(__file__).parent.parent.parent / "assets" / "logos"
-    logo_path = logos_dir / logo_name
-    if logo_path.exists() and logo_path.is_file():
-        return logo_path
-    launcher_logos = Path(__file__).parent.parent / "launchers" / "assets"
-    alt_path = launcher_logos / logo_name
-    if alt_path.exists() and alt_path.is_file():
-        return alt_path
+    for root in (
+        Path(__file__).parent.parent.parent / "assets" / "logos",
+        Path(__file__).parent.parent / "launchers" / "assets",
+    ):
+        resolved = _safe_join(root, logo_name)
+        if resolved is not None and resolved.exists() and resolved.is_file():
+            return resolved
     return None
 
 
@@ -268,11 +389,15 @@ def _register_launcher_endpoints(app: FastAPI) -> None:
     _repo_root = Path(__file__).parent.parent.parent
     _launcher_service = LauncherService(repo_root=_repo_root)
     app.state.process_manager = _launcher_service.process_manager
+    app.state.launcher_csrf_token = _new_launcher_csrf_token()
 
     @app.get("/api/launcher/manifest")
     async def get_launcher_manifest() -> dict[str, Any]:
         """Return the launcher manifest (tile configuration) for the web UI."""
-        return _load_launcher_manifest()
+        return _with_launcher_csrf_token(
+            _load_launcher_manifest(),
+            app.state.launcher_csrf_token,
+        )
 
     @app.get("/api/launcher/logos/{logo_name:path}")
     async def get_launcher_logo(logo_name: str) -> Any:
@@ -287,12 +412,15 @@ def _register_launcher_endpoints(app: FastAPI) -> None:
         )
 
     @app.post("/api/launcher/launch/{tile_id}", response_model=None)
-    async def launch_tile(tile_id: str) -> dict[str, Any] | JSONResponse:
+    async def launch_tile(
+        request: Request, tile_id: str
+    ) -> dict[str, Any] | JSONResponse:
         """Launch an engine or tool by tile ID.
 
         Looks up the tile in the launcher manifest and uses the model
         handler registry to spawn it as a subprocess.
         """
+        _enforce_launcher_mutation_guard(request)
         logger.info("[launch] Received launch request for tile_id=%s", tile_id)
 
         manifest, tile = _find_tile_in_manifest(tile_id)
@@ -316,8 +444,11 @@ def _register_launcher_endpoints(app: FastAPI) -> None:
         return {"processes": _launcher_service.get_running_processes()}
 
     @app.post("/api/launcher/stop/{name}", response_model=None)
-    async def stop_process(name: str) -> dict[str, Any] | JSONResponse:
+    async def stop_process(
+        request: Request, name: str
+    ) -> dict[str, Any] | JSONResponse:
         """Stop a running engine/tool process by name."""
+        _enforce_launcher_mutation_guard(request)
         if not _launcher_service.stop_process(name):
             logger.warning("[stop] Process not found: %s", name)
             return JSONResponse(
@@ -461,9 +592,14 @@ def _register_spa_catch_all(app: FastAPI, ui_path: Path) -> None:
                     status_code=404,
                     content={"detail": "API route not found", "path": full_path},
                 )
-            static_file = ui_path / full_path
-            if full_path and static_file.exists() and static_file.is_file():
-                return FileResponse(str(static_file))
+            if full_path:
+                static_file = _safe_join(ui_path, full_path)
+                if (
+                    static_file is not None
+                    and static_file.exists()
+                    and static_file.is_file()
+                ):
+                    return FileResponse(str(static_file))
             return FileResponse(str(index_html))
 
 
@@ -608,7 +744,7 @@ def create_local_app() -> FastAPI:
             f"All endpoints are available under `{API_PREFIX}/` prefix.\n"
             "Legacy `/api/` routes are maintained for backward compatibility."
         ),
-        version="2.0.0",
+        version=get_app_version(),
         docs_url="/api/docs",  # Swagger UI available locally
         redoc_url="/api/redoc",
     )
@@ -621,6 +757,12 @@ def create_local_app() -> FastAPI:
 
     # Store in app state for dependency injection
     app.state.engine_manager = engine_manager
+    app.state.simulation_service = _LazyServiceProxy(
+        lambda: _create_simulation_service(engine_manager)
+    )
+    app.state.analysis_service = _LazyServiceProxy(
+        lambda: _create_analysis_service(engine_manager)
+    )
     app.state.chat_service = ChatService()
 
     # Register routes (no auth required in local mode)

@@ -8,27 +8,17 @@ from __future__ import annotations
 
 import pytest
 
-from src.shared.python.physics.flexible_shaft import (
-    FiniteElementShaftModel,
-    ShaftMaterial,
-    ShaftProperties,
-)
+from src.shared.python.physics._shaft_fem import FiniteElementShaftModel
+from src.shared.python.physics.flexible_shaft import create_standard_shaft
+
+pytestmark = pytest.mark.unit
 
 
 @pytest.fixture()
 def initialized_fem() -> FiniteElementShaftModel:
     """Return a fully initialized FE shaft model ready to step."""
-    import numpy as np
-
     model = FiniteElementShaftModel(n_elements=4)
-    # Create minimal shaft properties
-    props = ShaftProperties(
-        length=1.0,
-        outer_diameter=np.array([0.01, 0.01, 0.01, 0.01, 0.01]),
-        wall_thickness=np.array([0.001, 0.001, 0.001, 0.001, 0.001]),
-        station_positions=np.array([0.0, 0.25, 0.5, 0.75, 1.0]),
-        material=ShaftMaterial.STEEL,
-    )
+    props = create_standard_shaft()
     model.initialize(props)
     return model
 

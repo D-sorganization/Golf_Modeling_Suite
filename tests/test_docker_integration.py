@@ -14,6 +14,8 @@ import pytest
 
 from src.shared.python.data_io.path_utils import get_repo_root, get_src_root
 
+pytestmark = pytest.mark.integration
+
 # Docker launch command tests are broken after the launcher refactoring to
 # mixin-based architecture (launcher_simulation.py, launcher_dialogs.py).
 # The tests assume a single Popen call but the refactored code makes multiple
@@ -36,7 +38,7 @@ def _is_docker_available() -> bool:
 class TestDockerBuild(unittest.TestCase):
     """Test Docker image building and configuration."""
 
-    def test_dockerfile_syntax(self):
+    def test_dockerfile_syntax(self) -> None:
         """Test that Dockerfile has valid syntax."""
         dockerfile_path = get_repo_root() / "Dockerfile"
         self.assertTrue(
@@ -46,12 +48,18 @@ class TestDockerBuild(unittest.TestCase):
         content = dockerfile_path.read_text()
 
         # Check for required components (multi-stage build with pinned version)
-        self.assertIn("FROM continuumio/miniconda3:24.11.1-0 AS builder", content)
-        self.assertIn("FROM continuumio/miniconda3:24.11.1-0 AS runtime", content)
+        self.assertIn(
+            "FROM continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b AS builder",
+            content,
+        )
+        self.assertIn(
+            "FROM continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b AS runtime",
+            content,
+        )
         self.assertIn('ENV PYTHONPATH="/workspace"', content)
         self.assertIn("WORKDIR /workspace", content)
 
-    def test_dockerfile_pythonpath_setup(self):
+    def test_dockerfile_pythonpath_setup(self) -> None:
         """Test that Dockerfile sets up PYTHONPATH correctly."""
         dockerfile_path = get_repo_root() / "Dockerfile"
         content = dockerfile_path.read_text()
@@ -69,7 +77,7 @@ class TestDockerBuild(unittest.TestCase):
         )
 
     @unittest.skipUnless(_is_docker_available(), "Docker not available")
-    def test_docker_available(self):
+    def test_docker_available(self) -> None:
         """Test that Docker is available for building."""
         result = subprocess.run(
             ["docker", "--version"], capture_output=True, text=True, timeout=10
@@ -78,10 +86,57 @@ class TestDockerBuild(unittest.TestCase):
         self.assertIn("Docker version", result.stdout)
 
 
+class TestDockerRuntimeEntrypoint(unittest.TestCase):
+    """Regression tests for the hardened runtime API entrypoint (#2786).
+
+    Salvaged from stale PR #2723: the runtime image must default to the
+    FastAPI server (not an interactive shell), bound to 0.0.0.0:8001, and
+    must carry production hardening flags (proxy headers, single worker,
+    access logs) that match the documented SPEC behavior.
+    """
+
+    def setUp(self):
+        self.content = (get_repo_root() / "Dockerfile").read_text()
+
+    def test_runtime_cmd_invokes_uvicorn_api_server(self):
+        """CMD must launch src.api.server:app via uvicorn."""
+        self.assertIn('"python3", "-m", "uvicorn"', self.content)
+        self.assertIn('"src.api.server:app"', self.content)
+
+    def test_runtime_cmd_binds_public_host_and_port(self):
+        """CMD must bind 0.0.0.0:8001 to match EXPOSE/HEALTHCHECK."""
+        self.assertIn('"--host", "0.0.0.0"', self.content)
+        self.assertIn('"--port", "8001"', self.content)
+
+    def test_runtime_cmd_single_worker_for_healthcheck(self):
+        """Single worker keeps in-process state + HEALTHCHECK aligned."""
+        self.assertIn('"--workers", "1"', self.content)
+
+    def test_runtime_cmd_proxy_headers_hardening(self):
+        """Proxy-aware flags must be present for reverse-proxy deployments."""
+        self.assertIn('"--proxy-headers"', self.content)
+        self.assertIn('"--forwarded-allow-ips"', self.content)
+        self.assertIn('"--access-log"', self.content)
+
+    def test_runtime_healthcheck_hits_health_endpoint(self):
+        """HEALTHCHECK must probe /health on the same port as CMD."""
+        self.assertIn("curl -f http://localhost:8001/health", self.content)
+
+    def test_runtime_does_not_default_to_interactive_shell(self):
+        """Runtime stage must not default CMD to /bin/bash."""
+        # Extract the runtime stage (between `AS runtime` and the next `FROM`).
+        runtime_start = self.content.index("AS runtime")
+        next_from = self.content.find("\nFROM ", runtime_start)
+        runtime_block = self.content[
+            runtime_start : next_from if next_from != -1 else None
+        ]
+        self.assertNotIn('CMD ["/bin/bash"]', runtime_block)
+
+
 class TestDockerLaunchCommands(unittest.TestCase):
     """Test Docker container launch command generation."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures."""
         # Mock launcher components
         self.mock_launcher = Mock()
@@ -109,7 +164,7 @@ class TestDockerLaunchCommands(unittest.TestCase):
 
     @_DOCKER_CMD_XFAIL
     @unittest.skipIf(sys.platform != "win32", "Windows-specific test")
-    def test_mujoco_humanoid_command(self):
+    def test_mujoco_humanoid_command(self) -> None:
         """Test MuJoCo humanoid Docker command generation."""
         from src.launchers.golf_launcher import GolfLauncher
 
@@ -179,7 +234,7 @@ class TestDockerLaunchCommands(unittest.TestCase):
 
     @_DOCKER_CMD_XFAIL
     @unittest.skipIf(sys.platform != "win32", "Windows-specific test")
-    def test_drake_command(self):
+    def test_drake_command(self) -> None:
         """Test Drake Docker command generation."""
         from src.launchers.golf_launcher import GolfLauncher
 
@@ -250,7 +305,7 @@ class TestDockerLaunchCommands(unittest.TestCase):
 
     @_DOCKER_CMD_XFAIL
     @unittest.skipIf(sys.platform != "win32", "Windows-specific test")
-    def test_pinocchio_command(self):
+    def test_pinocchio_command(self) -> None:
         """Test Pinocchio Docker command generation."""
         from src.launchers.golf_launcher import GolfLauncher
 
@@ -307,7 +362,7 @@ class TestDockerLaunchCommands(unittest.TestCase):
 
     @_DOCKER_CMD_XFAIL
     @unittest.skipIf(sys.platform != "win32", "Windows-specific test")
-    def test_display_configuration_windows(self):
+    def test_display_configuration_windows(self) -> None:
         """Test Windows display configuration."""
         from src.launchers.golf_launcher import GolfLauncher
 
@@ -355,7 +410,7 @@ class TestDockerLaunchCommands(unittest.TestCase):
 
     @_DOCKER_CMD_XFAIL
     @unittest.skipIf(sys.platform != "win32", "Windows-specific test")
-    def test_gpu_acceleration_option(self):
+    def test_gpu_acceleration_option(self) -> None:
         """Test GPU acceleration option."""
         from src.launchers.golf_launcher import GolfLauncher
 
@@ -400,7 +455,7 @@ class TestDockerLaunchCommands(unittest.TestCase):
 class TestContainerEnvironment(unittest.TestCase):
     """Test container environment setup and module accessibility."""
 
-    def test_pythonpath_environment_variable(self):
+    def test_pythonpath_environment_variable(self) -> None:
         """Test PYTHONPATH environment variable setup."""
         dockerfile_path = get_repo_root() / "Dockerfile"
         content = dockerfile_path.read_text()
@@ -421,7 +476,7 @@ class TestContainerEnvironment(unittest.TestCase):
             "PYTHONPATH should be set to /workspace",
         )
 
-    def test_workspace_directory_creation(self):
+    def test_workspace_directory_creation(self) -> None:
         """Test workspace directory structure creation."""
         dockerfile_path = get_repo_root() / "Dockerfile"
         content = dockerfile_path.read_text()
@@ -432,26 +487,44 @@ class TestContainerEnvironment(unittest.TestCase):
         self.assertIn("mkdir -p /workspace", content)
         self.assertIn("WORKDIR /workspace", content)
 
-    def test_conda_environment_setup(self):
+    def test_conda_environment_setup(self) -> None:
         """Test conda environment configuration."""
         dockerfile_path = get_repo_root() / "Dockerfile"
+        lockfile_path = get_repo_root() / "requirements.lock"
         content = dockerfile_path.read_text()
+        lockfile_content = lockfile_path.read_text()
 
         # Verify base image (pinned version, multi-stage build) and package installation
-        self.assertIn("FROM continuumio/miniconda3:24.11.1-0 AS builder", content)
+        self.assertIn(
+            "FROM continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b AS builder",
+            content,
+        )
         self.assertIn("conda install", content)
         self.assertIn("python=3.12", content)
 
-        # Check for required packages
-        required_packages = ["numpy", "scipy", "matplotlib", "pandas", "pyqt6"]
+        # Check for required packages that are installed directly by the Dockerfile.
+        required_packages = [
+            "numpy",
+            "scipy",
+            "pyqt6",
+            "opencv",
+            "pyyaml",
+            "h5py",
+            "scikit-learn",
+            "pillow",
+            "ezc3d",
+        ]
         for package in required_packages:
             self.assertIn(package, content, f"Should install {package}")
+
+        # matplotlib is pulled in through the pinned requirements lockfile.
+        self.assertIn("matplotlib", lockfile_content)
 
 
 class TestModuleAccessibility(unittest.TestCase):
     """Test that modules will be accessible in Docker containers."""
 
-    def test_shared_module_structure(self):
+    def test_shared_module_structure(self) -> None:
         """Test shared module directory structure."""
         shared_path = get_src_root() / "shared" / "python"
         self.assertTrue(shared_path.exists(), "Shared python directory should exist")
@@ -474,7 +547,7 @@ class TestModuleAccessibility(unittest.TestCase):
                 module_path.exists(), f"Key module {subdir}/{module} should exist"
             )
 
-    def test_engine_directory_structure(self):
+    def test_engine_directory_structure(self) -> None:
         """Test engine directory structure."""
         engines_path = get_src_root() / "engines"
         self.assertTrue(engines_path.exists(), "Engines directory should exist")
@@ -495,7 +568,7 @@ class TestModuleAccessibility(unittest.TestCase):
                     python_path.exists(), f"{engine} should have python directory"
                 )
 
-    def test_mujoco_module_accessibility(self):
+    def test_mujoco_module_accessibility(self) -> None:
         """Test MuJoCo module structure for container access."""
         mujoco_python_path = (
             get_src_root() / "engines" / "physics_engines" / "mujoco" / "python"

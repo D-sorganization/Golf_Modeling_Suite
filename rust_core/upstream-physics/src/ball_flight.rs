@@ -144,17 +144,36 @@ pub fn simulate_ball_trajectory(
     air: &AirProperties,
     config: &IntegratorConfig,
 ) -> BallTrajectoryResult {
-    debug_assert!(
+    assert!(
         pos0.iter().all(|v| v.is_finite()),
         "DbC: initial position must be finite"
     );
-    debug_assert!(
+    assert!(
         vel0.iter().all(|v| v.is_finite()),
         "DbC: initial velocity must be finite"
     );
-    debug_assert!(omega0 >= 0.0, "DbC: omega0 must be non-negative");
-    debug_assert!(ball.mass > 0.0, "DbC: ball mass must be positive");
-    debug_assert!(air.density >= 0.0, "DbC: air density must be non-negative");
+    assert!(
+        spin_axis.iter().all(|v| v.is_finite()),
+        "DbC: spin axis must be finite"
+    );
+    assert!(
+        omega0.is_finite() && omega0 >= 0.0,
+        "DbC: omega0 must be finite and non-negative"
+    );
+    assert!(
+        gravity.iter().all(|v| v.is_finite()),
+        "DbC: gravity must be finite"
+    );
+    assert!(
+        wind.iter().all(|v| v.is_finite()),
+        "DbC: wind must be finite"
+    );
+    ball.validate()
+        .expect("invalid aerodynamic ball properties");
+    air.validate().expect("invalid air properties");
+    config
+        .validate()
+        .expect("invalid RK4 integrator configuration");
 
     // State: [x, y, z, vx, vy, vz, omega]
     let y0 = [pos0[0], pos0[1], pos0[2], vel0[0], vel0[1], vel0[2], omega0];
@@ -162,7 +181,17 @@ pub fn simulate_ball_trajectory(
     // Capture by reference using owned copies for the closure
     let ball = ball.clone();
     let air = air.clone();
-    let spin_axis_v = Vector3::new(spin_axis[0], spin_axis[1], spin_axis[2]);
+    // Normalize spin_axis to unit vector; fall back to Z-axis if near-zero
+    let raw_spin = Vector3::new(spin_axis[0], spin_axis[1], spin_axis[2]);
+    let spin_axis_v = {
+        let n =
+            (raw_spin.x * raw_spin.x + raw_spin.y * raw_spin.y + raw_spin.z * raw_spin.z).sqrt();
+        if n > 1e-10 {
+            Vector3::new(raw_spin.x / n, raw_spin.y / n, raw_spin.z / n)
+        } else {
+            Vector3::new(0.0, 0.0, 1.0)
+        }
+    };
     let gravity_v = Vector3::new(gravity[0], gravity[1], gravity[2]);
     let wind_v = Vector3::new(wind[0], wind[1], wind[2]);
 
@@ -199,7 +228,7 @@ pub fn simulate_ball_trajectory(
 
     // Convert IntegrationResult to BallTrajectoryResult
     let state_dim = result.state_dim;
-    let points = result
+    let points: Vec<TrajectoryPoint> = result
         .times
         .iter()
         .zip(result.states.chunks(state_dim))
@@ -214,8 +243,16 @@ pub fn simulate_ball_trajectory(
         })
         .collect();
 
+    // Landing (termination by ground contact) is a successful outcome, not an
+    // aborted integration.  Override completed=true whenever the final point
+    // reached z ≤ 0 after the minimum flight time.
+    let landed = points
+        .last()
+        .map(|p| p.z <= 0.0 && p.t > 0.05)
+        .unwrap_or(false);
+
     BallTrajectoryResult {
-        completed: result.completed,
+        completed: result.completed || landed,
         steps: result.steps_taken,
         points,
     }
@@ -234,6 +271,26 @@ mod tests {
             dt: 0.01,
             max_steps: 2_000,
         }
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid aerodynamic ball properties")]
+    fn test_simulation_rejects_invalid_mass_in_release_mode() {
+        let ball = AeroBallProperties {
+            mass: 0.0,
+            ..AeroBallProperties::default()
+        };
+        let _ = simulate_ball_trajectory(
+            [0.0, 0.0, 0.5],
+            [10.0, 0.0, 10.0],
+            [0.0, 1.0, 0.0],
+            100.0,
+            [0.0, 0.0, -9.81],
+            [0.0, 0.0, 0.0],
+            &ball,
+            &AirProperties::default(),
+            &default_config(),
+        );
     }
 
     /// Test 1: Basic trajectory — ball launched at 45° should travel ~20-50m in range.
@@ -438,6 +495,68 @@ mod tests {
         assert!(
             headwind_range < base_range,
             "Headwind range {headwind_range:.2} should be less than no-wind range {base_range:.2}"
+        );
+    }
+
+    /// Test: normal landing must report completed = true (issue #2484).
+    #[test]
+    fn test_landing_reports_completed_true() {
+        let result = simulate_ball_trajectory(
+            [0.0, 0.0, 0.5],
+            [20.0, 0.0, 10.0],
+            [0.0, 0.0, 1.0],
+            100.0,
+            [0.0, 0.0, -9.81],
+            [0.0, 0.0, 0.0],
+            &AeroBallProperties::default(),
+            &AirProperties::default(),
+            &default_config(),
+        );
+
+        assert!(
+            result.completed,
+            "Ball that lands on the ground must report completed=true, got false"
+        );
+    }
+
+    /// Test: non-unit spin_axis is normalized before force computation (issue #2484).
+    #[test]
+    fn test_non_unit_spin_axis_normalized() {
+        // A spin_axis with magnitude 2.0 should behave identically to magnitude 1.0
+        let result_unit = simulate_ball_trajectory(
+            [0.0, 0.0, 0.5],
+            [20.0, 0.0, 10.0],
+            [0.0, 0.0, 1.0], // unit axis
+            100.0,
+            [0.0, 0.0, -9.81],
+            [0.0, 0.0, 0.0],
+            &AeroBallProperties::default(),
+            &AirProperties::default(),
+            &default_config(),
+        );
+        let result_scaled = simulate_ball_trajectory(
+            [0.0, 0.0, 0.5],
+            [20.0, 0.0, 10.0],
+            [0.0, 0.0, 2.0], // non-unit axis — should be normalized
+            100.0,
+            [0.0, 0.0, -9.81],
+            [0.0, 0.0, 0.0],
+            &AeroBallProperties::default(),
+            &AirProperties::default(),
+            &default_config(),
+        );
+
+        assert_eq!(
+            result_unit.steps, result_scaled.steps,
+            "Non-unit spin_axis must be normalized: trajectories must be identical"
+        );
+        let last_unit = result_unit.points.last().unwrap();
+        let last_scaled = result_scaled.points.last().unwrap();
+        assert!(
+            (last_unit.x - last_scaled.x).abs() < 1e-10,
+            "Non-unit spin_axis yields different trajectory: unit.x={} scaled.x={}",
+            last_unit.x,
+            last_scaled.x
         );
     }
 }

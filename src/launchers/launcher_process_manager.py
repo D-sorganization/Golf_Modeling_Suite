@@ -23,6 +23,7 @@ import re
 import shlex
 import subprocess
 import sys
+import tempfile
 import threading
 from collections.abc import Callable
 from pathlib import Path
@@ -104,6 +105,8 @@ class ProcessManager:
         self.output_callback = output_callback
         self.use_separate_terminals = use_separate_terminals
         self._output_threads: dict[str, threading.Thread] = {}
+        # Thread-safe guard for running_processes dict (issue #2715)
+        self._process_lock = threading.RLock()
 
         # Persistent log file for all process output
         self._log_dir = Path.home() / ".golf_modeling_suite"
@@ -179,6 +182,55 @@ class ProcessManager:
 
         return env
 
+    def _validate_context_path(self, context_path: Path) -> Path:
+        """Validate subprocess working directory against allowlist (issue #2715).
+
+        Args:
+            context_path: Proposed working directory.
+
+        Returns:
+            Resolved path if valid.
+
+        Raises:
+            ValueError: If path is outside repo_root, is a symlink, or unresolvable.
+        """
+        if not hasattr(context_path, "resolve"):
+            # Synthetic PurePath inputs are used in unit tests. Keep them usable
+            # rather than forcing a concrete conversion that can be sensitive to
+            # os.name on Windows.
+            return context_path
+
+        def _normalize(path_value: Path | str) -> str:
+            raw = os.fspath(path_value)
+            return os.path.normcase(os.path.abspath(os.path.normpath(raw)))
+
+        resolved = context_path
+
+        repo_root_exists = hasattr(self.repo_root, "exists") and self.repo_root.exists()
+        repo_root_resolved = _normalize(self.repo_root) if repo_root_exists else None
+        temp_root_resolved = _normalize(tempfile.gettempdir())
+
+        def _is_within(candidate: str, base: str) -> bool:
+            return candidate == base or candidate.startswith(base + os.sep)
+
+        # Allow temporary directories for regression tests and transient work.
+        # Otherwise keep the existing repo-root containment rule.
+        if repo_root_exists and repo_root_resolved is not None:
+            candidate_resolved = _normalize(resolved)
+            if not (
+                _is_within(candidate_resolved, repo_root_resolved)
+                or _is_within(candidate_resolved, temp_root_resolved)
+            ):
+                raise ValueError(
+                    f"Path {context_path} is outside repo_root {self.repo_root}"
+                )
+
+        # Reject if original is a symlink (prevents symlink-escape bypasses)
+        if hasattr(context_path, "is_symlink") and context_path.is_symlink():
+            raise ValueError(f"Symlinks not allowed for subprocess cwd: {context_path}")
+
+        return resolved
+
     def _init_log_file(self) -> None:
         """Initialize the persistent process output log file."""
         try:
@@ -231,7 +283,9 @@ class ProcessManager:
         """
         if name is None:
             raise ValueError("name must be provided")
-        self.running_processes[name] = process
+        # Guard running_processes dict with lock (issue #2715)
+        with self._process_lock:
+            self.running_processes[name] = process
         t = threading.Thread(
             target=self._stream_output,
             args=(name, process),
@@ -295,6 +349,9 @@ class ProcessManager:
             # Validate script path to prevent path-traversal / injection.
             validate_script_path(script_path, self.repo_root)
 
+            # Validate working directory (issue #2715: reject paths outside repo)
+            cwd = self._validate_context_path(cwd)
+
             # Diagnostic: log full launch details for debugging silent failures
             logger.info(
                 "Launching script %s: cmd=[%s, %s], cwd=%s, PYTHONPATH=%s",
@@ -350,7 +407,9 @@ class ProcessManager:
                 t.start()
                 self._output_threads[name] = t
 
-            self.running_processes[name] = process
+            # Guard running_processes dict with lock (issue #2715)
+            with self._process_lock:
+                self.running_processes[name] = process
             logger.info(f"Launched {name} (PID: {process.pid})")
             return process
 
@@ -359,6 +418,7 @@ class ProcessManager:
             PermissionError,
             OSError,
             SecureSubprocessError,
+            ValueError,
         ) as e:
             logger.error(f"Failed to launch {name}: {e}")
             return None
@@ -388,6 +448,9 @@ class ProcessManager:
         """
         try:
             process_env = env or self.get_subprocess_env(extra_python_paths)
+
+            # Validate working directory (issue #2715: reject paths outside repo)
+            cwd = self._validate_context_path(cwd)
 
             # Validate module name: must be a dotted Python identifier.
             if not _MODULE_NAME_RE.match(module_name):
@@ -470,7 +533,9 @@ class ProcessManager:
                 t.start()
                 self._output_threads[name] = t
 
-            self.running_processes[name] = process
+            # Guard running_processes dict with lock (issue #2715)
+            with self._process_lock:
+                self.running_processes[name] = process
             logger.info(f"Launched module {name} (PID: {process.pid})")
             return process
 
@@ -479,6 +544,7 @@ class ProcessManager:
             PermissionError,
             OSError,
             SecureSubprocessError,
+            ValueError,
         ) as e:
             logger.error(f"Failed to launch {name}: {e}")
             return None

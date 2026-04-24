@@ -19,6 +19,8 @@ from src.engines.physics_engines.putting_green.python.turf_properties import (
     TurfProperties,
 )
 
+pytestmark = pytest.mark.unit
+
 
 class TestRollMode:
     """Tests for RollMode enumeration."""
@@ -51,6 +53,27 @@ class TestBallState:
             velocity=np.array([3.0, 4.0]),
             spin=np.zeros(3),
         )
+        assert np.isclose(state.speed, 5.0)
+
+    def test_ball_state_column_vector_velocity_is_supported(self) -> None:
+        """Column-vector velocity input should be normalized to 1D."""
+        state = BallState(
+            position=np.array([[0.0], [0.0]]),
+            velocity=np.array([[3.0], [4.0]]),
+            spin=np.array([[0.0], [0.0], [0.0]]),
+        )
+        assert state.velocity.shape == (2,)
+        assert np.isclose(state.speed, 5.0)
+        assert np.allclose(state.direction, np.array([0.6, 0.8]))
+
+    def test_ball_state_row_vector_velocity_is_supported(self) -> None:
+        """Row-vector velocity input should be normalized to 1D."""
+        state = BallState(
+            position=np.array([[0.0, 0.0]]),
+            velocity=np.array([[3.0, 4.0]]),
+            spin=np.array([[0.0, 0.0, 0.0]]),
+        )
+        assert state.velocity.shape == (2,)
         assert np.isclose(state.speed, 5.0)
 
     def test_ball_state_is_moving(self) -> None:

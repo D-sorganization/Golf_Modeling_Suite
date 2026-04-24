@@ -11,9 +11,12 @@ Covers issues:
 from __future__ import annotations
 
 import importlib
+import types
 from unittest.mock import patch
 
 import pytest
+
+pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
 # Issue #1779 – SECRET_KEY fallback
@@ -104,7 +107,7 @@ class TestAuthCacheCryptoHash:
         from src.api.auth.security import AuthCache
 
         cache = AuthCache()
-        api_key = "gms_testkey_abc123"
+        api_key = "gms_testkey_abc123"  # nosec B105 - test fixture
 
         key1 = cache._cache_lookup_token(api_key)
         key2 = cache._cache_lookup_token(api_key)
@@ -121,7 +124,7 @@ class TestAuthCacheCryptoHash:
         from src.api.auth.security import AuthCache
 
         cache = AuthCache()
-        api_key = "gms_testkey_abc123"
+        api_key = "gms_testkey_abc123"  # nosec B105 - test fixture
         token = cache._cache_lookup_token(api_key)
 
         # The token must not be derived solely from Python's hash()
@@ -135,7 +138,7 @@ class TestAuthCacheCryptoHash:
         from src.api.auth.security import AuthCache
 
         cache = AuthCache()
-        api_key = "gms_testkey_abc123"
+        api_key = "gms_testkey_abc123"  # nosec B105 - test fixture
         token = cache._cache_lookup_token(api_key)
 
         expected = hashlib.sha256(api_key.encode()).hexdigest()
@@ -146,7 +149,7 @@ class TestAuthCacheCryptoHash:
         from src.api.auth.security import AuthCache
 
         cache = AuthCache()
-        api_key = "gms_roundtrip_key"
+        api_key = "gms_roundtrip_key"  # nosec B105 - test fixture
         user_id = 42
 
         cache.set(api_key, user_id)
@@ -173,7 +176,7 @@ class TestAuthCacheCryptoHash:
 class TestMotionTrainingGetattr:
     """Issue #1777: motion_training exports must return real objects, not None."""
 
-    def _import_motion_training(self):
+    def _import_motion_training(self) -> types.ModuleType:
         """Import the motion_training module."""
         return importlib.import_module(
             "src.engines.physics_engines.pinocchio.python.motion_training"
@@ -366,7 +369,7 @@ class TestBarePassExceptionHandlers:
 # ---------------------------------------------------------------------------
 
 PHYSICS_MODULES = [
-    "src/shared/python/physics/aerodynamics.py",
+    "src/shared/python/physics/aerodynamics/__init__.py",
     "src/shared/python/physics/ball_flight_physics.py",
     "src/shared/python/physics/energy_monitor.py",
     "src/shared/python/physics/equipment.py",

@@ -16,6 +16,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from src.shared.python.engine_core.engine_availability import (
     PYQT6_AVAILABLE,
     skip_if_unavailable,
@@ -27,6 +29,8 @@ from src.shared.python.security.secure_subprocess import (
     validate_executable,
     validate_script_path,
 )
+
+pytestmark = pytest.mark.integration
 
 # Use the current Python executable for cross-platform subprocess tests
 PYTHON_EXE = sys.executable
@@ -291,7 +295,7 @@ class TestPhase1SecurityIntegration(unittest.TestCase):
         results = []
         errors = []
 
-        def run_subprocess():
+        def run_subprocess() -> None:
             try:
                 result = secure_run(
                     [PYTHON_EXE, "--version"],
