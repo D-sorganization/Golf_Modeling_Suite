@@ -209,8 +209,7 @@ class PuttingGreenSimulator:
         # Guard against invalid time steps (Issue #3054)
         if dt <= EPSILON_TIME_STEP:
             raise ValueError(
-                f"dt must be positive, got {dt}. "
-                f"Minimum supported: {EPSILON_TIME_STEP}"
+                f"dt must be positive, got {dt}. Minimum supported: {EPSILON_TIME_STEP}"
             )
 
         if self._wind_speed > 0 and self._ball_state.is_moving:

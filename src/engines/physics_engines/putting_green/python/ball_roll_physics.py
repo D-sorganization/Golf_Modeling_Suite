@@ -424,8 +424,7 @@ class BallRollPhysics:
         # Guard against invalid time steps (Issue #3054)
         if dt <= EPSILON_TIME_STEP:
             raise ValueError(
-                f"dt must be positive, got {dt}. "
-                f"Minimum supported: {EPSILON_TIME_STEP}"
+                f"dt must be positive, got {dt}. Minimum supported: {EPSILON_TIME_STEP}"
             )
         if self.integrator == "rk4":
             return self._step_rk4(state, dt)
