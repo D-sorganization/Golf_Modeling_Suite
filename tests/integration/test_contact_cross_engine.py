@@ -205,7 +205,9 @@ class TestBasicContactPhysics:
         )
 
         # Verify NotImplementedError is raised when caller ignores capability check
-        with pytest.raises(NotImplementedError, match="does not support compute_contact_forces"):
+        with pytest.raises(
+            NotImplementedError, match="does not support compute_contact_forces"
+        ):
             engine.compute_contact_forces()
 
 
