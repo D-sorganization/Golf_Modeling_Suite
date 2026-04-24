@@ -17,17 +17,17 @@ else:
 
 
 @pytest.fixture
-def generator() -> None:
+def generator() -> CollisionGeometryGenerator:
     return CollisionGeometryGenerator()
 
 
 @pytest.fixture
-def box_mesh() -> None:
+def box_mesh() -> trimesh.Trimesh:
     return trimesh.creation.box(extents=(1.0, 1.0, 1.0))
 
 
 @pytest.fixture
-def sphere_mesh() -> None:
+def sphere_mesh() -> trimesh.Trimesh:
     return trimesh.creation.icosphere(radius=1.0, subdivisions=2)
 
 

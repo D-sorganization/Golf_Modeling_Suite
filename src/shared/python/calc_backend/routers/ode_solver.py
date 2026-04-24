@@ -58,9 +58,7 @@ def _safe_eval(
     via attribute access on the ``math`` module.
     """
     # Build the evaluation namespace with math functions exposed directly
-    if not (expr is not None):
-        raise ValueError("expr must be provided")
-    if not (expr is not None):
+    if expr is None:
         raise ValueError("expr must be provided")
     namespace: dict[str, object] = {
         "sin": math.sin,
@@ -94,9 +92,7 @@ def _rk4_solve(
     num_points: int,
 ) -> ODESolverResponse:
     """RK4 integration of the ODE system."""
-    if not (var_names is not None):
-        raise ValueError("var_names must be provided")
-    if not (var_names is not None):
+    if var_names is None:
         raise ValueError("var_names must be provided")
     dt = (t_end - t_start) / (num_points - 1)
     state = {v: initial[v] for v in var_names}

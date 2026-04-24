@@ -102,9 +102,12 @@ dev = [
     "hypothesis>=6.0.0",
     # Required for database migration tooling (issue #2078)
     "alembic>=1.13.0",
-    # Type stubs for untyped third-party packages (GH2034)
-    "types-PyYAML>=6.0",
-    "scipy-stubs>=1.13.0",
+    # Security: requests>=2.33.0 fixes CVE-2024-47081 and CVE-2026-25645
+    "requests>=2.33.0",
+    # Security: bokeh>=3.8.2 fixes CVE-2026-21883
+    "bokeh>=3.8.2",
+    # Security: flask>=3.1.3 fixes CVE-2026-27205
+    "flask>=3.1.3",
 ]
 
 # GUI testing (requires PyQt6)
@@ -170,7 +173,7 @@ select = [
     "RET",   # return statement cleanup
 ]
 ignore = [
-    "E501",    # line too long (handled by black)
+    "E501",    # line too long (handled by formatter)
     "B008",    # function call in default arg (FastAPI Depends)
     "RET504",  # unnecessary assign before return (often clearer)
     "PERF203", # try-except in loop (unavoidable in some patterns)
@@ -182,36 +185,22 @@ ignore = [
 "tests/**" = ["T201"]
 "examples/**" = ["T201"]
 
-[tool.black]
-line-length = 88
-target-version = ["py310"]
-# Exclude third-party model files (legacy Python 2 scripts from OpenSim)
-exclude = '''
-/(
-    src/shared/models/opensim/opensim-models
-  | shared/models/opensim/opensim-models
-  | shared/models/myosuite
-  | vendor/ud-tools
-)/
-'''
-
 [tool.mypy]
 python_version = "3.10"
-mypy_path = "stubs"
 ignore_missing_imports = true
 check_untyped_defs = true
 disallow_untyped_defs = false
-# Exclude directories with invalid Python package names and third-party models.
-# Remaining exclusions: Simscape (invalid pkg names), opensim-models (Python 2 legacy).
+# Exclude directories with invalid Python package names, third-party models,
+# and modules pending type annotation improvements (tracked for future cleanup)
 exclude = [
     "src/engines/Simscape_Multibody_Models/2D_Golf_Model",
     "src/engines/Simscape_Multibody_Models/3D_Golf_Model",
     "src/shared/models/opensim/opensim-models",
-    # GUI/Qt modules with PyQt6 attr-defined false positives (tracked: GH-3075)
+    # Pending type annotation cleanup (consolidated PR 2026-01-31)
     "src/shared/python/plotting/",
     "src/shared/python/ui/qt/widgets/",
     "src/launchers/",
-    # Pose/AI GUI modules with complex dynamic attribute patterns
+    # Additional directories with complex typing issues (pre-existing)
     "src/shared/python/pose_editor/",
     "src/shared/python/ai/gui/",
     "src/engines/physics_engines/pinocchio/python/pinocchio_golf/pose_editor_tab.py",
@@ -219,14 +208,14 @@ exclude = [
     "src/shared/python/pose_estimation/",
     "src/shared/python/ui/adapters/",
     "src/shared/python/ui/",
-    # Mixin-based decomposition files (attr-defined false positives on mixin attrs)
+    # Mixin-based decomposition files (attr-defined false positives)
     "src/engines/physics_engines/drake/python/src/",
     "src/engines/physics_engines/mujoco/python/humanoid_launcher_analysis.py",
     "src/engines/physics_engines/mujoco/python/humanoid_launcher_sim.py",
     "src/engines/physics_engines/mujoco/python/humanoid_launcher_ui.py",
     # Test stubs with pre-existing issues
     "src/engines/physics_engines/drake/python/tests/",
-    # Root/example scripts use runtime src.-prefixed imports
+    # Root/example scripts use runtime src. prefixed imports
     "installer/",
     "start_api_server.py",
     "setup_golf_suite.py",
@@ -260,59 +249,25 @@ exclude = [
     "src/research/deformable/objects.py",
 ]
 
-# --- Strict enforcement for API layer ---
-[[tool.mypy.overrides]]
-module = "src.api.*"
-disallow_untyped_defs = true
-warn_return_any = true
-
-# --- Broad suppressions: GUI/Qt widget modules ---
-# These modules use PyQt6 dynamic attributes that mypy cannot resolve.
-# Tracked for incremental improvement under GH-3075.
+# Mypy overrides for modules with pre-existing type issues
 [[tool.mypy.overrides]]
 module = [
     "src.shared.python.plotting.*",
     "src.shared.python.ui.*",
-    "src.shared.python.spatial_algebra.*",
     "src.engines.physics_engines.mujoco.python.mujoco_humanoid_golf.*",
     "src.engines.physics_engines.pinocchio.python.pinocchio_golf.*",
 ]
 ignore_errors = true
 
-# --- Targeted suppressions: attr-defined on third-party/generated code ---
-# These modules use dynamic attributes from third-party libs (scipy, Drake, Pinocchio)
-# that ship without complete type stubs.  disable_error_code is narrower than
-# ignore_errors and preserves coverage for all other error categories.
 [[tool.mypy.overrides]]
-module = [
-    "src.engines.physics_engines.drake.python.motion_optimization",
-    "src.engines.physics_engines.pinocchio.python.pinocchio_physics_engine",
-    "src.engines.physics_engines.pinocchio.python.pinocchio_screw_kinematics",
-    "src.robotics.contact.grasp_analysis",
-    "src.robotics.control.whole_body.qp_solver",
-    "src.shared.python.analysis.*",
-    "src.shared.python.physics.flight_models",
-    "src.shared.python.plot_engine.contour",
-    "src.shared.python.signal_toolkit.*",
-]
-disable_error_code = ["attr-defined", "union-attr"]
+module = "src.shared.python.spatial_algebra.*"
+warn_return_any = true
+disable_error_code = ["arg-type", "no-any-return"]
 
-# --- Targeted suppressions: unresolved imports + type inference in training code ---
 [[tool.mypy.overrides]]
-module = [
-    "src.engines.physics_engines.mujoco.python.playground_experiments.humanoid_cm_demo",
-    "src.engines.physics_engines.myosuite.python.*",
-    "src.engines.physics_engines.pinocchio.python.dtack.*",
-    "src.engines.physics_engines.pinocchio.python.motion_training.*",
-    "src.engines.physics_engines.pinocchio.python.perturbation.*",
-    "src.engines.physics_engines.pinocchio.scripts.verify_pipeline",
-    "src.shared.python.optimization.*",
-    "src.shared.python.pendulum_simulator.gui.optimization_widget",
-    "src.shared.python.upstream_drift_tools.process_calculators.ode_solver",
-    "src.shared.python.upstream_drift_tools.process_calculators.syngas_compression_tabs_mixin",
-    "src.shared.python.validation_pkg._data_fitting_solvers",
-]
-ignore_errors = true
+module = "src.api.*"
+disallow_untyped_defs = true
+warn_return_any = true
 
 [tool.pytest.ini_options]
 # Consolidated pytest configuration (replaces duplicate pytest.ini files)
@@ -388,7 +343,6 @@ omit = [
 
 [tool.coverage.report]
 # Coverage threshold — enforced in CI and locally when running with --cov.
-# Unified threshold: 10% minimum per CLAUDE.md policy.
 # Raise this value as coverage improves toward the 60% target (#1630).
 fail_under = 45
 show_missing = true
@@ -399,8 +353,6 @@ exclude_lines = [
     "def __repr__",
     "if __name__ == .__main__.",
     "raise NotImplementedError",
-    "pass",
-    "except ImportError",
     "if TYPE_CHECKING:",
 ]
 

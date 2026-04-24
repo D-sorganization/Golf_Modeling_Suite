@@ -19,6 +19,7 @@ from src.shared.python.core.contracts import (
     postcondition,
     precondition,
 )
+from src.shared.python.core.numerical_constants import EPSILON_TIME_STEP
 from src.shared.python.engine_core.engine_availability import OPENSIM_AVAILABLE
 from src.shared.python.engine_core.interfaces import PhysicsEngine
 from src.shared.python.logging_pkg.logging_config import get_logger
@@ -131,11 +132,26 @@ class OpenSimPhysicsEngine(PhysicsEngine):
         lambda self, dt=None: self.is_initialized, "Engine must be initialized"
     )
     def step(self, dt: float | None = None) -> None:
-        """Integrate the simulation forward by one time step."""
+        """Integrate the simulation forward by one time step.
+
+        Args:
+            dt: Time step [s]. Must be > EPSILON_TIME_STEP if provided.
+
+        Raises:
+            ValueError: If dt is not positive.
+        """
         if not self._model or not self._state:
             return
 
         step_size = dt if dt is not None else self._time_step
+
+        # Guard against invalid time steps (Issue #3054)
+        if step_size <= EPSILON_TIME_STEP:
+            raise ValueError(
+                f"dt must be positive, got {step_size}. "
+                f"Minimum supported: {EPSILON_TIME_STEP}"
+            )
+
         current_time = self._state.getTime()
 
         # Integrate to new time
@@ -170,9 +186,7 @@ class OpenSimPhysicsEngine(PhysicsEngine):
 
     def set_state(self, q: np.ndarray, v: np.ndarray) -> None:
         """Set coordinate positions and speeds on the model state."""
-        if not (q is not None):
-            raise ValueError("q must be provided")
-        if not (q is not None):
+        if q is None:
             raise ValueError("q must be provided")
         if not self._model or not self._state:
             return
@@ -197,9 +211,7 @@ class OpenSimPhysicsEngine(PhysicsEngine):
 
     def set_control(self, u: np.ndarray) -> None:
         """Set controls for the model."""
-        if not (u is not None):
-            raise ValueError("u must be provided")
-        if not (u is not None):
+        if u is None:
             raise ValueError("u must be provided")
         if not self._model or not self._state:
             return
@@ -295,9 +307,7 @@ class OpenSimPhysicsEngine(PhysicsEngine):
     @postcondition(check_finite, "Inverse dynamics torques must contain finite values")
     def compute_inverse_dynamics(self, qacc: np.ndarray) -> np.ndarray:
         """Compute required torques for the given joint accelerations."""
-        if not (qacc is not None):
-            raise ValueError("qacc must be provided")
-        if not (qacc is not None):
+        if qacc is None:
             raise ValueError("qacc must be provided")
         if not self._model or not self._state:
             return np.array([])
@@ -351,9 +361,7 @@ class OpenSimPhysicsEngine(PhysicsEngine):
             - 'angular': Rotation Jacobian (3 × nv) [rad/rad or rad/m]
             - 'spatial': Combined [angular; linear] (6 × nv)
         """
-        if not (body_name is not None):
-            raise ValueError("body_name must be provided")
-        if not (body_name is not None):
+        if body_name is None:
             raise ValueError("body_name must be provided")
         if not self._model or not self._state or opensim is None:
             return None
@@ -539,9 +547,7 @@ class OpenSimPhysicsEngine(PhysicsEngine):
         Returns:
             q_ddot_control: Control acceleration vector (nv,) [rad/s² or m/s²]
         """
-        if not (tau is not None):
-            raise ValueError("tau must be provided")
-        if not (tau is not None):
+        if tau is None:
             raise ValueError("tau must be provided")
         if not self._model or not self._state:
             logger.warning("Model or state not initialized")
@@ -707,9 +713,7 @@ class OpenSimPhysicsEngine(PhysicsEngine):
         Returns:
             q̈_ZTCF: Acceleration under zero applied torque (n_v,)
         """
-        if not (q is not None):
-            raise ValueError("q must be provided")
-        if not (q is not None):
+        if q is None:
             raise ValueError("q must be provided")
         if not self._model or not self._state:
             return np.array([])
@@ -759,9 +763,7 @@ class OpenSimPhysicsEngine(PhysicsEngine):
         Returns:
             q̈_ZVCF: Acceleration with v=0 (n_v,)
         """
-        if not (q is not None):
-            raise ValueError("q must be provided")
-        if not (q is not None):
+        if q is None:
             raise ValueError("q must be provided")
         if not self._model or not self._state:
             return np.array([])

@@ -11,12 +11,12 @@ High-performance data handling with optimized MATLAB loading and frame processin
 from __future__ import annotations
 
 import logging
+import math
 import threading
 import time
 import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -197,9 +197,7 @@ class PerformanceStats:
 
     def update_frame_time(self, frame_time: float) -> None:
         """Update frame timing statistics"""
-        if not (frame_time is not None):
-            raise ValueError("frame_time must be provided")
-        if not (frame_time is not None):
+        if frame_time is None:
             raise ValueError("frame_time must be provided")
         self.frame_times.append(frame_time)
         if len(self.frame_times) > 120:  # Keep last 2 seconds at 60fps
@@ -227,9 +225,7 @@ class MatlabDataLoader:
         self, baseq_file: str, ztcfq_file: str, delta_file: str
     ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """Load all three MATLAB datasets with comprehensive error handling"""
-        if not (baseq_file is not None):
-            raise ValueError("baseq_file must be provided")
-        if not (baseq_file is not None):
+        if baseq_file is None:
             raise ValueError("baseq_file must be provided")
         start_time = time.time()
 
@@ -342,9 +338,7 @@ class MatlabDataLoader:
         PERF-002: Optimized with vectorized operations where possible.
         """
         # Fast path for numeric 2D arrays (most common case)
-        if not (col_data is not None):
-            raise ValueError("col_data must be provided")
-        if not (col_data is not None):
+        if col_data is None:
             raise ValueError("col_data must be provided")
         if col_data.dtype != "object" and col_data.ndim == 2 and col_data.shape[1] == 3:
             # Vectorized operation - process all rows at once
@@ -479,10 +473,8 @@ class FrameProcessor:
         self,
         datasets: tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame],
         config: RenderConfig,
-    ) -> None:
-        if not (datasets is not None):
-            raise ValueError("datasets must be provided")
-        if not (datasets is not None):
+    ):
+        if datasets is None:
             raise ValueError("datasets must be provided")
         self.baseq_df, self.ztcfq_df, self.deltaq_df = datasets
         self.config = config
@@ -520,9 +512,7 @@ class FrameProcessor:
     def get_frame_data(self, frame_idx: int) -> FrameData:
         """Get processed frame data, including calculated dynamics."""
         # Bounds checking
-        if not (frame_idx is not None):
-            raise ValueError("frame_idx must be provided")
-        if not (frame_idx is not None):
+        if frame_idx is None:
             raise ValueError("frame_idx must be provided")
         frame_idx = max(0, min(frame_idx, self.num_frames - 1))
 
@@ -583,9 +573,7 @@ class FrameProcessor:
 
     def _process_raw_frame(self, frame_idx: int) -> FrameData:
         """Process a single frame from raw data sources."""
-        if not (frame_idx is not None):
-            raise ValueError("frame_idx must be provided")
-        if not (frame_idx is not None):
+        if frame_idx is None:
             raise ValueError("frame_idx must be provided")
         frame_data = FrameData(
             frame_idx=frame_idx,
@@ -705,11 +693,9 @@ class FrameProcessor:
         """Set the current filter type and invalidate cached filtered data"""
         self.set_filter(filter_type)  # Use existing method
 
-    def set_filter_param(self, param_name: str, value: Any) -> None:
+    def set_filter_param(self, param_name: str, value) -> None:
         """Set a filter parameter and invalidate cached filtered data"""
-        if not (param_name is not None):
-            raise ValueError("param_name must be provided")
-        if not (param_name is not None):
+        if param_name is None:
             raise ValueError("param_name must be provided")
         if not hasattr(self, "filter_params"):
             self.filter_params = {}
@@ -747,19 +733,23 @@ class GeometryUtils:
     def rotation_matrix_from_vectors(vec1: np.ndarray, vec2: np.ndarray) -> np.ndarray:
         """Create rotation matrix to rotate vec1 to vec2 using Rodrigues formula"""
         # Normalize input vectors
-        if not (vec1 is not None):
+        if vec1 is None:
             raise ValueError("vec1 must be provided")
-        if not (vec1 is not None):
-            raise ValueError("vec1 must be provided")
-        v1 = vec1 / np.linalg.norm(vec1)
-        v2 = vec2 / np.linalg.norm(vec2)
+
+        v1_norm = math.sqrt(vec1[0] * vec1[0] + vec1[1] * vec1[1] + vec1[2] * vec1[2])
+        v2_norm = math.sqrt(vec2[0] * vec2[0] + vec2[1] * vec2[1] + vec2[2] * vec2[2])
+
+        v1 = vec1 / v1_norm
+        v2 = vec2 / v2_norm
+
+        dot_val = v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2]
 
         # If vectors are already aligned
-        if np.allclose(v1, v2):
+        if dot_val > 0.999999:
             return np.eye(3, dtype=np.float32)
 
         # If vectors are opposite
-        if np.allclose(v1, -v2):
+        if dot_val < -0.999999:
             # Find any perpendicular vector
             if abs(v1[0]) < 0.9:
                 perpendicular = np.array([1.0, 0.0, 0.0], dtype=np.float32)
@@ -767,15 +757,16 @@ class GeometryUtils:
                 perpendicular = np.array([0.0, 1.0, 0.0], dtype=np.float32)
 
             v = np.cross(v1, perpendicular)
-            v = v / np.linalg.norm(v)
+            v_norm = math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2])
+            v = v / v_norm
 
             # 180 degree rotation
             return 2 * np.outer(v, v) - np.eye(3, dtype=np.float32)
 
         # General case using Rodrigues formula
         v = np.cross(v1, v2)
-        s = np.linalg.norm(v)
-        c = np.dot(v1, v2)
+        s = math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2])
+        c = dot_val
 
         vx = np.array(
             [[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]], dtype=np.float32
@@ -790,9 +781,7 @@ class GeometryUtils:
         radius: float = 1.0, height: float = 1.0, segments: int = 16
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Create optimized cylinder mesh with normals"""
-        if not (radius is not None):
-            raise ValueError("radius must be provided")
-        if not (radius is not None):
+        if radius is None:
             raise ValueError("radius must be provided")
         vertices = []
         normals = []
@@ -833,9 +822,7 @@ class GeometryUtils:
         radius: float = 1.0, lat_segments: int = 12, lon_segments: int = 16
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Create optimized sphere mesh using UV sphere method"""
-        if not (radius is not None):
-            raise ValueError("radius must be provided")
-        if not (radius is not None):
+        if radius is None:
             raise ValueError("radius must be provided")
         vertices = []
         normals = []
@@ -882,9 +869,7 @@ class GeometryUtils:
         segments: int = 8,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Create arrow mesh for force/torque visualization"""
-        if not (shaft_radius is not None):
-            raise ValueError("shaft_radius must be provided")
-        if not (shaft_radius is not None):
+        if shaft_radius is None:
             raise ValueError("shaft_radius must be provided")
         vertices = []
         normals = []

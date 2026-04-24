@@ -241,12 +241,6 @@ class APIKeyResponse(BaseModel):
     expires_at: datetime | None = None
 
 
-class RefreshTokenRequest(BaseModel):
-    """Request body for token refresh endpoint."""
-
-    refresh_token: str
-
-
 class UsageQuotas(BaseModel):
     """Usage quotas for different subscription tiers."""
 

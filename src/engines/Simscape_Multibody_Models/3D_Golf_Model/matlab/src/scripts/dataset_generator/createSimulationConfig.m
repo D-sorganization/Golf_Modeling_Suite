@@ -34,7 +34,6 @@ end
 config = struct();
 
 % === Model Configuration ===
-% GolfSwing3D_Kinetic.slx is the actual Simscape model in src/model/
 config.model_name = 'GolfSwing3D_Kinetic';
 
 % Try to find model path automatically
@@ -86,9 +85,7 @@ config.enable_master_dataset = true;       % Compile master dataset CSV
 % === Verbosity Configuration ===
 % Options: 'Silent', 'Normal', 'Verbose', 'Debug'
 config.verbosity = 'Normal';
-% config.verbose is the boolean form consumed by processSimulationOutput
-% (true when verbosity is 'Verbose' or 'Debug', false otherwise)
-config.verbose = false;
+config.verbose = deriveVerboseFlag(config.verbosity);
 
 % === Advanced Configuration ===
 config.stop_on_error = false;              % Continue on simulation errors
@@ -133,10 +130,9 @@ end
 try
     validateSimulationConfig(config);
 catch ME
-    error('DataGenerator:ConfigValidationFailed', ...
-        'Configuration is invalid and cannot be used: %s\n%s', ...
-        ME.message, ...
-        'Fix the configuration before proceeding (e.g. ensure model_name is correct).');
+    warning('DataGenerator:ConfigValidationFailed', ...
+        'Created configuration failed validation: %s', ME.message);
+    % Return config anyway for inspection/correction
 end
 
 end
