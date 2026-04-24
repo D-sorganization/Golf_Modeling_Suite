@@ -1,6 +1,9 @@
 """Benchmark comparing trajectory-funnel RL policies across solver configurations."""
 
+from __future__ import annotations
+
 import logging
+from typing import Any
 
 import numpy as np
 
@@ -37,7 +40,7 @@ class TrajectoryFunnelBenchmark:
         self,
         current_state: np.ndarray,
         reference_trajectory: np.ndarray,
-        current_phase: float,
+        current_phase: int,
     ) -> float:
         """
         Geometric approach: Reward confinement to the trajectory tube (orbital stability).
@@ -60,7 +63,7 @@ class TrajectoryFunnelBenchmark:
 
         return float(transverse_cost + phase_velocity_reward)
 
-    def simulate_agent_training_mock(self) -> dict[str, float]:
+    def simulate_agent_training_mock(self) -> dict[str, Any]:
         """
         Mocks the RL convergence behavior discussed in Chapter 10.
         This will be replaced with Stable Baselines3 + MuJoCo in future PRs.

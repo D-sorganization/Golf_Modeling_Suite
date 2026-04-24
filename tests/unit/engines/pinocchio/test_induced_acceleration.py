@@ -10,24 +10,48 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
-mock_pin = MagicMock()
-with patch.dict("sys.modules", {"pinocchio": mock_pin}):
-    induced_acceleration_mod = importlib.import_module(
-        "src.engines.physics_engines.pinocchio.python.pinocchio_golf.induced_acceleration"
+pytestmark = pytest.mark.unit
+
+_PINOCCHIO_MOD = (
+    "src.engines.physics_engines.pinocchio.python.pinocchio_golf.induced_acceleration"
+)
+
+
+@pytest.fixture(autouse=True)
+def _mock_pinocchio() -> Generator[MagicMock, None, None]:
+    """Mock pinocchio for every test using patch.dict.
+
+    patch.dict auto-restores sys.modules after each test so no pollution leaks
+    to other modules.
+    """
+    mock_pin = MagicMock()
+    # Evict any stale cached module before patching.
+    sys.modules.pop(_PINOCCHIO_MOD, None)
+    with patch.dict("sys.modules", {"pinocchio": mock_pin}):
+        yield mock_pin
+    sys.modules.pop(_PINOCCHIO_MOD, None)
+
+
+@pytest.fixture
+def _analyzer_class():
+    """Return InducedAccelerationAnalyzer under the currently active mocks."""
+    from src.engines.physics_engines.pinocchio.python.pinocchio_golf.induced_acceleration import (  # noqa: E501
+        InducedAccelerationAnalyzer,
     )
 
-InducedAccelerationAnalyzer = (  # noqa: N816
-    induced_acceleration_mod.InducedAccelerationAnalyzer
-)
+    return InducedAccelerationAnalyzer
 
 
 class TestPinocchioInducedAcceleration:
     """Test suite for InducedAccelerationAnalyzer."""
 
+    @pytest.fixture
+    def mock_pin(self, _mock_pinocchio) -> MagicMock:
+        """Return the active pinocchio mock (yielded by autouse fixture)."""
+        return _mock_pinocchio
+
     @pytest.fixture(autouse=True)
-    def reset_mocks(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> Generator[None, None, None]:
+    def reset_mocks(self, mock_pin) -> Generator[None, None, None]:
         """Reset mocks before each test."""
         mock_pin.reset_mock()
         mock_pin.aba.side_effect = None
@@ -50,9 +74,9 @@ class TestPinocchioInducedAcceleration:
         return MagicMock()
 
     @pytest.fixture
-    def analyzer(self, mock_model, mock_data) -> InducedAccelerationAnalyzer:
+    def analyzer(self, _analyzer_class, mock_model, mock_data):
         """Create analyzer instance."""
-        return InducedAccelerationAnalyzer(mock_model, mock_data)
+        return _analyzer_class(mock_model, mock_data)
 
     def test_initialization(self, analyzer, mock_model, mock_data) -> None:
         """Test initialization."""
@@ -61,7 +85,7 @@ class TestPinocchioInducedAcceleration:
         assert analyzer._temp_data is not None
         assert analyzer._temp_data != mock_data  # Should be a new instance
 
-    def test_compute_components_logic(self, analyzer, mock_model) -> None:
+    def test_compute_components_logic(self, analyzer, mock_model, mock_pin) -> None:
         """Test compute_components logical flow."""
         q = np.array([0.0, 0.0])
         v = np.array([0.1, 0.2])
@@ -100,7 +124,7 @@ class TestPinocchioInducedAcceleration:
         # Verify calls were made
         assert mock_pin.aba.call_count == 3
 
-    def test_compute_specific_control(self, analyzer, mock_model) -> None:
+    def test_compute_specific_control(self, analyzer, mock_model, mock_pin) -> None:
         """Test compute_specific_control."""
         q = np.zeros(2)
         specific_tau = np.array([5.0, 5.0])
@@ -123,7 +147,7 @@ class TestPinocchioInducedAcceleration:
         np.testing.assert_allclose(result, [5.0, 5.0])
         assert mock_pin.aba.call_count == 2
 
-    def test_compute_counterfactuals(self, analyzer, mock_model) -> None:
+    def test_compute_counterfactuals(self, analyzer, mock_model, mock_pin) -> None:
         """Test compute_counterfactuals."""
         q = np.zeros(2)
         v = np.zeros(2)

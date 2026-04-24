@@ -19,6 +19,8 @@ import pytest
 
 from src.shared.python.core.constants import GRAVITY_M_S2
 
+pytestmark = pytest.mark.integration
+
 # Contact test constants
 BOUNCE_HEIGHT_THRESHOLD_M = 0.001  # Minimum height (1mm) to consider a bounce occurred
 
@@ -33,7 +35,7 @@ def _skip_if_mujoco_state_unavailable(engine) -> None:
 
 
 @pytest.fixture(scope="module")
-def ball_urdf(tmp_path_factory):
+def ball_urdf(tmp_path_factory: pytest.TempPathFactory) -> str:
     """Create a simple ball URDF for contact testing."""
     # Golf ball: mass = 0.045kg, radius = 0.02135m
     urdf_content = """<?xml version="1.0"?>
@@ -76,7 +78,7 @@ def ball_urdf(tmp_path_factory):
 class TestBasicContactPhysics:
     """Test fundamental contact behavior across all engines."""
 
-    def test_mujoco_ball_drop_energy_dissipation(self, ball_urdf):
+    def test_mujoco_ball_drop_energy_dissipation(self, ball_urdf) -> None:
         """Verify MuJoCo contact dissipates energy (ball doesn't bounce forever)."""
         try:
             from src.engines.physics_engines.mujoco.python.mujoco_humanoid_golf.physics_engine import (
@@ -131,20 +133,63 @@ class TestBasicContactPhysics:
         np.sqrt(E_final / E_initial)
 
     @pytest.mark.slow
-    def test_drake_ball_drop_energy_dissipation(self, ball_urdf):
-        """Verify Drake contact dissipates energy."""
-        pytest.skip("Drake contact model testing - implementation pending")
-        # Expected behavior: Similar to MuJoCo but may use different contact model
+    def test_drake_ball_drop_energy_dissipation(self, ball_urdf) -> None:
+        """Verify Drake contact dissipates energy (ball doesn't bounce forever)."""
+        try:
+            from src.engines.physics_engines.drake.python.drake_physics_engine import (
+                DrakePhysicsEngine,
+            )
+        except ImportError:
+            pytest.skip("Drake not installed")
+
+        engine = DrakePhysicsEngine()
+        try:
+            engine.load_from_path(ball_urdf)
+        except Exception as e:  # noqa: BLE001
+            pytest.skip(f"Drake URDF loading failed: {e}")
+
+        # Drop ball from 1m height
+        initial_height = 1.0
+        # State: [x, y, z, qw, qx, qy, qz]
+        q_init = np.array([0, 0, initial_height, 1, 0, 0, 0])
+        v_init = np.zeros(6)  # Zero velocity
+        engine.set_state(q_init, v_init)
+
+        # Simulate for 1.5s at 1ms steps to capture ball drop and bounces
+        # Free-fall time from 1m: t = sqrt(2*1.0/9.81) ≈ 0.45s
+        dt = 0.001
+        num_steps = int(1.5 / dt)
+        for _ in range(num_steps):
+            engine.step(dt=dt)
+
+        q_final, _ = engine.get_state()
+        final_height = q_final[2]
+
+        # Check that contact dissipates energy: final height << initial height
+        # After 1.5s, ball should have settled significantly (multiple bounces)
+        if final_height > BOUNCE_HEIGHT_THRESHOLD_M:  # Still bouncing
+            # Energy dissipation: measure bounce height decline
+            energy_ratio = final_height / initial_height
+            # Drake's contact should dissipate energy (e.g., e ≈ 0.6-0.8 per bounce)
+            assert energy_ratio < 0.9, (
+                f"Drake contact should dissipate energy after {num_steps} steps; "
+                f"final height {final_height:.6f} too close to initial {initial_height}"
+            )
+        else:
+            # Ball settled to ground - contact dissipation working
+            assert final_height < BOUNCE_HEIGHT_THRESHOLD_M
 
     @pytest.mark.slow
-    def test_pinocchio_contact_behavior(self, ball_urdf):
-        """Document Pinocchio contact behavior."""
+    def test_pinocchio_contact_behavior(self, ball_urdf) -> None:
+        """Verify Pinocchio properly declares contact force unsupport via Capability."""
         try:
             from src.engines.physics_engines.pinocchio.python.pinocchio_physics_engine import (
                 PinocchioPhysicsEngine,
             )
         except ImportError:
             pytest.skip("Pinocchio not installed")
+
+        from src.shared.python.engine_core.capabilities import Capability
 
         engine = PinocchioPhysicsEngine()
         try:
@@ -153,14 +198,17 @@ class TestBasicContactPhysics:
         except Exception as e:  # noqa: BLE001
             pytest.skip(f"Pinocchio URDF loading failed/broken: {e}")
 
-        # Ensure DbC logic works and it doesn't crash on contact calculation
-        contact_forces = engine.compute_contact_forces()
-        assert isinstance(contact_forces, np.ndarray), "Should return a numpy array"
-        assert contact_forces.shape == (3,), "Should return a 3-element force vector"
-        # Since it's a known limitation in ABA without constraint solver, we expect 0 natively
-        assert np.all(contact_forces == 0), (
-            "Currently expects zero forces without constraint solver"
+        # Verify contract (issue #3052): CONTACT_FORCES not in capabilities
+        caps = engine.capabilities()
+        assert Capability.CONTACT_FORCES not in caps, (
+            "Pinocchio declares CONTACT_FORCES despite not supporting it"
         )
+
+        # Verify NotImplementedError is raised when caller ignores capability check
+        with pytest.raises(
+            NotImplementedError, match="does not support compute_contact_forces"
+        ):
+            engine.compute_contact_forces()
 
 
 class TestCrossEngineContactComparison:
@@ -171,7 +219,7 @@ class TestCrossEngineContactComparison:
         [0.1, 0.5, 1.0, 2.0],
         ids=["10cm", "50cm", "1m", "2m"],
     )
-    def test_mujoco_restitution_coefficient(self, ball_urdf, drop_height):
+    def test_mujoco_restitution_coefficient(self, ball_urdf, drop_height) -> None:
         """Measure MuJoCo's effective coefficient of restitution at various heights."""
         try:
             from src.engines.physics_engines.mujoco.python.mujoco_humanoid_golf.physics_engine import (
@@ -222,7 +270,7 @@ class TestCrossEngineContactComparison:
 class TestContactModelDocumentation:
     """Document expected differences between engine contact models."""
 
-    def test_document_mujoco_contact_model(self):
+    def test_document_mujoco_contact_model(self) -> None:
         """Document MuJoCo's contact physics approach."""
         documentation = """
         MuJoCo Contact Model:
@@ -242,7 +290,7 @@ class TestContactModelDocumentation:
         # This is a documentation test - always passes
         assert True, documentation
 
-    def test_document_drake_contact_model(self):
+    def test_document_drake_contact_model(self) -> None:
         """Document Drake's contact physics approach."""
         documentation = """
         Drake Contact Model:
@@ -260,7 +308,7 @@ class TestContactModelDocumentation:
         """
         assert True, documentation
 
-    def test_document_pinocchio_contact_model(self):
+    def test_document_pinocchio_contact_model(self) -> None:
         """Document Pinocchio's contact physics approach."""
         documentation = """
         Pinocchio Contact Model:
@@ -281,7 +329,7 @@ class TestContactModelDocumentation:
 class TestContactEnergyConservation:
     """Test energy conservation properties with contact."""
 
-    def test_mujoco_elastic_collision_energy(self, ball_urdf):
+    def test_mujoco_elastic_collision_energy(self, ball_urdf) -> None:
         """Verify (near) energy conservation for elastic collisions in MuJoCo.
 
         With high restitution coefficient, energy should be mostly conserved.
@@ -289,7 +337,7 @@ class TestContactEnergyConservation:
         pytest.skip("Elastic collision test - requires custom contact parameters")
         # Verify E_before ≈ E_after (within tolerance)
 
-    def test_contact_work_energy_theorem(self):
+    def test_contact_work_energy_theorem(self) -> None:
         """Verify work-energy theorem holds during contact."""
         pytest.skip("Work-energy validation - requires contact force measurement")
         # Verify: ΔKE = W_contact + W_gravity
@@ -298,7 +346,7 @@ class TestContactEnergyConservation:
 class TestContactStability:
     """Test numerical stability of contact simulations."""
 
-    def test_mujoco_stacked_boxes_stability(self):
+    def test_mujoco_stacked_boxes_stability(self) -> None:
         """Verify stacked objects don't explode due to contact errors."""
         pytest.skip("Stability test - requires multi-body contact URDF")
         # Simulate for extended time
@@ -309,13 +357,13 @@ class TestContactStability:
 class TestContactCrossValidation:
     """Cross-validate contact results between engines (where comparable)."""
 
-    def test_compare_energy_dissipation_rates(self, ball_urdf):
+    def test_compare_energy_dissipation_rates(self, ball_urdf) -> None:
         """Compare energy dissipation across engines for same scenario."""
         pytest.skip("Cross-engine comparison - requires all engines installed")
         # Document differences in energy dissipation
         # Ensure differences are within expected range (not catastrophic)
 
-    def test_compare_contact_force_magnitudes(self):
+    def test_compare_contact_force_magnitudes(self) -> None:
         """Compare contact force magnitudes across engines."""
         pytest.skip("Force comparison - requires contact force extraction")
         # Compare across engines

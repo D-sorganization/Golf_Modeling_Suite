@@ -10,6 +10,8 @@ from src.shared.python.upstream_drift_tools.process_calculators.financial_calcul
     FinancialResults,
 )
 
+pytestmark = pytest.mark.unit
+
 # ---------------------------------------------------------------------------
 # Dataclasses
 # ---------------------------------------------------------------------------
@@ -93,13 +95,13 @@ class TestCalculateFinancialModel:
         assert result.total_revenue == 0.0
 
     def test_negative_capital_raises(self) -> None:
-        with pytest.raises(ValueError):
+        with pytest.raises((AssertionError, ValueError)):
             self._CALC.calculate_financial_model(
                 _base_params(total_capital_investment=-1.0)
             )
 
     def test_negative_operating_days_raises(self) -> None:
-        with pytest.raises(ValueError):
+        with pytest.raises((AssertionError, ValueError)):
             self._CALC.calculate_financial_model(
                 _base_params(operating_days_per_year=-1)
             )

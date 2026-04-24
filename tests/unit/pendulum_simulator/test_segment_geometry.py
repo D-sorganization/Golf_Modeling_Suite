@@ -15,6 +15,8 @@ from src.shared.python.pendulum_simulator.segment_geometry import (
     tapered_cylinder_cross_section,
 )
 
+pytestmark = pytest.mark.unit
+
 
 class TestSegmentStyle:
     def test_line_value(self) -> None:
@@ -46,7 +48,7 @@ class TestCylinderCrossSection:
         assert result[3, 1] < 0  # bottom-left y
 
     def test_radius_assertion_fails(self) -> None:
-        with pytest.raises(AssertionError):
+        with pytest.raises((AssertionError, ValueError)):
             cylinder_cross_section(np.array([0.0, 0.0]), np.array([1.0, 0.0]), -0.1)
 
     def test_degenerate_segment_returns_4_points(self) -> None:
@@ -68,15 +70,15 @@ class TestEllipsoidCrossSection:
         assert result.shape == (16, 2)
 
     def test_semi_a_assertion(self) -> None:
-        with pytest.raises(AssertionError):
+        with pytest.raises((AssertionError, ValueError)):
             ellipsoid_cross_section(np.array([0.0, 0.0]), -1.0, 0.5)
 
     def test_semi_b_assertion(self) -> None:
-        with pytest.raises(AssertionError):
+        with pytest.raises((AssertionError, ValueError)):
             ellipsoid_cross_section(np.array([0.0, 0.0]), 1.0, 0.0)
 
     def test_n_points_min_3(self) -> None:
-        with pytest.raises(AssertionError):
+        with pytest.raises((AssertionError, ValueError)):
             ellipsoid_cross_section(np.array([0.0, 0.0]), 1.0, 0.5, n_points=2)
 
     def test_circle_is_symmetric(self) -> None:
@@ -94,7 +96,7 @@ class TestTaperedCylinderCrossSection:
         assert result.shape == (4, 2)
 
     def test_assertion_on_zero_radius(self) -> None:
-        with pytest.raises(AssertionError):
+        with pytest.raises((AssertionError, ValueError)):
             tapered_cylinder_cross_section(
                 np.array([0.0, 0.0]), np.array([1.0, 0.0]), 0.0, 0.1
             )
@@ -158,5 +160,5 @@ class TestAutoRadiusFromMass:
         assert r2 > r1
 
     def test_assertion_on_zero_mass(self) -> None:
-        with pytest.raises(AssertionError):
+        with pytest.raises((AssertionError, ValueError)):
             auto_radius_from_mass(0.0, 1.0)

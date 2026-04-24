@@ -51,6 +51,7 @@ class WBCConfig:
     acceleration_limits: NDArray[np.float64] | None = None
     contact_force_regularization: float = 1e-4
     use_hierarchical: bool = True
+    nullspace_damping: float = 1e-3
 
 
 @dataclass
@@ -193,7 +194,9 @@ class WholeBodyController:
         Returns:
             True if task was removed, False if not found.
         """
-        if name is None:
+        if not (name is not None):
+            raise ValueError("name must be provided")
+        if not (name is not None):
             raise ValueError("name must be provided")
         for i, task in enumerate(self._tasks):
             if task.name == name:
@@ -214,7 +217,9 @@ class WholeBodyController:
         Returns:
             Task if found, None otherwise.
         """
-        if name is None:
+        if not (name is not None):
+            raise ValueError("name must be provided")
+        if not (name is not None):
             raise ValueError("name must be provided")
         for task in self._tasks:
             if task.name == name:
@@ -300,7 +305,9 @@ class WholeBodyController:
         Returns:
             WBCSolution from weighted QP.
         """
-        if n_v is None:
+        if not (n_v is not None):
+            raise ValueError("n_v must be provided")
+        if not (n_v is not None):
             raise ValueError("n_v must be provided")
         n_vars = n_v + n_contact_vars
 
@@ -316,17 +323,12 @@ class WholeBodyController:
             target = task.target  # Desired task-space acceleration
             W = task.get_weight_matrix()  # Diagonal weight matrix
 
-            # Task dimension
-            J.shape[0]
-
-            # Ensure dimensions match
             if J.shape[1] != n_v:
-                continue
+                raise ValueError(
+                    f"Task '{task.name}': Jacobian column width {J.shape[1]} != n_v {n_v}."
+                    " Update the task Jacobian to match the current model DOF count."
+                )
 
-            # Cost: ||J @ qdd - target||^2_W = (J @ qdd - target)^T @ W @ (J @ qdd - target)
-            # Expanded: qdd^T @ J^T @ W @ J @ qdd - 2 * target^T @ W @ J @ qdd + const
-            # H contribution: J^T @ W @ J
-            # g contribution: -J^T @ W @ target
             H[:n_v, :n_v] += J.T @ W @ J
             g[:n_v] += -J.T @ W @ target
 
@@ -388,7 +390,9 @@ class WholeBodyController:
         Returns:
             WBCSolution from hierarchical solve.
         """
-        if n_v is None:
+        if not (n_v is not None):
+            raise ValueError("n_v must be provided")
+        if not (n_v is not None):
             raise ValueError("n_v must be provided")
         priority_groups = self._group_tasks_by_priority()
 
@@ -399,7 +403,7 @@ class WholeBodyController:
         accumulated_A: list[NDArray[np.float64]] = []
         x_solution = np.zeros(n_vars)
 
-        for _priority, tasks in sorted(priority_groups.items(), reverse=True):
+        for priority, tasks in sorted(priority_groups.items(), reverse=True):
             H, g, accumulated_A = self._build_priority_level_cost(
                 tasks, n_v, n_vars, accumulated_A
             )
@@ -408,19 +412,30 @@ class WholeBodyController:
             problem = self._build_level_qp(H, g, n_v, n_contact_vars, M, nle, qd)
             qp_solution = self._solver.solve(problem)
 
-            if qp_solution.success and qp_solution.x is not None:
-                x_solution = qp_solution.x  # type: ignore[assignment]
+            if not qp_solution.success or qp_solution.x is None:
+                import logging
+
+                logging.getLogger(__name__).warning(
+                    "HQP infeasible at priority %d: %s", priority, qp_solution.status
+                )
+                return WBCSolution(
+                    success=False,
+                    status=f"HQP infeasible at priority {priority}: {qp_solution.status}",
+                )
+            x_solution = qp_solution.x  # type: ignore[assignment]
 
         return self._extract_solution_from_x(x_solution, n_v, n_contact_vars, M, nle)
 
     def _build_priority_level_cost(
         self,
-        tasks: list,
+        tasks: list[Task],
         n_v: int,
         n_vars: int,
-        accumulated_A: list[np.ndarray],
-    ) -> tuple[np.ndarray, np.ndarray, list[np.ndarray]]:
-        if tasks is None:
+        accumulated_A: list[NDArray],
+    ) -> tuple[NDArray, NDArray, list]:
+        if not (tasks is not None):
+            raise ValueError("tasks must be provided")
+        if not (tasks is not None):
             raise ValueError("tasks must be provided")
         H = np.zeros((n_vars, n_vars))
         g = np.zeros(n_vars)
@@ -431,7 +446,10 @@ class WholeBodyController:
 
             J = task.jacobian
             if J.shape[1] != n_v:
-                continue
+                raise ValueError(
+                    f"Task '{task.name}': Jacobian column width {J.shape[1]} != n_v {n_v}."
+                    " Update the task Jacobian to match the current model DOF count."
+                )
 
             J_full = np.zeros((J.shape[0], n_vars))
             J_full[:, :n_v] = J
@@ -451,9 +469,7 @@ class WholeBodyController:
 
         return H, g, accumulated_A
 
-    def _apply_regularization(
-        self, H: np.ndarray, n_v: int, n_contact_vars: int
-    ) -> None:
+    def _apply_regularization(self, H: NDArray, n_v: int, n_contact_vars: int) -> None:
         H[:n_v, :n_v] += self._config.regularization * np.eye(n_v)
         if n_contact_vars > 0:
             H[n_v:, n_v:] += self._config.contact_force_regularization * np.eye(
@@ -462,15 +478,17 @@ class WholeBodyController:
 
     def _build_level_qp(
         self,
-        H: np.ndarray,
-        g: np.ndarray,
+        H: NDArray,
+        g: NDArray,
         n_v: int,
         n_contact_vars: int,
-        M: np.ndarray,
-        nle: np.ndarray,
-        qd: np.ndarray,
+        M: NDArray,
+        nle: NDArray,
+        qd: NDArray,
     ) -> QPProblem:
-        if H is None:
+        if not (H is not None):
+            raise ValueError("H must be provided")
+        if not (H is not None):
             raise ValueError("H must be provided")
         A_eq, b_eq = self._build_dynamics_constraint(n_v, n_contact_vars, M, nle)
         A_ineq, lb_ineq, ub_ineq = self._build_inequality_constraints(
@@ -512,7 +530,9 @@ class WholeBodyController:
         Returns:
             Tuple of (A_eq, b_eq) or (None, None) if no constraint.
         """
-        if n_v is None:
+        if not (n_v is not None):
+            raise ValueError("n_v must be provided")
+        if not (n_v is not None):
             raise ValueError("n_v must be provided")
         if not self._contact_jacobians:
             # No contacts - no dynamics constraint in QP
@@ -559,7 +579,9 @@ class WholeBodyController:
         Returns:
             Tuple of (A_ineq, lb_ineq, ub_ineq) or (None, None, None).
         """
-        if n_v is None:
+        if not (n_v is not None):
+            raise ValueError("n_v must be provided")
+        if not (n_v is not None):
             raise ValueError("n_v must be provided")
         constraints_A: list[NDArray[np.float64]] = []
         constraints_lb: list[NDArray[np.float64]] = []
@@ -615,7 +637,9 @@ class WholeBodyController:
         Returns:
             Tuple of (x_lb, x_ub) or (None, None).
         """
-        if n_v is None:
+        if not (n_v is not None):
+            raise ValueError("n_v must be provided")
+        if not (n_v is not None):
             raise ValueError("n_v must be provided")
         n_vars = n_v + n_contact_vars
 
@@ -628,12 +652,18 @@ class WholeBodyController:
             x_lb[:n_v] = -lim
             x_ub[:n_v] = lim
 
-        # Velocity limits translated to acceleration
+        # Velocity limits translated to acceleration.
+        # Clamp so lb <= ub even when qd is outside [-v_lim, v_lim] (e.g. after
+        # velocity reversal), which would otherwise produce inverted bounds.
         if self._config.velocity_limits is not None:
             dt = self._config.dt
             v_lim = self._config.velocity_limits
             qdd_lb_from_v = (-v_lim - qd) / dt
             qdd_ub_from_v = (v_lim - qd) / dt
+            qdd_lb_from_v, qdd_ub_from_v = (
+                np.minimum(qdd_lb_from_v, qdd_ub_from_v),
+                np.maximum(qdd_lb_from_v, qdd_ub_from_v),
+            )
             x_lb[:n_v] = np.maximum(x_lb[:n_v], qdd_lb_from_v)
             x_ub[:n_v] = np.minimum(x_ub[:n_v], qdd_ub_from_v)
 
@@ -665,7 +695,9 @@ class WholeBodyController:
         Returns:
             WBCSolution.
         """
-        if qp_solution is None:
+        if not (qp_solution is not None):
+            raise ValueError("qp_solution must be provided")
+        if not (qp_solution is not None):
             raise ValueError("qp_solution must be provided")
         if not qp_solution.success or qp_solution.x is None:
             return WBCSolution(
@@ -695,7 +727,9 @@ class WholeBodyController:
         Returns:
             WBCSolution.
         """
-        if x is None:
+        if not (x is not None):
+            raise ValueError("x must be provided")
+        if not (x is not None):
             raise ValueError("x must be provided")
         qdd = x[:n_v]
 
@@ -705,6 +739,8 @@ class WholeBodyController:
 
         # Compute torques: tau = M @ qdd + nle - J_c^T @ f_c
         tau = M @ qdd + nle
+        if self._config.torque_limits is not None:
+            tau = np.clip(tau, -self._config.torque_limits, self._config.torque_limits)
         if contact_forces is not None and self._contact_jacobians:
             for i, J_c in enumerate(self._contact_jacobians):
                 if J_c.shape[0] == 6:
@@ -740,7 +776,9 @@ class WholeBodyController:
         Returns:
             Dictionary mapping task name to weighted error.
         """
-        if qdd is None:
+        if not (qdd is not None):
+            raise ValueError("qdd must be provided")
+        if not (qdd is not None):
             raise ValueError("qdd must be provided")
         errors: dict[str, float] = {}
 
@@ -788,7 +826,9 @@ class WholeBodyController:
         A: NDArray[np.float64],
         n: int,
     ) -> NDArray[np.float64]:
-        """Compute nullspace projector N = I - pinv(A) @ A.
+        """Compute nullspace projector N = I - A^T (A A^T + λ²I)^{-1} A.
+
+        Uses damped least-squares to avoid numerical blow-up near singularities.
 
         Args:
             A: Constraint matrix.
@@ -799,5 +839,8 @@ class WholeBodyController:
         """
         if A is None:
             raise ValueError("A must be provided")
-        A_pinv = np.linalg.pinv(A)
-        return np.eye(n) - A_pinv @ A
+        lam = self._config.nullspace_damping
+        m = A.shape[0]
+        # Damped pseudo-inverse: A^+ = A^T (A A^T + λ²I)^{-1}
+        A_pinv_damped = A.T @ np.linalg.inv(A @ A.T + lam**2 * np.eye(m))
+        return np.eye(n) - A_pinv_damped @ A

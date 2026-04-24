@@ -55,7 +55,9 @@ class ModuleHandler:
     def __init__(
         self, model_types: set[str], module_name: str, display_name: str
     ) -> None:
-        if model_types is None:
+        if not (model_types is not None):
+            raise ValueError("model_types must be provided")
+        if not (model_types is not None):
             raise ValueError("model_types must be provided")
         self.model_types = model_types
         self.module_name = module_name
@@ -72,9 +74,10 @@ class ModuleHandler:
         process_manager: ProcessManager,
     ) -> bool:
         """Launch the module."""
-        if repo_path is None:
+        if not (repo_path is not None):
             raise ValueError("repo_path must be provided")
-        cwd = get_model_working_directory(model, repo_path)
+        if not (repo_path is not None):
+            raise ValueError("repo_path must be provided")
         process = process_manager.launch_module(
             name=self.display_name,
             module_name=self.module_name,
@@ -98,7 +101,9 @@ class ScriptHandler:
         display_name: str,
         cwd_path: str | None = None,
     ) -> None:
-        if model_types is None:
+        if not (model_types is not None):
+            raise ValueError("model_types must be provided")
+        if not (model_types is not None):
             raise ValueError("model_types must be provided")
         self.model_types = model_types
         self._script_path = script_path
@@ -116,11 +121,12 @@ class ScriptHandler:
         process_manager: ProcessManager,
     ) -> bool:
         """Launch the script."""
-        if repo_path is None:
+        if not (repo_path is not None):
             raise ValueError("repo_path must be provided")
-        source_root = get_model_source_root(model, repo_path)
-        script_path = source_root / self._script_path
-        cwd = get_model_working_directory(model, repo_path, self._cwd_path)
+        if not (repo_path is not None):
+            raise ValueError("repo_path must be provided")
+        script_path = repo_path / self._script_path
+        cwd = repo_path / self._cwd_path if self._cwd_path else repo_path
 
         process = process_manager.launch_script(
             name=self.display_name,
@@ -166,7 +172,9 @@ class SpecialAppHandler:
             True if launch succeeded, False otherwise.
         """
         # DBC Precondition: model must have a path
-        if repo_path is None:
+        if not (repo_path is not None):
+            raise ValueError("repo_path must be provided")
+        if not (repo_path is not None):
             raise ValueError("repo_path must be provided")
         model_path = getattr(model, "path", None) or ""
         if not model_path:
@@ -222,7 +230,9 @@ class PuttingGreenHandler:
         Returns:
             True if launch succeeded, False otherwise.
         """
-        if repo_path is None:
+        if not (repo_path is not None):
+            raise ValueError("repo_path must be provided")
+        if not (repo_path is not None):
             raise ValueError("repo_path must be provided")
         model_path = getattr(model, "path", None) or ""
         if not model_path:
@@ -290,7 +300,9 @@ class _SystemFileHandler:
         process_manager: ProcessManager,
     ) -> bool:
         """Open a file with the system default application."""
-        if repo_path is None:
+        if not (repo_path is not None):
+            raise ValueError("repo_path must be provided")
+        if not (repo_path is not None):
             raise ValueError("repo_path must be provided")
         model_path = getattr(model, "path", None) or ""
         if not model_path:
@@ -424,7 +436,9 @@ class ModelHandlerRegistry:
         Returns:
             A handler that can launch the model, or None if not found.
         """
-        if model_type is None:
+        if not (model_type is not None):
+            raise ValueError("model_type must be provided")
+        if not (model_type is not None):
             raise ValueError("model_type must be provided")
         for handler in self._handlers:
             if handler.can_handle(model_type):
@@ -449,7 +463,9 @@ class ModelHandlerRegistry:
         Returns:
             True if launch succeeded, False otherwise.
         """
-        if model_type is None:
+        if not (model_type is not None):
+            raise ValueError("model_type must be provided")
+        if not (model_type is not None):
             raise ValueError("model_type must be provided")
         handler = self.get_handler(model_type)
         if handler is None:

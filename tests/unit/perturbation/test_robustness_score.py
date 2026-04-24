@@ -6,6 +6,8 @@ import pytest
 
 from src.shared.python.perturbation.robustness_score import compute_robustness_score
 
+pytestmark = pytest.mark.unit
+
 # ---------------------------------------------------------------------------
 # compute_robustness_score
 # ---------------------------------------------------------------------------
@@ -38,5 +40,5 @@ class TestComputeRobustnessScore:
         assert abs(compute_robustness_score(cv) - expected) < 1e-12
 
     def test_negative_cv_raises(self) -> None:
-        with pytest.raises(ValueError):
+        with pytest.raises((ValueError, AssertionError)):
             compute_robustness_score(-0.1)

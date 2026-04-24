@@ -3,21 +3,40 @@
 from __future__ import annotations
 
 import sys
-from unittest.mock import MagicMock
+from collections.abc import Generator
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
 
-# Mock pydrake before importing the module under test
-mock_pydrake = MagicMock()
-sys.modules["pydrake"] = mock_pydrake
-sys.modules["pydrake.all"] = mock_pydrake
+pytestmark = pytest.mark.unit
 
-# Now import the module under test
-# We use 'src' as a package anchor if possible, or relative import if path is set
-from src.engines.physics_engines.drake.python.src.induced_acceleration import (  # noqa: E402
-    DrakeInducedAccelerationAnalyzer,
-)
+_PYDRAKE_MOCKED_KEYS = ["pydrake", "pydrake.all"]
+
+
+@pytest.fixture(autouse=True)
+def _mock_pydrake() -> Generator[None, None, None]:
+    """Mock pydrake for every test in this module using patch.dict.
+
+    patch.dict auto-restores sys.modules after each test so no pollution leaks
+    to other modules.
+    """
+    mock_pydrake = MagicMock()
+    with patch.dict("sys.modules", dict.fromkeys(_PYDRAKE_MOCKED_KEYS, mock_pydrake)):
+        yield
+
+
+@pytest.fixture
+def _drake_analyzer_class():
+    """Return DrakeInducedAccelerationAnalyzer under active mocks."""
+    # Evict any cached module so it re-imports with the current sys.modules mocks.
+    mod_key = "src.engines.physics_engines.drake.python.src.induced_acceleration"
+    sys.modules.pop(mod_key, None)
+    from src.engines.physics_engines.drake.python.src.induced_acceleration import (
+        DrakeInducedAccelerationAnalyzer,
+    )
+
+    return DrakeInducedAccelerationAnalyzer
 
 
 class TestDrakeInducedAcceleration:
@@ -33,9 +52,9 @@ class TestDrakeInducedAcceleration:
         return plant
 
     @pytest.fixture
-    def analyzer(self, mock_plant) -> DrakeInducedAccelerationAnalyzer:
+    def analyzer(self, _drake_analyzer_class, mock_plant):
         """Create analyzer instance."""
-        return DrakeInducedAccelerationAnalyzer(mock_plant)
+        return _drake_analyzer_class(mock_plant)
 
     def test_initialization(self, analyzer, mock_plant) -> None:
         """Test initialization."""

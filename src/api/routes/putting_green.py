@@ -6,7 +6,7 @@ Provides REST endpoints for the putting green simulation tool page:
 - Get aim-line assist calculations
 - Scatter analysis for practice mode
 
-See issue #1206
+Backend tracked in #3166.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 from src.api.middleware.error_handler import handle_api_errors
 from src.shared.python.core.contracts import precondition
 
-router = APIRouter(prefix="/api/tools/putting-green", tags=["putting-green"])
+router = APIRouter(prefix="/tools/putting-green", tags=["putting-green"])
 
 
 # -- Request / Response Models --
@@ -128,7 +128,7 @@ class GreenContourResponse(BaseModel):
 async def simulate_putt(request: PuttSimulationRequest) -> PuttSimulationResponse:
     """Simulate a single putt with given parameters.
 
-    See issue #1206
+    Backend tracked in #3166.
     """
     from src.engines.physics_engines.putting_green.python.green_surface import (
         GreenSurface,
@@ -187,7 +187,7 @@ async def simulate_putt(request: PuttSimulationRequest) -> PuttSimulationRespons
 async def read_green(request: GreenReadingRequest) -> GreenReadingResponse:
     """Read green between ball and target positions.
 
-    See issue #1206
+    Backend tracked in #3166.
     """
     from src.engines.physics_engines.putting_green.python.green_surface import (
         GreenSurface,
@@ -234,7 +234,7 @@ async def scatter_analysis(
 ) -> ScatterAnalysisResponse:
     """Run scatter analysis with multiple putts.
 
-    See issue #1206
+    Backend tracked in #3166.
     """
     from src.engines.physics_engines.putting_green.python.green_surface import (
         GreenSurface,
@@ -304,9 +304,9 @@ async def get_green_contours(
 ) -> GreenContourResponse:
     """Get green elevation contour data for 2D visualization.
 
-    See issue #1206
+    Backend tracked in #3166.
     """
-    if width is None:
+    if not (width is not None):
         raise ValueError("width must be provided")
     from src.engines.physics_engines.putting_green.python.green_surface import (
         GreenSurface,

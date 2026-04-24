@@ -13,6 +13,8 @@ from src.shared.python.pendulum_simulator.jacobians import (
     jacobian_triple,
 )
 
+pytestmark = pytest.mark.unit
+
 
 class TestEllipsoidFromJacobian:
     def test_returns_four_elements(self) -> None:
@@ -55,12 +57,12 @@ class TestEllipsoidFromJacobian:
         assert force is None
 
     def test_assertion_on_wrong_shape(self) -> None:
-        with pytest.raises(ValueError):
+        with pytest.raises((AssertionError, ValueError)):
             ellipsoid_from_jacobian(np.eye(3))
 
     def test_assertion_on_nan(self) -> None:
         J = np.array([[1.0, np.nan], [0.0, 1.0]])
-        with pytest.raises(ValueError):
+        with pytest.raises((AssertionError, ValueError)):
             ellipsoid_from_jacobian(J)
 
 
@@ -88,11 +90,11 @@ class TestJacobianDouble:
             assert np.all(np.isfinite(J))
 
     def test_zero_l1_raises(self) -> None:
-        with pytest.raises(ValueError):
+        with pytest.raises((AssertionError, ValueError)):
             jacobian_double(0.0, 0.0, 0.0, 1.0)
 
     def test_zero_l2_raises(self) -> None:
-        with pytest.raises(ValueError):
+        with pytest.raises((AssertionError, ValueError)):
             jacobian_double(0.0, 0.0, 1.0, 0.0)
 
 

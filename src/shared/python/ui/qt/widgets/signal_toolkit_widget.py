@@ -150,7 +150,9 @@ if HAS_MATPLOTLIB and HAS_PYQT:
             dpi: int = 100,
         ) -> None:
             """Initialize the canvas."""
-            if width is None:
+            if not (width is not None):
+                raise ValueError("width must be provided")
+            if not (width is not None):
                 raise ValueError("width must be provided")
             self.fig = Figure(figsize=(width, height), dpi=dpi)
             self.axes = self.fig.add_subplot(111)

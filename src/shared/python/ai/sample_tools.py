@@ -37,7 +37,7 @@ def _get_education_system() -> EducationSystem:
         _education_holder["instance"] = EducationSystem()
 
     system = _education_holder["instance"]
-    if system is None:  # Ensure it is not None for mypy
+    if not (system is not None):  # Ensure it is not None for mypy
         raise ValueError("DbC Blocked: Precondition failed.")
     return system
 
@@ -92,7 +92,7 @@ def _register_list_sample_files_tool(registry: ToolRegistry) -> None:
         }
 
 
-def _register_load_c3d_tool(registry: ToolRegistry):
+def _register_load_c3d_tool(registry: ToolRegistry) -> None:  # type: ignore[return]
     @registry.register(
         name="load_c3d",
         description=(
@@ -153,10 +153,10 @@ def _register_load_c3d_tool(registry: ToolRegistry):
         except ImportError as e:
             return {"success": False, "error": f"Failed to load C3D: {e}"}
 
-    return load_c3d
+    return load_c3d  # type: ignore[return-value]
 
 
-def _register_marker_info_tool(registry: ToolRegistry, load_c3d_fn) -> None:
+def _register_marker_info_tool(registry: ToolRegistry, load_c3d_fn: Any) -> None:
     @registry.register(
         name="get_marker_info",
         description=(
@@ -228,7 +228,7 @@ def _register_marker_info_tool(registry: ToolRegistry, load_c3d_fn) -> None:
 def _register_data_tools(registry: ToolRegistry) -> None:
     """Register data loading and management tools."""
     _register_list_sample_files_tool(registry)
-    load_c3d_fn = _register_load_c3d_tool(registry)
+    load_c3d_fn = _register_load_c3d_tool(registry)  # type: ignore[func-returns-value]
     _register_marker_info_tool(registry, load_c3d_fn)
 
 
@@ -256,7 +256,9 @@ def _register_inverse_dynamics_tool(registry: ToolRegistry) -> None:
         Returns:
             Simulation results summary.
         """
-        if file_path is None:
+        if not (file_path is not None):
+            raise ValueError("file_path must be provided")
+        if not (file_path is not None):
             raise ValueError("file_path must be provided")
         valid_engines = ["mujoco", "drake", "pinocchio"]
         if engine.lower() not in valid_engines:
@@ -265,22 +267,10 @@ def _register_inverse_dynamics_tool(registry: ToolRegistry) -> None:
                 "error": f"Invalid engine. Choose from: {valid_engines}",
             }
 
-        # This implementation requires integration with the physics engines.
-        # 1. Load the C3D data
-        # 2. Create/load the model
-        # 3. Run inverse dynamics
-        # 4. Return results
-
         return {
-            "success": True,
-            "status": "simulation_pending",
-            "engine": engine,
-            "file": file_path,
-            "message": (
-                f"Inverse dynamics simulation queued using {engine}. "
-                "This would normally take 30-60 seconds for a typical swing."
-            ),
-            "note": ("Implementation requires physics engine integration."),
+            "success": False,
+            "error": "not implemented",
+            "issue": "#3163",
         }
 
 
@@ -310,7 +300,9 @@ def _register_interpret_torques_tool(registry: ToolRegistry) -> None:
             Interpretation of torque values.
         """
         # Typical ranges for golf swing (approximate)
-        if shoulder_torque is None:
+        if not (shoulder_torque is not None):
+            raise ValueError("shoulder_torque must be provided")
+        if not (shoulder_torque is not None):
             raise ValueError("shoulder_torque must be provided")
         ranges = {
             "shoulder": {"low": 40, "typical": 80, "high": 150, "unit": "N·m"},
@@ -320,7 +312,9 @@ def _register_interpret_torques_tool(registry: ToolRegistry) -> None:
 
         def classify(value: float, range_info: dict[str, Any]) -> str:
             """Classify a torque value relative to its typical range."""
-            if value is None:
+            if not (value is not None):
+                raise ValueError("value must be provided")
+            if not (value is not None):
                 raise ValueError("value must be provided")
             if value < range_info["low"]:
                 return "Below typical"
@@ -380,7 +374,9 @@ def _register_explain_concept_tool(registry: ToolRegistry) -> None:
         Returns:
             Explanation at appropriate level.
         """
-        if term is None:
+        if not (term is not None):
+            raise ValueError("term must be provided")
+        if not (term is not None):
             raise ValueError("term must be provided")
         edu = _get_education_system()
 
@@ -511,17 +507,10 @@ def _register_cross_engine_validation_tool(registry: ToolRegistry) -> None:
         Returns:
             Validation results.
         """
-        # Placeholder for actual cross-engine validation
         return {
-            "status": "validation_pending",
-            "file": file_path,
-            "engines": ["mujoco", "drake", "pinocchio"],
-            "tolerance": tolerance,
-            "message": (
-                "Cross-engine validation queued. This compares results from "
-                "multiple physics engines to ensure accuracy."
-            ),
-            "note": "Placeholder - requires full physics engine integration.",
+            "success": False,
+            "error": "not implemented",
+            "issue": "#3163",
         }
 
 
@@ -545,13 +534,9 @@ def _register_energy_conservation_tool(registry: ToolRegistry) -> None:
             Energy conservation check results.
         """
         return {
-            "status": "check_pending",
-            "tolerance": tolerance,
-            "message": (
-                "Energy conservation check queued. This verifies that total "
-                "mechanical energy is properly accounted for throughout the motion."
-            ),
-            "note": "Placeholder - requires simulation data.",
+            "success": False,
+            "error": "not implemented",
+            "issue": "#3163",
         }
 
 

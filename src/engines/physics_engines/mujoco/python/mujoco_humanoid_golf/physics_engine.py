@@ -109,23 +109,60 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             raise
 
     def load_from_path(self, path: str) -> None:
-        """Load model from file path."""
+        """Load model from file path.
+
+        Parameters
+        ----------
+        path : str
+            Path to the MuJoCo XML model file.
+
+        Raises
+        ------
+        FileNotFoundError
+            If the specified file does not exist.
+        ValueError
+            If the path is outside allowed directories or file format is invalid.
+        """
         try:
             # Security: Validate path is within allowed directories
             # Hardening against path traversal (F-004)
             resolved = validate_path(path, ALLOWED_MODEL_DIRS, strict=True)
             path_str = str(resolved)
 
+            # Check if file exists before attempting to parse
+            if not Path(path_str).exists():
+                raise FileNotFoundError(
+                    f"Model file not found: {path}\n"
+                    f"Expected path: {Path(path_str).resolve()}\n"
+                    f"Supported format: .xml (MuJoCo model files)\n"
+                    f"Allowed directories:\n"
+                    + "\n".join(f"  - {d}" for d in ALLOWED_MODEL_DIRS)
+                )
+
             self.model = mujoco.MjModel.from_xml_path(path_str)
             self.data = mujoco.MjData(self.model)
             self.xml_path = path_str
-        except (RuntimeError, TypeError, ValueError) as e:
-            logger.error("Failed to load model from path %s: %s", path, e)
+            logger.info("Successfully loaded MuJoCo model from: %s", path_str)
+        except FileNotFoundError:
             raise
+        except (RuntimeError, TypeError, ValueError) as e:
+            error_msg = (
+                f"Failed to load MuJoCo model from: {path}\n"
+                f"Error: {e}\n"
+                f"Possible causes:\n"
+                f"  - Invalid XML syntax or format\n"
+                f"  - Missing mesh files referenced in the model\n"
+                f"  - Incompatible MuJoCo model version\n"
+                f"Check the file at: {Path(path).resolve()}"
+            )
+            logger.error(error_msg)
+            raise ValueError(error_msg) from e
 
     def set_model_data(self, model: mujoco.MjModel, data: mujoco.MjData) -> None:
         """Set model and data manually (e.g. from async loader)."""
-        if model is None:
+        if not (model is not None):
+            raise ValueError("model must be provided")
+        if not (model is not None):
             raise ValueError("model must be provided")
         self.model = model
         self.data = data
@@ -337,7 +374,9 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         Returns:
             q_ddot_control: Control acceleration vector (nv,) [rad/s² or m/s²]
         """
-        if tau is None:
+        if not (tau is not None):
+            raise ValueError("tau must be provided")
+        if not (tau is not None):
             raise ValueError("tau must be provided")
         if self.model is None or self.data is None:
             return np.array([])
@@ -380,7 +419,9 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
 
     def compute_jacobian(self, body_name: str) -> dict[str, np.ndarray] | None:
         """Compute spatial Jacobian for a specific body."""
-        if body_name is None:
+        if not (body_name is not None):
+            raise ValueError("body_name must be provided")
+        if not (body_name is not None):
             raise ValueError("body_name must be provided")
         if self.model is None or self.data is None:
             return None
@@ -423,14 +464,19 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             # frame rows: normal, tangent1, tangent2
             contact_frame = self.data.contact[i].frame.reshape(3, 3)
 
-            # Force exerted BY geom2 ON geom1
+            # mj_contactForce returns force exerted BY geom2 ON geom1.
+            # Contact ordering is not fixed: either geom may be the foot.
+            # If geom1 is the dynamic body (non-world), the force is the GRF (+).
+            # If geom1 is the world body (ground), the force is reaction on ground;
+            # negate to get GRF on the dynamic body (-).
             f_local = c_force[:3]
             f_world = contact_frame.T @ f_local
 
-            # MuJoCo reports the contact force exerted by geom2 on geom1.
-            # For foot-ground contacts where the foot is geom1, this is already
-            # the upward ground reaction force acting on the modeled body.
-            total_force += f_world
+            geom1_body = self.model.geom_bodyid[self.data.contact[i].geom1]
+            if geom1_body == 0:  # geom1 is ground: force direction is reversed
+                total_force -= f_world
+            else:
+                total_force += f_world
 
         return total_force
 
@@ -474,7 +520,9 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         Returns:
             q̈_ZTCF: Acceleration under zero applied torque (n_v,) [rad/s² or m/s²]
         """
-        if q is None:
+        if not (q is not None):
+            raise ValueError("q must be provided")
+        if not (q is not None):
             raise ValueError("q must be provided")
         if self.model is None or self.data is None:
             return np.array([])
@@ -527,7 +575,9 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         Returns:
             q̈_ZVCF: Acceleration with v=0 (n_v,) [rad/s² or m/s²]
         """
-        if q is None:
+        if not (q is not None):
+            raise ValueError("q must be provided")
+        if not (q is not None):
             raise ValueError("q must be provided")
         if self.model is None or self.data is None:
             return np.array([])
@@ -580,7 +630,9 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             True if successfully configured.
         """
         # Store shaft configuration
-        if length is None:
+        if not (length is not None):
+            raise ValueError("length must be provided")
+        if not (length is not None):
             raise ValueError("length must be provided")
         self._shaft_config = {
             "length": length,
@@ -635,7 +687,9 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             Tuple of (frequencies [Hz], mode_shapes (n_modes, n_stations))
         """
         # Use average properties for simple analytical solution
-        if length is None:
+        if not (length is not None):
+            raise ValueError("length must be provided")
+        if not (length is not None):
             raise ValueError("length must be provided")
         EI_avg = np.mean(EI_profile)
         mu_avg = np.mean(mass_profile)  # Linear mass density [kg/m]

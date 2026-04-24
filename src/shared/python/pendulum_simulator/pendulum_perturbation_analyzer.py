@@ -1,7 +1,3 @@
-# ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.
-
 """Pendulum Perturbation Analyzer — reference implementation of the unified protocol.
 
 Implements ``PerturbationAnalyzer`` (from ``src.shared.python.perturbation.config``)
@@ -252,7 +248,7 @@ class PendulumPerturbationAnalyzer:
         Pre:  ``set_base_torque_profile`` has been called.
         Post: returned dict has same structure as the base profile.
         """
-        if self._base_coeffs is None:
+        if not (self._base_coeffs is not None):
             raise ValueError("Call set_base_torque_profile() before perturb_torque()")
         perturbed = _perturb_coeffs_by_mode(self._base_coeffs, config, seed)
         return {"coeffs": perturbed}
@@ -380,7 +376,7 @@ class PendulumPerturbationAnalyzer:
         Post: summary.metrics contains all MANDATORY_METRICS.
         Post: summary.robustness_score in [0.0, 1.0].
         """
-        if self._base_coeffs is None:
+        if not (self._base_coeffs is not None):
             raise ValueError("Call set_base_torque_profile() before run_batch()")
         if not (config.n_trials > 0):
             raise ValueError("DbC Blocked: Precondition failed.")
@@ -522,7 +518,7 @@ class PendulumPerturbationAnalyzer:
                     if isinstance(v, np.ndarray):
                         v = float(np.linalg.norm(v))
                     values.append(float(v))
-                except Exception:  # noqa: BLE001  # noqa: BLE001
+                except Exception:  # noqa: BLE001
                     pass
             return np.array(values) if values else np.array([0.0])
 

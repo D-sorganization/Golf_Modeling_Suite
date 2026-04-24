@@ -1,15 +1,3 @@
-# Completist Report: 2026-04-16
-
-## Executive Summary
-- **Critical Gaps**: 216
-- **Feature Gaps (TRACKED_TASK)**: 1
-- **Technical Debt**: 27
-- **Documentation Gaps**: 610
-
-## Visualization
-### Status Overview
-```mermaid
-pie title Completion Status
     "Impl Gaps (Critical)" : 216
     "Feature Requests (TRACKED_TASK)" : 1
     "Technical Debt (TRACKED_DEFECT)" : 27
@@ -17,6 +5,7 @@ pie title Completion Status
 ```
 
 ### Top Impacted Modules
+
 ```mermaid
 pie title Issues by Module
     "src" : 199
@@ -27,96 +16,101 @@ pie title Issues by Module
 ```
 
 ## Critical Incomplete (Top 50)
-| File | Line | Type | Impact | Coverage | Complexity |
-|---|---|---|---|---|---|
-| `./src/api/auth/security.py` | 339 | Stub | 5 | 2 | 4 |
-| `./src/shared/python/physics/flexible_shaft.py` | 325 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/physics/flexible_shaft.py` | 329 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/physics/flexible_shaft.py` | 333 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/physics/flexible_shaft.py` | 342 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/physics/flexible_shaft.py` | 372 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/physics/flight_models.py` | 162 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/physics/flight_models.py` | 168 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/physics/flight_models.py` | 174 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/physics/flight_models.py` | 179 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/physics/impact_model/models.py` | 20 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/pendulum_simulator/gui/controls_widget_base.py` | 429 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/pendulum_simulator/gui/controls_widget_base.py` | 439 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/pendulum_simulator/gui/controls_widget_base.py` | 449 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/pendulum_simulator/gui/controls_widget_base.py` | 459 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/pendulum_simulator/gui/matrix_widget_base.py` | 148 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/pendulum_simulator/gui/matrix_widget_base.py` | 158 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/pendulum_simulator/gui/matrix_widget_base.py` | 173 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/pendulum_simulator/gui/matrix_widget_base.py` | 183 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/pendulum_simulator/gui/base_pendulum_widget.py` | 115 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/pendulum_simulator/gui/base_pendulum_widget.py` | 120 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/pendulum_simulator/gui/base_pendulum_widget.py` | 125 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/pendulum_simulator/gui/base_pendulum_widget.py` | 130 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/pendulum_simulator/gui/base_pendulum_widget.py` | 135 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/model_generation/plugins/__init__.py` | 21 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/model_generation/plugins/__init__.py` | 27 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/model_generation/plugins/__init__.py` | 32 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/model_generation/plugins/__init__.py` | 36 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/model_generation/library/repository.py` | 44 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/model_generation/library/repository.py` | 50 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/model_generation/library/repository.py` | 55 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/model_generation/library/repository.py` | 60 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/model_generation/editor/editor_clipboard.py` | 41 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/model_generation/editor/editor_modifications.py` | 53 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/model_generation/editor/editor_modifications.py` | 55 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/model_generation/editor/editor_modifications.py` | 57 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/model_generation/editor/editor_modifications.py` | 59 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/model_generation/builders/base_builder.py` | 191 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/model_generation/builders/base_builder.py` | 201 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/humanoid_character_builder/generators/mesh_generator_models.py` | 59 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/humanoid_character_builder/generators/mesh_generator_models.py` | 65 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/humanoid_character_builder/generators/mesh_generator_models.py` | 70 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/humanoid_character_builder/generators/mesh_generator_models.py` | 90 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/pose_estimation/interface.py` | 24 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/pose_estimation/interface.py` | 32 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/pose_estimation/interface.py` | 43 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/perturbation/analyzer_base.py` | 57 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/perturbation/analyzer_base.py` | 61 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/perturbation/analyzer_base.py` | 65 | Stub | 5 | 3 | 4 |
-| `./src/shared/python/calc_backend/protocols.py` | 35 | Stub | 5 | 3 | 4 |
+
+| File                                                                                 | Line | Type | Impact | Coverage | Complexity |
+| ------------------------------------------------------------------------------------ | ---- | ---- | ------ | -------- | ---------- |
+| `./src/api/auth/security.py`                                                         | 339  | Stub | 5      | 2        | 4          |
+| `./src/shared/python/physics/flexible_shaft.py`                                      | 325  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/physics/flexible_shaft.py`                                      | 329  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/physics/flexible_shaft.py`                                      | 333  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/physics/flexible_shaft.py`                                      | 342  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/physics/flexible_shaft.py`                                      | 372  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/physics/flight_models.py`                                       | 162  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/physics/flight_models.py`                                       | 168  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/physics/flight_models.py`                                       | 174  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/physics/flight_models.py`                                       | 179  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/physics/impact_model/models.py`                                 | 20   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/pendulum_simulator/gui/controls_widget_base.py`                 | 429  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/pendulum_simulator/gui/controls_widget_base.py`                 | 439  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/pendulum_simulator/gui/controls_widget_base.py`                 | 449  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/pendulum_simulator/gui/controls_widget_base.py`                 | 459  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/pendulum_simulator/gui/matrix_widget_base.py`                   | 148  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/pendulum_simulator/gui/matrix_widget_base.py`                   | 158  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/pendulum_simulator/gui/matrix_widget_base.py`                   | 173  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/pendulum_simulator/gui/matrix_widget_base.py`                   | 183  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/pendulum_simulator/gui/base_pendulum_widget.py`                 | 115  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/pendulum_simulator/gui/base_pendulum_widget.py`                 | 120  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/pendulum_simulator/gui/base_pendulum_widget.py`                 | 125  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/pendulum_simulator/gui/base_pendulum_widget.py`                 | 130  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/pendulum_simulator/gui/base_pendulum_widget.py`                 | 135  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/model_generation/plugins/__init__.py`                           | 21   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/model_generation/plugins/__init__.py`                           | 27   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/model_generation/plugins/__init__.py`                           | 32   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/model_generation/plugins/__init__.py`                           | 36   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/model_generation/library/repository.py`                         | 44   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/model_generation/library/repository.py`                         | 50   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/model_generation/library/repository.py`                         | 55   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/model_generation/library/repository.py`                         | 60   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/model_generation/editor/editor_clipboard.py`                    | 41   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/model_generation/editor/editor_modifications.py`                | 53   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/model_generation/editor/editor_modifications.py`                | 55   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/model_generation/editor/editor_modifications.py`                | 57   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/model_generation/editor/editor_modifications.py`                | 59   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/model_generation/builders/base_builder.py`                      | 191  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/model_generation/builders/base_builder.py`                      | 201  | Stub | 5      | 3        | 4          |
+| `./src/shared/python/humanoid_character_builder/generators/mesh_generator_models.py` | 59   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/humanoid_character_builder/generators/mesh_generator_models.py` | 65   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/humanoid_character_builder/generators/mesh_generator_models.py` | 70   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/humanoid_character_builder/generators/mesh_generator_models.py` | 90   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/pose_estimation/interface.py`                                   | 24   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/pose_estimation/interface.py`                                   | 32   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/pose_estimation/interface.py`                                   | 43   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/perturbation/analyzer_base.py`                                  | 57   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/perturbation/analyzer_base.py`                                  | 61   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/perturbation/analyzer_base.py`                                  | 65   | Stub | 5      | 3        | 4          |
+| `./src/shared/python/calc_backend/protocols.py`                                      | 35   | Stub | 5      | 3        | 4          |
 
 ## Feature Gap Matrix
-| Module | Feature Gap | Type |
-|---|---|---|
+
+| Module                                                   | Feature Gap                           | Type         |
+| -------------------------------------------------------- | ------------------------------------- | ------------ |
 | `./vendor/ud-tools/src/tools/matlab_utilities/README.md` | - TODO, FIXME, HACK, XXX placeholders | TRACKED_TASK |
 
 ## Technical Debt Register
-| File | Line | Issue | Type |
-|---|---|---|---|
-| `./src/api/utils/error_codes.py` | 53 | # General Errors (GMS-GEN-XXX) | XXX |
-| `./src/api/utils/error_codes.py` | 59 | # Engine Errors (GMS-ENG-XXX) | XXX |
-| `./src/api/utils/error_codes.py` | 67 | # Simulation Errors (GMS-SIM-XXX) | XXX |
-| `./src/api/utils/error_codes.py` | 76 | # Video Errors (GMS-VID-XXX) | XXX |
-| `./src/api/utils/error_codes.py` | 83 | # Analysis Errors (GMS-ANL-XXX) | XXX |
-| `./src/api/utils/error_codes.py` | 88 | # Auth Errors (GMS-AUT-XXX) | XXX |
-| `./src/api/utils/error_codes.py` | 95 | # Validation Errors (GMS-VAL-XXX) | XXX |
-| `./src/api/utils/error_codes.py` | 101 | # Resource Errors (GMS-RES-XXX) | XXX |
-| `./src/api/utils/error_codes.py` | 106 | # System Errors (GMS-SYS-XXX) | XXX |
-| `./src/shared/models/opensim/opensim-models/Tutorials/doc/styles/site.css` | 3404 | html body { /* HACK: Temporary fix for CONF-15412 */ | HACK |
-| `./src/engines/pendulum_models/tools/matlab_utilities/README.md` | 261 | - TRACKED_TASK, TRACKED_DEFECT, HACK, XXX placeholders | XXX |
-| `./src/engines/physics_engines/drake/tools/matlab_utilities/README.md` | 261 | - TRACKED_TASK, TRACKED_DEFECT, HACK, XXX placeholders | XXX |
-| `./src/engines/physics_engines/pinocchio/tools/matlab_utilities/README.md` | 261 | - TRACKED_TASK, TRACKED_DEFECT, HACK, XXX placeholders | XXX |
-| `./src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab_utilities/README.md` | 261 | - TRACKED_TASK, TRACKED_DEFECT, HACK, XXX placeholders | XXX |
-| `./src/tools/matlab_utilities/scripts/matlab_quality_check.py` | 83 | (r"\bHACK\b", "HACK comment found"), | HACK |
-| `./src/tools/matlab_utilities/scripts/matlab_quality_check.py` | 84 | (r"\bXXX\b", "XXX comment found"), | XXX |
-| `./shared/models/opensim/opensim-models/Tutorials/doc/styles/site.css` | 3404 | html body { /* HACK: Temporary fix for CONF-15412 */ | HACK |
-| `./scripts/refresh_completist_data.py` | 60 | "TRACKED_TASK\|TRACKED_DEFECT\|XXX\|HACK\|TEMP", | XXX |
-| `./vendor/ud-tools/src/tools/matlab_quality_utils.py` | 232 | (r"\bHACK\b", "HACK comment found"), | HACK |
-| `./vendor/ud-tools/src/tools/matlab_quality_utils.py` | 233 | (r"\bXXX\b", "XXX comment found"), | XXX |
-| `./.gaai/core/skills/cross/friction-retrospective/SKILL.md` | 58 | - `signal: high` → automatic promotion candidate (CAND-XXX) | XXX |
-| `./.gaai/core/skills/cross/friction-retrospective/SKILL.md` | 64 | - **High-Signal Events (CAND-XXX):** each candidate with evidence, proposed promotion target, and re | XXX |
-| `./.gaai/core/skills/cross/friction-retrospective/SKILL.md` | 91 | - Promotion candidates (CAND-XXX) with evidence and recommended targets | XXX |
-| `./.gaai/core/skills/cross/friction-retrospective/SKILL.md` | 98 | - Every CAND-XXX has at least 2 supporting evidence entries (or 1 with `signal: high`) | XXX |
-| `./tests/unit/api/test_error_codes.py` | 36 | """Postcondition: All codes follow GMS-XXX-NNN format.""" | XXX |
-| `./tests/unit/utils/test_error_codes.py` | 39 | """Every error code must follow GMS-XXX-NNN pattern.""" | XXX |
-| `./tests/unit/utils/test_error_codes.py` | 42 | assert len(parts) == 3, f"{code.name} doesn't follow GMS-XXX-NNN" | XXX |
+
+| File                                                                               | Line | Issue                                                                                                | Type |
+| ---------------------------------------------------------------------------------- | ---- | ---------------------------------------------------------------------------------------------------- | ---- |
+| `./src/api/utils/error_codes.py`                                                   | 53   | # General Errors (GMS-GEN-XXX)                                                                       | XXX  |
+| `./src/api/utils/error_codes.py`                                                   | 59   | # Engine Errors (GMS-ENG-XXX)                                                                        | XXX  |
+| `./src/api/utils/error_codes.py`                                                   | 67   | # Simulation Errors (GMS-SIM-XXX)                                                                    | XXX  |
+| `./src/api/utils/error_codes.py`                                                   | 76   | # Video Errors (GMS-VID-XXX)                                                                         | XXX  |
+| `./src/api/utils/error_codes.py`                                                   | 83   | # Analysis Errors (GMS-ANL-XXX)                                                                      | XXX  |
+| `./src/api/utils/error_codes.py`                                                   | 88   | # Auth Errors (GMS-AUT-XXX)                                                                          | XXX  |
+| `./src/api/utils/error_codes.py`                                                   | 95   | # Validation Errors (GMS-VAL-XXX)                                                                    | XXX  |
+| `./src/api/utils/error_codes.py`                                                   | 101  | # Resource Errors (GMS-RES-XXX)                                                                      | XXX  |
+| `./src/api/utils/error_codes.py`                                                   | 106  | # System Errors (GMS-SYS-XXX)                                                                        | XXX  |
+| `./src/shared/models/opensim/opensim-models/Tutorials/doc/styles/site.css`         | 3404 | html body { /_ HACK: Temporary fix for CONF-15412 _/                                                 | HACK |
+| `./src/engines/pendulum_models/tools/matlab_utilities/README.md`                   | 261  | - TRACKED_TASK, TRACKED_DEFECT, HACK, XXX placeholders                                               | XXX  |
+| `./src/engines/physics_engines/drake/tools/matlab_utilities/README.md`             | 261  | - TRACKED_TASK, TRACKED_DEFECT, HACK, XXX placeholders                                               | XXX  |
+| `./src/engines/physics_engines/pinocchio/tools/matlab_utilities/README.md`         | 261  | - TRACKED_TASK, TRACKED_DEFECT, HACK, XXX placeholders                                               | XXX  |
+| `./src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab_utilities/README.md` | 261  | - TRACKED_TASK, TRACKED_DEFECT, HACK, XXX placeholders                                               | XXX  |
+| `./src/tools/matlab_utilities/scripts/matlab_quality_check.py`                     | 83   | (r"\bHACK\b", "HACK comment found"),                                                                 | HACK |
+| `./src/tools/matlab_utilities/scripts/matlab_quality_check.py`                     | 84   | (r"\bXXX\b", "XXX comment found"),                                                                   | XXX  |
+| `./shared/models/opensim/opensim-models/Tutorials/doc/styles/site.css`             | 3404 | html body { /_ HACK: Temporary fix for CONF-15412 _/                                                 | HACK |
+| `./scripts/refresh_completist_data.py`                                             | 60   | "TRACKED_TASK\|TRACKED_DEFECT\|XXX\|HACK\|TEMP",                                                     | XXX  |
+| `./vendor/ud-tools/src/tools/matlab_quality_utils.py`                              | 232  | (r"\bHACK\b", "HACK comment found"),                                                                 | HACK |
+| `./vendor/ud-tools/src/tools/matlab_quality_utils.py`                              | 233  | (r"\bXXX\b", "XXX comment found"),                                                                   | XXX  |
+| `./.gaai/core/skills/cross/friction-retrospective/SKILL.md`                        | 58   | - `signal: high` → automatic promotion candidate (CAND-XXX)                                          | XXX  |
+| `./.gaai/core/skills/cross/friction-retrospective/SKILL.md`                        | 64   | - **High-Signal Events (CAND-XXX):** each candidate with evidence, proposed promotion target, and re | XXX  |
+| `./.gaai/core/skills/cross/friction-retrospective/SKILL.md`                        | 91   | - Promotion candidates (CAND-XXX) with evidence and recommended targets                              | XXX  |
+| `./.gaai/core/skills/cross/friction-retrospective/SKILL.md`                        | 98   | - Every CAND-XXX has at least 2 supporting evidence entries (or 1 with `signal: high`)               | XXX  |
+| `./tests/unit/api/test_error_codes.py`                                             | 36   | """Postcondition: All codes follow GMS-XXX-NNN format."""                                            | XXX  |
+| `./tests/unit/utils/test_error_codes.py`                                           | 39   | """Every error code must follow GMS-XXX-NNN pattern."""                                              | XXX  |
+| `./tests/unit/utils/test_error_codes.py`                                           | 42   | assert len(parts) == 3, f"{code.name} doesn't follow GMS-XXX-NNN"                                    | XXX  |
+
 
 ## Recommended Implementation Order
+
 Prioritized by Impact (High) and Complexity (Low).
 | Priority | File | Issue | Metrics (I/C/C) |
 |---|---|---|---|
@@ -192,3 +186,4 @@ Prioritized by Impact (High) and Complexity (Low).
 - Created `docs/assessments/issues/Issue_2357_Incomplete_Stub_in_analyzer_base_py_61.md`
 - Created `docs/assessments/issues/Issue_2358_Incomplete_Stub_in_analyzer_base_py_65.md`
 - Created `docs/assessments/issues/Issue_2359_Incomplete_Stub_in_protocols_py_35.md`
+```
