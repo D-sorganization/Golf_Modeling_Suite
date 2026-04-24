@@ -4,6 +4,7 @@ import asyncio
 import contextlib
 from typing import Any
 
+import numpy as np
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 
@@ -69,7 +70,6 @@ def _engine_state_to_dict(engine: object) -> dict[str, Any]:
         "q": q.tolist() if isinstance(q, np.ndarray) else list(q),
         "v": v.tolist() if isinstance(v, np.ndarray) else list(v),
     }
-
 
 
 class SimulationFrame(BaseModel):

@@ -26,6 +26,7 @@ from src.shared.python.core.contracts import (
     precondition,
 )
 from src.shared.python.core.numerical_constants import EPSILON_TIME_STEP
+from src.shared.python.data_io.path_utils import get_repo_root
 from src.shared.python.engine_core.interfaces import PhysicsEngine
 from src.shared.python.logging_pkg.logging_config import get_logger
 from src.shared.python.security.security_utils import validate_path
