@@ -3,15 +3,10 @@
 from __future__ import annotations
 
 import importlib.util
-import types
 from pathlib import Path
 
-import pytest
 
-pytestmark = pytest.mark.unit
-
-
-def _load_module() -> types.ModuleType:
+def _load_module():
     script_path = (
         Path(__file__).resolve().parents[2]
         / "scripts"
@@ -26,7 +21,7 @@ def _load_module() -> types.ModuleType:
     return module
 
 
-def test_build_exception_index_flags_invalid_and_expired_entries() -> None:
+def test_build_exception_index_flags_invalid_and_expired_entries():
     module = _load_module()
 
     config = {
@@ -58,7 +53,7 @@ def test_build_exception_index_flags_invalid_and_expired_entries() -> None:
     assert any("Expired exception" in msg for msg in invalid)
 
 
-def test_check_rules_respects_rules_path_and_exceptions(tmp_path) -> None:
+def test_check_rules_respects_rules_path_and_exceptions(tmp_path):
     module = _load_module()
 
     project_root = tmp_path

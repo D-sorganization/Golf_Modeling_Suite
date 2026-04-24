@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from datetime import timezone
 
-import pytest
-
 from src.shared.python.ai.types import (
     AgentChunk,
     AgentResponse,
@@ -17,8 +15,6 @@ from src.shared.python.ai.types import (
     ToolCall,
     ToolResult,
 )
-
-pytestmark = pytest.mark.unit
 
 # Python 3.10 compatibility: datetime.UTC is only available in 3.11+
 # Use timezone.utc instead for compatibility

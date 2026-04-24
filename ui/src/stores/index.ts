@@ -38,14 +38,3 @@ export type {
   UIStoreState,
   UIStoreActions,
 } from './useUIStore';
-
-export {
-  useChatStore,
-} from './useChatStore';
-export type {
-  ChatMessage,
-  MessageRole,
-  ChatStore,
-  ChatStoreState,
-  ChatStoreActions,
-} from './useChatStore';

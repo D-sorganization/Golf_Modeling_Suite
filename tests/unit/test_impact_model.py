@@ -27,8 +27,6 @@ from src.shared.python.physics.impact_model import (
     validate_energy_balance,
 )
 
-pytestmark = pytest.mark.unit
-
 
 class TestPreImpactState:
     """Tests for pre-impact state creation."""

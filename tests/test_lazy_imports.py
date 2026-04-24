@@ -4,12 +4,8 @@ import sys
 import tempfile
 from pathlib import Path
 
-import pytest
 
-pytestmark = pytest.mark.unit
-
-
-def test_lazy_imports_engine_manager() -> None:
+def test_lazy_imports_engine_manager():
     """Test that importing EngineManager does NOT import heavy engine libraries."""
 
     # Ensure modules are not already loaded

@@ -28,8 +28,6 @@ from src.shared.python.engine_core.engine_availability import (
     skip_if_unavailable,
 )
 
-pytestmark = pytest.mark.unit
-
 # ═══════════════════════════════════════════════════════════════════════════════
 # 1. Drake Specific Tests (#1810)
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -161,10 +159,6 @@ class TestOpenSimSpecificVerification:
 class TestMyoSuiteGymnasiumCompatibility:
     """Verify MyoSuite uses gymnasium with gym fallback."""
 
-    @pytest.mark.xfail(
-        strict=False,
-        reason="gymnasium import is in _engine_init.py mixin; not in main module source",
-    )
     def test_myosuite_prefers_gymnasium(self) -> None:
         """MyoSuite engine must prefer gymnasium over legacy gym."""
         source_code = inspect.getsource(
@@ -177,10 +171,6 @@ class TestMyoSuiteGymnasiumCompatibility:
             "MyoSuite engine should prefer 'import gymnasium' over legacy 'import gym'"
         )
 
-    @pytest.mark.xfail(
-        strict=False,
-        reason="gym import is in _engine_init.py mixin; not in main module source",
-    )
     def test_myosuite_has_gym_fallback(self) -> None:
         """MyoSuite must fall back to legacy gym if gymnasium is missing."""
         source_code = inspect.getsource(

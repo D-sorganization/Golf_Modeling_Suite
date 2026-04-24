@@ -24,8 +24,6 @@ from src.shared.python.physics.terrain_engine import (
     TerrainGeometryGenerator,
 )
 
-pytestmark = pytest.mark.integration
-
 
 class TestTerrainConsistency:
     """Test terrain calculations are consistent."""
@@ -356,7 +354,7 @@ class TestTerrainAwareEngineWrapper:
         engine = TerrainAwareEngine(terrain)
 
         h1 = engine.get_ground_height(0.0, 50.0)
-        h2 = engine.get_ground_height(99.0, 50.0)
+        h2 = engine.get_ground_height(100.0, 50.0)
 
         # Height should increase with X
         assert h2 > h1
@@ -415,11 +413,11 @@ class TestTerrainEdgeCases:
         """Queries at terrain boundaries should work."""
         terrain = create_flat_terrain("Test", 100.0, 100.0)
 
-        # Queries at edges (use 99.0 instead of 100.0 since bounds are [0, 99])
+        # Queries at edges
         terrain.elevation.get_elevation(0.0, 0.0)
-        terrain.elevation.get_elevation(99.0, 0.0)
-        terrain.elevation.get_elevation(0.0, 99.0)
-        terrain.elevation.get_elevation(99.0, 99.0)
+        terrain.elevation.get_elevation(100.0, 0.0)
+        terrain.elevation.get_elevation(0.0, 100.0)
+        terrain.elevation.get_elevation(100.0, 100.0)
 
         # Should not raise exceptions
 

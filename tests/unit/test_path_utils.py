@@ -25,8 +25,6 @@ from src.shared.python.data_io.path_utils import (
     get_tests_root,
 )
 
-pytestmark = pytest.mark.unit
-
 
 class TestGetRepoRoot:
     """Tests for get_repo_root function."""

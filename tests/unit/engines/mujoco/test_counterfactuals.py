@@ -9,8 +9,6 @@ from mujoco_humanoid_golf.counterfactuals import (
     CounterfactualAnalyzer,
 )
 
-pytestmark = pytest.mark.unit
-
 
 @pytest.fixture
 def simple_pendulum_model() -> mujoco.MjModel:

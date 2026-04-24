@@ -6,8 +6,6 @@ from unittest.mock import mock_open, patch  # noqa: E402
 import pytest  # noqa: E402
 import yaml  # noqa: E402
 
-pytestmark = pytest.mark.integration
-
 from src.launchers.model_registry import (  # noqa: E402
     ModelRegistry,
     ModelSpec,
@@ -17,7 +15,7 @@ from src.launchers.model_registry import (  # noqa: E402
 
 
 @pytest.fixture
-def mock_yaml_data() -> dict:
+def mock_yaml_data():
     return {
         "models": [
             {
@@ -39,7 +37,7 @@ def mock_yaml_data() -> dict:
     }
 
 
-def test_model_spec() -> None:
+def test_model_spec():
     """Test ModelSpec dataclass."""
     spec = ModelSpec(
         id="test",
@@ -52,14 +50,14 @@ def test_model_spec() -> None:
     assert spec.engine_type is None
 
 
-def test_model_registry_init() -> None:
+def test_model_registry_init():
     """Test initializing registry."""
     registry = ModelRegistry("custom/path.yaml")
     assert registry.config_path == Path("custom/path.yaml")
     assert not registry._loaded
 
 
-def test_model_registry_load_success(mock_yaml_data) -> None:
+def test_model_registry_load_success(mock_yaml_data):
     """Test parsing yaml config correctly."""
     registry = ModelRegistry()
     mock_file = mock_open(read_data=yaml.dump(mock_yaml_data))
@@ -82,7 +80,7 @@ def test_model_registry_load_success(mock_yaml_data) -> None:
     assert len(models) == 2
 
 
-def test_model_registry_load_missing_file() -> None:
+def test_model_registry_load_missing_file():
     """Test behaviour when config file is missing."""
     registry = ModelRegistry()
 
@@ -93,7 +91,7 @@ def test_model_registry_load_missing_file() -> None:
     assert len(registry.models) == 0
 
 
-def test_model_registry_yaml_error() -> None:
+def test_model_registry_yaml_error():
     """Test yaml parsing error handling."""
     registry = ModelRegistry()
     mock_file = mock_open(read_data="invalid: yaml: content\n - - -")
@@ -106,7 +104,7 @@ def test_model_registry_yaml_error() -> None:
         registry.load(Path("/fake/root"))
 
 
-def test_model_registry_type_error(mock_yaml_data) -> None:
+def test_model_registry_type_error(mock_yaml_data):
     """Test type error when loading."""
     # Introduce bad data to cause TypeError in ModelSpec initialization
     bad_data = {"models": [{"id": "bad", "unknown_arg": "value"}]}
@@ -121,7 +119,7 @@ def test_model_registry_type_error(mock_yaml_data) -> None:
         registry.load(Path("/fake/root"))
 
 
-def test_model_registry_os_error() -> None:
+def test_model_registry_os_error():
     """Test OS error when loading file."""
     registry = ModelRegistry()
 
@@ -133,7 +131,7 @@ def test_model_registry_os_error() -> None:
         registry.load(Path("/fake/root"))
 
 
-def test_get_model_by_id_not_found(mock_yaml_data) -> None:
+def test_get_model_by_id_not_found(mock_yaml_data):
     """Test getting an unknown model."""
     registry = ModelRegistry()
     mock_file = mock_open(read_data=yaml.dump(mock_yaml_data))
@@ -146,6 +144,6 @@ def test_get_model_by_id_not_found(mock_yaml_data) -> None:
     assert registry.get_model_by_id("nonexistent") is None
 
 
-def test_get_global_registry() -> None:
+def test_get_global_registry():
     """Test the global singleton accessor."""
     assert get_model_registry() is _registry

@@ -13,8 +13,6 @@ from src.shared.python.dashboard.advanced_analysis import (
     SpectrogramTab,
 )
 
-pytestmark = pytest.mark.unit
-
 
 class MockRecorder:
     """Mock recorder providing synthetic time series data."""

@@ -28,8 +28,6 @@ from src.shared.python.pose_estimation.validation_metrics import (
     validate_pipeline_output,
 )
 
-pytestmark = pytest.mark.unit
-
 # ===================================================================
 # Fixtures: synthetic keypoint sets
 # ===================================================================

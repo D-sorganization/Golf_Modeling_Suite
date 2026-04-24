@@ -2,6 +2,8 @@
 
 Provides REST endpoints for browsing, filtering, and visualizing
 simulation datasets in the React Data Explorer tool page.
+
+See issue #1206
 """
 
 from __future__ import annotations
@@ -122,7 +124,10 @@ def _parse_json_content(content: str) -> tuple[list[str], list[dict[str, Any]]]:
 
 @router.get("/datasets", response_model=DatasetListResponse)
 async def list_datasets() -> DatasetListResponse:
-    """List available datasets in the output directory."""
+    """List available datasets in the output directory.
+
+    See issue #1206
+    """
     output_dir = _get_output_dir()
     datasets: list[DatasetInfo] = []
 
@@ -183,7 +188,10 @@ async def list_datasets() -> DatasetListResponse:
 )
 @handle_api_errors
 async def preview_dataset(name: str, limit: int = 50) -> DatasetPreviewResponse:
-    """Get a preview of dataset contents."""
+    """Get a preview of dataset contents.
+
+    See issue #1206
+    """
     # Check in-memory cache first
     if name in _loaded_datasets:
         ds = _loaded_datasets[name]
@@ -230,7 +238,10 @@ async def preview_dataset(name: str, limit: int = 50) -> DatasetPreviewResponse:
 )
 @handle_api_errors
 async def dataset_stats(name: str) -> DatasetStatsResponse:
-    """Get summary statistics for a dataset."""
+    """Get summary statistics for a dataset.
+
+    See issue #1206
+    """
     # Get dataset rows
     if name in _loaded_datasets:
         ds = _loaded_datasets[name]
@@ -284,7 +295,10 @@ async def dataset_stats(name: str) -> DatasetStatsResponse:
 @router.post("/import", response_model=ImportResponse)
 @handle_api_errors
 async def import_dataset(file: UploadFile) -> ImportResponse:
-    """Import a CSV or JSON dataset."""
+    """Import a CSV or JSON dataset.
+
+    See issue #1206
+    """
     if not file.filename:
         raise HTTPException(status_code=400, detail="Filename is required")
 
@@ -324,7 +338,10 @@ async def import_dataset(file: UploadFile) -> ImportResponse:
 async def filter_dataset(
     name: str, request: DatasetFilterRequest
 ) -> DatasetPreviewResponse:
-    """Filter a dataset by column value."""
+    """Filter a dataset by column value.
+
+    See issue #1206
+    """
     # First get the dataset
     if name in _loaded_datasets:
         ds = _loaded_datasets[name]
@@ -396,7 +413,10 @@ async def filter_dataset(
 
 @router.get("/export-formats")
 async def get_export_formats() -> list[dict[str, str]]:
-    """List supported export formats."""
+    """List supported export formats.
+
+    See issue #1206
+    """
     return [
         {"format": "csv", "description": "Comma-separated values"},
         {"format": "json", "description": "JSON array of objects"},

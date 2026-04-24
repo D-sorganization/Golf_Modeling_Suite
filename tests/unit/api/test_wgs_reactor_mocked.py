@@ -8,7 +8,6 @@ internal mathematical logic.
 
 from __future__ import annotations
 
-from collections.abc import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -17,15 +16,13 @@ from fastapi.testclient import TestClient
 
 from src.shared.python.calc_backend.routers.wgs_reactor import router
 
-pytestmark = pytest.mark.unit
-
 _app = FastAPI()
 _app.include_router(router)
 client = TestClient(_app)
 
 
 @pytest.fixture
-def mock_engine() -> Generator[MagicMock, None, None]:
+def mock_engine():
     """Mock the WGSReactorEngine securely from Tools."""
     with patch(
         "upstream_drift_tools.process_calculators.WGSReactorEngine"

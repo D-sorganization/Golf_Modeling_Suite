@@ -9,8 +9,6 @@ from mujoco_humanoid_golf.screw_kinematics import (
     Twist,
 )
 
-pytestmark = pytest.mark.unit
-
 
 @pytest.fixture
 def simple_pendulum() -> mujoco.MjModel:
@@ -287,23 +285,18 @@ class TestManipulability:
 class TestScrewKinematicsPhysics:
     """Integration tests for screw kinematics physics."""
 
-    @pytest.mark.xfail(
-        strict=False, reason="Requires helical motion model - not yet implemented"
-    )
     def test_pitch_matches_analytical_helix(
         self, simple_pendulum: mujoco.MjModel
     ) -> None:
         """Test pitch calculation matches analytical helix motion."""
-        # Verify computed pitch matches known pitch
-        raise NotImplementedError("Requires helical motion model")
+        pytest.skip("Requires helical motion model - implement in follow-up")
 
-    @pytest.mark.xfail(
-        strict=False,
-        reason="Requires precise geometric validation - not yet implemented",
-    )
+        # Verify computed pitch matches known pitch
+
     def test_screw_axis_lies_on_rotation_axis(
         self, simple_pendulum: mujoco.MjModel
     ) -> None:
         """Test screw axis for pure rotation lies on rotation axis."""
+        pytest.skip("Requires precise geometric validation - implement in follow-up")
+
         # through the joint axis
-        raise NotImplementedError("Requires precise geometric validation")

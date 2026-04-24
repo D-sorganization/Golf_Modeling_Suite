@@ -26,8 +26,6 @@ from tests.fixtures.fixtures_lib import (
     skip_if_insufficient_engines,
 )
 
-pytestmark = pytest.mark.integration
-
 logger = get_logger(__name__)
 
 # Tolerance multiplier for triangulation outlier detection

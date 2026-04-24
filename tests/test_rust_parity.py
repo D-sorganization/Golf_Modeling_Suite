@@ -23,8 +23,6 @@ from src.shared.python.physics.rust_kernel import (
     get_kernel_info,
 )
 
-pytestmark = pytest.mark.integration
-
 
 class TestParityRK4:
     """Verify RK4 integrator parity between Rust and Python."""

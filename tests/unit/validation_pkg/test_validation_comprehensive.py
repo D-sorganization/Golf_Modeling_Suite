@@ -78,8 +78,6 @@ from src.shared.python.validation_pkg.validation_utils import (
     validate_type,
 )
 
-pytestmark = pytest.mark.unit
-
 # ============================================================================
 # validation.py -- PhysicalValidationError
 # ============================================================================

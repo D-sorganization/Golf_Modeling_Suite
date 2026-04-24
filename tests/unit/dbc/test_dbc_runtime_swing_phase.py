@@ -12,9 +12,6 @@ import unittest
 from unittest.mock import MagicMock
 
 import numpy as np
-import pytest
-
-pytestmark = pytest.mark.unit
 
 
 def _make_swing_mixin(n: int = 200, n_joints: int = 4) -> object:

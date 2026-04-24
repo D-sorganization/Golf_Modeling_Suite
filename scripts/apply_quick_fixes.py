@@ -12,7 +12,7 @@ from pathlib import Path
 from scripts.script_utils import get_repo_root
 
 
-def add_missing_init_files() -> None:
+def add_missing_init_files():
     """Add missing __init__.py files to package directories."""
     repo_root = get_repo_root()
 

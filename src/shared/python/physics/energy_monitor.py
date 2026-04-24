@@ -260,13 +260,12 @@ class ConservationMonitor:
         snapshot = self.get_energy_snapshot()
         E_current = snapshot.total
 
-        e_current_local = E_current  # local snapshot to avoid TOCTOU race
-        if abs(e_current_local) < 1e-12:
+        if abs(E_current) < 1e-12:
             logger.warning("Cannot project to energy manifold: E_current ≈ 0")
-            return  # skip projection
+            return
 
         # Scale velocities to restore total energy
-        scale = np.sqrt(abs(self.E_initial / e_current_local))
+        scale = np.sqrt(abs(self.E_initial / E_current))
         q, v = self.engine.get_state()
         self.engine.set_state(q, scale * v)
 

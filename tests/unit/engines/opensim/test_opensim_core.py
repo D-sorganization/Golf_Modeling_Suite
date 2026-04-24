@@ -17,8 +17,6 @@ from src.engines.physics_engines.opensim.python.opensim_golf.core import (
     OpenSimNotInstalledError,
 )
 
-pytestmark = pytest.mark.unit
-
 
 @pytest.fixture
 def mock_opensim_env() -> Generator[MagicMock, None, None]:

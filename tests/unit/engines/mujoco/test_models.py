@@ -13,8 +13,6 @@ from mujoco_humanoid_golf.models import (
     generate_rigid_club_xml,
 )
 
-pytestmark = pytest.mark.unit
-
 
 class TestModelXML:
     """Tests for model XML strings."""

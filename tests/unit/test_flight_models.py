@@ -26,8 +26,6 @@ from src.shared.python.physics.flight_models import (
     compare_models,
 )
 
-pytestmark = pytest.mark.unit
-
 # =============================================================================
 # Fixtures
 # =============================================================================

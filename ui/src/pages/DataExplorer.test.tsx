@@ -1,7 +1,7 @@
 /**
  * Tests for DataExplorer page.
  *
- * WIP: backend not yet implemented. Tracked in #3166.
+ * See issue #1206
  */
 
 import { describe, it, expect } from 'vitest';

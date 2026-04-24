@@ -13,8 +13,6 @@ from src.api.utils.error_codes import (
     raise_api_error,
 )
 
-pytestmark = pytest.mark.unit
-
 
 class TestErrorCategory:
     """Tests for ErrorCategory enum."""

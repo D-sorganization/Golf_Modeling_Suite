@@ -14,8 +14,6 @@ from src.shared.python.validation_pkg.data_fitting import (
     convert_poses_to_markers,
 )
 
-pytestmark = pytest.mark.unit
-
 
 def test_body_segment_params() -> None:
     """Test BodySegmentParams serialization."""
@@ -245,7 +243,7 @@ class TestA3FittingPipeline:
 
     def test_fit_from_c3d(self, tmp_path, monkeypatch) -> None:
         import sys
-        from unittest.mock import MagicMock, patch
+        from unittest.mock import MagicMock
 
         # Mock ezc3d
         mock_ezc3d = MagicMock()
@@ -259,21 +257,25 @@ class TestA3FittingPipeline:
             },
         }
         mock_ezc3d.c3d.return_value = mock_c3d_data
+        sys.modules["ezc3d"] = mock_ezc3d
 
         c3d_file = tmp_path / "test.c3d"
-        with patch.dict(sys.modules, {"ezc3d": mock_ezc3d}):
-            report = self.pipeline.fit_from_c3d(c3d_file, 70.0)
+        report = self.pipeline.fit_from_c3d(c3d_file, 70.0)
         assert report.subject_id == "test"
         assert report.quality_metrics["n_frames"] == 10
 
+        # Clean up
+        sys.modules.pop("ezc3d", None)
+
     def test_fit_from_c3d_no_ezc3d(self, tmp_path, monkeypatch) -> None:
         import sys
-        from unittest.mock import patch
 
-        # Force import error by setting module to None
+        # Force import error
+        sys.modules["ezc3d"] = None
+
         c3d_file = tmp_path / "test.c3d"
-        with (
-            patch.dict(sys.modules, {"ezc3d": None}),
-            pytest.raises(ImportError, match="Install ezc3d"),
-        ):
+        with pytest.raises(ImportError, match="Install ezc3d"):
             self.pipeline.fit_from_c3d(c3d_file, 70.0)
+
+        # Clean up
+        sys.modules.pop("ezc3d", None)

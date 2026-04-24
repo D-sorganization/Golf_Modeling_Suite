@@ -1,7 +1,4 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import type { RunSummary } from '@/components/analysis/SummaryPanel';
-
-export type { RunSummary };
 
 export interface SimulationFrame {
   frame: number;
@@ -40,39 +37,12 @@ const MAX_RECONNECT_DELAY_MS = 30000;
 export type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'failed';
 
 export async function fetchEngines(): Promise<EngineStatus[]> {
-  try {
-    const response = await fetch('/api/engines', { signal: AbortSignal.timeout(5000) });
-    if (!response.ok) {
-      if (response.status === 503) {
-        throw new Error(
-          'Backend API server is temporarily unavailable (503 Service Unavailable). ' +
-          'The server may be starting up. Try again in a moment or check: python -m uvicorn src.api.main:app'
-        );
-      }
-      throw new Error(`Failed to fetch engines: HTTP ${response.status}`);
-    }
-    const data = await response.json();
-    return data.engines;
-  } catch (error) {
-    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-      throw new Error(
-        'Backend API server is not running.\n\n' +
-        'To start the server:\n' +
-        '  python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000\n' +
-        'Or with Docker:\n' +
-        '  docker-compose up backend\n\n' +
-        'Check that the server is accessible at http://localhost:8000/api/engines'
-      );
-    }
-    if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error(
-        'Backend API request timed out (5s). Server may be overloaded or unreachable.\n\n' +
-        'Check if the server is running and responsive:\n' +
-        '  curl http://localhost:8000/api/health'
-      );
-    }
-    throw error;
+  const response = await fetch('/api/engines');
+  if (!response.ok) {
+    throw new Error('Failed to fetch engines');
   }
+  const data = await response.json();
+  return data.engines;
 }
 
 export function useSimulation(engineType: string) {
@@ -81,7 +51,6 @@ export function useSimulation(engineType: string) {
   const [currentFrame, setCurrentFrame] = useState<SimulationFrame | null>(null);
   const [frames, setFrames] = useState<SimulationFrame[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
-  const [runSummary, setRunSummary] = useState<RunSummary | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   // Track if component is mounted to prevent state updates after unmount
   const isMountedRef = useRef(true);
@@ -139,7 +108,6 @@ export function useSimulation(engineType: string) {
       setConnectionStatus('connected');
       setIsRunning(true);
       setFrames([]);
-      setRunSummary(null);
 
       ws.send(JSON.stringify({
         action: 'start',
@@ -159,9 +127,6 @@ export function useSimulation(engineType: string) {
 
         if (data.status === 'complete' || data.status === 'stopped') {
           setIsRunning(false);
-          if (data.status === 'complete' && data.summary != null) {
-            setRunSummary(data.summary as RunSummary);
-          }
           return;
         }
         if (data.status === 'paused') {
@@ -186,25 +151,7 @@ export function useSimulation(engineType: string) {
     };
 
     ws.onerror = (error) => {
-      const errorMsg = error instanceof Event ? 'WebSocket connection error' : String(error);
-      if (!isMountedRef.current) return;
-
-      // Determine if this is a connection refused error
-      const isConnectionRefused =
-        wsUrl.includes('localhost') ||
-        wsUrl.includes('127.0.0.1');
-
-      const detailedMsg = isConnectionRefused
-        ? `WebSocket error: Failed to connect to backend at ${wsUrl}.\n\n` +
-          `The backend API server may not be running.\n` +
-          `Start it with:\n` +
-          `  python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000\n` +
-          `Check that the server is reachable at http://localhost:8000/api/health`
-        : `WebSocket error: ${errorMsg}\n` +
-          `Cannot establish connection to ${wsUrl}.\n` +
-          `Check that the backend server is running and accessible.`;
-
-      console.error(detailedMsg);
+      console.error('WebSocket error:', error);
     };
 
     ws.onclose = (event) => {
@@ -304,10 +251,9 @@ export function useSimulation(engineType: string) {
     currentFrame,
     frames,
     connectionStatus,
-    runSummary,
     start,
     stop,
     pause,
-    resume,
+    resume
   };
 }

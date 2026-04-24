@@ -14,8 +14,6 @@ from src.engines.common.physics import (
     BallProperties,
 )
 
-pytestmark = pytest.mark.unit
-
 
 class TestAirProperties:
     """Tests for AirProperties dataclass."""

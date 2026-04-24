@@ -22,8 +22,6 @@ from src.shared.python.physics.ground_reaction_forces import (
     validate_grf_cross_engine,
 )
 
-pytestmark = pytest.mark.unit
-
 
 class TestLinearImpulse:
     """Tests for linear impulse computation."""

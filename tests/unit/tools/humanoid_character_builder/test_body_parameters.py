@@ -2,7 +2,6 @@
 Unit tests for body parameters module.
 """
 
-import pytest
 from humanoid_character_builder.core.body_parameters import (
     RGBA,
     BodyParameters,
@@ -14,8 +13,6 @@ from humanoid_character_builder.core.body_parameters import (
     create_average_body,
     create_heavy_body,
 )
-
-pytestmark = pytest.mark.unit
 
 
 class TestVector3:

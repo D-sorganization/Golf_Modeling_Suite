@@ -4,9 +4,6 @@ import importlib
 from pathlib import Path
 
 import numpy as np
-import pytest
-
-pytestmark = pytest.mark.unit
 
 
 def _normalized_path(value: str) -> str:

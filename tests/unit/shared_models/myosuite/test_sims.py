@@ -5,9 +5,6 @@ import os
 import unittest
 
 import mujoco
-import pytest
-
-pytestmark = pytest.mark.unit
 
 logger = logging.getLogger(__name__)
 

@@ -10,8 +10,6 @@ import math
 
 import pytest
 
-pytestmark = pytest.mark.benchmark
-
 pytest.importorskip("pytest_benchmark")
 
 

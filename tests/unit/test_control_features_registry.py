@@ -16,8 +16,6 @@ from src.shared.python.control_features_registry import (
 )
 from src.shared.python.engine_core.mock_engine import MockPhysicsEngine
 
-pytestmark = pytest.mark.unit
-
 # ---- Fixtures ----
 
 

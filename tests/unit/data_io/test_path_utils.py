@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
 from src.shared.python.data_io.path_utils import (
     ensure_directory,
     get_data_dir,
@@ -17,8 +15,6 @@ from src.shared.python.data_io.path_utils import (
     get_shared_dir,
     get_src_root,
 )
-
-pytestmark = pytest.mark.unit
 
 
 class TestGetRepoRoot:

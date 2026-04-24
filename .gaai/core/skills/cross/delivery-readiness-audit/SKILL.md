@@ -29,7 +29,6 @@ outputs:
 Activate via `/gaai-status --audit`. This skill runs **after** the standard status sections (1–4) have already identified delivery-ready stories, memory staleness, and framework health.
 
 This skill adds two depth checks that standard status skips for speed:
-
 - **AC internal consistency** — catches missing columns, undeclared endpoints, broken cross-references within a story
 - **Pending revisions** — catches deferred work flagged in backlog notes but not yet captured as stories
 
@@ -47,7 +46,6 @@ For each story identified as "ready to deliver" by Section 1:
 4. Flag any reference to a column, endpoint, queue, table, or resource that is not declared elsewhere in the same story
 
 **Example of what this catches:**
-
 - AC5 uses `orders.cancelled_at` for filtering, but AC4 (schema migration) doesn't list that column
 - AC7 references `users.api_token` but it's missing from the migration
 
@@ -58,7 +56,6 @@ Severity: CRITICAL if it would cause the Delivery Agent to produce incomplete co
 Scan all backlog item `notes` fields for patterns indicating unresolved work:
 
 **Patterns to match:**
-
 - "sera révisé", "à réviser", "sera revu"
 - "story à générer", "story E0x à générer", "à créer"
 - "TRACKED_TASK", "à remplacer", "à migrer"
@@ -66,7 +63,6 @@ Scan all backlog item `notes` fields for patterns indicating unresolved work:
 - `DEC-` references followed by a pending action description
 
 For each match:
-
 - State the backlog item ID, the DEC reference (if any), and the pending action
 - Check whether a corresponding story already exists in the backlog
 - Flag as IMPORTANT if no story exists yet
@@ -74,7 +70,6 @@ For each match:
 ### 3. Delivery verdict
 
 Produce a summary:
-
 - Count of stories truly ready (all deps met + ACs internally consistent)
 - Count of issues by severity (CRITICAL / IMPORTANT / MINOR)
 - Verdict: **READY FOR DELIVERY** (0 critical issues) or **ISSUES TO RESOLVE FIRST** (list critical issues)
@@ -123,7 +118,6 @@ READY FOR DELIVERY | ISSUES TO RESOLVE FIRST
 ## Non-Goals
 
 This skill must NOT:
-
 - Repeat checks already done by `/gaai-status` Sections 1–4 (staleness, dependency graph, backlog counts)
 - Fix issues (report only — Discovery or human decides)
 - Rewrite artefacts or memory

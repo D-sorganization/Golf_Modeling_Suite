@@ -1,7 +1,5 @@
 from unittest.mock import Mock
 
-import pytest
-
 from src.api.models.requests import ForceOverlayRequest
 from src.api.routes.force_overlays import (
     _is_filtered_out,
@@ -11,16 +9,14 @@ from src.api.routes.force_overlays import (
     _should_include_force_type,
 )
 
-pytestmark = pytest.mark.unit
 
-
-def test_magnitude_to_color() -> None:
+def test_magnitude_to_color():
     assert _magnitude_to_color(0, 10) == [0.0, 1.0, 1.0, 1.0]
     assert _magnitude_to_color(5, 10) == [1.0, 1.0, 0.0, 1.0]
     assert _magnitude_to_color(10, 10) == [1.0, 0.0, 0.0, 1.0]  # based on t logic
 
 
-def test_resolve_joint_names() -> None:
+def test_resolve_joint_names():
     engine = Mock()
     engine.joint_names = ["j1", "j2"]
     assert _resolve_joint_names(engine, 2) == ["j1", "j2"]
@@ -29,7 +25,7 @@ def test_resolve_joint_names() -> None:
     assert _resolve_joint_names(engine, 2) == ["joint_0", "joint_1"]
 
 
-def test_should_include_force_type() -> None:
+def test_should_include_force_type():
     req = ForceOverlayRequest(
         enabled=True,
         force_types=["applied"],
@@ -45,13 +41,13 @@ def test_should_include_force_type() -> None:
     assert _should_include_force_type(req, "contact")
 
 
-def test_resolve_body_name() -> None:
+def test_resolve_body_name():
     names = ["j1", "j2"]
     assert _resolve_body_name(names, 0) == "j1"
     assert _resolve_body_name(names, 2) == "joint_2"
 
 
-def test_is_filtered_out() -> None:
+def test_is_filtered_out():
     req = ForceOverlayRequest(
         enabled=True,
         force_types=["all"],

@@ -24,8 +24,6 @@ from src.shared.python.gui_pkg.viewpoint_controls import (
     spherical_to_cartesian,
 )
 
-pytestmark = pytest.mark.unit
-
 
 class TestSphericalToCartesian:
     """Tests for spherical coordinate conversion."""

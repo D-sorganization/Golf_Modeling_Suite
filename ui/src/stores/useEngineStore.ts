@@ -38,7 +38,7 @@ export interface EngineStoreActions {
   /** Request loading an engine (async) */
   requestLoad: (name: string) => Promise<void>;
   /** Unload an engine */
-  unloadEngine(name: string): Promise<void>;
+  unloadEngine: (name: string) => void;
   /** Reset all engines to idle */
   resetEngines: () => void;
 }
@@ -192,7 +192,7 @@ export const useEngineStore = create<EngineStore>((set, get) => ({
     }
   },
 
-  unloadEngine: async (engineName) => {
+  unloadEngine: (engineName) => {
     const { selectedEngine } = get();
     set((state) => ({
       engines: state.engines.map((e) =>
@@ -203,11 +203,6 @@ export const useEngineStore = create<EngineStore>((set, get) => ({
       selectedEngine:
         selectedEngine === engineName ? null : selectedEngine,
     }));
-    try {
-      await fetch(`/api/engines/${engineName}/unload`, { method: 'POST' });
-    } catch {
-      // Best-effort: still update client state even if backend call fails
-    }
   },
 
   resetEngines: () =>

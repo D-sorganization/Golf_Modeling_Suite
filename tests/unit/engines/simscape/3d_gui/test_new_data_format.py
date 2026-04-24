@@ -6,10 +6,7 @@ Quick test to verify the new test data files are compatible with GUI format
 import logging
 
 import numpy as np
-import pytest
 import scipy.io
-
-pytestmark = pytest.mark.unit
 
 logger = logging.getLogger(__name__)
 

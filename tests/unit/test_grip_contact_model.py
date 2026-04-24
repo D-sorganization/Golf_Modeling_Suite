@@ -23,8 +23,6 @@ from src.shared.python.physics.grip_contact_model import (
     decompose_contact_force,
 )
 
-pytestmark = pytest.mark.unit
-
 
 class TestFrictionCone:
     """Tests for friction cone calculations."""
