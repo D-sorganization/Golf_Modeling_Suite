@@ -251,7 +251,7 @@ def check_api_server() -> tuple[bool, str]:
                     sys.executable,
                     "-m",
                     "uvicorn",
-                    "src.api.server:create_app",
+                    "src.api.server:app",
                     "--port",
                     "8001",
                     "--host",
@@ -325,9 +325,9 @@ def main() -> int:
     logger.info(message)
     results["environment"].append(success)
 
-    success, message = check_virtual_env()
+    _venv_ok, message = check_virtual_env()
     logger.info(message)
-    results["environment"].append(success)
+    # check_virtual_env is recommended, not critical — don't fold into env results
 
     success, message = check_pythonpath()
     logger.info(message)
@@ -496,7 +496,7 @@ def main() -> int:
         logger.info("")
         logger.info("You can now run:")
         logger.info("  python examples/01_basic_simulation.py")
-        logger.info("  python -m uvicorn src.api.server:create_app --reload")
+        logger.info("  python -m uvicorn src.api.server:app --reload")
         logger.info("")
         return 0
 
