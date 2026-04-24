@@ -8,8 +8,6 @@ import logging
 import numpy as np
 import pytest
 import scipy.io
-import pytest
-import scipy.io
 
 pytestmark = pytest.mark.unit
 

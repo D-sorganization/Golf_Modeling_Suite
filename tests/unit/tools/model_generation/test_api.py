@@ -10,9 +10,7 @@ import pytest
 
 pytestmark = pytest.mark.unit
 
-import pytest
-
-pytestmark = pytest.mark.unit
+import pytest  # noqa: E402
 
 SIMPLE_URDF = """<?xml version="1.0"?>
 <robot name="test_robot">

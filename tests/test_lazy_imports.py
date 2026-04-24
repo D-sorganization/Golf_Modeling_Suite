@@ -8,9 +8,7 @@ import pytest
 
 pytestmark = pytest.mark.unit
 
-import pytest
-
-pytestmark = pytest.mark.unit
+import pytest  # noqa: E402
 
 
 def test_lazy_imports_engine_manager() -> None:

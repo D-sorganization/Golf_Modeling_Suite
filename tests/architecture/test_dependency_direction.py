@@ -24,9 +24,7 @@ import pytest
 
 pytestmark = pytest.mark.unit
 
-import pytest
-
-pytestmark = pytest.mark.unit
+import pytest  # noqa: E402
 
 logger = logging.getLogger(__name__)
 

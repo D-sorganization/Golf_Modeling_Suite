@@ -8,9 +8,6 @@ from typing import Any
 import pytest
 
 from src.robotics.control.whole_body.qp_solver import ScipyQPSolver
-import pytest
-
-from src.robotics.control.whole_body.qp_solver import ScipyQPSolver
 
 pytestmark = pytest.mark.unit
 

@@ -16,8 +16,8 @@ import pytest
 
 pytestmark = pytest.mark.unit
 
-from src.shared.python.ai.adapters.gemini_adapter import GeminiAdapter
-from src.shared.python.ai.types import (
+from src.shared.python.ai.adapters.gemini_adapter import GeminiAdapter  # noqa: E402
+from src.shared.python.ai.types import (  # noqa: E402
     ConversationContext,
     Message,
     ProviderCapability,

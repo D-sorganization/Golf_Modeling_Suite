@@ -11,9 +11,7 @@ import pytest
 
 pytestmark = pytest.mark.unit
 
-import pytest
-
-pytestmark = pytest.mark.unit
+import pytest  # noqa: E402
 
 SCRIPT_PATH = (
     Path(__file__).resolve().parents[2] / "scripts" / "analyze_completist_data.py"

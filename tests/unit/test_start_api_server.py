@@ -7,9 +7,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 import start_api_server
-import pytest
-
-import start_api_server
 
 pytestmark = pytest.mark.unit
 

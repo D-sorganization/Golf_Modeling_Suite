@@ -10,7 +10,7 @@ import yaml
 
 pytestmark = pytest.mark.unit
 
-from src.shared.python.config.model_registry import (
+from src.shared.python.config.model_registry import (  # noqa: E402
     ModelConfig,
     ModelRegistry,
     ModelRegistryLoadError,
