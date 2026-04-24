@@ -16,6 +16,9 @@ def mock_pyqt6_available() -> Generator[None, None, None]:
         yield
 
 
+pytestmark = pytest.mark.unit
+
+
 @pytest.fixture(autouse=True)
 def mock_golf_launcher_module() -> Generator[MagicMock, None, None]:
     """Mock golf_launcher module."""

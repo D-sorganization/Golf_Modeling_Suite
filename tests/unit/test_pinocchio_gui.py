@@ -1,5 +1,7 @@
 """Unit tests for Pinocchio GUI logic."""
 
+from collections.abc import Generator
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -10,12 +12,14 @@ from src.shared.python.engine_core.engine_availability import (
 )
 from src.shared.python.gui_pkg.gui_utils import get_qapp
 
+pytestmark = pytest.mark.unit
+
 if PYQT6_AVAILABLE:
     pass
 
 
 @pytest.fixture(autouse=True, scope="module")
-def mock_pinocchio_gui_dependencies():
+def mock_pinocchio_gui_dependencies() -> Generator[None, None, None]:
     """Fixture to mock pinocchio and meshcat safely for the duration of this module."""
     with patch.dict(
         "sys.modules",
@@ -35,13 +39,13 @@ class TestPinocchioGUI:
     """Test Pinocchio GUI."""
 
     @pytest.fixture
-    def qapp(self):
+    def qapp(self) -> Any:
         """Ensure QApplication exists."""
         app = get_qapp()
         return app
 
     @pytest.fixture
-    def mock_gui(self, qapp):
+    def mock_gui(self, qapp) -> Any:
         """Create a mocked PinocchioGUI instance."""
         from contextlib import ExitStack
 
@@ -74,7 +78,7 @@ class TestPinocchioGUI:
             gui = PinocchioGUI()
             return gui
 
-    def test_ensure_analyzer_initialized(self, mock_gui):
+    def test_ensure_analyzer_initialized(self, mock_gui) -> None:
         """Test _ensure_analyzer_initialized method."""
         # 1. Model is None, Analyzer is None -> Should remain None
         mock_gui.model = None

@@ -62,33 +62,25 @@ class TrajectoryFunnelBenchmark:
 
     def simulate_agent_training_mock(self) -> dict[str, float]:
         """
-        Mocks the RL convergence behavior discussed in Chapter 10.
-        This will be replaced with Stable Baselines3 + MuJoCo in future PRs.
-        """
-        # Configure basic logging to ensure output is visible
-        if not logger.hasHandlers():
-            logging.basicConfig(level=logging.INFO)
+        Placeholder for RL convergence simulation discussed in Chapter 10.
 
-        logger.info("Initializing %s RL Agent Benchmark...", self.mode.upper())
-        if self.mode == "setpoint":
-            logger.info("Agent is fighting phase asynchrony. High variance at target.")
-            return {"convergence_epochs": 15000, "terminal_variance": 4.5}
-        logger.info("Agent is exploiting passive dynamics within the funnel tube.")
-        return {"convergence_epochs": 2400, "terminal_variance": 0.03}
+        Raises:
+            NotImplementedError: Real RL integration with Stable Baselines3 +
+                MuJoCo is not yet implemented. Use setpoint_reward() or
+                trajectory_funnel_reward() to compute rewards manually.
+        """
+        raise NotImplementedError(
+            "Real RL training integration (Stable Baselines3 + MuJoCo) is not yet "
+            "implemented. This method previously returned hardcoded mock values. "
+            "Implement actual RL training or use setpoint_reward() / "
+            "trajectory_funnel_reward() directly."
+        )
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     logger.info("--- Empirical Funnel Control Benchmark ---")
-
-    setpoint_benchmark = TrajectoryFunnelBenchmark("setpoint")
-    res_sp = setpoint_benchmark.simulate_agent_training_mock()
-    logger.info("Setpoint Results: %s\n", res_sp)
-
-    funnel_benchmark = TrajectoryFunnelBenchmark("transverse")
-    res_fn = funnel_benchmark.simulate_agent_training_mock()
-    logger.info("Transverse Results: %s", res_fn)
-
     logger.info(
-        "\nResult: The Trajectory Tracking Cost Functional geometrically accelerates convergence."
+        "Note: simulate_agent_training_mock() raises NotImplementedError. "
+        "Use setpoint_reward() or trajectory_funnel_reward() for real computations."
     )
