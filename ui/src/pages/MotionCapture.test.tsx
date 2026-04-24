@@ -12,7 +12,7 @@ import type {
   RecordingInfo,
   CaptureSession,
   PlaybackState,
-} from './MotionCapture';
+} from './_wip/MotionCapture';
 
 describe('MotionCapture data structures', () => {
   it('should parse capture sources', () => {

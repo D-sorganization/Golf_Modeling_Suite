@@ -6,7 +6,7 @@
 
 import { describe, it, expect } from 'vitest';
 
-import type { PuttResult, GreenReading, ScatterResult } from './PuttingGreen';
+import type { PuttResult, GreenReading, ScatterResult } from './_wip/PuttingGreen';
 
 describe('PuttingGreen data structures', () => {
   it('should parse a putt simulation result', () => {
