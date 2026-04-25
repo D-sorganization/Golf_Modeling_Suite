@@ -1,21 +1,21 @@
 # Review Comments Archive - 2026-04-25
 
-Generated: 2026-04-25T09:27:03.181108
+Generated: 2026-04-25T09:47:56.724830
 
 ## Reviewer (chatgpt-codex-connector[bot]) (1 comments)
 
-### PR #3259: .github/workflows/Jules-Assessment-Remediator.yml:66
+### PR #3264: src/api/local_server.py:71
 
-Actionable: No
+Actionable: Yes
 Has Suggestion: No
 
 ```
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Grant token scope before invoking kill-switch action**
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Avoid hard dependency on python-multipart at server import**
 
-This workflow now calls `./.github/actions/check-kill-switch`, but its `GITHUB_TOKEN` is still limited to `contents: read` and `issues: write`; the action queries `GET /repos/{owner}/{repo}/actions/variables/WORKFLOWS_PAUSED`, so in this permission set the lookup can return 403 and the action falls back to `false`, allowing the job to continue even when ...
+Importing `data_explorer` unconditionally here makes `src.api.local_server` fail to import in environments without `python-multipart` installed, because `src/api/routes/data_explorer.py` defines an `UploadFile` endpoint and FastAPI raises `RuntimeError` during route setup. This repository already treats multipart as optional (for example, `tests/un...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3259#discussion_r3142235702)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3264#discussion_r3142264352)
 
 ---
 
