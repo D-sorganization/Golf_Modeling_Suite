@@ -7,6 +7,7 @@ required files, environment variables, and the API server.
 
 Usage:
     python scripts/verify_installation.py
+    python scripts/verify_installation.py --smoke-test
 
 Exit codes:
     0 - All critical checks passed
@@ -15,6 +16,7 @@ Exit codes:
 
 from __future__ import annotations
 
+import argparse
 import logging
 import pathlib
 import subprocess
@@ -298,8 +300,101 @@ def check_api_server() -> tuple[bool, str]:
         return False, f"✗ API Server: Check failed - {e}"
 
 
+_MUJOCO_SMOKE_XML = """
+<mujoco model="smoke_test">
+  <worldbody>
+    <body name="box" pos="0 0 1">
+      <freejoint/>
+      <geom type="box" size="0.1 0.1 0.1" mass="1"/>
+    </body>
+  </worldbody>
+</mujoco>
+""".strip()
+
+
+def _smoke_mujoco() -> tuple[bool, str]:
+    """Run a minimal MuJoCo forward-simulation smoke test.
+
+    Loads a minimal XML model, creates MjData, steps 10 times, and
+    reports timing.
+
+    Returns:
+        Tuple of (passed, message)
+    """
+    try:
+        import mujoco
+
+        t0 = time.perf_counter()
+        model = mujoco.MjModel.from_xml_string(_MUJOCO_SMOKE_XML)
+        data = mujoco.MjData(model)
+        for _ in range(10):
+            mujoco.mj_step(model, data)
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+        return True, f"  PASS  MuJoCo: 10-step sim completed in {elapsed_ms:.1f} ms"
+    except ImportError:
+        return False, "  SKIP  MuJoCo: not installed"
+    except Exception as e:
+        return False, f"  FAIL  MuJoCo: {e}"
+
+
+def run_smoke_tests() -> int:
+    """Run per-engine smoke tests and print pass/fail with timing.
+
+    Returns:
+        0 if all available engines passed, 1 if any failed.
+    """
+    logger.info("=" * 70)
+    logger.info("Smoke Tests (per-engine real checks)")
+    logger.info("=" * 70)
+    logger.info("")
+
+    smoke_runners = [
+        ("MuJoCo", _smoke_mujoco),
+    ]
+
+    passed = 0
+    failed = 0
+    skipped = 0
+
+    for engine_name, runner in smoke_runners:
+        logger.info("  Running %s smoke test...", engine_name)
+        ok, message = runner()
+        logger.info(message)
+        if message.startswith("  PASS"):
+            passed += 1
+        elif message.startswith("  SKIP"):
+            skipped += 1
+        else:
+            failed += 1
+
+    logger.info("")
+    logger.info(
+        "Smoke test results: %d passed, %d failed, %d skipped",
+        passed,
+        failed,
+        skipped,
+    )
+    logger.info("")
+
+    return 0 if failed == 0 else 1
+
+
 def main() -> int:
     """Run all verification checks."""
+    parser = argparse.ArgumentParser(
+        description="Verify Golf Modeling Suite installation."
+    )
+    parser.add_argument(
+        "--smoke-test",
+        action="store_true",
+        default=False,
+        help=(
+            "Run per-engine smoke tests (real functional checks with timing). "
+            "Default: import-only checks."
+        ),
+    )
+    args = parser.parse_args()
+
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
     logger.info("=" * 70)
@@ -499,6 +594,11 @@ def main() -> int:
         logger.info("  python examples/01_basic_simulation.py")
         logger.info("  python -m uvicorn src.api.server:create_app --reload")
         logger.info("")
+
+        if args.smoke_test:
+            smoke_exit = run_smoke_tests()
+            return smoke_exit
+
         return 0
 
     logger.warning("✗ Some critical checks failed.")
@@ -509,6 +609,11 @@ def main() -> int:
     logger.info("  3. For physics engines: pip install -e '.[engines]'")
     logger.info("  4. See docs/troubleshooting/installation.md")
     logger.info("")
+
+    if args.smoke_test:
+        logger.info("Note: smoke tests skipped because critical import checks failed.")
+        logger.info("")
+
     return 1
 
 
