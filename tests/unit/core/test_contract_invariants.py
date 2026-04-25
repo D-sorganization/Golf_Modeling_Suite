@@ -2,42 +2,8 @@
 
 from __future__ import annotations
 
-import pytest
+from collections.abc import Callable
 
-from src.shared.python.core.contracts.exceptions import InvariantError
-from src.shared.python.core.contracts.invariants import (
-    ContractChecker,
-    invariant,
-    invariant_checked,
-)
-from src.shared.python.core.contracts.level import (
-    ContractLevel,
-    get_contract_level,
-    set_contract_level,
-)
-
-
-class TestContractChecker:
-    def setup_method(self) -> None:
-        self._saved_level = get_contract_level()
-        set_contract_level(ContractLevel.ENFORCE)
-
-    def teardown_method(self) -> None:
-        set_contract_level(self._saved_level)
-
-    def test_no_invariants_returns_true(self) -> None:
-        class MyClass(ContractChecker):
-            pass
-
-        obj = MyClass()
-        assert obj.verify_invariants() is True
-
-    def test_satisfied_invariant_returns_true(self) -> None:
-        class MyClass(ContractChecker):
-            def __init__(self) -> None:
-                self.mass = 1.0
-
-            def _get_invariants(self):
                 return [(lambda: self.mass > 0, "mass must be positive")]
 
         obj = MyClass()
@@ -48,7 +14,7 @@ class TestContractChecker:
             def __init__(self) -> None:
                 self.mass = -1.0
 
-            def _get_invariants(self):
+            def _get_invariants(self) -> list[tuple[Callable[[], bool], str]]:
                 return [(lambda: self.mass > 0, "mass must be positive")]
 
         obj = MyClass()
@@ -61,7 +27,7 @@ class TestContractChecker:
                 self.mass = 1.0
                 self.timestep = 0.01
 
-            def _get_invariants(self):
+            def _get_invariants(self) -> list[tuple[Callable[[], bool], str]]:
                 return [
                     (lambda: self.mass > 0, "mass must be positive"),
                     (lambda: self.timestep > 0, "timestep must be positive"),
@@ -84,7 +50,7 @@ class TestInvariantCheckedDecorator:
             def __init__(self) -> None:
                 self.count = 0
 
-            def _get_invariants(self):
+            def _get_invariants(self) -> list[tuple[Callable[[], bool], str]]:
                 return [(lambda: self.count >= 0, "count must be non-negative")]
 
             @invariant_checked
@@ -100,7 +66,7 @@ class TestInvariantCheckedDecorator:
             def __init__(self) -> None:
                 self.value = 1.0
 
-            def _get_invariants(self):
+            def _get_invariants(self) -> list[tuple[Callable[[], bool], str]]:
                 return [(lambda: self.value > 0, "value must be positive")]
 
             @invariant_checked

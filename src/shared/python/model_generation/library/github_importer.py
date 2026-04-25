@@ -73,7 +73,9 @@ class GitHubImporter:
         Returns:
             List of import results
         """
-        if query is None:
+        if not (query is not None):
+            raise ValueError("query must be provided")
+        if not (query is not None):
             raise ValueError("query must be provided")
         results = []
 
@@ -102,7 +104,9 @@ class GitHubImporter:
             if token:
                 req.add_header("Authorization", f"token {token}")
 
-            with urllib.request.urlopen(req) as response:  # nosec B310 - GitHub API endpoint, validated by Request object
+            with urllib.request.urlopen(
+                req
+            ) as response:  # nosec B310 - GitHub API endpoint, validated by Request object
                 data = json.loads(response.read().decode())
 
             items = data.get("items", [])
@@ -123,7 +127,9 @@ class GitHubImporter:
 
     def _process_search_item(self, item: dict[str, Any], dry_run: bool) -> ImportResult:
         """Process a single search result item."""
-        if item is None:
+        if not (item is not None):
+            raise ValueError("item must be provided")
+        if not (item is not None):
             raise ValueError("item must be provided")
         owner = item["owner"]["login"]
         repo_name = item["name"]
@@ -194,7 +200,9 @@ class GitHubImporter:
         Returns:
             List of import results
         """
-        if urls is None:
+        if not (urls is not None):
+            raise ValueError("urls must be provided")
+        if not (urls is not None):
             raise ValueError("urls must be provided")
         results = []
 
@@ -275,7 +283,9 @@ class GitHubImporter:
         self, url: str, owner: str, repo_name: str
     ) -> tuple[str, str]:
         """Fetch repository metadata (branch and description) from GitHub API."""
-        if url is None:
+        if not (url is not None):
+            raise ValueError("url must be provided")
+        if not (url is not None):
             raise ValueError("url must be provided")
         api_url = f"{self.API_BASE}/repos/{owner}/{repo_name}"
         branch = "main"
@@ -287,7 +297,9 @@ class GitHubImporter:
             token = os.environ.get("GITHUB_TOKEN")
             if token:
                 req.add_header("Authorization", f"token {token}")
-            with urllib.request.urlopen(req) as response:  # nosec B310 - GitHub API endpoint, validated by Request object
+            with urllib.request.urlopen(
+                req
+            ) as response:  # nosec B310 - GitHub API endpoint, validated by Request object
                 repo_data = json.loads(response.read().decode())
                 branch = repo_data.get("default_branch", "main")
                 description = repo_data.get("description", "")

@@ -19,6 +19,8 @@ jobs:
     outputs:
       runner: ${{ steps.check.outputs.runner }}
     steps:
+<<<<<<< HEAD
+=======
       - name: Check for self-hosted runner
         id: check
         env:
@@ -38,6 +40,7 @@ jobs:
     needs: pick-runner
     runs-on: self-hosted
     steps:
+>>>>>>> origin/main
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0

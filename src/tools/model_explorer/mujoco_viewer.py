@@ -4,12 +4,16 @@
 
 # mypy: ignore-errors
 # MuJoCo types are dynamically imported and mypy cannot resolve them statically
-"""MuJoCo-based 3D visualization for URDF preview.
+"""MuJoCo-based 3D visualization for URDF preview (coordinator).
 
 Implements Task 2.1: MuJoCo Visualization Embed per Phase 2 roadmap.
 Provides real-time URDF preview via MJCF conversion.
 
 Issue #755: Enhanced visualization toggles for collision, frames, joints, and contacts.
+
+Implementation split across:
+- _mujoco_viewer_backend.py: VisualizationFlags, URDFToMJCFConverter,
+  MuJoCoOffscreenRenderer
 """
 
 from __future__ import annotations
@@ -17,10 +21,9 @@ from __future__ import annotations
 import subprocess
 import sys
 import tempfile
-from dataclasses import dataclass
+import xml.etree.ElementTree as ET
 from typing import TYPE_CHECKING
 
-import defusedxml.ElementTree as ET
 import numpy as np
 from PyQt6.QtCore import QPointF, Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QImage, QMouseEvent, QPixmap, QWheelEvent
@@ -34,24 +37,29 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from src.shared.python.core.constants import (
-    GRAVITY_M_S2,  # DRY: Use centralized constant
-)
 from src.shared.python.engine_core.engine_availability import MUJOCO_AVAILABLE
 from src.shared.python.logging_pkg.logging_config import get_logger
 
 if TYPE_CHECKING:
     from typing import Any
 
+# Re-export public names for backward compatibility
+from ._mujoco_viewer_backend import (
+    MuJoCoOffscreenRenderer,
+    URDFToMJCFConverter,
+    VisualizationFlags,
+)
+
 logger = get_logger(__name__)
 
-# MuJoCo is optional - gracefully handle missing
+# MuJoCo is optional
 if MUJOCO_AVAILABLE:
     import mujoco
 else:
     mujoco = None  # type: ignore[assignment]
 
 
+=======
 @dataclass
 class VisualizationFlags:
     """Configuration for visualization options.
@@ -541,6 +549,7 @@ class MuJoCoOffscreenRenderer:
         self.distance = max(0.5, min(20.0, self.distance))
 
 
+>>>>>>> origin/main
 class MuJoCoViewerWidget(QWidget):
     """Qt widget for MuJoCo-based URDF visualization.
 
@@ -593,7 +602,8 @@ class MuJoCoViewerWidget(QWidget):
 
         # Create toggle group with visual separator
         toggle_frame = QFrame()
-        toggle_frame.setStyleSheet("""
+        toggle_frame.setStyleSheet(
+            """
             QFrame {
                 background-color: #3a3a3a;
                 border-radius: 4px;
@@ -611,7 +621,8 @@ class MuJoCoViewerWidget(QWidget):
                 background-color: #4a9eff;
                 border-radius: 2px;
             }
-        """)
+        """
+        )
         toggle_layout = QHBoxLayout(toggle_frame)
         toggle_layout.setContentsMargins(4, 2, 4, 2)
         toggle_layout.setSpacing(8)
@@ -651,13 +662,15 @@ class MuJoCoViewerWidget(QWidget):
         self._viewport = QLabel()
         self._viewport.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._viewport.setMinimumSize(320, 240)
-        self._viewport.setStyleSheet("""
+        self._viewport.setStyleSheet(
+            """
             QLabel {
                 background-color: #2a2a2a;
                 border: 1px solid #444;
                 border-radius: 4px;
             }
-        """)
+        """
+        )
         self._viewport.setMouseTracking(True)
         layout.addWidget(self._viewport, stretch=1)
 
@@ -692,7 +705,8 @@ class MuJoCoViewerWidget(QWidget):
 
     def _update_headless_placeholder(self) -> None:
         """Show a clear headless fallback message."""
-        self._viewport.setStyleSheet("""
+        self._viewport.setStyleSheet(
+            """
             QLabel {
                 background-color: #1a1a2e;
                 border: 2px dashed #4a4a6a;
@@ -700,7 +714,8 @@ class MuJoCoViewerWidget(QWidget):
                 color: #8888aa;
                 font-size: 14px;
             }
-        """)
+        """
+        )
         self._viewport.setText(
             "🖥️ Headless Mode\n\n"
             "MuJoCo is not installed.\n"
@@ -724,7 +739,10 @@ class MuJoCoViewerWidget(QWidget):
             urdf_content: URDF XML string.
             urdf_path: Optional path to URDF file for mesh resolution.
         """
-        if urdf_content is None:
+<<<<<<< HEAD
+        if not (urdf_content is not None):
+            raise ValueError("urdf_content must be provided")
+        if not (urdf_content is not None):
             raise ValueError("urdf_content must be provided")
         self._urdf_content = urdf_content
         self._urdf_path = urdf_path
@@ -776,12 +794,16 @@ class MuJoCoViewerWidget(QWidget):
         Returns:
             List of validation error messages.
         """
-        if urdf_content is None:
+        if not (urdf_content is not None):
+            raise ValueError("urdf_content must be provided")
+        if not (urdf_content is not None):
             raise ValueError("urdf_content must be provided")
         errors = []
 
         try:
-            root = ET.fromstring(urdf_content)
+            root = ET.fromstring(
+                urdf_content
+            )  # nosec B314 - urdf is validated tool input
         except ET.ParseError as e:
             return [f"XML Parse Error: {e}"]
 
@@ -883,7 +905,9 @@ class MuJoCoViewerWidget(QWidget):
         Args:
             checked: Whether collision geometry should be shown.
         """
-        if checked is None:
+        if not (checked is not None):
+            raise ValueError("checked must be provided")
+        if not (checked is not None):
             raise ValueError("checked must be provided")
         self._vis_flags.show_collision = checked
         self._update_renderer_flags()
@@ -895,7 +919,9 @@ class MuJoCoViewerWidget(QWidget):
         Args:
             checked: Whether coordinate frames should be shown.
         """
-        if checked is None:
+        if not (checked is not None):
+            raise ValueError("checked must be provided")
+        if not (checked is not None):
             raise ValueError("checked must be provided")
         self._vis_flags.show_frames = checked
         self._update_renderer_flags()
@@ -907,7 +933,9 @@ class MuJoCoViewerWidget(QWidget):
         Args:
             checked: Whether joint axes and limits should be shown.
         """
-        if checked is None:
+        if not (checked is not None):
+            raise ValueError("checked must be provided")
+        if not (checked is not None):
             raise ValueError("checked must be provided")
         self._vis_flags.show_joint_limits = checked
         self._update_renderer_flags()
@@ -919,7 +947,9 @@ class MuJoCoViewerWidget(QWidget):
         Args:
             checked: Whether contact points and forces should be shown.
         """
-        if checked is None:
+        if not (checked is not None):
+            raise ValueError("checked must be provided")
+        if not (checked is not None):
             raise ValueError("checked must be provided")
         self._vis_flags.show_contacts = checked
         self._update_renderer_flags()
@@ -989,7 +1019,9 @@ class MuJoCoViewerWidget(QWidget):
         Args:
             flags: New visualization configuration.
         """
-        if flags is None:
+        if not (flags is not None):
+            raise ValueError("flags must be provided")
+        if not (flags is not None):
             raise ValueError("flags must be provided")
         self._vis_flags = flags
 
@@ -1043,3 +1075,11 @@ class MuJoCoViewerWidget(QWidget):
             info["geoms"] = self._renderer._model.ngeom
 
         return info
+
+
+__all__ = [
+    "MuJoCoOffscreenRenderer",
+    "MuJoCoViewerWidget",
+    "URDFToMJCFConverter",
+    "VisualizationFlags",
+]

@@ -12,19 +12,8 @@ All tests are headless-safe and require only numpy (no Rust extension).
 from __future__ import annotations
 
 import math
-
-import numpy as np
-import pytest
-
-pytestmark = pytest.mark.unit
-
-# ---------------------------------------------------------------------------
-# Fixtures
-# ---------------------------------------------------------------------------
-
-
-@pytest.fixture
-def basic_params():
+from collections.abc import Callable
+from typing import Any
     """Standard double-pendulum parameters for golf swing model."""
     from src.shared.python.pendulum_simulator.physics import PendulumParams
 
@@ -32,13 +21,13 @@ def basic_params():
 
 
 @pytest.fixture
-def rest_state():
+def rest_state() -> np.ndarray:
     """State vector at rest in equilibrium (hanging straight down)."""
     return np.array([0.0, 0.0, 0.0, 0.0])
 
 
 @pytest.fixture
-def zero_torque():
+def zero_torque() -> Callable[..., tuple[float, float]]:
     """Zero torque function."""
     return lambda t: (0.0, 0.0)
 
@@ -644,7 +633,7 @@ class TestEquationsOfMotion:
             equations_of_motion,
         )
 
-        def torque(_t):
+        def torque(_t) -> tuple[float, float]:
             return (200.0, 200.0)  # will be clamped
 
         clamp = TorqueClamp(max_torque1=100.0, max_torque2=50.0)

@@ -12,16 +12,7 @@ import numpy as np
 import pytest
 
 from src.shared.python.screw_theory.kinematics import (
-    Twist,
-    compute_screw_axis,
-)
-from src.shared.python.screw_theory.visualization import plot_screw_axis_3d
-
-pytestmark = pytest.mark.unit
-
-
-@pytest.fixture
-def rotation_screw():
+    ScrewAxis,
     """ScrewAxis for pure rotation about Z-axis."""
     twist = Twist(
         angular=np.array([0.0, 0.0, 1.0]),
@@ -33,7 +24,7 @@ def rotation_screw():
 
 
 @pytest.fixture
-def translation_screw():
+def translation_screw() -> ScrewAxis:
     """ScrewAxis for pure translation along X-axis."""
     twist = Twist(
         angular=np.zeros(3),
@@ -44,7 +35,7 @@ def translation_screw():
     return compute_screw_axis(twist)
 
 
-def _make_mock_ax():
+def _make_mock_ax() -> MagicMock:
     """Create a mock matplotlib 3D axes object."""
     ax = MagicMock()
     return ax
@@ -117,7 +108,7 @@ class TestPlotScrewAxis3D:
         assert True  # Confirms no exception
 
     def test_assert_screw_not_none(self) -> None:
-        """plot_screw_axis_3d raises ValueError when screw is None."""
+        """plot_screw_axis_3d raises AssertionError when screw is None."""
         ax = _make_mock_ax()
-        with pytest.raises(ValueError):
+        with pytest.raises(AssertionError):
             plot_screw_axis_3d(ax, None, length=1.0)  # type: ignore[arg-type]

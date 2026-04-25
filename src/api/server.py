@@ -37,6 +37,7 @@ from src.shared.python.engine_core.engine_manager import EngineManager
 # Configure logging - use centralized logging config
 from src.shared.python.logging_pkg.logging_config import get_logger, setup_logging
 
+from ._version import __version__
 from .config import (
     get_allowed_hosts,
     get_cors_origins,
@@ -47,7 +48,9 @@ from .database import init_db
 from .middleware.security_headers import add_security_headers
 from .middleware.upload_limits import validate_upload_size
 from .route_registry import register_routes
+from .routes import chat_ws, simulation_ws
 from .services.analysis_service import AnalysisService
+from .services.chat_service import ChatService
 from .services.simulation_service import SimulationService
 from .task_manager import TaskManager
 from .utils.tracing import RequestTracer
@@ -133,52 +136,7 @@ async def lifespan(fastapi_app: FastAPI) -> AsyncGenerator[None, None]:
         # Initialize services and store in app.state for dependency injection
         fastapi_app.state.simulation_service = SimulationService(engine_manager)
         fastapi_app.state.analysis_service = AnalysisService(engine_manager)
-        fastapi_app.state.task_manager = active_tasks
-        fastapi_app.state.logger = logger
-
-        # Initialize video pipeline with default config
-        video_pipeline = _init_video_pipeline()
-        fastapi_app.state.video_pipeline = video_pipeline
-
-        # All routes now use FastAPI Depends() for dependency injection.
-        # No legacy configure() calls needed.
-
-        logger.info("Golf Modeling Suite API %s started successfully", API_PREFIX)
-
-    except OSError as e:
-        logger.error("Database or file system error during initialization: %s", e)
-        raise
-    except ImportError as e:
-        logger.error("Missing required dependency: %s", e)
-        raise
-    except RuntimeError as e:
-        logger.error("Engine initialization failed: %s", e)
-        raise
-    except (TypeError, AttributeError) as e:
-        logger.exception("Unexpected error during API initialization: %s", e)
-        raise
-
-    yield
-
-
-# Initialize FastAPI app with enhanced OpenAPI metadata (#1488)
-app = FastAPI(
-    title="UpstreamDrift API",
-    description=(
-        "Professional biomechanical analysis and physics simulation API.\n\n"
-        "## Features\n"
-        "- Multi-engine physics simulation (MuJoCo, Drake, Pinocchio, OpenSim, MyoSuite)\n"
-        "- Video-based pose estimation and motion capture\n"
-        "- Biomechanical analysis (kinematics, kinetics, energetics)\n"
-        "- Asynchronous simulation with job status tracking\n"
-        "- Real-time WebSocket streaming\n\n"
-        "## Versioning\n"
-        f"Current API version: **{API_VERSION}**. "
-        f"All endpoints are available under `{API_PREFIX}/` prefix.\n"
-        "Legacy un-prefixed and `/api/` routes are maintained for backward "
-        "compatibility."
-    ),
-    version=get_app_version(),
+        fastapi_app.state.chat_service = ChatService()
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_tags=[
@@ -253,9 +211,10 @@ app.middleware("http")(_tracer.trace_request)
 # Use plugin-style auto-discovery instead of 20+ explicit imports (#1485).
 # Routes are registered at root, /api, and /api/v1 (#1488).
 
-# Register all routes at root level (backward compatibility)
-_root_count = register_routes(app, prefix="")
-logger.info("Registered %d route modules at root prefix", _root_count)
+# Register all routes at /api prefix (backward compatibility — previously these modules
+# hardcoded /api/ in their own prefix, so legacy clients expect /api/<resource>).
+_root_count = register_routes(app, prefix="/api")
+logger.info("Registered %d route modules at /api prefix", _root_count)
 
 # Register all routes under /api prefix (legacy API compatibility)
 _legacy_api_count = register_routes(app, prefix="/api")
@@ -264,6 +223,13 @@ logger.info("Registered %d route modules under /api", _legacy_api_count)
 # Register all routes under /api/v1/ prefix (versioned API)
 _versioned_count = register_routes(app, prefix=API_PREFIX)
 logger.info("Registered %d route modules under %s", _versioned_count, API_PREFIX)
+
+# WebSocket routes are excluded from auto-discovery and must be registered explicitly.
+# See route_registry._EXCLUDED_MODULES and issue #2448.
+app.include_router(simulation_ws.router, prefix="")
+app.include_router(chat_ws.router, prefix="")
+app.include_router(simulation_ws.router, prefix=API_PREFIX)
+app.include_router(chat_ws.router, prefix=API_PREFIX)
 
 
 if __name__ == "__main__":

@@ -18,7 +18,7 @@ Fixes #1133
 
 import os
 import time
-from unittest.mock import patch
+from collections.abc import Generator
 
 import pytest
 
@@ -31,7 +31,7 @@ except ImportError:
 
 
 @pytest.fixture(scope="module")
-def client():
+def client() -> Generator[TestClient, None, None]:
     """Create test client with proper application lifespan."""
     with TestClient(app) as test_client:
         yield test_client

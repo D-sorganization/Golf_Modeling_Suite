@@ -9,15 +9,8 @@ All tests skip gracefully when optional dependencies are unavailable.
 
 from __future__ import annotations
 
-import numpy as np
-import pytest
+from typing import Any
 
-# ---------------------------------------------------------------------------
-# Import helpers
-# ---------------------------------------------------------------------------
-
-
-def _import_screw_modules():
     """Import screw theory modules or skip."""
     try:
         from mujoco_humanoid_golf.screw_theory.adjoint import adjoint_transform

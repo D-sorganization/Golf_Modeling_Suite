@@ -6,31 +6,7 @@ This file tests the outer src.shared.python.contracts module.
 
 from __future__ import annotations
 
-from collections.abc import Generator
-
-import pytest
-
-# ---------------------------------------------------------------------------
-# Helpers — enforce mode for all tests
-# ---------------------------------------------------------------------------
-
-
-@pytest.fixture(autouse=True)
-def enforce_contracts(monkeypatch: pytest.MonkeyPatch) -> Generator[None, None, None]:
-    monkeypatch.setenv("DBC_LEVEL", "enforce")
-    import src.shared.python.contracts as _contracts
-
-    # Use set_contract_level() instead of importlib.reload() to avoid
-    # destroying class identity. reload() creates new class objects that break
-    # isinstance() checks in other test modules that captured the old classes
-    # at collection time (e.g., test_dbc_decorators.py).
-    original_level = _contracts.get_contract_level()
-    _contracts.set_contract_level(_contracts.ContractLevel.ENFORCE)
-    yield
-    _contracts.set_contract_level(original_level)
-
-
-def _get_contracts():
+import types
     """Import after env var is set."""
     import src.shared.python.contracts as c
 

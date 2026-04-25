@@ -8,12 +8,8 @@ All tests skip gracefully when PyQt6 is unavailable.
 from __future__ import annotations
 
 import sys
-
-import pytest
-
-
-@pytest.fixture(scope="module")
-def qt_app():
+from collections.abc import Generator
+from typing import Any
     """Return or create a QApplication singleton for headless tests."""
     try:
         from PyQt6.QtWidgets import QApplication

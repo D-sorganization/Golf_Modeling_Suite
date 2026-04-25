@@ -9,6 +9,7 @@ JAX's automatic differentiation and optax optimizers.
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 try:
     import jax
@@ -65,14 +66,14 @@ def clubhead_speed_objective(
     neg_speed : JaxArray, shape ()
         Negative clubhead speed (for minimization)
     """
-    assert torque_coeffs.shape == (7,), (
-        f"Expected (7,) coeffs, got {torque_coeffs.shape}"
-    )
+    assert torque_coeffs.shape == (
+        7,
+    ), f"Expected (7,) coeffs, got {torque_coeffs.shape}"
     assert t_end > 0, f"t_end must be positive, got {t_end}"
     assert dt > 0, f"dt must be positive, got {dt}"
-    assert initial_state.shape == (16,), (
-        f"Expected (16,) state, got {initial_state.shape}"
-    )
+    assert initial_state.shape == (
+        16,
+    ), f"Expected (16,) state, got {initial_state.shape}"
     sol = run_single_simulation_jax(
         params, initial_state, t_end, torque_coeffs, alpha, beta, dt
     )
@@ -117,14 +118,14 @@ def clubhead_velocity_at_final_time(
     speed : JaxArray, shape ()
         Clubhead speed magnitude (positive)
     """
-    assert torque_coeffs.shape == (7,), (
-        f"Expected (7,) coeffs, got {torque_coeffs.shape}"
-    )
+    assert torque_coeffs.shape == (
+        7,
+    ), f"Expected (7,) coeffs, got {torque_coeffs.shape}"
     assert t_end > 0, f"t_end must be positive, got {t_end}"
     assert dt > 0, f"dt must be positive, got {dt}"
-    assert initial_state.shape == (16,), (
-        f"Expected (16,) state, got {initial_state.shape}"
-    )
+    assert initial_state.shape == (
+        16,
+    ), f"Expected (16,) state, got {initial_state.shape}"
     sol = run_single_simulation_jax(
         params, initial_state, t_end, torque_coeffs, alpha, beta, dt
     )
@@ -198,7 +199,7 @@ def optimize_torque_profile(
 
     @jax.jit
     @jax.value_and_grad
-    def loss_fn(coeffs: JaxArray) -> JaxArray:
+    def loss_fn(coeffs: Any) -> float:
         coeffs_reshaped = coeffs.reshape(7, n_coeffs_per_joint)
         # Use mean torque across coefficients as the single torque profile
         torque_simple = jnp.mean(coeffs_reshaped, axis=1)
@@ -220,9 +221,9 @@ def optimize_torque_profile(
             logger.info("Iteration %d/%d: loss = %.6f", i + 1, n_iterations, loss_val)
 
     optimal_coeffs = torque_coeffs.reshape(7, n_coeffs_per_joint)
-    assert len(history) == n_iterations, (
-        f"Expected {n_iterations} history entries, got {len(history)}"
-    )
+    assert (
+        len(history) == n_iterations
+    ), f"Expected {n_iterations} history entries, got {len(history)}"
     assert optimal_coeffs.shape == (7, n_coeffs_per_joint)
 
     return optimal_coeffs, history
@@ -279,7 +280,7 @@ def optimize_simple_torque_profile(
 
     @jax.jit
     @jax.value_and_grad
-    def loss_fn(coeffs: JaxArray) -> JaxArray:
+    def loss_fn(coeffs: Any) -> float:
         return clubhead_speed_objective(
             coeffs, params, initial_state, t_end, alpha, beta, dt
         )
@@ -328,9 +329,9 @@ def compute_gradient_via_finite_difference(
     -------
     grad : JaxArray, shape (7,)
     """
-    assert torque_coeffs.shape == (7,), (
-        f"Expected (7,) coeffs, got {torque_coeffs.shape}"
-    )
+    assert torque_coeffs.shape == (
+        7,
+    ), f"Expected (7,) coeffs, got {torque_coeffs.shape}"
     assert eps > 0, f"eps must be positive, got {eps}"
     grad = jnp.zeros(7)
 

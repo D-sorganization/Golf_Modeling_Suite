@@ -87,9 +87,9 @@ class TestManifestLoading:
     def test_manifest_has_no_duplicate_ids(self, manifest: LauncherManifest) -> None:
         """DBC Postcondition: all tile IDs must be unique."""
         ids = [t.id for t in manifest.tiles]
-        assert len(ids) == len(set(ids)), (
-            f"Duplicate IDs found: {[x for x in ids if ids.count(x) > 1]}"
-        )
+        assert len(ids) == len(
+            set(ids)
+        ), f"Duplicate IDs found: {[x for x in ids if ids.count(x) > 1]}"
 
     def test_manifest_file_not_found_raises(self) -> None:
         """DBC Precondition: missing file raises FileNotFoundError."""
@@ -391,9 +391,9 @@ class TestTileProperties:
         """Category must be one of the allowed values."""
         valid_categories = {"physics_engine", "tool", "external"}
         for tile in manifest.tiles:
-            assert tile.category in valid_categories, (
-                f"Tile '{tile.id}' has invalid category: '{tile.category}'"
-            )
+            assert (
+                tile.category in valid_categories
+            ), f"Tile '{tile.id}' has invalid category: '{tile.category}'"
 
     def test_physics_engines_have_engine_type(self, manifest: LauncherManifest) -> None:
         """All physics_engine tiles must have an engine_type."""
@@ -437,9 +437,9 @@ class TestLogoValidation:
         All SVG logos were created in Phase 3 (closes #1164).
         """
         missing = manifest.validate_logos()
-        assert not missing, (
-            f"Missing logo files for tiles: {missing}. Expected in: {ASSETS_DIR}"
-        )
+        assert (
+            not missing
+        ), f"Missing logo files for tiles: {missing}. Expected in: {ASSETS_DIR}"
 
     def test_logo_path_property(self, sample_tile_dict: dict) -> None:
         """Tile logo_path property returns absolute path."""
@@ -464,9 +464,9 @@ class TestOrdering:
     def test_model_explorer_is_first(self, manifest: LauncherManifest) -> None:
         """Model Explorer must be the first tile (order=1)."""
         first = manifest.tiles[0]
-        assert first.id == "model_explorer", (
-            f"First tile should be model_explorer, got: {first.id}"
-        )
+        assert (
+            first.id == "model_explorer"
+        ), f"First tile should be model_explorer, got: {first.id}"
 
     def test_ordered_ids_returns_deterministic_list(
         self, manifest: LauncherManifest
@@ -637,3 +637,71 @@ class TestCategories:
         assert "openpose" in mc.capabilities
         assert "mediapipe" in mc.capabilities
         assert "c3d_viewer" in mc.capabilities
+
+
+class TestWebRouteFieldRoundTrip:
+    """Tests for web_route round-trip preservation (issue #2494)."""
+
+    def test_from_dict_preserves_web_route(self) -> None:
+        """from_dict() must read web_route from the manifest dict."""
+        data = {
+            "id": "test_tile",
+            "name": "Test",
+            "description": "A test tile",
+            "category": "tool",
+            "type": "web",
+            "path": "/some/path",
+            "logo": "logo.png",
+            "status": "gui_ready",
+            "web_route": "/tools/test",
+        }
+        tile = LauncherTile.from_dict(data)
+        assert tile.web_route == "/tools/test"
+
+    def test_to_dict_includes_web_route(self) -> None:
+        """to_dict() must serialize web_route so it survives a round-trip."""
+        data = {
+            "id": "test_tile",
+            "name": "Test",
+            "description": "A test tile",
+            "category": "tool",
+            "type": "web",
+            "path": "/some/path",
+            "logo": "logo.png",
+            "status": "gui_ready",
+            "web_route": "/tools/test",
+        }
+        tile = LauncherTile.from_dict(data)
+        serialized = tile.to_dict()
+        assert "web_route" in serialized
+        assert serialized["web_route"] == "/tools/test"
+
+    def test_web_route_none_by_default(self) -> None:
+        """web_route defaults to None when absent from the manifest dict."""
+        data = {
+            "id": "test_tile",
+            "name": "Test",
+            "description": "A test tile",
+            "category": "physics_engine",
+            "type": "mujoco",
+            "path": "/some/path",
+            "logo": "logo.png",
+            "status": "engine_ready",
+        }
+        tile = LauncherTile.from_dict(data)
+        assert tile.web_route is None
+
+    def test_to_dict_omits_web_route_when_none(self) -> None:
+        """to_dict() must not include web_route key when it is None."""
+        data = {
+            "id": "test_tile",
+            "name": "Test",
+            "description": "A test tile",
+            "category": "physics_engine",
+            "type": "mujoco",
+            "path": "/some/path",
+            "logo": "logo.png",
+        }
+        tile = LauncherTile.from_dict(data)
+        serialized = tile.to_dict()
+        assert "web_route" not in serialized

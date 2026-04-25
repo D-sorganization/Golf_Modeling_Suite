@@ -11,17 +11,16 @@ Design by Contract
 
 from __future__ import annotations
 
-import numpy as np
-import pytest
+from typing import Any
 
-from src.engines.physics_engines.mujoco.python.perturbation.analyzer import (
-    MANDATORY_METRICS,
     MuJoCoSimResult,
 )
 from src.shared.python.pendulum_simulator.perturbation_analysis import (
     perturb_torque_coeffs,
 )
+=======
 from src.shared.python.perturbation.analyzer_base import ComparisonReport
+>>>>>>> origin/main
 from src.shared.python.perturbation.config import PerturbationConfig
 
 # ---------------------------------------------------------------------------
@@ -198,7 +197,8 @@ class TestComparisonReport:
 
 
 @pytest.fixture(scope="module")
-def analyzer():  # type: ignore[no-untyped-def]
+<<<<<<< HEAD
+def analyzer() -> Any:  # type: ignore[no-untyped-def]
     from src.engines.physics_engines.mujoco.python.perturbation.analyzer import (
         MuJoCoPerturbationAnalyzer,
     )
@@ -207,7 +207,7 @@ def analyzer():  # type: ignore[no-untyped-def]
 
 
 @pytest.fixture(scope="module")
-def analyzer_with_profile(analyzer):  # type: ignore[no-untyped-def]
+def analyzer_with_profile(analyzer) -> Any:  # type: ignore[no-untyped-def]
     analyzer.set_base_torque_profile(_ZERO_PROFILE)
     return analyzer
 
@@ -230,11 +230,11 @@ class TestSetBaseProfile:
         analyzer.set_base_torque_profile(_ZERO_PROFILE)  # no exception
 
     def test_requires_dict(self, analyzer) -> None:  # type: ignore[no-untyped-def]
-        with pytest.raises((ValueError, AssertionError, TypeError)):
+        with pytest.raises((AssertionError, TypeError)):
             analyzer.set_base_torque_profile("not_a_dict")  # type: ignore[arg-type]
 
     def test_requires_coeffs_key(self, analyzer) -> None:  # type: ignore[no-untyped-def]
-        with pytest.raises((ValueError, AssertionError, KeyError)):
+        with pytest.raises((AssertionError, KeyError)):
             analyzer.set_base_torque_profile({"bad_key": []})
 
     def test_stores_base_coeffs(self, analyzer) -> None:  # type: ignore[no-untyped-def]
@@ -280,7 +280,7 @@ class TestExtractMetrics:
                 assert np.isfinite(float(val)), f"Non-finite scalar metric: {name}"
 
     def test_rejects_invalid_input(self, analyzer_with_profile) -> None:  # type: ignore[no-untyped-def]
-        with pytest.raises((ValueError, AssertionError, AttributeError)):
+        with pytest.raises((AssertionError, AttributeError)):
             analyzer_with_profile.extract_metrics("bad_input")  # type: ignore[arg-type]
 
     def test_motion_duration_positive(self, analyzer_with_profile) -> None:  # type: ignore[no-untyped-def]
@@ -334,7 +334,11 @@ class TestRunBatch:
             MuJoCoPerturbationAnalyzer,
         )
 
-        fresh = MuJoCoPerturbationAnalyzer(t_end=0.1)
+        # Bypass the __init__ (which requires a real mujoco model) and test
+        # the base-class precondition check directly.
+        fresh = MuJoCoPerturbationAnalyzer.__new__(MuJoCoPerturbationAnalyzer)
+        fresh._base_coeffs = None  # type: ignore[attr-defined]
+        fresh._nominal_result = None  # type: ignore[attr-defined]
         with pytest.raises((ValueError, AssertionError, AttributeError)):
             fresh.run_batch(_SMALL_CONFIG)
 

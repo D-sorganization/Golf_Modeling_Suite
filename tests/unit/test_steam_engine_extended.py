@@ -14,17 +14,8 @@ All tests use the simplified calculation path (no CoolProp / Cantera required).
 
 from __future__ import annotations
 
-import pytest
+from typing import Any
 
-pytestmark = pytest.mark.unit
-
-# ---------------------------------------------------------------------------
-# Fixture
-# ---------------------------------------------------------------------------
-
-
-@pytest.fixture
-def engine():
     """SteamCalculationEngine instance."""
     from src.shared.python.upstream_drift_tools.calculators.thermo.steam_engine import (
         SteamCalculationEngine,
@@ -225,7 +216,7 @@ class TestCalculateDewPoint:
 
         # Partial pressure of water = 2000 Pa (about 2% at 1 atm)
         T_dew = engine.calculate_dew_point(2000.0, 101325.0)
-        assert isinstance(T_dew, int | float)
+        assert isinstance(T_dew, (int, float))
         assert math.isfinite(T_dew)
 
     def test_dew_point_below_saturation_temperature(self, engine) -> None:

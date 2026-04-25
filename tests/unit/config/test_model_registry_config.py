@@ -240,6 +240,8 @@ class TestModelRegistryLoad:
         mc = registry.get_model("robot")
         assert mc is not None
         assert mc.engine_type == "pinocchio"
+<<<<<<< HEAD
+=======
 
     def test_blank_description_falls_back_to_name_for_legacy_registry(
         self, tmp_path: Path
@@ -262,3 +264,4 @@ class TestModelRegistryLoad:
         mc = registry.get_model("legacy")
         assert mc is not None
         assert mc.description == "Legacy Model"
+>>>>>>> origin/main

@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import asyncio
 import time
+from collections.abc import Generator
+from typing import Any
 
 import pytest
 
@@ -32,13 +34,33 @@ class TestRouteRegistry:
             assert hasattr(router, "routes")  # APIRouter has .routes
 
     def test_discover_routes_excludes_websocket_modules(self) -> None:
-        """WebSocket-only modules are excluded by default."""
+        """WebSocket-only modules are excluded from auto-discovery (handled explicitly)."""
         from src.api.route_registry import discover_routes
 
         routes = discover_routes()
         module_names = {name for name, _ in routes}
         assert "chat_ws" not in module_names
         assert "simulation_ws" not in module_names
+
+    def test_websocket_modules_registered_explicitly_in_server(self) -> None:
+        """WebSocket modules must be explicitly registered in server.py.
+
+        They are excluded from auto-discovery but must still be served —
+        this test protects against accidental removal of the explicit registration.
+        """
+        source = (
+            __import__("pathlib").Path("src/api/server.py").read_text(encoding="utf-8")
+        )
+        assert "chat_ws" in source, (
+            "server.py does not register chat_ws router. "
+            "WebSocket modules are excluded from auto-discovery and must be "
+            "explicitly included in server.py."
+        )
+        assert "simulation_ws" in source, (
+            "server.py does not register simulation_ws router. "
+            "WebSocket modules are excluded from auto-discovery and must be "
+            "explicitly included in server.py."
+        )
 
     def test_discover_routes_custom_exclude(self) -> None:
         """Custom exclusion set is respected."""
@@ -61,9 +83,9 @@ class TestRouteRegistry:
         # Priority modules should appear in _REGISTRATION_ORDER sequence
         priority_names = [n for n in names if n in _REGISTRATION_ORDER]
         expected_order = [n for n in _REGISTRATION_ORDER if n in priority_names]
-        assert priority_names == expected_order, (
-            f"Priority modules out of order: {priority_names} != {expected_order}"
-        )
+        assert (
+            priority_names == expected_order
+        ), f"Priority modules out of order: {priority_names} != {expected_order}"
 
     def test_register_routes_on_app(self) -> None:
         """register_routes includes discovered routers on a FastAPI app."""
@@ -320,7 +342,7 @@ class TestAPIVersioning:
     """Tests for API versioning under /api/v1/ prefix (#1488)."""
 
     @pytest.fixture
-    def client(self):
+    def client(self) -> Generator[Any, None, None]:
         """Create a test client for the API."""
         httpx = pytest.importorskip("httpx")  # noqa: F841
         fastapi = pytest.importorskip("fastapi")  # noqa: F841
@@ -440,9 +462,9 @@ class TestLinkageMechanismsDecomposition:
             assert "xml" in entry, f"Missing 'xml' in catalog entry: {name}"
             assert "actuators" in entry, f"Missing 'actuators' in catalog entry: {name}"
             assert "category" in entry, f"Missing 'category' in catalog entry: {name}"
-            assert "description" in entry, (
-                f"Missing 'description' in catalog entry: {name}"
-            )
+            assert (
+                "description" in entry
+            ), f"Missing 'description' in catalog entry: {name}"
 
     def test_four_bar_generates_valid_xml(self) -> None:
         """Four-bar linkage XML contains expected MuJoCo elements."""
@@ -508,7 +530,7 @@ class TestOpenAPIEnhancements:
     """Tests for OpenAPI schema improvements (#1488)."""
 
     @pytest.fixture
-    def client(self):
+    def client(self) -> Generator[Any, None, None]:
         """Create a test client for the API."""
         httpx = pytest.importorskip("httpx")  # noqa: F841
         fastapi = pytest.importorskip("fastapi")  # noqa: F841

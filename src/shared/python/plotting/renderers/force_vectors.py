@@ -23,138 +23,8 @@ Color/style configuration is centralized in module-level constants.
 
 from __future__ import annotations
 
-import numpy as np
-from matplotlib.figure import Figure
+from typing import Any
 
-from src.shared.python.plotting.renderers.base import BaseRenderer
-
-# ── Force type color configuration ────────────────────────────────────
-# Consistent color scheme across all force vector plots.
-COLOR_TOTAL = "#32CD32"  # Lime green — total (driven) forces
-COLOR_ZTCF = "#D278FF"  # Violet — passive / counterfactual
-COLOR_DELTA = "#FF6347"  # Tomato — active control component
-
-LINESTYLE_TOTAL = "-"
-LINESTYLE_ZTCF = "--"
-LINESTYLE_DELTA = "-."
-
-
-class ForceVectorRenderer(BaseRenderer):
-    """Renderer for joint force vector overlays (total, ZTCF, delta).
-
-    Provides methods to plot force vectors at joint positions in 3-D,
-    with support for single-type plots and combined decomposition views.
-    """
-
-    # ------------------------------------------------------------------
-    # Total force vectors
-    # ------------------------------------------------------------------
-
-    def plot_joint_force_vectors(
-        self,
-        fig: Figure,
-        *,
-        positions: np.ndarray | None = None,
-        forces: np.ndarray | None = None,
-        frame_idx: int | None = None,
-        scale: float = 0.01,
-        title: str = "Joint Force Vectors",
-    ) -> None:
-        """Plot total joint force vectors as 3-D arrows.
-
-        Args:
-            fig: Target figure.
-            positions: ``(n_joints, 3)`` joint world positions.
-            forces: ``(n_joints, 3)`` force vectors in Newtons.
-            frame_idx: If positions/forces are None, fetch from data at
-                this frame index.
-            scale: Arrow length scaling factor.
-            title: Plot title.
-        """
-        assert fig is not None, "fig must be provided"
-        positions, forces = self._resolve_force_data(
-            positions, forces, frame_idx, "joint_forces"
-        )
-        self._render_quiver_overlay(
-            fig,
-            positions=positions,
-            vectors=forces,
-            scale=scale,
-            color=COLOR_TOTAL,
-            label="Total Force",
-            title=title,
-        )
-
-    # ------------------------------------------------------------------
-    # ZTCF force vectors
-    # ------------------------------------------------------------------
-
-    def plot_ztcf_force_vectors(
-        self,
-        fig: Figure,
-        *,
-        positions: np.ndarray | None = None,
-        ztcf_forces: np.ndarray | None = None,
-        frame_idx: int | None = None,
-        scale: float = 0.01,
-        title: str = "ZTCF Force Vectors (Passive)",
-    ) -> None:
-        """Plot zero-torque counterfactual force vectors.
-
-        Args:
-            fig: Target figure.
-            positions: ``(n_joints, 3)`` joint world positions.
-            ztcf_forces: ``(n_joints, 3)`` ZTCF force vectors.
-            frame_idx: Frame index for data lookup if arrays not given.
-            scale: Arrow length scaling factor.
-            title: Plot title.
-        """
-        assert fig is not None, "fig must be provided"
-        positions, ztcf_forces = self._resolve_force_data(
-            positions, ztcf_forces, frame_idx, "ztcf_joint_forces"
-        )
-        self._render_quiver_overlay(
-            fig,
-            positions=positions,
-            vectors=ztcf_forces,
-            scale=scale,
-            color=COLOR_ZTCF,
-            label="ZTCF (Passive)",
-            title=title,
-            linestyle=LINESTYLE_ZTCF,
-        )
-
-    # ------------------------------------------------------------------
-    # Delta (active control) force vectors
-    # ------------------------------------------------------------------
-
-    def plot_force_delta_vectors(
-        self,
-        fig: Figure,
-        *,
-        positions: np.ndarray,
-        total_forces: np.ndarray,
-        ztcf_forces: np.ndarray,
-        scale: float = 0.01,
-        title: str = "Active Control Force Vectors (Total − ZTCF)",
-    ) -> None:
-        """Plot delta force vectors (total − ZTCF = active component).
-
-        Args:
-            fig: Target figure.
-            positions: ``(n_joints, 3)`` joint world positions.
-            total_forces: ``(n_joints, 3)`` total force vectors.
-            ztcf_forces: ``(n_joints, 3)`` ZTCF force vectors.
-            scale: Arrow length scaling factor.
-            title: Plot title.
-        """
-        assert fig is not None, "fig must be provided"
-        total_forces = np.asarray(total_forces)
-        ztcf_forces = np.asarray(ztcf_forces)
-
-        assert total_forces.shape == ztcf_forces.shape, (
-            f"Shape mismatch: total {total_forces.shape} vs ztcf {ztcf_forces.shape}"
-        )
 
         delta = total_forces - ztcf_forces
         self._render_quiver_overlay(
@@ -378,7 +248,7 @@ class ForceVectorRenderer(BaseRenderer):
 
     def _draw_quiver_on_axes(
         self,
-        ax,
+        ax: Any,
         *,
         positions: np.ndarray,
         vectors: np.ndarray,
@@ -413,7 +283,7 @@ class ForceVectorRenderer(BaseRenderer):
         )
 
     @staticmethod
-    def _format_3d_axes(ax) -> None:
+    def _format_3d_axes(ax: Any) -> None:
         """Apply standard formatting to a 3-D axes."""
         ax.set_xlabel("X (m)", fontsize=10)
         ax.set_ylabel("Y (m)", fontsize=10)

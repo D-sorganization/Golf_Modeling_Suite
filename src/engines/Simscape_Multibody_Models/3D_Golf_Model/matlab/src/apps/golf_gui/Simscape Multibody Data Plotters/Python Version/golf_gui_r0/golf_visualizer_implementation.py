@@ -5,36 +5,9 @@ from __future__ import annotations
 
 import logging
 import sys
-
-from PyQt6.QtWidgets import QApplication
-
-try:
-    from .golf_visualizer_app import ModernGolfVisualizerApp
-    from .golf_visualizer_data import DataProcessor
-    from .golf_visualizer_models import FrameData, RenderConfig
-    from .golf_visualizer_renderer import OpenGLRenderer
-    from .golf_visualizer_widget import ModernGolfVisualizerWidget
-except ImportError:
-    from golf_visualizer_app import ModernGolfVisualizerApp
-    from golf_visualizer_data import DataProcessor
-    from golf_visualizer_models import FrameData, RenderConfig
-    from golf_visualizer_renderer import OpenGLRenderer
-    from golf_visualizer_widget import ModernGolfVisualizerWidget
-
-logger = logging.getLogger(__name__)
-
-
-__all__ = [
-    "FrameData",
-    "RenderConfig",
-    "DataProcessor",
-    "OpenGLRenderer",
-    "ModernGolfVisualizerWidget",
-    "ModernGolfVisualizerApp",
-    "main",
-]
-
-
+import time
+from dataclasses import dataclass
+from typing import Any
 def main() -> None:
     """Main application entry point."""
     app = QApplication(sys.argv)

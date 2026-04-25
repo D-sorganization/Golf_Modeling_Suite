@@ -42,6 +42,7 @@ import sys
 from pathlib import Path
 
 
+=======
 def _emit_stdout(message: str) -> None:
     """Write a single line to standard output."""
     sys.stdout.write(f"{message}\n")
@@ -52,6 +53,7 @@ def _emit_stderr(message: str) -> None:
     sys.stderr.write(f"{message}\n")
 
 
+>>>>>>> origin/main
 def _ensure_src_on_path() -> None:
     """Prepend ``src/`` to sys.path so project packages are importable."""
     repo_root = Path(__file__).resolve().parent.parent
@@ -153,10 +155,13 @@ def cmd_check(args: argparse.Namespace) -> int:  # noqa: ARG001
     try:
         cfg = _get_alembic_config()
         command.check(cfg)
-        _emit_stdout("Migration check passed: models and migrations are in sync.")
+<<<<<<< HEAD
+        print(
+            "Migration check passed: models and migrations are in sync."
+        )  # noqa: T201
         return 0
     except Exception as exc:  # noqa: BLE001
-        _emit_stderr(
+        print(  # noqa: T201
             f"Migration check FAILED: {exc}\n"
             "Run: python3 scripts/db_migrate.py revision --autogenerate "
             "-m 'describe your change' to generate a new migration."

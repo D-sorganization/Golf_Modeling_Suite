@@ -1,7 +1,48 @@
+<<<<<<< HEAD:src/shared/python/data_io/dataset_generator.py
+"""Dataset Generator for Neural Network Training.
+
+Generates large-scale simulation datasets by varying inputs across physics engines.
+Records all kinematics (q, v, a), kinetics (tau, forces, energies), and model
+data (inertia, bias forces, Jacobians) into structured databases for ML training.
+
+Data models are in _dataset_models.py.
+Export methods are in _dataset_export_mixin.py.
+
+Design by Contract:
+    Preconditions:
+        - Engine must implement PhysicsEngine protocol
+        - Parameter ranges must be valid (min <= max)
+        - Output directory must be writable
+    Postconditions:
+        - Generated dataset contains all requested fields
+        - Data is validated (no NaN/Inf in physics quantities)
+        - Provenance metadata is attached to every dataset
+    Invariants:
+        - Original engine state is restored after generation
+        - All data is reproducible given the same seed
+
+Usage:
+    >>> from src.shared.python.data_io.dataset_generator import DatasetGenerator
+    >>> gen = DatasetGenerator(engine)
+    >>> config = GeneratorConfig(
+    ...     num_samples=1000,
+    ...     duration=2.0,
+    ...     timestep=0.002,
+    ...     vary_initial_positions=True,
+    ... )
+    >>> dataset = gen.generate(config)
+    >>> gen.export(dataset, "output/training_data", format="hdf5")
+"""
+
+from __future__ import annotations
+
+import contextlib
+=======
 import contextlib
 import json
 import sqlite3
 from pathlib import Path
+>>>>>>> origin/main:src/shared/python/data_io/dataset_generator/core.py
 from typing import Any
 
 import numpy as np
@@ -11,8 +52,20 @@ from src.shared.python.core.error_utils import SimulationError
 from src.shared.python.engine_core.interfaces import PhysicsEngine
 from src.shared.python.logging_pkg.logging_config import get_logger
 
+<<<<<<< HEAD:src/shared/python/data_io/dataset_generator.py
+# Re-export public data models for backward compatibility
+from ._dataset_export_mixin import _DatasetExportMixin
+from ._dataset_models import (
+    ControlProfile,
+    GeneratorConfig,
+    ParameterRange,
+    SimulationSample,
+    TrainingDataset,
+)
+=======
 from .config import GeneratorConfig
 from .models import SimulationSample, TrainingDataset
+>>>>>>> origin/main:src/shared/python/data_io/dataset_generator/core.py
 
 logger = get_logger(__name__)
 
@@ -21,7 +74,7 @@ logger = get_logger(__name__)
     lambda self: self.engine is not None,
     "DatasetGenerator must have a valid engine reference",
 )
-class DatasetGenerator:
+class DatasetGenerator(_DatasetExportMixin):
     """Generates simulation datasets for neural network training.
 
     Uses a PhysicsEngine to run simulations with varied inputs and records
@@ -47,7 +100,13 @@ class DatasetGenerator:
         Raises:
             ValueError: If engine has no model loaded.
         """
+<<<<<<< HEAD:src/shared/python/data_io/dataset_generator.py
+        if not (engine is not None):
+            raise ValueError("engine must be provided")
+        if not (engine is not None):
+=======
         if engine is None:
+>>>>>>> origin/main:src/shared/python/data_io/dataset_generator/core.py
             raise ValueError("engine must be provided")
         self.engine = engine
         self._original_state: tuple[np.ndarray, np.ndarray] | None = None
@@ -85,7 +144,13 @@ class DatasetGenerator:
         Raises:
             RuntimeError: If simulation fails for all samples.
         """
+<<<<<<< HEAD:src/shared/python/data_io/dataset_generator.py
+        if not (config is not None):
+            raise ValueError("config must be provided")
+        if not (config is not None):
+=======
         if config is None:
+>>>>>>> origin/main:src/shared/python/data_io/dataset_generator/core.py
             raise ValueError("config must be provided")
         rng = np.random.default_rng(config.seed)
 
@@ -112,42 +177,44 @@ class DatasetGenerator:
             n_steps,
         )
 
-        for i in range(config.num_samples):
-            try:
-                sample = self._run_single_simulation(
-                    sample_id=i,
-                    config=config,
-                    rng=rng,
-                    n_steps=n_steps,
-                    n_q=n_q,
-                    n_v=n_v,
+        try:
+            for i in range(config.num_samples):
+                try:
+                    sample = self._run_single_simulation(
+                        sample_id=i,
+                        config=config,
+                        rng=rng,
+                        n_steps=n_steps,
+                        n_q=n_q,
+                        n_v=n_v,
+                    )
+                    samples.append(sample)
+
+                    if progress_callback is not None:
+                        progress_callback(i + 1, config.num_samples)
+
+                except (RuntimeError, TypeError, ValueError) as e:
+                    logger.warning("Sample %d failed: %s", i, e)
+                    failed_count += 1
+                    continue
+
+            if not samples:
+                raise SimulationError(
+                    f"All {config.num_samples} samples failed during generation"
                 )
-                samples.append(sample)
 
-                if progress_callback is not None:
-                    progress_callback(i + 1, config.num_samples)
+            if failed_count > 0:
+                logger.warning(
+                    "%d/%d samples failed during generation",
+                    failed_count,
+                    config.num_samples,
+                )
 
-            except (RuntimeError, TypeError, ValueError) as e:
-                logger.warning("Sample %d failed: %s", i, e)
-                failed_count += 1
-                continue
-
-        if not samples:
-            raise SimulationError(
-                f"All {config.num_samples} samples failed during generation"
-            )
-
-        if failed_count > 0:
-            logger.warning(
-                "%d/%d samples failed during generation",
-                failed_count,
-                config.num_samples,
-            )
-
-        # Restore original state
-        if self._original_state is not None:
-            with contextlib.suppress(ValueError, RuntimeError, AttributeError):
-                self.engine.set_state(*self._original_state)
+        finally:
+            # Restore original state regardless of success or failure
+            if self._original_state is not None:
+                with contextlib.suppress(ValueError, RuntimeError, AttributeError):
+                    self.engine.set_state(*self._original_state)
 
         dataset = TrainingDataset(
             samples=samples,
@@ -215,6 +282,21 @@ class DatasetGenerator:
             "control_type": profile.profile_type,
         }
 
+<<<<<<< HEAD:src/shared/python/data_io/dataset_generator.py
+        if not (buffers["times"] is not None):
+            raise ValueError("times buffer must not be None")
+        if not (buffers["positions"] is not None):
+            raise ValueError("positions buffer must not be None")
+        if not (buffers["velocities"] is not None):
+            raise ValueError("velocities buffer must not be None")
+        if not (buffers["accelerations"] is not None):
+            raise ValueError("accelerations buffer must not be None")
+        if not (buffers["torques"] is not None):
+            raise ValueError("torques buffer must not be None")
+        if not (buffers["kinetic_energy"] is not None):
+            raise ValueError("kinetic_energy buffer must not be None")
+        if not (buffers["potential_energy"] is not None):
+=======
         if buffers["times"] is None:
             raise ValueError("times buffer must not be None")
         if buffers["positions"] is None:
@@ -228,6 +310,7 @@ class DatasetGenerator:
         if buffers["kinetic_energy"] is None:
             raise ValueError("kinetic_energy buffer must not be None")
         if buffers["potential_energy"] is None:
+>>>>>>> origin/main:src/shared/python/data_io/dataset_generator/core.py
             raise ValueError("potential_energy buffer must not be None")
 
         return SimulationSample(
@@ -352,7 +435,13 @@ class DatasetGenerator:
             v: Current velocity vector.
             buffers: Pre-allocated recording buffers (modified in-place).
         """
+<<<<<<< HEAD:src/shared/python/data_io/dataset_generator.py
+        if not (config is not None):
+            raise ValueError("config must be provided")
+        if not (config is not None):
+=======
         if config is None:
+>>>>>>> origin/main:src/shared/python/data_io/dataset_generator/core.py
             raise ValueError("config must be provided")
         if config.record_mass_matrix and buffers["mass_matrices"] is not None:
             with contextlib.suppress(ValueError, RuntimeError, AttributeError):
@@ -390,6 +479,10 @@ class DatasetGenerator:
             buffers["kinetic_energy"][step] = 0.5 * float(v.T @ M @ v)  # type: ignore[index]
         except (ValueError, RuntimeError, AttributeError):
             pass
+        with contextlib.suppress(ValueError, RuntimeError, AttributeError):
+            buffers["potential_energy"][step] = float(  # type: ignore[index]
+                self.engine.compute_potential_energy()  # type: ignore[attr-defined]
+            )
 
     def _generate_initial_conditions(
         self,
@@ -409,7 +502,13 @@ class DatasetGenerator:
         Returns:
             Tuple of (initial_positions, initial_velocities).
         """
+<<<<<<< HEAD:src/shared/python/data_io/dataset_generator.py
+        if not (config is not None):
+            raise ValueError("config must be provided")
+        if not (config is not None):
+=======
         if config is None:
+>>>>>>> origin/main:src/shared/python/data_io/dataset_generator/core.py
             raise ValueError("config must be provided")
         if config.vary_initial_positions and config.position_ranges:
             q0 = np.zeros(n_q)
@@ -483,9 +582,17 @@ class DatasetGenerator:
         n_q, _ = self._get_dimensions()
         return [f"joint_{i}" for i in range(n_q)]
 
-    def export_to_hdf5(self, dataset: TrainingDataset, output_path: str | Path) -> Path:
-        """Export dataset to HDF5 format.
 
+<<<<<<< HEAD:src/shared/python/data_io/dataset_generator.py
+__all__ = [
+    "ControlProfile",
+    "DatasetGenerator",
+    "GeneratorConfig",
+    "ParameterRange",
+    "SimulationSample",
+    "TrainingDataset",
+]
+=======
         Args:
             dataset: Training dataset to export.
             output_path: Output file path (without extension).
@@ -822,3 +929,4 @@ class DatasetGenerator:
         raise ValueError(
             f"Unsupported export format: {format}. Supported: hdf5, sqlite, csv"
         )
+>>>>>>> origin/main:src/shared/python/data_io/dataset_generator/core.py

@@ -1,3 +1,4 @@
+=======
 # ARCHITECTURE_DEBT:
 # This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
 # It requires domain-aware structural extraction to isolate its internal classes appropriately.
@@ -20,91 +21,33 @@ Example:
     )
 """
 
+>>>>>>> origin/main
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
-from enum import Enum, auto
 from pathlib import Path
 from typing import Any
 
-import numpy as np
+from ._cg_convex_hull import generate_convex_hull, generate_vhacd, is_roughly_convex
+from ._cg_decimation import generate_decimated, generate_hybrid
+from ._cg_metrics import (
+    compute_hausdorff_distance,
+    compute_volume_preservation,
+    count_triangles,
+)
+from ._cg_primitive_fitting import generate_primitives, primitives_would_fit
+from ._cg_types import (
+    CollisionGeometryResult,
+    ComplexityLevel,
+    PrimitiveFit,
+    SimplificationMethod,
+    VHACDParameters,
+)
 
 logger = logging.getLogger(__name__)
 
 
-class SimplificationMethod(Enum):
-    """Available mesh simplification methods."""
-
-    AUTO = auto()
-    VHACD = auto()  # Convex decomposition
-    PRIMITIVES = auto()  # Fit geometric primitives
-    DECIMATION = auto()  # Quadric decimation
-    CONVEX_HULL = auto()  # Single convex hull
-    HYBRID = auto()  # Combine methods
-
-
-class ComplexityLevel(Enum):
-    """Target complexity levels for collision geometry."""
-
-    MINIMAL = auto()  # Fastest simulation, lowest accuracy
-    BALANCED = auto()  # Good tradeoff
-    ACCURATE = auto()  # Higher accuracy, slower simulation
-
-
-@dataclass
-class PrimitiveFit:
-    """Result of fitting a primitive to a mesh region."""
-
-    primitive_type: str  # "box", "sphere", "cylinder", "capsule"
-    center: tuple[float, float, float]
-    dimensions: tuple[float, ...]  # Type-specific dimensions
-    rotation: tuple[float, float, float, float]  # Quaternion
-    volume_ratio: float  # Mesh volume / primitive volume
-    error_metric: float  # Hausdorff distance
-
-
-@dataclass
-class CollisionGeometryResult:
-    """Result of collision geometry generation."""
-
-    success: bool
-    method_used: SimplificationMethod
-    components: list[Any]  # Mesh or primitive definitions
-    original_triangles: int
-    final_triangles: int
-    reduction_ratio: float
-    volume_preservation: float
-    hausdorff_distance: float
-    primitive_fits: list[PrimitiveFit] = field(default_factory=list)
-    warnings: list[str] = field(default_factory=list)
-    errors: list[str] = field(default_factory=list)
-
-
-@dataclass
-class VHACDParameters:
-    """Parameters for VHACD convex decomposition."""
-
-    max_hulls: int = 16
-    max_vertices_per_hull: int = 64
-    resolution: int = 100000
-    concavity: float = 0.001
-    plane_downsampling: int = 4
-    hull_downsampling: int = 4
-    alpha: float = 0.05
-    beta: float = 0.05
-    mode: int = 0  # 0: voxel-based, 1: tetrahedra-based
-    min_volume_per_hull: float = 0.0001
-
-
 class CollisionGeometryGenerator:
-    """Generate optimized collision geometry from visual meshes.
-
-    This class provides various methods to create efficient collision
-    representations that balance accuracy with simulation performance.
-    """
-
-    # Default parameters for each complexity level
     COMPLEXITY_PRESETS = {
         ComplexityLevel.MINIMAL: {
             "max_primitives": 4,
@@ -124,13 +67,11 @@ class CollisionGeometryGenerator:
     }
 
     def __init__(self) -> None:
-        """Initialize the collision geometry generator."""
         self._trimesh_available = self._check_trimesh()
         self._vhacd_available = self._check_vhacd()
 
     @staticmethod
     def _check_trimesh() -> bool:
-        """Check if trimesh is available."""
         try:
             import trimesh  # noqa: F401
 
@@ -141,9 +82,7 @@ class CollisionGeometryGenerator:
 
     @staticmethod
     def _check_vhacd() -> bool:
-        """Check if VHACD is available."""
         try:
-            # VHACD can be accessed via trimesh or pybullet
             import trimesh
 
             if hasattr(trimesh.interfaces, "vhacd"):
@@ -171,35 +110,21 @@ class CollisionGeometryGenerator:
         max_hulls: int | None = None,
         vhacd_params: VHACDParameters | None = None,
     ) -> CollisionGeometryResult:
-        """Generate optimized collision geometry from visual mesh.
-
-        Args:
-            visual_mesh: Input mesh (trimesh.Trimesh or path)
-            method: Simplification method (auto, vhacd, primitives, decimation)
-            target_complexity: Complexity level (minimal, balanced, accurate)
-            max_primitives: Override max primitive count
-            max_triangles: Override max triangle count
-            max_hulls: Override max convex hulls for VHACD
-            vhacd_params: Custom VHACD parameters
-
-        Returns:
-            CollisionGeometryResult with generated geometry
-        """
-        # Convert string enum values
-        if method is None:
+<<<<<<< HEAD
+        if not (method is not None):
+            raise ValueError("method must be provided")
+        if not (method is not None):
             raise ValueError("method must be provided")
         if isinstance(method, str):
             method = SimplificationMethod[method.upper()]
         if isinstance(target_complexity, str):
             target_complexity = ComplexityLevel[target_complexity.upper()]
 
-        # Get complexity preset
         preset = self.COMPLEXITY_PRESETS[target_complexity]
         max_primitives = max_primitives or preset["max_primitives"]
         max_triangles = max_triangles or preset["max_triangles"]
         max_hulls = max_hulls or preset["max_hulls"]
 
-        # Load mesh if path
         mesh = self._load_mesh(visual_mesh)
         if mesh is None:
             return CollisionGeometryResult(
@@ -217,24 +142,22 @@ class CollisionGeometryGenerator:
         original_triangles = len(mesh.faces) if hasattr(mesh, "faces") else 0
         original_volume = mesh.volume if hasattr(mesh, "volume") else 0.0
 
-        # Select method
         if method == SimplificationMethod.AUTO:
             method = self._select_best_method(mesh, max_primitives, max_triangles)
 
-        # Generate collision geometry
         try:
             if method == SimplificationMethod.VHACD:
-                result = self._generate_vhacd(mesh, max_hulls, vhacd_params)
+                result = generate_vhacd(mesh, max_hulls, vhacd_params)
             elif method == SimplificationMethod.PRIMITIVES:
-                result = self._generate_primitives(mesh, max_primitives)
+                result = generate_primitives(mesh, max_primitives)
             elif method == SimplificationMethod.DECIMATION:
-                result = self._generate_decimated(mesh, max_triangles)
+                result = generate_decimated(mesh, max_triangles)
             elif method == SimplificationMethod.CONVEX_HULL:
-                result = self._generate_convex_hull(mesh)
+                result = generate_convex_hull(mesh)
             elif method == SimplificationMethod.HYBRID:
-                result = self._generate_hybrid(mesh, max_primitives, max_triangles)
+                result = generate_hybrid(mesh, max_primitives, max_triangles)
             else:
-                result = self._generate_decimated(mesh, max_triangles)
+                result = generate_decimated(mesh, max_triangles)
 
         except (ValueError, TypeError, RuntimeError, OSError) as e:
             logger.error(f"Collision generation failed: {e}")
@@ -250,13 +173,12 @@ class CollisionGeometryGenerator:
                 errors=[str(e)],
             )
 
-        # Compute metrics
-        final_triangles = self._count_triangles(result.components)
+        final_triangles = count_triangles(result.components)
         reduction_ratio = 1.0 - (final_triangles / max(original_triangles, 1))
-        volume_preservation = self._compute_volume_preservation(
+        volume_preservation = compute_volume_preservation(
             mesh, result.components, original_volume
         )
-        hausdorff = self._compute_hausdorff_distance(mesh, result.components)
+        hausdorff = compute_hausdorff_distance(mesh, result.components)
 
         return CollisionGeometryResult(
             success=True,
@@ -272,7 +194,6 @@ class CollisionGeometryGenerator:
         )
 
     def _load_mesh(self, mesh_or_path: Any) -> Any:
-        """Load mesh from path or return as-is."""
         if not self._trimesh_available:
             return None
 
@@ -293,33 +214,28 @@ class CollisionGeometryGenerator:
         max_primitives: int,
         max_triangles: int,
     ) -> SimplificationMethod:
-        """Automatically select the best simplification method.
-
-        Based on mesh complexity and shape characteristics.
-        """
-        if max_primitives is None:
+        if not (max_primitives is not None):
+            raise ValueError("max_primitives must be provided")
+        if not (max_primitives is not None):
             raise ValueError("max_primitives must be provided")
         n_faces = len(mesh.faces) if hasattr(mesh, "faces") else 0
 
-        # Simple meshes: single convex hull
         if n_faces < 100:
             return SimplificationMethod.CONVEX_HULL
 
-        # Check if mesh is roughly convex
-        if self._is_roughly_convex(mesh):
+        if is_roughly_convex(mesh):
             return SimplificationMethod.CONVEX_HULL
 
-        # Check if primitives would work well
-        if self._primitives_would_fit(mesh, max_primitives):
+        if primitives_would_fit(mesh, max_primitives):
             return SimplificationMethod.PRIMITIVES
 
-        # Use VHACD for complex meshes if available
         if self._vhacd_available and n_faces > 500:
             return SimplificationMethod.VHACD
 
-        # Default to decimation
         return SimplificationMethod.DECIMATION
 
+<<<<<<< HEAD
+=======
     def _is_roughly_convex(self, mesh: Any, threshold: float = 0.95) -> bool:
         """Check if mesh is approximately convex."""
         try:
@@ -751,12 +667,13 @@ class CollisionGeometryGenerator:
         except (ValueError, ZeroDivisionError, OverflowError, TypeError):
             return float("inf")
 
+>>>>>>> origin/main
 
 __all__ = [
     "CollisionGeometryGenerator",
     "CollisionGeometryResult",
-    "SimplificationMethod",
     "ComplexityLevel",
-    "VHACDParameters",
     "PrimitiveFit",
+    "SimplificationMethod",
+    "VHACDParameters",
 ]

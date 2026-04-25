@@ -18,7 +18,7 @@ def is_engine_available(engine_type: EngineType) -> bool:
     return bool(probe_result.is_available())
 
 
-def test_mujoco_momentum_conservation():
+def test_mujoco_momentum_conservation() -> None:
     """Verify linear momentum conservation in zero-gravity MuJoCo simulation."""
     if not is_engine_available(EngineType.MUJOCO):
         pytest.skip("MuJoCo not installed")
@@ -96,12 +96,12 @@ def test_mujoco_momentum_conservation():
 
     # Tolerance: 1e-12 should be achievable for floating point arithmetic if truly conservative
     # But contact solver might introduce slight drift. Let's start with 1e-6.
-    assert max_deviation < 1e-6, (
-        f"Momentum not conserved. Max deviation: {max_deviation}"
-    )
+    assert (
+        max_deviation < 1e-6
+    ), f"Momentum not conserved. Max deviation: {max_deviation}"
 
 
-def test_pinocchio_momentum_conservation():
+def test_pinocchio_momentum_conservation() -> None:
     """Verify momentum conservation for Pinocchio free floating bodies."""
     if not is_engine_available(EngineType.PINOCCHIO):
         pytest.skip("Pinocchio not installed")

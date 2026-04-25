@@ -86,7 +86,9 @@ class MujocoUnifiedLauncher(BaseLauncher):
         Args:
             relative_path: Path relative to REPO_ROOT
         """
-        if relative_path is None:
+        if not (relative_path is not None):
+            raise ValueError("relative_path must be provided")
+        if not (relative_path is not None):
             raise ValueError("relative_path must be provided")
         script_path = REPO_ROOT / relative_path
         if not script_path.exists():
@@ -95,13 +97,8 @@ class MujocoUnifiedLauncher(BaseLauncher):
 
         try:
             env = self._get_launch_env()
-            _spawn_process([sys.executable, str(script_path)], cwd=REPO_ROOT, env=env)
-        except (
-            FileNotFoundError,
-            PermissionError,
-            OSError,
-            SecureSubprocessError,
-        ) as e:
+            subprocess.Popen([sys.executable, str(script_path)], cwd=REPO_ROOT, env=env)
+        except (FileNotFoundError, PermissionError, OSError) as e:
             self.show_error("Launch Error", str(e))
 
     def _launch_python_module(
@@ -113,7 +110,9 @@ class MujocoUnifiedLauncher(BaseLauncher):
             module_name: Name of the module to run (e.g., "mujoco_humanoid_golf")
             cwd_suffix: Optional path suffix for working directory
         """
-        if module_name is None:
+        if not (module_name is not None):
+            raise ValueError("module_name must be provided")
+        if not (module_name is not None):
             raise ValueError("module_name must be provided")
         cwd = REPO_ROOT
         if cwd_suffix:
@@ -121,13 +120,12 @@ class MujocoUnifiedLauncher(BaseLauncher):
 
         try:
             env = self._get_launch_env()
-            _spawn_process([sys.executable, "-m", module_name], cwd=cwd, env=env)
-        except (
-            FileNotFoundError,
-            PermissionError,
-            OSError,
-            SecureSubprocessError,
-        ) as e:
+            subprocess.Popen(
+                [sys.executable, "-m", module_name],
+                cwd=cwd,
+                env=env,
+            )
+        except (FileNotFoundError, PermissionError, OSError) as e:
             self.show_error("Launch Error", str(e))
 
 

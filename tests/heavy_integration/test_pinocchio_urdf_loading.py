@@ -9,17 +9,7 @@ All tests skip gracefully when pinocchio is not installed.
 from __future__ import annotations
 
 from pathlib import Path
-
-import numpy as np
-import pytest
-
-GOLFER_URDF = (
-    Path(__file__).parents[2]
-    / "src/engines/physics_engines/pinocchio/models/generated/golfer.urdf"
-)
-
-
-def _pin():
+from typing import Any
     """Import pinocchio or skip."""
     try:
         import pinocchio as pin
@@ -30,7 +20,7 @@ def _pin():
 
 
 @pytest.fixture(scope="module")
-def golfer_model():
+def golfer_model() -> Any:
     """Load the golfer URDF; skip if file or pinocchio unavailable."""
     pin = _pin()
     if not GOLFER_URDF.exists():

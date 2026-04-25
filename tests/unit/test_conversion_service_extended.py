@@ -16,18 +16,8 @@ All tests are headless-safe with no heavy dependencies.
 
 from __future__ import annotations
 
-import pytest
+from typing import Any
 
-pytestmark = pytest.mark.unit
-
-
-# ---------------------------------------------------------------------------
-# Fixtures
-# ---------------------------------------------------------------------------
-
-
-@pytest.fixture
-def service():
     """Fresh UnitConversionService for each test."""
     from src.shared.python.upstream_drift_tools.calculators.conversion.service import (
         UnitConversionService,

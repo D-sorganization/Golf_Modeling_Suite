@@ -1,7 +1,9 @@
+=======
 # ARCHITECTURE_DEBT:
 # This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
 # It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
+>>>>>>> origin/main
 """Cross-Engine Perturbation Comparison Dashboard.
 
 Addresses GH2020: provides a PyQt6 interactive dashboard (and optional CLI)
@@ -35,7 +37,7 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
-from dataclasses import dataclass
+<<<<<<< HEAD
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -134,6 +136,7 @@ class _StubEngine:
 _ENGINE_NAMES = ("mujoco", "drake", "pinocchio", "pendulum_stub")
 
 
+=======
 @dataclass(frozen=True, slots=True)
 class _QtBackends:
     """Deferred Qt and Matplotlib imports for the dashboard window."""
@@ -480,6 +483,7 @@ def _handle_run(window: object, backends: _QtBackends) -> None:
         window._run_btn.setEnabled(True)
 
 
+>>>>>>> origin/main
 def _try_build_real_engine(name: str) -> object | None:
     """Attempt to instantiate a real physics engine by name.
 
@@ -514,7 +518,8 @@ def _try_build_real_engine(name: str) -> object | None:
             )
 
             return PinocchioPhysicsEngine()
-    except Exception:  # noqa: BLE001  # noqa: BLE001
+<<<<<<< HEAD
+    except Exception:  # noqa: BLE001
         logger.warning("Engine '%s' unavailable — will use stub", name, exc_info=False)
     return None
 
@@ -627,64 +632,244 @@ class CrossEngineDashboardWindow:
         )
 
 
-def _build_qt_window() -> object:
-    """Build and return the QMainWindow instance (deferred Qt import).
+def _create_dashboard_window_class() -> type:
+    """Construct and return the _Window class with deferred Qt/mpl imports.
 
     Returns
     -------
-    QMainWindow subclass instance.
+    type
+        A QMainWindow subclass ready to be instantiated.
 
     Raises
     ------
-    ImportError if PyQt6 is not available. Matplotlib-backed charts are
-    omitted when Matplotlib cannot be imported.
+    ImportError if PyQt6 or Matplotlib is not available.
     """
-    backends = _load_qt_backends()
+    from PyQt6.QtWidgets import (  # noqa: PLC0415
+        QApplication,
+        QCheckBox,
+        QDoubleSpinBox,
+        QGroupBox,
+        QHBoxLayout,
+        QLabel,
+        QMainWindow,
+        QPushButton,
+        QSpinBox,
+        QVBoxLayout,
+        QWidget,
+    )
 
-    class _Window(backends.qmainwindow):
+    try:
+        import matplotlib  # noqa: PLC0415
+
+        matplotlib.use("QtAgg")
+        from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg  # noqa: PLC0415
+        from matplotlib.figure import Figure  # noqa: PLC0415
+
+        _has_mpl = True
+    except ImportError:
+        _has_mpl = False
+        FigureCanvasQTAgg = None
+        Figure = None
+
+    class _Window(QMainWindow):
         """Cross-Engine Perturbation Comparison Dashboard main window."""
 
-        def __init__(self, parent: object | None = None) -> None:
+        def __init__(self, parent: QWidget | None = None) -> None:
             super().__init__(parent)
-            _initialize_qt_window(self, backends)
+            self.setWindowTitle("Cross-Engine Perturbation Comparison Dashboard")
+            self.setMinimumSize(900, 620)
+            self.setStyleSheet(_STYLE)
+
+            central = QWidget()
+            central.setObjectName("central")
+            self.setCentralWidget(central)
+
+            root = QHBoxLayout(central)
+            root.setContentsMargins(8, 8, 8, 8)
+            root.setSpacing(8)
+
+            root.addWidget(self._build_config_panel(), stretch=0)
+            if _has_mpl:
+                root.addWidget(self._build_chart_panel(), stretch=1)
 
         # ------------------------------------------------------------------
         # Config panel
         # ------------------------------------------------------------------
 
-        def _build_config_panel(self) -> object:
-            return _build_qt_config_panel(self, backends)
+        def _build_config_panel(self) -> QWidget:
+            panel = QWidget()
+            panel.setFixedWidth(260)
+            layout = QVBoxLayout(panel)
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.setSpacing(6)
 
-        def _build_engine_group(self) -> object:
-            return _build_qt_engine_group(self, backends)
+            layout.addWidget(self._build_engine_group())
+            layout.addWidget(self._build_sim_config_group())
+            layout.addWidget(self._build_run_group())
+            layout.addStretch()
+            return panel
 
-        def _build_sim_config_group(self) -> object:
-            return _build_qt_sim_config_group(self, backends)
+        def _build_engine_group(self) -> QGroupBox:
+            grp = QGroupBox("Engines")
+            lay = QVBoxLayout(grp)
+            lay.setSpacing(4)
+            self._engine_checks: dict[str, QCheckBox] = {}
+            for name in _ENGINE_NAMES:
+                cb = QCheckBox(name)
+                cb.setChecked(name == "pendulum_stub")
+                self._engine_checks[name] = cb
+                lay.addWidget(cb)
+            return grp
 
-        def _build_run_group(self) -> object:
-            return _build_qt_run_group(self, backends)
+        def _build_sim_config_group(self) -> QGroupBox:
+            grp = QGroupBox("Simulation Config")
+            lay = QVBoxLayout(grp)
+            lay.setSpacing(4)
+
+            # n_trials
+            row = QHBoxLayout()
+            row.addWidget(QLabel("Trials:"))
+            self._trials_spin = QSpinBox()
+            self._trials_spin.setRange(1, 500)
+            self._trials_spin.setValue(10)
+            row.addWidget(self._trials_spin)
+            lay.addLayout(row)
+
+            # amplitude
+            row2 = QHBoxLayout()
+            row2.addWidget(QLabel("Amplitude:"))
+            self._amp_spin = QDoubleSpinBox()
+            self._amp_spin.setRange(0.0, 5.0)
+            self._amp_spin.setSingleStep(0.01)
+            self._amp_spin.setValue(0.1)
+            self._amp_spin.setDecimals(3)
+            row2.addWidget(self._amp_spin)
+            lay.addLayout(row2)
+
+            # t_end
+            row3 = QHBoxLayout()
+            row3.addWidget(QLabel("t_end (s):"))
+            self._tend_spin = QDoubleSpinBox()
+            self._tend_spin.setRange(0.1, 10.0)
+            self._tend_spin.setSingleStep(0.1)
+            self._tend_spin.setValue(1.5)
+            self._tend_spin.setDecimals(2)
+            row3.addWidget(self._tend_spin)
+            lay.addLayout(row3)
+
+            # dt
+            row4 = QHBoxLayout()
+            row4.addWidget(QLabel("dt (s):"))
+            self._dt_spin = QDoubleSpinBox()
+            self._dt_spin.setRange(0.001, 0.1)
+            self._dt_spin.setSingleStep(0.001)
+            self._dt_spin.setValue(0.01)
+            self._dt_spin.setDecimals(3)
+            row4.addWidget(self._dt_spin)
+            lay.addLayout(row4)
+
+            return grp
+
+        def _build_run_group(self) -> QGroupBox:
+            grp = QGroupBox("Run")
+            lay = QVBoxLayout(grp)
+            lay.setSpacing(4)
+            self._run_btn = QPushButton("Run Comparison")
+            self._run_btn.clicked.connect(self._on_run)
+            lay.addWidget(self._run_btn)
+            self._status_label = QLabel("Ready")
+            lay.addWidget(self._status_label)
+            return grp
 
         # ------------------------------------------------------------------
         # Chart panel
         # ------------------------------------------------------------------
 
-        def _build_chart_panel(self) -> object:
-            return _build_qt_chart_panel(self, backends)
+        def _build_chart_panel(self) -> QWidget:
+            panel = QWidget()
+            layout = QVBoxLayout(panel)
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.setSpacing(6)
 
-        def _style_ax(self, ax: object) -> None:
-            _style_axes(ax)
+            # Robustness Score chart
+            rs_grp = QGroupBox("Robustness Score (1 − CV, per engine)")
+            rs_lay = QVBoxLayout(rs_grp)
+            fig_rs = Figure(figsize=(5, 2.5), facecolor="#12121e")
+            self._canvas_rs = FigureCanvasQTAgg(fig_rs)
+            self._ax_rs = fig_rs.add_subplot(111)
+            self._ax_rs.set_facecolor("#1a1a2e")
+            self._style_ax(self._ax_rs)
+            rs_lay.addWidget(self._canvas_rs)
+            layout.addWidget(rs_grp)
+
+            # CV chart
+            cv_grp = QGroupBox("Coefficient of Variation per Metric")
+            cv_lay = QVBoxLayout(cv_grp)
+            fig_cv = Figure(figsize=(5, 2.5), facecolor="#12121e")
+            self._canvas_cv = FigureCanvasQTAgg(fig_cv)
+            self._ax_cv = fig_cv.add_subplot(111)
+            self._ax_cv.set_facecolor("#1a1a2e")
+            self._style_ax(self._ax_cv)
+            cv_lay.addWidget(self._canvas_cv)
+            layout.addWidget(cv_grp)
+
+            return panel
+
+        @staticmethod
+        def _style_ax(ax: object) -> None:
+            """Apply dark theme styling to a Matplotlib axes."""
+            ax.tick_params(colors="#8080b0", labelsize=9)
+            for spine in ax.spines.values():
+                spine.set_edgecolor("#303050")
+            ax.yaxis.label.set_color("#8080b0")
+            ax.xaxis.label.set_color("#8080b0")
 
         # ------------------------------------------------------------------
         # Slots
         # ------------------------------------------------------------------
 
         def _on_run(self) -> None:
-            _handle_run(self, backends)
+            """Build config, run comparison, update charts."""
+            selected = [
+                name for name, cb in self._engine_checks.items() if cb.isChecked()
+            ]
+            if not selected:
+                self._status_label.setText("Select at least one engine")
+                logger.warning("No engines selected for comparison")
+                return
+
+            try:
+                config = CrossEngineSimConfig(
+                    t_end=self._tend_spin.value(),
+                    dt=self._dt_spin.value(),
+                    noise_amplitude=self._amp_spin.value(),
+                    n_trials=self._trials_spin.value(),
+                )
+            except ValueError as exc:
+                self._status_label.setText(f"Config error: {exc}")
+                logger.error("Invalid CrossEngineSimConfig: %s", exc)
+                return
+
+            self._run_btn.setEnabled(False)
+            self._status_label.setText("Running…")
+            # Force UI repaint before blocking call
+            QApplication.processEvents()
+
+            try:
+                cv_summary = _run_headless(selected, config)
+                self._update_charts(selected, cv_summary)
+                self._status_label.setText("Done")
+            except Exception as exc:  # noqa: BLE001
+                self._status_label.setText(f"Error: {exc}")
+                logger.error("Comparison failed: %s", exc, exc_info=True)
+            finally:
+                self._run_btn.setEnabled(True)
 
         # ------------------------------------------------------------------
         # Chart update
         # ------------------------------------------------------------------
 
+=======
         _METRIC_KEYS = [
             "cv_total_energy_final",
             "cv_end_effector_speed_final",
@@ -692,30 +877,110 @@ def _build_qt_window() -> object:
         ]
         _METRIC_LABELS = ["Energy", "Speed", "Peak Speed"]
 
+>>>>>>> origin/main
         def _update_charts(
             self,
             engine_names: list[str],
             cv_summary: dict[str, float],
         ) -> None:
-            _update_dashboard_charts(self, backends, engine_names, cv_summary)
+<<<<<<< HEAD
+            """Refresh Robustness Score and CV charts from the latest results.
 
-        def _draw_robustness_chart(
-            self, engine_names: list[str], robustness: float
-        ) -> None:
-            _draw_robustness_chart(self, engine_names, robustness)
+            Parameters
+            ----------
+            engine_names : list of str
+                Names of engines that were run.
+            cv_summary : dict
+                Output of CrossEnginePerturbationRunner.compute_cv_summary().
 
-        def _draw_cv_chart(self, cv_values: list[float]) -> None:
-            _draw_cv_chart(self, cv_values)
+            Design by Contract
+            ------------------
+            Pre:  engine_names is non-empty
+            Pre:  cv_summary has the three standard CV keys
+            Post: both canvases are redrawn
+            """
+            if not _has_mpl:
+                return
+            if not engine_names:
+                return
 
-        @staticmethod
-        def _annotate_bars(
-            ax: object,
-            bars: object,
-            values: list[float],
-            fmt: str = ".2f",
-            offset: float = 0.02,
-        ) -> None:
-            _annotate_bars(ax, bars, values, fmt=fmt, offset=offset)
+            metric_keys = [
+                "cv_total_energy_final",
+                "cv_end_effector_speed_final",
+                "cv_peak_end_effector_speed",
+            ]
+            metric_labels = ["Energy", "Speed", "Peak Speed"]
+
+            # Robustness Score: use mean CV across metrics per engine.
+            # Since compute_cv_summary returns aggregate CVs (not per-engine),
+            # we compute a single robustness score for the ensemble.
+            cv_values = [cv_summary.get(k, 0.0) for k in metric_keys]
+            mean_cv = float(np.mean(cv_values)) if cv_values else 0.0
+            robustness = max(0.0, min(1.0, 1.0 - mean_cv))
+            robustness_per_engine = [robustness] * len(engine_names)
+
+            ax = self._ax_rs
+            ax.clear()
+            ax.set_facecolor("#1a1a2e")
+            x = np.arange(len(engine_names))
+            bars = ax.bar(
+                x,
+                robustness_per_engine,
+                color="#5555b0",
+                edgecolor="#303070",
+                width=0.5,
+            )
+            ax.set_xticks(x)
+            ax.set_xticklabels(engine_names, fontsize=9)
+            ax.set_ylim(0.0, 1.0)
+            ax.set_ylabel("Robustness Score", fontsize=9)
+            ax.axhline(0.5, color="#ff6060", linewidth=0.8, linestyle="--")
+            self._style_ax(ax)
+
+            # Annotate bar values
+            for bar, val in zip(bars, robustness_per_engine, strict=True):
+                ax.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    bar.get_height() + 0.02,
+                    f"{val:.2f}",
+                    ha="center",
+                    va="bottom",
+                    color="#d0d0f0",
+                    fontsize=8,
+                )
+
+            self._canvas_rs.draw()
+
+            # CV chart — one bar per metric
+            ax2 = self._ax_cv
+            ax2.clear()
+            ax2.set_facecolor("#1a1a2e")
+            x2 = np.arange(len(metric_labels))
+            bars2 = ax2.bar(
+                x2,
+                cv_values,
+                color="#8040c0",
+                edgecolor="#502080",
+                width=0.5,
+            )
+            ax2.set_xticks(x2)
+            ax2.set_xticklabels(metric_labels, fontsize=9)
+            ax2.set_ylabel("CV", fontsize=9)
+            ax2.axhline(1.0, color="#ff6060", linewidth=0.8, linestyle="--")
+            self._style_ax(ax2)
+
+            for bar, val in zip(bars2, cv_values, strict=True):
+                ax2.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    bar.get_height() + 0.01,
+                    f"{val:.3f}",
+                    ha="center",
+                    va="bottom",
+                    color="#d0d0f0",
+                    fontsize=8,
+                )
+
+            self._canvas_cv.draw()
 
     return _Window()
 
@@ -725,6 +990,19 @@ def _build_qt_window() -> object:
 # ---------------------------------------------------------------------------
 
 
+<<<<<<< HEAD
+def _build_qt_window() -> object:
+    """Build and return the QMainWindow instance (deferred Qt import)."""
+    return _create_dashboard_window_class()()
+
+
+def _build_qt_window() -> object:
+    """Build and return the QMainWindow instance (deferred Qt import)."""
+    return _create_dashboard_window_class()()
+
+
+=======
+>>>>>>> origin/main
 def _build_arg_parser() -> argparse.ArgumentParser:
     """Build and return the argument parser for the dashboard CLI."""
     parser = argparse.ArgumentParser(

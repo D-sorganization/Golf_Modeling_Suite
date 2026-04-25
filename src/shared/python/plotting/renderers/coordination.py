@@ -6,22 +6,33 @@
 
 from __future__ import annotations
 
-from typing import Any
-
-import numpy as np
-from matplotlib.axes import Axes
-from matplotlib.colors import ListedColormap
-from matplotlib.figure import Figure
-from matplotlib.patches import Rectangle
-
-from src.shared.python.logging_pkg.logging_config import get_logger
+from src.shared.python.plotting.renderers._coordination_alignment import (
+    CoordinationAlignmentMixin,
+)
+from src.shared.python.plotting.renderers._coordination_phase import (
+    CoordinationPhaseMixin,
+)
+from src.shared.python.plotting.renderers._coordination_sequence import (
+    CoordinationSequenceMixin,
+)
+from src.shared.python.plotting.renderers._coordination_synergy import (
+    CoordinationSynergyMixin,
+)
 from src.shared.python.plotting.renderers.base import BaseRenderer
 
-logger = get_logger(__name__)
+__all__ = ["CoordinationRenderer"]
 
 
-class CoordinationRenderer(BaseRenderer):
+class CoordinationRenderer(
+    CoordinationPhaseMixin,
+    CoordinationAlignmentMixin,
+    CoordinationSequenceMixin,
+    CoordinationSynergyMixin,
+    BaseRenderer,
+):
     """Renderer for coordination, sequencing, and variability plots."""
+<<<<<<< HEAD
+=======
 
     def plot_coupling_angle(
         self,
@@ -942,3 +953,4 @@ class CoordinationRenderer(BaseRenderer):
             fontsize=14,
             fontweight="bold",
         )
+>>>>>>> origin/main

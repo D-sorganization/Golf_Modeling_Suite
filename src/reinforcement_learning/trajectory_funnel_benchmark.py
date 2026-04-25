@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 import numpy as np
 
@@ -39,7 +40,7 @@ class TrajectoryFunnelBenchmark:
         self,
         current_state: np.ndarray,
         reference_trajectory: np.ndarray,
-        current_phase: float,
+        current_phase: int,
     ) -> float:
         """
         Geometric approach: Reward confinement to the trajectory tube (orbital stability).
@@ -62,21 +63,7 @@ class TrajectoryFunnelBenchmark:
 
         return float(transverse_cost + phase_velocity_reward)
 
-    def _estimate_convergence(
-        self,
-        reward_trajectory: list[float],
-        window_size: int = 10,
-        threshold: float = 0.01,
-    ) -> tuple[int, float]:
-        """Estimate convergence epoch and terminal variance from reward history.
-
-        Args:
-            reward_trajectory: List of rewards per episode.
-            window_size: Rolling window for variance computation.
-            threshold: Relative improvement threshold for convergence detection.
-
-        Returns:
-            Tuple of (convergence_epoch, terminal_variance).
+    def simulate_agent_training_mock(self) -> dict[str, Any]:
         """
         if not reward_trajectory:
             return 0, float("inf")
