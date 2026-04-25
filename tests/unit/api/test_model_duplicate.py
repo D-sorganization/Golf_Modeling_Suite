@@ -1,4 +1,4 @@
-"""Unit tests for model duplicate endpoint (issue #3174).
+"""Unit tests for model duplicate endpoint (issues #3174, #3202).
 
 Tests cover:
 - ModelDuplicateRequest validation (safe name, path fields)
@@ -14,7 +14,12 @@ from __future__ import annotations
 
 import ast
 import re
+import tempfile
 from pathlib import Path
+from unittest.mock import patch
+import pytest
+pytestmark = pytest.mark.unit
+
 
 _MODEL_EXPLORER_SRC = (
     Path(__file__).parents[3] / "src" / "api" / "routes" / "model_explorer.py"
