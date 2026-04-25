@@ -73,7 +73,12 @@ async def chat_stream(websocket: WebSocket, session_id: str = "new") -> None:
 
                 # Stream response chunks
                 async for chunk in chat_service.stream_response(session_id):
-                    await websocket.send_json({"type": "chunk", "content": chunk})
+                    if isinstance(chunk, dict):
+                        await websocket.send_json(chunk)
+                    else:
+                        await websocket.send_json(
+                            {"type": "chunk", "content": str(chunk)}
+                        )
 
                 await websocket.send_json(
                     {"type": "complete", "session_id": session_id}
