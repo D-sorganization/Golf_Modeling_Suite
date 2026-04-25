@@ -73,7 +73,17 @@ def main() -> int:
     args = parser.parse_args()
 
     repo_root = Path(__file__).resolve().parent.parent.parent
-    config = _load_config(repo_root, args.config_path)
+
+    # Clean up any potential double scripts/ directory nesting
+    resolved_path = repo_root / args.config_path
+    if not resolved_path.exists():
+        # Fallback if config is passed as relative to scripts instead of root
+        resolved_path = repo_root / args.config_path.name
+        if not resolved_path.exists():
+             resolved_path = Path(__file__).resolve().parent.parent / "config/file_size_budget.json"
+
+    with resolved_path.open(encoding="utf-8") as handle:
+        config = json.load(handle)
     budget = int(config.get("max_lines", 1200))
 
     active_exceptions: dict[str, dict] = {}
