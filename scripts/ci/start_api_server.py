@@ -9,6 +9,14 @@ Refactored to address DRY and Orthogonality violations (Pragmatic Programmer).
 from __future__ import annotations
 
 import os
+import sys
+from pathlib import Path
+
+# Add repo root to sys.path so script can be run directly from scripts/ci/
+_script_dir = Path(__file__).resolve().parent
+_repo_root = _script_dir.parent.parent
+if str(_repo_root) not in sys.path:
+    sys.path.insert(0, str(_repo_root))
 
 import uvicorn
 
