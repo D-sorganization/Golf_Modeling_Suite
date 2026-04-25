@@ -20,8 +20,6 @@ from __future__ import annotations
 import json
 import logging
 import sys
-import venv
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -32,9 +30,11 @@ def check_python_version() -> tuple[bool, str]:
     if sys.version_info >= (required_major, required_minor):
         version_str = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
         return True, f"✓ Python version {version_str}"
-    else:
-        version_str = f"{sys.version_info.major}.{sys.version_info.minor}"
-        return False, f"✗ Python {version_str} (requires {required_major}.{required_minor}+)"
+    version_str = f"{sys.version_info.major}.{sys.version_info.minor}"
+    return (
+        False,
+        f"✗ Python {version_str} (requires {required_major}.{required_minor}+)",
+    )
 
 
 def check_virtualenv() -> tuple[bool, str]:
@@ -44,8 +44,7 @@ def check_virtualenv() -> tuple[bool, str]:
     )
     if in_venv:
         return True, f"✓ Virtual environment detected: {sys.prefix}"
-    else:
-        return True, "⚠ System Python (virtualenv recommended but not required)"
+    return True, "⚠ System Python (virtualenv recommended but not required)"
 
 
 def check_import(
@@ -187,7 +186,9 @@ def main() -> int:
             "core_checks": {"passed": core_passed, "total": core_total},
             "suite_checks": {"passed": suite_passed, "total": suite_total},
             "overall": {"passed": total_passed, "total": total_checks},
-            "status": "passed" if (py_critical and total_passed == total_checks) else "failed",
+            "status": "passed"
+            if (py_critical and total_passed == total_checks)
+            else "failed",
         }
         print(json.dumps(result, indent=2))
 
