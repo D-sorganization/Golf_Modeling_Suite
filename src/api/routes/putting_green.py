@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 from src.api.middleware.error_handler import handle_api_errors
 from src.shared.python.core.contracts import precondition
 
-router = APIRouter(prefix="/api/tools/putting-green", tags=["putting-green"])
+router = APIRouter(prefix="/tools/putting-green", tags=["putting-green"])
 
 
 # -- Request / Response Models --
@@ -310,7 +310,7 @@ async def get_green_contours(
 
     See issue #1206
     """
-    if width is None:
+    if not (width is not None):
         raise ValueError("width must be provided")
     from src.engines.physics_engines.putting_green.python.green_surface import (
         GreenSurface,

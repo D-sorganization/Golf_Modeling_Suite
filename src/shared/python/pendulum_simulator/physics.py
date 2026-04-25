@@ -32,6 +32,7 @@ import numpy.typing as npt
 
 from . import native_backend as _native_backend
 from .constants import GRAVITY_MSS
+from .physics_base import clamp_torque_ndof  # noqa: F401  (re-export, DRY)
 
 _log = logging.getLogger(__name__)
 
@@ -432,83 +433,6 @@ def clamp_torque_ndof(tau: np.ndarray, limits: np.ndarray) -> np.ndarray:
     result: np.ndarray = np.clip(tau, -limits, limits)
     return result
 
-
-# ---------------------------------------------------------------------------
-# Equations of motion
-# ---------------------------------------------------------------------------
-
-
-def equations_of_motion(
-    state: State,
-    t: float,
-    params: PendulumParams,
-    torque_func: TorqueFunc,
-    limits: JointLimits | None = None,
-    clamp: TorqueClamp | None = None,
-) -> State:
-    """Compute state derivative: dx/dt = f(x, t).
-
-    M(q)Â·qÌˆ = Ï„_drive + Ï„_friction + Ï„_joint_limit âˆ’ C âˆ’ G
-
-    Pre: state shape (4,), all finite.
-    Post: state_dot shape (4,), all finite.
-    """
-    assert state.shape == (4,) and all(np.isfinite(state))
-    theta1, phi, dtheta1, dphi = state
-
-    M = mass_matrix(phi, params)
-    C = coriolis_vector(phi, dtheta1, dphi, params)
-    G = gravity_vector(theta1, phi, params)
-
-    tau_drive = np.array(torque_func(t))
-    if clamp is not None:
-        tau_drive = clamp_torque(tau_drive, clamp)
-
-    tau_friction = friction_torque_vector(dtheta1, dphi, params)
-
-    tau_limits = np.zeros(2)
-    if limits is not None:
-        tau_limits = joint_limit_torque(
-            phi, dphi, limits, theta1=theta1, dtheta1=dtheta1
-        )
-
-    rhs = tau_drive + tau_friction + tau_limits - C - G
-    cond = np.linalg.cond(M)
-    if cond > _MASS_MATRIX_COND_WARN:
-        _log.warning("Mass matrix near-singular: cond(M)=%.3e at phi=%.4f", cond, phi)
-    qddot = np.linalg.solve(M, rhs)
-
-    state_dot = np.array([dtheta1, dphi, qddot[0], qddot[1]])
-    assert all(np.isfinite(state_dot)), f"Non-finite state_dot: {state_dot}"
-    return state_dot
-
-
-# ---------------------------------------------------------------------------
-# Forward kinematics
-# ---------------------------------------------------------------------------
-
-
-def forward_kinematics(theta1: float, phi: float, params: PendulumParams) -> dict:
-    """Compute joint positions in world frame. Origin at shoulder.
-
-    Post: ||wrist - shoulder|| â‰ˆ L1, ||tip - wrist|| â‰ˆ L2 (within 1e-9).
-    """
-    native_positions = _native_backend.double_forward_kinematics(theta1, phi, params)
-    if native_positions is not None:
-        return native_positions
-
-    L1, L2 = params.L1, params.L2
-    abs_angle2 = theta1 + phi
-    wx = L1 * np.sin(theta1)
-    wy = -L1 * np.cos(theta1)
-    tx = wx + L2 * np.sin(abs_angle2)
-    ty = wy - L2 * np.cos(abs_angle2)
-    result = {"shoulder": (0.0, 0.0), "wrist": (wx, wy), "tip": (tx, ty)}
-    _wrist_dist = np.hypot(wx, wy)
-    _tip_dist = np.hypot(tx - wx, ty - wy)
-    assert abs(_wrist_dist - L1) < 1e-9, (
-        f"Wrist distance {_wrist_dist:.6f} â‰  L1={L1:.6f}"
-    )
     assert abs(_tip_dist - L2) < 1e-9, f"Tip distance {_tip_dist:.6f} â‰  L2={L2:.6f}"
     return result
 

@@ -1,12 +1,13 @@
 # Import paths configured at test runner level via pyproject.toml/conftest.py
 
-import subprocess
 import sys
 import unittest
 
+from src.shared.python.security.secure_subprocess import secure_run
+
 
 class TestVerification(unittest.TestCase):
-    def test_engine_interface_compliance(self):
+    def test_engine_interface_compliance(self) -> None:
         """Verify that physics engines implement the updated interface (get_full_state)."""
 
         # 1. Check MuJoCo
@@ -50,7 +51,7 @@ class TestVerification(unittest.TestCase):
         except ImportError:
             pass
 
-    def test_signal_processing_optimizations(self):
+    def test_signal_processing_optimizations(self) -> None:
         """Verify signal processing fallbacks."""
         try:
             from src.shared.python.signal_toolkit import signal_processing
@@ -62,7 +63,7 @@ class TestVerification(unittest.TestCase):
         except ImportError as e:
             self.fail(f"Failed to import signal_processing: {e}")
 
-    def test_code_quality(self):
+    def test_code_quality(self) -> None:
         """Run code quality check on modified files."""
         tool_path = "tools/code_quality_check.py"
         from os.path import exists
@@ -78,7 +79,7 @@ class TestVerification(unittest.TestCase):
 
         for file_path in files_to_check:
             if exists(file_path):
-                result = subprocess.run(
+                result = secure_run(
                     [sys.executable, tool_path, file_path],
                     capture_output=True,
                     text=True,

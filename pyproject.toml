@@ -29,7 +29,7 @@ dependencies = [
     "mujoco>=3.6.0,<4.0.0",
 
     # Safe expression evaluation (replaces eval())
-    "simpleeval>=1.0.5",
+    "simpleeval>=1.0.0",
 
     # Structured logging (OBS-001: required for observability)
     "structlog>=24.1.0",
@@ -102,10 +102,11 @@ dev = [
     "hypothesis>=6.0.0",
     # Required for database migration tooling (issue #2078)
     "alembic>=1.13.0",
+    # Type stubs for untyped third-party packages (GH2034)
+    "types-PyYAML>=6.0",
+    "scipy-stubs>=1.13.0",
     # Security: requests>=2.33.0 fixes CVE-2024-47081 and CVE-2026-25645
     "requests>=2.33.0",
-    # Security: black>=26.3.1 fixes CVE-2026-32274
-    "black>=26.3.1",
     # Security: bokeh>=3.8.2 fixes CVE-2026-21883
     "bokeh>=3.8.2",
     # Security: flask>=3.1.3 fixes CVE-2026-27205
@@ -175,7 +176,7 @@ select = [
     "RET",   # return statement cleanup
 ]
 ignore = [
-    "E501",    # line too long (handled by black)
+    "E501",    # line too long (handled by formatter)
     "B008",    # function call in default arg (FastAPI Depends)
     "RET504",  # unnecessary assign before return (often clearer)
     "PERF203", # try-except in loop (unavoidable in some patterns)
@@ -187,21 +188,9 @@ ignore = [
 "tests/**" = ["T201"]
 "examples/**" = ["T201"]
 
-[tool.black]
-line-length = 88
-target-version = ["py310"]
-# Exclude third-party model files (legacy Python 2 scripts from OpenSim)
-exclude = '''
-/(
-    src/shared/models/opensim/opensim-models
-  | shared/models/opensim/opensim-models
-  | shared/models/myosuite
-  | vendor/ud-tools
-)/
-'''
-
 [tool.mypy]
 python_version = "3.10"
+mypy_path = "stubs"
 ignore_missing_imports = true
 check_untyped_defs = true
 disallow_untyped_defs = false
@@ -269,11 +258,15 @@ exclude = [
 module = [
     "src.shared.python.plotting.*",
     "src.shared.python.ui.*",
-    "src.shared.python.spatial_algebra.*",
     "src.engines.physics_engines.mujoco.python.mujoco_humanoid_golf.*",
     "src.engines.physics_engines.pinocchio.python.pinocchio_golf.*",
 ]
 ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "src.shared.python.spatial_algebra.*"
+warn_return_any = true
+disable_error_code = ["arg-type", "no-any-return"]
 
 [[tool.mypy.overrides]]
 module = "src.api.*"
@@ -364,8 +357,6 @@ exclude_lines = [
     "def __repr__",
     "if __name__ == .__main__.",
     "raise NotImplementedError",
-    "pass",
-    "except ImportError",
     "if TYPE_CHECKING:",
 ]
 

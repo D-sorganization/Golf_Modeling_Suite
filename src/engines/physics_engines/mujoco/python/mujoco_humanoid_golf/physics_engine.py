@@ -125,7 +125,9 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
 
     def set_model_data(self, model: mujoco.MjModel, data: mujoco.MjData) -> None:
         """Set model and data manually (e.g. from async loader)."""
-        if model is None:
+        if not (model is not None):
+            raise ValueError("model must be provided")
+        if not (model is not None):
             raise ValueError("model must be provided")
         self.model = model
         self.data = data
@@ -337,7 +339,9 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         Returns:
             q_ddot_control: Control acceleration vector (nv,) [rad/s² or m/s²]
         """
-        if tau is None:
+        if not (tau is not None):
+            raise ValueError("tau must be provided")
+        if not (tau is not None):
             raise ValueError("tau must be provided")
         if self.model is None or self.data is None:
             return np.array([])
@@ -380,7 +384,9 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
 
     def compute_jacobian(self, body_name: str) -> dict[str, np.ndarray] | None:
         """Compute spatial Jacobian for a specific body."""
-        if body_name is None:
+        if not (body_name is not None):
+            raise ValueError("body_name must be provided")
+        if not (body_name is not None):
             raise ValueError("body_name must be provided")
         if self.model is None or self.data is None:
             return None
@@ -397,8 +403,8 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         return {
             "linear": jacp,
             "angular": jacr,
-            "spatial": np.vstack([jacp, jacr]),
-            # Suite spatial convention: [Linear; Angular].
+            "spatial": np.vstack([jacr, jacp]),
+            # Suite spatial convention: [Angular; Linear].
         }
 
     def compute_contact_forces(self) -> np.ndarray:
@@ -427,10 +433,21 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             f_local = c_force[:3]
             f_world = contact_frame.T @ f_local
 
-            # MuJoCo reports the contact force exerted by geom2 on geom1.
-            # For foot-ground contacts where the foot is geom1, this is already
-            # the upward ground reaction force acting on the modeled body.
-            total_force += f_world
+            contact = self.data.contact[i]
+            if contact.geom1 < 0 or contact.geom2 < 0:
+                continue
+
+            geom1_body = self.model.geom_bodyid[contact.geom1]
+            geom2_body = self.model.geom_bodyid[contact.geom2]
+
+            # mj_contactForce returns the force exerted BY geom2 ON geom1.
+            if geom2_body == 0:
+                # World is geom2. Force ON system (geom1) is +f_world.
+                total_force += f_world
+            elif geom1_body == 0:
+                # World is geom1. Force ON world is +f_world.
+                # Force ON system (geom2) is therefore -f_world.
+                total_force -= f_world
 
         return total_force
 
@@ -474,7 +491,9 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         Returns:
             q̈_ZTCF: Acceleration under zero applied torque (n_v,) [rad/s² or m/s²]
         """
-        if q is None:
+        if not (q is not None):
+            raise ValueError("q must be provided")
+        if not (q is not None):
             raise ValueError("q must be provided")
         if self.model is None or self.data is None:
             return np.array([])
@@ -527,7 +546,9 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         Returns:
             q̈_ZVCF: Acceleration with v=0 (n_v,) [rad/s² or m/s²]
         """
-        if q is None:
+        if not (q is not None):
+            raise ValueError("q must be provided")
+        if not (q is not None):
             raise ValueError("q must be provided")
         if self.model is None or self.data is None:
             return np.array([])
@@ -580,7 +601,9 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             True if successfully configured.
         """
         # Store shaft configuration
-        if length is None:
+        if not (length is not None):
+            raise ValueError("length must be provided")
+        if not (length is not None):
             raise ValueError("length must be provided")
         self._shaft_config = {
             "length": length,
@@ -635,7 +658,9 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             Tuple of (frequencies [Hz], mode_shapes (n_modes, n_stations))
         """
         # Use average properties for simple analytical solution
-        if length is None:
+        if not (length is not None):
+            raise ValueError("length must be provided")
+        if not (length is not None):
             raise ValueError("length must be provided")
         EI_avg = np.mean(EI_profile)
         mu_avg = np.mean(mass_profile)  # Linear mass density [kg/m]

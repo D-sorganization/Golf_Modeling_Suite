@@ -1,27 +1,31 @@
 """Tests for C3D export security, versioning, and telemetry features."""
 
+import importlib.util
 import json
+from collections.abc import Generator
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd
 import pytest
 
-try:
-    from c3d_reader import SCHEMA_VERSION, C3DDataReader  # noqa: E402
-except (ImportError, ModuleNotFoundError):
-    pytest.skip(
-        "c3d_reader module not available (requires c3d/ezc3d)",
-        allow_module_level=True,
-    )
+_c3d_available = importlib.util.find_spec("c3d_reader") is not None
+pytestmark = pytest.mark.skipif(
+    not _c3d_available,
+    reason="c3d_reader module not available (requires c3d/ezc3d)",
+)
+
+if _c3d_available:
+    from c3d_reader import SCHEMA_VERSION, C3DDataReader
 
 
 class TestC3DExportFeatures:
     """Tests for the enhanced export functionality."""
 
     @pytest.fixture
-    def mock_reader(self):
+    def mock_reader(self) -> C3DDataReader:
         """Create a reader with a mocked get_metadata method."""
         reader = C3DDataReader("test_capture.c3d")
         # Mock underlying data to allow export to proceed (it calls self.get_metadata().units)
@@ -31,7 +35,7 @@ class TestC3DExportFeatures:
         return reader
 
     @pytest.fixture
-    def sample_dataframe(self):
+    def sample_dataframe(self) -> pd.DataFrame:
         """Create a dummy DataFrame for export."""
         return pd.DataFrame(
             {
@@ -45,7 +49,7 @@ class TestC3DExportFeatures:
         )
 
     @pytest.fixture
-    def mock_project_root(self, tmp_path):
+    def mock_project_root(self, tmp_path) -> Generator[Any, None, None]:
         """Make tmp_path appear as the project root."""
         with patch("pathlib.Path.cwd") as mock_cwd:
             mock_cwd.return_value = Path(tmp_path).resolve()
@@ -53,7 +57,7 @@ class TestC3DExportFeatures:
 
     def test_security_prevents_directory_traversal(
         self, mock_reader, sample_dataframe, tmp_path
-    ):
+    ) -> None:
         """Ensure attempts to write outside the project root are blocked."""
         with patch("pathlib.Path.cwd") as mock_cwd:
             mock_root = Path(tmp_path) / "project_root"
@@ -70,7 +74,7 @@ class TestC3DExportFeatures:
 
     def test_security_allows_project_root_files(
         self, mock_reader, sample_dataframe, mock_project_root, tmp_path
-    ):
+    ) -> None:
         """Ensure writing within the project root is allowed."""
         # Safe path (inside tmp_path which is mocked as root)
         safe_path = tmp_path / "safe_export.csv"
@@ -83,7 +87,7 @@ class TestC3DExportFeatures:
 
     def test_csv_metadata_sidecar_creation(
         self, mock_reader, sample_dataframe, mock_project_root, tmp_path
-    ):
+    ) -> None:
         """Verify _meta.json sidecar is created for CSV exports."""
         output_path = tmp_path / "export.csv"
 
@@ -109,7 +113,7 @@ class TestC3DExportFeatures:
 
     def test_json_envelope_structure(
         self, mock_reader, sample_dataframe, mock_project_root, tmp_path
-    ):
+    ) -> None:
         """Verify JSON export uses the envelope pattern."""
         output_path = tmp_path / "export.json"
 
@@ -127,7 +131,7 @@ class TestC3DExportFeatures:
 
     def test_npz_metadata_embedding(
         self, mock_reader, sample_dataframe, mock_project_root, tmp_path
-    ):
+    ) -> None:
         """Verify NPZ export includes metadata in the archive."""
         output_path = tmp_path / "export.npz"
 
@@ -142,7 +146,7 @@ class TestC3DExportFeatures:
 
     def test_telemetry_logging(
         self, mock_reader, sample_dataframe, mock_project_root, tmp_path
-    ):
+    ) -> None:
         """Verify execution time is logged."""
         with patch("c3d_reader.log_execution_time") as mock_log_ctx:
             # Setup context manager mock
@@ -159,7 +163,9 @@ class TestC3DExportFeatures:
             args, _ = mock_log_ctx.call_args
             assert "export_csv" in args[0]
 
-    def test_csv_injection_sanitization(self, mock_reader, mock_project_root, tmp_path):
+    def test_csv_injection_sanitization(
+        self, mock_reader, mock_project_root, tmp_path
+    ) -> None:
         """Verify dangerous characters are escaped in CSV."""
         dangerous_df = pd.DataFrame(
             {

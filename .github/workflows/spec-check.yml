@@ -34,15 +34,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
-          ONLINE=$(gh api /orgs/${{ github.repository_owner }}/actions/runners \
+          ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq '[.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length' \
             2>/dev/null || echo "0")
           if [[ "$ONLINE" -gt 0 ]]; then
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
             echo "Self-hosted runner online — routing locally"
           else
-            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
-            echo "No self-hosted runner — using GitHub-hosted"
+            echo "::error::No local self-hosted runner available; failing closed"
+            exit 1
           fi
   spec-freshness:
     needs: pick-runner
@@ -53,9 +53,8 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - name: Enable Windows long paths
-        if: runner.os == 'Windows'
-        run: git config --system core.longpaths true
+      - name: Enable long Git paths
+        run: git config --global core.longpaths true
 
       - name: Checkout
         uses: actions/checkout@v6

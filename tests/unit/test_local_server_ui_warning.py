@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 import pytest
 
@@ -45,6 +46,13 @@ def test_api_version_constants() -> None:
     assert local_server.API_PREFIX == "/api/v1"
 
 
+def test_local_server_has_single_logger_assignment() -> None:
+    """local_server should not keep a dead logging.getLogger overwrite (#3008)."""
+    source = Path(local_server.__file__).read_text(encoding="utf-8")
+    assert "logger = logging.getLogger(__name__)" not in source
+    assert source.count("logger = get_logger(__name__)") == 1
+
+
 def test_local_app_registers_versioned_routes(monkeypatch, tmp_path) -> None:
     """create_local_app registers routes under /api/v1/ prefix (#2070)."""
     missing_ui_path = tmp_path / "ui" / "dist"
@@ -63,6 +71,7 @@ def test_local_app_registers_versioned_routes(monkeypatch, tmp_path) -> None:
     app = local_server.create_local_app()
     route_paths = [getattr(r, "path", "") for r in app.routes if hasattr(r, "path")]
     versioned = [p for p in route_paths if p.startswith("/api/v1/")]
+
     assert len(versioned) > 0, (
         f"No /api/v1/ routes found. Registered paths: {route_paths[:20]}"
     )

@@ -12,8 +12,9 @@ Cost Model:
     - Typical workflow: ~$0.50-1.00
 
 Example:
+    >>> import os
     >>> from shared.python.ai.adapters.openai_adapter import OpenAIAdapter
-    >>> adapter = OpenAIAdapter(api_key="your-api-key-here")
+    >>> adapter = OpenAIAdapter(api_key=os.environ["OPENAI_API_KEY"])
     >>> response = adapter.send_message("Analyze this swing", context, tools)
 """
 
@@ -75,7 +76,8 @@ class OpenAIAdapter(BaseAgentAdapter):
         organization: Optional organization ID.
 
     Example:
-        >>> adapter = OpenAIAdapter(api_key="your-api-key-here")
+        >>> import os
+        >>> adapter = OpenAIAdapter(api_key=os.environ["OPENAI_API_KEY"])
         >>> success, message = adapter.validate_connection()
         >>> if success:
         ...     response = adapter.send_message(
@@ -105,7 +107,9 @@ class OpenAIAdapter(BaseAgentAdapter):
             timeout: Request timeout [s]. Uses OPENAI_TIMEOUT env var or default.
             organization: Organization ID. Uses OPENAI_ORGANIZATION env var if not set.
         """
-        if api_key is None:
+        if not (api_key is not None):
+            raise ValueError("api_key must be provided")
+        if not (api_key is not None):
             raise ValueError("api_key must be provided")
         self._api_key = api_key
         self._model = model or get_openai_model()
@@ -167,7 +171,9 @@ class OpenAIAdapter(BaseAgentAdapter):
             AIRateLimitError: If rate limit exceeded.
             AITimeoutError: If request times out.
         """
-        if message is None:
+        if not (message is not None):
+            raise ValueError("message must be provided")
+        if not (message is not None):
             raise ValueError("message must be provided")
         client = self._get_client()
 
@@ -207,7 +213,9 @@ class OpenAIAdapter(BaseAgentAdapter):
         Yields:
             AgentChunk instances as they arrive.
         """
-        if message is None:
+        if not (message is not None):
+            raise ValueError("message must be provided")
+        if not (message is not None):
             raise ValueError("message must be provided")
         client = self._get_client()
         messages = self._format_messages(context, message)
@@ -340,7 +348,9 @@ class OpenAIAdapter(BaseAgentAdapter):
         Returns:
             List of message dicts for OpenAI.
         """
-        if context is None:
+        if not (context is not None):
+            raise ValueError("context must be provided")
+        if not (context is not None):
             raise ValueError("context must be provided")
         messages: list[dict[str, Any]] = []
 
@@ -398,7 +408,9 @@ class OpenAIAdapter(BaseAgentAdapter):
         Returns:
             System message string.
         """
-        if context is None:
+        if not (context is not None):
+            raise ValueError("context must be provided")
+        if not (context is not None):
             raise ValueError("context must be provided")
         expertise = context.user_expertise.name.lower()
 

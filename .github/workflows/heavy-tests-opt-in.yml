@@ -2,7 +2,7 @@ name: Heavy Integration Tests (Opt-In)
 # ─────────────────────────────────────────────────────────────────────────────
 # ISOLATION CONTRACT: This workflow MUST NOT run on standard PR required lanes.
 #   • Trigger: manual dispatch OR weekly schedule ONLY
-#   • Runner: ubuntu-latest (or dedicated runner if configured)
+#   • Runner: d-sorg-fleet (or dedicated runner if configured)
 #   • Marker: live_simulation (explicitly EXCLUDED from ci-standard.yml)
 #
 # Parity: mirrors scripts/run_local_heavy_tests.sh exactly.
@@ -34,15 +34,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
-          ONLINE=$(gh api /orgs/${{ github.repository_owner }}/actions/runners \
+          ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq '[.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length' \
             2>/dev/null || echo "0")
           if [[ "$ONLINE" -gt 0 ]]; then
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
             echo "Self-hosted runner online — routing locally"
           else
-            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
-            echo "No self-hosted runner — using GitHub-hosted"
+            echo "::error::No local self-hosted runner available; failing closed"
+            exit 1
           fi
   run-heavy-tests:
     needs: pick-runner

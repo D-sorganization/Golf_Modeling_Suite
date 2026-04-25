@@ -8,6 +8,27 @@ from typing import Any, Protocol
 import numpy as np
 
 
+@dataclass(frozen=True)
+class TrialFailure:
+    """Structured metadata for a trial that failed during perturbation analysis."""
+
+    trial_index: int
+    seed: int
+    stage: str
+    error_type: str
+    message: str
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert failure metadata to a JSON-serializable dictionary."""
+        return {
+            "trial_index": self.trial_index,
+            "seed": self.seed,
+            "stage": self.stage,
+            "error_type": self.error_type,
+            "message": self.message,
+        }
+
+
 @dataclass
 class PerturbationConfig:
     """Unified configuration for Monte Carlo perturbation analysis across engines.

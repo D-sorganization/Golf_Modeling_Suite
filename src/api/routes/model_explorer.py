@@ -28,6 +28,7 @@ from ..models.responses import (
     ModelExplorerResponse,
     URDFTreeNode,
 )
+from ._route_utils import find_project_root
 
 router = APIRouter()
 
@@ -41,13 +42,7 @@ _MODEL_DIRS = [
 
 def _find_project_root() -> Path:
     """Find the project root directory by looking for known markers."""
-    current = Path(__file__).resolve()
-    for parent in current.parents:
-        if (parent / "src" / "shared" / "urdf").exists():
-            return parent
-        if (parent / "pyproject.toml").exists():
-            return parent
-    return Path.cwd()
+    return find_project_root()
 
 
 def _parse_urdf_link_nodes(
@@ -113,7 +108,7 @@ def _parse_urdf_joint_nodes(
     Returns:
         Tuple of (joint_count, child_links).
     """
-    if root is None:
+    if not (root is not None):
         raise ValueError("root must be provided")
     child_links: set[str] = set()
     joint_count = 0
@@ -212,7 +207,7 @@ def _parse_urdf_tree(urdf_content: str, file_path: str) -> ModelExplorerResponse
     Raises:
         ValueError: If the URDF cannot be parsed.
     """
-    if urdf_content is None:
+    if not (urdf_content is not None):
         raise ValueError("urdf_content must be provided")
     try:
         root = ElementTree.fromstring(urdf_content)
@@ -367,7 +362,7 @@ async def inspect_model(
     Returns:
         Model explorer data.
     """
-    if request is None:
+    if not (request is not None):
         raise ValueError("request must be provided")
     filepath = _resolve_model_path(request.model_path)
     content = filepath.read_text(encoding="utf-8")
@@ -394,7 +389,7 @@ async def compare_models(
     Returns:
         Comparison data with both models and diff analysis.
     """
-    if request is None:
+    if not (request is not None):
         raise ValueError("request must be provided")
     path_a = _resolve_model_path(request.model_a_path)
     path_b = _resolve_model_path(request.model_b_path)

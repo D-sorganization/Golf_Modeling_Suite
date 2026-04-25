@@ -57,13 +57,12 @@ logger = get_logger(__name__)
 # ---------------------------------------------------------------------------
 
 _TOOLS_PENDULUM_AVAILABLE: bool | None = None
+# Resolve repo root: src/engines/physics_engines/pendulum/python/<this file>
+# seven levels up from this file reaches the repository root
+_THIS_FILE = Path(__file__).resolve()
+_REPO_ROOT = _THIS_FILE.parents[6]
 _TOOLS_PACKAGE_ROOT = (
-    Path(__file__).parent.parent.parent.parent.parent.parent.parent
-    / "vendor"
-    / "ud-tools"
-    / "src"
-    / "pendulum_simulator"
-    / "src"
+    _REPO_ROOT / "vendor" / "ud-tools" / "src" / "pendulum_simulator" / "src"
 )
 
 
@@ -362,7 +361,9 @@ class GolfSwingPendulumEngine(BasePhysicsEngine):
         qacc : np.ndarray, shape (2,)
             Desired angular accelerations [rad/s²].
         """
-        if qacc is None:
+        if not (qacc is not None):
+            raise ValueError("qacc must be provided")
+        if not (qacc is not None):
             raise ValueError("qacc must be provided")
         if not self._is_initialized or len(qacc) < 2:
             return np.zeros(2)
@@ -388,7 +389,9 @@ class GolfSwingPendulumEngine(BasePhysicsEngine):
         tau : np.ndarray, shape (2,)
             Applied joint torques [N·m].
         """
-        if tau is None:
+        if not (tau is not None):
+            raise ValueError("tau must be provided")
+        if not (tau is not None):
             raise ValueError("tau must be provided")
         if not self._is_initialized or len(tau) < 2:
             return np.zeros(2)
@@ -403,7 +406,9 @@ class GolfSwingPendulumEngine(BasePhysicsEngine):
         Cartesian velocities at the requested point.  Returns ``None`` for
         unknown body names.
         """
-        if body_name is None:
+        if not (body_name is not None):
+            raise ValueError("body_name must be provided")
+        if not (body_name is not None):
             raise ValueError("body_name must be provided")
         if not self._is_initialized:
             return None
@@ -438,7 +443,9 @@ class GolfSwingPendulumEngine(BasePhysicsEngine):
 
     def compute_ztcf(self, q: np.ndarray, v: np.ndarray) -> np.ndarray:
         """Zero-Torque Counterfactual at a given state (q, v)."""
-        if q is None:
+        if not (q is not None):
+            raise ValueError("q must be provided")
+        if not (q is not None):
             raise ValueError("q must be provided")
         if not self._is_initialized or len(q) < 2 or len(v) < 2:
             return np.zeros(2)
@@ -452,7 +459,9 @@ class GolfSwingPendulumEngine(BasePhysicsEngine):
 
     def compute_zvcf(self, q: np.ndarray) -> np.ndarray:
         """Zero-Velocity Counterfactual at position q with current control."""
-        if q is None:
+        if not (q is not None):
+            raise ValueError("q must be provided")
+        if not (q is not None):
             raise ValueError("q must be provided")
         if not self._is_initialized or len(q) < 2:
             return np.zeros(2)
@@ -478,7 +487,9 @@ class GolfSwingPendulumEngine(BasePhysicsEngine):
         }
 
     def _restore_extra_checkpoint_state(self, checkpoint: StateCheckpoint) -> None:
-        if checkpoint is None:
+        if not (checkpoint is not None):
+            raise ValueError("checkpoint must be provided")
+        if not (checkpoint is not None):
             raise ValueError("checkpoint must be provided")
         self.time = checkpoint.timestamp
         es = checkpoint.engine_state

@@ -66,8 +66,13 @@ def _parse_root(source: str | Path | ET.Element) -> ET.Element:
     """Return the ``<robot>`` root element for ``source``."""
     if isinstance(source, ET.Element):
         return source
-    path = Path(source)
+    try:
+        path = Path(source)
+    except (TypeError, ValueError):
+        # Not path-like; treat as raw XML text.
+        return ET.fromstring(str(source))  # nosec B314 — URDF XML from trusted file paths
     if path.exists():
+        # For existing files, surface real parse/I/O failures directly.
         return ET.parse(path).getroot()  # nosec B314 — URDF XML from trusted file paths
     # Fall back to treating the argument as raw XML text.
     return ET.fromstring(str(source))  # nosec B314 — URDF XML from trusted file paths
@@ -226,6 +231,19 @@ def _check_bilateral_symmetry(
                         f"({right_mass} kg) exceeds "
                         f"{MAX_BILATERAL_MASS_ASYMMETRY:.0%}"
                     ),
+                )
+            )
+
+    # Also catch right-side-only links that have no left_ counterpart.
+    for name in masses:
+        if not name.startswith("right_"):
+            continue
+        mirror = "left_" + name[len("right_") :]
+        if mirror not in masses:
+            violations.append(
+                ContractViolation(
+                    category="asymmetric_limbs",
+                    message=(f"link '{name}' has no mirror '{mirror}'"),
                 )
             )
     return violations
