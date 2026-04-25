@@ -1,5 +1,7 @@
 """Benchmark comparing trajectory-funnel RL policies across solver configurations."""
 
+from __future__ import annotations
+
 import logging
 
 import numpy as np
@@ -106,7 +108,7 @@ class TrajectoryFunnelBenchmark:
         n_episodes: int = 100,
         n_steps: int = 50,
         state_dim: int = 4,
-    ) -> dict[str, float]:
+    ) -> dict[str, float | str]:
         """Simulate RL training and compute convergence metrics from reward dynamics.
 
         Uses the actual reward functions defined in this class to generate
