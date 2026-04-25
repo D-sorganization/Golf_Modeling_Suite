@@ -12,17 +12,11 @@ import numpy as np
 
 # Core data structures
 class Model:
-<<<<<<< HEAD
-=======
     name: str
->>>>>>> origin/main
     nq: int
     nv: int
     njoints: int
     nframes: int
-<<<<<<< HEAD
-    def __init__(self) -> None: ...
-=======
     frames: list[Any]
     joints: list[Any]
     def __init__(self) -> None: ...
@@ -31,17 +25,13 @@ class Model:
     def existFrame(self, name: str) -> bool: ...
     def getJointId(self, name: str) -> int: ...
     def getFrameId(self, name: str) -> int: ...
->>>>>>> origin/main
 
 class Data:
     oMi: Any
     oMf: Any
     J: Any
     dJ: Any
-<<<<<<< HEAD
-=======
     Minv: np.ndarray
->>>>>>> origin/main
     v: Any
     a: Any
     tau: Any
@@ -49,10 +39,7 @@ class Data:
 
 class GeometryModel:
     def __init__(self) -> None: ...
-<<<<<<< HEAD
-=======
     def createData(self) -> GeometryData: ...
->>>>>>> origin/main
 
 class GeometryData:
     def __init__(self, geom_model: GeometryModel) -> None: ...
@@ -60,8 +47,6 @@ class GeometryData:
 class VisualModel(GeometryModel): ...
 class CollisionModel(GeometryModel): ...
 
-<<<<<<< HEAD
-=======
 class RobotWrapper:
     model: Model
     data: Data
@@ -69,7 +54,6 @@ class RobotWrapper:
     @staticmethod
     def BuildFromURDF(filename: str) -> RobotWrapper: ...
 
->>>>>>> origin/main
 # SE3 / spatial algebra
 class SE3:
     translation: np.ndarray
@@ -79,19 +63,11 @@ class SE3:
     def __init__(self, rotation: np.ndarray, translation: np.ndarray) -> None: ...
 
 class ReferenceFrame:
-<<<<<<< HEAD
-    LOCAL: int
-    LOCAL_WORLD_ALIGNED: int
-    WORLD: int
-
-LOCAL_WORLD_ALIGNED: int
-=======
     LOCAL: ReferenceFrame
     LOCAL_WORLD_ALIGNED: ReferenceFrame
     WORLD: ReferenceFrame
 
 LOCAL_WORLD_ALIGNED: ReferenceFrame
->>>>>>> origin/main
 
 class GeometryType:
     VISUAL: int
@@ -102,12 +78,6 @@ def buildModelFromUrdf(
     filename: str,
     root_joint: Any = ...,
 ) -> Model: ...
-<<<<<<< HEAD
-def buildModelsFromUrdf(
-    filename: str,
-    geom_types: Any = ...,
-) -> tuple[Model, GeometryModel]: ...
-=======
 def buildModelFromMJCF(filename: str) -> Model: ...
 def buildModelFromXML(content: str) -> Model: ...
 def buildSampleModelManipulator() -> Model: ...
@@ -115,7 +85,6 @@ def buildModelsFromUrdf(
     filename: str,
     geom_types: Any = ...,
 ) -> tuple[Model, GeometryModel, GeometryModel]: ...
->>>>>>> origin/main
 def buildGeomFromUrdf(
     model: Model,
     filename: str,
@@ -143,9 +112,6 @@ def getFrameJacobian(
     model: Model,
     data: Data,
     frame_id: int,
-<<<<<<< HEAD
-    reference_frame: int,
-=======
     reference_frame: Any,
 ) -> np.ndarray: ...
 def computeFrameJacobian(
@@ -154,27 +120,18 @@ def computeFrameJacobian(
     q: np.ndarray,
     frame_id: int,
     reference_frame: Any,
->>>>>>> origin/main
 ) -> np.ndarray: ...
 def getJointJacobian(
     model: Model,
     data: Data,
     joint_id: int,
-<<<<<<< HEAD
-    reference_frame: int,
-=======
     reference_frame: Any,
->>>>>>> origin/main
 ) -> np.ndarray: ...
 def getFrameVelocity(
     model: Model,
     data: Data,
     frame_id: int,
-<<<<<<< HEAD
-    reference_frame: int,
-=======
     reference_frame: Any,
->>>>>>> origin/main
 ) -> Any: ...
 
 # Inverse/forward dynamics
@@ -184,10 +141,7 @@ def rnea(
     q: np.ndarray,
     v: np.ndarray,
     a: np.ndarray,
-<<<<<<< HEAD
-=======
     f_ext: Any = ...,
->>>>>>> origin/main
 ) -> np.ndarray: ...
 def aba(
     model: Model,
@@ -195,10 +149,7 @@ def aba(
     q: np.ndarray,
     v: np.ndarray,
     tau: np.ndarray,
-<<<<<<< HEAD
-=======
     f_ext: Any = ...,
->>>>>>> origin/main
 ) -> np.ndarray: ...
 def crba(
     model: Model,
@@ -211,14 +162,11 @@ def computeCoriolisMatrix(
     q: np.ndarray,
     v: np.ndarray,
 ) -> np.ndarray: ...
-<<<<<<< HEAD
-=======
 def computeMinverse(
     model: Model,
     data: Data,
     q: np.ndarray,
 ) -> None: ...
->>>>>>> origin/main
 def nle(
     model: Model,
     data: Data,

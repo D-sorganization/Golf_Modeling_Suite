@@ -33,46 +33,18 @@ Usage:
 
 from __future__ import annotations
 
+import json
 import logging
+import struct
+from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 
-from ._mesh_parsers import (
-    load_collada,
-    load_fbx,
-    load_gltf,
-    load_obj,
-    load_ply,
-    load_stl,
-)
-from ._mesh_types import (
-    LoadedMesh,
-    MeshBone,
-    MeshFace,
-    MeshFormat,
-    MeshLoadError,
-    MeshMaterial,
-    MeshSkeleton,
-    MeshVertex,
-    UnsupportedFormatError,
-)
-
-__all__ = [
-    "LoadedMesh",
-    "MeshBone",
-    "MeshFace",
-    "MeshFormat",
-    "MeshLoadError",
-    "MeshLoader",
-    "MeshMaterial",
-    "MeshSkeleton",
-    "MeshVertex",
-    "UnsupportedFormatError",
-]
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
 
-=======
 class MeshLoadError(Exception):
     """Exception raised when mesh loading fails."""
 
@@ -399,7 +371,6 @@ class LoadedMesh:
         return np.array([v.uv if v.uv is not None else [0, 0] for v in self.vertices])
 
 
->>>>>>> origin/main
 class MeshLoader:
     """Universal mesh loader supporting multiple formats.
 
@@ -424,10 +395,7 @@ class MeshLoader:
         Args:
             enable_cache: Whether to cache loaded meshes.
         """
-<<<<<<< HEAD
-        if not (enable_cache is not None):
-            raise ValueError("enable_cache must be provided")
-        if not (enable_cache is not None):
+        if enable_cache is None:
             raise ValueError("enable_cache must be provided")
         self.enable_cache = enable_cache
         self._cache: dict[str, tuple[float, LoadedMesh]] = {}
@@ -481,11 +449,14 @@ class MeshLoader:
         """
         path_obj = Path(path)
 
+        # Precondition: file exists
         if not path_obj.exists():
             raise FileNotFoundError(f"Mesh file not found: {path}")
 
+        # Precondition: format supported
         fmt = MeshFormat.from_extension(path_obj.suffix)
 
+        # Check cache
         if self.enable_cache:
             mtime = path_obj.stat().st_mtime
             if path in self._cache:
@@ -494,25 +465,27 @@ class MeshLoader:
                     logger.debug(f"Using cached mesh: {path}")
                     return cached_mesh
 
+        # Load based on format
         try:
             if fmt == MeshFormat.OBJ:
-                mesh = load_obj(path_obj)
+                mesh = self._load_obj(path_obj)
             elif fmt == MeshFormat.STL:
-                mesh = load_stl(path_obj)
+                mesh = self._load_stl(path_obj)
             elif fmt in (MeshFormat.GLTF, MeshFormat.GLB):
-                mesh = load_gltf(path_obj)
+                mesh = self._load_gltf(path_obj)
             elif fmt == MeshFormat.FBX:
-                mesh = load_fbx(path_obj)
+                mesh = self._load_fbx(path_obj)
             elif fmt == MeshFormat.COLLADA:
-                mesh = load_collada(path_obj)
+                mesh = self._load_collada(path_obj)
             elif fmt == MeshFormat.PLY:
-                mesh = load_ply(path_obj)
+                mesh = self._load_ply(path_obj)
             else:
                 raise UnsupportedFormatError(path_obj.suffix, path)
 
             mesh.source_path = path
             mesh.format = fmt
 
+            # Update cache
             if self.enable_cache:
                 self._cache[path] = (path_obj.stat().st_mtime, mesh)
 
@@ -525,8 +498,6 @@ class MeshLoader:
             raise
         except (RuntimeError, TypeError, ValueError) as e:
             raise MeshLoadError(f"Failed to load mesh: {e}", path, e) from e
-<<<<<<< HEAD
-=======
 
     def _load_obj(self, path: Path) -> LoadedMesh:
         """Load OBJ format mesh.
@@ -877,4 +848,3 @@ class MeshLoader:
             raise MeshLoadError(
                 "PLY loading requires trimesh library", str(path)
             ) from e
->>>>>>> origin/main

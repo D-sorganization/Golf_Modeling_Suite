@@ -1,9 +1,7 @@
-=======
 # ARCHITECTURE_DEBT:
 # This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
 # It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
->>>>>>> origin/main
 """OpenSim Perturbation Analyzer — PerturbationAnalyzer protocol for OpenSim (#1981).
 
 Implements the ``PerturbationAnalyzer`` protocol for the OpenSim physics
@@ -11,7 +9,7 @@ simulation engine.  Uses a built-in minimal pendulum model when no model path
 is provided.  When ``opensim`` is not installed the module imports cleanly but
 construction raises ``ImportError``.
 
-<<<<<<< HEAD
+
 Inherits from ``PerturbationAnalyzerBase`` (see #2273) which provides the
 shared ``set_base_torque_profile``, ``perturb_torque``, ``extract_metrics``,
 ``run_batch``, and ``compare_profiles`` implementations.
@@ -41,7 +39,6 @@ from pathlib import Path
 
 import numpy as np
 
-from src.shared.python.engine_core.engine_availability import OPENSIM_AVAILABLE
 from src.shared.python.perturbation.perturbation_base import (
     MANDATORY_METRICS,
     ComparisonReport,
@@ -170,18 +167,6 @@ class OpenSimSimResult:
 
 
 # ---------------------------------------------------------------------------
-=======
-# Comparison report
-# ---------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------
-# Coefficient perturbation helper
-# ---------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------
->>>>>>> origin/main
 # Main analyzer
 # ---------------------------------------------------------------------------
 
@@ -236,7 +221,6 @@ class OpenSimPerturbationAnalyzer(PerturbationAnalyzerBase):
             Name of the end-effector body.  Defaults to the last body in the
             model (excluding ground).
         """
-<<<<<<< HEAD
         super().__init__()
 
         logger.info(

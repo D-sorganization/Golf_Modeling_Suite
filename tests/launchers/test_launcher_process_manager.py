@@ -160,7 +160,6 @@ def test_launch_script_unified(mock_secure_popen, mock_validate, manager) -> Non
         mock_thread().start.assert_called_once()
 
 
-=======
 @patch(_SECURE_POPEN)
 def test_launch_script_accepts_src_script_path(mock_secure_popen, tmp_path):
     """Launcher-managed scripts under src must pass subprocess validation."""
@@ -199,13 +198,11 @@ def test_launch_script_unified_passes_extra_python_paths(
     assert str(Path("/external/provider/src")) in env_passed["PYTHONPATH"]
 
 
->>>>>>> origin/main
 @patch(_VALIDATE_SCRIPT)
 @patch("subprocess.Popen")
 @patch(_SECURE_POPEN)
 def test_launch_script_separate_term(
     mock_secure_popen, mock_popen, mock_validate, manager
-<<<<<<< HEAD
 ) -> None:
     manager.use_separate_terminals = True
 

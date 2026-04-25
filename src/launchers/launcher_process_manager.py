@@ -465,9 +465,7 @@ class ProcessManager:
             PermissionError,
             OSError,
             SecureSubprocessError,
-=======
             ValueError,
->>>>>>> origin/main
         ) as e:
             logger.error(f"Failed to launch {name}: {e}")
             return None
@@ -599,7 +597,6 @@ class ProcessManager:
             PermissionError,
             OSError,
             SecureSubprocessError,
-<<<<<<< HEAD
         ) as e:
             logger.error(f"Failed to launch {name}: {e}")
             return None

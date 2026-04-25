@@ -71,7 +71,6 @@ __all__ = [
 logger = logging.getLogger(__name__)
 
 
-=======
 # ============================================================================
 # GAS COMPONENT PROPERTIES DATABASE
 # ============================================================================
@@ -868,7 +867,6 @@ def calculate_mixture_viscosity_simple(
 # ============================================================================
 
 
->>>>>>> origin/main
 def calculate_gas_properties(
     composition: dict[str, float],
     temperature: float,
@@ -900,7 +898,6 @@ def calculate_gas_properties(
         >>> print(f"Gamma: {props['heat_capacity_ratio']:.3f}")
     """
     # Molecular weight
-<<<<<<< HEAD
     if not (composition is not None):
         raise ValueError("composition must be provided")
     if not (composition is not None):

@@ -229,7 +229,6 @@ class EngineManager(ContractChecker):
                     "engine_discovered engine=%s path=%s status=available",
                     engine_type.value,
                     engine_path,
-=======
                 )
             elif available_provider_path is not None:
                 self.engine_status[engine_type] = EngineStatus.AVAILABLE
@@ -237,7 +236,6 @@ class EngineManager(ContractChecker):
                     "engine_discovered_via_provider engine=%s path=%s status=available",
                     engine_type.value,
                     available_provider_path,
->>>>>>> origin/main
                 )
             else:
                 self.engine_status[engine_type] = EngineStatus.UNAVAILABLE
@@ -249,7 +247,6 @@ class EngineManager(ContractChecker):
 
     def _load_engine(self, engine_type: EngineType) -> None:
         """Load a specific engine."""
-<<<<<<< HEAD
         if not (engine_type is not None):
             raise ValueError("engine_type must be provided")
         if not (engine_type is not None):

@@ -75,7 +75,6 @@ from src.api.routes import (  # noqa: E402
     simulation_ws,
 )
 from src.api.services.chat_service import ChatService  # noqa: E402
-from src.api.versioning import get_app_version  # noqa: E402
 from src.shared.python.engine_core.engine_manager import EngineManager  # noqa: E402
 from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
 
@@ -84,9 +83,7 @@ logger = get_logger(__name__)
 # API versioning constants (#2070)
 API_VERSION = "v1"
 API_PREFIX = f"/api/{API_VERSION}"
-=======
 LAUNCHER_CSRF_HEADER = "X-Launcher-CSRF-Token"
->>>>>>> origin/main
 
 
 # Track startup metrics for diagnostics
@@ -335,7 +332,6 @@ def _execute_tile_launch(
     Returns:
         Success dict or JSONResponse with error details.
     """
-<<<<<<< HEAD
     if not (tile_id is not None):
         raise ValueError("tile_id must be provided")
     model_type = tile.get("type", "")

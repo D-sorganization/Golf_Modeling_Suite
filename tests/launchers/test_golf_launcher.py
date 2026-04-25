@@ -9,7 +9,6 @@ from PyQt6.QtWidgets import QMessageBox  # noqa: E402
 
 from src.launchers.golf_launcher import (  # noqa: E402
     GolfLauncher,
-    ProcessCleanupWorker,  # noqa: E402
     main,
 )
 from src.launchers.ui_components import StartupResults  # noqa: E402

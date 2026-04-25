@@ -19,7 +19,6 @@ generate_humanoid_urdf) is fully preserved.
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
 
@@ -202,7 +201,6 @@ class HumanoidURDFGenerator:
             logger.info(f"URDF written to {output_path}")
         return urdf_xml
 
-=======
     def _apply_proportion_factors(
         self, dimensions: dict[str, dict[str, float]], params: BodyParameters
     ) -> dict[str, dict[str, float]]:
@@ -415,14 +413,12 @@ def _is_valid_xml(xml_str: str) -> bool:
     except ET.ParseError:
         return False
 
->>>>>>> origin/main
 
 def generate_humanoid_urdf(
     params: BodyParameters,
     output_path: Path | str | None = None,
     config: URDFGeneratorConfig | None = None,
 ) -> str:
-<<<<<<< HEAD
     """
     Convenience function to generate humanoid URDF.
 

@@ -3,11 +3,9 @@
 
 from __future__ import annotations
 
-import logging
 import sys
-import time
-from dataclasses import dataclass
-from typing import Any
+
+
 def main() -> None:
     """Main application entry point."""
     app = QApplication(sys.argv)

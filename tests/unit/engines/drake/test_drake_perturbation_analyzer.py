@@ -13,16 +13,17 @@ Design by Contract
 
 from __future__ import annotations
 
-from typing import Any
+import numpy as np
+import pytest
 
+from src.engines.physics_engines.drake.python.perturbation.analyzer import (
+    MANDATORY_METRICS,
     DrakeSimResult,
 )
 from src.shared.python.pendulum_simulator.perturbation_analysis import (
     perturb_torque_coeffs,
 )
-=======
 from src.shared.python.perturbation.analyzer_base import ComparisonReport
->>>>>>> origin/main
 from src.shared.python.perturbation.config import PerturbationConfig
 
 # ---------------------------------------------------------------------------
@@ -42,8 +43,7 @@ _SMALL_CONFIG = PerturbationConfig(
 # ---------------------------------------------------------------------------
 
 try:
-<<<<<<< HEAD
-    from pydrake.all import MultibodyPlant  # noqa: F401
+    import pydrake.multibody.tree  # noqa: F401
 
     _DRAKE_AVAILABLE = True
 except ImportError:
@@ -198,7 +198,7 @@ class TestComparisonReport:
 
 
 @pytest.fixture(scope="module")
-def analyzer() -> Any:  # type: ignore[no-untyped-def]
+def analyzer():  # type: ignore[no-untyped-def]
     from src.engines.physics_engines.drake.python.perturbation.analyzer import (
         DrakePerturbationAnalyzer,
     )
@@ -214,7 +214,7 @@ def simple_profile(analyzer) -> dict:  # type: ignore[no-untyped-def]
 
 
 @pytest.fixture(scope="module")
-def analyzer_with_profile(analyzer, simple_profile) -> Any:  # type: ignore[no-untyped-def]
+def analyzer_with_profile(analyzer, simple_profile):  # type: ignore[no-untyped-def]
     analyzer.set_base_torque_profile(simple_profile)
     return analyzer
 
@@ -386,9 +386,9 @@ class TestRK4EnergyStability:
 
         assert np.all(np.isfinite(sim.q_traj)), "q_traj contains non-finite values"
         assert np.all(np.isfinite(sim.v_traj)), "v_traj contains non-finite values"
-        assert np.all(
-            np.isfinite(sim.kinetic_energy_traj)
-        ), "kinetic_energy_traj contains non-finite values"
-        assert np.all(
-            np.isfinite(sim.potential_energy_traj)
-        ), "potential_energy_traj contains non-finite values"
+        assert np.all(np.isfinite(sim.kinetic_energy_traj)), (
+            "kinetic_energy_traj contains non-finite values"
+        )
+        assert np.all(np.isfinite(sim.potential_energy_traj)), (
+            "potential_energy_traj contains non-finite values"
+        )

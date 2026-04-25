@@ -47,7 +47,6 @@ from ._acid_gas_utils import (
 )
 from ._acid_gas_widget import GUI_AVAILABLE
 
-=======
 logger = logging.getLogger(__name__)
 
 
@@ -702,7 +701,6 @@ def estimate_condensation_risk(
 
 
 # --- GUI Widget for Acid Gas Dewpoint Calculator ---
->>>>>>> origin/main
 if GUI_AVAILABLE:
     from ._acid_gas_widget import AcidGasDewpointCalculatorWidget
 
@@ -716,6 +714,5 @@ __all__ = [
     "GUI_AVAILABLE",
 ]
 
-<<<<<<< HEAD
 if GUI_AVAILABLE:
     __all__ += ["AcidGasDewpointCalculatorWidget"]

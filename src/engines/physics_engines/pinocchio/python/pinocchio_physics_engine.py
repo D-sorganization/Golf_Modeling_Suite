@@ -9,7 +9,7 @@ initialization patterns.
 
 from __future__ import annotations
 
-from typing import Any, Literal, cast
+from typing import Literal, cast
 
 import numpy as np
 
@@ -432,11 +432,9 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
         Returns:
             q_ddot_ZVCF: Acceleration with v=0 (n_v,)
         """
-<<<<<<< HEAD
+
         if not (q is not None):
             raise ValueError("q must be provided")
-=======
->>>>>>> origin/main
         if self.model is None or self.data is None:
             return np.array([])
 

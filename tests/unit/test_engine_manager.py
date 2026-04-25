@@ -3,7 +3,6 @@ Unit tests for EngineManager functionality.
 """
 
 import tempfile
-import textwrap
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 

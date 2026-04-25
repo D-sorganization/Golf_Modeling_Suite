@@ -113,16 +113,13 @@ class URDFExporter:
         include_collision: bool,
     ) -> None:
         """Build URDF tree from MuJoCo model structure."""
-=======
         # Find root body (worldbody's first child or free joint body)
->>>>>>> origin/main
         if robot is None:
             raise ValueError("robot must be provided")
         root_body_id = self._find_root_body()
         if root_body_id is None:
             logger.warning("No root body found, creating default")
             return
-<<<<<<< HEAD
         root_link = self._create_link(
             root_body_id,
             include_visual=include_visual,

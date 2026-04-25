@@ -343,42 +343,6 @@ class TestMyoSuiteEngine:
                 f"Activation not set correctly: {ctrl_value}"
             )
 
-<<<<<<< HEAD
-=======
-            engine = MyoSuitePhysicsEngine()
-            engine.load_from_path("myoElbowPose1D6MRandom-v0")
-
-            # Get muscle names
-            analyzer = engine.get_muscle_analyzer()
-            if analyzer is None:
-                pytest.skip("No muscles available")
-
-            assert analyzer is not None
-
-            if not hasattr(analyzer, "muscle_names") or len(analyzer.muscle_names) == 0:
-                pytest.skip("No muscles available")
-
-            # Set activation for first muscle
-            muscle_name = analyzer.muscle_names[0]
-            engine.set_muscle_activations({muscle_name: 0.8})
-
-            logger.info(f"Set {muscle_name} activation to 0.8")
-
-            # Verify it was set (by checking control vector)
-            if (
-                hasattr(analyzer, "muscle_actuator_ids")
-                and analyzer.muscle_actuator_ids
-            ):
-                actuator_id = analyzer.muscle_actuator_ids[0]
-                ctrl_value = engine.sim.data.ctrl[actuator_id]
-                assert 0.7 <= ctrl_value <= 0.9, (
-                    f"Activation not set correctly: {ctrl_value}"
-                )
-
-        except Exception as e:  # noqa: BLE001
-            pytest.skip(f"Activation setting test failed: {e}")
-
->>>>>>> origin/main
 
 class TestCrossValidation:
     """Cross-validation with OpenSim."""

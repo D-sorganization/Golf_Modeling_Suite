@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from model_generation.library.unified_loader import UnifiedModelLoader
+    pass
 
 
 class TestFormatDetection:

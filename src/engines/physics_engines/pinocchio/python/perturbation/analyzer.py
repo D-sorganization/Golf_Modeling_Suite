@@ -1,9 +1,7 @@
-=======
 # ARCHITECTURE_DEBT:
 # This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
 # It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
 
->>>>>>> origin/main
 """Pinocchio Perturbation Analyzer — PerturbationAnalyzer protocol (#1978).
 
 Implements the ``PerturbationAnalyzer`` protocol for the Pinocchio rigid-body
@@ -11,7 +9,7 @@ dynamics engine.  Uses ``PinocchioPhysicsEngine`` for forward simulation with
 polynomial torque profiles, and exposes Jacobian-based sensitivity as an
 optional complement to Monte Carlo results.
 
-<<<<<<< HEAD
+
 Inherits from ``PerturbationAnalyzerBase`` (see #2273) which provides the
 shared ``set_base_torque_profile``, ``perturb_torque``, ``extract_metrics``,
 ``run_batch``, and ``compare_profiles`` implementations.
@@ -43,7 +41,6 @@ from pathlib import Path
 
 import numpy as np
 
-from src.shared.python.engine_core.engine_availability import PINOCCHIO_AVAILABLE
 from src.shared.python.perturbation.perturbation_base import (
     MANDATORY_METRICS,
     ComparisonReport,
@@ -101,18 +98,6 @@ class PinocchioSimResult:
 
 
 # ---------------------------------------------------------------------------
-=======
-# Comparison report
-# ---------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------
-# Coefficient perturbation helper
-# ---------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------
->>>>>>> origin/main
 # Main analyzer
 # ---------------------------------------------------------------------------
 
@@ -162,7 +147,6 @@ class PinocchioPerturbationAnalyzer(PerturbationAnalyzerBase):
         ee_frame_name : str, optional
             Name of the end-effector frame in the URDF.  Defaults to last frame.
         """
-<<<<<<< HEAD
         super().__init__()
 
         logger.info(

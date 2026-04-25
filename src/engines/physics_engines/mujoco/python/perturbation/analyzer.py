@@ -1,16 +1,14 @@
-=======
 # ARCHITECTURE_DEBT:
 # This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
 # It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
 
->>>>>>> origin/main
 """MuJoCo Perturbation Analyzer — PerturbationAnalyzer protocol for MuJoCo (#1980).
 
 Implements the ``PerturbationAnalyzer`` protocol for the MuJoCo physics
 simulation engine.  Uses ``mujoco.MjModel`` + ``mujoco.MjData`` for forward
 simulation with polynomial torque profiles injected via ``data.ctrl``.
 
-<<<<<<< HEAD
+
 Inherits from ``PerturbationAnalyzerBase`` (see #2273) which provides the
 shared ``set_base_torque_profile``, ``perturb_torque``, ``extract_metrics``,
 ``run_batch``, and ``compare_profiles`` implementations.
@@ -40,7 +38,6 @@ from pathlib import Path
 
 import numpy as np
 
-from src.shared.python.engine_core.engine_availability import MUJOCO_AVAILABLE
 from src.shared.python.perturbation.perturbation_base import (
     MANDATORY_METRICS,
     ComparisonReport,
@@ -120,18 +117,6 @@ class MuJoCoSimResult:
 
 
 # ---------------------------------------------------------------------------
-=======
-# Comparison report
-# ---------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------
-# Coefficient perturbation helper
-# ---------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------
->>>>>>> origin/main
 # Main analyzer
 # ---------------------------------------------------------------------------
 
@@ -181,9 +166,7 @@ class MuJoCoPerturbationAnalyzer(PerturbationAnalyzerBase):
             Name of the end-effector body in the MJCF model.  Defaults to
             the last non-world body.
         """
-<<<<<<< HEAD
         super().__init__()
-
 
         logger.info(
             "MuJoCoPerturbationAnalyzer: nq=%d, nv=%d, nu=%d, t_end=%.2f",

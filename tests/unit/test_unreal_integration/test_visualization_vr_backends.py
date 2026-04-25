@@ -24,7 +24,6 @@ from src.unreal_integration.viewer_backends import (
     BackendType,
     CameraState,
     MockBackend,
-    PyVistaBackend,
     ViewerConfig,
     create_viewer,
 )

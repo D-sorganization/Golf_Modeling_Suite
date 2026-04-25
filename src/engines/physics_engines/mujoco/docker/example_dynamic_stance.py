@@ -4,7 +4,55 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any
+
+import dm_control
+import imageio
+import numpy as np
+from dm_control import mjcf, suite
+
+logger = logging.getLogger(__name__)
+
+# Path to CMU Humanoid XMl in the container
+# We need to find it first. Usually in dm_control/suite/humanoid_CMU.xml
+# But strictly speaking we should use the suite to get the model structure if possible?
+# Re-loading via mjcf is cleaner for editing.
+# Let's assume standard install path or try to locate it.
+# Fallback: We can modify the `suite.load` behavior by patching? No.
+# WE WILL USE REFLECTION to find the xml path from the loaded env if possible,
+# or just assume the standard path in site-packages.
+
+# Target Pose: Address Position
+TARGET_POSE = {
+    "lowerbackrx": 0.35,
+    "upperbackrx": 0.15,
+    "rtibiarx": 0.1,
+    "ltibiarx": 0.1,
+    "rfemurrx": -0.2,
+    "lfemurrx": -0.2,
+    "rfootrx": -0.05,
+    "lfootrx": -0.05,
+    # Arms closer together (holding club)
+    "rhumerusrx": -0.4,
+    "lhumerusrx": -0.4,  # More forward
+    "rhumerusrz": -0.4,
+    "lhumerusrz": 0.4,  # Rotate in towards body
+    "rhumerusry": -0.2,
+    "lhumerusry": 0.2,  # Twist
+    "rradiusrx": 0.5,
+    "lradiusrx": 0.5,  # Bent elbows slightly
+}
+
+
+def get_cmu_xml_path() -> str:
+    """Locate the CMU Humanoid XML file."""
+    # Heuristic to find the XML
+    suite_dir = Path(dm_control.suite.__file__).parent
+    return str(suite_dir / "humanoid_CMU.xml")
+
+
+def pd_control(physics, target_pose, actuators, kp=10.0, kd=1.0) -> np.ndarray:
+    """Compute PD control action."""
+    if physics is None:
         raise ValueError("physics must be provided")
     action = np.zeros(physics.model.nu)
     for joint_name, target_angle in target_pose.items():
@@ -20,7 +68,7 @@ from typing import Any
     return action
 
 
-def customize_model(physics: Any) -> None:
+def customize_model(physics) -> None:
     """Apply colors and geometric adjustments."""
     # Grey Shirt
     GREY_SHIRT = [0.6, 0.6, 0.6, 1.0]
@@ -111,7 +159,7 @@ def customize_model(physics: Any) -> None:
             physics.model.geom_rgba[i] = BLACK_SHOES
 
 
-def _load_and_patch_xml(xml_path: str | Path) -> mjcf.Physics:
+def _load_and_patch_xml(xml_path) -> mjcf.Physics:
     """Load the CMU Humanoid XML, patch it, and return compiled physics.
 
     Returns the compiled physics object, or None if patching fails.
@@ -156,7 +204,7 @@ def _load_and_patch_xml(xml_path: str | Path) -> mjcf.Physics:
     return physics
 
 
-def _attach_golf_club(root: Any) -> None:
+def _attach_golf_club(root) -> None:
     """Attach a golf club geometry to the right hand body."""
     rhand = root.find("body", "rhand")
     if rhand:
@@ -183,7 +231,7 @@ def _attach_golf_club(root: Any) -> None:
         )
 
 
-def _add_face_on_camera(root: Any) -> None:
+def _add_face_on_camera(root) -> None:
     """Add a face-on camera to the worldbody."""
     worldbody = root.find("worldbody", "world")
     if worldbody:
@@ -197,7 +245,7 @@ def _add_face_on_camera(root: Any) -> None:
         )
 
 
-def _setup_physics(xml_path: str | Path) -> mjcf.Physics:
+def _setup_physics(xml_path) -> mjcf.Physics:
     """Set up physics, falling back to suite.load if patching fails."""
     try:
         physics = _load_and_patch_xml(xml_path)
@@ -209,7 +257,7 @@ def _setup_physics(xml_path: str | Path) -> mjcf.Physics:
     return physics
 
 
-def _find_face_on_camera(physics: Any) -> int:
+def _find_face_on_camera(physics) -> int:
     """Find the face_on camera id, defaulting to 0."""
     logger.info("\nAvailable Cameras:")
     ncam = physics.model.ncam
@@ -222,7 +270,7 @@ def _find_face_on_camera(physics: Any) -> int:
     return camera_id
 
 
-def _set_initial_pose(physics: Any) -> None:
+def _set_initial_pose(physics) -> None:
     """Reset physics and set the initial address pose."""
     with physics.reset_context():
         # Z-height 0.96 adjusted empirically for CMU model to ensure feet
@@ -239,13 +287,9 @@ def _set_initial_pose(physics: Any) -> None:
                 pass
 
 
-def _run_simulation_loop(
-    physics: Any, actuators: dict[str, int], camera_id: int
-) -> None:
+def _run_simulation_loop(physics, actuators, camera_id) -> None:
     """Run the simulation loop, recording frames and saving video."""
-    if not (physics is not None):
-        raise ValueError("physics must be provided")
-    if not (physics is not None):
+    if physics is None:
         raise ValueError("physics must be provided")
     logger.info("Simulating...")
     frames = []

@@ -12,35 +12,25 @@ This module implements the A3 pipeline per project design guidelines:
 Issue #754: Implements complete A3 model fitting and parameter identification.
 
 Reference: docs/assessments/project_design_guidelines.qmd Section A3
-
-Implementation split across:
-- _data_fitting_models.py: data classes
-- _data_fitting_solvers.py: InverseKinematicsSolver, ParameterEstimator
 """
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
+from scipy import optimize
 
 from src.shared.python.logging_pkg.logging_config import get_logger
 
-# Re-export public names for backward compatibility
-from ._data_fitting_models import (
-    BodySegmentParams,
-    FitResult,
-    KinematicState,
-    ParameterEstimationReport,
-    SensitivityResult,
-)
-from ._data_fitting_solvers import InverseKinematicsSolver, ParameterEstimator
+if TYPE_CHECKING:
+    pass
 
 logger = get_logger(__name__)
 
 
-=======
 # =============================================================================
 # Data Structures
 # =============================================================================
@@ -649,7 +639,6 @@ class ParameterEstimator:
 # =============================================================================
 
 
->>>>>>> origin/main
 class SensitivityAnalyzer:
     """Perform sensitivity analysis on model parameters.
 
@@ -665,10 +654,7 @@ class SensitivityAnalyzer:
         Args:
             perturbation_size: Fractional perturbation for finite differences
         """
-<<<<<<< HEAD
-        if not (perturbation_size is not None):
-            raise ValueError("perturbation_size must be provided")
-        if not (perturbation_size is not None):
+        if perturbation_size is None:
             raise ValueError("perturbation_size must be provided")
         self.perturbation_size = perturbation_size
 
@@ -692,9 +678,7 @@ class SensitivityAnalyzer:
         Returns:
             SensitivityResult with sensitivity indices.
         """
-        if not (parameter_name is not None):
-            raise ValueError("parameter_name must be provided")
-        if not (parameter_name is not None):
+        if parameter_name is None:
             raise ValueError("parameter_name must be provided")
         delta = nominal_value * self.perturbation_size
 
@@ -755,9 +739,7 @@ class SensitivityAnalyzer:
         Returns:
             Dictionary with summary statistics and rankings.
         """
-        if not (sensitivities is not None):
-            raise ValueError("sensitivities must be provided")
-        if not (sensitivities is not None):
+        if sensitivities is None:
             raise ValueError("sensitivities must be provided")
         if not sensitivities:
             return {"error": "No sensitivity data"}
@@ -821,9 +803,7 @@ def convert_poses_to_markers(
         Tuple of (marker_positions [M x 3], marker_names [M]).
     """
     # Standard mapping from pose estimation to biomechanical markers
-    if not (pose_keypoints is not None):
-        raise ValueError("pose_keypoints must be provided")
-    if not (pose_keypoints is not None):
+    if pose_keypoints is None:
         raise ValueError("pose_keypoints must be provided")
     pose_to_marker_map = {
         # MediaPipe / OpenPose keypoint names -> Biomechanics marker names
@@ -895,9 +875,7 @@ class A3FittingPipeline:
         Args:
             anthropometric_model: Model for parameter regression
         """
-        if not (anthropometric_model is not None):
-            raise ValueError("anthropometric_model must be provided")
-        if not (anthropometric_model is not None):
+        if anthropometric_model is None:
             raise ValueError("anthropometric_model must be provided")
         self.param_estimator = ParameterEstimator(anthropometric_model)
         self.sensitivity_analyzer = SensitivityAnalyzer()
@@ -933,9 +911,7 @@ class A3FittingPipeline:
         Returns:
             Complete ParameterEstimationReport.
         """
-        if not (marker_positions is not None):
-            raise ValueError("marker_positions must be provided")
-        if not (marker_positions is not None):
+        if marker_positions is None:
             raise ValueError("marker_positions must be provided")
         logger.info(
             f"Fitting A3 model for subject '{subject_id}' "
@@ -1014,9 +990,7 @@ class A3FittingPipeline:
         Returns:
             Complete ParameterEstimationReport.
         """
-        if not (c3d_path is not None):
-            raise ValueError("c3d_path must be provided")
-        if not (c3d_path is not None):
+        if c3d_path is None:
             raise ValueError("c3d_path must be provided")
         try:
             import ezc3d
@@ -1066,9 +1040,7 @@ class A3FittingPipeline:
             output_path: Output file path
             format: Export format ("json", "csv")
         """
-        if not (report is not None):
-            raise ValueError("report must be provided")
-        if not (report is not None):
+        if report is None:
             raise ValueError("report must be provided")
         import json
 
@@ -1091,17 +1063,3 @@ class A3FittingPipeline:
             logger.info(f"Report exported to: {output_path}")
         else:
             raise ValueError(f"Unsupported export format: {format}")
-
-
-__all__ = [
-    "A3FittingPipeline",
-    "BodySegmentParams",
-    "FitResult",
-    "InverseKinematicsSolver",
-    "KinematicState",
-    "ParameterEstimationReport",
-    "ParameterEstimator",
-    "SensitivityAnalyzer",
-    "SensitivityResult",
-    "convert_poses_to_markers",
-]

@@ -93,9 +93,7 @@ def compute_rotation(request: RotationConverterRequest) -> RotationConverterResp
             eul = list(rot.as_euler(request.euler_convention))
             conv = request.euler_convention
         except (ValueError, KeyError):
-=======
             # Unknown Euler convention from the request; fall back to xyz.
->>>>>>> origin/main
             eul = list(rot.as_euler("xyz"))
             conv = "xyz"
 
@@ -117,7 +115,6 @@ def compute_rotation(request: RotationConverterRequest) -> RotationConverterResp
 
         return RotationConverterResponse(representations=rep_model)
 
-<<<<<<< HEAD
     except (AttributeError, TypeError, ArithmeticError) as exc:
         raise HTTPException(
             status_code=500, detail=f"Failed building outputs: {exc}"

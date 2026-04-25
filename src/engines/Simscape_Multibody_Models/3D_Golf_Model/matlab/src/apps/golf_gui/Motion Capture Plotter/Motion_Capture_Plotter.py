@@ -53,7 +53,6 @@ class MotionCapturePlotter(
         # Try to auto-load the Excel file if it exists
         self.auto_load_excel_file()
 
-<<<<<<< HEAD
     def auto_load_excel_file(self) -> None:
         """Automatically load the Excel file if it exists in the current directory."""
         excel_files = [f for f in os.listdir(".") if f.endswith((".xlsx", ".xls"))]
@@ -1395,8 +1394,6 @@ class MotionCapturePlotter(
 
         self._last_pos = (event.x, event.y)
 
-=======
->>>>>>> origin/main
 
 def main() -> None:
     """Launch the Motion Capture Plotter GUI application."""

@@ -1,8 +1,6 @@
 """Unit tests for shared model registry."""
 
-import tempfile
 import unittest
-from pathlib import Path
 from unittest.mock import mock_open, patch
 
 import yaml
@@ -10,7 +8,6 @@ import yaml
 from src.shared.python.config.model_registry import (
     ModelConfig,
     ModelRegistry,
-    ModelRegistryLoadError,
 )
 
 

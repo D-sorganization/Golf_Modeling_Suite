@@ -36,7 +36,6 @@ from .sim_widget import MuJoCoSimWidget
 logger = get_logger(__name__)
 
 
-=======
 class PressureVisualizationWidget(QtWidgets.QWidget):
     """Widget for visualizing grip pressure distribution.
 
@@ -228,7 +227,6 @@ class ContactMetricsWidget(QtWidgets.QWidget):
             self.lbl_equilibrium.setStyleSheet("color: orange;")
 
 
->>>>>>> origin/main
 class GripModellingTab(QtWidgets.QWidget):
     """Tab for manipulating advanced hand models (Shadow, Allegro)."""
 
@@ -241,7 +239,7 @@ class GripModellingTab(QtWidgets.QWidget):
         # For now, we just store the reference, but we maintain our own internal widget
         # for independent visualization of the hand models.
         # Future work: Unify visualization if possible.
-<<<<<<< HEAD
+
         if not (sim_widget is not None):
             raise ValueError("sim_widget must be provided")
         if not (sim_widget is not None):
@@ -713,9 +711,7 @@ class GripModellingTab(QtWidgets.QWidget):
         for i in range(model.njnt):
             self._add_joint_control_row(i, model)
 
-    def _add_joint_control_row(
-        self, i: int, model: mujoco.MjModel
-    ) -> None:  # noqa: PLR0915
+    def _add_joint_control_row(self, i: int, model: mujoco.MjModel) -> None:  # noqa: PLR0915
         """Create a control row for a single joint."""
         if not (i is not None):
             raise ValueError("i must be provided")
@@ -1071,7 +1067,6 @@ class GripModellingTab(QtWidgets.QWidget):
             QtWidgets.QMessageBox.critical(
                 self, "Export Failed", f"Failed to export: {e}"
             )  # noqa: E501
-<<<<<<< HEAD
 
 
 __all__ = [
@@ -1079,5 +1074,3 @@ __all__ = [
     "GripModellingTab",
     "PressureVisualizationWidget",
 ]
-=======
->>>>>>> origin/main

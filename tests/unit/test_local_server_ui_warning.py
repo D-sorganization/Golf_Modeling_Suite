@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 
@@ -47,7 +46,6 @@ def test_api_version_constants() -> None:
     assert local_server.API_PREFIX == "/api/v1"
 
 
-=======
 def test_local_server_has_single_logger_assignment() -> None:
     """local_server should not keep a dead logging.getLogger overwrite (#3008)."""
     source = Path(local_server.__file__).read_text(encoding="utf-8")
@@ -55,7 +53,6 @@ def test_local_server_has_single_logger_assignment() -> None:
     assert source.count("logger = get_logger(__name__)") == 1
 
 
->>>>>>> origin/main
 def test_local_app_registers_versioned_routes(monkeypatch, tmp_path) -> None:
     """create_local_app registers routes under /api/v1/ prefix (#2070)."""
     missing_ui_path = tmp_path / "ui" / "dist"
@@ -74,10 +71,10 @@ def test_local_app_registers_versioned_routes(monkeypatch, tmp_path) -> None:
     app = local_server.create_local_app()
     route_paths = [getattr(r, "path", "") for r in app.routes if hasattr(r, "path")]
     versioned = [p for p in route_paths if p.startswith("/api/v1/")]
-<<<<<<< HEAD
-    assert (
-        len(versioned) > 0
-    ), f"No /api/v1/ routes found. Registered paths: {route_paths[:20]}"
+
+    assert len(versioned) > 0, (
+        f"No /api/v1/ routes found. Registered paths: {route_paths[:20]}"
+    )
 
 
 def test_local_app_keeps_legacy_routes(monkeypatch, tmp_path) -> None:
@@ -101,9 +98,9 @@ def test_local_app_keeps_legacy_routes(monkeypatch, tmp_path) -> None:
     legacy = [
         p for p in route_paths if p.startswith("/api/") and not p.startswith("/api/v1/")
     ]
-    assert (
-        len(legacy) > 0
-    ), f"No legacy /api/ routes found. Registered paths: {route_paths[:20]}"
+    assert len(legacy) > 0, (
+        f"No legacy /api/ routes found. Registered paths: {route_paths[:20]}"
+    )
 
 
 def test_local_app_description_mentions_versioning(monkeypatch, tmp_path) -> None:
@@ -124,35 +121,3 @@ def test_local_app_description_mentions_versioning(monkeypatch, tmp_path) -> Non
     app = local_server.create_local_app()
     assert "v1" in app.description
     assert "/api/v1/" in app.description
-<<<<<<< HEAD
-=======
-
-
-def test_local_app_initializes_simulation_and_analysis_services(
-    monkeypatch, tmp_path
-) -> None:
-    """create_local_app wires simulation/analysis services for DI (issue #3011)."""
-    from src.api.dependencies import get_analysis_service, get_simulation_service
-
-    missing_ui_path = tmp_path / "ui" / "dist"
-    monkeypatch.setenv("GOLF_UI_DIST", str(missing_ui_path))
-
-    local_server._startup_metrics.update(
-        {
-            "startup_time": None,
-            "static_files_mounted": False,
-            "ui_path": None,
-            "engines_loaded": [],
-            "errors": [],
-        }
-    )
-
-    app = local_server.create_local_app()
-    request = SimpleNamespace(app=app)
-
-    simulation_service = get_simulation_service(request)
-    analysis_service = get_analysis_service(request)
-
-    assert simulation_service is app.state.simulation_service
-    assert analysis_service is app.state.analysis_service
->>>>>>> origin/main

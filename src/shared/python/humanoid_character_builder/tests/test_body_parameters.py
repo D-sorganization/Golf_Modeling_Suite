@@ -93,13 +93,9 @@ class TestBodyParameters:
         assert len(errors) == 0
 
     def test_validate_invalid_height(self) -> None:
-        import pytest
-
         assert "height_m must be positive" in params.validate()
 
     def test_validate_invalid_mass(self) -> None:
-        import pytest
-
         assert "mass_kg must be positive" in params.validate()
 
     def test_segment_override(self) -> None:

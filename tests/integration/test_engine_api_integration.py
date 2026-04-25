@@ -32,14 +32,6 @@ if _api_deps_available:
     from fastapi.testclient import TestClient
 
     from src.api.server import app
-<<<<<<< HEAD
-=======
-except ImportError:
-    TestClient = typing.Any  # type: ignore
-    pytest.skip("API server deps not available", allow_module_level=True)
-
-from src.shared.python.engine_core.engine_registry import EngineType
->>>>>>> origin/main
 
 
 @pytest.fixture(scope="module")

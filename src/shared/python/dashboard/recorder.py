@@ -89,7 +89,6 @@ class GenericPhysicsRecorder(
         if self._buffers_initialized:
             self._ensure_buffers_allocated()
 
-=======
     def _ensure_buffers_allocated(self) -> None:
         """Allocate buffers for enabled analysis features if missing."""
         # Use existing joint velocity buffer to determine dimensions
@@ -215,7 +214,6 @@ class GenericPhysicsRecorder(
             f"Initialized recorder buffers: nq={nq}, nv={nv}, max_samples={self.max_samples}"
         )
 
->>>>>>> origin/main
     def start(self) -> None:
         self.is_recording = True
         logger.info("Recording started.")
@@ -229,5 +227,4 @@ class GenericPhysicsRecorder(
         logger.info("Recorder reset.")
 
 
-<<<<<<< HEAD
 __all__ = ["GenericPhysicsRecorder"]
