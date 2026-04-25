@@ -46,9 +46,10 @@ def process_file(path: str, marker: str) -> bool:
         content = fh.read()
 
     if "pytestmark" in content:
-        return False
+        return False  # already decorated
 
     lines = content.split("\n")
+
     has_pytest_import = any(
         re.match(r"^import pytest\b", line) or re.match(r"^from pytest\b", line)
         for line in lines
@@ -60,7 +61,7 @@ def process_file(path: str, marker: str) -> bool:
     if not has_pytest_import:
         to_insert.append("import pytest")
     to_insert.append(f"pytestmark = pytest.mark.{marker}")
-    to_insert.append("")
+    to_insert.append("")  # blank line after
 
     new_lines = lines[:insert_at] + to_insert + lines[insert_at:]
     new_content = "\n".join(new_lines)
