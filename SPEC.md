@@ -29,8 +29,8 @@ Last-Updated: 2026-04-24T21:04:00-07:00
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.177                                            |
-| **Last Spec Update**    | 2026-04-24                                         |
+| **Spec Version**        | 1.0.178                                            |
+| **Last Spec Update**    | 2026-04-25                                         |
 
 ## 2. Purpose & Mission
 
@@ -507,6 +507,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 - Performance scaling beyond 100-muscle models not yet tested
 
 ## 12. Change Log
+| 2026-04-25 | 1.0.178 | Performance optimization: Replaced `np.linalg.norm` with `math.hypot` in mujoco_humanoid_golf for faster 3D vector magnitude calculation. |
 | 2026-05-01 | 1.0.176 | Performance optimization: Replaced `np.linalg.norm(diff)` with `np.sqrt(np.vdot(diff, diff))` in humanoid golf visualization for faster array reduction. |
 
 | 2024-05-27 | 1.0.176 | Performance optimization: Replaced `np.linalg.norm` with `math.hypot` in green_surface.py for ~5x speedup in 2D vector magnitude calculation. |

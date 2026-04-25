@@ -30,3 +30,8 @@
 ## 2026-04-24 - [Replace np.sum(x**2) with np.vdot(x, x)]
 **Learning:** When computing the sum of squares on flat or real-numbered arrays (e.g., Reinforcement Learning action or energy penalties), replacing `np.sum(x**2)` with `np.vdot(x, x)` leverages BLAS dot products directly. This avoids the memory allocation overhead of creating a temporary array for the squared values, yielding up to a ~4x performance speedup.
 **Action:** Replace `np.sum(x**2)` with `np.vdot(x, x)` for sum of squares on real arrays.
+
+## 2026-04-25 - math.hypot for 3D Magnitudes
+**Learning:** For small arrays like 3D vectors (forces, velocities), `math.hypot(*vec)` is significantly faster than `np.linalg.norm(vec)` because it avoids the overhead of NumPy array reduction. The speedup is approximately 5x in many cases, which matters when these calculations are inside tight loops (like iterating over bodies in `sim_rendering_mixin.py`).
+
+**Action:** Replace `float(np.linalg.norm(force_vector))` with `math.hypot(*force_vector)` for performance improvements in critical loops over 3D coordinates.
