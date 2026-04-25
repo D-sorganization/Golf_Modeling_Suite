@@ -43,6 +43,8 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from src.shared.python.security.secure_subprocess import secure_popen
+
 from ...ui.utils.widget_factory import create_slider
 from .psa_model import (
     DEFAULT_COMPONENTS,
@@ -872,12 +874,12 @@ class PSAMainWindow(QMainWindow):
         if notebook_path.exists():
             try:
                 if sys.platform == "win32":
-                    subprocess.Popen(
-                        ["jupyter", "notebook", notebook_path],
+                    secure_popen(
+                        ["jupyter", "notebook", str(notebook_path)],
                         creationflags=subprocess.CREATE_NEW_CONSOLE,
                     )
                 else:
-                    subprocess.Popen(["jupyter", "notebook", notebook_path])
+                    secure_popen(["jupyter", "notebook", str(notebook_path)])
                 QMessageBox.information(
                     self, "Jupyter Notebook", "Launching Jupyter Notebook..."
                 )
@@ -923,12 +925,12 @@ class PSAMainWindow(QMainWindow):
         if webapp_path.exists():
             try:
                 if sys.platform == "win32":
-                    subprocess.Popen(
-                        ["streamlit", "run", webapp_path],
+                    secure_popen(
+                        ["streamlit", "run", str(webapp_path)],
                         creationflags=subprocess.CREATE_NEW_CONSOLE,
                     )
                 else:
-                    subprocess.Popen(["streamlit", "run", webapp_path])
+                    secure_popen(["streamlit", "run", str(webapp_path)])
                 QMessageBox.information(
                     self,
                     "Web App",
