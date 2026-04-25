@@ -50,6 +50,34 @@ if not OPENSIM_AVAILABLE:
 from src.engines.physics_engines.opensim.python.muscle_analysis import (  # noqa: E402
     OpenSimMuscleAnalyzer,
 )
+import pytest
+pytestmark = pytest.mark.unit
+
+
+if not OPENSIM_AVAILABLE:
+    # Remove the collection-time stub right away.
+    if _prior_opensim is None:
+        sys.modules.pop("opensim", None)
+    else:
+        sys.modules["opensim"] = _prior_opensim
+    del _prior_opensim
+
+# Convenient alias: used in tests that run when opensim is not installed.
+MockOpenSim = _MockOpenSim
+
+
+@pytest.fixture(autouse=True)
+def _opensim_stub():
+    """Ensure a stub for ``opensim`` is in sys.modules for every test.
+
+    Uses ``patch.dict`` so the stub is automatically removed after the test,
+    satisfying the CLAUDE.md rule against persistent module-level sys.modules
+    mutations.  When the real opensim is installed the dict is patched with
+    the real module object, which is an identity replacement.
+    """
+    stub = opensim if OPENSIM_AVAILABLE else _MockOpenSim  # type: ignore[possibly-undefined]
+    with patch.dict(sys.modules, {"opensim": stub}):  # type: ignore[arg-type]
+        yield
 
 if not OPENSIM_AVAILABLE:
     # Remove the collection-time stub right away.
