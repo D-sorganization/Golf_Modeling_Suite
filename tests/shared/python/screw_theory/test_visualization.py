@@ -13,16 +13,6 @@ import pytest
 
 from src.shared.python.screw_theory.kinematics import (
     ScrewAxis,
-    Twist,
-    compute_screw_axis,
-)
-from src.shared.python.screw_theory.visualization import plot_screw_axis_3d
-
-pytestmark = pytest.mark.unit
-
-
-@pytest.fixture
-def rotation_screw() -> ScrewAxis:
     """ScrewAxis for pure rotation about Z-axis."""
     twist = Twist(
         angular=np.array([0.0, 0.0, 1.0]),

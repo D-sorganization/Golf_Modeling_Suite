@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Flexible Beam Shaft Module.
 
 Guideline B5 Implementation: Flexible Beam Shaft.
@@ -21,6 +25,20 @@ Planned enhancement: support asymmetric cross-sections (modeling spine alignment
 
 from __future__ import annotations
 
+=======
+import functools
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from enum import Enum, auto
+from typing import TYPE_CHECKING
+
+import numpy as np
+
+from src.shared.python.contracts import check_positive, require
+from src.shared.python.core.physics_constants import (
+    GRAPHITE_DENSITY_KG_M3,
+)
+>>>>>>> origin/main
 from src.shared.python.logging_pkg.logging_config import get_logger
 
 from ._shaft_data import (
@@ -50,6 +68,7 @@ from ._shaft_utils import compute_static_deflection, create_shaft_model
 
 logger = get_logger(__name__)
 
+<<<<<<< HEAD
 __all__ = [
     "BeamElement",
     "FiniteElementShaftModel",

@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """
 Output Manager for Golf Modeling Suite
 
@@ -107,7 +111,7 @@ class OutputManager:
         """Create the standard output directory structure."""
         create_output_structure(self.directories)
 
-    @precondition(
+    @precondition(  # fmt: skip
         lambda self,
         results,
         filename,
@@ -118,7 +122,7 @@ class OutputManager:
         parameters=None: (results is not None),
         "Simulation results must not be None",
     )
-    @precondition(
+    @precondition(  # fmt: skip
         lambda self,
         results,
         filename,
@@ -154,6 +158,10 @@ class OutputManager:
         Returns:
             Path to saved file
         """
+=======
+        if results is None:
+            raise ValueError("results must be provided")
+>>>>>>> origin/main
         engine_dir = self.directories["simulations"] / engine
         engine_dir.mkdir(parents=True, exist_ok=True)
 
@@ -186,6 +194,7 @@ class OutputManager:
             )
             raise
 
+<<<<<<< HEAD
     def save_simulation_results_async(
         self,
         results: pd.DataFrame | dict[str, Any] | list[dict[str, Any]],

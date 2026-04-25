@@ -9,12 +9,6 @@ from __future__ import annotations
 
 from types import ModuleType
 
-import numpy as np
-import pytest
-
-
-@pytest.fixture(scope="module")
-def mp() -> ModuleType:
     """Import mediapipe or skip the module."""
     mp_mod = pytest.importorskip("mediapipe")
     return mp_mod

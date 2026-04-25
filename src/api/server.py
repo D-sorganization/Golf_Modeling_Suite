@@ -15,7 +15,8 @@ Architecture (#1485):
 
 API Versioning (#1488):
     All routes are served under ``/api/v1/`` prefix for forward compatibility.
-    Legacy un-prefixed routes are also registered for backward compatibility.
+    Legacy un-prefixed and ``/api/`` routes are also registered for backward
+    compatibility.
 """
 
 from collections.abc import AsyncGenerator
@@ -53,6 +54,7 @@ from .services.chat_service import ChatService
 from .services.simulation_service import SimulationService
 from .task_manager import TaskManager
 from .utils.tracing import RequestTracer
+from .versioning import get_app_version
 
 setup_logging()
 logger = get_logger(__name__)
@@ -135,51 +137,6 @@ async def lifespan(fastapi_app: FastAPI) -> AsyncGenerator[None, None]:
         fastapi_app.state.simulation_service = SimulationService(engine_manager)
         fastapi_app.state.analysis_service = AnalysisService(engine_manager)
         fastapi_app.state.chat_service = ChatService()
-        fastapi_app.state.task_manager = active_tasks
-        fastapi_app.state.logger = logger
-
-        # Initialize video pipeline with default config
-        video_pipeline = _init_video_pipeline()
-        fastapi_app.state.video_pipeline = video_pipeline
-
-        # All routes now use FastAPI Depends() for dependency injection.
-        # No legacy configure() calls needed.
-
-        logger.info("Golf Modeling Suite API %s started successfully", API_PREFIX)
-
-    except OSError as e:
-        logger.error("Database or file system error during initialization: %s", e)
-        raise
-    except ImportError as e:
-        logger.error("Missing required dependency: %s", e)
-        raise
-    except RuntimeError as e:
-        logger.error("Engine initialization failed: %s", e)
-        raise
-    except (TypeError, AttributeError) as e:
-        logger.exception("Unexpected error during API initialization: %s", e)
-        raise
-
-    yield
-
-
-# Initialize FastAPI app with enhanced OpenAPI metadata (#1488)
-app = FastAPI(
-    title="UpstreamDrift API",
-    description=(
-        "Professional biomechanical analysis and physics simulation API.\n\n"
-        "## Features\n"
-        "- Multi-engine physics simulation (MuJoCo, Drake, Pinocchio, OpenSim, MyoSuite)\n"
-        "- Video-based pose estimation and motion capture\n"
-        "- Biomechanical analysis (kinematics, kinetics, energetics)\n"
-        "- Asynchronous simulation with job status tracking\n"
-        "- Real-time WebSocket streaming\n\n"
-        "## Versioning\n"
-        f"Current API version: **{API_VERSION}**. "
-        f"All endpoints are available under `{API_PREFIX}/` prefix.\n"
-        "Legacy un-prefixed routes are maintained for backward compatibility."
-    ),
-    version=__version__,
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_tags=[
@@ -252,12 +209,16 @@ app.middleware("http")(_tracer.trace_request)
 
 # ── Route Registration ──────────────────────────────────────────
 # Use plugin-style auto-discovery instead of 20+ explicit imports (#1485).
-# Routes are registered both at root (backward compat) and under /api/v1/ (#1488).
+# Routes are registered at root, /api, and /api/v1 (#1488).
 
 # Register all routes at /api prefix (backward compatibility — previously these modules
 # hardcoded /api/ in their own prefix, so legacy clients expect /api/<resource>).
 _root_count = register_routes(app, prefix="/api")
 logger.info("Registered %d route modules at /api prefix", _root_count)
+
+# Register all routes under /api prefix (legacy API compatibility)
+_legacy_api_count = register_routes(app, prefix="/api")
+logger.info("Registered %d route modules under /api", _legacy_api_count)
 
 # Register all routes under /api/v1/ prefix (versioned API)
 _versioned_count = register_routes(app, prefix=API_PREFIX)

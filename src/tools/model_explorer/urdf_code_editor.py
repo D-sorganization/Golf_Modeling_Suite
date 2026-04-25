@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """URDF Code Editor with XML syntax highlighting and validation.
 
 Provides a code editor experience for viewing and editing URDF/XML files
@@ -114,10 +118,12 @@ class XMLHighlighter(QSyntaxHighlighter):
             "mesh",
             "capsule",
         ]
-        for keyword in urdf_keywords:
-            self.highlighting_rules.append(
-                (QRegularExpression(rf"</?{keyword}\b"), urdf_format)
-            )
+        self.highlighting_rules.extend(
+            [
+                (QRegularExpression(f"</?{keyword}\\b"), urdf_format)
+                for keyword in urdf_keywords
+            ]
+        )
 
         # Numbers (orange)
         number_format = QTextCharFormat()

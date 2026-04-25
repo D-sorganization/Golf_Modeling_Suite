@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Simulation launching mixin for GolfLauncher.
 
 Contains methods for launching simulations, MJCF viewers, Docker containers,
@@ -21,6 +25,10 @@ from PyQt6.QtWidgets import QApplication, QMessageBox
 from src.launchers.launcher_constants import (
     CREATE_NO_WINDOW,
     REPOS_ROOT,
+)
+from src.launchers.launcher_model_sources import (
+    get_model_source_root,
+    resolve_model_artifact_path,
 )
 from src.shared.python.core.contracts import precondition
 from src.shared.python.logging_pkg.logging_config import get_logger
@@ -166,9 +174,12 @@ except (RuntimeError, TypeError, AttributeError) as e:
         QApplication.processEvents(QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents)
 
         try:
-            repo_path = getattr(model, "path", None)
-            if repo_path:
-                self._launch_docker_container(model, REPOS_ROOT / repo_path)
+            model_path = getattr(model, "path", None)
+            if model_path:
+                self._launch_docker_container(
+                    model,
+                    resolve_model_artifact_path(model, REPOS_ROOT),
+                )
             else:
                 self.show_toast("Model path missing for Docker launch.", "error")
         except (RuntimeError, ValueError, OSError) as e:
@@ -209,12 +220,12 @@ except (RuntimeError, TypeError, AttributeError) as e:
         return False
 
     def _execute_local_launch(self, model: Any) -> None:
-        repo_path = getattr(model, "path", None)
-        if not repo_path:
+        try:
+            abs_model_path = resolve_model_artifact_path(model, REPOS_ROOT)
+        except ValueError:
             self.show_toast("Model path missing.", "error")
             return
 
-        abs_repo_path = REPOS_ROOT / repo_path
         handler = self.model_handler_registry.get_handler(model.type)
         if handler:
             success = handler.launch(model, REPOS_ROOT, self.process_manager)
@@ -236,8 +247,8 @@ except (RuntimeError, TypeError, AttributeError) as e:
                 )
                 self.lbl_status.setText("* Launch Error")
                 self.lbl_status.setStyleSheet(Styles.STATUS_ERROR)
-        elif model.type == "mjcf" or str(repo_path).endswith(".xml"):
-            self._launch_generic_mjcf(abs_repo_path)
+        elif model.type == "mjcf" or str(abs_model_path).endswith(".xml"):
+            self._launch_generic_mjcf(abs_model_path)
         else:
             self.show_toast(f"Unknown launch type: {model.type}", "warning")
 
@@ -589,7 +600,8 @@ except (RuntimeError, TypeError, AttributeError) as e:
         self.show_toast(f"Launching MATLAB: {app.name}...", "info")
 
         try:
-            abs_path = REPOS_ROOT / app_path
+            abs_path = resolve_model_artifact_path(app, REPOS_ROOT)
+            model_root = get_model_source_root(app, REPOS_ROOT)
             path_str = str(abs_path).replace("\\", "/")
 
             # Check if using batch script wrapper
@@ -613,7 +625,7 @@ except (RuntimeError, TypeError, AttributeError) as e:
 
                 process = secure_popen(
                     cmd,
-                    cwd=str(abs_path.parent),
+                    cwd=str(model_root),
                     creationflags=CREATE_NO_WINDOW if os.name == "nt" else 0,
                 )
 

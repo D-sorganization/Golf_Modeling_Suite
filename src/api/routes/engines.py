@@ -45,6 +45,38 @@ def _sanitize_for_json(obj: Any) -> Any:
     return obj
 
 
+# Capability levels that may appear in a CapabilityLevelResponse.
+# See src/shared/python/engine_core/capabilities.py::CapabilityLevel.
+_VALID_CAPABILITY_LEVELS: frozenset[str] = frozenset({"full", "partial", "none"})
+
+# Keys emitted by EngineCapabilities.to_dict() that are metadata and must NOT
+# be surfaced as CapabilityLevelResponse entries. Their values do not follow
+# the capability-level schema (full/partial/none). See issue #2797, #2743.
+_NON_LEVEL_METADATA_KEYS: frozenset[str] = frozenset(
+    {
+        "engine_name",
+        "spatial_jacobian_order",
+    }
+)
+
+
+def _sanitize_for_json(obj: Any) -> Any:
+    """Recursively convert numpy arrays and other non-JSON types to native Python."""
+    import numpy as np
+
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    if isinstance(obj, np.integer):
+        return int(obj)
+    if isinstance(obj, np.floating):
+        return float(obj)
+    if isinstance(obj, dict):
+        return {k: _sanitize_for_json(v) for k, v in obj.items()}
+    if isinstance(obj, list | tuple):
+        return [_sanitize_for_json(v) for v in obj]
+    return obj
+
+
 router = APIRouter()
 
 
@@ -124,10 +156,13 @@ async def probe_engine(
 @handle_api_errors
 async def load_engine_lazy(
     engine_name: str,
+    model_path: str | None = None,
     engine_manager: EngineManager = Depends(get_engine_manager),
 ) -> dict[str, Any]:
     """Load an engine (for lazy loading UI)."""
     try:
+        if model_path:
+            validate_model_path(model_path)
         workflow = EngineWorkflowAdapter(engine_manager)
         result = workflow.load(engine_name)
         if not result.ok:
@@ -284,7 +319,12 @@ async def get_engine_capabilities(
     summary = {"full": 0, "partial": 0, "none": 0}
 
     for key, level in caps_dict.items():
-        if key == "engine_name":
+        if key in _NON_LEVEL_METADATA_KEYS:
+            continue
+        # Defensive: skip any value that is not a recognized level. This
+        # filters out future metadata keys that might be added to
+        # EngineCapabilities.to_dict() without an explicit allow-list update.
+        if not isinstance(level, str) or level not in _VALID_CAPABILITY_LEVELS:
             continue
         supported = level != "none"
         capability_list.append(

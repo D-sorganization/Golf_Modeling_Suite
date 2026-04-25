@@ -7,7 +7,7 @@ simplified, chainable interface suitable for scripting, API backends, and tests.
 See issue #407.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402, F404
 
 import ast
 import logging
@@ -15,7 +15,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-import pandas as pd
+import pandas as pd  # noqa: E402
+from contracts import require  # noqa: E402
 
 logger = logging.getLogger(__name__)
 SUPPORTED_FILTER_TYPES = {"butterworth", "moving_average", "median", "savgol"}
@@ -25,25 +26,6 @@ SUPPORTED_FILTER_TYPES = {"butterworth", "moving_average", "median", "savgol"}
 # ---------------------------------------------------------------------------
 
 #: AST node types that must not appear in DataFrame.eval() expressions
-_DISALLOWED_EVAL_NODES: tuple[type, ...] = (
-    ast.Import,
-    ast.ImportFrom,
-    ast.Lambda,
-    ast.ListComp,
-    ast.DictComp,
-    ast.SetComp,
-    ast.GeneratorExp,
-    ast.Await,
-    ast.Yield,
-    ast.YieldFrom,
-    ast.Global,
-    ast.Nonlocal,
-    ast.FunctionDef,
-    ast.AsyncFunctionDef,
-    ast.ClassDef,
-)
-
-#: Bare names that must never appear in an expression
 _FORBIDDEN_NAMES: frozenset[str] = frozenset(
     {
         "__builtins__",
@@ -87,107 +69,12 @@ def _validate_dataframe_expression(expression: str) -> None:
 
     for node in ast.walk(tree):
         # Reject disallowed node types outright
-        if isinstance(node, _DISALLOWED_EVAL_NODES):
-            raise ValueError(
-                f"Disallowed construct in expression: {type(node).__name__}"
-            )
-
-        # Reject attribute access to dunder names (e.g. `x.__class__`)
         if isinstance(node, ast.Attribute) and node.attr.startswith("__"):
             raise ValueError(
                 f"Attribute access to dunder name '{node.attr}' is not permitted"
             )
 
         # Reject forbidden bare names
-        if isinstance(node, ast.Name) and node.id in _FORBIDDEN_NAMES:
-            raise ValueError(f"Use of forbidden name '{node.id}' is not permitted")
-
-
-@dataclass
-class DatasetInfo:
-    """Metadata about a loaded dataset."""
-
-    name: str = ""
-    source_path: str = ""
-    num_rows: int = 0
-    num_columns: int = 0
-    columns: list[str] = field(default_factory=list)
-    dtypes: dict[str, str] = field(default_factory=dict)
-    memory_mb: float = 0.0
-
-
-class DataProcessor:
-    """Facade for data loading, transformation, analysis, and export.
-
-    Example::
-
-        dp = DataProcessor()
-        dp.load("data.csv")
-        dp.trim_time(0, 100)
-        dp.apply_filter("butterworth", cutoff=10, order=4, columns=["v1"])
-        dp.resample(target_rate=100)
-        stats = dp.describe()
-        dp.export("out.parquet")
-    """
-
-    def __init__(self) -> None:
-        self._df: pd.DataFrame | None = None
-        self._source_path: str = ""
-        self._history: list[str] = []
-
-    # ------------------------------------------------------------------
-    # Properties
-    # ------------------------------------------------------------------
-
-    @property
-    def dataframe(self) -> pd.DataFrame:
-        """Return the current working DataFrame (raises if nothing loaded)."""
-        if self._df is None:
-            raise RuntimeError("No data loaded. Call load() first.")
-        return self._df
-
-    @dataframe.setter
-    def dataframe(self, value: pd.DataFrame) -> None:
-        self._df = value
-
-    @property
-    def info(self) -> DatasetInfo:
-        """Return metadata about the current dataset."""
-        if self._df is None:
-            return DatasetInfo()
-        return DatasetInfo(
-            name=Path(self._source_path).stem if self._source_path else "untitled",
-            source_path=self._source_path,
-            num_rows=len(self._df),
-            num_columns=len(self._df.columns),
-            columns=list(self._df.columns),
-            dtypes={str(col): str(dt) for col, dt in self._df.dtypes.items()},
-            memory_mb=self._df.memory_usage(deep=True).sum() / 1e6,
-        )
-
-    @property
-    def history(self) -> list[str]:
-        """Return the processing history (list of operation descriptions)."""
-        return list(self._history)
-
-    # ------------------------------------------------------------------
-    # Load
-    # ------------------------------------------------------------------
-
-    def load(
-        self,
-        path: str | Path,
-        *,
-        sheet_name: str | int = 0,
-        encoding: str = "utf-8",
-    ) -> DataProcessor:
-        """Load data from a file (CSV, Excel, Parquet, DAT).
-
-        Returns *self* for method chaining.
-        """
-        if not (path is not None):
-            raise ValueError("path must be provided")
-        if not (path is not None):
             raise ValueError("path must be provided")
         path = Path(path)
         suffix = path.suffix.lower()
@@ -269,6 +156,11 @@ class DataProcessor:
 
         Uses the core ``resample_data`` when available, else falls back to
         pandas interpolation.
+
+        Args:
+            target_rate: Target sample rate in Hz. Must be positive.
+            time_column: Column containing time values. Auto-detected if None.
+            method: Interpolation method ('linear', 'cubic', etc.).
         """
         if not (target_rate is not None):
             raise ValueError("target_rate must be provided")

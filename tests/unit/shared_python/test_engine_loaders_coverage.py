@@ -23,16 +23,27 @@ def test_load_mujoco_success(tmp_path: object) -> None:
     mock_result.is_available.return_value = True
     mock_probe_instance.probe.return_value = mock_result
 
-    # Patch at the canonical import location used by src.engines.loaders
+    physics_engine_module = MagicMock()
+    physics_engine_module.MuJoCoPhysicsEngine = mock_engine_cls
+    engine_probes_module = MagicMock()
+    engine_probes_module.MuJoCoProbe = mock_probe_cls
+    common_utils_module = MagicMock()
+    common_utils_module.GolfModelingError = RuntimeError
+
+    # Patch the import modules directly so the test is independent of whether
+    # the full suite imported the concrete MuJoCo module earlier.
     with (
-        patch.dict(sys.modules, {"mujoco": MagicMock()}),
-        patch(
-            "src.engines.physics_engines.mujoco.python.mujoco_humanoid_golf.physics_engine.MuJoCoPhysicsEngine",
-            mock_engine_cls,
-        ),
-        patch(
-            "src.shared.python.engine_core.engine_probes.MuJoCoProbe",
-            mock_probe_cls,
+        patch.dict(
+            sys.modules,
+            {
+                "mujoco": MagicMock(),
+                (
+                    "src.engines.physics_engines.mujoco.python."
+                    "mujoco_humanoid_golf.physics_engine"
+                ): physics_engine_module,
+                "src.shared.python.engine_core.engine_probes": engine_probes_module,
+                "src.shared.python.data_io.common_utils": common_utils_module,
+            },
         ),
     ):
         from src.engines.loaders import load_mujoco_engine
@@ -65,7 +76,19 @@ def test_load_drake_missing(tmp_path: object) -> None:
         def side_effect(name, *args, **kwargs) -> Any:
             if name == "pydrake" or name.startswith("pydrake."):
                 raise ImportError(f"No module named {name}")
-            return original_import(name, *args, **kwargs)
+            try:
+                return original_import(name, *args, **kwargs)
+            except ImportError as e:
+                if "cannot load module more than once per process" in str(e):
+                    if name == "" and args and kwargs:
+                        name = args[0][0] if args else ""
+                        if not name:
+                            return None
+                    # Python 3.12+ extension loading race condition with mocked __import__
+                    import importlib
+
+                    return importlib.import_module(name)
+                raise
 
         # Need to mock other engines to allow import of engine_loaders
         with (

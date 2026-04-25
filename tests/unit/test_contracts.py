@@ -4,31 +4,6 @@ from __future__ import annotations
 
 from collections.abc import Generator
 
-import pytest
-
-from src.shared.python.contracts import (
-    DBC_LEVEL,
-    ContractLevel,
-    ContractViolationError,
-    check_non_negative,
-    check_positive,
-    check_range,
-    ensure,
-    get_contract_level,
-    precondition,
-    require,
-    require_positive,
-    set_contract_level,
-)
-
-_needs_contracts = pytest.mark.skipif(
-    DBC_LEVEL != ContractLevel.ENFORCE,
-    reason="DBC_LEVEL is not 'enforce'; enforcement tests require ENFORCE mode",
-)
-
-
-@pytest.fixture(autouse=True)
-def _enforce_contracts() -> Generator[None, None, None]:
     """Force ENFORCE mode by patching the exact module dict that require/ensure read.
 
     set_contract_level() updates sys.modules[__name__], but in a namespace-package

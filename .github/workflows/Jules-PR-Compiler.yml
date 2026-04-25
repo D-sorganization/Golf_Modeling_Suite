@@ -17,9 +17,35 @@ permissions:
   pull-requests: write
 
 jobs:
-  compile-prs:
-    runs-on: ubuntu-latest
+  # ── Dispatcher: route to self-hosted if available ──────────────────────────
+  pick-runner:
+    runs-on: d-sorg-fleet
+    timeout-minutes: 2
+    outputs:
+      runner: ${{ steps.check.outputs.runner }}
     steps:
+<<<<<<< HEAD
+=======
+      - name: Check for self-hosted runner
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        run: |
+          ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
+            --jq '[.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length' \
+            2>/dev/null || echo "0")
+          if [[ "$ONLINE" -gt 0 ]]; then
+            echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
+            echo "Self-hosted runner online — routing locally"
+          else
+            echo "::error::No local self-hosted runner available; failing closed"
+            exit 1
+          fi
+  compile-prs:
+    needs: pick-runner
+    runs-on: self-hosted
+    steps:
+>>>>>>> origin/main
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
@@ -27,7 +53,7 @@ jobs:
       - name: Analyze Open PRs
         id: analyze
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
           mkdir -p .jules/pr_compiler
 
@@ -98,7 +124,7 @@ jobs:
       - name: Compile PRs
         if: steps.analyze.outputs.skip != 'true' && steps.groups.outputs.has_compilable == 'true' && inputs.dry_run != true
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
           # Process each compilable group
           python3 << 'PYEOF'
@@ -239,7 +265,7 @@ jobs:
       - name: Cleanup Merged PR Branches
         if: steps.analyze.outputs.skip != 'true' && steps.groups.outputs.has_compilable == 'true' && inputs.dry_run != true
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
           # Note: Individual PRs are closed via "Closes #N" in the compiled PR body
           # This step just cleans up tracking

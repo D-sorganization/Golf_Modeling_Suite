@@ -13,17 +13,14 @@ from __future__ import annotations
 
 from typing import Any
 
-import numpy as np
-import pytest
-
-from src.engines.physics_engines.mujoco.python.perturbation.analyzer import (
-    MANDATORY_METRICS,
-    ComparisonReport,
     MuJoCoSimResult,
 )
 from src.shared.python.pendulum_simulator.perturbation_analysis import (
     perturb_torque_coeffs,
 )
+=======
+from src.shared.python.perturbation.analyzer_base import ComparisonReport
+>>>>>>> origin/main
 from src.shared.python.perturbation.config import PerturbationConfig
 
 # ---------------------------------------------------------------------------
@@ -200,6 +197,7 @@ class TestComparisonReport:
 
 
 @pytest.fixture(scope="module")
+<<<<<<< HEAD
 def analyzer() -> Any:  # type: ignore[no-untyped-def]
     from src.engines.physics_engines.mujoco.python.perturbation.analyzer import (
         MuJoCoPerturbationAnalyzer,

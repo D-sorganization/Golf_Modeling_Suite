@@ -12,12 +12,35 @@ on:
       - "conftest.py"
       - "launch_golf_suite.py"
       - "setup_golf_suite.py"
-      - "start_api_server.py"
+      - "scripts/ci/start_api_server.py"
 
 jobs:
+  # ── Dispatcher: route to self-hosted if available ──────────────────────────
+  pick-runner:
+    runs-on: d-sorg-fleet
+    timeout-minutes: 2
+    outputs:
+      runner: ${{ steps.check.outputs.runner }}
+    steps:
+      - name: Check for self-hosted runner
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        run: |
+          ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
+            --jq '[.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length' \
+            2>/dev/null || echo "0")
+          if [[ "$ONLINE" -gt 0 ]]; then
+            echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
+            echo "Self-hosted runner online — routing locally"
+          else
+            echo "::error::No local self-hosted runner available; failing closed"
+            exit 1
+          fi
   verify-critical-files:
+    needs: pick-runner
     name: Verify Critical Files Exist
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6
@@ -35,7 +58,6 @@ jobs:
             "conftest.py"
             "launch_golf_suite.py"
             "setup_golf_suite.py"
-            "start_api_server.py"
           )
 
           MISSING_FILES=()
@@ -48,6 +70,14 @@ jobs:
               echo "✅ Found: $file"
             fi
           done
+
+          # Check for start_api_server.py in scripts/ci/ (reorganized in #3070)
+          if [ ! -f "scripts/ci/start_api_server.py" ]; then
+            echo "❌ MISSING: scripts/ci/start_api_server.py"
+            MISSING_FILES+=("scripts/ci/start_api_server.py")
+          else
+            echo "✅ Found: scripts/ci/start_api_server.py"
+          fi
 
           if [ ${#MISSING_FILES[@]} -ne 0 ]; then
             echo ""

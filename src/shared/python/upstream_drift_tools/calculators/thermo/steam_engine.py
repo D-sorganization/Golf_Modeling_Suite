@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """
 Steam Calculation Engine
 ========================
@@ -207,6 +211,9 @@ class SteamCalculationEngine:
         Returns:
             SteamProperties dataclass with all thermodynamic properties
         """
+=======
+        # DbC preconditions
+>>>>>>> origin/main
         if not (temperature > 0):
             raise ValueError(f"Temperature must be positive (K), got {temperature}")
         if not (pressure > 0):
@@ -226,6 +233,7 @@ class SteamCalculationEngine:
             logger.exception("Steam calculation failed: %s", e)
             result = calculate_simplified_properties(temperature, pressure)
 
+<<<<<<< HEAD
         if not (np.isfinite(result.enthalpy)):
             raise ValueError(f"Enthalpy must be finite, got {result.enthalpy}")
         return result

@@ -18,45 +18,6 @@ import importlib
 from pathlib import Path
 from types import ModuleType
 from typing import Any
-from unittest.mock import patch
-
-import pytest
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-REPO_ROOT = Path(__file__).resolve().parents[3]
-INITIAL_MIGRATION_PATH = (
-    REPO_ROOT
-    / "src"
-    / "api"
-    / "migrations"
-    / "versions"
-    / "20260323_0000_0001_initial_schema.py"
-)
-
-
-def _import_migration_module() -> ModuleType:
-    """Import the initial migration module dynamically."""
-    spec = importlib.util.spec_from_file_location(
-        "initial_migration", INITIAL_MIGRATION_PATH
-    )
-    assert spec is not None and spec.loader is not None
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)  # type: ignore[union-attr]
-    return mod
-
-
-# ---------------------------------------------------------------------------
-# Alembic availability
-# ---------------------------------------------------------------------------
-
-
-class TestAlembicAvailability:
-    """Verify Alembic is installed and importable."""
-
-    def test_alembic_importable(self) -> None:
         """Alembic must be importable (dev dependency, issue #2078)."""
         import alembic  # noqa: F401
 

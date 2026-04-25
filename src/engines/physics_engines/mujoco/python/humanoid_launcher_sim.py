@@ -87,7 +87,7 @@ class SimulationMixin:
 
         cmd.extend(
             ["--rm", "-v", f"{mount_path}:/workspace", "-w", "/workspace/docker/src"]
-        )
+        )  # noqa: E501
 
         self._append_display_env(cmd)
 
@@ -146,7 +146,7 @@ class SimulationMixin:
             self.log(
                 "⚠️ COMMON CAUSE: X11 Display Server not found or "
                 "configured incorrectly."
-            )
+            )  # noqa: E501
 
             self.log("1. Ensure VcXsrv (XLaunch) is running.")
 
@@ -154,7 +154,7 @@ class SimulationMixin:
 
             self.log(
                 "3. If you don't need the live GUI, uncheck 'Live Interactive View'."
-            )
+            )  # noqa: E501
 
         else:
             self.log(f"Simulation failed with code {code}.")

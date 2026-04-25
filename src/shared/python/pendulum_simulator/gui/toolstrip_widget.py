@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """
 ToolStrip — persistent header bar with stacked overlay controls.
 
@@ -303,8 +307,8 @@ class ToolStrip(QWidget):
         self._build_overlay_section(row2)
         outer.addLayout(row2)
 
-    def _build_row1(self, layout: QHBoxLayout) -> None:
-        """Actions row: Title | Run Reset Play | Speed | [frame slider] | Frame# | Reset View"""
+    def _add_separator(self, layout: QHBoxLayout) -> None:
+        layout.addWidget(_vline())
 
         if not (layout is not None):
             raise ValueError("layout must be provided")
@@ -312,8 +316,6 @@ class ToolStrip(QWidget):
         title.setStyleSheet(_TITLE)
         title.setFont(QFont("Sans", 11, QFont.Weight.Bold))
         layout.addWidget(title)
-
-        # Model selection dropdown (#1149)
 
         self.cmb_model = QComboBox()
         self.cmb_model.addItems(["Double Pendulum", "Triple Pendulum", "Upper Body"])
@@ -328,9 +330,7 @@ class ToolStrip(QWidget):
         self.cmb_model.currentIndexChanged.connect(self.model_changed.emit)
         layout.addWidget(self.cmb_model)
 
-        layout.addWidget(_vline())
-
-        # Run / Reset / Play
+    def _build_row1_transport_controls(self, layout: QHBoxLayout) -> None:
         self.btn_run = QPushButton("▶ Run")
         self.btn_run.setStyleSheet(_BTN_RUN)
         self.btn_run.setToolTip("Run simulation")
@@ -350,7 +350,6 @@ class ToolStrip(QWidget):
         self.btn_play.toggled.connect(self._on_play_toggled)
         layout.addWidget(self.btn_play)
 
-        # Loop toggle
         self.chk_loop = QCheckBox("🔁")
         self.chk_loop.setToolTip("Loop animation")
         self.chk_loop.setStyleSheet(
@@ -362,9 +361,6 @@ class ToolStrip(QWidget):
         self.chk_loop.toggled.connect(self.loop_toggled.emit)
         layout.addWidget(self.chk_loop)
 
-        layout.addWidget(_vline())
-
-        # Speed
         spd_lbl = QLabel("Speed:")
         spd_lbl.setStyleSheet(_LABEL)
         layout.addWidget(spd_lbl)
@@ -384,9 +380,6 @@ class ToolStrip(QWidget):
         self.speed_spin.valueChanged.connect(lambda v: self.speed_changed.emit(v))
         layout.addWidget(self.speed_spin)
 
-        layout.addWidget(_vline())
-
-        # Playback scrub slider — MUST be visible (#1207)
         scrub_lbl = QLabel("Playback:")
         scrub_lbl.setStyleSheet(_LABEL)
         layout.addWidget(scrub_lbl)
@@ -406,9 +399,7 @@ class ToolStrip(QWidget):
         self._frame_lbl.setAlignment(Qt.AlignmentFlag.AlignRight)
         layout.addWidget(self._frame_lbl)
 
-        layout.addWidget(_vline())
-
-        # Reset View
+    def _build_row1_secondary_actions(self, layout: QHBoxLayout) -> None:
         self.btn_reset_view = QPushButton("⤢ Reset View")
         self.btn_reset_view.setStyleSheet(_BTN_SMALL)
         self.btn_reset_view.setToolTip(
@@ -417,9 +408,6 @@ class ToolStrip(QWidget):
         self.btn_reset_view.clicked.connect(self.reset_view_requested.emit)
         layout.addWidget(self.btn_reset_view)
 
-        layout.addWidget(_vline())
-
-        # Export buttons (#1141)
         self.btn_export_csv = QPushButton("📄 Export CSV")
         self.btn_export_csv.setStyleSheet(_BTN_SMALL)
         self.btn_export_csv.setToolTip("Export simulation data to CSV")
@@ -432,9 +420,6 @@ class ToolStrip(QWidget):
         self.btn_export_video.clicked.connect(self.export_video_requested.emit)
         layout.addWidget(self.btn_export_video)
 
-        layout.addWidget(_vline())
-
-        # Help / Equations buttons (#1136, #1144)
         self.btn_eom = QPushButton("📐 Equations of Motion")
         self.btn_eom.setStyleSheet(_BTN_SMALL)
         self.btn_eom.setToolTip("Show Equations of Motion derivation")
@@ -455,9 +440,7 @@ class ToolStrip(QWidget):
         self.btn_popout.clicked.connect(self.popout_chart_requested.emit)
         layout.addWidget(self.btn_popout)
 
-        layout.addWidget(_vline())
-
-        # Diagnostics button
+    def _build_row1_diagnostics_button(self, layout: QHBoxLayout) -> None:
         self.btn_diagnostics = QPushButton("🔍 Diagnostics")
         self.btn_diagnostics.setStyleSheet(
             "QPushButton{background:#2a1a2a;color:#d0a0d0;border:1px solid #503060;"
@@ -470,6 +453,49 @@ class ToolStrip(QWidget):
         )
         self.btn_diagnostics.clicked.connect(self._show_diagnostics)
         layout.addWidget(self.btn_diagnostics)
+
+    def _make_segment_checkbox(self, label: str, checked: bool = True) -> QCheckBox:
+        chk = QCheckBox(label)
+        chk.setChecked(checked)
+        chk.setStyleSheet(
+            "QCheckBox{color:#707090;font-size:11px;spacing:2px;}"
+            "QCheckBox::indicator{width:11px;height:11px;border:1px solid #404060;"
+            "border-radius:2px;background:#1a1a2a;}"
+            "QCheckBox::indicator:checked{background:#303068;border-color:#5050a0;}"
+        )
+        chk.toggled.connect(self._on_segment_toggled)
+        return chk
+
+    def _clear_segment_checks(self) -> None:
+        for chk in self._segment_checks.values():
+            chk.setParent(None)
+            chk.deleteLater()
+        self._segment_checks.clear()
+
+    def _segment_row_layout(self) -> QHBoxLayout | None:
+        overlay_frame: QFrame | None = self.findChild(QFrame, "overlay_section")
+        if overlay_frame is None:
+            return None
+        overlay_layout = overlay_frame.layout()
+        if overlay_layout is None:
+            return None
+        seg_item = overlay_layout.itemAt(overlay_layout.count() - 1)
+        if seg_item is None:
+            return None
+        return seg_item.layout()  # type: ignore[return-value]
+
+    def _build_row1(self, layout: QHBoxLayout) -> None:
+        """Actions row: Title | Run Reset Play | Speed | [frame slider] | Frame# | Reset View"""
+
+        if layout is None:
+            raise ValueError("layout must be provided")
+        self._build_row1_title_and_model(layout)
+        self._add_separator(layout)
+        self._build_row1_transport_controls(layout)
+        self._add_separator(layout)
+        self._build_row1_secondary_actions(layout)
+        self._add_separator(layout)
+        self._build_row1_diagnostics_button(layout)
 
     def _show_eom_popup(self) -> None:
         """Open the Equations of Motion popup (#1144)."""
@@ -584,6 +610,9 @@ class ToolStrip(QWidget):
         self.chk_com.setToolTip("Show the combined center of mass of the whole system.")
         self.chk_com.toggled.connect(self.com_toggled.emit)
         extra_col.addWidget(self.chk_com)
+=======
+
+>>>>>>> origin/main
         self.chk_torque = QCheckBox("Torque Vectors")
         self.chk_torque.setStyleSheet(_CHK_TORQUE)
         self.chk_torque.setToolTip(
@@ -592,6 +621,7 @@ class ToolStrip(QWidget):
         )
         self.chk_torque.toggled.connect(self.torque_vectors_toggled.emit)
         extra_col.addWidget(self.chk_torque)
+<<<<<<< HEAD
         self.chk_mof = QCheckBox("Moment of Force")
         self.chk_mof.setStyleSheet(_CHK_MOF)
         self.chk_mof.setToolTip(
@@ -600,6 +630,9 @@ class ToolStrip(QWidget):
         )
         self.chk_mof.toggled.connect(self.moment_of_force_toggled.emit)
         extra_col.addWidget(self.chk_mof)
+=======
+
+>>>>>>> origin/main
         self.chk_sum_moments = QCheckBox("Sum of Moments")
         self.chk_sum_moments.setStyleSheet(_CHK_SUM)
         self.chk_sum_moments.setToolTip(
@@ -616,6 +649,7 @@ class ToolStrip(QWidget):
         )
         self.chk_3d.toggled.connect(self.mode_3d_toggled.emit)
         extra_col.addWidget(self.chk_3d)
+<<<<<<< HEAD
         azimuth_row = QHBoxLayout()
         azimuth_row.setContentsMargins(0, 0, 0, 0)
         azimuth_row.setSpacing(2)
@@ -977,9 +1011,8 @@ class ToolStrip(QWidget):
         self._segment_checks.clear()
         self._segment_names = [key for key, _label in names]
 
-        # Find and clear the segment row layout (last layout in overlay_frame)
-        overlay_frame: QFrame | None = self.findChild(QFrame, "overlay_section")
-        if overlay_frame is None:
+        seg_layout = self._segment_row_layout()
+        if seg_layout is None:
             return
         overlay_layout = overlay_frame.layout()
         if overlay_layout is None:

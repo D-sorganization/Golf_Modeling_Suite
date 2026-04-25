@@ -1,9 +1,16 @@
+=======
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
+
+>>>>>>> origin/main
 """Drake Perturbation Analyzer — PerturbationAnalyzer protocol for Drake (#1979).
 
 Implements the ``PerturbationAnalyzer`` protocol for Drake's ``MultibodyPlant``
 within a ``DiagramBuilder`` / ``Simulator`` framework.  Polynomial torques are
 injected via a ``TrajectorySource`` connected to the actuation input port.
 
+<<<<<<< HEAD
 Inherits from ``PerturbationAnalyzerBase`` (see #2273) which provides the
 shared ``set_base_torque_profile``, ``perturb_torque``, ``extract_metrics``,
 ``run_batch``, and ``compare_profiles`` implementations.
@@ -93,6 +100,18 @@ class DrakeSimResult:
 
 
 # ---------------------------------------------------------------------------
+=======
+# Comparison report
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# Coefficient perturbation helper
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+>>>>>>> origin/main
 # Main analyzer
 # ---------------------------------------------------------------------------
 
@@ -170,44 +189,9 @@ class DrakePerturbationAnalyzer(PerturbationAnalyzerBase):
         ee_body_name : str, optional
             Name of the end-effector body.  Defaults to last moving body.
         """
+<<<<<<< HEAD
         super().__init__()
 
-        if not is_engine_available("drake"):
-            msg = "pydrake is not installed.  Install it with: pip install drake"
-            raise ImportError(msg)
-
-        from pydrake.all import (  # noqa: PLC0415
-            AddMultibodyPlantSceneGraph,
-            DiagramBuilder,
-            Parser,
-        )
-        from pydrake.multibody.tree import BodyIndex  # noqa: PLC0415
-
-        self._t_end = t_end
-        self._dt = dt
-
-        # Build plant
-        builder = DiagramBuilder()
-        plant, _scene_graph = AddMultibodyPlantSceneGraph(builder, time_step=0.0)
-
-        if urdf_path is not None:
-            urdf_path = Path(urdf_path)
-            if not (urdf_path.exists()):
-                raise ValueError(f"URDF not found: {urdf_path}")
-            Parser(plant).AddModels(str(urdf_path))
-        else:
-            # Try bundled golfer URDF, fall back to minimal pendulum
-            bundled = Path(__file__).parents[4] / "models" / "generated" / "golfer.urdf"
-            if bundled.exists():
-                Parser(plant).AddModels(str(bundled))
-            else:
-                import tempfile
-
-                tmp = tempfile.NamedTemporaryFile(
-                    suffix=".urdf", mode="w", delete=False
-                )
-                tmp.write(self._MINIMAL_URDF)
-                tmp.close()
                 Parser(plant).AddModels(tmp.name)
 
         plant.Finalize()
@@ -231,6 +215,11 @@ class DrakePerturbationAnalyzer(PerturbationAnalyzerBase):
             ]
             self._ee_body_idx = bodies[-1].index() if bodies else None
 
+=======
+        self._base_coeffs: list[list[float]] | None = None
+        self._nominal_result: DrakeSimResult | None = None
+
+>>>>>>> origin/main
         logger.info(
             "DrakePerturbationAnalyzer: nq=%d, nv=%d, nu=%d, t_end=%.2f",
             self._nq,
@@ -240,6 +229,7 @@ class DrakePerturbationAnalyzer(PerturbationAnalyzerBase):
         )
 
     # ------------------------------------------------------------------
+<<<<<<< HEAD
     # Base-class abstract method implementations
     # ------------------------------------------------------------------
 
@@ -364,6 +354,9 @@ class DrakePerturbationAnalyzer(PerturbationAnalyzerBase):
         v_arr = np.array(v_list)
 
         # End-effector positions via FK
+=======
+        # Precompute non-world bodies (BodyIndex wrapper required by Drake API)
+>>>>>>> origin/main
         world_idx = plant.world_body().index()
         non_world_bodies = [
             plant.get_body(BodyIndex(i))
@@ -383,6 +376,7 @@ class DrakePerturbationAnalyzer(PerturbationAnalyzerBase):
         ee_pos_arr = np.array(ee_pos_list)
 
         # EE velocities via finite difference
+<<<<<<< HEAD
         ee_vel_arr = np.zeros_like(ee_pos_arr)
         for i in range(1, len(t_arr)):
             dt_i = max(t_arr[i] - t_arr[i - 1], 1e-12)

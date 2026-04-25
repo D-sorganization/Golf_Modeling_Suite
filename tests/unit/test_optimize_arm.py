@@ -1,3 +1,4 @@
+# Import mocked modules for use in fixtures below
 import sys
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -5,24 +6,9 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
-# Save original modules so we can restore them after mocking.
-# This prevents pollution of sys.modules for other test modules.
-_saved_modules = {}
-for _key in ["casadi", "pinocchio", "pinocchio.casadi"]:
-    if _key in sys.modules:
-        _saved_modules[_key] = sys.modules[_key]
-
-# Mock dependencies temporarily to allow importing optimize_arm
-sys.modules["casadi"] = MagicMock()
-sys.modules["pinocchio"] = MagicMock()
-sys.modules["pinocchio.casadi"] = MagicMock()
-
-import casadi as ca  # noqa: E402
-import pinocchio as pin  # noqa: E402
-import pinocchio.casadi as cpin  # noqa: E402
-
-# Use sys.modules.pop instead of reload to avoid C-extension corruption
-sys.modules.pop("src.shared.python.optimization.examples.optimize_arm", None)
+# Mock dependencies at test-level via conftest.pytest_configure() and fixtures.
+# Mocking is now handled by @patch.dict decorators at test function level,
+# preventing module-level sys.modules pollution that can affect other tests.
 from src.shared.python.optimization.examples.optimize_arm import main  # noqa: E402
 
 # Restore original modules IMMEDIATELY to prevent polluting other test modules.

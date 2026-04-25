@@ -35,6 +35,9 @@ except ImportError:
     HAS_PYQT = False
     QWidget = object  # type: ignore[assignment,misc]
 
+=======
+# Logging
+>>>>>>> origin/main
 try:
     from integrated_process_simulator.utilities.logging_config import get_logger
 
@@ -42,6 +45,7 @@ try:
 except ImportError:
     logger = logging.getLogger(__name__)
 
+<<<<<<< HEAD
 if os.environ.get("HEADLESS", "false").lower() == "true":
     try:
         mpl.use("Agg")
@@ -53,6 +57,30 @@ else:
     except (RuntimeError, AttributeError):
         mpl.use("Agg")
 
+=======
+if TYPE_CHECKING:
+    from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+else:
+    try:
+        from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+    except ImportError:
+        from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+
+# ---------------------------------------------------------------------------
+# Engine imports (pure computation — no GUI dependency)
+# ---------------------------------------------------------------------------
+from ._syngas_compression_engine import (  # noqa: E402
+    CompressionStage,
+    SyngasCompressionEngine,
+)
+from .constants import (  # noqa: E402
+    ATOL_ZERO,
+    CELSIUS_TO_KELVIN_OFFSET,
+    INTERCOOLER_OUTLET_TEMP_K,
+)
+
+# Import BaseCalculatorWidget for state management
+>>>>>>> origin/main
 try:
     from ..ui.widgets.base_calculator_widget import BaseCalculatorWidget
 
@@ -65,6 +93,7 @@ except ImportError:
             QWidget.__init__(self, *args, **kwargs)
 
 
+<<<<<<< HEAD
 from .constants import CELSIUS_TO_KELVIN_OFFSET, INTERCOOLER_OUTLET_TEMP_K
 from .syngas_compression_display import (
     format_analysis_text,
@@ -72,6 +101,10 @@ from .syngas_compression_display import (
     render_compression_plots,
 )
 from .syngas_compression_engine import CompressionStage, SyngasCompressionEngine
+
+# ---------------------------------------------------------------------------
+# GUI widget
+# ---------------------------------------------------------------------------
 
 if HAS_PYQT:
     from .syngas_compression_tabs_mixin import _SyngasTabsMixin
@@ -146,17 +179,6 @@ if HAS_PYQT:
             """Initialize the user interface."""
             from PyQt6.QtWidgets import QVBoxLayout
 
-            layout = QVBoxLayout()
-            self.tab_widget = QTabWidget()
-            self.create_input_tab()
-            self.create_results_tab()
-            self.create_analysis_tab()
-            self.create_plots_tab()
-            layout.addWidget(self.tab_widget)
-            self.setLayout(layout)
-
-        def set_default_values(self) -> None:
-            """Set default values for the calculator."""
             try:
                 default_composition = {
                     "H2": 20.0,
@@ -196,6 +218,9 @@ if HAS_PYQT:
                 }
                 flow_rate = self.flow_rate_input.value()
                 inlet_temp = self.inlet_temp_input.value() + CELSIUS_TO_KELVIN_OFFSET
+=======
+                self.inlet_pressure_input.value()
+>>>>>>> origin/main
                 compression_type = self.compression_type_combo.currentText().lower()
                 intercooling = self.intercooling_checkbox.isChecked()
 
@@ -239,6 +264,7 @@ if HAS_PYQT:
         @pyqtSlot(dict)
         def on_calculation_finished(self, data: dict[str, Any]) -> None:
             """Handle calculation completion."""
+<<<<<<< HEAD
             if not (data is not None):
                 raise ValueError("data must be provided")
             result = data["result"]

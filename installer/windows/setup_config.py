@@ -160,19 +160,6 @@ def build_setup_configuration(
     profile = get_packaging_profile(profile_name)
     src_root = project_root / "src"
     launchers_assets_dir = src_root / "launchers" / "assets"
-    available_engines = detect_available_engines(profile, importer=importer)
-    packages = list(BASE_PACKAGES)
-    for engine_id in available_engines:
-        packages.extend(PHYSICS_ENGINES[engine_id]["modules"])
-
-    build_exe_options = {
-        "packages": packages,
-        "excludes": list(EXCLUDES),
-        "include_files": [
-            (str(src_root / "shared" / "urdf"), "src/shared/urdf"),
-            (str(src_root / "shared" / "meshes"), "src/shared/meshes"),
-            (str(launchers_assets_dir), "src/launchers/assets"),
-            (str(src_root / "config"), "src/config"),
             (str(project_root / "docs"), "docs"),
             (str(project_root / "README.md"), "README.md"),
             (str(project_root / "LICENSE"), "LICENSE"),

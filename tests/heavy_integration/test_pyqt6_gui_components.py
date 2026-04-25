@@ -10,12 +10,6 @@ from __future__ import annotations
 import sys
 from collections.abc import Generator
 from typing import Any
-
-import pytest
-
-
-@pytest.fixture(scope="module")
-def qt_app() -> Generator[Any, None, None]:
     """Return or create a QApplication singleton for headless tests."""
     try:
         from PyQt6.QtWidgets import QApplication

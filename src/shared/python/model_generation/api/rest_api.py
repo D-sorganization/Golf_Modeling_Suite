@@ -1,3 +1,6 @@
+# ARCHITECTURE: God class decomposed in PR #2176.
+# Handler methods extracted to generation_handlers.py and library_handlers.py as mixins.
+
 """
 REST API for model_generation package.
 
@@ -9,13 +12,14 @@ from __future__ import annotations
 
 import logging
 import os
-import tempfile
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from pathlib import Path
 from typing import Any
+
+from .generation_handlers import GenerationHandlersMixin as _GenerationHandlersMixin
+from .library_handlers import LibraryHandlersMixin as _LibraryHandlersMixin
 
 logger = logging.getLogger(__name__)
 
@@ -100,9 +104,16 @@ class Route:
     tags: list[str] = field(default_factory=list)
 
 
-class ModelGenerationAPI:
+class ModelGenerationAPI(
+    _GenerationHandlersMixin,
+    _LibraryHandlersMixin,
+):
     """
     REST API for model generation operations.
+
+    Handler methods are provided by mixins (see generation_handlers.py
+    and library_handlers.py) to keep this orchestrator class focused on
+    routing and middleware concerns.
 
     Provides endpoints for:
     - URDF generation (parametric, humanoid)
@@ -488,7 +499,9 @@ class ModelGenerationAPI:
         )
 
     # ============================================================
-    # Generation Handlers
+    # Handler methods are provided by GenerationHandlersMixin and
+    # LibraryHandlersMixin (see generation_handlers.py and
+    # library_handlers.py).
     # ============================================================
 
     def generate_humanoid(self, request: APIRequest) -> APIResponse:
@@ -1202,19 +1215,6 @@ class ModelGenerationAPI:
             }
         )
 
-
-# ============================================================
-# Framework Adapters
-# ============================================================
-
-
-class FlaskAdapter:
-    """Adapter for Flask framework."""
-
-    def __init__(self, api: ModelGenerationAPI) -> None:
-        if not (api is not None):
-            raise ValueError("api must be provided")
-        if not (api is not None):
             raise ValueError("api must be provided")
         self.api = api
 

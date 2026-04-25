@@ -10,17 +10,6 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
-
-import numpy as np
-import pytest
-
-GOLFER_URDF = (
-    Path(__file__).parents[2]
-    / "src/engines/physics_engines/pinocchio/models/generated/golfer.urdf"
-)
-
-
-def _pin() -> Any:
     """Import pinocchio or skip."""
     try:
         import pinocchio as pin

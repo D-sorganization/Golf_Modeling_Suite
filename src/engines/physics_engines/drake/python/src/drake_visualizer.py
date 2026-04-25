@@ -15,7 +15,7 @@ from pydrake.all import (
 )
 
 FRAME_AXIS_LENGTH_M: typing.Final[float] = (
-    0.2  # [m] Axle length for frame visualization
+    0.2  # [m] Axle length for frame visualization  # noqa: E501
 )
 FRAME_AXIS_RADIUS_M: typing.Final[float] = 0.005  # [m] Axle radius
 COM_SPHERE_RADIUS_M: typing.Final[float] = 0.015  # [m] COM marker radius
@@ -55,7 +55,7 @@ class DrakeVisualizer:
             # X Axis (Red)
             self.meshcat.SetObject(
                 f"{path}/x", Cylinder(radius, length), Rgba(1, 0, 0, 1)
-            )
+            )  # noqa: E501
             X_x = RigidTransform(
                 RotationMatrix.MakeYRotation(pi / 2),
                 [length / 2, 0, 0],  # type: ignore[call-overload]  # pydrake list-to-array overload
@@ -65,7 +65,7 @@ class DrakeVisualizer:
             # Y Axis (Green)
             self.meshcat.SetObject(
                 f"{path}/y", Cylinder(radius, length), Rgba(0, 1, 0, 1)
-            )
+            )  # noqa: E501
             X_y = RigidTransform(
                 RotationMatrix.MakeXRotation(-pi / 2),
                 [0, length / 2, 0],  # type: ignore[call-overload]  # pydrake list-to-array overload
@@ -75,7 +75,7 @@ class DrakeVisualizer:
             # Z Axis (Blue)
             self.meshcat.SetObject(
                 f"{path}/z", Cylinder(radius, length), Rgba(0, 0, 1, 1)
-            )
+            )  # noqa: E501
             X_z = RigidTransform(RotationMatrix(), [0, 0, length / 2])  # type: ignore[call-overload]  # pydrake list-to-array overload
             self.meshcat.SetTransform(f"{path}/z", X_z)
 
@@ -108,7 +108,7 @@ class DrakeVisualizer:
             # Sphere for COM
             self.meshcat.SetObject(
                 path, Sphere(COM_SPHERE_RADIUS_M), Rgba(1, 1, 0, 1)
-            )  # Yellow
+            )  # Yellow  # noqa: E501
             self.visible_coms.add(body_name)
         else:
             self.meshcat.Delete(path)

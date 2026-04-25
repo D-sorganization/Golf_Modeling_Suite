@@ -1,56 +1,7 @@
 from collections.abc import Generator
-from typing import Any
-from unittest.mock import MagicMock, patch
-
-import numpy as np
-import pytest
-
-from src.shared.python.engine_core.engine_availability import (
-    skip_if_unavailable,
-)
-
-# Skip entire module if Pinocchio is not installed - mocking pinocchio at module level
-# is unreliable and leads to AttributeError on patched module globals
-pytestmark = skip_if_unavailable("pinocchio")
-
-# Explicit attribute lists for Pinocchio C++ types (pinocchio bindings).
-_PIN_MODEL_SPEC = [
-    "nv",
-    "nq",
-    "existBodyName",
-    "existFrame",
-    "getFrameId",
-    "createData",
-]
-_PIN_DATA_SPEC = ["M", "J"]
-
-
-# Mock classes that need to be defined before importing the engine
-class MockPhysicsEngine:
-    pass
-
-
-@pytest.fixture(autouse=True, scope="module")
-def mock_pinocchio_dependencies() -> Generator[tuple[MagicMock, MagicMock], None, None]:
-    """Fixture to mock pinocchio and interfaces safely for the duration of this module."""
-    mock_pin = MagicMock()
-    mock_interfaces = MagicMock()
-    mock_interfaces.PhysicsEngine = MockPhysicsEngine
-
-    with patch.dict(
-        "sys.modules",
-        {"pinocchio": mock_pin, "shared.python.interfaces": mock_interfaces},
-    ):
-        yield mock_pin, mock_interfaces
-
-
-@pytest.fixture(scope="module")
-def PinocchioPhysicsEngineClass(
-    mock_pinocchio_dependencies,
-) -> Generator[type, None, None]:
     """Fixture to provide the PinocchioPhysicsEngine class with mocked dependencies."""
-    # Ensure module is imported
-    import engines.physics_engines.pinocchio.python.pinocchio_physics_engine as mod
+    # Ensure module is imported via the correct src-rooted path
+    import src.engines.physics_engines.pinocchio.python.pinocchio_physics_engine as mod
 
     # Manually patch the module's globals
     mock_pin, mock_interfaces = mock_pinocchio_dependencies
@@ -59,13 +10,13 @@ def PinocchioPhysicsEngineClass(
     original_pin = getattr(mod, "pin", None)
 
     # Inject mocks
-    mod.pin = mock_pin
+    mod.pin = mock_pin  # type: ignore[attr-defined]
 
     yield mod.PinocchioPhysicsEngine
 
     # Restore
     if original_pin:
-        mod.pin = original_pin
+        mod.pin = original_pin  # type: ignore[attr-defined]
 
 
 @pytest.fixture
@@ -95,7 +46,9 @@ def test_load_from_string(mock_pin, engine) -> None:
     content = "<robot/>"
     mock_model = MagicMock(spec=_PIN_MODEL_SPEC)
     mock_model.nv = 2
+    mock_model.nq = 2
     mock_pin.buildModelFromXML.return_value = mock_model
+    mock_pin.neutral.return_value = np.zeros(2)
 
     engine.load_from_string(content, "urdf")
 
@@ -112,15 +65,15 @@ def test_step(engine) -> None:
 
     # Mock aba return
     with patch(
-        "engines.physics_engines.pinocchio.python.pinocchio_physics_engine.pin"
+        "src.engines.physics_engines.pinocchio.python.pinocchio_physics_engine.pin"
     ) as mock_pin:
         mock_pin.aba.return_value = np.array([1.0])  # acceleration
         mock_pin.integrate.return_value = np.array([0.1])
 
-        engine.step(0.1)
+        engine.step(0.1, integrator="semi_implicit")
 
         mock_pin.aba.assert_called_once()
-        mock_pin.integrate.assert_called_once()
+        assert mock_pin.integrate.call_count == 1
         np.testing.assert_array_equal(engine.a, np.array([1.0]))
         # v = v + a*dt = 0 + 1.0*0.1 = 0.1
         np.testing.assert_array_equal(engine.v, np.array([0.1]))
@@ -133,7 +86,7 @@ def test_compute_mass_matrix(engine) -> None:
     engine.data.M = np.array([[1.0, 0.2], [0.0, 2.0]])  # Upper triangular example
 
     with patch(
-        "engines.physics_engines.pinocchio.python.pinocchio_physics_engine.pin"
+        "src.engines.physics_engines.pinocchio.python.pinocchio_physics_engine.pin"
     ) as mock_pin:
         M = engine.compute_mass_matrix()
 
@@ -150,7 +103,7 @@ def test_compute_jacobian(engine) -> None:
     engine.model.getFrameId.return_value = 1
 
     with patch(
-        "engines.physics_engines.pinocchio.python.pinocchio_physics_engine.pin"
+        "src.engines.physics_engines.pinocchio.python.pinocchio_physics_engine.pin"
     ) as mock_pin:
         # 6x2 Jacobian
         mock_J = np.zeros((6, 2))

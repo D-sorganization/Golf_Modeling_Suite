@@ -10,12 +10,6 @@ from __future__ import annotations
 import tempfile
 from pathlib import Path
 from typing import Any
-
-import numpy as np
-import pytest
-
-
-def _import_mesh_processor() -> Any:
     """Import MeshProcessor or skip the test."""
     try:
         from src.shared.python.humanoid_character_builder.mesh.mesh_processor import (

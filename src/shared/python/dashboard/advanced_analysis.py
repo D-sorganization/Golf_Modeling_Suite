@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Advanced Analysis Dialog for the Unified Dashboard.
 
 Contains widgets and a dialog for advanced signal processing analysis:
@@ -422,7 +426,13 @@ class CorrelationTab(QtWidgets.QWidget):
             # Reduce to scalar
             # Take L2 norm for vectors (forces, etc.)
             # Assuming shape (N, D)
-            scalar_vals = np.linalg.norm(vals, axis=1) if vals.ndim > 1 else vals
+            # ⚡ Bolt: Explicit element-wise sum of squares is faster than np.linalg.norm(..., axis=1) for small inner dimensions
+            vals_f = vals.astype(float, copy=False)
+            scalar_vals = (
+                np.sqrt(np.einsum("...i,...i->...", vals_f, vals_f))
+                if vals.ndim > 1
+                else vals
+            )
 
             data_dict[label] = scalar_vals
             if len(scalar_vals) < min_len:
@@ -436,8 +446,7 @@ class CorrelationTab(QtWidgets.QWidget):
         # Stack into matrix (N_samples, N_features)
         feature_names = list(data_dict.keys())
         matrix_list = []
-        for name in feature_names:
-            matrix_list.append(data_dict[name][: int(min_len)])
+        matrix_list.extend([data_dict[name][: int(min_len)] for name in feature_names])
 
         X = np.column_stack(matrix_list)  # (N, F)
 

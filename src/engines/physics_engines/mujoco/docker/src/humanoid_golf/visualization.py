@@ -58,7 +58,7 @@ class TrajectoryTracer:
         """
         self._desired_traces[body_name] = [
             np.asarray(p, dtype=np.float64) for p in positions
-        ]
+        ]  # noqa: E501
 
     def get_desired_trace(self, body_name: str) -> list[np.ndarray]:
         """Return the desired reference trajectory for a body."""
@@ -165,7 +165,7 @@ def _init_arrow_geom(
     start = np.asarray(start, dtype=np.float64)
     end = np.asarray(end, dtype=np.float64)
     diff = end - start
-    length = float(np.linalg.norm(diff))
+    length = float(np.sqrt(np.vdot(diff, diff)))
     if length < 1e-8:
         return
 

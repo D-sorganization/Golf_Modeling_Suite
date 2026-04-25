@@ -8,6 +8,9 @@ import functools
 import math
 from dataclasses import dataclass
 
+MIN_VALID_ALTITUDE_M = 0.0
+MAX_VALID_TROPOSPHERE_ALTITUDE_M = 11_000.0
+
 
 @dataclass
 class FlightModelOptions:

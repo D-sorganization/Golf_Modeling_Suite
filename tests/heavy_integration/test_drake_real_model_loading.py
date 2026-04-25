@@ -12,39 +12,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-import numpy as np
-import pytest
-
-# Minimal self-contained URDF for testing
-_MINIMAL_URDF = """\
-<?xml version="1.0"?>
-<robot name="minimal_pendulum">
-  <link name="world"/>
-  <link name="pendulum_link">
-    <inertial>
-      <mass value="1.0"/>
-      <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.01"/>
-    </inertial>
-    <visual>
-      <geometry><cylinder radius="0.02" length="0.5"/></geometry>
-    </visual>
-    <collision>
-      <geometry><cylinder radius="0.02" length="0.5"/></geometry>
-    </collision>
-  </link>
-  <joint name="pivot" type="revolute">
-    <parent link="world"/>
-    <child link="pendulum_link"/>
-    <origin xyz="0 0 0.25"/>
-    <axis xyz="0 1 0"/>
-    <limit lower="-3.14" upper="3.14" effort="10" velocity="10"/>
-  </joint>
-</robot>
-"""
-
-
-@pytest.fixture(scope="module")
-def drake_modules() -> dict[str, Any]:
     """Import required Drake modules or skip the entire module."""
     try:
         from pydrake.all import DiagramBuilder, Parser  # noqa: F401

@@ -34,7 +34,7 @@ class InducedAccelerationAnalyzer:
         self._temp_data = model.createData()
 
     def compute_components(
-        self, q: np.ndarray, v: np.ndarray, tau: np.ndarray
+        self, q: np.ndarray, v: np.ndarray, tau: np.ndarray, f_ext: dict | None = None
     ) -> dict[str, np.ndarray]:
         """
         Compute induced acceleration components.
@@ -59,7 +59,7 @@ class InducedAccelerationAnalyzer:
             raise ValueError("q must be provided")
         q_ddot_g = pin.aba(
             self.model, self._temp_data, q, np.zeros(self.nv), np.zeros(self.nv)
-        )
+        )  # noqa: E501
 
         # 2. Velocity Induced Acceleration
         # M * q_ddot_v = -C(q, v)v
@@ -96,16 +96,47 @@ class InducedAccelerationAnalyzer:
         # q_ddot_t = q_ddot_total - q_ddot_gv
         q_ddot_t = q_ddot_total - q_ddot_gv
 
+        q_ddot_ext = np.zeros(self.nv)
+        if f_ext is not None:
+            q_ddot_ext = self.compute_external_acceleration(q, v, f_ext)
+            q_ddot_total += q_ddot_ext
+
         return {
             "gravity": q_ddot_g,
             "velocity": q_ddot_v,
             "control": q_ddot_t,
+            "external": q_ddot_ext,
             "total": q_ddot_total,
         }
 
+    def compute_external_acceleration(
+        self, q: np.ndarray, v: np.ndarray, f_ext: dict
+    ) -> np.ndarray:
+        """Compute acceleration due to external forces only."""
+        # a_ext = M^{-1} @ sum(J_i^T @ f_ext_i)
+        pin.computeAllTerms(self.model, self.data, q, v)
+        M = self.data.M
+        nv = int(self.model.nv)
+        if nv == 0:
+            return np.zeros(0, dtype=float)
+
+        tau_ext = np.zeros(nv, dtype=float)
+        for frame_id, wrench in f_ext.items():
+            # use pin.LOCAL for reference_frame if needed, else try default
+            J = pin.computeFrameJacobian(self.model, self.data, q, frame_id)
+            contribution = np.asarray(J.T @ wrench, dtype=float).reshape(-1)
+            if contribution.size == 0:
+                contribution = np.zeros_like(tau_ext)
+            tau_ext += contribution
+
+        if np.asarray(M).ndim < 2 or np.asarray(M).size == 0:
+            return np.zeros_like(tau_ext)
+
+        return np.linalg.solve(M, tau_ext)
+
     def compute_specific_control(
         self, q: np.ndarray, specific_tau: np.ndarray
-    ) -> np.ndarray:
+    ) -> np.ndarray:  # noqa: E501
         """
         Compute induced acceleration for a specific control torque vector.
 
@@ -139,7 +170,7 @@ class InducedAccelerationAnalyzer:
 
     def compute_counterfactuals(
         self, q: np.ndarray, v: np.ndarray
-    ) -> dict[str, np.ndarray]:
+    ) -> dict[str, np.ndarray]:  # noqa: E501
         """
         Decompose acceleration into Zero-Torque (ZTCF) and Zero-Velocity (ZVCF)
         components.

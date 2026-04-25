@@ -15,12 +15,15 @@ Following Pragmatic Programmer principles:
 
 from __future__ import annotations
 
+from types import SimpleNamespace
 from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
 
+from src.shared.python.core.constants import AIR_VISCOSITY_KG_M_S
 from src.shared.python.physics.aerodynamics import (
+    MIN_AIR_DENSITY_KG_M3,
     AerodynamicsConfig,
     AerodynamicsEngine,
     DragModel,
@@ -244,6 +247,39 @@ class TestDragModel:
 
         assert drag_high > drag_low
 
+    def test_reynolds_transition_remains_continuous_for_tuned_cd(self) -> None:
+        """Test tuned Cd scales smoothly through the Reynolds transition."""
+        air_density = 1.225
+        model_default = DragModel()
+        model_tuned = DragModel(base_coefficient=0.20)
+        probe_velocity = np.array([10.0, 0.0, 0.0])
+
+        default_cd = model_default.get_effective_coefficient(
+            probe_velocity, air_density=air_density
+        )
+        tuned_cd = model_tuned.get_effective_coefficient(
+            probe_velocity, air_density=air_density
+        )
+
+        assert tuned_cd == pytest.approx(default_cd * 0.8, rel=1e-6)
+
+        boundary_re = 8e4
+        diameter = 2 * model_tuned.ball_radius
+        boundary_speed = (
+            boundary_re * float(AIR_VISCOSITY_KG_M_S) / (air_density * diameter)
+        )
+        just_below = np.array([boundary_speed * 0.999999, 0.0, 0.0])
+        just_above = np.array([boundary_speed * 1.000001, 0.0, 0.0])
+
+        cd_below = model_tuned.get_effective_coefficient(
+            just_below, air_density=air_density
+        )
+        cd_above = model_tuned.get_effective_coefficient(
+            just_above, air_density=air_density
+        )
+
+        assert cd_below == pytest.approx(cd_above, rel=1e-4, abs=1e-4)
+
     def test_reynolds_number_correction(self) -> None:
         """Test Reynolds number affects drag coefficient."""
         model = DragModel(reynolds_correction=True)
@@ -258,6 +294,30 @@ class TestDragModel:
 
         # At high Re (turbulent), golf ball has lower Cd
         assert cd_high < cd_low
+
+    def test_vector_inputs_accept_column_shapes(self) -> None:
+        """Test vector-magnitude helpers accept non-1D velocity arrays."""
+        velocity = np.array([[50.0], [0.0], [10.0]])
+        spin = np.array([[0.0], [-200.0], [0.0]])
+
+        drag_model = DragModel()
+        lift_model = LiftModel()
+        magnus_model = MagnusModel()
+
+        drag = drag_model.calculate(velocity, air_density=1.225)
+        lift = lift_model.calculate(velocity, spin, air_density=1.225)
+        magnus = magnus_model.calculate(velocity, spin, air_density=1.225)
+        drag_cd = drag_model.get_effective_coefficient(velocity, air_density=1.225)
+
+        expected_shape = velocity.reshape(-1).shape
+        assert drag.shape == expected_shape
+        assert lift.shape == expected_shape
+        assert magnus.shape == expected_shape
+        assert np.isfinite(drag_cd)
+        assert drag_cd > 0
+        assert np.all(np.isfinite(drag))
+        assert np.all(np.isfinite(lift))
+        assert np.all(np.isfinite(magnus))
 
 
 # =============================================================================
@@ -657,6 +717,17 @@ class TestEnvironmentRandomizer:
         assert min(results) != max(results)
         # Should be centered around base
         assert np.mean(results) == pytest.approx(base_density, rel=0.1)
+
+    def test_randomize_air_density_clamps_to_positive_floor(self) -> None:
+        """Test random air density never falls below the physical floor."""
+        config = RandomizationConfig(enabled=True, air_density_variance=0.5)
+        randomizer = EnvironmentRandomizer(config, seed=42)
+        randomizer._rng = SimpleNamespace(normal=lambda *args, **kwargs: -1.0)  # type: ignore[assignment]
+
+        result = randomizer.randomize_air_density(1.225)
+
+        assert result == pytest.approx(MIN_AIR_DENSITY_KG_M3)
+        assert result > 0
 
     def test_reproducibility_with_seed(self) -> None:
         """Test same seed gives same randomization."""

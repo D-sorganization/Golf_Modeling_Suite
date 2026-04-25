@@ -1,3 +1,9 @@
+=======
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
+>>>>>>> origin/main
 """MyoSuite Perturbation Analyzer — PerturbationAnalyzer protocol for MyoSuite (#1982).
 
 Implements the ``PerturbationAnalyzer`` protocol for the MyoSuite musculoskeletal
@@ -5,6 +11,7 @@ simulation environment (built on MuJoCo).  Uses a built-in minimal tendon-driven
 arm model when no environment ID or model path is provided.  When ``myosuite``
 is not installed the module imports cleanly but construction raises ``ImportError``.
 
+<<<<<<< HEAD
 Inherits from ``PerturbationAnalyzerBase`` (see #2273) which provides the
 shared ``set_base_torque_profile``, ``perturb_torque``, ``extract_metrics``,
 ``run_batch``, and ``compare_profiles`` implementations.
@@ -129,6 +136,18 @@ class MyoSuiteSimResult:
 
 
 # ---------------------------------------------------------------------------
+=======
+# Comparison report
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# Coefficient perturbation helper
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+>>>>>>> origin/main
 # Main analyzer
 # ---------------------------------------------------------------------------
 
@@ -186,18 +205,8 @@ class MyoSuitePerturbationAnalyzer(PerturbationAnalyzerBase):
         ee_body_name : str, optional
             Name of the end-effector body.  Defaults to the last body.
         """
+<<<<<<< HEAD
         super().__init__()
-
-        self._t_end = t_end
-        self._ee_body_name = ee_body_name
-        self._env: Any = None
-        self._model: Any = None
-        self._use_gym = False
-
-        if MYOSUITE_AVAILABLE:
-            self._init_myosuite(env_id or _DEFAULT_ENV_ID)
-        else:
-            self._init_mujoco_fallback(model_xml, model_path)
 
         logger.info(
             "MyoSuitePerturbationAnalyzer: nq=%d, nu=%d, t_end=%.2f, use_gym=%s",

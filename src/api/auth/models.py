@@ -122,7 +122,7 @@ class APIKey(Base):  # type: ignore[misc,valid-type]
         Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     key_hash = Column(String(255), unique=True, index=True, nullable=False)
-    # Performance Issue #2 fix: Fast lookup prefix (SHA256 of first 8 chars)
+    # Fast lookup prefix hash stored under the legacy key_prefix column name.
     key_prefix = Column(String(64), index=True, nullable=True)
     name = Column(String(255), nullable=False)  # User-friendly name
     is_active = Column(Boolean, default=True, nullable=False)
@@ -240,12 +240,15 @@ class APIKeyResponse(BaseModel):
     created_at: datetime
     expires_at: datetime | None = None
 
+<<<<<<< HEAD
 
 class RefreshTokenRequest(BaseModel):
     """Request body for token refresh endpoint."""
 
     refresh_token: str
 
+=======
+>>>>>>> origin/main
 
 class UsageQuotas(BaseModel):
     """Usage quotas for different subscription tiers."""

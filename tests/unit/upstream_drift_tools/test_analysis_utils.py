@@ -5,6 +5,9 @@ from __future__ import annotations
 from typing import Any
 
 from src.shared.python.upstream_drift_tools.process_calculators.analysis_utils import (
+=======
+    evaluate_compression_result,
+>>>>>>> origin/main
     evaluate_output,
 )
 
@@ -123,3 +126,4 @@ class TestEvaluateOutput:
         _, state, comp = evaluate_output(engine, self._BASE, 0.0, "efficiency")
         assert state == {"x": 1.0}
         assert comp == {"H2": 0.5}
+<<<<<<< HEAD

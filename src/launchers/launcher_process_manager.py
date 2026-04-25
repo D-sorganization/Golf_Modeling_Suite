@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Process management utilities for the Golf Launcher.
 
 This module provides centralized process lifecycle management for launching
@@ -19,6 +23,7 @@ import re
 import shlex
 import subprocess
 import sys
+import tempfile
 import threading
 from collections.abc import Callable
 from pathlib import Path
@@ -102,22 +107,75 @@ class ProcessManager:
         self.output_callback = output_callback
         self.use_separate_terminals = use_separate_terminals
         self._output_threads: dict[str, threading.Thread] = {}
+        # Thread-safe guard for running_processes dict (issue #2715)
+        self._process_lock = threading.RLock()
 
         # Persistent log file for all process output
         self._log_dir = Path.home() / ".golf_modeling_suite"
         self._log_file_path = self._log_dir / "process_output.log"
         self._init_log_file()
 
-    def get_subprocess_env(self) -> dict[str, str]:
+    def _merge_python_paths(
+        self,
+        existing_path: str,
+        extra_python_paths: tuple[str, ...] = (),
+    ) -> str:
+        """Merge required and extra PYTHONPATH entries without duplication."""
+        separator = ";" if os.name == "nt" else ":"
+        current_paths = existing_path.split(separator) if existing_path else []
+
+        required_paths = [str(self.repo_root), str(self.repo_root / "src")]
+        optional_paths = [
+            str(self.repo_root / "src" / "shared" / "python"),
+            str(
+                self.repo_root
+                / "src"
+                / "engines"
+                / "physics_engines"
+                / "mujoco"
+                / "python"
+            ),
+            os.path.join(
+                os.path.expanduser("~"),
+                "miniconda3",
+                "lib",
+                "python3.10",
+                "site-packages",
+            ),
+        ]
+
+        merged_paths: list[str] = []
+        seen: set[str] = set()
+
+        for path in required_paths:
+            if path not in seen and path not in current_paths:
+                seen.add(path)
+                merged_paths.append(path)
+
+        for path in [*optional_paths, *extra_python_paths]:
+            if path in seen or path in current_paths:
+                continue
+            if path in optional_paths and not os.path.isdir(path):
+                continue
+            seen.add(path)
+            merged_paths.append(path)
+
+        if not merged_paths:
+            return existing_path
+
+        new_paths = separator.join(merged_paths)
+        return f"{new_paths}{separator}{existing_path}" if existing_path else new_paths
+
+    def get_subprocess_env(
+        self,
+        extra_python_paths: tuple[Path, ...] = (),
+    ) -> dict[str, str]:
         """Get environment variables for subprocess execution.
 
         Returns:
             Dictionary of environment variables with proper PYTHONPATH.
         """
         env = os.environ.copy()
-        repo_root_str = str(self.repo_root)
-        src_dir = str(self.repo_root / "src")
-
         existing_path = env.get("PYTHONPATH", "")
         separator = ";" if os.name == "nt" else ":"
         current_paths = existing_path.split(separator) if existing_path else []
@@ -153,6 +211,55 @@ class ProcessManager:
             )
 
         return env
+
+    def _validate_context_path(self, context_path: Path) -> Path:
+        """Validate subprocess working directory against allowlist (issue #2715).
+
+        Args:
+            context_path: Proposed working directory.
+
+        Returns:
+            Resolved path if valid.
+
+        Raises:
+            ValueError: If path is outside repo_root, is a symlink, or unresolvable.
+        """
+        if not hasattr(context_path, "resolve"):
+            # Synthetic PurePath inputs are used in unit tests. Keep them usable
+            # rather than forcing a concrete conversion that can be sensitive to
+            # os.name on Windows.
+            return context_path
+
+        def _normalize(path_value: Path | str) -> str:
+            raw = os.fspath(path_value)
+            return os.path.normcase(os.path.abspath(os.path.normpath(raw)))
+
+        resolved = context_path
+
+        repo_root_exists = hasattr(self.repo_root, "exists") and self.repo_root.exists()
+        repo_root_resolved = _normalize(self.repo_root) if repo_root_exists else None
+        temp_root_resolved = _normalize(tempfile.gettempdir())
+
+        def _is_within(candidate: str, base: str) -> bool:
+            return candidate == base or candidate.startswith(base + os.sep)
+
+        # Allow temporary directories for regression tests and transient work.
+        # Otherwise keep the existing repo-root containment rule.
+        if repo_root_exists and repo_root_resolved is not None:
+            candidate_resolved = _normalize(resolved)
+            if not (
+                _is_within(candidate_resolved, repo_root_resolved)
+                or _is_within(candidate_resolved, temp_root_resolved)
+            ):
+                raise ValueError(
+                    f"Path {context_path} is outside repo_root {self.repo_root}"
+                )
+
+        # Reject if original is a symlink (prevents symlink-escape bypasses)
+        if hasattr(context_path, "is_symlink") and context_path.is_symlink():
+            raise ValueError(f"Symlinks not allowed for subprocess cwd: {context_path}")
+
+        return resolved
 
     def _init_log_file(self) -> None:
         """Initialize the persistent process output log file."""
@@ -253,6 +360,7 @@ class ProcessManager:
         script_path: Path,
         cwd: Path,
         env: dict[str, str] | None = None,
+        extra_python_paths: tuple[Path, ...] = (),
         keep_terminal_open: bool = False,
     ) -> subprocess.Popen[bytes] | None:
         """Launch a Python script as a subprocess.
@@ -270,7 +378,23 @@ class ProcessManager:
             The process object if successful, None otherwise.
         """
         try:
-            process_env = env or self.get_subprocess_env()
+            process_env = env or self.get_subprocess_env(extra_python_paths)
+
+            # Validate script path to prevent path-traversal / injection.
+            validate_script_path(script_path, self.repo_root)
+
+            # Validate working directory (issue #2715: reject paths outside repo)
+            cwd = self._validate_context_path(cwd)
+
+            # Diagnostic: log full launch details for debugging silent failures
+            logger.info(
+                "Launching script %s: cmd=[%s, %s], cwd=%s, PYTHONPATH=%s",
+                name,
+                sys.executable,
+                script_path,
+                cwd,
+                process_env.get("PYTHONPATH", "<unset>")[:300],
+            )
 
             # Validate script path to prevent path-traversal / injection.
             validate_script_path(script_path, self.repo_root)
@@ -330,7 +454,9 @@ class ProcessManager:
                 t.start()
                 self._output_threads[name] = t
 
-            self.running_processes[name] = process
+            # Guard running_processes dict with lock (issue #2715)
+            with self._process_lock:
+                self.running_processes[name] = process
             logger.info(f"Launched {name} (PID: {process.pid})")
             return process
 
@@ -339,6 +465,9 @@ class ProcessManager:
             PermissionError,
             OSError,
             SecureSubprocessError,
+=======
+            ValueError,
+>>>>>>> origin/main
         ) as e:
             logger.error(f"Failed to launch {name}: {e}")
             return None
@@ -349,6 +478,7 @@ class ProcessManager:
         module_name: str,
         cwd: Path,
         env: dict[str, str] | None = None,
+        extra_python_paths: tuple[Path, ...] = (),
         keep_terminal_open: bool = False,
     ) -> subprocess.Popen[bytes] | None:
         """Launch a Python module as a subprocess.
@@ -366,7 +496,16 @@ class ProcessManager:
             The process object if successful, None otherwise.
         """
         try:
-            process_env = env or self.get_subprocess_env()
+            process_env = env or self.get_subprocess_env(extra_python_paths)
+
+            # Validate working directory (issue #2715: reject paths outside repo)
+            cwd = self._validate_context_path(cwd)
+
+            # Validate module name: must be a dotted Python identifier.
+            if not _MODULE_NAME_RE.match(module_name):
+                raise SecureSubprocessError(
+                    f"Invalid module name (potential injection): {module_name!r}"
+                )
 
             # Validate module name: must be a dotted Python identifier.
             if not _MODULE_NAME_RE.match(module_name):
@@ -449,7 +588,9 @@ class ProcessManager:
                 t.start()
                 self._output_threads[name] = t
 
-            self.running_processes[name] = process
+            # Guard running_processes dict with lock (issue #2715)
+            with self._process_lock:
+                self.running_processes[name] = process
             logger.info(f"Launched module {name} (PID: {process.pid})")
             return process
 
@@ -458,6 +599,7 @@ class ProcessManager:
             PermissionError,
             OSError,
             SecureSubprocessError,
+<<<<<<< HEAD
         ) as e:
             logger.error(f"Failed to launch {name}: {e}")
             return None

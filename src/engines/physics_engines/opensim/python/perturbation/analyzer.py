@@ -1,3 +1,9 @@
+=======
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
+>>>>>>> origin/main
 """OpenSim Perturbation Analyzer — PerturbationAnalyzer protocol for OpenSim (#1981).
 
 Implements the ``PerturbationAnalyzer`` protocol for the OpenSim physics
@@ -5,6 +11,7 @@ simulation engine.  Uses a built-in minimal pendulum model when no model path
 is provided.  When ``opensim`` is not installed the module imports cleanly but
 construction raises ``ImportError``.
 
+<<<<<<< HEAD
 Inherits from ``PerturbationAnalyzerBase`` (see #2273) which provides the
 shared ``set_base_torque_profile``, ``perturb_torque``, ``extract_metrics``,
 ``run_batch``, and ``compare_profiles`` implementations.
@@ -163,6 +170,18 @@ class OpenSimSimResult:
 
 
 # ---------------------------------------------------------------------------
+=======
+# Comparison report
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# Coefficient perturbation helper
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+>>>>>>> origin/main
 # Main analyzer
 # ---------------------------------------------------------------------------
 
@@ -217,58 +236,8 @@ class OpenSimPerturbationAnalyzer(PerturbationAnalyzerBase):
             Name of the end-effector body.  Defaults to the last body in the
             model (excluding ground).
         """
+<<<<<<< HEAD
         super().__init__()
-
-        if not OPENSIM_AVAILABLE:
-            msg = (
-                "opensim is not installed.  "
-                "Install it with: conda install -c opensim-org opensim"
-            )
-            raise ImportError(msg)
-
-        import opensim as osim  # noqa: PLC0415
-
-        self._t_end = t_end
-        self._dt = dt
-        self._ee_body_name = ee_body_name
-
-        if model_path is not None:
-            model_path = Path(model_path)
-            if not (model_path.exists()):
-                raise ValueError(f"Model not found: {model_path}")
-            self._model = osim.Model(str(model_path))
-        else:
-            # Write minimal model to a temp file — OpenSim requires a file path
-            import tempfile  # noqa: PLC0415
-
-            with tempfile.NamedTemporaryFile(
-                suffix=".osim", delete=False, mode="w"
-            ) as tmp:
-                tmp.write(_MINIMAL_OSIM_XML)
-                tmp_name = tmp.name
-            self._model = osim.Model(tmp_name)
-
-        self._model.initSystem()
-
-        # Determine DOF count from coordinate set
-        coord_set = self._model.getCoordinateSet()
-        self._nq = coord_set.getSize()
-        self._nv = self._nq  # pin joints: nv == nq
-
-        # Actuator count
-        force_set = self._model.getForceSet()
-        self._nu = force_set.getSize()
-
-        # End-effector body
-        body_set = self._model.getBodySet()
-        if ee_body_name is not None:
-            self._ee_body_name = ee_body_name
-        else:
-            # Default: last body in the set (excluding ground at index 0)
-            if body_set.getSize() > 0:
-                self._ee_body_name = body_set.get(body_set.getSize() - 1).getName()
-            else:
-                self._ee_body_name = "link2"
 
         logger.info(
             "OpenSimPerturbationAnalyzer: nq=%d, nu=%d, t_end=%.2f, ee=%s",

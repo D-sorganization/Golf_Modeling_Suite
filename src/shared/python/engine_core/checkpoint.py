@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """State Checkpoint/Restore System for Reversibility.
 
 This module provides checkpoint/restore functionality for physics simulations,
@@ -29,7 +33,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import pickle
 import time
 from collections import deque
 from collections.abc import Callable
@@ -105,7 +108,8 @@ class StateCheckpoint:
         checkpoint_id = f"cp_{int(time.time() * 1000)}_{id(engine_state) % 10000:04d}"
 
         # Create checksum for integrity
-        state_bytes = pickle.dumps((engine_type, q.tobytes(), v.tobytes(), timestamp))
+        data_str = f"{engine_type}|{q.tobytes().hex()}|{v.tobytes().hex()}|{timestamp}"
+        state_bytes = data_str.encode("utf-8")
         checksum = hashlib.sha256(state_bytes).hexdigest()[:16]
 
         return cls(
@@ -135,14 +139,8 @@ class StateCheckpoint:
         Returns:
             True if checksum matches
         """
-        state_bytes = pickle.dumps(
-            (
-                self.engine_type,
-                np.array(self.q).tobytes(),
-                np.array(self.v).tobytes(),
-                self.timestamp,
-            )
-        )
+        data_str = f"{self.engine_type}|{np.array(self.q).tobytes().hex()}|{np.array(self.v).tobytes().hex()}|{self.timestamp}"
+        state_bytes = data_str.encode("utf-8")
         expected = hashlib.sha256(state_bytes).hexdigest()[:16]
         return expected == self.checksum
 

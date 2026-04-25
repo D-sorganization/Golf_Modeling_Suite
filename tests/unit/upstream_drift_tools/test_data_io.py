@@ -91,6 +91,16 @@ class TestDataReaderCSV:
         assert isinstance(df, pd.DataFrame)
         assert df.shape == (2, 2)
 
+=======
+    def test_read_pickle_raises(self, tmp_path: Path) -> None:
+        p = tmp_path / "data.pkl"
+        p.write_text("dummy")
+        with pytest.raises(
+            ValueError, match="Pickle format is disabled for security reasons"
+        ):
+            DataReader.read_file(p)
+
+>>>>>>> origin/main
     def test_unsupported_format_raises(self, tmp_path: Path) -> None:
         p = tmp_path / "data.xyz"
         p.write_text("nothing")
@@ -137,6 +147,7 @@ class TestDataWriterCSV:
         DataWriter.write_file(pd.DataFrame({"v": [1]}), p)
         assert p.exists()
 
+<<<<<<< HEAD
     def test_unsupported_format_raises(self, tmp_path: Path) -> None:
         p = tmp_path / "data.xyz"
         with pytest.raises(ValueError):

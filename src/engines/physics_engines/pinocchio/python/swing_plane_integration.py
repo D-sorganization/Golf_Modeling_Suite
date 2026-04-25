@@ -52,7 +52,7 @@ class PinocchioSwingPlaneAnalyzer:
 
         self.logger.info(
             f"Analyzing swing plane from {len(positions)} trajectory points"
-        )
+        )  # noqa: E501
 
         # Use shared analyzer
         metrics = self.analyzer.analyze(positions)

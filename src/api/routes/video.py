@@ -6,11 +6,12 @@ No module-level mutable state.
 
 from __future__ import annotations
 
+import os
 import tempfile
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile
 
@@ -20,6 +21,7 @@ from src.api.config import (
     MIN_CONFIDENCE,
     VALID_ESTIMATOR_TYPES,
 )
+from src.api.middleware.upload_limits import write_upload_file_to_path
 from src.api.utils.datetime_compat import UTC
 from src.shared.python.core.contracts import precondition
 
@@ -38,16 +40,6 @@ except ImportError:
     _VideoPosePipeline = None  # type: ignore[assignment,misc]
     VideoProcessingConfig = None  # type: ignore[assignment,misc]
     _VIDEO_DEPS_AVAILABLE = False
-
-from ..dependencies import get_logger, get_task_manager, get_video_pipeline
-from ..models.responses import VideoAnalysisResponse
-
-router = APIRouter()
-
-
-@router.post("/analyze/video", response_model=VideoAnalysisResponse)
-@precondition(
-    lambda file=None, estimator_type="mediapipe", min_confidence=0.5, enable_smoothing=True, video_pipeline=None, logger=None: (
         estimator_type is not None
         and len(estimator_type.strip()) > 0
         and 0.0 <= min_confidence <= 1.0
@@ -96,10 +88,10 @@ async def analyze_video(
 
     temp_path: Path | None = None
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_file:
-            content = await file.read()
-            temp_file.write(content)
-            temp_path = Path(temp_file.name)
+        temp_fd, temp_file_name = tempfile.mkstemp(suffix=".mp4")
+        os.close(temp_fd)
+        temp_path = Path(temp_file_name)
+        await write_upload_file_to_path(file, temp_path)
 
         if (
             not _VIDEO_DEPS_AVAILABLE
@@ -209,10 +201,10 @@ async def analyze_video_async(
 
     task_id = str(uuid.uuid4())
 
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_file:
-        content = await file.read()
-        temp_file.write(content)
-        temp_path = Path(temp_file.name)
+    temp_fd, temp_file_name = tempfile.mkstemp(suffix=".mp4")
+    os.close(temp_fd)
+    temp_path = Path(temp_file_name)
+    await write_upload_file_to_path(file, temp_path)
 
     task_manager[task_id] = {
         "status": "started",
@@ -288,7 +280,7 @@ async def _process_video_background(
             },
         }
 
-    except (RuntimeError, ValueError, OSError) as e:
+    except (RuntimeError, ValueError, OSError, ImportError) as e:
         task_data = task_manager.get(task_id) or {}
         created_at = task_data.get("created_at", datetime.now(UTC))
 

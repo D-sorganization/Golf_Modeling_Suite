@@ -5,6 +5,7 @@ This module defines data structures for collision queries and results.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from enum import Enum, auto
 
@@ -116,7 +117,9 @@ class DistanceResult:
             if self.normal.shape != (3,):
                 raise ValueError("normal must be shape (3,)")
             # Normalize the normal vector
-            norm = np.linalg.norm(self.normal)
+            # ⚡ Bolt: Element-wise norm computation is faster than np.linalg.norm(..., axis=None) for tiny vectors
+            # using math.hypot equivalent
+            norm = float(math.hypot(*self.normal))
             if norm > 1e-10:
                 object.__setattr__(self, "normal", self.normal / norm)
 

@@ -1,9 +1,16 @@
+=======
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
+
+>>>>>>> origin/main
 """MuJoCo Perturbation Analyzer — PerturbationAnalyzer protocol for MuJoCo (#1980).
 
 Implements the ``PerturbationAnalyzer`` protocol for the MuJoCo physics
 simulation engine.  Uses ``mujoco.MjModel`` + ``mujoco.MjData`` for forward
 simulation with polynomial torque profiles injected via ``data.ctrl``.
 
+<<<<<<< HEAD
 Inherits from ``PerturbationAnalyzerBase`` (see #2273) which provides the
 shared ``set_base_torque_profile``, ``perturb_torque``, ``extract_metrics``,
 ``run_batch``, and ``compare_profiles`` implementations.
@@ -113,6 +120,18 @@ class MuJoCoSimResult:
 
 
 # ---------------------------------------------------------------------------
+=======
+# Comparison report
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# Coefficient perturbation helper
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+>>>>>>> origin/main
 # Main analyzer
 # ---------------------------------------------------------------------------
 
@@ -162,39 +181,9 @@ class MuJoCoPerturbationAnalyzer(PerturbationAnalyzerBase):
             Name of the end-effector body in the MJCF model.  Defaults to
             the last non-world body.
         """
+<<<<<<< HEAD
         super().__init__()
 
-        if not MUJOCO_AVAILABLE:
-            msg = "mujoco is not installed.  Install it with: pip install mujoco"
-            raise ImportError(msg)
-
-        import mujoco  # noqa: PLC0415
-
-        if model_path is not None:
-            model_path = Path(model_path)
-            if not (model_path.exists()):
-                raise ValueError(f"Model not found: {model_path}")
-            self._model = mujoco.MjModel.from_xml_path(str(model_path))
-        elif model_xml is not None:
-            self._model = mujoco.MjModel.from_xml_string(model_xml)
-        else:
-            self._model = mujoco.MjModel.from_xml_string(_MINIMAL_MJCF)
-
-        self._t_end = t_end
-        self._nq = self._model.nq
-        self._nv = self._model.nv
-        self._nu = self._model.nu
-
-        # End-effector body index
-        if ee_body_name is not None:
-            self._ee_body_id = mujoco.mj_name2id(
-                self._model, mujoco.mjtObj.mjOBJ_BODY, ee_body_name
-            )
-            if not (self._ee_body_id >= 0):
-                raise ValueError(f"Body '{ee_body_name}' not found in model")
-        else:
-            # Use the last non-world body (body 0 is always world in MuJoCo)
-            self._ee_body_id = max(0, self._model.nbody - 1)
 
         logger.info(
             "MuJoCoPerturbationAnalyzer: nq=%d, nv=%d, nu=%d, t_end=%.2f",

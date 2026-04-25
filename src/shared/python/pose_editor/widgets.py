@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """PyQt6 widgets for pose editing.
 
 Provides reusable widgets for pose manipulation across all physics engines.
@@ -790,7 +794,7 @@ class PoseEditorWidget(QtWidgets.QWidget):  # type: ignore[misc]
             for joint in joints:
                 if joint.name in data:
                     value = data[joint.name]
-                    if isinstance(value, (int, float)):
+                    if isinstance(value, int | float):
                         positions[joint.position_index] = value
 
             self._editor.set_all_positions(positions)

@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Widgets for the Unified Dashboard.
 
 Contains:
@@ -7,7 +11,7 @@ Contains:
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 from matplotlib.axes import Axes
@@ -541,7 +545,7 @@ class LivePlotWidget(QtWidgets.QWidget):
             if self.comparison_label:
                 title += f" vs {self.comparison_label}"
                 # Create secondary axis
-                self.ax2 = self.ax.twinx()
+                self.ax2 = cast(Axes, self.ax.twinx())
             self.ax.set_xlabel("Time (s)")
 
         self.ax.set_title(title)
@@ -595,7 +599,9 @@ class LivePlotWidget(QtWidgets.QWidget):
 
         elif plot_mode == "Norm":
             # Compute Euclidean norm
-            data = np.linalg.norm(data, axis=1).reshape(-1, 1)
+            # ⚡ Bolt: Explicit element-wise sum of squares is faster than np.linalg.norm(..., axis=1) for small inner dimensions
+            data_f = data.astype(float, copy=False)
+            data = np.sqrt(np.einsum("...i,...i->...", data_f, data_f)).reshape(-1, 1)
             dim_label = "Norm"
 
         return times, data, dim_label

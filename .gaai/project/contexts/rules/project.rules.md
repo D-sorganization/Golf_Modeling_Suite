@@ -32,7 +32,11 @@ python3 -m pytest -x --timeout=60 -q
 7. No new `print()` calls in `src/` (use logging).
 8. File size budget: max 1200 lines per file. Exceptions in `scripts/config/file_size_budget.json`.
 9. Module size budget baseline in `module_size_budget_baseline.json` for modules exceeding default limits.
+<<<<<<< HEAD
 10. No TODO/FIXME comments unless a tracked GitHub issue exists.
+=======
+10. No TRACKED_TASK/TRACKED_DEFECT comments unless a tracked GitHub issue exists.
+>>>>>>> origin/main
 11. Use `python3` — never bare `python`.
 12. Pre-push hook uses `python3 -m pytest` (fixed in #2037). Run `pre-commit install --hook-type pre-push` after cloning.
 
@@ -40,6 +44,13 @@ python3 -m pytest -x --timeout=60 -q
 13. After creating a PR, invoke the `ci-watch-and-fix` skill to monitor CI and remediate failures.
 14. Do NOT mark a story as `done` until CI passes or the skill escalates after 3 remediation cycles.
 
+<<<<<<< HEAD
+=======
+## CI Watch (Post-PR)
+13. After creating a PR, invoke the `ci-watch-and-fix` skill to monitor CI and remediate failures.
+14. Do NOT mark a story as `done` until CI passes or the skill escalates after 3 remediation cycles.
+
+>>>>>>> origin/main
 ## Escalation
 15. If a story requires modifying CI pipelines in a breaking way — escalate.
 16. If a story touches shared/core modules affecting multiple subsystems — escalate.

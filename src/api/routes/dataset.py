@@ -376,44 +376,6 @@ async def list_features(
         raise ValueError("available_only must be provided")
     if not (category is not None):
         raise ValueError("category must be provided")
-    engine = _require_active_engine(engine_manager)
-
-    try:
-        from src.shared.python.control_features_registry import ControlFeaturesRegistry
-
-        registry = ControlFeaturesRegistry(engine)
-        return registry.list_features(category=category, available_only=available_only)
-
-    except ImportError as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-
-
-@router.get("/features/summary")
-async def features_summary(
-    engine_manager: EngineManager = Depends(get_engine_manager),
-) -> dict[str, Any]:
-    """Get summary of all available features on the active engine."""
-    engine = _require_active_engine(engine_manager)
-
-    try:
-        from src.shared.python.control_features_registry import ControlFeaturesRegistry
-
-        registry = ControlFeaturesRegistry(engine)
-        return registry.get_summary()
-
-    except ImportError as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-
-
-@router.post("/features/execute")
-@handle_api_errors
-async def execute_feature(
-    request: FeatureExecuteRequest,
-    engine_manager: EngineManager = Depends(get_engine_manager),
-    logger: Any = Depends(get_logger),
-) -> dict[str, Any]:
-    """Execute a specific engine feature by name on the active engine."""
-    if not (request is not None):
         raise ValueError("request must be provided")
     engine = _require_active_engine(engine_manager)
 

@@ -285,8 +285,11 @@ class ZMPComputer(ContractChecker):
             if isinstance(engine, HumanoidCapable):
                 return engine.get_com_position()
 
-        # Fallback: use origin
-        return np.array([0.0, 0.0, 1.0])
+        # No silent fallback -- caller must provide COM or use a HumanoidCapable engine
+        raise ValueError(
+            "Cannot determine COM position: engine does not implement "
+            "HumanoidCapable. Provide com_position explicitly."
+        )
 
     def _get_com_velocity(self) -> NDArray[np.float64]:
         """Get CoM velocity from engine."""
@@ -435,4 +438,5 @@ class ZMPComputer(ContractChecker):
         t = max(0, min(1, t))
 
         closest = seg_a + t * v
-        return float(np.linalg.norm(point - closest))
+        diff = point - closest
+        return float(np.sqrt(np.vdot(diff, diff)))

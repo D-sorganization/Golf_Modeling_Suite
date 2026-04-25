@@ -1,3 +1,16 @@
+=======
+# ARCHITECTURE_DEBT — tracked as GitHub issue #1937
+# This file is 1,163 lines of pure calculation functions plus the engine class.
+# Recommended split:
+#   friction_factors.py           — friction_factor_* functions
+#   flow_properties.py            — calculate_flow_properties, classify_flow_regime
+#   fittings.py                   — calculate_fitting_pressure_drop
+#   compressible_flow.py          — compressible correction + expansion factor
+#   pressure_drop_calculation_engine.py — PressureDropCalculationEngine (thin facade)
+# Risk: medium — many internal cross-calls; extract incrementally with contract tests.
+
+#!/usr/bin/env python3
+>>>>>>> origin/main
 """Advanced pressure drop calculation engine for combustion and gasification gases.
 
 This module implements comprehensive pressure drop calculations using industry-standard
@@ -17,11 +30,10 @@ from __future__ import annotations
 
 import logging
 
+<<<<<<< HEAD
 from ...constants import HUNDRED_FEET_IN_METERS, METERS_TO_INCHES
 from ..models.pressure_drop_data_models import (
     FlowProperties,
-    GasComposition,
-    PipeFitting,
     PressureDropInputs,
     PressureDropResults,
 )
@@ -48,6 +60,26 @@ from ._friction_factors import (
 
 logger = logging.getLogger(__name__)
 
+=======
+__all__ = [
+    "PressureDropCalculationEngine",
+    "calculate_compressible_flow_correction",
+    "calculate_elevation_pressure_drop",
+    "calculate_erosional_velocity",
+    "calculate_expansion_factor",
+    "calculate_fitting_pressure_drop",
+    "calculate_flow_properties",
+    "calculate_frictional_pressure_drop",
+    "classify_flow_regime",
+    "friction_factor_churchill",
+    "friction_factor_colebrook",
+    "friction_factor_haaland",
+    "friction_factor_laminar",
+    "friction_factor_swamee_jain",
+    "select_friction_factor_method",
+]
+
+>>>>>>> origin/main
 
 class PressureDropCalculationEngine:
     """Advanced pressure drop calculation engine."""
@@ -71,6 +103,7 @@ class PressureDropCalculationEngine:
         Returns:
             (dp_friction, dp_fittings, dp_elevation, total_k_factor)
         """
+<<<<<<< HEAD
         if not (inputs is not None):
             raise ValueError("inputs must be provided")
         if not (inputs is not None):

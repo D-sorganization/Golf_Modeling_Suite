@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Core Data Processing Engine.
 
 Provides headless data manipulation, filtering, and analysis capabilities.
@@ -8,290 +12,6 @@ from __future__ import annotations
 
 import ast
 import logging
-from collections.abc import Callable
-from dataclasses import dataclass, field
-from datetime import datetime
-from enum import Enum
-from pathlib import Path
-from typing import Any
-
-import numpy as np
-import pandas as pd
-from scipy.signal import butter, filtfilt, medfilt, savgol_filter
-
-from ..calculators.base import BaseCalculationEngine
-from .exceptions import (
-    ColumnNotFoundError,
-    DataNotLoadedError,
-    FileIOError,
-    FilterError,
-    FitError,
-    TransformationError,
-    UnsupportedOperationError,
-)
-from .io import DataReader, DataWriter
-
-logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Expression validation (security -- issue #2065)
-# ---------------------------------------------------------------------------
-
-#: AST node types that must not appear in DataFrame.eval() expressions
-_DISALLOWED_EVAL_NODES: tuple[type, ...] = (
-    ast.Import,
-    ast.ImportFrom,
-    ast.Lambda,
-    ast.ListComp,
-    ast.DictComp,
-    ast.SetComp,
-    ast.GeneratorExp,
-    ast.Await,
-    ast.Yield,
-    ast.YieldFrom,
-    ast.Global,
-    ast.Nonlocal,
-    ast.FunctionDef,
-    ast.AsyncFunctionDef,
-    ast.ClassDef,
-)
-
-#: Bare names that must never appear in an expression
-_FORBIDDEN_NAMES: frozenset[str] = frozenset(
-    {
-        "__builtins__",
-        "__import__",
-        "__class__",
-        "__subclasses__",
-        "__globals__",
-        "__locals__",
-        "__code__",
-        "__dict__",
-        "exec",
-        "eval",
-        "compile",
-        "open",
-        "breakpoint",
-        "input",
-    }
-)
-
-
-def _validate_dataframe_expression(expression: str) -> None:
-    """Validate that *expression* is safe to pass to ``DataFrame.eval()``.
-
-    Raises ``ValueError`` for any expression that contains constructs which
-    could lead to arbitrary code execution (imports, lambdas, dunder
-    attribute access, forbidden built-in names, etc.).
-
-    This follows the same AST-validation approach used by
-    ``ExpressionFunction`` in the pendulum physics engine (see issue #2065).
-
-    Args:
-        expression: The expression string to validate.
-
-    Raises:
-        ValueError: If the expression contains disallowed syntax.
-    """
-    try:
-        tree = ast.parse(expression, mode="eval")
-    except SyntaxError as exc:
-        raise ValueError(f"Syntax error in expression: {exc}") from exc
-
-    for node in ast.walk(tree):
-        # Reject disallowed node types outright
-        if isinstance(node, _DISALLOWED_EVAL_NODES):
-            raise ValueError(
-                f"Disallowed construct in expression: {type(node).__name__}"
-            )
-
-        # Reject attribute access to dunder names (e.g. `x.__class__`)
-        if isinstance(node, ast.Attribute) and node.attr.startswith("__"):
-            raise ValueError(
-                f"Attribute access to dunder name '{node.attr}' is not permitted"
-            )
-
-        # Reject forbidden bare names
-        if isinstance(node, ast.Name) and node.id in _FORBIDDEN_NAMES:
-            raise ValueError(f"Use of forbidden name '{node.id}' is not permitted")
-
-
-class DataFormat(Enum):
-    """Supported data formats."""
-
-    CSV = "csv"
-    EXCEL = "excel"
-    JSON = "json"
-    PARQUET = "parquet"
-
-
-class AggregationType(Enum):
-    """Available aggregation types."""
-
-    SUM = "sum"
-    MEAN = "mean"
-    MEDIAN = "median"
-    STD = "std"
-    MIN = "min"
-    MAX = "max"
-    COUNT = "count"
-    FIRST = "first"
-    LAST = "last"
-
-
-class FitType(Enum):
-    """Available curve fitting types."""
-
-    LINEAR = "linear"
-    POLYNOMIAL = "polynomial"
-    EXPONENTIAL = "exponential"
-    LOGARITHMIC = "logarithmic"
-    POWER = "power"
-
-
-@dataclass
-class FitResult:
-    """Result of a curve fitting operation."""
-
-    fit_type: str
-    coefficients: list[float]
-    r_squared: float
-    equation: str
-    fitted_values: np.ndarray
-    residuals: np.ndarray
-
-
-@dataclass
-class ColumnStats:
-    """Statistics for a data column."""
-
-    name: str
-    dtype: str
-    count: int
-    null_count: int
-    unique_count: int
-    mean: float | None = None
-    std: float | None = None
-    min_val: float | str | None = None
-    max_val: float | str | None = None
-    median: float | None = None
-    q25: float | None = None
-    q75: float | None = None
-
-
-@dataclass
-class ProcessingResult:
-    """Result of a data processing operation."""
-
-    success: bool
-    message: str
-    data: pd.DataFrame | None = None
-    stats: dict[str, Any] = field(default_factory=dict)
-    timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
-
-
-class DataProcessorEngine(BaseCalculationEngine):
-    """Core data processing engine with comprehensive data manipulation capabilities.
-
-    Integrates logic from Gasification Model and advanced signal filtering.
-    """
-
-    def __init__(self) -> None:
-        """Initialize the data processor engine."""
-        self.data: pd.DataFrame | None = None
-        self.original_data: pd.DataFrame | None = None
-        self.history: list[ProcessingResult] = []
-        self.file_path: Path | None = None
-        self._undo_stack: list[pd.DataFrame] = []
-        self._redo_stack: list[pd.DataFrame] = []
-
-    def calculate(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
-        """Implementation of abstract method from BaseCalculationEngine."""
-        operation = kwargs.get("operation", "stats")
-
-        operations: dict[str, Callable[..., dict[str, Any]]] = {
-            "load": lambda: self._wrap_result(
-                self.load_file(kwargs.get("file_path", ""))
-            ),
-            "stats": lambda: {"stats": self.get_statistics()},
-            "filter": lambda: self._wrap_result(
-                self.filter_data(
-                    kwargs.get("column", ""),
-                    kwargs.get("operator", "=="),
-                    kwargs.get("value"),
-                )
-            ),
-            "smooth": lambda: self._wrap_result(
-                self.smooth_column(
-                    kwargs.get("column", ""),
-                    kwargs.get("method", "moving_average"),
-                    **kwargs,
-                )
-            ),
-            "aggregate": lambda: self._wrap_result(
-                self.aggregate(
-                    kwargs.get("group_by"),
-                    kwargs.get("agg_column"),
-                    AggregationType(kwargs.get("agg_type", "mean")),
-                )
-            ),
-            "fit": lambda: {
-                "fit_result": self.fit_curve(
-                    kwargs.get("x_column", ""),
-                    kwargs.get("y_column", ""),
-                    FitType(kwargs.get("fit_type", "linear")),
-                    kwargs.get("degree", 2),
-                )
-            },
-        }
-
-        handler = operations.get(operation)
-        if handler:
-            return handler()
-        return {"error": f"Unknown operation: {operation}"}
-
-    def _wrap_result(self, result: ProcessingResult) -> dict[str, Any]:
-        """Wrap result for JSON compatibility."""
-        return {
-            "success": result.success,
-            "message": result.message,
-            "stats": result.stats,
-            "timestamp": result.timestamp,
-        }
-
-    # ========== File I/O ==========
-
-    def load_file(self, file_path: str | Path, **kwargs: Any) -> ProcessingResult:
-        """Load data using shared DataReader.
-
-        Preconditions:
-            - *file_path* is a non-empty string or Path.
-        """
-        if not file_path:
-            raise FileIOError("file_path must not be empty")
-        try:
-            self.data = DataReader.read_file(file_path, **kwargs)
-            self.original_data = self.data.copy()
-            self.file_path = Path(file_path)
-            self._undo_stack.clear()
-            self._redo_stack.clear()
-
-            return ProcessingResult(
-                success=True,
-                message=f"Loaded {len(self.data)} rows",
-                data=self.data,
-                stats=self._get_basic_stats(),
-            )
-        except (FileNotFoundError, PermissionError, IsADirectoryError) as e:
-            raise FileIOError(str(e)) from e
-        except (ValueError, ImportError) as e:
-            raise FileIOError(str(e)) from e
-
-    def load_dataframe(self, df: pd.DataFrame) -> ProcessingResult:
-        """Load data from an existing DataFrame."""
-        if not (df is not None):
-            raise ValueError("df must be provided")
-        if not (df is not None):
             raise ValueError("df must be provided")
         self._save_undo_state()
         self.data = df.copy()
@@ -613,7 +333,9 @@ class DataProcessorEngine(BaseCalculationEngine):
                     )
                 ]
             else:
-                self.data = self.data.query(f"{column} {operator} @value")
+                expr = f"{column} {operator} @value"
+                _validate_dataframe_expression(expr.replace("@", ""))
+                self.data = self.data.query(expr)
             return ProcessingResult(success=True, message="Filtered", data=self.data)
         except (KeyError, ValueError, TypeError, SyntaxError) as e:
             self._undo()
@@ -630,6 +352,14 @@ class DataProcessorEngine(BaseCalculationEngine):
             raise DataNotLoadedError("No data loaded")
         if not expression:
             raise FilterError("Query expression must not be empty")
+
+        # Security: validate the expression before passing to DataFrame.query()
+        # which can execute arbitrary Python code.
+        try:
+            _validate_dataframe_expression(expression)
+        except ValueError as exc:
+            raise FilterError(str(exc)) from exc
+
         self._save_undo_state()
         try:
             self.data = self.data.query(expression)

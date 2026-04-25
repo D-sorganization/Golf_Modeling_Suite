@@ -7,7 +7,11 @@ from unittest.mock import MagicMock, patch  # noqa: E402
 import pytest  # noqa: E402
 from PyQt6.QtWidgets import QMessageBox  # noqa: E402
 
-from src.launchers.golf_launcher import GolfLauncher, main  # noqa: E402
+from src.launchers.golf_launcher import (  # noqa: E402
+    GolfLauncher,
+    ProcessCleanupWorker,  # noqa: E402
+    main,
+)
 from src.launchers.ui_components import StartupResults  # noqa: E402
 
 
@@ -309,7 +313,6 @@ def test_menu_toggles(qapp) -> None:
 def test_cleanup_processes(qapp) -> None:
     with patch_launcher_ui():
         launcher = GolfLauncher()
-
         proc1 = MagicMock()
         proc1.poll.return_value = 0  # Finished
         proc2 = MagicMock()
@@ -324,6 +327,20 @@ def test_cleanup_processes(qapp) -> None:
         launcher._cleanup_processes()
         assert not launcher.running_processes
         assert launcher.lbl_status.text() == "Ready"
+
+
+def test_on_cleanup_finished_updates_running_processes(qapp):
+    with patch_launcher_ui():
+        launcher = GolfLauncher()
+        launcher.running_processes = {
+            "p1": MagicMock(),
+            "p2": MagicMock(),
+        }
+
+        launcher._on_cleanup_finished(["p1"])
+
+        assert "p1" not in launcher.running_processes
+        assert "p2" in launcher.running_processes
 
 
 @patch("src.launchers.golf_launcher.QMessageBox.question")

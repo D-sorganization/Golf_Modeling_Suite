@@ -29,6 +29,7 @@ class TestSecureSubprocess(unittest.TestCase):
         (self.suite_root / "engines").mkdir()
         (self.suite_root / "launchers").mkdir()
         (self.suite_root / "tools").mkdir()
+        (self.suite_root / "src").mkdir()
 
         # Create test scripts
         self.test_script = self.suite_root / "engines" / "test_script.py"

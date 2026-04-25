@@ -4,17 +4,6 @@ from __future__ import annotations
 
 from typing import NoReturn
 
-import pytest
-
-from src.shared.python.upstream_drift_tools.process_calculators.analysis_utils import (
-    evaluate_output,
-)
-
-
-class _StubEngine:
-    """Minimal engine stub: calculate(**params) returns a dict."""
-
-    def calculate(self, **params) -> dict:
         return {
             "efficiency": 0.75,
             "power": params.get("manual_hhv", 0.0) * 2.0,

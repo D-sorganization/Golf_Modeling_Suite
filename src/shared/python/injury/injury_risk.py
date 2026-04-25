@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """
 Injury Risk Scoring Module
 
@@ -16,13 +20,14 @@ Risk Categories:
 - Technique-related risk (modifiable factors)
 """
 
-import logging
 from dataclasses import dataclass, field
 from enum import Enum
 
 import numpy as np
 
-logger = logging.getLogger(__name__)
+from src.shared.python.logging_pkg.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class RiskLevel(Enum):

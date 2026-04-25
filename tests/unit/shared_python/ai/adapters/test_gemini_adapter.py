@@ -60,7 +60,7 @@ def test_init_success(mock_model_cls, mock_configure) -> None:
 def test_capabilities() -> None:
     """Test capabilities properly define vision and streaming."""
     sys.modules["google.generativeai"].configure.reset_mock()
-    adapter = GeminiAdapter("sk-gemini")
+    adapter = GeminiAdapter("sk-gemini")  # nosec B106 - test fixture
     caps = adapter.capabilities
 
     assert caps.provider_name == "google"

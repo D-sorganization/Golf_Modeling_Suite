@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """Footstep planning for bipedal locomotion.
 
 This module provides footstep generation and planning for
@@ -10,6 +14,7 @@ Design by Contract:
 
 from __future__ import annotations
 
+import math
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 
@@ -282,7 +287,7 @@ class FootstepPlanner(ContractChecker):
 
         # Compute direction to goal
         direction = goal - start
-        distance = float(np.linalg.norm(direction[:2]))
+        distance = math.hypot(direction[0], direction[1])
 
         if distance < 1e-3:
             # Already at goal, return empty plan
@@ -404,10 +409,10 @@ class FootstepPlanner(ContractChecker):
         if not (vx is not None):
             raise ValueError("vx must be provided")
         dt = self._parameters.step_duration
-        step_x = np.clip(vx * dt, -self._max_step_length, self._max_step_length)
-        step_y = np.clip(vy * dt, -self._max_step_width, self._max_step_width)
-        step_yaw = np.clip(
-            omega * dt, -self._max_step_rotation, self._max_step_rotation
+        step_x = float(np.clip(vx * dt, -self._max_step_length, self._max_step_length))
+        step_y = float(np.clip(vy * dt, -self._max_step_width, self._max_step_width))
+        step_yaw = float(
+            np.clip(omega * dt, -self._max_step_rotation, self._max_step_rotation)
         )
         return step_x, step_y, step_yaw
 
@@ -542,7 +547,7 @@ class FootstepPlanner(ContractChecker):
         if not (start is not None):
             raise ValueError("start must be provided")
         direction = goal - start
-        distance = float(np.linalg.norm(direction[:2]))
+        distance = math.hypot(direction[0], direction[1])
         path_yaw = float(np.arctan2(direction[1], direction[0]))
 
         # Number of steps

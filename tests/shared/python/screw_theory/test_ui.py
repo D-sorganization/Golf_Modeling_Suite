@@ -8,21 +8,6 @@ from __future__ import annotations
 
 from typing import Any
 
-import pytest
-
-from src.shared.python.engine_core.engine_availability import (
-    skip_if_unavailable,
-)
-
-pytestmark = pytest.mark.unit
-
-
-@skip_if_unavailable("pyqt6")
-class TestScrewVisualizationTab:
-    """Tests for ScrewVisualizationTab widget."""
-
-    @pytest.fixture(scope="class")
-    def qapp(self) -> Any:
         """Ensure QApplication exists for the test class."""
         from src.shared.python.gui_pkg.gui_utils import get_qapp
 

@@ -288,7 +288,7 @@ class DrakeRecorder:
         if (
             isinstance(source_name, int)
             or source_name not in self.induced_accelerations
-        ):
+        ):  # noqa: E501
             # If int, maybe we have it stored by int key?
             # Or map int to name if possible?
             # For now, return empty if not found.

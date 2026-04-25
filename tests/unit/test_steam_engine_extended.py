@@ -16,17 +16,6 @@ from __future__ import annotations
 
 from typing import Any
 
-import pytest
-
-pytestmark = pytest.mark.unit
-
-# ---------------------------------------------------------------------------
-# Fixture
-# ---------------------------------------------------------------------------
-
-
-@pytest.fixture
-def engine() -> Any:
     """SteamCalculationEngine instance."""
     from src.shared.python.upstream_drift_tools.calculators.thermo.steam_engine import (
         SteamCalculationEngine,

@@ -1,3 +1,9 @@
+=======
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
+
+>>>>>>> origin/main
 """Pinocchio Perturbation Analyzer — PerturbationAnalyzer protocol (#1978).
 
 Implements the ``PerturbationAnalyzer`` protocol for the Pinocchio rigid-body
@@ -5,6 +11,7 @@ dynamics engine.  Uses ``PinocchioPhysicsEngine`` for forward simulation with
 polynomial torque profiles, and exposes Jacobian-based sensitivity as an
 optional complement to Monte Carlo results.
 
+<<<<<<< HEAD
 Inherits from ``PerturbationAnalyzerBase`` (see #2273) which provides the
 shared ``set_base_torque_profile``, ``perturb_torque``, ``extract_metrics``,
 ``run_batch``, and ``compare_profiles`` implementations.
@@ -94,6 +101,18 @@ class PinocchioSimResult:
 
 
 # ---------------------------------------------------------------------------
+=======
+# Comparison report
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# Coefficient perturbation helper
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+>>>>>>> origin/main
 # Main analyzer
 # ---------------------------------------------------------------------------
 
@@ -143,37 +162,8 @@ class PinocchioPerturbationAnalyzer(PerturbationAnalyzerBase):
         ee_frame_name : str, optional
             Name of the end-effector frame in the URDF.  Defaults to last frame.
         """
+<<<<<<< HEAD
         super().__init__()
-
-        if not PINOCCHIO_AVAILABLE:
-            msg = "pinocchio is not installed.  Install it with: pip install pinocchio"
-            raise ImportError(msg)
-
-        import pinocchio as pin  # noqa: PLC0415 — guard already checked
-
-        if urdf_path is None:
-            urdf_path = (
-                Path(__file__).parents[4] / "models" / "generated" / "golfer.urdf"
-            )
-
-        self._urdf_path = Path(urdf_path)
-        if not (self._urdf_path.exists()):
-            raise ValueError(f"URDF not found: {self._urdf_path}")
-
-        self._model = pin.buildModelFromUrdf(str(self._urdf_path))
-        self._data = self._model.createData()
-        self._t_end = t_end
-        self._dt = dt
-
-        # End-effector frame
-        if ee_frame_name is not None:
-            self._ee_frame_id = self._model.getFrameId(ee_frame_name)
-        else:
-            # Use the last operational frame (tip of kinematic chain)
-            self._ee_frame_id = self._model.nframes - 1
-
-        self._nq = self._model.nq
-        self._nv = self._model.nv
 
         logger.info(
             "PinocchioPerturbationAnalyzer: model=%s, nq=%d, nv=%d, t_end=%.2f",

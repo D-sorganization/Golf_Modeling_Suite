@@ -1,12 +1,13 @@
 """Utilities for analyzing Python code quality and structure."""
 
 import ast
-import logging
 import re
 from pathlib import Path
 from typing import Any
 
-logger = logging.getLogger(__name__)
+from src.shared.python.logging_pkg.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 def get_python_metrics(file_path: Path) -> dict[str, Any]:
@@ -60,9 +61,22 @@ def assess_error_handling_content(content: str) -> dict[str, int]:
 
 def assess_logging_content(content: str) -> dict[str, int]:
     """Count logging vs print usage in content."""
+    print_usage = 0
+    try:
+        tree = ast.parse(content)
+        for node in ast.walk(tree):
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Name)
+                and node.func.id == "print"
+            ):
+                print_usage += 1
+    except SyntaxError:
+        print_usage = len(re.findall(r"(?<!\w)print\s*\(", content))
+
     return {
         "logging_usage": len(re.findall(r"logging\.|logger\.", content)),
-        "print_usage": content.count("print("),
+        "print_usage": print_usage,
     }
 
 
@@ -105,14 +119,23 @@ def grep_count(root: Path, pattern: str, file_pattern: str = "**/*.py") -> int:
         raise ValueError("root must be provided")
     count = 0
     regex = re.compile(pattern)
+    excluded = {part for part in exclude_parts if part}
     for p in root.glob(file_pattern):
-        if p.is_file():
+        if not p.is_file():
+            continue
+        if excluded:
             try:
-                with p.open(encoding="utf-8", errors="ignore") as f:
-                    if regex.search(f.read()):
-                        count += 1
-            except (FileNotFoundError, PermissionError, OSError) as e:
-                logger.debug("Failed to read %s: %s", p, e)
+                rel_parts = p.relative_to(root).parts
+            except ValueError:
+                rel_parts = p.parts
+            if any(part in excluded for part in rel_parts):
+                continue
+        try:
+            with p.open(encoding="utf-8", errors="ignore") as f:
+                if regex.search(f.read()):
+                    count += 1
+        except (FileNotFoundError, PermissionError, OSError) as e:
+            logger.debug("Failed to read %s: %s", p, e)
     return count
 
 

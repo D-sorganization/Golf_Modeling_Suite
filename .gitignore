@@ -1,3 +1,13 @@
+<<<<<<< HEAD
+=======
+# Environment secrets
+.env
+.env.*
+!.env.example
+!.env.docker.example
+!.env.*.example
+
+>>>>>>> origin/main
 # Merge conflict artifacts
 *.ours
 *.theirs
@@ -79,6 +89,14 @@ quality_report*.txt
 black_report*.txt
 coverage.xml
 coverage.json
+<<<<<<< HEAD
+=======
+bandit_results.json
+reports/bandit.json
+temp_id.txt
+matlab_quality_report.txt
+test.npz
+>>>>>>> origin/main
 htmlcov/
 
 # Test output debris (prevent accumulation at root)
@@ -96,6 +114,7 @@ run_log.txt
 
 # Generated agent memory
 .jules/bolt.md
+.jules/completist_data/
 
 # Jules generated files
 .jules/bolt*
@@ -184,3 +203,7 @@ pkg/
 
 # Rust build artifacts
 target/
+venv/
+testenv/
+venv/
+test_venv/

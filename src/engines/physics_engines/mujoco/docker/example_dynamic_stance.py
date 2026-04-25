@@ -5,63 +5,6 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 from typing import Any
-
-import dm_control
-import imageio
-import numpy as np
-from dm_control import mjcf, suite
-
-logger = logging.getLogger(__name__)
-
-# Path to CMU Humanoid XMl in the container
-# We need to find it first. Usually in dm_control/suite/humanoid_CMU.xml
-# But strictly speaking we should use the suite to get the model structure if possible?
-# Re-loading via mjcf is cleaner for editing.
-# Let's assume standard install path or try to locate it.
-# Fallback: We can modify the `suite.load` behavior by patching? No.
-# WE WILL USE REFLECTION to find the xml path from the loaded env if possible,
-# or just assume the standard path in site-packages.
-
-# Target Pose: Address Position
-TARGET_POSE = {
-    "lowerbackrx": 0.35,
-    "upperbackrx": 0.15,
-    "rtibiarx": 0.1,
-    "ltibiarx": 0.1,
-    "rfemurrx": -0.2,
-    "lfemurrx": -0.2,
-    "rfootrx": -0.05,
-    "lfootrx": -0.05,
-    # Arms closer together (holding club)
-    "rhumerusrx": -0.4,
-    "lhumerusrx": -0.4,  # More forward
-    "rhumerusrz": -0.4,
-    "lhumerusrz": 0.4,  # Rotate in towards body
-    "rhumerusry": -0.2,
-    "lhumerusry": 0.2,  # Twist
-    "rradiusrx": 0.5,
-    "lradiusrx": 0.5,  # Bent elbows slightly
-}
-
-
-def get_cmu_xml_path() -> str:
-    """Locate the CMU Humanoid XML file."""
-    # Heuristic to find the XML
-    suite_dir = Path(dm_control.suite.__file__).parent
-    return str(suite_dir / "humanoid_CMU.xml")
-
-
-def pd_control(
-    physics: Any,
-    target_pose: dict[str, float],
-    actuators: dict[str, int],
-    kp: float = 10.0,
-    kd: float = 1.0,
-) -> np.ndarray:
-    """Compute PD control action."""
-    if not (physics is not None):
-        raise ValueError("physics must be provided")
-    if not (physics is not None):
         raise ValueError("physics must be provided")
     action = np.zeros(physics.model.nu)
     for joint_name, target_angle in target_pose.items():

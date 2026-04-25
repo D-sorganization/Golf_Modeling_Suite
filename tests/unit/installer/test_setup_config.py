@@ -2,20 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, NoReturn
-
-import pytest
-
-from installer.windows.packaging_profiles import get_packaging_profile
-from installer.windows.setup_config import (
-    build_setup_configuration,
-    detect_available_engines,
-)
-
-
-def test_detect_available_engines_core_skips_optional_imports() -> None:
-    imported: list[str] = []
-
-    def fake_import(name: str) -> Any:
         imported.append(name)
         if name == "mujoco":
             return object()

@@ -4,6 +4,9 @@ Covers:
 - CrossEngineSimConfig default values and validation
 - _StubEngine protocol compliance
 - _run_headless() headless comparison path
+=======
+- Qt window assembly helpers and GUI bootstrap
+>>>>>>> origin/main
 - main() CLI interface
 - _build_arg_parser() argument handling
 - CV summary dict structure
@@ -16,6 +19,7 @@ skipped if PyQt6 is not installed.
 from __future__ import annotations
 
 import logging
+<<<<<<< HEAD
 import sys
 from unittest.mock import patch
 
@@ -36,6 +40,16 @@ from src.launchers.cross_engine_dashboard import (
 pytestmark = pytest.mark.unit
 
 
+=======
+@pytest.fixture(scope="module")
+def qapp() -> QApplication:
+    """Provide a QApplication instance for GUI smoke tests."""
+    if QApplication is None:
+        pytest.skip("PyQt6 not available")
+    return QApplication.instance() or QApplication([])
+
+
+>>>>>>> origin/main
 # ---------------------------------------------------------------------------
 # CrossEngineSimConfig
 # ---------------------------------------------------------------------------
@@ -227,6 +241,7 @@ class TestArgParser:
 
 
 # ---------------------------------------------------------------------------
+<<<<<<< HEAD
 # main() CLI
 # ---------------------------------------------------------------------------
 

@@ -1,11 +1,19 @@
 """test_collision_geometry.py module."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pytest
-import trimesh
 from humanoid_character_builder.mesh.collision_geometry import (
     CollisionGeometryGenerator,
 )
+
+if TYPE_CHECKING:
+    import trimesh
+else:
+    trimesh = pytest.importorskip("trimesh")
 
 
 @pytest.fixture

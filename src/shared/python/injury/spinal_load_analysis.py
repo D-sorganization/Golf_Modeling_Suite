@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """
 Spinal Load Analysis Module
 
@@ -24,7 +28,6 @@ References:
 - Lindsay et al. (2002) review of spine loading mechanisms
 """
 
-import logging
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -37,8 +40,9 @@ from src.shared.python.analysis.dataclasses import (
     MethodCitation,
 )
 from src.shared.python.core.constants import GRAVITY_M_S2
+from src.shared.python.logging_pkg.logging_config import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class SpinalRiskLevel(Enum):

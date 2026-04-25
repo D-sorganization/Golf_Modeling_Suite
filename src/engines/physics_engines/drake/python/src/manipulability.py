@@ -210,7 +210,7 @@ class DrakeManipulabilityAnalyzer:
 
             res = self._build_result_for_body(
                 context, name, body, radii_v, eigvecs_v, cond
-            )
+            )  # noqa: E501
             results.append(res)
 
         return results

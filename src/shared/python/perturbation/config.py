@@ -8,6 +8,29 @@ from typing import Any, Protocol
 import numpy as np
 
 
+=======
+@dataclass(frozen=True)
+class TrialFailure:
+    """Structured metadata for a trial that failed during perturbation analysis."""
+
+    trial_index: int
+    seed: int
+    stage: str
+    error_type: str
+    message: str
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert failure metadata to a JSON-serializable dictionary."""
+        return {
+            "trial_index": self.trial_index,
+            "seed": self.seed,
+            "stage": self.stage,
+            "error_type": self.error_type,
+            "message": self.message,
+        }
+
+
+>>>>>>> origin/main
 @dataclass
 class PerturbationConfig:
     """Unified configuration for Monte Carlo perturbation analysis across engines.
@@ -32,6 +55,7 @@ class PerturbationConfig:
     noise_amplitude: float = 0.1
     perturb_mode: str = "additive"
     seed: int | None = None
+<<<<<<< HEAD
 
     def __post_init__(self) -> None:
         if not (self.n_trials > 0):
@@ -40,6 +64,13 @@ class PerturbationConfig:
             raise ValueError(
                 f"noise_amplitude must be non-negative, got {self.noise_amplitude}"
             )
+=======
+        if not (0.0 <= self.min_success_rate <= 1.0):
+            raise ValueError(
+                "min_success_rate must be between 0.0 and 1.0, "
+                f"got {self.min_success_rate}"
+            )
+>>>>>>> origin/main
         if self.noise_type not in {"white", "pink", "brown"}:
             raise ValueError(f"Unknown noise_type: {self.noise_type}")
         if self.perturb_mode not in {"additive", "multiplicative", "both"}:
@@ -56,6 +87,7 @@ class PerturbationSummary:
     metrics: dict[str, Any]  # Dictionary mapping metric name to MetricStatistics
     success_rate: float
     execution_time_sec: float
+<<<<<<< HEAD
 
     def to_dict(self) -> dict[str, Any]:
         """Convert summary to JSON-serializable dictionary."""
@@ -67,6 +99,10 @@ class PerturbationSummary:
                 "noise_amplitude": self.config.noise_amplitude,
                 "perturb_mode": self.config.perturb_mode,
                 "seed": self.config.seed,
+=======
+                "min_success_rate": self.config.min_success_rate,
+                "raise_on_partial_results": self.config.raise_on_partial_results,
+>>>>>>> origin/main
             },
             "robustness_score": self.robustness_score,
             "metrics": {
@@ -75,6 +111,7 @@ class PerturbationSummary:
             },
             "success_rate": self.success_rate,
             "execution_time_sec": self.execution_time_sec,
+<<<<<<< HEAD
         }
 
 

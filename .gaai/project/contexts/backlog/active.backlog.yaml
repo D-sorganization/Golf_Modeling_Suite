@@ -140,6 +140,7 @@ items:
   - id: GH2035
     title: "Audit and reduce 310 pytest.skip calls"
     priority: medium
+<<<<<<< HEAD
     status: done
     started_at: "2026-04-20T01:42:49-07:00"
     completed_at: "2026-04-20T02:03:26-07:00"
@@ -147,6 +148,9 @@ items:
     pr_number: 2841
     pr_status: "open"
     cost_usd: 3.5061
+=======
+    status: refined
+>>>>>>> origin/main
     github_issue: 2035
     artefact: .gaai/project/contexts/artefacts/stories/GH2035.story.md
     dependencies: []
@@ -155,6 +159,7 @@ items:
   - id: GH2034
     title: "Reduce 1227 type:ignore comments systematically"
     priority: medium
+<<<<<<< HEAD
     status: done
     started_at: "2026-04-20T01:42:53-07:00"
     completed_at: "2026-04-20T02:00:47-07:00"
@@ -162,6 +167,9 @@ items:
     pr_number: 2840
     pr_status: "open"
     cost_usd: 4.755
+=======
+    status: refined
+>>>>>>> origin/main
     github_issue: 2034
     artefact: .gaai/project/contexts/artefacts/stories/GH2034.story.md
     dependencies: []

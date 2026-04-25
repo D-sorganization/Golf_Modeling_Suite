@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 #!/usr/bin/env python3
 """Water-Gas Shift Reactor Calculator
 ====================================
@@ -681,8 +685,12 @@ if BASE_CALCULATOR_AVAILABLE:
                     "Product Composition:\n",
                 ]
 
-                for species, content in equilibrium["composition"].items():
-                    output_parts.append(f"  {species}: {content:.2f} mol%\n")
+                output_parts.extend(
+                    [
+                        f"  {species}: {content:.2f} mol%\n"
+                        for (species, content) in equilibrium["composition"].items()
+                    ]
+                )
 
                 output_parts.extend(
                     [

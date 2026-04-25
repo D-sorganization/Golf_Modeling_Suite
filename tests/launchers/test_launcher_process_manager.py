@@ -75,6 +75,13 @@ def test_get_subprocess_env(manager) -> None:
     assert src_str in env["PYTHONPATH"]
 
 
+def test_get_subprocess_env_includes_extra_python_paths(manager):
+    env = manager.get_subprocess_env((Path("/external/src"), Path("/external/src")))
+    expected = str(Path("/external/src"))
+    assert expected in env["PYTHONPATH"]
+    assert env["PYTHONPATH"].count(expected) == 1
+
+
 @patch("src.launchers.launcher_process_manager.datetime")
 @patch("builtins.open", new_callable=mock_open)
 def test_write_log_line(mock_open_file, mock_datetime, manager) -> None:
@@ -153,11 +160,52 @@ def test_launch_script_unified(mock_secure_popen, mock_validate, manager) -> Non
         mock_thread().start.assert_called_once()
 
 
+=======
+@patch(_SECURE_POPEN)
+def test_launch_script_accepts_src_script_path(mock_secure_popen, tmp_path):
+    """Launcher-managed scripts under src must pass subprocess validation."""
+    script_path = tmp_path / "src" / "launchers" / "dummy_launcher.py"
+    script_path.parent.mkdir(parents=True)
+    script_path.write_text("pass\n", encoding="utf-8")
+
+    manager = ProcessManager(repo_root=tmp_path)
+    manager.use_separate_terminals = False
+    mock_secure_popen.return_value = MagicMock()
+
+    with patch("threading.Thread"):
+        process = manager.launch_script("Test", script_path, tmp_path)
+
+    assert process is mock_secure_popen.return_value
+    mock_secure_popen.assert_called_once()
+
+
+@patch(_VALIDATE_SCRIPT)
+@patch(_SECURE_POPEN)
+def test_launch_script_unified_passes_extra_python_paths(
+    mock_secure_popen, mock_validate, manager
+):
+    manager.use_separate_terminals = False
+    mock_secure_popen.return_value = MagicMock()
+
+    with patch("threading.Thread"):
+        manager.launch_script(
+            "Test",
+            PureWindowsPath("/fake/script.py"),
+            PureWindowsPath("/fake/cwd"),
+            extra_python_paths=(Path("/external/provider/src"),),
+        )
+
+    env_passed = mock_secure_popen.call_args[1]["env"]
+    assert str(Path("/external/provider/src")) in env_passed["PYTHONPATH"]
+
+
+>>>>>>> origin/main
 @patch(_VALIDATE_SCRIPT)
 @patch("subprocess.Popen")
 @patch(_SECURE_POPEN)
 def test_launch_script_separate_term(
     mock_secure_popen, mock_popen, mock_validate, manager
+<<<<<<< HEAD
 ) -> None:
     manager.use_separate_terminals = True
 

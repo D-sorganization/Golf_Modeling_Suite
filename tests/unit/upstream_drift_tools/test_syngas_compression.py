@@ -4,6 +4,11 @@ from __future__ import annotations
 
 import pytest
 
+=======
+from src.shared.python.upstream_drift_tools.process_calculators.analysis_utils import (
+    evaluate_compression_result,
+)
+>>>>>>> origin/main
 from src.shared.python.upstream_drift_tools.process_calculators.syngas_compression_calculator import (
     CompressionStage,
     SyngasCompressionEngine,
@@ -109,3 +114,4 @@ class TestCalculateCompressionWork:
         )
         with pytest.raises(ValueError):
             self._ENGINE.calculate_compression_work(stage, 1000.0, _MIX_PROPS)
+<<<<<<< HEAD

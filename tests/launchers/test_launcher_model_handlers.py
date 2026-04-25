@@ -32,7 +32,10 @@ def test_module_handler() -> None:
     res = handler.launch("model", Path("/repo"), mock_manager)
     assert res is True
     mock_manager.launch_module.assert_called_once_with(
-        name="My Module", module_name="my_module", cwd=Path("/repo")
+        name="My Module",
+        module_name="my_module",
+        cwd=Path("/repo").resolve(),
+        extra_python_paths=(),
     )
 
 
@@ -56,8 +59,9 @@ def test_script_handler() -> None:
     assert res is True
     mock_manager.launch_script.assert_called_once_with(
         name="Drake",
-        script_path=Path("/repo/script.py"),
-        cwd=Path("/repo/dir"),
+        script_path=(Path("/repo") / "script.py").resolve(),
+        cwd=(Path("/repo") / "dir").resolve(),
+        extra_python_paths=(),
     )
 
 

@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
+
 """Motion capture integration and retargeting for golf swing analysis.
 
 This module provides comprehensive motion capture data handling, including:

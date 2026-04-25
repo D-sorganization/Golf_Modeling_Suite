@@ -14,19 +14,6 @@ from __future__ import annotations
 import math
 from collections.abc import Callable
 from typing import Any
-
-import numpy as np
-import pytest
-
-pytestmark = pytest.mark.unit
-
-# ---------------------------------------------------------------------------
-# Fixtures
-# ---------------------------------------------------------------------------
-
-
-@pytest.fixture
-def basic_params() -> Any:
     """Standard double-pendulum parameters for golf swing model."""
     from src.shared.python.pendulum_simulator.physics import PendulumParams
 

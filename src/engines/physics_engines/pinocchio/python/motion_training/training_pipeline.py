@@ -93,7 +93,7 @@ class MotionTrainingPipeline:
     """
 
     DEFAULT_URDF = (
-        "src/engines/physics_engines/pinocchio/models/generated/golfer_ik.urdf"
+        "src/engines/physics_engines/pinocchio/models/generated/golfer_ik.urdf"  # noqa: E501
     )
 
     def __init__(self, config: PipelineConfig | None = None) -> None:
@@ -142,7 +142,7 @@ class MotionTrainingPipeline:
         self.ik_result = self._solve_ik()
         logger.info(
             f"      Convergence rate: {self.ik_result.convergence_rate * 100:.1f}%"
-        )
+        )  # noqa: E501
         logger.error(
             f"      Mean left hand error: "
             f"{np.mean(self.ik_result.left_hand_errors) * 1000:.2f} mm"
@@ -184,7 +184,7 @@ class MotionTrainingPipeline:
             self.config.end_frame
             if self.config.end_frame > 0
             else len(trajectory.frames)
-        )
+        )  # noqa: E501
         trajectory.frames = trajectory.frames[start:end]
 
         # Apply subsampling
@@ -234,7 +234,7 @@ class MotionTrainingPipeline:
             writer = csv.writer(f)
             header = ["time"] + [
                 f"q{i}" for i in range(self.ik_result.q_trajectory.shape[1])
-            ]
+            ]  # noqa: E501
             writer.writerow(header)
             for i, t in enumerate(self.ik_result.times):
                 row = [t] + list(self.ik_result.q_trajectory[i])
@@ -330,7 +330,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
         description="Train body motion from club trajectory using IK"
-    )
+    )  # noqa: E501
     parser.add_argument(
         "--trajectory",
         "-t",

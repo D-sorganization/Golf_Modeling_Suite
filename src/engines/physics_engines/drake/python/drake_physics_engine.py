@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
+
 """Drake Physics Engine wrapper implementation.
 
 Wraps pydrake.multibody to provide a compliant PhysicsEngine interface.
@@ -180,7 +184,7 @@ class DrakePhysicsEngine(PhysicsEngine):
 
     @precondition(
         lambda self, dt=None: self.is_initialized, "Engine must be initialized"
-    )
+    )  # noqa: E501
     def step(self, dt: float | None = None) -> None:
         """Advance the simulation by one time step."""
         self._ensure_finalized()
@@ -199,7 +203,7 @@ class DrakePhysicsEngine(PhysicsEngine):
         if not self.plant_context:
             logger.warning(
                 "Cannot compute forward dynamics: plant context not initialized"
-            )
+            )  # noqa: E501
             return
 
         # Drake uses lazy evaluation, but we can force computation by accessing
@@ -280,8 +284,7 @@ class DrakePhysicsEngine(PhysicsEngine):
         if not names:
             # If there are no actuators defined, fall back to generic names
             # derived from the number of generalized velocities (dofs).
-            for i in range(self.plant.num_velocities()):
-                names.append(f"dof_{i}")
+            names.extend([f"dof_{i}" for i in range(self.plant.num_velocities())])
 
         return names
 
@@ -350,7 +353,7 @@ class DrakePhysicsEngine(PhysicsEngine):
         # g(q) = GravityForces(context)
         return cast(
             np.ndarray, self.plant.CalcGravityGeneralizedForces(self.plant_context)
-        )
+        )  # noqa: E501
 
     @precondition(lambda self, qacc: self.is_initialized, "Engine must be initialized")
     @postcondition(check_finite, "Inverse dynamics must contain finite values")
@@ -400,7 +403,7 @@ class DrakePhysicsEngine(PhysicsEngine):
                 contact_force = point_contact.contact_force()
                 total_force += np.array(
                     [contact_force[0], contact_force[1], contact_force[2]]
-                )
+                )  # noqa: E501
 
             if n_contacts > 0:
                 logger.debug(

@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
+
 """URDF import and export functionality for MuJoCo models.
 
 This module provides utilities to convert between MuJoCo MJCF and URDF formats,
@@ -109,12 +113,16 @@ class URDFExporter:
         include_collision: bool,
     ) -> None:
         """Build URDF tree from MuJoCo model structure."""
+=======
+        # Find root body (worldbody's first child or free joint body)
+>>>>>>> origin/main
         if robot is None:
             raise ValueError("robot must be provided")
         root_body_id = self._find_root_body()
         if root_body_id is None:
             logger.warning("No root body found, creating default")
             return
+<<<<<<< HEAD
         root_link = self._create_link(
             root_body_id,
             include_visual=include_visual,
@@ -140,6 +148,13 @@ class URDFExporter:
             if parent_id == 0:  # worldbody
                 return i
         return None
+
+    def _body_link_name(self, body_id: int) -> str:
+        """Return the URDF link name for a MuJoCo body."""
+        return (
+            mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_BODY, body_id)
+            or f"link_{body_id}"
+        )
 
     def _build_children(
         self,

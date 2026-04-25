@@ -1,3 +1,7 @@
+# ARCHITECTURE_DEBT:
+# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
+# It requires domain-aware structural extraction to isolate its internal classes appropriately.
+
 """
 Mesh-based inertia calculation for humanoid character builder.
 
@@ -12,6 +16,7 @@ using the trimesh library. It supports:
 from __future__ import annotations
 
 import logging
+import math
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -150,7 +155,7 @@ class InertiaResult:
             raise ValueError("mass must be provided")
         i_default = 0.1 * mass
         # Use volume of a sphere with 1 cm radius as minimum (~4.2e-6 m³)
-        _min_volume = (4.0 / 3.0) * 3.14159265358979 * (0.01**3)
+        _min_volume = (4.0 / 3.0) * math.pi * (0.01**3)
         return cls(
             ixx=i_default,
             iyy=i_default,

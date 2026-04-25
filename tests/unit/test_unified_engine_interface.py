@@ -48,6 +48,7 @@ class TestCreateUnifiedInterface:
     def test_has_engine_manager(self) -> None:
         ui = create_unified_interface()
         assert ui.engine_manager is not None
+<<<<<<< HEAD
 
 
 class TestIssue2500EngineStringLoading:
@@ -100,3 +101,5 @@ class TestIssue2500EngineStringLoading:
         assert (
             called_with == EngineType.MUJOCO
         ), f"_load_engine must be called with EngineType.MUJOCO, got {called_with!r}."
+=======
+>>>>>>> origin/main
