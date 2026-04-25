@@ -38,8 +38,8 @@ jobs:
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
             echo "Self-hosted runner online — routing locally"
           else
-            echo "::error::No local self-hosted runner available; failing closed"
-            exit 1
+            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
+            echo "No self-hosted runner — using GitHub-hosted"
           fi
   create-hotfix:
     needs: pick-runner
@@ -63,7 +63,7 @@ jobs:
           fi
           echo "failed_branch=$FAILED_BRANCH" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           ref: ${{ steps.branch.outputs.failed_branch }}
           fetch-depth: 0
@@ -80,7 +80,7 @@ jobs:
             echo "enabled=true" >> $GITHUB_OUTPUT
           fi
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4.1.0
         if: steps.jules.outputs.enabled == 'true'
         with: { node-version: "24" }
       - run: npm install -g @google/jules

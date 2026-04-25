@@ -1,22 +1,24 @@
-"""Tests for the OpenAI adapter."""
+"""Tests for the OpenAI adapter.
+
+The ``openai`` stub that this module depends on is installed by
+``conftest.pytest_configure`` (see ``conftest.py`` in this directory), which
+keeps the banned module-level ``sys.modules[...] = MagicMock()`` assignments
+out of test files while still ensuring the stub is present before
+``openai_adapter`` is imported for the first time.
+"""
+
+from __future__ import annotations
 
 import sys
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
-# Mock openai globally so lazy imports bypass the missing package
-openai_mock = MagicMock()
-openai_mock.OpenAI = MagicMock()
-openai_mock.Anthropic = MagicMock()
-sys.modules["openai"] = openai_mock
-# for gemini
-if "openai" == "google.generativeai":
-    sys.modules["google"] = MagicMock()
-from unittest.mock import MagicMock, patch  # noqa: E402
+import pytest
 
-import pytest  # noqa: E402
+from src.shared.python.ai.adapters.base import ToolDeclaration
+from src.shared.python.ai.adapters.openai_adapter import OpenAIAdapter
 
-from src.shared.python.ai.adapters.base import ToolDeclaration  # noqa: E402
-from src.shared.python.ai.adapters.openai_adapter import OpenAIAdapter  # noqa: E402
+pytestmark = pytest.mark.unit
+
 from src.shared.python.ai.exceptions import (  # noqa: E402
     AIConnectionError,
     AIProviderError,

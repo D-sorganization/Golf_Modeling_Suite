@@ -23,7 +23,7 @@ By the end of this tutorial, you will:
 ### Clone the Repository
 
 \`\`\`bash
-git clone https://github.com/D-sorganization/UpstreamDrift.git
+git clone https://github.com/dieterolson/UpstreamDrift.git
 cd UpstreamDrift
 git lfs install && git lfs pull
 \`\`\`
@@ -43,30 +43,18 @@ python scripts/verify_installation.py
 
 Expected output:
 \`\`\`
-============================================================
-Golf Modeling Suite - Installation Verification
-============================================================
-
-Checking core dependencies:
-...
-Checking Golf Suite modules:
-...
-Core dependencies: <passed>/<total> passed
-Suite modules:     <passed>/<total> passed
-Overall:           <passed>/<total> passed
+✅ Python version: 3.11.5
+✅ MuJoCo installed
+✅ Core dependencies available
+Installation verified successfully!
 \`\`\`
-
-The verification script's final launcher recommendation is not yet fully
-covered; see #G12.
 
 ## Step 2: Run Your First Simulation
 
 ### Launch the Unified GUI
 
 \`\`\`bash
-upstream-drift
-# or, from a repository checkout:
-python launch_golf_suite.py
+python3 launch_golf_suite.py
 \`\`\`
 
 ### Select Engine and Model

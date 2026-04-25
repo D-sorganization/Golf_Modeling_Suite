@@ -1,5 +1,11 @@
 """Unit tests for AI package init."""
 
+import pytest
+
+pytestmark = pytest.mark.unit
+
+import pytest  # noqa: E402
+
 
 class TestAIPackageInit:
     """Tests for AI package exports."""

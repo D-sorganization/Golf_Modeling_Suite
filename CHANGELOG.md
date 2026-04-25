@@ -11,50 +11,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Added
 
-- GitHub Actions pinning to commit SHAs for supply chain security (#3210)
-- Comprehensive pytest markers added to 937+ test files for better test organization
-- Aerodynamics engine integration with BallFlightSimulator for consistent wind/ball settings (#3204)
+- `BaseEngineAdapter` abstract base class with `NotImplementedError` stubs for engine interchange layer (#3051, PR #3206)
+- Choose-your-engine tutorial and demo script in `docs/examples/` (#3050, PR #3205)
+- Launcher README cataloguing all five launchers and the canonical `upstream-drift` entry point (#3058, PR #3200)
+- `docs/README.md` navigable index for the `docs/` tree (#3073)
 
 #### Fixed
 
-- CI/CD gaps: added proper gating on build success before release artifacts (#3210)
-- MyPy exclusion list reduced from 65+ to targeted disable_error_code directives (#3075, #3207)
-- Pip-audit CVE ignore list cleaned up with proper dependency upgrades (#3208)
-- Removed sys.path hacks from examples for clean package install (#3049, #3209)
-- Pinocchio zero-force fallback for unsupported contact-force queries (#3201, #3211)
-- verify_installation.py expanded with comprehensive environment checks (#3172, #3203)
-- basic_flight_simulation.py example now produces output instead of silent execution (#3171)
-- HelpPanel populated with substantive content and contextual bindings (#3170)
-- Tutorial imports fixed: broken URLs and incorrect module paths corrected (#3169)
-- UI README replaced Vite template with UpstreamDrift developer guide (#3176)
-- Silent failure paths replaced with actionable error messages (#3175)
-- Aerodynamics and impact models wired into physics engine step() (#3167)
-- Four React Tool pages (DataExplorer, MotionCapture, VideoAnalyzer, PuttingGreen) backend implementation (#3166)
-- RAG store wired on startup and glossary endpoint added (#3164, #3165)
-- Tool calling enabled in chat service streaming (#3162, #3163)
-- ChatPanel component shipped in React/Tauri web UI (#3161)
-- AI assistant core extracted for dashboard-help integrations (#3145)
-- Model editor with duplicate, parameter presets, and post-sim summary (#3174, #3190)
-- Orphan root-level scripts cleaned up and reorganized (#3070)
-- Test pollution eliminated: sys.modules mocking replaced with proper patching (#3212)
+- Shrunk `pyproject.toml` mypy exclusion list; promoted suppressed modules to per-file `disable_error_code` overrides (#3207)
+- Deprecation notices added to duplicate humanoid builders; `contracts.py` audited (#3057, PR #3199)
+- Orphan root-level scripts (`setup_golf_suite.py`, `start_api_server.py`) relocated to `scripts/chore/` (#3070)
 
-#### Documentation
+#### Changed
 
-- Updated SPEC.md for accuracy with current implementation (#3071)
-- Removed orphan root scripts and tracked junk files (#3070)
-- Added docs hub for navigable documentation tree (#3213)
+- SPEC.md module map, lock-file reference, and Python version brought in line with the actual codebase (#3071)
 
-### February-March 2026
+---
 
-- Initial assessment framework (Adversarial Review A-O)
-- Cross-engine parity testing infrastructure
-- Physics correctness validation framework
-- Refactored launcher consolidation
-- Humanoid builder consolidation
+### Security (January 13, 2026)
 
-### Security (CRITICAL - January 13, 2026)
-
-Critical security fixes for authentication, data exposure, and dependency vulnerabilities.
+> Note: the security hardening below was an internal engineering effort. No independent audit certificate is available at this time; the grade figures quoted previously have been removed pending a linked audit artifact.
 
 #### Added
 
@@ -102,8 +78,6 @@ Critical security fixes for authentication, data exposure, and dependency vulner
 - ✅ CWE-94 (Code Injection - archived/warned)
 - ✅ Python Security Best Practices
 - ✅ FastAPI Security Guidelines
-
-**Production Ready**: Previously unsuitable for production → Now production-ready ✅
 
 ---
 

@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import ast
 from pathlib import Path
+import pytest
+pytestmark = pytest.mark.unit
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCOPED_FILES = (
@@ -23,7 +26,7 @@ def _missing_return_annotations() -> list[str]:
         tree = ast.parse(path.read_text(encoding="utf-8"))
         for node in ast.walk(tree):
             if (
-                isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+                isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef)
                 and node.returns is None
             ):
                 violations.append(f"{relative_path}:{node.lineno}")

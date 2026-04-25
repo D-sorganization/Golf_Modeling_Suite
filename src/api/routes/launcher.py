@@ -16,7 +16,7 @@ from src.shared.python.core.contracts import precondition
 from src.shared.python.logging_pkg.logging_config import get_logger
 
 logger = get_logger(__name__)
-router = APIRouter(prefix="/launcher", tags=["launcher"])
+router = APIRouter(prefix="/api/launcher", tags=["launcher"])
 
 # Cache the manifest in memory (singleton holder avoids 'global')
 _launcher_state: dict[str, LauncherManifest | None] = {"manifest": None}
@@ -40,10 +40,9 @@ def _get_manifest() -> LauncherManifest:
                 status_code=500,
                 detail=f"Launcher manifest error: {e}",
             ) from e
-    # Guaranteed non-None after the check above
-    manifest = _launcher_state["manifest"]
-    assert manifest is not None  # for mypy
-    return manifest
+    result = _launcher_state["manifest"]
+    assert result is not None  # guaranteed: loaded above or HTTPException raised
+    return result
 
 
 @router.get("/manifest")

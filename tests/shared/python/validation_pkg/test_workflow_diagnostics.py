@@ -1,7 +1,10 @@
 import json
 from pathlib import Path
 
-from src.shared.python.validation_pkg.workflow_diagnostics import (
+import pytest
+
+pytestmark = pytest.mark.unit
+from src.shared.python.validation_pkg.workflow_diagnostics import (  # noqa: E402
     WorkflowDiagnosticContext,
 )
 

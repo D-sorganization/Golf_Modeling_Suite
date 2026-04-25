@@ -1,6 +1,6 @@
 # SPEC.md — Repository Specification Document
 
-Last-Updated: 2026-04-24T21:04:00-07:00
+Last-Updated: 2026-04-25T00:00:00-07:00
 
 <!--
   TEMPLATE VERSION: 1.0.0
@@ -30,7 +30,7 @@ Last-Updated: 2026-04-24T21:04:00-07:00
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
 | **Spec Version**        | 1.0.178                                            |
-| **Last Spec Update**    | 2026-04-24                                         |
+| **Last Spec Update**    | 2026-04-25                                         |
 
 ## 2. Purpose & Mission
 
@@ -54,7 +54,9 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 ### Non-Goals
 
 - Not a general-purpose physics engine; focused exclusively on biomechanical simulation
-- Not intended for non-biomechanical simulations (rigid body dynamics, fluid dynamics, etc.)
+- Not intended for non-biomechanical simulations (fluid dynamics, electromagnetic, etc.); note that
+  rigid-body dynamics engines (Drake, Pinocchio) are included as biomechanical backends — they are
+  in-scope as physics engine substrates, not as general rigid-body simulation targets
 - Not a replacement for domain-specific tools (OpenSim for clinical analysis, MATLAB for controls research)
 
 ## 4. Architecture Overview
@@ -70,11 +72,12 @@ UpstreamDrift/
 ├── src/
 │   ├── engines/
 │   │   ├── physics_engines/        # Engine adapters and integrations
-│   │   │   ├── mujoco_engine.py    # MuJoCo backend (supported)
-│   │   │   ├── drake_engine.py     # Drake backend (extended)
-│   │   │   ├── pinocchio_engine.py # Pinocchio backend (extended)
-│   │   │   ├── opensim_engine.py   # OpenSim backend (experimental)
-│   │   │   └── myosuite_engine.py  # MyoSuite backend (experimental)
+│   │   │   │                       # Each engine lives in its own subpackage, e.g.:
+│   │   │   ├── mujoco/python/      # MuJoCo backend subpackage (supported)
+│   │   │   ├── drake/python/       # Drake backend subpackage (extended)
+│   │   │   ├── pinocchio/python/   # Pinocchio backend subpackage (extended)
+│   │   │   ├── opensim/python/     # OpenSim backend subpackage (experimental)
+│   │   │   └── myosuite/python/    # MyoSuite backend subpackage (experimental)
 │   │   └── pendulum_models/        # Simplified educational models
 │   │       ├── twodof_pendulum.py
 │   │       └── biomechanical_pendulum.py
@@ -135,7 +138,8 @@ UpstreamDrift/
 │       ├── vendor-freshness.yml
 │       └── docker-size-gates.yml
 ├── pyproject.toml
-├── poetry.lock
+├── requirements.lock               # pip-compile pinned runtime deps
+├── requirements-dev.lock           # pip-compile pinned dev deps
 ├── SPEC.md                         # This file
 └── README.md
 ```
@@ -144,11 +148,11 @@ UpstreamDrift/
 
 | Component                      | Location                                                   | Purpose                                                                                                                                                                    |
 | ------------------------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| MuJoCo Engine Adapter          | `src/engines/physics_engines/mujoco_engine.py`             | Primary physics engine integration with full support for contact dynamics, world-contact force sign normalization, and muscle models                                       |
-| Drake Engine Adapter           | `src/engines/physics_engines/drake_engine.py`              | Extended Drake support for trajectory optimization and manipulation tasks                                                                                                  |
-| Pinocchio Engine Adapter       | `src/engines/physics_engines/pinocchio_engine.py`          | Extended Pinocchio support for efficient rigid-body dynamics computation; step integration accepts only `rk4` and `semi_implicit` modes                                    |
-| OpenSim Engine Adapter         | `src/engines/physics_engines/opensim_engine.py`            | Experimental OpenSim integration for clinical biomechanics workflows                                                                                                       |
-| MyoSuite Engine Adapter        | `src/engines/physics_engines/myosuite_engine.py`           | Experimental MyoSuite integration for detailed muscle physiology simulation                                                                                                |
+| MuJoCo Engine Adapter          | `src/engines/physics_engines/mujoco/python/`             | Primary physics engine integration with full support for contact dynamics, world-contact force sign normalization, and muscle models                                       |
+| Drake Engine Adapter           | `src/engines/physics_engines/drake/python/`              | Extended Drake support for trajectory optimization and manipulation tasks                                                                                                  |
+| Pinocchio Engine Adapter       | `src/engines/physics_engines/pinocchio/python/`          | Extended Pinocchio support for efficient rigid-body dynamics computation; step integration accepts only `rk4` and `semi_implicit` modes                                    |
+| OpenSim Engine Adapter         | `src/engines/physics_engines/opensim/python/`            | Experimental OpenSim integration for clinical biomechanics workflows                                                                                                       |
+| MyoSuite Engine Adapter        | `src/engines/physics_engines/myosuite/python/`           | Experimental MyoSuite integration for detailed muscle physiology simulation                                                                                                |
 | Pendulum Models                | `src/engines/pendulum_models/`                             | Educational simplified models for learning and quick prototyping                                                                                                           |
 | FastAPI Backend                | `src/api/`                                                 | REST API exposing simulation, IK/ID, trajectory optimization, and control endpoints                                                                                        |
 | PyQt6 GUI                      | `src/launchers/gui_launcher.py`                            | Professional interactive GUI with real-time 3D visualization                                                                                                               |
@@ -510,6 +514,9 @@ pytest tests/ --cov=src --cov-fail-under=70
 | 2026-05-01 | 1.0.176 | Performance optimization: Replaced `np.linalg.norm(diff)` with `np.sqrt(np.vdot(diff, diff))` in humanoid golf visualization for faster array reduction. |
 
 | 2024-05-27 | 1.0.176 | Performance optimization: Replaced `np.linalg.norm` with `math.hypot` in green_surface.py for ~5x speedup in 2D vector magnitude calculation. |
+
+| 2026-04-25 | 1.0.177 | Issue #3168 (Option B): Deleted `src/reinforcement_learning/trajectory_funnel_benchmark.py` and its associated test files. The `simulate_agent_training_mock()` method returned hardcoded placeholder values masquerading as real RL results; the entire file is removed rather than kept with a stub. |
+| 2026-04-23 | 1.0.175 | fix(ci): Shrunk `pyproject.toml` mypy exclusion list by promoting previously suppressed modules to per-file overrides, reducing the global `ignore_errors` footprint toward zero. |
 | 2026-04-22 | 1.0.153 | Performance optimization: Replaced `np.linalg.norm(x)` with `np.sqrt(np.vdot(x, x))` and updated `np.sqrt(sum of squares)` to `math.hypot(*x)` for faster array reduction computations. |
 | 2026-04-23 | 1.0.173 | Performance optimization: Replaced `np.linalg.norm` with `math.hypot` for small 2D vectors in putting green engine. |
 | 2026-04-20 | 1.0.95 | Performance optimization: Replaced generator expression `math.sqrt(sum(...))` with `math.dist(a,b)` for distance calculations to push execution entirely into C, resulting in an ~8x speedup. |
@@ -715,7 +722,6 @@ pytest tests/ --cov=src --cov-fail-under=70
 | 1.0.140 | 2026-04-20 | Bolt: Replaced `np.linalg.norm` with `math.hypot` for 2D/3D physics vectors in aerodynamics and ball flight simulation for a ~5x performance speedup. |
 | 1.0.139 | 2026-04-20 | Bolt: Optimized Numba-compiled `rotation_matrix_from_vectors` in `golf_data_core.py` by replacing `np.linalg.norm` and `np.allclose` with explicit element-wise math.sqrt and dot products for a 2x+ speedup. |
 | 1.0.140 | 2026-04-21 | Bolt: Optimized `np.sum(forces * velocities, axis=1)` to `np.einsum` in `dynamics_quantities.py` for performance. |
-| 1.0.177 | 2026-04-24 | Corrected `simulate_agent_training` return type annotation from `dict[str, float]` to `dict[str, float | str]` in `trajectory_funnel_benchmark.py` to resolve mypy dict-item error. |
 
 ## Changelog
 

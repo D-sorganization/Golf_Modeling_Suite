@@ -10,10 +10,10 @@
 #   claude --version   # verify claude is in PATH
 #
 # Usage:
-#   From Windows Git Bash or WSL:
-#     bash start-gaai-daemon.sh            # interactive (status output)
-#     bash start-gaai-daemon.sh --dry-run  # show what would launch, no action
-#     bash start-gaai-daemon.sh --status   # check active sessions
+#   From Windows Git Bash or WSL, from the repository root:
+#     bash scripts/maintenance/start-gaai-daemon.sh            # interactive (status output)
+#     bash scripts/maintenance/start-gaai-daemon.sh --dry-run  # show what would launch, no action
+#     bash scripts/maintenance/start-gaai-daemon.sh --status   # check active sessions
 #
 # Monitor overnight:
 #   tmux attach -t gaai-daemon
@@ -24,7 +24,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 DAEMON_SCRIPT="$REPO_ROOT/.gaai/core/scripts/delivery-daemon.sh"
 
 # ── Preflight checks ──────────────────────────────────────────────────────────
@@ -107,7 +107,7 @@ echo ""
 echo "Useful commands:"
 echo "  tmux attach -t $SESSION_NAME           # watch live"
 echo "  Ctrl+B then D                           # detach without stopping"
-echo "  bash start-gaai-daemon.sh --status      # check what's running"
+echo "  bash scripts/maintenance/start-gaai-daemon.sh --status      # check what's running"
 echo "  tail -f .gaai/project/contexts/backlog/.delivery-logs/*.log  # story logs"
 echo ""
 echo "Attaching now... (Ctrl+B D to detach)"

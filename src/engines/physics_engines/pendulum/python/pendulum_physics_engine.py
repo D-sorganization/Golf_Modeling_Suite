@@ -3,10 +3,20 @@
 Wraps the standalone DoublePendulumDynamics to implement the PhysicsEngine
 protocol. Inherits from BasePhysicsEngine to eliminate DRY violations for
 checkpoint save/restore, model name tracking, and engine initialization.
+
+Implementation hierarchy (see issue #3056):
+    - Canonical physics: ``src/shared/python/pendulum_simulator/physics.py``
+    - OO wrapper:        ``...double_pendulum_model/physics/double_pendulum.py``
+    - Engine adapter:    this file (wraps the OO wrapper above)
+
+This adapter exists to bridge ``DoublePendulumDynamics`` to the
+``PhysicsEngine`` protocol used by engine-agnostic callers.  For pure
+physics computations, prefer importing from the canonical module directly.
 """
 
 from __future__ import annotations
 
+import warnings  # noqa: E402
 from typing import Any
 
 import numpy as np
@@ -20,11 +30,19 @@ from src.shared.python.core.contracts import (
     postcondition,
     precondition,
 )
+from src.shared.python.core.numerical_constants import EPSILON_TIME_STEP
 from src.shared.python.engine_core.base_physics_engine import (
     BasePhysicsEngine,
 )
 from src.shared.python.engine_core.checkpoint import StateCheckpoint
 from src.shared.python.logging_pkg.logging_config import get_logger
+
+warnings.warn(
+    "pendulum_physics_engine is deprecated (issue #3056). "
+    "Use src.shared.python.pendulum_simulator instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 logger = get_logger(__name__)
 
@@ -116,8 +134,22 @@ class PendulumPhysicsEngine(BasePhysicsEngine):
         self.control = np.zeros(2)
 
     def step(self, dt: float | None = None) -> None:
-        """Step the simulation forward."""
+        """Step the simulation forward.
+
+        Args:
+            dt: Time step [s]. Must be > EPSILON_TIME_STEP if provided.
+
+        Raises:
+            ValueError: If dt is not positive.
+        """
         step_size = dt if dt is not None else 0.01
+
+        # Guard against invalid time steps (Issue #3054)
+        if step_size <= EPSILON_TIME_STEP:
+            raise ValueError(
+                f"dt must be positive, got {step_size}. "
+                f"Minimum supported: {EPSILON_TIME_STEP}"
+            )
 
         # The dynamics step returns a NEW state object (functional style)
         self._pendulum_state = self.dynamics.step(

@@ -50,8 +50,8 @@ jobs:
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
             echo "Self-hosted runner online — routing locally"
           else
-            echo "::error::No local self-hosted runner available; failing closed"
-            exit 1
+            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
+            echo "No self-hosted runner — using GitHub-hosted"
           fi
 
   # Named "quality-gate" to satisfy branch protection required-check
@@ -61,7 +61,7 @@ jobs:
     runs-on: self-hosted
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           fetch-depth: 0
 

@@ -5,6 +5,12 @@ Tests for the model library module.
 import tempfile
 from pathlib import Path
 
+import pytest
+
+pytestmark = pytest.mark.unit
+
+import pytest  # noqa: E402
+
 
 class TestModelLibrary:
     """Tests for ModelLibrary class."""

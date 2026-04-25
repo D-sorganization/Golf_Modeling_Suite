@@ -30,14 +30,14 @@ jobs:
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
             echo "Self-hosted runner online — routing locally"
           else
-            echo "::error::No local self-hosted runner available; failing closed"
-            exit 1
+            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
+            echo "No self-hosted runner — using GitHub-hosted"
           fi
   stale:
     needs: pick-runner
     runs-on: self-hosted
     steps:
-      - uses: actions/stale@v10
+      - uses: actions/stale@b5d41d4e1d5dceea10e7104786b73624c18a190f  # v10
         with:
           # Stale configuration
           days-before-stale: 30

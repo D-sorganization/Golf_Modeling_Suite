@@ -6,12 +6,20 @@ This example demonstrates how to:
 2. Load the MuJoCo engine
 3. Run a basic simulation loop
 4. Save results
+
+Usage::
+
+    python3 examples/01_basic_simulation.py
 """
 
+import sys
 import time
+from pathlib import Path
+
+# Allow running from repo root without installing the package
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.shared.python.core.constants import GRAVITY_M_S2
-from src.shared.python.core.error_utils import EngineNotAvailableError
 from src.shared.python.data_io.output_manager import OutputManager
 from src.shared.python.data_io.path_utils import get_repo_root
 from src.shared.python.engine_core.engine_manager import EngineManager
@@ -36,14 +44,11 @@ def main() -> None:
 
     # 2. Load Engine
     # Note: This checks for actual installation.
-    # If not installed, raise an actionable error with install hint.
+    # If not installed, we'll handle gracefully for this example.
     logger.info("Initializing MuJoCo engine...")
     if not engine_manager.switch_engine(EngineType.MUJOCO):
-        raise EngineNotAvailableError(
-            engine_name="mujoco",
-            operation="basic simulation",
-            install_hint="pip install mujoco",
-        )
+        print("Error: MuJoCo engine not available. Install MuJoCo: pip install mujoco")
+        sys.exit(1)
 
     # 3. Simulation Loop (Conceptual)
     logger.info("Running simulation...")

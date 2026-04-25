@@ -144,33 +144,6 @@ class BallFlightSimulator:
         self.ball = ball or BallProperties()
         self.environment = env or environment or EnvironmentalConditions()
 
-        # Initialize aerodynamics engine to ensure wind and ball settings
-        # are threaded through force calculations during Rust integration
-        from src.shared.python.physics.aerodynamics import (
-            AerodynamicsConfig,
-            AerodynamicsEngine,
-            WindConfig,
-            WindModel,
-        )
-
-        # Create basic wind config from environment wind velocity
-        wind_config = WindConfig(
-            base_velocity=self.environment.wind_velocity,
-            gust_enabled=False,
-        )
-        wind_model = WindModel(wind_config)
-
-        # Initialize aerodynamics with wind and ball properties
-        self._aero_engine = AerodynamicsEngine(
-            config=AerodynamicsConfig(
-                drag_enabled=True,
-                lift_enabled=True,
-                magnus_enabled=True,
-            ),
-            wind_model=wind_model,
-            air_density=self.environment.air_density,
-        )
-
     @precondition(
         lambda self, launch, max_time=10.0, dt=0.01: (
             launch is not None and launch.velocity >= 0
@@ -263,42 +236,17 @@ class BallFlightSimulator:
     def _post_process_rust(
         self, rust_result: Any, launch: LaunchConditions
     ) -> list[TrajectoryPoint]:
-        """Convert a Rust BallTrajectoryResult to a list of TrajectoryPoint objects.
-
-        Uses the initialized aerodynamics engine to ensure wind and ball
-        settings are consistently applied to force calculations.
-        """
+        """Convert a Rust BallTrajectoryResult to a list of TrajectoryPoint objects."""
         if launch is None:
             raise ValueError("launch must be provided")
         points = []
         for p in rust_result.get_points():
             pos = np.array([p.x, p.y, p.z])
             vel = np.array([p.vx, p.vy, p.vz])
-
-            # Compute forces using aerodynamics engine with wind and ball settings
-            omega = launch.spin_rate * 2 * np.pi / 60
-            spin = launch.spin_axis * omega
-
-            aero_forces = self._aero_engine.compute_forces(
-                vel, spin, t=p.t, position=pos
-            )
-
-            # Gravity force
-            gravity_force = np.array(
-                [0.0, 0.0, -self.ball.mass * self.environment.gravity]
-            )
-
-            # Combine forces
-            forces = {
-                "gravity": gravity_force,
-                "drag": aero_forces["drag"],
-                "magnus": aero_forces["magnus"],
-            }
-
-            # Compute acceleration
-            total_force = gravity_force + aero_forces["drag"] + aero_forces["magnus"]
-            acc = total_force / self.ball.mass
-
+            forces = self._calculate_forces(vel, launch)
+            acc = (
+                forces["gravity"] + forces["drag"] + forces["magnus"]
+            ) / self.ball.mass
             points.append(TrajectoryPoint(p.t, pos, vel, acc, forces))
         return points
 
@@ -551,8 +499,23 @@ class EnhancedBallFlightSimulator:
 
         self.ball = ball or BallProperties()
         self.environment = environment or EnvironmentalConditions()
-        self.aero_config = aero_config or AerodynamicsConfig()
-        self.wind_config = wind_config or WindConfig()
+        # When no aero_config is supplied, seed ball_radius/ball_area from the
+        # actual BallProperties so that custom-ball configurations are honoured.
+        if aero_config is None:
+            self.aero_config = AerodynamicsConfig(
+                ball_radius=self.ball.radius,
+                ball_area=self.ball.cross_sectional_area,
+            )
+        else:
+            self.aero_config = aero_config
+        # When no wind_config is supplied, seed the base_velocity from the
+        # environment wind so that non-zero wind reaches the AerodynamicsEngine.
+        if wind_config is None:
+            self.wind_config = WindConfig(
+                base_velocity=self.environment.wind_velocity.copy(),
+            )
+        else:
+            self.wind_config = wind_config
         self.randomization_config = randomization_config or RandomizationConfig()
         self._seed = seed
 

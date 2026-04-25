@@ -1,4 +1,10 @@
-"""Tests for video export functionality."""
+"""Tests for video export functionality.
+
+The ``cv2`` and ``imageio`` stubs required by ``video_export`` are installed
+in ``conftest.pytest_configure`` (same directory), which keeps the banned
+module-level ``sys.modules[...] = MagicMock()`` assignments out of test
+files.
+"""
 
 from __future__ import annotations
 
@@ -10,9 +16,7 @@ import mujoco
 import numpy as np
 import pytest
 
-# Mock dependencies before import
-sys.modules["cv2"] = MagicMock()
-sys.modules["imageio"] = MagicMock()
+pytestmark = pytest.mark.unit
 
 from src.engines.physics_engines.mujoco.python.mujoco_humanoid_golf.video_export import (  # noqa: E402, E501
     VideoExporter,

@@ -12,11 +12,14 @@ No module-level mutable state.
 
 from __future__ import annotations
 
+import re
+import shutil
 from pathlib import Path
 from typing import Any
 
 import defusedxml.ElementTree as ElementTree
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 
 from src.api.middleware.error_handler import handle_api_errors
 from src.shared.python.core.contracts import postcondition, precondition
@@ -29,6 +32,106 @@ from ..models.responses import (
     URDFTreeNode,
 )
 from ._route_utils import find_project_root
+
+# ---------------------------------------------------------------------------
+# Model duplicate endpoint helpers
+# ---------------------------------------------------------------------------
+
+# Only alphanumeric characters, hyphens, and underscores are permitted as a
+# new model stem (no slashes, dots, or path-traversal sequences).
+_SAFE_STEM_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_\-]{0,63}$")
+
+# Restrict duplication to known model-asset extensions only (issue #3202).
+_ALLOWED_MODEL_EXTENSIONS = {
+    ".urdf",
+    ".mjcf",
+    ".xml",
+    ".sdf",
+    ".obj",
+    ".stl",
+    ".dae",
+    ".yaml",
+    ".yml",
+}
+
+# Approved model directories relative to repo root (issue #3202).
+_ALLOWED_MODEL_DIRS = {
+    "src/models",
+    "src/robots",
+    "assets",
+    "models",
+    "tests/fixtures/models",
+    "src/shared/urdf",
+    "src/engines/physics_engines/pinocchio/models/generated",
+}
+
+
+def validate_model_source_path(source_path: str, repo_root: Path) -> None:
+    """Validate that source_path points to a legitimate model asset file.
+
+    Preconditions:
+        - source_path is a non-empty string
+        - repo_root is an existing directory
+
+    Postconditions:
+        - abs_path is inside repo_root
+        - abs_path has an allowed model extension
+        - abs_path is inside an approved model directory
+
+    Args:
+        source_path: Relative path from repo root to the source file.
+        repo_root: Absolute path to the repository root.
+
+    Raises:
+        ValueError: If the path escapes the repo root, has a disallowed
+            extension, or is not in an approved model directory.
+    """
+    if not source_path:
+        raise ValueError("source_path must not be empty")
+
+    abs_path = (repo_root / source_path).resolve()
+
+    # Confirm still within repo root.
+    try:
+        abs_path.relative_to(repo_root.resolve())
+    except ValueError as exc:
+        raise ValueError(
+            f"source_path '{source_path}' escapes the repository root"
+        ) from exc
+
+    # Confirm extension is a model asset file format.
+    if abs_path.suffix.lower() not in _ALLOWED_MODEL_EXTENSIONS:
+        raise ValueError(
+            f"source_path must be a model asset file (got '{abs_path.suffix}'). "
+            f"Allowed extensions: {sorted(_ALLOWED_MODEL_EXTENSIONS)}"
+        )
+
+    # Confirm it is in an approved model directory.
+    is_approved_dir = any(
+        str(abs_path).startswith(str((repo_root / d).resolve()))
+        for d in _ALLOWED_MODEL_DIRS
+    )
+    if not is_approved_dir:
+        raise ValueError(
+            f"source_path '{source_path}' must be in an approved model directory. "
+            f"Approved dirs: {sorted(_ALLOWED_MODEL_DIRS)}"
+        )
+
+
+class ModelDuplicateRequest(BaseModel):
+    """Request body for POST /models/duplicate."""
+
+    source_path: str
+    new_name: str
+
+
+class ModelDuplicateResponse(BaseModel):
+    """Response body for POST /models/duplicate."""
+
+    source_path: str
+    copy_path: str
+    new_name: str
+
 
 router = APIRouter()
 
@@ -414,4 +517,85 @@ async def compare_models(
         shared_joints=shared,
         unique_to_a=only_a,
         unique_to_b=only_b,
+    )
+
+
+@router.post(
+    "/models/duplicate",
+    response_model=ModelDuplicateResponse,
+    status_code=201,
+)
+@handle_api_errors
+async def duplicate_model(
+    request: ModelDuplicateRequest,
+    logger: Any = Depends(get_logger),
+) -> ModelDuplicateResponse:
+    """Duplicate a URDF/MJCF/SDF/mesh model asset under a new name.
+
+    Only files inside an approved model directory and with an extension
+    from _ALLOWED_MODEL_EXTENSIONS may be duplicated (issue #3202).
+    Arbitrary repo files -- config, code, secrets -- are rejected even
+    when they reside inside the checkout.
+
+    Args:
+        request: Duplicate request with source_path and new_name.
+        logger: Injected logger.
+
+    Returns:
+        ModelDuplicateResponse with source and copy paths.
+
+    Raises:
+        HTTPException 400: new_name contains unsafe characters.
+        HTTPException 404: source_path not found or not a model asset.
+        HTTPException 409: destination file already exists.
+        HTTPException 422: source_path fails allowlist validation.
+    """
+    if request is None:
+        raise ValueError("request must be provided")
+
+    # Validate new_name against the safe-stem allowlist.
+    if not _SAFE_STEM_RE.match(request.new_name):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "new_name must start with an alphanumeric character and "
+                "contain only letters, digits, hyphens, and underscores "
+                "(max 64 chars)."
+            ),
+        )
+
+    root = _find_project_root()
+
+    # Validate source_path against extension and directory allowlists
+    # BEFORE any file-system operation (issue #3202).
+    try:
+        validate_model_source_path(request.source_path, root)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    source = (root / request.source_path).resolve()
+
+    if not source.exists() or not source.is_file():
+        raise HTTPException(
+            status_code=404,
+            detail=f"Model file not found: {request.source_path}",
+        )
+
+    dest = source.parent / (request.new_name + source.suffix)
+
+    if dest.exists():
+        raise HTTPException(
+            status_code=409,
+            detail=f"Destination '{dest.relative_to(root)}' already exists.",
+        )
+
+    shutil.copy2(source, dest)
+
+    if logger:
+        logger.info("Duplicated model %s -> %s", source, dest)
+
+    return ModelDuplicateResponse(
+        source_path=str(source.relative_to(root)),
+        copy_path=str(dest.relative_to(root)),
+        new_name=request.new_name,
     )

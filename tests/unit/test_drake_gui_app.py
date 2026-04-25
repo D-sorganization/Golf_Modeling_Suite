@@ -5,10 +5,13 @@ and the individual mixin modules (UI, Sim, Viz, Analysis).
 """
 
 import sys
+from collections.abc import Generator
 from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
+
+pytestmark = pytest.mark.unit
 
 # Check PyQt6 availability without importing engine_availability
 # (which triggers a torch import that may fail on some platforms)
@@ -36,7 +39,7 @@ _DRAKE_ENGINE_MODULES = [
 
 
 @pytest.fixture(autouse=True, scope="function")
-def _mock_pydrake():
+def _mock_pydrake() -> Generator[None, None, None]:
     """Provide mock pydrake modules only during test execution.
 
     Also cleanup drake engine modules to prevent pollution of test_drake_wrapper.py.

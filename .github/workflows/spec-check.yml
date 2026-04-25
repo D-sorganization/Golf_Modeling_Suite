@@ -24,7 +24,7 @@ permissions:
 jobs:
   # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
-    runs-on: d-sorg-fleet
+    runs-on: ubuntu-latest
     timeout-minutes: 2
     outputs:
       runner: ${{ steps.check.outputs.runner }}
@@ -41,13 +41,13 @@ jobs:
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
             echo "Self-hosted runner online — routing locally"
           else
-            echo "::error::No local self-hosted runner available; failing closed"
-            exit 1
+            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
+            echo "No self-hosted runner — using GitHub-hosted"
           fi
   spec-freshness:
     needs: pick-runner
     name: Verify SPEC.md freshness
-    runs-on: self-hosted
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
     # Skip if spec-exempt label is applied
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'spec-exempt') }}
     timeout-minutes: 5
@@ -57,7 +57,7 @@ jobs:
         run: git config --global core.longpaths true
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           fetch-depth: 0
 
@@ -108,7 +108,7 @@ jobs:
 
       - name: Post warning comment
         if: steps.check.outputs.needs_update == 'true'
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
         with:
           script: |
             const body = `## ⚠️ SPEC.md Update Required

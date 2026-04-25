@@ -12,7 +12,7 @@ on:
       - "conftest.py"
       - "launch_golf_suite.py"
       - "setup_golf_suite.py"
-      - "scripts/ci/start_api_server.py"
+      - "start_api_server.py"
 
 jobs:
   # ── Dispatcher: route to self-hosted if available ──────────────────────────
@@ -34,8 +34,8 @@ jobs:
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
             echo "Self-hosted runner online — routing locally"
           else
-            echo "::error::No local self-hosted runner available; failing closed"
-            exit 1
+            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
+            echo "No self-hosted runner — using GitHub-hosted"
           fi
   verify-critical-files:
     needs: pick-runner
@@ -43,7 +43,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
       - name: Check Critical Files
         run: |
@@ -58,6 +58,7 @@ jobs:
             "conftest.py"
             "launch_golf_suite.py"
             "setup_golf_suite.py"
+            "start_api_server.py"
           )
 
           MISSING_FILES=()
@@ -70,14 +71,6 @@ jobs:
               echo "✅ Found: $file"
             fi
           done
-
-          # Check for start_api_server.py in scripts/ci/ (reorganized in #3070)
-          if [ ! -f "scripts/ci/start_api_server.py" ]; then
-            echo "❌ MISSING: scripts/ci/start_api_server.py"
-            MISSING_FILES+=("scripts/ci/start_api_server.py")
-          else
-            echo "✅ Found: scripts/ci/start_api_server.py"
-          fi
 
           if [ ${#MISSING_FILES[@]} -ne 0 ]; then
             echo ""

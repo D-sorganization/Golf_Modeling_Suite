@@ -1,53 +1,40 @@
-"""Tests for the local Ollama adapter."""
+"""Tests for the local Ollama adapter.
+
+The ``httpx`` stub that this module depends on is installed by
+``conftest.pytest_configure`` (see ``conftest.py`` in this directory), which
+keeps the banned module-level ``sys.modules[...] = MagicMock()`` assignments
+out of test files while still ensuring the stub is present before
+``ollama_adapter`` is imported for the first time.
+"""
+
+from __future__ import annotations
 
 import json
 import sys
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
-# Mock httpx globally so lazy imports bypass the missing package
-httpx_mock = MagicMock()
-httpx_mock.OpenAI = MagicMock()
-httpx_mock.Anthropic = MagicMock()
-sys.modules["httpx"] = httpx_mock
+import pytest
 
-
-class MockConnectError(OSError):
-    pass
-
-
-class MockTimeoutException(OSError):
-    pass
-
-
-httpx_mock.ConnectError = MockConnectError
-httpx_mock.TimeoutException = MockTimeoutException
-
-# for gemini
-if "httpx" == "google.generativeai":
-    sys.modules["google"] = MagicMock()
-from unittest.mock import MagicMock, patch  # noqa: E402
-
-import pytest  # noqa: E402
-
-
-@pytest.fixture(autouse=True)
-def reset_mocks():
-    sys.modules["httpx"].reset_mock()
-
-
-from src.shared.python.ai.adapters.base import ToolDeclaration  # noqa: E402
-from src.shared.python.ai.adapters.ollama_adapter import OllamaAdapter  # noqa: E402
-from src.shared.python.ai.exceptions import (  # noqa: E402
+from src.shared.python.ai.adapters.base import ToolDeclaration
+from src.shared.python.ai.adapters.ollama_adapter import OllamaAdapter
+from src.shared.python.ai.exceptions import (
     AIConnectionError,
     AIProviderError,
     AITimeoutError,
 )
-from src.shared.python.ai.types import (  # noqa: E402
+from src.shared.python.ai.types import (
     ConversationContext,
     ExpertiseLevel,
     Message,
     ProviderCapability,
 )
+
+pytestmark = pytest.mark.unit
+
+
+@pytest.fixture(autouse=True)
+def reset_mocks():
+    sys.modules["httpx"].reset_mock()
 
 
 @pytest.fixture

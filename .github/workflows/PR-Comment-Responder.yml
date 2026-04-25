@@ -40,8 +40,8 @@ jobs:
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
             echo "Self-hosted runner online — routing locally"
           else
-            echo "::error::No local self-hosted runner available; failing closed"
-            exit 1
+            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
+            echo "No self-hosted runner — using GitHub-hosted"
           fi
   collect-comment:
     needs: pick-runner
@@ -94,7 +94,7 @@ jobs:
             echo "should_skip=false" >> $GITHUB_OUTPUT
           fi
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         if: steps.filter.outputs.is_bot != 'true' && steps.pr_state.outputs.should_skip != 'true'
         with:
           fetch-depth: 1

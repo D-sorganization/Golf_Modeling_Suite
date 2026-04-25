@@ -68,11 +68,13 @@ project_name/
 **MANDATORY**: All new code must follow the Test-Driven Development methodology:
 
 1. **🔴 RED - Write a Failing Test First**
+
    - Before writing any production code, write a unit test that defines the new functionality or behavior.
    - The test MUST fail initially because the production code has not yet been written.
    - This ensures you understand the requirements before implementation.
 
 2. **🟢 GREEN - Make the Test Pass**
+
    - Write the **minimal** amount of production code necessary to make the failing test pass.
    - The goal is purely to pass the test, not to write perfect or optimized code.
    - Resist the temptation to add features not covered by tests.
@@ -637,6 +639,7 @@ To maintain a clean repository root, all development-related documentation (summ
 - Prefer creating issues for task tracking rather than temporary markdown files.
 
 <!-- BEGIN FLEET-MANAGED: network-api-hygiene -->
+
 ## 🛑 NETWORK & API HYGIENE (CRITICAL)
 
 > This section is managed centrally by Repository_Management and synced fleet-wide.
@@ -644,10 +647,10 @@ To maintain a clean repository root, all development-related documentation (summ
 
 ### GitHub API Quotas
 
-| API Type | Quota | Consumed By |
-|----------|-------|-------------|
-| REST (`gh api repos/...`) | 5,000 req/hr | Safe for polling |
-| GraphQL | 5,000 req/hr | `gh pr list --json`, `gh pr checks`, `gh pr create`, `gh pr merge` |
+| API Type                  | Quota        | Consumed By                                                        |
+| ------------------------- | ------------ | ------------------------------------------------------------------ |
+| REST (`gh api repos/...`) | 5,000 req/hr | Safe for polling                                                   |
+| GraphQL                   | 5,000 req/hr | `gh pr list --json`, `gh pr checks`, `gh pr create`, `gh pr merge` |
 
 GraphQL and REST have **separate** quotas. Exhausting GraphQL blocks PR creation and merging fleet-wide for an entire hour.
 
@@ -682,8 +685,7 @@ for k in ['core', 'graphql']:
 "
 ```
 
-<!-- END FLEET-MANAGED: network-api-hygiene -->
----
+## <!-- END FLEET-MANAGED: network-api-hygiene -->
 
 ## Specification
 

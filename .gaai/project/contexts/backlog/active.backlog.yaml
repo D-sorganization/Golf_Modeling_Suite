@@ -6,7 +6,6 @@
 #   - Only Discovery may add items; only Delivery may update status
 
 items:
-
   - id: GH1957
     title: "Upgrade Example Notebooks & Scripts to align with recent architectural refactoring"
     priority: medium
@@ -71,10 +70,7 @@ items:
     pr_url: "https://github.com/D-sorganization/UpstreamDrift/pull/2031"
     pr_number: 2031
     pr_status: "open"
-    cost_usd: "7.4021
-7.442
-7.4621
-7.48"
+    cost_usd: 7.48
     github_issue: 1744
     artefact: .gaai/project/contexts/artefacts/stories/GH1744.story.md
     dependencies: []
@@ -140,7 +136,10 @@ items:
   - id: GH2035
     title: "Audit and reduce 310 pytest.skip calls"
     priority: medium
-    status: refined
+    status: done
+    pr_url: "https://github.com/D-sorganization/UpstreamDrift/pull/3256"
+    pr_number: 3256
+    completed_at: "2026-04-25T15:28:15Z"
     github_issue: 2035
     artefact: .gaai/project/contexts/artefacts/stories/GH2035.story.md
     dependencies: []
@@ -149,7 +148,11 @@ items:
   - id: GH2034
     title: "Reduce 1227 type:ignore comments systematically"
     priority: medium
-    status: refined
+    status: done
+    completed_at: "2026-04-20T09:08:18Z"
+    pr_url: "https://github.com/D-sorganization/UpstreamDrift/pull/2840"
+    pr_number: 2840
+    pr_status: "merged"
     github_issue: 2034
     artefact: .gaai/project/contexts/artefacts/stories/GH2034.story.md
     dependencies: []

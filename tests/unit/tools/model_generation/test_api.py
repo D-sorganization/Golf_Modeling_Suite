@@ -6,6 +6,12 @@ from __future__ import annotations
 
 from typing import Any
 
+import pytest
+
+pytestmark = pytest.mark.unit
+
+import pytest  # noqa: E402
+
 SIMPLE_URDF = """<?xml version="1.0"?>
 <robot name="test_robot">
     <link name="base_link">

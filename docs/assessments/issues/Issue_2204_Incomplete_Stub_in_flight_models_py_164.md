@@ -11,10 +11,18 @@ Found critical incomplete implementation in `./src/shared/python/physics/flight_
 
 ## Context
 
-**Type**: Stub | **Location**: `./src/shared/python/physics/flight_models.py:164`
+# **Type**: Stub | **Location**: `./src/shared/python/physics/flight_models.py:164`
+
+Found critical incomplete implementation in `./src/shared/python/physics/impact_model.py` at line 135.
+
+## Context
+
+**Type**: Stub | **Location**: `./src/shared/python/physics/impact_model.py:135`
+
+> > > > > > > > origin/staging:docs/assessments/issues/Issue_2159_Incomplete_Stub_in_impact_model_py_135.md
 
 ```python
-name
+solve
 ```
 
 ## Audit Metrics

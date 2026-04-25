@@ -29,8 +29,8 @@ jobs:
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
             echo "Self-hosted runner online — routing locally"
           else
-            echo "::error::No local self-hosted runner available; failing closed"
-            exit 1
+            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
+            echo "No self-hosted runner — using GitHub-hosted"
           fi
   organize-docs:
     needs: pick-runner
@@ -38,7 +38,7 @@ jobs:
     if: vars.WORKFLOWS_PAUSED != 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           fetch-depth: 0
 
@@ -86,7 +86,7 @@ jobs:
           rm -rf .jules/debug_* || true
 
       - name: Commit Changes
-        uses: stefanzweifel/git-auto-commit-action@v7
+        uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9  # v7
         with:
           commit_message: "docs: nightly documentation organization and workflow update"
           file_pattern: "docs/maintenance/WORKFLOWS.md docs/review_archive/* .jules/temp_* .jules/debug_*"

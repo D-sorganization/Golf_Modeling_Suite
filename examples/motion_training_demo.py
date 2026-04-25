@@ -271,11 +271,11 @@ def main():
     output_dir = Path(args.output)
 
     if not trajectory_path.exists():
-        raise FileNotFoundError(
-            f"Trajectory file not found: {trajectory_path}\n"
-            f"  Fix: Provide a valid trajectory file via --trajectory "
-            f"or use the bundled fixture at data/golf_trajectory.csv"
+        print(
+            f"Error: motion capture file not found at {trajectory_path}. "
+            "Provide a valid .c3d file path."
         )
+        sys.exit(1)
 
     if args.plot_only:
         run_trajectory_analysis(trajectory_path, args.sheet, output_dir)

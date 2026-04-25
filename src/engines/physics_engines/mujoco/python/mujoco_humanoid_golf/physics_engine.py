@@ -25,7 +25,9 @@ from src.shared.python.core.contracts import (
     postcondition,
     precondition,
 )
+from src.shared.python.core.numerical_constants import EPSILON_TIME_STEP
 from src.shared.python.data_io.path_utils import get_repo_root
+from src.shared.python.engine_core.capabilities import Capability
 from src.shared.python.engine_core.interfaces import PhysicsEngine
 from src.shared.python.logging_pkg.logging_config import get_logger
 from src.shared.python.security.security_utils import validate_path
@@ -143,8 +145,25 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
         lambda self, dt=None: self.is_initialized, "Engine must be initialized"
     )  # noqa: E501
     def step(self, dt: float | None = None) -> None:
-        """Step the simulation forward."""
+        """Step the simulation forward.
+
+        Args:
+            dt: Time step [s]. Must be > EPSILON_TIME_STEP if provided.
+
+        Raises:
+            ValueError: If dt is not positive.
+        """
         if self.model is not None and self.data is not None:
+            # Determine effective time step
+            effective_dt = dt if dt is not None else self.model.opt.timestep
+
+            # Guard against invalid time steps (Issue #3054)
+            if effective_dt <= EPSILON_TIME_STEP:
+                raise ValueError(
+                    f"dt must be positive, got {effective_dt}. "
+                    f"Minimum supported: {EPSILON_TIME_STEP}"
+                )
+
             # If dt is provided, temporarily override option.timestep
             if dt is not None:
                 old_dt = self.model.opt.timestep
@@ -724,3 +743,21 @@ class MuJoCoPhysicsEngine(PhysicsEngine):
             "velocity": velocity,
             "modal_amplitudes": state["amplitudes"].copy(),
         }
+
+    def capabilities(self) -> frozenset:
+        """Return the set of Capability members this engine supports.
+
+        Returns:
+            frozenset[Capability] of capabilities implemented by MuJoCo.
+        """
+        return frozenset(
+            {
+                Capability.FORWARD_DYNAMICS,
+                Capability.INVERSE_DYNAMICS,
+                Capability.CONTACT_FORCES,
+                Capability.MASS_MATRIX,
+                Capability.JACOBIAN,
+                Capability.DRIFT_CONTROL,
+                Capability.COUNTERFACTUAL,
+            }
+        )

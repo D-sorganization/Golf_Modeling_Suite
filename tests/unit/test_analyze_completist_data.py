@@ -3,15 +3,22 @@
 from __future__ import annotations
 
 import importlib.util
+import types
 from datetime import datetime
 from pathlib import Path
+
+import pytest
+
+pytestmark = pytest.mark.unit
+
+import pytest  # noqa: E402
 
 SCRIPT_PATH = (
     Path(__file__).resolve().parents[2] / "scripts" / "analyze_completist_data.py"
 )
 
 
-def _load_module():
+def _load_module() -> types.ModuleType:
     spec = importlib.util.spec_from_file_location(
         "analyze_completist_data", SCRIPT_PATH
     )

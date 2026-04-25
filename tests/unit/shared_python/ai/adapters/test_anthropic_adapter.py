@@ -1,36 +1,35 @@
-"""Tests for the Anthropic adapter."""
+"""Tests for the Anthropic adapter.
+
+The ``anthropic`` stub that this module depends on is installed by
+``conftest.pytest_configure`` (see ``conftest.py`` in this directory), which
+keeps the banned module-level ``sys.modules[...] = MagicMock()`` assignments
+out of test files while still ensuring the stub is present before
+``anthropic_adapter`` is imported for the first time.
+"""
+
+from __future__ import annotations
 
 import sys
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
-# Mock anthropic globally so lazy imports bypass the missing package
-anthropic_mock = MagicMock()
-anthropic_mock.OpenAI = MagicMock()
-anthropic_mock.Anthropic = MagicMock()
-sys.modules["anthropic"] = anthropic_mock
-# for gemini
-if "anthropic" == "google.generativeai":
-    sys.modules["google"] = MagicMock()
-from unittest.mock import MagicMock, patch  # noqa: E402
+import pytest
 
-import pytest  # noqa: E402
-
-from src.shared.python.ai.adapters.anthropic_adapter import (  # noqa: E402
-    AnthropicAdapter,
-)
-from src.shared.python.ai.adapters.base import ToolDeclaration  # noqa: E402
-from src.shared.python.ai.exceptions import (  # noqa: E402
+from src.shared.python.ai.adapters.anthropic_adapter import AnthropicAdapter
+from src.shared.python.ai.adapters.base import ToolDeclaration
+from src.shared.python.ai.exceptions import (
     AIConnectionError,
     AIProviderError,
     AIRateLimitError,
     AITimeoutError,
 )
-from src.shared.python.ai.types import (  # noqa: E402
+from src.shared.python.ai.types import (
     ConversationContext,
     ExpertiseLevel,
     Message,
     ProviderCapability,
 )
+
+pytestmark = pytest.mark.unit
 
 
 @pytest.fixture

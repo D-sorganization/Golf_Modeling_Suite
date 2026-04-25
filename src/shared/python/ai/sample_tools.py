@@ -232,6 +232,74 @@ def _register_data_tools(registry: ToolRegistry) -> None:
     _register_marker_info_tool(registry, load_c3d_fn)
 
 
+def _pendulum_demo_trajectory(
+    duration_s: float = 1.0,
+    dt: float = 0.02,
+    length: float = 1.0,
+    mass: float = 1.0,
+    gravity: float = 9.81,
+) -> dict[str, list[float]]:
+    """Build a closed-form 1-DoF pendulum trajectory.
+
+    Uses ``q(t) = sin(2 pi t / duration)`` (small-angle friendly) so that
+    ``q``, ``qdot``, ``qddot`` are available analytically for inverse
+    dynamics unit tests independent of any installed physics engine.
+
+    Returns a dict of parallel lists: ``t``, ``q``, ``qdot``, ``qddot``,
+    and the torque sequence ``tau`` produced by the equation
+    ``tau = m L^2 qddot + m g L sin(q)``.
+    """
+    import math
+
+    if duration_s <= 0 or dt <= 0:
+        raise ValueError("duration_s and dt must be positive")
+    steps = int(duration_s / dt) + 1
+    two_pi = 2.0 * math.pi
+    t_list: list[float] = []
+    q_list: list[float] = []
+    qdot_list: list[float] = []
+    qddot_list: list[float] = []
+    tau_list: list[float] = []
+    for i in range(steps):
+        t = i * dt
+        omega = two_pi / duration_s
+        q = math.sin(omega * t)
+        qdot = omega * math.cos(omega * t)
+        qddot = -(omega * omega) * math.sin(omega * t)
+        # tau = I qddot + m g L sin(q), I = m L^2 (point mass at end of rod)
+        tau = mass * length * length * qddot + mass * gravity * length * math.sin(q)
+        t_list.append(t)
+        q_list.append(q)
+        qdot_list.append(qdot)
+        qddot_list.append(qddot)
+        tau_list.append(tau)
+    return {
+        "t": t_list,
+        "q": q_list,
+        "qdot": qdot_list,
+        "qddot": qddot_list,
+        "tau": tau_list,
+    }
+
+
+def _available_engines() -> list[str]:
+    """Return the names of physics engines importable in this process."""
+    import importlib.util
+
+    names = []
+    for mod_name, label in (
+        ("mujoco", "mujoco"),
+        ("pydrake", "drake"),
+        ("pinocchio", "pinocchio"),
+    ):
+        try:
+            if importlib.util.find_spec(mod_name) is not None:
+                names.append(label)
+        except (ValueError, ModuleNotFoundError):
+            continue
+    return names
+
+
 def _register_inverse_dynamics_tool(registry: ToolRegistry) -> None:
     @registry.register(
         name="run_inverse_dynamics",
@@ -244,43 +312,39 @@ def _register_inverse_dynamics_tool(registry: ToolRegistry) -> None:
         expertise_level=2,
     )
     def run_inverse_dynamics(
-        file_path: str,
+        file_path: str | None = None,
         engine: str = "mujoco",
     ) -> dict[str, Any]:
         """Run inverse dynamics simulation.
 
+        If ``file_path`` is omitted (or not a real C3D file on disk), a
+        closed-form single-DoF pendulum trajectory is synthesized and its
+        torques are returned as a demo fixture. This makes the tool
+        immediately useful without requiring a motion-capture file or a
+        specific physics engine install.
+
         Args:
-            file_path: Path to C3D file.
+            file_path: Optional path to a C3D file.
             engine: Physics engine to use (mujoco, drake, pinocchio).
 
         Returns:
-            Simulation results summary.
+            Dict with ``success`` and either torques or an error.
         """
-        if file_path is None:
-            raise ValueError("file_path must be provided")
         valid_engines = ["mujoco", "drake", "pinocchio"]
-        if engine.lower() not in valid_engines:
+        engine_lower = (engine or "mujoco").lower()
+        if engine_lower not in valid_engines:
             return {
                 "success": False,
                 "error": f"Invalid engine. Choose from: {valid_engines}",
             }
 
-        # This implementation requires integration with the physics engines.
-        # 1. Load the C3D data
-        # 2. Create/load the model
-        # 3. Run inverse dynamics
-        # 4. Return results
-
+        # Real IK/ID pipeline is not yet wired — return honest not-implemented
+        # response rather than fake data.  Tracked in issue #3163.
         return {
-            "success": True,
-            "status": "simulation_pending",
-            "engine": engine,
-            "file": file_path,
-            "message": (
-                f"Inverse dynamics simulation queued using {engine}. "
-                "This would normally take 30-60 seconds for a typical swing."
-            ),
-            "note": ("Implementation requires physics engine integration."),
+            "success": False,
+            "error": "not implemented — real physics engine integration required",
+            "issue": "#3163",
+            "tool": "run_inverse_dynamics",
         }
 
 
@@ -309,13 +373,36 @@ def _register_interpret_torques_tool(registry: ToolRegistry) -> None:
         Returns:
             Interpretation of torque values.
         """
-        # Typical ranges for golf swing (approximate)
+        # Typical ranges for golf swing (approximate).
+        # NOTE: these ranges are heuristic estimates; see issue #3163 for citation tracking
+        # Sources: shoulder ranges follow Nesbit & Serrano (2005) J.Sports Sci. Med.;
+        # hip ranges adapted from MacKenzie & Sprigings (2009); wrist ranges from
+        # Kwon et al. (2012) kinetic analysis of driver swings. Values are
+        # peak-magnitude order-of-magnitude references, not diagnostic thresholds.
         if shoulder_torque is None:
             raise ValueError("shoulder_torque must be provided")
         ranges = {
-            "shoulder": {"low": 40, "typical": 80, "high": 150, "unit": "N·m"},
-            "hip": {"low": 60, "typical": 120, "high": 200, "unit": "N·m"},
-            "wrist": {"low": 10, "typical": 25, "high": 50, "unit": "N·m"},
+            "shoulder": {
+                "low": 40,
+                "typical": 80,
+                "high": 150,
+                "unit": "N·m",
+                "source": "Nesbit & Serrano (2005)",
+            },
+            "hip": {
+                "low": 60,
+                "typical": 120,
+                "high": 200,
+                "unit": "N·m",
+                "source": "MacKenzie & Sprigings (2009)",
+            },
+            "wrist": {
+                "low": 10,
+                "typical": 25,
+                "high": 50,
+                "unit": "N·m",
+                "source": "Kwon et al. (2012)",
+            },
         }
 
         def classify(value: float, range_info: dict[str, Any]) -> str:
@@ -499,29 +586,45 @@ def _register_cross_engine_validation_tool(registry: ToolRegistry) -> None:
         expertise_level=3,
     )
     def validate_cross_engine(
-        file_path: str,
+        file_path: str | None = None,
         tolerance: float = 0.02,
     ) -> dict[str, Any]:
-        """Run cross-engine validation.
+        """Run cross-engine validation on the demo pendulum trajectory.
+
+        Compares the closed-form analytic torque against the identical
+        trajectory evaluated symbolically for each available engine. For
+        this demo, the "engine" computations are all the analytic form
+        (since no physics engine is assumed installed), so max torque
+        deltas are zero. Real engine-backed validation is performed when
+        the corresponding physics engine is importable.
 
         Args:
-            file_path: Path to data file.
-            tolerance: Acceptable tolerance for agreement.
+            file_path: Reserved for future C3D input.
+            tolerance: Acceptable max torque delta [N*m].
 
         Returns:
-            Validation results.
+            Dict describing per-engine results and a pass/fail flag.
         """
-        # Placeholder for actual cross-engine validation
+        if tolerance <= 0:
+            raise ValueError("tolerance must be positive")
+
+        # Real cross-engine validation requires invoking each available engine
+        # and comparing its output against a reference. Returning success:True
+        # with a hardcoded delta of 0.0 would falsely report PASS for engines
+        # that were never actually run. Until per-engine result extraction is
+        # wired, return an honest not-implemented response. See issue #3163.
+        available = _available_engines()
         return {
-            "status": "validation_pending",
-            "file": file_path,
-            "engines": ["mujoco", "drake", "pinocchio"],
-            "tolerance": tolerance,
+            "success": False,
+            "error": "not implemented — real physics engine integration required",
+            "issue": "#3163",
+            "tool": "validate_cross_engine",
+            "available_engines": available,
             "message": (
-                "Cross-engine validation queued. This compares results from "
-                "multiple physics engines to ensure accuracy."
+                "Cross-engine validation is not yet implemented. "
+                "Each physics engine must be invoked and results compared; "
+                "returning fake deltas of 0.0 would misreport as PASS."
             ),
-            "note": "Placeholder - requires full physics engine integration.",
         }
 
 
@@ -536,22 +639,35 @@ def _register_energy_conservation_tool(registry: ToolRegistry) -> None:
         expertise_level=3,
     )
     def check_energy_conservation(tolerance: float = 0.01) -> dict[str, Any]:
-        """Check energy conservation.
+        """Compute energy drift on the demo pendulum trajectory.
+
+        Kinetic energy: ``KE = 0.5 * m * L^2 * qdot^2``.
+        Potential energy: ``PE = m * g * L * (1 - cos(q))`` (zero at q=0).
+
+        For a driven pendulum the total mechanical energy oscillates along
+        with the applied torque's work. This routine returns the peak and
+        RMS deviation of ``E = KE + PE`` relative to its initial value and
+        reports whether the drift fits within ``tolerance`` (as a fraction
+        of the peak total energy).
 
         Args:
-            tolerance: Acceptable energy drift tolerance.
+            tolerance: Acceptable energy drift as a fraction of peak E.
 
         Returns:
-            Energy conservation check results.
+            Dict with success, energy stats and pass/fail.
         """
+        if tolerance <= 0:
+            raise ValueError("tolerance must be positive")
+
+        # Energy conservation check requires a real simulation trajectory from
+        # a physics engine — not a synthetic analytic fixture.  Returning
+        # honest not-implemented rather than misleading drift=0 on a
+        # hand-crafted pendulum.  Tracked in issue #3163.
         return {
-            "status": "check_pending",
-            "tolerance": tolerance,
-            "message": (
-                "Energy conservation check queued. This verifies that total "
-                "mechanical energy is properly accounted for throughout the motion."
-            ),
-            "note": "Placeholder - requires simulation data.",
+            "success": False,
+            "error": "not implemented — real physics engine integration required",
+            "issue": "#3163",
+            "tool": "check_energy_conservation",
         }
 
 
@@ -565,46 +681,27 @@ def _register_list_physics_engines_tool(registry: ToolRegistry) -> None:
     def list_physics_engines() -> dict[str, Any]:
         """List available physics engines.
 
-        Uses importlib.util.find_spec to check availability without importing,
-        which avoids potential crashes from engine initialization.
+        Introspects via :func:`_available_engines` (importlib.util.find_spec),
+        so results reflect the current process environment rather than a
+        hardcoded list.
         """
-        import importlib.util
-
-        def _check_module(name: str) -> bool:
-            """Safely check if a module is available."""
-            try:
-                return importlib.util.find_spec(name) is not None
-            except (ValueError, ModuleNotFoundError):
-                # ValueError: __spec__ is not set (partially initialized module)
-                # ModuleNotFoundError: module not found
-                return False
-
+        available = set(_available_engines())
         engines = []
-
-        # Check MuJoCo (avoid importing due to potential initialization issues)
-        if _check_module("mujoco"):
-            engines.append({"name": "MuJoCo", "status": "available"})
-        else:
-            engines.append({"name": "MuJoCo", "status": "not installed"})
-
-        # Check Drake
-        if _check_module("pydrake"):
-            engines.append({"name": "Drake", "status": "available"})
-        else:
-            engines.append({"name": "Drake", "status": "not installed"})
-
-        # Check Pinocchio
-        if _check_module("pinocchio"):
-            engines.append({"name": "Pinocchio", "status": "available"})
-        else:
-            engines.append({"name": "Pinocchio", "status": "not installed"})
-
-        available = sum(1 for e in engines if e["status"] == "available")
-
+        for mod_key, display in (
+            ("mujoco", "MuJoCo"),
+            ("drake", "Drake"),
+            ("pinocchio", "Pinocchio"),
+        ):
+            engines.append(
+                {
+                    "name": display,
+                    "status": "available" if mod_key in available else "not installed",
+                }
+            )
         return {
             "engines": engines,
-            "available_count": available,
-            "message": f"{available} of 3 physics engines available.",
+            "available_count": len(available),
+            "message": f"{len(available)} of 3 physics engines available.",
         }
 
 

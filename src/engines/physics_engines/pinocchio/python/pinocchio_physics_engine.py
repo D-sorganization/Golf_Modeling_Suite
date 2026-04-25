@@ -23,7 +23,9 @@ from src.shared.python.engine_core.base_physics_engine import (
     BasePhysicsEngine,
 )
 from src.shared.python.engine_core.capabilities import (
+    Capability,
     CapabilityLevel,
+    CapabilityNotSupported,
     EngineCapabilities,
 )
 from src.shared.python.engine_core.engine_availability import (
@@ -36,6 +38,7 @@ if PINOCCHIO_AVAILABLE:
     import pinocchio as pin
 
 from src.shared.python.core import constants
+from src.shared.python.core.numerical_constants import EPSILON_TIME_STEP
 
 logger = get_logger(__name__)
 
@@ -130,6 +133,28 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
             extra={"spatial_jacobian_order": "angular_linear"},
         )
 
+    def capabilities(self) -> frozenset[Capability]:
+        """Return the set of optional capabilities this Pinocchio engine supports.
+
+        Contact forces are NOT included because standard ABA dynamics in
+        Pinocchio do not compute contact forces without a constraint solver.
+        Callers should check ``Capability.CONTACT_FORCES in engine.capabilities()``
+        before dispatching to ``compute_contact_forces()``.
+
+        Returns:
+            frozenset[Capability] of capabilities implemented by Pinocchio.
+        """
+        return frozenset(
+            {
+                Capability.FORWARD_DYNAMICS,
+                Capability.INVERSE_DYNAMICS,
+                Capability.MASS_MATRIX,
+                Capability.JACOBIAN,
+                Capability.DRIFT_CONTROL,
+                Capability.COUNTERFACTUAL,
+            }
+        )
+
     def _load_from_path_impl(self, path: str) -> None:
         """Pinocchio-specific model loading from URDF file path.
 
@@ -196,13 +221,32 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
         *,
         integrator: PinocchioIntegrator | None = None,
     ) -> None:
-        """Advance the simulation by one time step."""
+        """Advance the simulation by one time step.
+
+        Args:
+            dt: Time step size [s]. Must be > EPSILON_TIME_STEP.
+                Defaults to DEFAULT_TIME_STEP.
+            integrator: Integration scheme — ``"semi_implicit"`` (symplectic
+                Euler, O(dt), energy-stable) or ``"rk4"`` (classic 4th-order
+                Runge-Kutta, O(dt^4), more accurate for large dt or
+                validation).
+
+        Raises:
+            ValueError: If dt is not positive.
+        """
         if self.model is None or self.data is None:
             return
 
         time_step = dt if dt is not None else DEFAULT_TIME_STEP
         if time_step <= 0.0:
             raise ValueError("dt must be positive")
+
+        # Guard against invalid time steps (Issue #3054)
+        if time_step <= EPSILON_TIME_STEP:
+            raise ValueError(
+                f"dt must be positive, got {time_step}. "
+                f"Minimum supported: {EPSILON_TIME_STEP}"
+            )
 
         method = self.integrator if integrator is None else integrator
         if method == "rk4":
@@ -390,29 +434,22 @@ class PinocchioPhysicsEngine(BasePhysicsEngine):
         return cast(np.ndarray, tau)
 
     @precondition(lambda self: self.is_initialized, "Engine must be initialized")
-    @postcondition(
-        lambda result: result is not None and result.shape == (3,),
-        "Contact forces must be a (3,) array",
-    )
     def compute_contact_forces(self) -> np.ndarray:
         """Compute total contact forces (ground reaction force, GRF).
 
-        Pinocchio's standard ABA dynamics do not compute contact forces
-        without a constraint solver (e.g., RigidContactModel + ProximalContactSolver).
-        This implementation returns a zero-force fallback to allow callers
-        to degrade gracefully to static gravity approximations.
+        Raises:
+            CapabilityNotSupported: Always. Pinocchio's standard ABA does not
+                compute contact forces without a constraint solver (e.g.,
+                RigidContactModel + ProximalContactSolver). Returning zeros
+                would silently misrepresent the physical state and mask
+                integration failures downstream.
 
-        For accurate contact-aware dynamics, use Drake, MuJoCo, or a
-        constraint-enabled Pinocchio configuration.
-
-        Returns:
-            Zero force vector [N] (3,) as fallback for unsupported contact queries.
+                Check ``Capability.CONTACT_FORCES in engine.capabilities()``
+                before calling this method. Use Drake or MuJoCo for GRF.
         """
-        if self.model is None or self.data is None:
-            return np.array([0.0, 0.0, 0.0])
-
-        # Return zero vector; callers check norm and fall back to gravity
-        return np.array([0.0, 0.0, 0.0])
+        raise CapabilityNotSupported(
+            "PinocchioPhysicsEngine", Capability.CONTACT_FORCES
+        )
 
     @precondition(
         lambda self, body_name: self.is_initialized,

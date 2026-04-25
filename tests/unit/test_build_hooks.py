@@ -1,6 +1,30 @@
+"""Tests for build_hooks module.
+
+``build_hooks`` imports ``hatchling`` at module level, so the stubs must be
+in place before the module is imported. We install the stubs from
+``tests._mocks.physics_stubs.hatchling_stubs`` directly into ``sys.modules``
+(only for keys that are not already present) and remove exactly those keys
+in ``teardown_module``. This cooperates with other test modules that may
+install their own stubs, avoiding the ``patch.dict`` snapshot-and-restore
+pattern that wipes unrelated entries.
+
+This is NOT a module-level ``sys.modules[...] = MagicMock()`` assignment —
+it goes through the shared helper and tracks only the keys this module
+actually added.
+"""
+
+from __future__ import annotations
+
 import os
+import subprocess
 import sys
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
+
+import pytest
+
+pytestmark = pytest.mark.unit
+
+from tests._mocks.physics_stubs import hatchling_stubs  # noqa: E402
 
 
 class DummyHookInterface:
@@ -9,20 +33,24 @@ class DummyHookInterface:
         self.config = config
 
 
-sys.modules["hatchling"] = MagicMock()
-sys.modules["hatchling.builders"] = MagicMock()
-sys.modules["hatchling.builders.hooks"] = MagicMock()
-sys.modules["hatchling.builders.hooks.plugin"] = MagicMock()
-sys.modules["hatchling.builders.hooks.plugin.interface"] = MagicMock()
-sys.modules[
-    "hatchling.builders.hooks.plugin.interface"
-].BuildHookInterface = DummyHookInterface
+# Install hatchling stubs only for keys we own, and record them so teardown
+# removes only those entries (never other tests' stubs).
+_installed_keys: list[str] = []
+for _key, _value in hatchling_stubs(hook_interface=DummyHookInterface).items():
+    if _key not in sys.modules:
+        sys.modules[_key] = _value
+        _installed_keys.append(_key)
 
-import subprocess  # noqa: E402
-
-import pytest  # noqa: E402
-
+# Force a fresh import of build_hooks under the mocked hatchling.
+sys.modules.pop("build_hooks", None)
 import build_hooks  # noqa: E402
+
+
+def teardown_module(module) -> None:
+    """Remove only the hatchling stubs installed by this test module."""
+    for key in _installed_keys:
+        sys.modules.pop(key, None)
+    sys.modules.pop("build_hooks", None)
 
 
 class DummyConfig:

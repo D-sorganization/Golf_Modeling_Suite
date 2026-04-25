@@ -50,8 +50,8 @@ jobs:
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
             echo "Self-hosted runner online — routing locally"
           else
-            echo "::error::No local self-hosted runner available; failing closed"
-            exit 1
+            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
+            echo "No self-hosted runner — using GitHub-hosted"
           fi
   # ===========================================================================
   # Check - Fast validation on PRs
@@ -62,17 +62,28 @@ jobs:
     runs-on: self-hosted
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - name: Checkout Tools (tools-core dependency)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          repository: D-sorganization/Tools
+          path: _tools_dep
+          sparse-checkout: |
+            rust_core
+            Cargo.toml
+            rust-toolchain.toml
+      - name: Symlink Tools for Cargo path resolution
+        run: ln -sfn "$GITHUB_WORKSPACE/_tools_dep" "$GITHUB_WORKSPACE/../Tools"
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4.1.0
         with:
           node-version: "24"
           cache: "npm"
           cache-dependency-path: ui/package-lock.json
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8  # stable
         with:
           components: rustfmt, clippy
 
@@ -112,32 +123,43 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: d-sorg-fleet
+          - platform: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-          - platform: [self-hosted, Windows]
+          - platform: windows-latest
             target: x86_64-pc-windows-msvc
-          - platform: [self-hosted, macOS]
+          - platform: macos-latest
             target: x86_64-apple-darwin
 
     runs-on: ${{ matrix.platform }}
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - name: Checkout Tools (tools-core dependency)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          repository: D-sorganization/Tools
+          path: _tools_dep
+          sparse-checkout: |
+            rust_core
+            Cargo.toml
+            rust-toolchain.toml
+      - name: Symlink Tools for Cargo path resolution
+        run: ln -sfn "$GITHUB_WORKSPACE/_tools_dep" "$GITHUB_WORKSPACE/../Tools"
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4.1.0
         with:
           node-version: "24"
           cache: "npm"
           cache-dependency-path: ui/package-lock.json
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8  # stable
         with:
           targets: ${{ matrix.target }}
 
       - name: Install Linux dependencies
-        if: matrix.platform == 'd-sorg-fleet'
+        if: matrix.platform == 'ubuntu-latest'
         run: |
           sudo apt-get -o DPkg::Lock::Timeout=300 update
           sudo apt-get -o DPkg::Lock::Timeout=300 install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
@@ -151,14 +173,14 @@ jobs:
         run: npm run build
 
       - name: Build Tauri app
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5  # v0
         env:
           GITHUB_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         with:
           projectPath: ui
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b  # v4.5.0
         with:
           name: golf-modeling-suite-${{ matrix.platform }}
           path: |
