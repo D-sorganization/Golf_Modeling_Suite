@@ -216,7 +216,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add .jules/pending/pr_comments.json
+          git add -f .jules/pending/pr_comments.json
 
           if ! git diff --staged --quiet; then
             git commit -m "chore: queue PR comment for batch processing
