@@ -1,21 +1,36 @@
 # Review Comments Archive - 2026-04-25
 
-Generated: 2026-04-25T09:27:03.181108
+Generated: 2026-04-25T11:46:29.826711
 
-## Reviewer (chatgpt-codex-connector[bot]) (1 comments)
+## Reviewer (chatgpt-codex-connector[bot]) (2 comments)
 
-### PR #3259: .github/workflows/Jules-Assessment-Remediator.yml:66
+### PR #3287: src/shared/python/physics/shaft_model.py:401
 
-Actionable: No
+Actionable: Yes
 Has Suggestion: No
 
 ```
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Grant token scope before invoking kill-switch action**
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Split shaft_model.py below the repository size cap**
 
-This workflow now calls `./.github/actions/check-kill-switch`, but its `GITHUB_TOKEN` is still limited to `contents: read` and `issues: write`; the action queries `GET /repos/{owner}/{repo}/actions/variables/WORKFLOWS_PAUSED`, so in this permission set the lookup can return 403 and the action falls back to `false`, allowing the job to continue even when ...
+The new `shaft_model.py` exceeds the repository’s mandatory file-size limit from `AGENTS.md` (section **5d: No Monolithic Files**, max 400 lines). This file reaches 418 lines, so the refactor still leaves a monolithic module and reintroduces the maintainability debt this change is trying to resolve. Please split this file into smaller focused modules (for ...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3259#discussion_r3142235702)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3287#discussion_r3142402740)
+
+---
+
+### PR #3287: src/shared/python/physics/shaft_integrator.py:401
+
+Actionable: Yes
+Has Suggestion: No
+
+```
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Break up shaft_integrator.py to satisfy AGENTS.md limits**
+
+`shaft_integrator.py` also violates `AGENTS.md` section **5d (No Monolithic Files)** by exceeding the 400-line maximum for newly created files (this module is 528 lines). Keeping integration, static analysis, and factory logic in one oversized file undermines the stated architecture rule and increases long-term maintenance risk; it should be split in...
+```
+
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3287#discussion_r3142402741)
 
 ---
 
