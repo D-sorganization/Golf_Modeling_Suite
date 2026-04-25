@@ -29,8 +29,8 @@ Last-Updated: 2026-04-24T21:04:00-07:00
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.177                                            |
-| **Last Spec Update**    | 2026-04-24                                         |
+| **Spec Version**        | 1.0.178                                            |
+| **Last Spec Update**    | 2026-04-25                                         |
 
 ## 2. Purpose & Mission
 
@@ -748,3 +748,4 @@ pytest tests/ --cov=src --cov-fail-under=70
 - Mounted production quota route dependencies consistently and deferred auth-mode bypass decisions to request time so local/test API requests preserve endpoint validation semantics while cloud-mode simulation and video routes reject unauthenticated access.
 - Restored legacy `/api/...` API route registration for launcher, terrain, and other existing clients while preserving root and `/api/v1/...` route coverage.
 - Enforced streamed upload byte-limit validation in upload-related API handlers and tests for robust production quota enforcement.
+| 1.0.178 | 2026-04-25 | Bolt: Optimized np.sum(x**2) to np.vdot(x, x) in signal_toolkit/fitting.py and plot_engine/trendline.py for performance. |
