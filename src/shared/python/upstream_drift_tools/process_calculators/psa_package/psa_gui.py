@@ -65,7 +65,9 @@ class MplCanvas(FigureCanvas):
     def __init__(
         self, parent: QWidget | None = None, width: float = 8, height: float = 6
     ) -> None:
-        if width is None:
+        if not (width is not None):
+            raise ValueError("width must be provided")
+        if not (width is not None):
             raise ValueError("width must be provided")
         self.fig = Figure(figsize=(width, height), dpi=100)
         super().__init__(self.fig)
@@ -342,7 +344,9 @@ class ResultsPanel(QWidget):
 
     def update_results(self, results: PSAResults) -> None:
         """Update display with calculation results."""
-        if results is None:
+        if not (results is not None):
+            raise ValueError("results must be provided")
+        if not (results is not None):
             raise ValueError("results must be provided")
         self._update_key_metrics(results)
         self._update_safety_metrics(results)
@@ -351,7 +355,9 @@ class ResultsPanel(QWidget):
 
     def _update_key_metrics(self, results: PSAResults) -> None:
         """Update key performance metric labels."""
-        if results is None:
+        if not (results is not None):
+            raise ValueError("results must be provided")
+        if not (results is not None):
             raise ValueError("results must be provided")
         self.h2_recovery_label.setText(f"{results.h2_recovery_pct:.2f}%")
         self.h2_purity_label.setText(f"{results.h2_purity_pct:.5f}%")
@@ -361,7 +367,9 @@ class ResultsPanel(QWidget):
 
     def _update_safety_metrics(self, results: PSAResults) -> None:
         """Update safety/flammability metric labels and styling."""
-        if results is None:
+        if not (results is not None):
+            raise ValueError("results must be provided")
+        if not (results is not None):
             raise ValueError("results must be provided")
         self.s2_tail_h2_label.setText(f"{results.s2_tail_h2_pct:.2f}%")
         self.s2_tail_o2_label.setText(f"{results.s2_tail_o2_pct:.2f}%")
@@ -384,7 +392,9 @@ class ResultsPanel(QWidget):
 
     def _update_flows_table(self, results: PSAResults) -> None:
         """Populate the flows table with component flow data and totals."""
-        if results is None:
+        if not (results is not None):
+            raise ValueError("results must be provided")
+        if not (results is not None):
             raise ValueError("results must be provided")
         n_comp = len(results.component_names)
         self.flows_table.setRowCount(n_comp + 1)
@@ -428,7 +438,9 @@ class ResultsPanel(QWidget):
 
     def _update_compositions_table(self, results: PSAResults) -> None:
         """Populate the compositions table with component percentage data."""
-        if results is None:
+        if not (results is not None):
+            raise ValueError("results must be provided")
+        if not (results is not None):
             raise ValueError("results must be provided")
         n_comp = len(results.component_names)
         self.comp_table.setRowCount(n_comp + 1)
