@@ -14,6 +14,7 @@ Design by Contract:
 
 from __future__ import annotations
 
+import math
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 
@@ -276,7 +277,7 @@ class FootstepPlanner(ContractChecker):
 
         # Compute direction to goal
         direction = goal - start
-        distance = float(np.linalg.norm(direction[:2]))
+        distance = math.hypot(direction[0], direction[1])
 
         if distance < 1e-3:
             # Already at goal, return empty plan
@@ -536,7 +537,7 @@ class FootstepPlanner(ContractChecker):
         if start is None:
             raise ValueError("start must be provided")
         direction = goal - start
-        distance = float(np.linalg.norm(direction[:2]))
+        distance = math.hypot(direction[0], direction[1])
         path_yaw = float(np.arctan2(direction[1], direction[0]))
 
         # Number of steps
