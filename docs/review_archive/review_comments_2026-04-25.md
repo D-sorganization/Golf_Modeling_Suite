@@ -1,21 +1,21 @@
 # Review Comments Archive - 2026-04-25
 
-Generated: 2026-04-25T09:27:03.181108
+Generated: 2026-04-25T11:00:26.928822
 
 ## Reviewer (chatgpt-codex-connector[bot]) (1 comments)
 
-### PR #3259: .github/workflows/Jules-Assessment-Remediator.yml:66
+### PR #3281: src/shared/python/engine_core/base_physics_engine.py:487
 
-Actionable: No
+Actionable: Yes
 Has Suggestion: No
 
 ```
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Grant token scope before invoking kill-switch action**
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Avoid making BasePhysicsEngine abstract without migrations**
 
-This workflow now calls `./.github/actions/check-kill-switch`, but its `GITHUB_TOKEN` is still limited to `contents: read` and `issues: write`; the action queries `GET /repos/{owner}/{repo}/actions/variables/WORKFLOWS_PAUSED`, so in this permission set the lookup can return 403 and the action falls back to `false`, allowing the job to continue even when ...
+Adding `@abstractmethod capabilities()` here makes every existing `BasePhysicsEngine` subclass that lacks this method non-instantiable. In this tree, `PendulumPhysicsEngine` and `GolfSwingPendulumEngine` do not implement `capabilities()`, so constructing them now raises `TypeError` (e.g., `Can't instantiate abstract class ... without an implementat...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3259#discussion_r3142235702)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3281#discussion_r3142352713)
 
 ---
 
