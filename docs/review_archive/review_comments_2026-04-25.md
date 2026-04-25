@@ -1,21 +1,36 @@
 # Review Comments Archive - 2026-04-25
 
-Generated: 2026-04-25T09:27:03.181108
+Generated: 2026-04-25T10:59:51.737100
 
-## Reviewer (chatgpt-codex-connector[bot]) (1 comments)
+## Reviewer (chatgpt-codex-connector[bot]) (2 comments)
 
-### PR #3259: .github/workflows/Jules-Assessment-Remediator.yml:66
+### PR #3279: src/shared/python/engine_core/base_physics_engine.py:487
+
+Actionable: Yes
+Has Suggestion: No
+
+```
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Provide non-breaking capabilities behavior in BasePhysicsEngine**
+
+Making `BasePhysicsEngine.capabilities` abstract here turns every existing `BasePhysicsEngine` subclass without that override into an abstract class. In this repo, `PendulumPhysicsEngine` and `GolfSwingPendulumEngine` do not implement `capabilities()`, so instantiating them now raises `TypeError` and breaks pendulum engine usage at runtime. Th...
+```
+
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3279#discussion_r3142352325)
+
+---
+
+### PR #3279: src/engines/physics_engines/myosuite/python/myosuite_physics_engine.py:893
 
 Actionable: No
 Has Suggestion: No
 
 ```
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Grant token scope before invoking kill-switch action**
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Stop advertising CONTACT_FORCES in MyoSuite capabilities**
 
-This workflow now calls `./.github/actions/check-kill-switch`, but its `GITHUB_TOKEN` is still limited to `contents: read` and `issues: write`; the action queries `GET /repos/{owner}/{repo}/actions/variables/WORKFLOWS_PAUSED`, so in this permission set the lookup can return 403 and the action falls back to `false`, allowing the job to continue even when ...
+This declares `Capability.CONTACT_FORCES`, but `MyoSuitePhysicsEngine` does not implement `compute_contact_forces()`, so calls fall back to `DynamicsInterface.compute_contact_forces()` which returns `np.zeros(3)` by default. With this capability flag set, downstream code that correctly gates on `engine.capabilities()` will treat zero vectors as real ...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3259#discussion_r3142235702)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3279#discussion_r3142352327)
 
 ---
 
