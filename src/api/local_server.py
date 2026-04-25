@@ -42,17 +42,17 @@ mimetypes.add_type("image/jpeg", ".jpg")
 mimetypes.add_type("image/x-icon", ".ico")
 
 # Ensure we're running in local mode with explicit security configuration
-os.environ.setdefault("GOLF_SUITE_MODE", "local")
+os.environ.setdefault("UPSTREAM_SUITE_MODE", "local")
 # Auth is disabled ONLY in local mode for development convenience.
 # This is an intentional security boundary: local servers have NO auth by design.
 # Production servers MUST NOT use local_server.py and MUST enforce authentication.
 # See issue #2714 for security hardening requirements.
-if os.environ.get("GOLF_SUITE_MODE") == "local":
-    os.environ.setdefault("GOLF_AUTH_DISABLED", "true")
+if os.environ.get("UPSTREAM_SUITE_MODE") == "local":
+    os.environ.setdefault("UPSTREAM_AUTH_DISABLED", "true")
 else:
     # Production and other modes: auth is REQUIRED unless explicitly overridden
     # by deployment configuration (e.g., cloud IAM, OAuth2 middleware)
-    os.environ.setdefault("GOLF_AUTH_DISABLED", "false")
+    os.environ.setdefault("UPSTREAM_AUTH_DISABLED", "false")
 
 # NOTE: These imports are placed after env setup intentionally
 # The environment variables must be set before FastAPI initialization
@@ -68,6 +68,7 @@ from src.api.diagnostics import (  # noqa: E402
 from src.api.routes import (  # noqa: E402
     analysis,
     chat_ws,
+    data_explorer,
     engines,
     export,
     glossary,
@@ -171,6 +172,7 @@ def _register_api_routers(app: FastAPI) -> None:
     app.include_router(analysis.router, prefix=API_PREFIX, tags=["Analysis"])
     app.include_router(export.router, prefix=API_PREFIX, tags=["Export"])
     app.include_router(glossary.router, prefix=API_PREFIX, tags=["Glossary"])
+    app.include_router(data_explorer.router, prefix=API_PREFIX, tags=["Data Explorer"])
 
     # Legacy routes: /api/... (deprecated aliases for backward compatibility)
     app.include_router(engines.router, prefix="/api", tags=["Engines"])
@@ -182,6 +184,7 @@ def _register_api_routers(app: FastAPI) -> None:
     app.include_router(analysis.router, prefix="/api", tags=["Analysis"])
     app.include_router(export.router, prefix="/api", tags=["Export"])
     app.include_router(glossary.router, prefix="/api", tags=["Glossary"])
+    app.include_router(data_explorer.router, prefix="/api", tags=["Data Explorer"])
 
 
 def _load_launcher_manifest() -> dict[str, Any]:
