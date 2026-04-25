@@ -20,6 +20,8 @@ This directory contains utility and maintenance scripts for the UpstreamDrift pr
   - `start-gaai-daemon.sh` — Bootstrap the GAAI framework daemon
   - `run_wsl.sh` — Run tests in WSL environment (Windows)
 
+- **`analysis/`** — Data analysis and reporting (reserved for future use)
+
 ## Root-level Entry Points
 
 These scripts are intentionally at the repository root as they are primary entry points:
