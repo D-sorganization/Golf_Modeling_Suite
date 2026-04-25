@@ -425,6 +425,7 @@ def _register_interpret_torques_tool(registry: ToolRegistry) -> None:
             Interpretation of torque values.
         """
         # Typical ranges for golf swing (approximate).
+        # NOTE: these ranges are heuristic estimates; see issue #3163 for citation tracking
         # Sources: shoulder ranges follow Nesbit & Serrano (2005) J.Sports Sci. Med.;
         # hip ranges adapted from MacKenzie & Sprigings (2009); wrist ranges from
         # Kwon et al. (2012) kinetic analysis of driver swings. Values are
@@ -657,37 +658,21 @@ def _register_cross_engine_validation_tool(registry: ToolRegistry) -> None:
         """
         if tolerance <= 0:
             raise ValueError("tolerance must be positive")
-        traj = _pendulum_demo_trajectory()
-        analytic = traj["tau"]
+        # Real cross-engine validation requires invoking each available engine
+        # and comparing its output against a reference. Returning success:True
+        # with a hardcoded delta of 0.0 would falsely report PASS for engines
+        # that were never actually run. Until per-engine result extraction is
+        # wired, return an honest not-implemented response. See issue #3163.
         available = _available_engines()
-        results: list[dict[str, Any]] = []
-        max_delta = 0.0
-        for engine in ("mujoco", "drake", "pinocchio"):
-            # For now every engine reproduces the analytic torque exactly on
-            # the closed-form pendulum fixture; real engine-native computation
-            # will replace this once model import is wired.
-            per_engine_max = 0.0
-            results.append(
-                {
-                    "engine": engine,
-                    "available": engine in available,
-                    "max_delta": per_engine_max,
-                }
-            )
-            max_delta = max(max_delta, per_engine_max)
-        passed = max_delta <= tolerance
         return {
-            "success": True,
-            "source": "demo_fixture",
-            "file": file_path,
-            "tolerance": tolerance,
-            "max_delta": max_delta,
-            "passed": passed,
-            "engines": results,
-            "samples": len(analytic),
+            "success": False,
+            "error": "not implemented",
+            "issue": "#3163",
+            "available_engines": available,
             "message": (
-                "Cross-engine validation on demo pendulum fixture "
-                f"({'PASS' if passed else 'FAIL'} at tol={tolerance})."
+                "Cross-engine validation is not yet implemented. "
+                "Each physics engine must be invoked and results compared; "
+                "returning fake deltas of 0.0 would misreport as PASS."
             ),
         }
 
