@@ -72,7 +72,7 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    repo_root = Path(__file__).resolve().parent.parent
+    repo_root = Path(__file__).resolve().parent.parent.parent
     config = _load_config(repo_root, args.config_path)
     budget = int(config.get("max_lines", 1200))
 
