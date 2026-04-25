@@ -338,64 +338,13 @@ def _register_inverse_dynamics_tool(registry: ToolRegistry) -> None:
                 "error": f"Invalid engine. Choose from: {valid_engines}",
             }
 
-        available = _available_engines()
-        # If an engine name is requested but not installed, be explicit -
-        # demo still works via the closed-form pendulum, so surface both.
-
-        if file_path:
-            path = Path(file_path)
-            if path.exists() and path.suffix.lower() == ".c3d":
-                # Real C3D path: attempt to parse; delegate to load_c3d tool
-                # semantics but only for presence check.
-                try:
-                    import c3d  # noqa: F401
-                except ImportError:
-                    return {
-                        "success": False,
-                        "error": "c3d library not installed",
-                    }
-                try:
-                    with open(path, "rb") as f:
-                        import c3d as _c3d
-
-                        reader = _c3d.Reader(f)
-                        frame_count = reader.last_frame - reader.first_frame + 1
-                        frame_rate = reader.point_rate
-                except (OSError, ValueError) as exc:
-                    return {
-                        "success": False,
-                        "error": f"Failed to parse C3D: {exc}",
-                    }
-                return {
-                    "success": True,
-                    "source": "c3d",
-                    "engine": engine_lower,
-                    "available_engines": available,
-                    "file": str(path),
-                    "frames": frame_count,
-                    "frame_rate": frame_rate,
-                    "message": (
-                        f"C3D loaded for inverse dynamics on {engine_lower}. "
-                        "Full IK/ID pipeline for C3D inputs is not yet wired."
-                    ),
-                }
-
-        # Demo fixture path: analytic pendulum
-        traj = _pendulum_demo_trajectory()
-        torques = [
-            [t, "joint_0", tau] for t, tau in zip(traj["t"], traj["tau"], strict=True)
-        ]
+        # Real IK/ID pipeline is not yet wired — return honest not-implemented
+        # response rather than fake data.  Tracked in issue #3163.
         return {
-            "success": True,
-            "source": "demo_fixture",
-            "engine": engine_lower,
-            "available_engines": available,
-            "torques": torques,
-            "duration_s": traj["t"][-1] if traj["t"] else 0.0,
-            "message": (
-                "Computed joint torques for a closed-form 1-DoF pendulum "
-                "swing (tau = m L^2 qddot + m g L sin q)."
-            ),
+            "success": False,
+            "error": "not implemented — real physics engine integration required",
+            "issue": "#3163",
+            "tool": "run_inverse_dynamics",
         }
 
 
@@ -425,6 +374,7 @@ def _register_interpret_torques_tool(registry: ToolRegistry) -> None:
             Interpretation of torque values.
         """
         # Typical ranges for golf swing (approximate).
+        # NOTE: these ranges are heuristic estimates; see issue #3163 for citation tracking
         # Sources: shoulder ranges follow Nesbit & Serrano (2005) J.Sports Sci. Med.;
         # hip ranges adapted from MacKenzie & Sprigings (2009); wrist ranges from
         # Kwon et al. (2012) kinetic analysis of driver swings. Values are
@@ -657,37 +607,23 @@ def _register_cross_engine_validation_tool(registry: ToolRegistry) -> None:
         """
         if tolerance <= 0:
             raise ValueError("tolerance must be positive")
-        traj = _pendulum_demo_trajectory()
-        analytic = traj["tau"]
+
+        # Real cross-engine validation requires invoking each available engine
+        # and comparing its output against a reference. Returning success:True
+        # with a hardcoded delta of 0.0 would falsely report PASS for engines
+        # that were never actually run. Until per-engine result extraction is
+        # wired, return an honest not-implemented response. See issue #3163.
         available = _available_engines()
-        results: list[dict[str, Any]] = []
-        max_delta = 0.0
-        for engine in ("mujoco", "drake", "pinocchio"):
-            # For now every engine reproduces the analytic torque exactly on
-            # the closed-form pendulum fixture; real engine-native computation
-            # will replace this once model import is wired.
-            per_engine_max = 0.0
-            results.append(
-                {
-                    "engine": engine,
-                    "available": engine in available,
-                    "max_delta": per_engine_max,
-                }
-            )
-            max_delta = max(max_delta, per_engine_max)
-        passed = max_delta <= tolerance
         return {
-            "success": True,
-            "source": "demo_fixture",
-            "file": file_path,
-            "tolerance": tolerance,
-            "max_delta": max_delta,
-            "passed": passed,
-            "engines": results,
-            "samples": len(analytic),
+            "success": False,
+            "error": "not implemented — real physics engine integration required",
+            "issue": "#3163",
+            "tool": "validate_cross_engine",
+            "available_engines": available,
             "message": (
-                "Cross-engine validation on demo pendulum fixture "
-                f"({'PASS' if passed else 'FAIL'} at tol={tolerance})."
+                "Cross-engine validation is not yet implemented. "
+                "Each physics engine must be invoked and results compared; "
+                "returning fake deltas of 0.0 would misreport as PASS."
             ),
         }
 
@@ -720,40 +656,18 @@ def _register_energy_conservation_tool(registry: ToolRegistry) -> None:
         Returns:
             Dict with success, energy stats and pass/fail.
         """
-        import math
-
         if tolerance <= 0:
             raise ValueError("tolerance must be positive")
-        length = 1.0
-        mass = 1.0
-        gravity = 9.81
-        traj = _pendulum_demo_trajectory(length=length, mass=mass, gravity=gravity)
-        ke = [0.5 * mass * length * length * qd * qd for qd in traj["qdot"]]
-        pe = [mass * gravity * length * (1.0 - math.cos(q)) for q in traj["q"]]
-        total = [k + p for k, p in zip(ke, pe, strict=True)]
-        peak = max(abs(e) for e in total) or 1.0
-        baseline = total[0] if total else 0.0
-        deltas = [e - baseline for e in total]
-        max_drift = max(abs(d) for d in deltas) if deltas else 0.0
-        rms_drift = (
-            math.sqrt(sum(d * d for d in deltas) / len(deltas)) if deltas else 0.0
-        )
-        drift_fraction = max_drift / peak if peak > 0 else 0.0
-        passed = drift_fraction <= tolerance
+
+        # Energy conservation check requires a real simulation trajectory from
+        # a physics engine — not a synthetic analytic fixture.  Returning
+        # honest not-implemented rather than misleading drift=0 on a
+        # hand-crafted pendulum.  Tracked in issue #3163.
         return {
-            "success": True,
-            "source": "demo_fixture",
-            "tolerance": tolerance,
-            "max_drift": max_drift,
-            "rms_drift": rms_drift,
-            "drift_fraction": drift_fraction,
-            "peak_energy": peak,
-            "samples": len(total),
-            "passed": passed,
-            "message": (
-                f"Energy drift {drift_fraction:.4f} "
-                f"({'PASS' if passed else 'FAIL'} at tol={tolerance})."
-            ),
+            "success": False,
+            "error": "not implemented — real physics engine integration required",
+            "issue": "#3163",
+            "tool": "check_energy_conservation",
         }
 
 

@@ -14,8 +14,6 @@ from src.engines.physics_engines.pinocchio.python.dtack.utils.gears_parser impor
 
 pytestmark = pytest.mark.unit
 
-pytestmark = pytest.mark.unit
-
 
 class TestGearsParser:
     """Tests for the Gears .gpcap parser stub."""
