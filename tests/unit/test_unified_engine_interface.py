@@ -48,7 +48,6 @@ class TestCreateUnifiedInterface:
     def test_has_engine_manager(self) -> None:
         ui = create_unified_interface()
         assert ui.engine_manager is not None
-<<<<<<< HEAD
 
 
 class TestIssue2500EngineStringLoading:
@@ -57,9 +56,9 @@ class TestIssue2500EngineStringLoading:
     def test_engine_type_enum_values_are_lowercase(self) -> None:
         """EngineType enum values should be lowercase strings."""
         for member in EngineType:
-            assert (
-                member.value == member.value.lower()
-            ), f"EngineType.{member.name}.value must be lowercase, got {member.value!r}"
+            assert member.value == member.value.lower(), (
+                f"EngineType.{member.name}.value must be lowercase, got {member.value!r}"
+            )
 
     def test_load_engine_lowercase_string_invokes_internal_load(self) -> None:
         """load_engine('mujoco') must reach _load_engine with EngineType.MUJOCO."""
@@ -98,8 +97,6 @@ class TestIssue2500EngineStringLoading:
 
         mock_load.assert_called_once()
         called_with = mock_load.call_args[0][0]
-        assert (
-            called_with == EngineType.MUJOCO
-        ), f"_load_engine must be called with EngineType.MUJOCO, got {called_with!r}."
-=======
->>>>>>> origin/main
+        assert called_with == EngineType.MUJOCO, (
+            f"_load_engine must be called with EngineType.MUJOCO, got {called_with!r}."
+        )

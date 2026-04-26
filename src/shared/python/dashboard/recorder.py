@@ -10,7 +10,9 @@ Integrates GRF analysis and swing-plane wrench decomposition (Issue #761).
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
+
+import numpy as np
 
 from src.shared.python.core.contracts import invariant
 from src.shared.python.engine_core.interfaces import PhysicsEngine
@@ -89,7 +91,6 @@ class GenericPhysicsRecorder(
         if self._buffers_initialized:
             self._ensure_buffers_allocated()
 
-=======
     def _ensure_buffers_allocated(self) -> None:
         """Allocate buffers for enabled analysis features if missing."""
         # Use existing joint velocity buffer to determine dimensions
@@ -215,7 +216,6 @@ class GenericPhysicsRecorder(
             f"Initialized recorder buffers: nq={nq}, nv={nv}, max_samples={self.max_samples}"
         )
 
->>>>>>> origin/main
     def start(self) -> None:
         self.is_recording = True
         logger.info("Recording started.")
@@ -229,5 +229,4 @@ class GenericPhysicsRecorder(
         logger.info("Recorder reset.")
 
 
-<<<<<<< HEAD
 __all__ = ["GenericPhysicsRecorder"]

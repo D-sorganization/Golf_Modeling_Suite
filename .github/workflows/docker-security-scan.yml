@@ -21,7 +21,7 @@ on:
 jobs:
   trivy-scan:
     name: Trivy Container Scan
-    runs-on: self-hosted
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
     permissions:
       security-events: write
       contents: read

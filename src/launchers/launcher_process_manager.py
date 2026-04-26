@@ -194,6 +194,9 @@ class ProcessManager:
             "site-packages",
         )
 
+        repo_root_str = str(self.repo_root)
+        src_dir = str(self.repo_root / "src")
+
         # repo_root and src are always added (required for imports).
         # Optional extras are only added when the directory exists.
         paths_to_add = []
@@ -465,9 +468,7 @@ class ProcessManager:
             PermissionError,
             OSError,
             SecureSubprocessError,
-=======
             ValueError,
->>>>>>> origin/main
         ) as e:
             logger.error(f"Failed to launch {name}: {e}")
             return None
@@ -599,7 +600,6 @@ class ProcessManager:
             PermissionError,
             OSError,
             SecureSubprocessError,
-<<<<<<< HEAD
         ) as e:
             logger.error(f"Failed to launch {name}: {e}")
             return None

@@ -10,7 +10,11 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import patch
+
+if TYPE_CHECKING:
+    from src.launchers.launcher_process_manager import ProcessManager
 
 
 class TestMotionCaptureLauncherPythonpath:
@@ -25,9 +29,9 @@ class TestMotionCaptureLauncherPythonpath:
 
         env = _make_subprocess_env(REPO_ROOT)
         assert "PYTHONPATH" in env, "env dict must contain PYTHONPATH"
-        assert (
-            str(REPO_ROOT) in env["PYTHONPATH"]
-        ), f"REPO_ROOT ({REPO_ROOT}) must appear in PYTHONPATH"
+        assert str(REPO_ROOT) in env["PYTHONPATH"], (
+            f"REPO_ROOT ({REPO_ROOT}) must appear in PYTHONPATH"
+        )
 
     def test_popen_env_injects_pythonpath_in_subprocess_call(self) -> None:
         """_launch_script must pass env= to subprocess.Popen."""
@@ -37,9 +41,9 @@ class TestMotionCaptureLauncherPythonpath:
 
         src_text = inspect.getsource(mod)
         # The Popen call must pass env= keyword argument
-        assert (
-            "env=" in src_text
-        ), "subprocess.Popen(...) call must pass env= to inject PYTHONPATH"
+        assert "env=" in src_text, (
+            "subprocess.Popen(...) call must pass env= to inject PYTHONPATH"
+        )
 
 
 class TestGolfSuiteLauncherPythonpath:
@@ -54,15 +58,15 @@ class TestGolfSuiteLauncherPythonpath:
         )
         src_text = launcher_src.read_text(encoding="utf-8")
         # The Popen call in _launch_script must pass env=
-        assert (
-            "env=" in src_text
-        ), "subprocess.Popen(...) in _launch_script must pass env= to inject PYTHONPATH"
+        assert "env=" in src_text, (
+            "subprocess.Popen(...) in _launch_script must pass env= to inject PYTHONPATH"
+        )
 
 
 class TestProcessManagerWslConfig:
     """launch_in_wsl / launch_module_in_wsl must read settings from env vars."""
 
-    def _make_manager(self) -> object:
+    def _make_manager(self) -> ProcessManager:
         from src.launchers.launcher_process_manager import ProcessManager
 
         return ProcessManager(repo_root=Path("/tmp/fake_repo"))
@@ -72,9 +76,9 @@ class TestProcessManagerWslConfig:
         with patch.dict(os.environ, {"WSL_DISTRO": "MyDistro"}, clear=False):
             mgr = self._make_manager()
             distro = mgr._get_wsl_distro()
-            assert (
-                distro == "MyDistro"
-            ), f"Expected distro 'MyDistro' from env, got '{distro}'"
+            assert distro == "MyDistro", (
+                f"Expected distro 'MyDistro' from env, got '{distro}'"
+            )
 
     def test_wsl_distro_defaults_to_fallback_when_unset(self) -> None:
         """WSL distro must have a safe fallback when WSL_DISTRO is not set."""
@@ -82,9 +86,9 @@ class TestProcessManagerWslConfig:
             os.environ.pop("WSL_DISTRO", None)
             mgr = self._make_manager()
             distro = mgr._get_wsl_distro()
-            assert (
-                isinstance(distro, str) and len(distro) > 0
-            ), "_get_wsl_distro must return a non-empty string fallback"
+            assert isinstance(distro, str) and len(distro) > 0, (
+                "_get_wsl_distro must return a non-empty string fallback"
+            )
 
     def test_wsl_project_dir_reads_from_env(self) -> None:
         """WSL project dir must be read from WSL_PROJECT_DIR env var."""

@@ -158,10 +158,8 @@ class OutputManager:
         Returns:
             Path to saved file
         """
-=======
         if results is None:
             raise ValueError("results must be provided")
->>>>>>> origin/main
         engine_dir = self.directories["simulations"] / engine
         engine_dir.mkdir(parents=True, exist_ok=True)
 
@@ -194,7 +192,6 @@ class OutputManager:
             )
             raise
 
-<<<<<<< HEAD
     def save_simulation_results_async(
         self,
         results: pd.DataFrame | dict[str, Any] | list[dict[str, Any]],

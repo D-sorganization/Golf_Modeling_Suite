@@ -2,16 +2,11 @@
 
 from __future__ import annotations
 
-=======
-from typing import Any
-
->>>>>>> origin/main
 import pytest
 
 from src.shared.python.perturbation.config import (
     PerturbationConfig,
     PerturbationSummary,
-<<<<<<< HEAD
 )
 
 
@@ -22,10 +17,6 @@ class TestPerturbationConfig:
         assert cfg.noise_type == "white"
         assert cfg.noise_amplitude == pytest.approx(0.1)
         assert cfg.perturb_mode == "additive"
-=======
-        assert cfg.min_success_rate == pytest.approx(0.95)
-        assert cfg.raise_on_partial_results is False
->>>>>>> origin/main
         assert cfg.seed is None
 
     def test_custom_construction(self) -> None:
@@ -34,7 +25,6 @@ class TestPerturbationConfig:
             noise_type="pink",
             noise_amplitude=0.05,
             perturb_mode="multiplicative",
-<<<<<<< HEAD
             seed=42,
         )
         assert cfg.n_trials == 50
@@ -109,9 +99,6 @@ class TestPerturbationSummary:
             "metrics": {"rmse": 0.12},
             "success_rate": 0.95,
             "execution_time_sec": 3.14,
-=======
-            "failures": [],
->>>>>>> origin/main
         }
         defaults.update(kwargs)
         return PerturbationSummary(**defaults)
@@ -168,7 +155,6 @@ class TestPerturbationSummary:
         assert "metrics" in d
         assert d["metrics"]["rmse"] == pytest.approx(0.05)
 
-<<<<<<< HEAD
     def test_to_dict_json_serializable(self) -> None:
         import json
 

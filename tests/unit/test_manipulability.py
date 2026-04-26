@@ -6,8 +6,6 @@ that implements Guideline C2 for singularity detection.
 
 from __future__ import annotations
 
-from typing import NoReturn
-
 import numpy as np
 import pytest
 
@@ -363,7 +361,7 @@ class TestSingularityThresholds:
 class TestSingularityError:
     """Test SingularityError exception."""
 
-    def test_exception_can_be_raised(self) -> NoReturn:
+    def test_exception_can_be_raised(self) -> None:
         """Test that SingularityError can be raised."""
         with pytest.raises(SingularityError):
             raise SingularityError("Test error")

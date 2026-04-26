@@ -610,9 +610,7 @@ class ToolStrip(QWidget):
         self.chk_com.setToolTip("Show the combined center of mass of the whole system.")
         self.chk_com.toggled.connect(self.com_toggled.emit)
         extra_col.addWidget(self.chk_com)
-=======
 
->>>>>>> origin/main
         self.chk_torque = QCheckBox("Torque Vectors")
         self.chk_torque.setStyleSheet(_CHK_TORQUE)
         self.chk_torque.setToolTip(
@@ -621,7 +619,7 @@ class ToolStrip(QWidget):
         )
         self.chk_torque.toggled.connect(self.torque_vectors_toggled.emit)
         extra_col.addWidget(self.chk_torque)
-<<<<<<< HEAD
+
         self.chk_mof = QCheckBox("Moment of Force")
         self.chk_mof.setStyleSheet(_CHK_MOF)
         self.chk_mof.setToolTip(
@@ -630,9 +628,6 @@ class ToolStrip(QWidget):
         )
         self.chk_mof.toggled.connect(self.moment_of_force_toggled.emit)
         extra_col.addWidget(self.chk_mof)
-=======
-
->>>>>>> origin/main
         self.chk_sum_moments = QCheckBox("Sum of Moments")
         self.chk_sum_moments.setStyleSheet(_CHK_SUM)
         self.chk_sum_moments.setToolTip(
@@ -649,7 +644,6 @@ class ToolStrip(QWidget):
         )
         self.chk_3d.toggled.connect(self.mode_3d_toggled.emit)
         extra_col.addWidget(self.chk_3d)
-<<<<<<< HEAD
         azimuth_row = QHBoxLayout()
         azimuth_row.setContentsMargins(0, 0, 0, 0)
         azimuth_row.setSpacing(2)
@@ -1013,6 +1007,9 @@ class ToolStrip(QWidget):
 
         seg_layout = self._segment_row_layout()
         if seg_layout is None:
+            return
+        overlay_frame: QFrame | None = self.findChild(QFrame, "overlay_section")
+        if overlay_frame is None:
             return
         overlay_layout = overlay_frame.layout()
         if overlay_layout is None:

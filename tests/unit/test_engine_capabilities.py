@@ -5,9 +5,6 @@ from __future__ import annotations
 import pytest
 
 from src.shared.python.engine_core.capabilities import (
-=======
-    SPATIAL_JACOBIAN_ORDER,
->>>>>>> origin/main
     CapabilityLevel,
     EngineCapabilities,
 )
@@ -139,7 +136,6 @@ class TestEngineCapabilitiesToDict:
             "force_visualization",
             "model_positioning",
             "measurements",
-<<<<<<< HEAD
         ):
             assert key in d
 

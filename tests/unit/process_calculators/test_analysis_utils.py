@@ -2,8 +2,16 @@
 
 from __future__ import annotations
 
-from typing import NoReturn
+import pytest
+from src.shared.python.upstream_drift_tools.process_calculators.analysis_utils import (
+    evaluate_output,
+)
 
+
+class _StubEngine:
+    """Minimal engine stub: calculate(**params) returns a dict."""
+
+    def calculate(self, **params):
         return {
             "efficiency": 0.75,
             "power": params.get("manual_hhv", 0.0) * 2.0,
@@ -15,14 +23,14 @@ from typing import NoReturn
 class _FailingEngine:
     """Engine that always raises."""
 
-    def calculate(self, **params) -> NoReturn:
+    def calculate(self, **params):
         raise ValueError("Engine failure")
 
 
 class _NonDictEngine:
     """Engine that returns a non-dict."""
 
-    def calculate(self, **params) -> float:
+    def calculate(self, **params):
         return 42.0
 
 

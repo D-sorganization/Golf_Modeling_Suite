@@ -17,7 +17,6 @@ from typing import TYPE_CHECKING, Any, Protocol
 
 from src.launchers.launcher_model_sources import (
     get_model_python_paths,
-    get_model_source_root,
     get_model_working_directory,
     resolve_model_artifact_path,
 )
@@ -81,7 +80,7 @@ class ModuleHandler:
         process = process_manager.launch_module(
             name=self.display_name,
             module_name=self.module_name,
-            cwd=cwd,
+            cwd=repo_path,
             extra_python_paths=get_model_python_paths(model, repo_path),
         )
         return process is not None

@@ -21,13 +21,8 @@ Design by Contract:
 
 from __future__ import annotations
 
-=======
 import math
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Any
 
->>>>>>> origin/main
 import numpy as np
 
 from src.engines.physics_engines.putting_green.python._surface_analysis import (
@@ -57,7 +52,6 @@ __all__ = [
 ]
 
 
-<<<<<<< HEAD
 class GreenSurface(
     SurfaceGeometryMixin,
     SurfaceAnalysisMixin,
@@ -118,192 +112,6 @@ class GreenSurface(
         """Set hole position."""
         self._hole_position = np.array(position[:2])
 
-=======
-    def add_slope_region(self, region: SlopeRegion) -> None:
-        """Add a slope region to the green."""
-        self._slope_regions.append(region)
-
-    def set_contour_points(self, points: list[ContourPoint]) -> None:
-        """Set elevation from scattered contour points.
-
-        Points are interpolated to create a smooth surface.
-
-        Args:
-            points: List of ContourPoint objects
-        """
-        if points is None:
-            raise ValueError("points must be provided")
-        self._contour_points = points
-        self._build_contour_interpolator()
-
-    def _build_contour_interpolator(self) -> None:
-        """Build interpolator from contour points."""
-        if not self._contour_points:
-            return
-
-        x = np.array([p.x for p in self._contour_points])
-        y = np.array([p.y for p in self._contour_points])
-        z = np.array([p.elevation for p in self._contour_points])
-
-        # Use RBF interpolation for smooth surface
-        try:
-            self._heightmap_interpolator = interpolate.RBFInterpolator(
-                np.column_stack([x, y]),
-                z,
-                kernel="thin_plate_spline",
-                smoothing=0.01,
-            )
-        except (ValueError, TypeError, RuntimeError):
-            # Fallback to linear interpolation
-            self._heightmap_interpolator = interpolate.LinearNDInterpolator(
-                np.column_stack([x, y]), z, fill_value=0.0
-            )
-
-    def set_heightmap(
-        self,
-        heightmap: np.ndarray,
-        smooth: bool = True,
-        smooth_sigma: float = 1.0,
-    ) -> None:
-        """Set surface from 2D heightmap array.
-
-        Args:
-            heightmap: 2D array of elevation values [m]
-            smooth: Whether to smooth the heightmap
-            smooth_sigma: Gaussian smoothing sigma
-        """
-        if heightmap is None:
-            raise ValueError("heightmap must be provided")
-        if smooth:
-            heightmap = ndimage.gaussian_filter(heightmap, sigma=smooth_sigma)
-
-        self._heightmap = heightmap.astype(np.float64)
-
-        # Build interpolator
-        ny, nx = heightmap.shape
-        x = np.linspace(0, self.width, nx)
-        y = np.linspace(0, self.height, ny)
-
-        self._heightmap_interpolator = interpolate.RegularGridInterpolator(
-            (y, x),
-            self._heightmap,
-            method="cubic",
-            bounds_error=False,
-            fill_value=0.0,
-        )
-
-    def get_elevation_at(self, position: np.ndarray) -> float:
-        """Get elevation at a position.
-
-        Args:
-            position: [x, y] position on green [m]
-
-        Returns:
-            Elevation at position [m]
-        """
-        if position is None:
-            raise ValueError("position must be provided")
-        pos = np.clip(position[:2], [0, 0], [self.width, self.height])
-
-        # Base elevation from heightmap or contours
-        elevation = 0.0
-
-        if self._heightmap_interpolator is not None:
-            if self._heightmap is not None:
-                # Regular grid interpolator (y, x order)
-                elevation = float(self._heightmap_interpolator([[pos[1], pos[0]]])[0])
-            else:
-                # RBF interpolator (x, y order)
-                elevation = float(self._heightmap_interpolator([[pos[0], pos[1]]])[0])
-
-        # Add ridge contributions
-        for ridge in self._ridges:
-            elevation += self._ridge_elevation(pos, ridge)
-
-        # Add depression contributions
-        for depression in self._depressions:
-            elevation += self._depression_elevation(pos, depression)
-
-        return elevation
-
-    def get_gradient_at(self, position: np.ndarray, delta: float = 0.01) -> np.ndarray:
-        """Get elevation gradient at position.
-
-        Uses numerical differentiation.
-
-        Args:
-            position: [x, y] position on green [m]
-            delta: Step size for numerical gradient [m]
-
-        Returns:
-            [dz/dx, dz/dy] gradient vector
-        """
-        if position is None:
-            raise ValueError("position must be provided")
-        pos = position[:2]
-
-        # Central difference
-        dzdx = (
-            self.get_elevation_at(pos + [delta, 0])
-            - self.get_elevation_at(pos - [delta, 0])
-        ) / (2 * delta)
-
-        dzdy = (
-            self.get_elevation_at(pos + [0, delta])
-            - self.get_elevation_at(pos - [0, delta])
-        ) / (2 * delta)
-
-        return np.array([dzdx, dzdy])
-
-    def get_slope_at(self, position: np.ndarray) -> np.ndarray:
-        """Get slope vector at position.
-
-        Combines contributions from slope regions and elevation gradient.
-
-        Args:
-            position: [x, y] position on green [m]
-
-        Returns:
-            [slope_x, slope_y] slope vector (gradient)
-        """
-        if position is None:
-            raise ValueError("position must be provided")
-        pos = position[:2]
-        total_slope = np.zeros(2)
-
-        # Contribution from slope regions
-        for region in self._slope_regions:
-            weight = region.get_weight(pos)
-            if weight > 0:
-                total_slope += weight * region.slope_magnitude * region.slope_direction
-
-        # Contribution from elevation gradient
-        if self._heightmap_interpolator is not None:
-            gradient = self.get_gradient_at(pos)
-            total_slope += gradient
-
-        return total_slope
-
-    def get_gravitational_acceleration(self, position: np.ndarray) -> np.ndarray:
-        """Get gravitational acceleration component on sloped surface.
-
-        On a slope, gravity has a component parallel to the surface
-        that accelerates the ball downhill.
-
-        Args:
-            position: [x, y] position on green [m]
-
-        Returns:
-            [ax, ay] gravitational acceleration [m/s²]
-        """
-        if position is None:
-            raise ValueError("position must be provided")
-        slope = self.get_slope_at(position)
-        # Acceleration is proportional to slope and points downhill
-        # a = g * sin(theta) ≈ g * slope for small slopes
-        return -GRAVITY_M_S2 * slope
-
->>>>>>> origin/main
     def is_in_hole(
         self, position: np.ndarray, velocity: np.ndarray | None = None
     ) -> bool:
@@ -320,7 +128,6 @@ class GreenSurface(
         Returns:
             True if ball is holed
         """
-<<<<<<< HEAD
         if not (position is not None):
             raise ValueError("position must be provided")
         if not (position is not None):

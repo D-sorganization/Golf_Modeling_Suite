@@ -49,7 +49,7 @@ jobs:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
-            --jq '[.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length' \
+            --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
             2>/dev/null || echo "0")
           if [[ "$ONLINE" -gt 0 ]]; then
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
@@ -61,7 +61,7 @@ jobs:
   run-assessments:
     needs: pick-runner
     name: Run Repository Assessments (A-O)
-    runs-on: self-hosted
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
     permissions:
       contents: write
       pull-requests: write
@@ -233,7 +233,7 @@ jobs:
     name: Auto-Fix All Issues (Consolidated)
     needs: [pick-runner, run-assessments]
     if: github.event.inputs.auto_fix != 'false' && github.event.inputs.dry_run != 'true'
-    runs-on: self-hosted
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
     permissions:
       contents: write
       pull-requests: write
@@ -404,7 +404,7 @@ jobs:
   create-github-issues:
     name: Create GitHub Issues for Untracked Problems
     needs: [pick-runner, run-assessments]
-    runs-on: self-hosted
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
     permissions:
       issues: write
 
@@ -458,7 +458,7 @@ jobs:
       inputs.source_pr_to_close != '' &&
       inputs.dry_run != 'true' &&
       needs.auto-fix-issues.result == 'success'
-    runs-on: self-hosted
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
     permissions:
       pull-requests: write
 
@@ -503,7 +503,7 @@ jobs:
     needs: pick-runner
     name: Dry Run Summary
     if: inputs.dry_run == 'true'
-    runs-on: self-hosted
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
 
     steps:
       - name: Generate dry run report

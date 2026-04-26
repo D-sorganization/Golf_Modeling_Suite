@@ -1,9 +1,7 @@
-=======
 # ARCHITECTURE_DEBT:
 # This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
 # It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
->>>>>>> origin/main
 """OpenSim Perturbation Analyzer — PerturbationAnalyzer protocol for OpenSim (#1981).
 
 Implements the ``PerturbationAnalyzer`` protocol for the OpenSim physics
@@ -11,7 +9,7 @@ simulation engine.  Uses a built-in minimal pendulum model when no model path
 is provided.  When ``opensim`` is not installed the module imports cleanly but
 construction raises ``ImportError``.
 
-<<<<<<< HEAD
+
 Inherits from ``PerturbationAnalyzerBase`` (see #2273) which provides the
 shared ``set_base_torque_profile``, ``perturb_torque``, ``extract_metrics``,
 ``run_batch``, and ``compare_profiles`` implementations.
@@ -41,7 +39,6 @@ from pathlib import Path
 
 import numpy as np
 
-from src.shared.python.engine_core.engine_availability import OPENSIM_AVAILABLE
 from src.shared.python.perturbation.perturbation_base import (
     MANDATORY_METRICS,
     ComparisonReport,
@@ -170,18 +167,6 @@ class OpenSimSimResult:
 
 
 # ---------------------------------------------------------------------------
-=======
-# Comparison report
-# ---------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------
-# Coefficient perturbation helper
-# ---------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------
->>>>>>> origin/main
 # Main analyzer
 # ---------------------------------------------------------------------------
 
@@ -236,8 +221,36 @@ class OpenSimPerturbationAnalyzer(PerturbationAnalyzerBase):
             Name of the end-effector body.  Defaults to the last body in the
             model (excluding ground).
         """
-<<<<<<< HEAD
         super().__init__()
+        try:
+            import opensim as osim  # noqa: PLC0415
+        except ImportError as e:
+            raise ImportError(
+                "opensim not found. Please install it with 'pip install opensim'."
+            ) from e
+
+        if model_path is None:
+            # Create a temporary file with the minimal XML
+            tmp_path = Path("minimal_pendulum.osim")
+            if not tmp_path.exists():
+                tmp_path.write_text(_MINIMAL_OSIM_XML, encoding="utf-8")
+            model_path = tmp_path
+
+        self._model = osim.Model(str(model_path))
+        self._model.finalizeFromProperties()
+        self._nq = self._model.getCoordinateSet().getSize()
+        self._nu = self._model.getForceSet().getSize()
+        self._t_end = t_end
+        self._dt = dt
+
+        if ee_body_name:
+            self._ee_body_name = ee_body_name
+        else:
+            body_set = self._model.getBodySet()
+            if body_set.getSize() > 0:
+                self._ee_body_name = body_set.get(body_set.getSize() - 1).getName()
+            else:
+                self._ee_body_name = "ground"
 
         logger.info(
             "OpenSimPerturbationAnalyzer: nq=%d, nu=%d, t_end=%.2f, ee=%s",

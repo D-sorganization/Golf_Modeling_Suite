@@ -10,8 +10,211 @@ Ported from Gasification Model and ud-tools legacy Data Processor.
 
 from __future__ import annotations
 
-import ast
-import logging
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+import pandas as pd
+from scipy.signal import butter, filtfilt, medfilt, savgol_filter
+
+from src.shared.python.data_processing.processor import (
+    _validate_dataframe_expression,
+)
+from src.shared.python.logging_pkg.logging_config import get_logger
+
+from ..calculators.base import BaseCalculationEngine
+from .exceptions import (
+    ColumnNotFoundError,
+    DataNotLoadedError,
+    FileIOError,
+    FilterError,
+    FitError,
+    TransformationError,
+    UnsupportedOperationError,
+)
+from .io import DataReader, DataWriter
+
+logger = get_logger(__name__)
+
+
+class DataFormat(Enum):
+    """Supported data formats."""
+
+    CSV = "csv"
+    EXCEL = "excel"
+    JSON = "json"
+    PARQUET = "parquet"
+
+
+class AggregationType(Enum):
+    """Available aggregation types."""
+
+    SUM = "sum"
+    MEAN = "mean"
+    MEDIAN = "median"
+    STD = "std"
+    MIN = "min"
+    MAX = "max"
+    COUNT = "count"
+    FIRST = "first"
+    LAST = "last"
+
+
+class FitType(Enum):
+    """Available curve fitting types."""
+
+    LINEAR = "linear"
+    POLYNOMIAL = "polynomial"
+    EXPONENTIAL = "exponential"
+    LOGARITHMIC = "logarithmic"
+    POWER = "power"
+
+
+@dataclass
+class FitResult:
+    """Result of a curve fitting operation."""
+
+    fit_type: str
+    coefficients: list[float]
+    r_squared: float
+    equation: str
+    fitted_values: np.ndarray
+    residuals: np.ndarray
+
+
+@dataclass
+class ColumnStats:
+    """Statistics for a data column."""
+
+    name: str
+    dtype: str
+    count: int
+    null_count: int
+    unique_count: int
+    mean: float | None = None
+    std: float | None = None
+    min_val: float | str | None = None
+    max_val: float | str | None = None
+    median: float | None = None
+    q25: float | None = None
+    q75: float | None = None
+
+
+@dataclass
+class ProcessingResult:
+    """Result of a data processing operation."""
+
+    success: bool
+    message: str
+    data: pd.DataFrame | None = None
+    stats: dict[str, Any] = field(default_factory=dict)
+    timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
+
+
+class DataProcessorEngine(BaseCalculationEngine):
+    """Core data processing engine with comprehensive data manipulation capabilities.
+
+    Integrates logic from Gasification Model and advanced signal filtering.
+    """
+
+    def __init__(self) -> None:
+        """Initialize the data processor engine."""
+        self.data: pd.DataFrame | None = None
+        self.original_data: pd.DataFrame | None = None
+        self.history: list[ProcessingResult] = []
+        self.file_path: Path | None = None
+        self._undo_stack: list[pd.DataFrame] = []
+        self._redo_stack: list[pd.DataFrame] = []
+
+    def calculate(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
+        """Implementation of abstract method from BaseCalculationEngine."""
+        operation = kwargs.get("operation", "stats")
+
+        operations: dict[str, Callable[..., dict[str, Any]]] = {
+            "load": lambda: self._wrap_result(
+                self.load_file(kwargs.get("file_path", ""))
+            ),
+            "stats": lambda: {"stats": self.get_statistics()},
+            "filter": lambda: self._wrap_result(
+                self.filter_data(
+                    kwargs.get("column", ""),
+                    kwargs.get("operator", "=="),
+                    kwargs.get("value"),
+                )
+            ),
+            "smooth": lambda: self._wrap_result(
+                self.smooth_column(
+                    kwargs.get("column", ""),
+                    kwargs.get("method", "moving_average"),
+                    **kwargs,
+                )
+            ),
+            "aggregate": lambda: self._wrap_result(
+                self.aggregate(
+                    kwargs.get("group_by"),
+                    kwargs.get("agg_column"),
+                    AggregationType(kwargs.get("agg_type", "mean")),
+                )
+            ),
+            "fit": lambda: {
+                "fit_result": self.fit_curve(
+                    kwargs.get("x_column", ""),
+                    kwargs.get("y_column", ""),
+                    FitType(kwargs.get("fit_type", "linear")),
+                    kwargs.get("degree", 2),
+                )
+            },
+        }
+
+        handler = operations.get(operation)
+        if handler:
+            return handler()
+        return {"error": f"Unknown operation: {operation}"}
+
+    def _wrap_result(self, result: ProcessingResult) -> dict[str, Any]:
+        """Wrap result for JSON compatibility."""
+        return {
+            "success": result.success,
+            "message": result.message,
+            "stats": result.stats,
+            "timestamp": result.timestamp,
+        }
+
+    # ========== File I/O ==========
+
+    def load_file(self, file_path: str | Path, **kwargs: Any) -> ProcessingResult:
+        """Load data using shared DataReader.
+
+        Preconditions:
+            - *file_path* is a non-empty string or Path.
+        """
+        if not file_path:
+            raise FileIOError("file_path must not be empty")
+        try:
+            self.data = DataReader.read_file(file_path, **kwargs)
+            self.original_data = self.data.copy()
+            self.file_path = Path(file_path)
+            self._undo_stack.clear()
+            self._redo_stack.clear()
+
+            return ProcessingResult(
+                success=True,
+                message=f"Loaded {len(self.data)} rows",
+                data=self.data,
+                stats=self._get_basic_stats(),
+            )
+        except (FileNotFoundError, PermissionError, IsADirectoryError) as e:
+            raise FileIOError(str(e)) from e
+        except (ValueError, ImportError) as e:
+            raise FileIOError(str(e)) from e
+
+    def load_dataframe(self, df: pd.DataFrame) -> ProcessingResult:
+        """Load data from an existing DataFrame."""
+        if df is None:
             raise ValueError("df must be provided")
         self._save_undo_state()
         self.data = df.copy()

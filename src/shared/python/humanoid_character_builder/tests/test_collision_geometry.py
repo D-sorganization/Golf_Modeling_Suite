@@ -32,7 +32,7 @@ def sphere_mesh() -> None:
 
 
 def test_generate_primitives_box(
-    generator: CollisionGeometryGenerator, box_mesh: "trimesh.Trimesh"
+    generator: CollisionGeometryGenerator, box_mesh: trimesh.Trimesh
 ) -> None:
     result = generator.generate(box_mesh, method="primitives")
     assert len(result.meshes) == 1
@@ -43,7 +43,7 @@ def test_generate_primitives_box(
 
 
 def test_generate_vhacd_fallback(
-    generator: CollisionGeometryGenerator, sphere_mesh: "trimesh.Trimesh"
+    generator: CollisionGeometryGenerator, sphere_mesh: trimesh.Trimesh
 ) -> None:
     # VHACD likely falls back to hull if binary missing
     result = generator.generate(sphere_mesh, method="vhacd")
@@ -54,7 +54,7 @@ def test_generate_vhacd_fallback(
 
 
 def test_generate_decimation(
-    generator: CollisionGeometryGenerator, sphere_mesh: "trimesh.Trimesh"
+    generator: CollisionGeometryGenerator, sphere_mesh: trimesh.Trimesh
 ) -> None:
     # Sphere has 80 faces at subdiv 2
     target = 20
@@ -66,7 +66,7 @@ def test_generate_decimation(
 
 
 def test_generate_auto(
-    generator: CollisionGeometryGenerator, sphere_mesh: "trimesh.Trimesh"
+    generator: CollisionGeometryGenerator, sphere_mesh: trimesh.Trimesh
 ) -> None:
     result = generator.generate(sphere_mesh, method="auto")
     assert len(result.meshes) >= 1
@@ -74,7 +74,7 @@ def test_generate_auto(
 
 
 def test_quality_metrics(
-    generator: CollisionGeometryGenerator, box_mesh: "trimesh.Trimesh"
+    generator: CollisionGeometryGenerator, box_mesh: trimesh.Trimesh
 ) -> None:
     result = generator.generate(box_mesh, method="primitives")
     # Should be nearly identical

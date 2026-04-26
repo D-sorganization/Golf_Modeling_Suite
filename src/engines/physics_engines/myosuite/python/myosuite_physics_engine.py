@@ -18,21 +18,7 @@ Refactored to use shared engine availability module (DRY principle).
 
 from __future__ import annotations
 
-=======
-from typing import Any
-
 # Path: src/engines/physics_engines/myosuite/python/myosuite_physics_engine.py -> need 6 parents
-import numpy as np  # noqa: E402
-
-from src.shared.python.core.contracts import (  # noqa: E402
-    check_finite,
-    postcondition,
-    precondition,
-)
-from src.shared.python.engine_core.engine_availability import (  # noqa: E402
-    MYOSUITE_AVAILABLE,
-)
->>>>>>> origin/main
 from src.shared.python.engine_core.interfaces import PhysicsEngine  # noqa: E402
 from src.shared.python.logging_pkg.logging_config import get_logger  # noqa: E402
 
@@ -65,7 +51,6 @@ class MyoSuitePhysicsEngine(
 
     def __init__(self) -> None:
         """Initialize."""
-<<<<<<< HEAD
         EngineInitMixin.__init__(self)
 
 

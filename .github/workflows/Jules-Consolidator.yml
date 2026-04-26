@@ -39,7 +39,7 @@ jobs:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
-            --jq '[.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length' \
+            --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
             2>/dev/null || echo "0")
           if [[ "$ONLINE" -gt 0 ]]; then
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
@@ -50,7 +50,7 @@ jobs:
           fi
   discover:
     needs: pick-runner
-    runs-on: self-hosted
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
     outputs:
       pr_count: ${{ steps.list.outputs.count }}
       pr_list: ${{ steps.list.outputs.prs }}
@@ -89,7 +89,7 @@ jobs:
   consolidate:
     needs: [pick-runner, discover]
     if: needs.discover.outputs.should_consolidate == 'true' && inputs.dry_run != 'true'
-    runs-on: self-hosted
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
     steps:
       - uses: actions/checkout@v6
         with:

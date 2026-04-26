@@ -164,7 +164,6 @@ class TestFiniteResultDecorator:
             make_nan()
 
 
-<<<<<<< HEAD
 class TestAsyncPostconditionDecorator:
     """Tests for async-aware postcondition handling (issue #2470)."""
 
@@ -210,8 +209,6 @@ class TestAsyncPostconditionDecorator:
         assert result == -1
 
 
-=======
->>>>>>> origin/main
 class TestNonEmptyResultDecorator:
     def setup_method(self) -> None:
         self._saved_level = get_contract_level()

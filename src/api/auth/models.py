@@ -240,15 +240,12 @@ class APIKeyResponse(BaseModel):
     created_at: datetime
     expires_at: datetime | None = None
 
-<<<<<<< HEAD
 
 class RefreshTokenRequest(BaseModel):
     """Request body for token refresh endpoint."""
 
     refresh_token: str
 
-=======
->>>>>>> origin/main
 
 class UsageQuotas(BaseModel):
     """Usage quotas for different subscription tiers."""

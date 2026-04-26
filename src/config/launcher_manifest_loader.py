@@ -130,10 +130,8 @@ class LauncherTile:
     capabilities: tuple[str, ...] = ()
     order: int = 99
     engine_type: str | None = None
-=======
     provider: str | None = None
     source_root: str | None = None
->>>>>>> origin/main
     web_route: str | None = None
 
     @classmethod
@@ -166,7 +164,6 @@ class LauncherTile:
             capabilities=tuple(data.get("capabilities", [])),
             order=data.get("order", 99),
             engine_type=data.get("engine_type"),
-<<<<<<< HEAD
             web_route=data.get("web_route"),
         )
 
@@ -190,12 +187,6 @@ class LauncherTile:
         }
         if self.engine_type:
             result["engine_type"] = self.engine_type
-=======
-        if self.provider:
-            result["provider"] = self.provider
-        if self.source_root:
-            result["source_root"] = self.source_root
->>>>>>> origin/main
         if self.web_route:
             result["web_route"] = self.web_route
         return result
@@ -342,7 +333,6 @@ class LauncherManifest:
         Returns:
             LauncherTile if found, None otherwise
         """
-<<<<<<< HEAD
         if not (tile_id is not None):
             raise ValueError("tile_id must be provided")
         for tile in self.tiles:

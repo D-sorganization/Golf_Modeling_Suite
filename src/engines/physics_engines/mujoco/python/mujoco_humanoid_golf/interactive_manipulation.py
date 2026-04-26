@@ -1,4 +1,3 @@
-=======
 # ARCHITECTURE_DEBT:
 # This module historically exceeds standard length metrics and accumulates excessive domain responsibility.  # noqa: E501
 # It requires domain-aware structural extraction to isolate its internal classes appropriately.  # noqa: E501
@@ -13,7 +12,6 @@ This module provides:
 - Visual feedback for selected bodies and constraints
 """
 
->>>>>>> origin/main
 from __future__ import annotations
 
 import mujoco
@@ -35,162 +33,11 @@ __all__ = [
 
 class InteractiveManipulator(IKSolverMixin, ConstraintManagerMixin, PoseLibraryMixin):
     def __init__(self, model: mujoco.MjModel, data: mujoco.MjData) -> None:
-<<<<<<< HEAD
         if not (model is not None):
             raise ValueError("model must be provided")
         self.model = model
         self.data = data
 
-=======
-    def screen_to_ray(
-        self,
-        x: int,
-        y: int,
-        width: int,
-        height: int,
-        camera: mujoco.MjvCamera,
-    ) -> tuple[np.ndarray, np.ndarray]:
-        """Convert screen coordinates to 3D ray.
-
-        Args:
-            x: Screen x coordinate
-            y: Screen y coordinate
-            width: Viewport width
-            height: Viewport height
-            camera: MuJoCo camera
-
-        Returns:
-            Tuple of (ray_origin [3], ray_direction [3])
-        """
-        # Normalize screen coordinates to [-1, 1]
-        if x is None:
-            raise ValueError("x must be provided")
-        x_ndc = (2.0 * x) / width - 1.0
-        y_ndc = 1.0 - (2.0 * y) / height  # Flip y
-
-        # Get camera position and orientation
-        cam_pos = camera.lookat.copy()
-        cam_distance = camera.distance
-        cam_azimuth = np.deg2rad(camera.azimuth)
-        cam_elevation = np.deg2rad(camera.elevation)
-
-        # Compute camera frame vectors
-        # Forward vector (from lookat to camera)
-        forward = np.array(
-            [
-                np.cos(cam_elevation) * np.sin(cam_azimuth),
-                np.cos(cam_elevation) * np.cos(cam_azimuth),
-                np.sin(cam_elevation),
-            ],
-        )
-
-        # Camera position
-        ray_origin = cam_pos - forward * cam_distance
-
-        # Right and up vectors
-        up_world = np.array([0, 0, 1])
-        right = np.cross(up_world, forward)
-        right = right / (np.linalg.norm(right) + 1e-8)
-        up = np.cross(forward, right)
-
-        # Compute ray direction using field of view
-        fovy = 45.0  # Default field of view
-        aspect = width / height
-
-        # Ray direction in camera space
-        ray_dir = forward.copy()
-        ray_dir += right * x_ndc * np.tan(np.deg2rad(fovy / 2)) * aspect
-        ray_dir += up * y_ndc * np.tan(np.deg2rad(fovy / 2))
-        ray_dir = ray_dir / np.linalg.norm(ray_dir)
-
-        return ray_origin, ray_dir
-
-    def pick_body(
-        self,
-        x: int,
-        y: int,
-        width: int,
-        height: int,
-        camera: mujoco.MjvCamera,
-        max_distance: float = 100.0,
-    ) -> tuple[int, np.ndarray, float] | None:
-        """Pick a body using mouse coordinates.
-
-        Args:
-            x: Screen x coordinate
-            y: Screen y coordinate
-            width: Viewport width
-            height: Viewport height
-            camera: MuJoCo camera
-            max_distance: Maximum ray distance
-
-        Returns:
-            Tuple of (body_id, intersection_point, distance) or None
-        """
-        if x is None:
-            raise ValueError("x must be provided")
-        ray_origin, ray_dir = self.screen_to_ray(x, y, width, height, camera)
-
-        # Test ray against all body geometries
-        closest_body = None
-        closest_distance = max_distance
-        closest_point = None
-
-        for body_id in range(1, self.model.nbody):  # Skip world body (0)
-            # Get body position
-            body_pos = self.data.xpos[body_id].copy()
-
-            # Simple sphere intersection test
-            # (More sophisticated methods could use actual geom shapes)
-            to_body = body_pos - ray_origin
-            proj_length = np.dot(to_body, ray_dir)
-
-            if proj_length < 0:
-                continue
-
-            # Closest point on ray to body
-            closest_on_ray = ray_origin + ray_dir * proj_length
-            distance_to_body = np.linalg.norm(closest_on_ray - body_pos)
-
-            # Use body's bounding sphere (approximate)
-            body_radius = 0.1  # Default radius
-
-            # Get geometries for this body
-            for geom_id in range(self.model.ngeom):
-                if self.model.geom_bodyid[geom_id] == body_id:
-                    # Get geom size
-                    geom_size = self.model.geom_size[geom_id]
-                    body_radius = max(body_radius, geom_size[0])
-
-            # Check if ray intersects bounding sphere
-            if distance_to_body < body_radius * 1.5 and proj_length < closest_distance:
-                closest_distance = proj_length
-                closest_body = body_id
-                closest_point = closest_on_ray
-
-        if closest_body is not None and closest_point is not None:
-            return closest_body, closest_point, closest_distance
-
-        return None
-
-
-class InteractiveManipulator:
-    """Interactive manipulation system with IK-based dragging and constraints."""
-
-    def __init__(self, model: mujoco.MjModel, data: mujoco.MjData) -> None:
-        """Initialize interactive manipulator.
-
-        Args:
-            model: MuJoCo model
-            data: MuJoCo data
-        """
-        if model is None:
-            raise ValueError("model must be provided")
-        self.model = model
-        self.data = data
-
-        # Mouse picking
->>>>>>> origin/main
         self.picker = MousePickingRay(model, data)
 
         self.ik_damping = 0.05
@@ -221,7 +68,6 @@ class InteractiveManipulator:
         height: int,
         camera: mujoco.MjvCamera,
     ) -> int | None:
-<<<<<<< HEAD
         if not (x is not None):
             raise ValueError("x must be provided")
         if not self.drag_enabled:

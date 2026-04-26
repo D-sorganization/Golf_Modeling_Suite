@@ -1,9 +1,7 @@
-=======
 # ARCHITECTURE_DEBT:
 # This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
 # It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
->>>>>>> origin/main
 """MyoSuite Perturbation Analyzer — PerturbationAnalyzer protocol for MyoSuite (#1982).
 
 Implements the ``PerturbationAnalyzer`` protocol for the MyoSuite musculoskeletal
@@ -11,7 +9,7 @@ simulation environment (built on MuJoCo).  Uses a built-in minimal tendon-driven
 arm model when no environment ID or model path is provided.  When ``myosuite``
 is not installed the module imports cleanly but construction raises ``ImportError``.
 
-<<<<<<< HEAD
+
 Inherits from ``PerturbationAnalyzerBase`` (see #2273) which provides the
 shared ``set_base_torque_profile``, ``perturb_torque``, ``extract_metrics``,
 ``run_batch``, and ``compare_profiles`` implementations.
@@ -44,7 +42,6 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
 import numpy as np
 
@@ -136,18 +133,6 @@ class MyoSuiteSimResult:
 
 
 # ---------------------------------------------------------------------------
-=======
-# Comparison report
-# ---------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------
-# Coefficient perturbation helper
-# ---------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------
->>>>>>> origin/main
 # Main analyzer
 # ---------------------------------------------------------------------------
 
@@ -205,7 +190,6 @@ class MyoSuitePerturbationAnalyzer(PerturbationAnalyzerBase):
         ee_body_name : str, optional
             Name of the end-effector body.  Defaults to the last body.
         """
-<<<<<<< HEAD
         super().__init__()
 
         logger.info(

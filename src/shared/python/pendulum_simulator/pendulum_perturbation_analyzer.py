@@ -1,9 +1,7 @@
-=======
 # ARCHITECTURE_DEBT:
 # This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
 # It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
->>>>>>> origin/main
 """Pendulum Perturbation Analyzer — reference implementation of the unified protocol.
 
 Implements ``PerturbationAnalyzer`` (from ``src.shared.python.perturbation.config``)
@@ -254,7 +252,6 @@ class PendulumPerturbationAnalyzer:
         Pre:  ``set_base_torque_profile`` has been called.
         Post: returned dict has same structure as the base profile.
         """
-<<<<<<< HEAD
         if not (self._base_coeffs is not None):
             raise ValueError("Call set_base_torque_profile() before perturb_torque()")
         perturbed = _perturb_coeffs_by_mode(self._base_coeffs, config, seed)

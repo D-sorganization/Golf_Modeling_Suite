@@ -19,6 +19,7 @@ import time
 
 import mujoco
 import numpy as np
+from scipy.interpolate import CubicSpline
 from scipy.optimize import differential_evolution, minimize
 
 from ._motion_opt_simulation import (
@@ -177,7 +178,6 @@ class SwingOptimizer:
             final_club_position=metrics["final_club_position"],
         )
 
-=======
     def _generate_initial_guess(self) -> np.ndarray:
         """Generate initial trajectory guess.
 
@@ -496,7 +496,6 @@ class SwingOptimizer:
 
         return float(np.sum(np.abs(jerk)))
 
->>>>>>> origin/main
     def optimize_swing_for_speed(
         self,
         target_speed: float = 50.0,
@@ -509,7 +508,6 @@ class SwingOptimizer:
         Returns:
             OptimizationResult with speed-optimized trajectory
         """
-<<<<<<< HEAD
         if not (target_speed is not None):
             raise ValueError("target_speed must be provided")
         if not (target_speed is not None):
