@@ -10,7 +10,7 @@ def resolve_file(path):
     in_origin = False
 
     for line in lines:
-        if line.startswith("<<<<<<<") or line.startswith("<<<<<<<<"):
+        if line.startswith(("<<<<<<<", "<<<<<<<<")):
             in_head = True
             in_origin = False
             continue
@@ -28,7 +28,6 @@ def resolve_file(path):
 
     with open(path, "w", encoding="utf-8") as f:
         f.writelines(new_lines)
-    print(f"Resolved {path}")
 
 
 # Files to resolve

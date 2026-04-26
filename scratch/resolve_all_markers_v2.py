@@ -48,4 +48,4 @@ for path in files_with_markers:
         continue
 
     if resolve_markers(path):
-        print(f"Resolved {path}")
+        pass

@@ -6,8 +6,7 @@ def resolve_file(path):
     try:
         with open(path, encoding="utf-8", errors="ignore") as f:
             lines = f.readlines()
-    except Exception as e:
-        print(f"Error reading {path}: {e}")
+    except Exception:
         return
 
     new_lines = []
@@ -15,7 +14,7 @@ def resolve_file(path):
     in_origin = False
 
     for line in lines:
-        if line.startswith("<<<<<<<") or line.startswith("<<<<<<<<"):
+        if line.startswith(("<<<<<<<", "<<<<<<<<")):
             in_head = True
             in_origin = False
             continue
@@ -33,7 +32,6 @@ def resolve_file(path):
 
     with open(path, "w", encoding="utf-8") as f:
         f.writelines(new_lines)
-    print(f"Resolved {path}")
 
 
 # Find all files with markers

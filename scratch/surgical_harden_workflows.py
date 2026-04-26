@@ -1,11 +1,11 @@
 import os
 import re
 
-workflow_dir = '.github/workflows'
+workflow_dir = ".github/workflows"
 fixed_files = []
 
 # Hardened pick-runner logic
-hardened_replacement = '''  pick-runner:
+hardened_replacement = """  pick-runner:
     runs-on: d-sorg-fleet
     timeout-minutes: 2
     outputs:
@@ -25,23 +25,23 @@ hardened_replacement = '''  pick-runner:
           else
             echo "::error::No local self-hosted runner available; failing closed"
             exit 1
-          fi'''
+          fi"""
 
 for filename in os.listdir(workflow_dir):
-    if filename.endswith('.yml') or filename.endswith('.yaml'):
+    if filename.endswith((".yml", ".yaml")):
         path = os.path.join(workflow_dir, filename)
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path, encoding="utf-8") as f:
             content = f.read()
-        
+
         # 1. Replace the whole pick-runner job
-        new_content = re.sub(r'  pick-runner:[\s\S]*?(?=\n  [a-zA-Z]|\Z)', hardened_replacement, content)
-        
+        new_content = re.sub(
+            r"  pick-runner:[\s\S]*?(?=\n  [a-zA-Z]|\Z)", hardened_replacement, content
+        )
+
         # 2. Fix encoding/dashes
-        new_content = new_content.replace('—', ' - ').replace('–', ' - ')
-        
+        new_content = new_content.replace("—", " - ").replace("–", " - ")
+
         if new_content != content:
-            with open(path, 'w', encoding='utf-8') as f:
+            with open(path, "w", encoding="utf-8") as f:
                 f.write(new_content)
             fixed_files.append(filename)
-
-print(f"Hardened {len(fixed_files)} workflows.")

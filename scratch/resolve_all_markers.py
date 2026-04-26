@@ -34,4 +34,4 @@ for path in files_with_markers:
     if not os.path.exists(path):
         continue
     if resolve_markers(path):
-        print(f"Resolved {path}")
+        pass
