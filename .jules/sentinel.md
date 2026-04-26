@@ -70,3 +70,7 @@
 **Vulnerability:** String-based query construction with `f-strings` in `get_unique_values` (Bandit B608).
 **Learning:** Even when input is validated against a whitelist, security scanners will flag string-based SQL query construction. Using a hardcoded mapping of query strings eliminates both the actual risk and the static analysis warnings.
 **Prevention:** Use hardcoded SQL query maps for column names (which cannot be parameterized in standard SQL bindings) instead of dynamic string construction.
+## 2026-04-26 - Insecure subprocess execution
+**Vulnerability:** Use of `subprocess.Popen` instead of secure wrappers, creating risks of command injection, or using `shell=True`.
+**Learning:** We need to replace standard `subprocess` calls with custom `secure_popen` from `src.shared.python.security.secure_subprocess`. Also, when writing tests to assert these secure behaviors, we should add `# nosec B604` to avoid Bandit linter false positives since the failure is intentionally tested.
+**Prevention:** Only use secure subprocess wrappers from the codebase security module, avoid using `shell=True`, and appropriately suppress security linters only on specific lines during tests.
