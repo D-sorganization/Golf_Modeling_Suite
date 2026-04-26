@@ -1,15 +1,46 @@
-"""Thin facade for the legacy motion-capture golf plotter."""
-
 from __future__ import annotations
 
+import logging
+import os
 import sys
 from typing import Any
 
-from motion_capture_plotter_data import MotionCapturePlotterDataMixin
+import numpy as np
+import pandas as pd
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import (
+    QApplication,
+    QCheckBox,
+    QComboBox,
+    QFileDialog,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QMainWindow,
+    QMessageBox,
+    QPushButton,
+    QScrollArea,
+    QSlider,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
+
+from motion_capture_plotter_data import (
+    find_available_joints,
+    get_simscape_joint_positions,
+    MotionCapturePlotterDataMixin,
+    parse_excel_row,
+    process_excel_sheet,
+    safe_float,
+)
 from motion_capture_plotter_ui import MotionCapturePlotterUIMixin
 from motion_capture_plotter_visualization import MotionCapturePlotterVisualizationMixin
-from PyQt6.QtCore import QTimer
-from PyQt6.QtWidgets import QApplication, QMainWindow
+
+logger = logging.getLogger(__name__)
 
 
 class MotionCapturePlotter(

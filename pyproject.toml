@@ -187,6 +187,7 @@ ignore = [
 "scripts/**" = ["T201"]
 "tests/**" = ["T201"]
 "examples/**" = ["T201"]
+"*.py" = ["T201"]
 
 [tool.mypy]
 python_version = "3.10"

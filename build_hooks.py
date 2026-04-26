@@ -108,7 +108,7 @@ class UIBuildHook(BuildHookInterface):
                 # Use --legacy-peer-deps to handle potential React version conflicts
                 subprocess.run(
                     [npm_cmd, "ci", "--legacy-peer-deps"],
-                    cwd=str(ui_dir),
+                    cwd=str(self._ui_dir),
                     check=True,
                     capture_output=True,
                     text=True,
@@ -117,7 +117,7 @@ class UIBuildHook(BuildHookInterface):
                 # Build production bundle
                 subprocess.run(
                     [npm_cmd, "run", "build"],
-                    cwd=str(ui_dir),
+                    cwd=str(self._ui_dir),
                     check=True,
                     capture_output=True,
                     text=True,
