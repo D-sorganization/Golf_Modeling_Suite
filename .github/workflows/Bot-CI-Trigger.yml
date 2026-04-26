@@ -164,7 +164,7 @@ jobs:
           fi
 
       - name: Trigger CI for PRs
-        if: steps.loop-check.outputs.skip != 'true' && steps.find-prs.outputs.prs != '' && (secrets.BOT_PAT != '' || secrets.RUNNER_CHECK_TOKEN != '')
+        if: steps.loop-check.outputs.skip != 'true' && steps.find-prs.outputs.prs != ''
         env:
           GH_TOKEN: ${{ env.BOT_TRIGGER_TOKEN }}
         run: |
