@@ -27,14 +27,14 @@ jobs:
             2>/dev/null || echo "0")
           if [[ "$ONLINE" -gt 0 ]]; then
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
-            echo "Self-hosted runner online  -  routing locally"
+            echo "Self-hosted runner online - routing locally"
           else
             echo "::error::No local self-hosted runner available; failing closed"
             exit 1
           fi
   organize-docs:
     needs: pick-runner
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     if: vars.WORKFLOWS_PAUSED != 'true'
     steps:
       - name: Checkout

@@ -52,14 +52,14 @@ jobs:
             2>/dev/null || echo "0")
           if [[ "$ONLINE" -gt 0 ]]; then
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
-            echo "Self-hosted runner online  -  routing locally"
+            echo "Self-hosted runner online - routing locally"
           else
             echo "::error::No local self-hosted runner available; failing closed"
             exit 1
           fi
   cross-engine-validation:
     needs: pick-runner
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     timeout-minutes: 60
 
     strategy:
@@ -229,7 +229,7 @@ jobs:
   publish-dashboard:
     needs: [pick-runner, cross-engine-validation]
     if: always()
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
 
     steps:
       - name: Download test results

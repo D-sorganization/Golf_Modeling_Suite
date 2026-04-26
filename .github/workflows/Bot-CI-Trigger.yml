@@ -38,7 +38,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # -- Dispatcher: route to self-hosted if available --------------------------
+  # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
     runs-on: d-sorg-fleet
     timeout-minutes: 2
@@ -55,14 +55,14 @@ jobs:
             2>/dev/null || echo "0")
           if [[ "$ONLINE" -gt 0 ]]; then
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
-            echo "Self-hosted runner online  -  routing locally"
+            echo "Self-hosted runner online - routing locally"
           else
             echo "::error::No local self-hosted runner available; failing closed"
             exit 1
           fi
   check-and-trigger:
     needs: pick-runner
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     env:
       BOT_TRIGGER_TOKEN: ${{ secrets.BOT_PAT || secrets.RUNNER_CHECK_TOKEN || github.token }}
     # Only run for bot-authored PRs or scheduled/manual runs
@@ -164,7 +164,7 @@ jobs:
           fi
 
       - name: Trigger CI for PRs
-        if: steps.loop-check.outputs.skip != 'true' && steps.find-prs.outputs.prs != ''
+        if: steps.loop-check.outputs.skip != 'true' && steps.find-prs.outputs.prs != '' && (secrets.BOT_PAT != '' || secrets.RUNNER_CHECK_TOKEN != '')
         env:
           GH_TOKEN: ${{ env.BOT_TRIGGER_TOKEN }}
         run: |
