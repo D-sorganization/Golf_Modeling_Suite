@@ -1,6 +1,6 @@
 name: CI Standard
 # ---------------------------------------------------------------------------
-# WORKFLOW INVENTORY (issue #2352 — 58 workflows with overlapping concerns)
+# WORKFLOW INVENTORY (issue #2352  -  58 workflows with overlapping concerns)
 # ---------------------------------------------------------------------------
 # Core CI (this file and below) are authoritative. Jules-* workflows are
 # AI-automation helpers that SHOULD NOT duplicate core-CI checks.
@@ -22,7 +22,7 @@ name: CI Standard
 #     Both respond to CI failures. Auto-Repair pushes to the failing branch;
 #     Hotfix-Creator opens a new hotfix branch. Not truly redundant.
 #
-# Status (as of 2026-04-25 — issue #2352 infrastructure consolidation):
+# Status (as of 2026-04-25  -  issue #2352 infrastructure consolidation):
 #   1. ✓ auto-remediate-issues.yml archived → .github/workflows/archived/auto-remediate-issues.yml.disabled
 #   2. ✓ assessment-auto-fix.yml archived → .github/workflows/archived/assessment-auto-fix.yml.disabled
 #   3. TODO: Review Jules-Code-Quality-Fixer ↔ Jules-Assessment-AutoFix consolidation (follow-up PR)
@@ -47,7 +47,7 @@ on:
       - ".gitignore"
   workflow_dispatch:
   schedule:
-    # Weekly run every Monday at 06:00 UTC — catches test drift and
+    # Weekly run every Monday at 06:00 UTC  -  catches test drift and
     # coverage regression independent of code changes (issue #1789)
     - cron: "0 6 * * 1"
 
@@ -76,7 +76,7 @@ jobs:
             2>/dev/null || echo "0")
           if [[ "$ONLINE" -gt 0 ]]; then
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
-            echo "Self-hosted runner online — routing locally"
+            echo "Self-hosted runner online  -  routing locally"
           else
             echo "::error::No local self-hosted runner available; failing closed"
             exit 1
@@ -397,7 +397,7 @@ jobs:
       - name: Create stub ui/dist for editable install
         run: mkdir -p ui/dist
       - name: Install Core Test Dependencies
-        # See tests/Install Core Test Dependencies for the rationale —
+        # See tests/Install Core Test Dependencies for the rationale  - 
         # the shared toolcache can carry a stale `sortedcontainers` that
         # makes hypothesis fail during pytest_terminal_summary.
         # Force-reinstall numpy/scipy to ensure a consistent binary ABI:
@@ -534,11 +534,11 @@ jobs:
               echo "$RUST_FILES"
             else
               echo "has_changes=false" >> "$GITHUB_OUTPUT"
-              echo "Rust files changed but no Cargo.toml found — skipping quality gate."
+              echo "Rust files changed but no Cargo.toml found  -  skipping quality gate."
             fi
           else
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
-            echo "No Rust changes detected — skipping Rust quality gate."
+            echo "No Rust changes detected  -  skipping Rust quality gate."
           fi
 
       - name: Install Rust toolchain
@@ -665,7 +665,7 @@ jobs:
             echo "$RUST_FILES"
           else
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
-            echo "No Rust changes detected — skipping Rust quickstart."
+            echo "No Rust changes detected  -  skipping Rust quickstart."
           fi
 
       - name: Setup Python

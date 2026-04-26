@@ -1,7 +1,7 @@
 name: Weekly CI Failure Digest
 
 on:
-  # COST OPTIMIZATION: Schedule removed — informational digest, run manually.
+  # COST OPTIMIZATION: Schedule removed  -  informational digest, run manually.
   # Was: cron "0 0 * * 0,4" (twice-weekly cloud run creating issues nobody reads daily)
   workflow_dispatch: # Allow manual trigger
 
@@ -28,7 +28,7 @@ jobs:
             2>/dev/null || echo "0")
           if [[ "$ONLINE" -gt 0 ]]; then
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
-            echo "Self-hosted runner online — routing locally"
+            echo "Self-hosted runner online  -  routing locally"
           else
             echo "::error::No local self-hosted runner available; failing closed"
             exit 1

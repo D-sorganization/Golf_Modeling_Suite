@@ -14,7 +14,7 @@ on:
         default: ""
         type: string
   # Schedule removed: Control Tower handles Consolidator invocation via workflow_call.
-  # Was: cron "0 0 * * 0,4" — duplicate of Control Tower's pr-compiler routing.
+  # Was: cron "0 0 * * 0,4"  -  duplicate of Control Tower's pr-compiler routing.
 
 concurrency:
   group: jules-consolidator
@@ -43,7 +43,7 @@ jobs:
             2>/dev/null || echo "0")
           if [[ "$ONLINE" -gt 0 ]]; then
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
-            echo "Self-hosted runner online — routing locally"
+            echo "Self-hosted runner online  -  routing locally"
           else
             echo "::error::No local self-hosted runner available; failing closed"
             exit 1

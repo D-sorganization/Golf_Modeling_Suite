@@ -1,4 +1,4 @@
-# spec-check.yml — Specification Freshness Enforcement
+# spec-check.yml  -  Specification Freshness Enforcement
 #
 # PURPOSE: Ensures SPEC.md is updated when source files change.
 # DEPLOYMENT: Copy this file to .github/workflows/spec-check.yml in each repo.
@@ -39,7 +39,7 @@ jobs:
             2>/dev/null || echo "0")
           if [[ "$ONLINE" -gt 0 ]]; then
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
-            echo "Self-hosted runner online — routing locally"
+            echo "Self-hosted runner online  -  routing locally"
           else
             echo "::error::No local self-hosted runner available; failing closed"
             exit 1
@@ -83,7 +83,7 @@ jobs:
 
             # Check if source files were modified
             # Add or remove patterns as appropriate for your repo
-            # Note: .github/workflows/ is excluded — CI-only changes rarely
+            # Note: .github/workflows/ is excluded  -  CI-only changes rarely
             # affect documented behavior. Use spec-exempt if needed.
             if [[ "$file" == src/* ]] || \
                [[ "$file" == tests/* ]] || \
@@ -161,5 +161,5 @@ jobs:
           if [[ "${{ steps.check.outputs.spec_changed }}" == "true" ]]; then
             echo "   SPEC.md was updated alongside source changes. Good."
           elif [[ "${{ steps.check.outputs.source_changed }}" == "false" ]]; then
-            echo "   No source files changed — spec update not required."
+            echo "   No source files changed  -  spec update not required."
           fi
