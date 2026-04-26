@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QGroupBox,
@@ -13,8 +15,15 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+if TYPE_CHECKING:
+    from PyQt6.QtWidgets import QWidget
 
-class _EndEffectorManagerWidgetUIMixin:
+    _Base = QWidget
+else:
+    _Base = object
+
+
+class _EndEffectorManagerWidgetUIMixin(_Base):
     """UI construction helpers for EndEffectorManagerWidget."""
 
     def _setup_ui(self) -> None:

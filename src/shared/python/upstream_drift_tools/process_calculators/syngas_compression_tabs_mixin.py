@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from matplotlib.figure import Figure
+
 try:
     from PyQt6.QtWidgets import (
         QCheckBox,
@@ -29,17 +31,18 @@ try:
 except ImportError:
     HAS_PYQT = False
 
+FigureCanvas: Any
 try:
-    from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+    from matplotlib.backends.backend_qtagg import (
+        FigureCanvasQTAgg as FigureCanvas,  # type: ignore[assignment]
+    )
 except ImportError:
     try:
         from matplotlib.backends.backend_agg import (
             FigureCanvasAgg as FigureCanvas,  # type: ignore[assignment]
         )
     except ImportError:
-        FigureCanvas = None  # type: ignore[assignment,misc]
-
-from matplotlib.figure import Figure
+        FigureCanvas = None
 
 if HAS_PYQT:
 

@@ -161,14 +161,14 @@ class AnalysisTab:
         if _HAS_MPL:
             # 2D canvas
             self._fig_2d = Figure(figsize=(7, 5), dpi=100)
-            self._fig_2d.patch.set_facecolor("#1a1a28")
+            self._fig_2d.set_facecolor("#1a1a28")
             self._ax_2d = self._fig_2d.add_subplot(111)
             self._canvas_2d = FigureCanvasQTAgg(self._fig_2d)
             self._plot_tabs.addTab(self._canvas_2d, "2D Plot")
 
             # 3D canvas
             self._fig_3d = Figure(figsize=(7, 5), dpi=100)
-            self._fig_3d.patch.set_facecolor("#1a1a28")
+            self._fig_3d.set_facecolor("#1a1a28")
             self._ax_3d = self._fig_3d.add_subplot(111, projection="3d")
             self._canvas_3d = FigureCanvasQTAgg(self._fig_3d)
             self._plot_tabs.addTab(self._canvas_3d, "3D Surface")

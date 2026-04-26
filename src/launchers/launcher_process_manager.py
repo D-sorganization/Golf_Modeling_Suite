@@ -196,6 +196,9 @@ class ProcessManager:
 
         # repo_root and src are always added (required for imports).
         # Optional extras are only added when the directory exists.
+        repo_root_str = str(self.repo_root)
+        src_dir = str(self.repo_root / "src")
+
         paths_to_add = []
         for p in [repo_root_str, src_dir]:
             if p not in current_paths:

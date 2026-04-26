@@ -19,13 +19,15 @@ generate_humanoid_urdf) is fully preserved.
 from __future__ import annotations
 
 import logging
+import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 from humanoid_character_builder.contracts import postcondition, precondition
 from humanoid_character_builder.core.anthropometry import (
     estimate_segment_dimensions,
     estimate_segment_masses,
+    get_com_location,
 )
 from humanoid_character_builder.core.body_parameters import BodyParameters
 from humanoid_character_builder.core.model import (
@@ -36,6 +38,8 @@ from humanoid_character_builder.core.model import (
 from humanoid_character_builder.core.segment_definitions import (
     HUMANOID_JOINTS,
     HUMANOID_SEGMENTS,
+    JointDefinition,
+    SegmentDefinition,
 )
 from humanoid_character_builder.generators._joint_generation import generate_joint
 from humanoid_character_builder.generators._link_generation import (
@@ -44,11 +48,31 @@ from humanoid_character_builder.generators._link_generation import (
     generate_materials,
 )
 from humanoid_character_builder.generators._xml_builder import build_urdf_xml
+from humanoid_character_builder.generators.urdf_config import URDFGeneratorConfig
+from humanoid_character_builder.generators.urdf_geometry import (
+    add_geometry_element,
+    create_geometry_dict,
+)
+from humanoid_character_builder.generators.urdf_joints import (
+    expand_composite_joint,
+    generate_single_joint,
+    map_joint_type,
+)
+from humanoid_character_builder.generators.urdf_xml_builder import (
+    add_joint_element as _add_joint_element,
+)
+from humanoid_character_builder.generators.urdf_xml_builder import (
+    add_link_element as _add_link_element,
+)
 from humanoid_character_builder.mesh.inertia_calculator import (
     InertiaMode,
+    InertiaResult,
     MeshInertiaCalculator,
 )
-from humanoid_character_builder.mesh.primitive_inertia import PrimitiveInertiaCalculator
+from humanoid_character_builder.mesh.primitive_inertia import (
+    PrimitiveInertiaCalculator,
+    estimate_segment_primitive,
+)
 
 logger = logging.getLogger(__name__)
 

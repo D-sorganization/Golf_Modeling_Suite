@@ -10,7 +10,10 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
+from matplotlib.backends.backend_qtagg import (  # type: ignore[attr-defined]
+    FigureCanvasQTAgg,
+    NavigationToolbar2QT,
+)
 from matplotlib.figure import Figure
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import (
@@ -141,6 +144,7 @@ class PlotWidget(QWidget):
     def get_image_bytes(self, fmt: str = "png", dpi: int = 150) -> bytes:
         """Get the current plot as image bytes."""
         if not (fmt is not None):
+            # type: ignore
             raise ValueError("fmt must be provided")
         if not (fmt is not None):
             raise ValueError("fmt must be provided")

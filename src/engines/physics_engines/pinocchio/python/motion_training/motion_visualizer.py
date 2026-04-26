@@ -21,6 +21,7 @@ import numpy as np
 from src.shared.python.engine_core.engine_availability import PINOCCHIO_AVAILABLE
 
 if TYPE_CHECKING:
+    from matplotlib.figure import Figure
     from numpy.typing import NDArray
 
 if PINOCCHIO_AVAILABLE:
@@ -544,7 +545,7 @@ class MatplotlibVisualizer:
         trajectory: ClubTrajectory,
         show_events: bool = True,
         figsize: tuple = (12, 10),
-    ) -> plt.Figure:
+    ) -> Figure:
         """Create 3D plot of club trajectory.
 
         Args:
@@ -625,7 +626,7 @@ class MatplotlibVisualizer:
         self,
         ik_result: TrajectoryIKResult,
         figsize: tuple = (12, 6),
-    ) -> plt.Figure:
+    ) -> Figure:
         """Plot IK tracking errors over time.
 
         Args:
@@ -672,7 +673,7 @@ class MatplotlibVisualizer:
         ik_result: TrajectoryIKResult,
         joint_names: list[str] | None = None,
         figsize: tuple = (14, 8),
-    ) -> plt.Figure:
+    ) -> Figure:
         """Plot joint angle trajectories.
 
         Args:

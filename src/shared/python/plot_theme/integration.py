@@ -114,7 +114,7 @@ def style_axis(
     ax.tick_params(colors=theme.tick_color)
     ax.xaxis.label.set_color(theme.label_color)
     ax.yaxis.label.set_color(theme.label_color)
-    ax.title.set_color(theme.title_color)
+    ax.title.set_color(theme.title_color)  # type: ignore[attr-defined]
     ax.grid(True, color=theme.grid_color, alpha=theme.grid_alpha)
 
 

@@ -66,13 +66,54 @@ def _validate_dataframe_expression(expression: str) -> None:
         raise ValueError(f"Syntax error in expression: {exc}") from exc
 
     for node in ast.walk(tree):
-        # Reject disallowed node types outright
         if isinstance(node, ast.Attribute) and node.attr.startswith("__"):
             raise ValueError(
                 f"Attribute access to dunder name '{node.attr}' is not permitted"
             )
 
-            # Reject forbidden bare names
+        if isinstance(node, ast.Name) and node.id in _FORBIDDEN_NAMES:
+            raise ValueError(f"Use of forbidden name '{node.id}' is not permitted")
+
+        if isinstance(node, (ast.Import, ast.ImportFrom, ast.Lambda)):
+            raise ValueError(
+                f"Construction of type {type(node).__name__} is not permitted"
+            )
+
+
+class DataProcessor:
+    """Chainable data processing facade.
+
+    Maintains an internal pandas DataFrame and a history of applied transforms.
+    """
+
+    def __init__(self) -> None:
+        """Initialize an empty processor."""
+        self._df: pd.DataFrame = pd.DataFrame()
+        self._source_path: str = ""
+        self._history: list[str] = []
+
+    @property
+    def dataframe(self) -> pd.DataFrame:
+        """Return the current internal DataFrame."""
+        return self._df
+
+    @property
+    def history(self) -> list[str]:
+        """Return the list of applied transforms."""
+        return self._history.copy()
+
+    def load(
+        self,
+        path: str | Path,
+        *,
+        sheet_name: str | int = 0,
+        encoding: str = "utf-8",
+    ) -> DataProcessor:
+        """Load data from a file.
+
+        Supported formats: .csv, .tsv, .xlsx, .xls, .parquet, .dat
+        """
+        if not (path is not None):
             raise ValueError("path must be provided")
         path = Path(path)
         suffix = path.suffix.lower()

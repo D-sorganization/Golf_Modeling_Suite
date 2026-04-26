@@ -25,6 +25,7 @@ from __future__ import annotations
 import csv
 import logging
 from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
@@ -58,7 +59,19 @@ try:
     import matplotlib
 
     matplotlib.use("QtAgg")
-    from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+    FigureCanvas: Any
+    try:
+        from matplotlib.backends.backend_qtagg import (
+            FigureCanvasQTAgg as FigureCanvas,  # type: ignore[assignment]
+        )
+    except ImportError:
+        try:
+            from matplotlib.backends.backend_agg import (
+                FigureCanvasAgg as FigureCanvas,  # type: ignore[assignment]
+            )
+        except ImportError:
+            FigureCanvas = None
+
     from matplotlib.figure import Figure
 
     _HAS_MPL = True
@@ -335,7 +348,7 @@ class SwingComparisonDialog(QDialog):
         grp = QGroupBox("Mean ± Std Tip Speed by Preset")
         lay = QVBoxLayout(grp)
         fig = Figure(figsize=(6, 2.5), facecolor="#12121e")
-        self._canvas = FigureCanvasQTAgg(fig)
+        self._canvas = FigureCanvas(fig)
         self._ax = fig.add_subplot(111)
         self._ax.set_facecolor("#1a1a2e")
         self._ax.tick_params(colors="#8080b0", labelsize=9)
@@ -487,7 +500,7 @@ class SwingComparisonDialog(QDialog):
             error_kw={"ecolor": "#d0d0d0", "linewidth": 1.5},
         )
         self._ax.set_xticks(x)
-        self._ax.set_xticklabels(names, rotation=15, ha="right", fontsize=8)
+        self._ax.set_xticklabels(names, rotation=15, ha="right", fontsize=8)  # type: ignore[operator]
         self._ax.set_ylabel("Tip speed (m/s)", color="#8080b0", fontsize=9)
         self._ax.tick_params(colors="#8080b0", labelsize=9)
         for spine in self._ax.spines.values():

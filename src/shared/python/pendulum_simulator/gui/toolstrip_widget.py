@@ -20,6 +20,8 @@ Closes #1134: Font sizes increased for visibility
 
 from __future__ import annotations
 
+from typing import cast
+
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
@@ -310,8 +312,7 @@ class ToolStrip(QWidget):
     def _add_separator(self, layout: QHBoxLayout) -> None:
         layout.addWidget(_vline())
 
-        if not (layout is not None):
-            raise ValueError("layout must be provided")
+    def _build_row1_title_and_model(self, layout: QHBoxLayout) -> None:
         title = QLabel("Pendulums")
         title.setStyleSheet(_TITLE)
         title.setFont(QFont("Sans", 11, QFont.Weight.Bold))
@@ -1008,13 +1009,16 @@ class ToolStrip(QWidget):
         seg_layout = self._segment_row_layout()
         if seg_layout is None:
             return
+        overlay_frame: QFrame | None = self.findChild(QFrame, "overlay_section")
+        if overlay_frame is None:
+            return
         overlay_layout = overlay_frame.layout()
         if overlay_layout is None:
             return
         # The segment row is the last item in overlay_layout
         seg_item = overlay_layout.itemAt(overlay_layout.count() - 1)
         if seg_item is not None and seg_item.layout() is not None:
-            seg_layout = seg_item.layout()
+            seg_layout = cast(QHBoxLayout, seg_item.layout())
             if not (seg_layout is not None):  # narrowing for mypy
                 raise ValueError("DbC Blocked: Precondition failed.")
             # Clear old widgets (keep "Segments:" label at position 0)

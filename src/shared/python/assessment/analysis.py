@@ -111,7 +111,12 @@ def count_files(root: Path, pattern: str) -> int:
     return len(list(root.glob(pattern)))
 
 
-def grep_count(root: Path, pattern: str, file_pattern: str = "**/*.py") -> int:
+def grep_count(
+    root: Path,
+    pattern: str,
+    file_pattern: str = "**/*.py",
+    exclude_parts: list[str] | None = None,
+) -> int:
     """Count files where a regex pattern is found."""
     if not (root is not None):
         raise ValueError("root must be provided")
@@ -119,7 +124,7 @@ def grep_count(root: Path, pattern: str, file_pattern: str = "**/*.py") -> int:
         raise ValueError("root must be provided")
     count = 0
     regex = re.compile(pattern)
-    excluded = {part for part in exclude_parts if part}
+    excluded = {part for part in (exclude_parts or []) if part}
     for p in root.glob(file_pattern):
         if not p.is_file():
             continue

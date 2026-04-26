@@ -353,6 +353,60 @@ def clamp_torque(tau: np.ndarray, clamp: TorqueClamp) -> np.ndarray:
     )
 
 
+def equations_of_motion(
+    state: State,
+    t: float,
+    params: PendulumParams,
+    torque_func: TorqueFunc,
+    limits: JointLimits | None = None,
+    clamp: TorqueClamp | None = None,
+) -> State:
+    """Compute the state derivative: dx/dt = f(x, t).
+
+    State vector x = [theta1, phi, dtheta1, dphi].
+
+    M(q) * qddot = tau - C(q,qdot) - G(q)
+
+    Preconditions:
+        - state has shape (4,) with all finite values.
+        - torque_func returns a 2-tuple of finite floats.
+    Postconditions:
+        - Returns shape (4,) with all finite values.
+    """
+    assert state.shape == (4,), f"State must have shape (4,), got {state.shape}"
+    assert all(np.isfinite(state)), f"State values must be finite: {state}"
+
+    theta1, phi, dtheta1, dphi = state
+
+    M = mass_matrix(phi, params)
+    C = coriolis_vector(phi, dtheta1, dphi, params)
+    G = gravity_vector(theta1, phi, params)
+
+    tau1, tau2 = torque_func(t)
+    tau = np.array([tau1, tau2])
+
+    if clamp is not None:
+        tau = clamp_torque(tau, clamp)
+
+    tau_friction = friction_torque_vector(dtheta1, dphi, params)
+
+    # Joint limits
+    tau_lim = np.zeros(2)
+    if limits is not None:
+        tau_lim = joint_limit_torque(phi, dphi, limits, theta1=theta1, dtheta1=dtheta1)
+
+    # Solve: M * qddot = tau + tau_friction + tau_lim - C - G
+    rhs = tau + tau_friction + tau_lim - C - G
+    qddot = np.linalg.solve(M, rhs)
+
+    state_dot = np.array([dtheta1, dphi, qddot[0], qddot[1]])
+
+    assert all(np.isfinite(state_dot)), (
+        f"State derivative has non-finite values: {state_dot}"
+    )
+    return state_dot
+
+
 @dataclass(frozen=True)
 class JointLimitsNDOF:
     """N-DOF joint angle limits with Hermite smoothstep penalties.
@@ -412,31 +466,6 @@ def joint_limit_torque_ndof(
     return result
 
 
-def clamp_torque_ndof(tau: np.ndarray, limits: np.ndarray) -> np.ndarray:
-    """Clamp N-DOF torque vector to symmetric per-DOF limits (#1150).
-
-    Parameters
-    ----------
-    tau : ndarray, shape (n,)
-        Joint torque vector.
-    limits : ndarray, shape (n,)
-        Per-joint maximum torque magnitudes (positive).
-        Use ``inf`` for unclamped joints.
-
-    Pre: tau.shape == limits.shape, all limits > 0.
-    Post: |result[i]| <= limits[i] for all i.
-    """
-    assert tau.shape == limits.shape, (
-        f"Shape mismatch: tau={tau.shape}, limits={limits.shape}"
-    )
-    assert np.all(limits > 0), "All limits must be positive"
-    result: np.ndarray = np.clip(tau, -limits, limits)
-    return result
-
-    assert abs(_tip_dist - L2) < 1e-9, f"Tip distance {_tip_dist:.6f} â‰  L2={L2:.6f}"
-    return result
-
-
 # ---------------------------------------------------------------------------
 # Joint velocities (linear speed at each joint)
 # ---------------------------------------------------------------------------
@@ -462,6 +491,43 @@ def joint_velocities(state: State, params: PendulumParams) -> dict:
         "tip_speed": float(np.sqrt(vtx**2 + vty**2)),
         "wrist_vel": (float(vwx), float(vwy)),
         "tip_vel": (float(vtx), float(vty)),
+    }
+
+
+def forward_kinematics(theta1: float, phi: float, params: PendulumParams) -> dict:
+    """Compute joint and tip positions in the world frame.
+
+    Origin is at the shoulder (fixed pivot).
+    x-axis points right, y-axis points up.
+
+    Parameters
+    ----------
+    theta1 : float
+        Absolute angle of segment 1 from downward vertical (rad).
+    phi : float
+        Relative angle of segment 2 (rad).
+    params : PendulumParams
+
+    Returns
+    -------
+    dict with 'shoulder', 'wrist', 'tip' as (x, y) tuples.
+    """
+    assert theta1 is not None, "theta1 must be provided"
+    L1, L2 = params.L1, params.L2
+    abs_angle2 = theta1 + phi
+
+    # Segment 1 endpoint (wrist)
+    wx = L1 * np.sin(theta1)
+    wy = -L1 * np.cos(theta1)
+
+    # Segment 2 endpoint (tip)
+    tx = wx + L2 * np.sin(abs_angle2)
+    ty = wy - L2 * np.cos(abs_angle2)
+
+    return {
+        "shoulder": (0.0, 0.0),
+        "wrist": (wx, wy),
+        "tip": (tx, ty),
     }
 
 

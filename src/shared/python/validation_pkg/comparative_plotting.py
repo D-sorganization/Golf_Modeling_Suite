@@ -272,14 +272,14 @@ class ComparativePlotter:
             np.rad2deg(pos1_aligned.signal_a[0]),
             np.rad2deg(pos2_aligned.signal_a[0]),
             color=self.colors["a"],
-            marker="o",
+            marker="o",  # type: ignore[arg-type]
             s=50,
         )
         ax.scatter(
             np.rad2deg(pos1_aligned.signal_b[0]),
             np.rad2deg(pos2_aligned.signal_b[0]),
             color=self.colors["b"],
-            marker="o",
+            marker="o",  # type: ignore[arg-type]
             s=50,
         )
 
@@ -369,14 +369,14 @@ class ComparativePlotter:
             [pos_a[0, 1]],
             [pos_a[0, 2]],
             color=self.colors["a"],
-            marker="o",
+            marker="o",  # type: ignore[arg-type]
         )
         ax.scatter(
             [pos_b[0, 0]],
             [pos_b[0, 1]],
             [pos_b[0, 2]],
             color=self.colors["b"],
-            marker="o",
+            marker="o",  # type: ignore[arg-type]
         )
 
         ax.set_title(title, fontsize=14, fontweight="bold")
@@ -436,8 +436,8 @@ class ComparativePlotter:
                 align="center",
                 color=[self.colors["a"] if x > 0 else self.colors["b"] for x in diffs],
             )
-            ax4.set_yticks(y_pos)
-            ax4.set_yticklabels(names)
+            ax4.set_yticks(y_pos)  # type: ignore[operator]
+            ax4.set_yticklabels(names)  # type: ignore[operator]
             ax4.invert_yaxis()
             ax4.set_xlabel("% Difference (A - B)", fontsize=10)
             ax4.set_title("Relative Differences", fontsize=10, fontweight="bold")

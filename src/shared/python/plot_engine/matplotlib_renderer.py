@@ -237,11 +237,11 @@ class MatplotlibRenderer:
         im = ax.imshow(z_data, cmap=cmap, aspect="auto", origin="lower")
 
         if spec.x_labels:
-            ax.set_xticks(range(len(spec.x_labels)))
-            ax.set_xticklabels(spec.x_labels, rotation=45, ha="right")
+            ax.set_xticks(range(len(spec.x_labels)))  # type: ignore[operator]
+            ax.set_xticklabels(spec.x_labels, rotation=45, ha="right")  # type: ignore[operator]
         if spec.y_labels:
-            ax.set_yticks(range(len(spec.y_labels)))
-            ax.set_yticklabels(spec.y_labels)
+            ax.set_yticks(range(len(spec.y_labels)))  # type: ignore[operator]
+            ax.set_yticklabels(spec.y_labels)  # type: ignore[operator]
 
         if spec.annotate:
             for i in range(z_data.shape[0]):
@@ -290,7 +290,7 @@ class MatplotlibRenderer:
                 spec.series[i].style.color or self._cycle_color(colors, i)
                 for i in range(len(data_arrays))
             ]
-            ax.hist(
+            ax.hist(  # type: ignore[call-overload]
                 data_arrays,
                 bins=spec.bins,
                 density=spec.density,
@@ -485,7 +485,7 @@ class MatplotlibRenderer:
                 x,
                 y,
                 c=color,
-                marker=marker or "o",
+                marker=marker or "o",  # type: ignore[arg-type]
                 s=style.marker_size**2,
                 alpha=style.opacity,
                 label=label,
@@ -574,9 +574,9 @@ class MatplotlibRenderer:
         ax.set_ylabel(spec.y_axis.label)
 
         if spec.x_axis.min is not None or spec.x_axis.max is not None:
-            ax.set_xlim(spec.x_axis.min, spec.x_axis.max)
+            ax.set_xlim(spec.x_axis.min, spec.x_axis.max)  # type: ignore[arg-type]
         if spec.y_axis.min is not None or spec.y_axis.max is not None:
-            ax.set_ylim(spec.y_axis.min, spec.y_axis.max)
+            ax.set_ylim(spec.y_axis.min, spec.y_axis.max)  # type: ignore[arg-type]
 
         if spec.x_axis.log_scale:
             ax.set_xscale("log")

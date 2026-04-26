@@ -120,12 +120,19 @@ class ModelRegistry(ContractChecker):
         Path(__file__).parent.parent.parent.parent / "config" / "models.yaml"
     )
 
-    def __init__(self, config_path: str | Path | None = None) -> None:
+    def __init__(
+        self,
+        config_path: str | Path | None = None,
+        strict: bool | None = None,
+        required_model_ids: Iterable[str] = (),
+    ) -> None:
         """Initialize registry.
 
         Args:
             config_path: Path to the YAML configuration file. Defaults to
                 src/config/models.yaml (absolute, resolved from this file).
+            strict: Whether to raise error on validation failures.
+            required_model_ids: Set of model IDs that MUST be present.
         """
         if config_path is None:
             config_path = self._DEFAULT_CONFIG_PATH

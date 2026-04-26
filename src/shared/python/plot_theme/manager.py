@@ -226,7 +226,7 @@ class PlotThemeManager:
         ax.yaxis.label.set_color(theme.label_color)
 
         # Title
-        ax.title.set_color(theme.title_color)
+        ax.title.set_color(theme.title_color)  # type: ignore[attr-defined]
 
         # Grid
         ax.grid(True, color=theme.grid_color, alpha=theme.grid_alpha)

@@ -77,6 +77,7 @@ class ModuleHandler:
             raise ValueError("repo_path must be provided")
         if not (repo_path is not None):
             raise ValueError("repo_path must be provided")
+        cwd = get_model_working_directory(model, repo_path)
         process = process_manager.launch_module(
             name=self.display_name,
             module_name=self.module_name,

@@ -6,7 +6,7 @@ now lives in ``shared.python.data_io.output_manager``.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 

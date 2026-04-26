@@ -18,6 +18,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import matplotlib.pyplot as plt
+from cycler import cycler
 
 from .colors import CHART_COLORS, Colors  # type: ignore[attr-defined]
 
@@ -48,7 +49,7 @@ GOLF_SUITE_STYLE = {
     "axes.titlepad": 12,
     "axes.spines.top": False,
     "axes.spines.right": False,
-    "axes.prop_cycle": plt.cycler("color", CHART_COLORS),
+    "axes.prop_cycle": cycler("color", CHART_COLORS),
     # Grid
     "grid.color": Colors.GRID_LINE,
     "grid.linestyle": "-",
@@ -130,7 +131,7 @@ def apply_golf_suite_style(fig: Figure | None = None) -> None:
     else:
         # Apply to specific figure
         fig.set_facecolor(Colors.BG_BASE)
-        for ax in fig.get_axes():
+        for ax in fig.get_axes():  # type: ignore[operator]
             _style_axes(ax)
 
 

@@ -372,17 +372,27 @@ async def list_features(
     Exposes all hidden engine capabilities for discoverability.
     Feature availability is checked against the currently loaded engine.
     """
-    if not (available_only is not None):
-        raise ValueError("available_only must be provided")
-    if not (category is not None):
-        raise ValueError("category must be provided")
+    engine = _require_active_engine(engine_manager)
+
+    from src.shared.python.control_features_registry import ControlFeaturesRegistry
+
+    registry = ControlFeaturesRegistry(engine)
+    return registry.list_features(category=category, available_only=available_only)
+
+
+@router.post("/features/execute")
+async def execute_feature(
+    request: FeatureExecuteRequest,
+    engine_manager: EngineManager = Depends(get_engine_manager),
+) -> dict[str, Any]:
+    """Execute a specific engine feature by name."""
+    if not (request is not None):
         raise ValueError("request must be provided")
     engine = _require_active_engine(engine_manager)
 
     from src.shared.python.control_features_registry import ControlFeaturesRegistry
 
     registry = ControlFeaturesRegistry(engine)
-    # nosemgrep: sql-injection-db-cursor-execute
     result = registry.execute(request.feature_name, **request.args)
     return {"feature": request.feature_name, "result": result}
 

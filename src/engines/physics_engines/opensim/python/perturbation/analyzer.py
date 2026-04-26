@@ -222,6 +222,32 @@ class OpenSimPerturbationAnalyzer(PerturbationAnalyzerBase):
             model (excluding ground).
         """
         super().__init__()
+        import opensim as osim  # noqa: PLC0415
+
+        if model_path:
+            self._model = osim.Model(str(model_path))
+        else:
+            import tempfile
+
+            with tempfile.NamedTemporaryFile(
+                suffix=".osim", mode="w", delete=False
+            ) as tmp:
+                tmp.write(_MINIMAL_OSIM_XML)
+            self._model = osim.Model(tmp.name)
+
+        self._nq = self._model.getCoordinateSet().getSize()
+        self._nu = self._model.getForceSet().getSize()
+        self._t_end = t_end
+        self._dt = dt
+
+        if ee_body_name:
+            self._ee_body_name = ee_body_name
+        else:
+            body_set = self._model.getBodySet()
+            if body_set.getSize() > 0:
+                self._ee_body_name = body_set.get(body_set.getSize() - 1).getName()
+            else:
+                self._ee_body_name = "tip"
 
         logger.info(
             "OpenSimPerturbationAnalyzer: nq=%d, nu=%d, t_end=%.2f, ee=%s",

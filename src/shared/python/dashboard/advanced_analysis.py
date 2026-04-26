@@ -461,10 +461,10 @@ class CorrelationTab(QtWidgets.QWidget):
 
         # Plot Heatmap
         im = self.ax.imshow(corr_mat, cmap="coolwarm", vmin=-1, vmax=1)
-        self.ax.set_xticks(np.arange(len(feature_names)))
-        self.ax.set_yticks(np.arange(len(feature_names)))
-        self.ax.set_xticklabels(feature_names, rotation=45, ha="right")
-        self.ax.set_yticklabels(feature_names)
+        self.ax.set_xticks(np.arange(len(feature_names)))  # type: ignore[operator]
+        self.ax.set_yticks(np.arange(len(feature_names)))  # type: ignore[operator]
+        self.ax.set_xticklabels(feature_names, rotation=45, ha="right")  # type: ignore[operator]
+        self.ax.set_yticklabels(feature_names)  # type: ignore[operator]
         self.ax.set_title("Correlation Matrix")
 
         # Add colorbar
