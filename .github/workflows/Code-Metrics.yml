@@ -19,6 +19,7 @@ jobs:
     outputs:
       runner: ${{ steps.check.outputs.runner }}
     steps:
+<<<<<<< HEAD
       - name: Check for self-hosted runner
         id: check
         env:
@@ -40,6 +41,8 @@ jobs:
     name: Complexity Analysis (radon)
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     steps:
+=======
+>>>>>>> origin/main
       - uses: actions/checkout@v6
 
       - name: Setup Python

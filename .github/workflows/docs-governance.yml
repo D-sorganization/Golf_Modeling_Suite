@@ -21,6 +21,7 @@ jobs:
     outputs:
       runner: ${{ steps.check.outputs.runner }}
     steps:
+<<<<<<< HEAD
       - name: Check for self-hosted runner
         id: check
         env:
@@ -36,3 +37,13 @@ jobs:
             echo "::error::No local self-hosted runner available; failing closed"
             exit 1
           fi
+=======
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Validate docs governance
+        run: python3 scripts/check_docs_governance.py
+>>>>>>> origin/main

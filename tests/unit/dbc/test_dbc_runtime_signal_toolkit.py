@@ -21,12 +21,6 @@ from src.shared.python.signal_toolkit.noise import (
 )
 
 from src.shared.python.core.contracts import PreconditionError
-from src.shared.python.signal_toolkit.filters import (
-    FilterDesigner,
-    FilterType,
-    apply_exponential_smoothing,
-    apply_gaussian_smoothing,
-)
 
 
 def _make_signal(
