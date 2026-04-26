@@ -1,0 +1,361 @@
+name: Convert Review Comments to Issues
+
+# Converts PR review comments (from Copilot, Cursor, Jules, etc.) into GitHub Issues
+# This ensures no feedback is lost and creates a trackable work queue
+
+on:
+  # Run when PRs are updated or closed
+  pull_request:
+    types: [opened, synchronize, closed]
+  # Run when review comments are created
+  pull_request_review_comment:
+    types: [created]
+  # Manual trigger to process all open PRs
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Specific PR to process (leave empty for all open PRs)"
+        required: false
+        type: string
+      archive_only:
+        description: "Only archive to markdown, do not create issues"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: read
+  issues: write
+
+# HARDENING: Prevent concurrent runs and limit frequency
+concurrency:
+  group: comment-to-issue-${{ github.repository }}
+  cancel-in-progress: false
+
+env:
+  # HARDENING: Rate limit - max issues to create per run
+  MAX_ISSUES_PER_RUN: 5
+
+jobs:
+  # -- Dispatcher: route to self-hosted if available --------------------------
+  pick-runner:
+    runs-on: d-sorg-fleet
+    timeout-minutes: 2
+    outputs:
+      runner: ${{ steps.check.outputs.runner }}
+    steps:
+      - name: Check for self-hosted runner
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        run: |
+          ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
+            --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
+            2>/dev/null || echo "0")
+          if [[ "$ONLINE" -gt 0 ]]; then
+            echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
+            echo "Self-hosted runner online - routing locally"
+          else
+            echo "::error::No local self-hosted runner available; failing closed"
+            exit 1
+          fi
+  process-comments:
+    needs: pick-runner
+    runs-on: self-hosted
+    # HARDENING: Skip bot-triggered events to prevent cascades
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.actor != 'github-actions[bot]' &&
+       github.actor != 'dependabot[bot]' &&
+       github.actor != 'renovate[bot]' &&
+       github.actor != 'jules-bot' &&
+       github.actor != 'jules-ai[bot]' &&
+       github.actor != 'google-labs-jules' &&
+       github.actor != 'copilot-pull-request-reviewer[bot]')
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Collect Review Comments
+        id: collect
+        env:
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        run: |
+          mkdir -p .github/review_comments
+          mkdir -p docs/review_archive
+
+          # Determine which PRs to process
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.pr_number }}" ]; then
+            PR_NUMBERS="${{ inputs.pr_number }}"
+          elif [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ github.event_name }}" = "pull_request_review_comment" ]; then
+            PR_NUMBERS="${{ github.event.pull_request.number }}"
+          else
+            # Get all open PRs
+            PR_NUMBERS=$(gh pr list --state open --json number -q '.[].number' | tr '\n' ' ')
+          fi
+
+          echo "Processing PRs: $PR_NUMBERS"
+          echo "pr_numbers=$PR_NUMBERS" >> $GITHUB_OUTPUT
+
+          # Collect comments from each PR
+          for PR_NUM in $PR_NUMBERS; do
+            echo "Fetching comments for PR #$PR_NUM..."
+
+            # Get PR details
+            gh pr view $PR_NUM --json title,author,headRefName,state,body > ".github/review_comments/pr_${PR_NUM}_details.json" 2>/dev/null || continue
+
+            # Get review comments (inline code comments)
+            gh api "repos/${{ github.repository }}/pulls/${PR_NUM}/comments" \
+              > ".github/review_comments/pr_${PR_NUM}_review_comments.json" 2>/dev/null || echo "[]" > ".github/review_comments/pr_${PR_NUM}_review_comments.json"
+
+            # Get PR conversation comments
+            gh api "repos/${{ github.repository }}/issues/${PR_NUM}/comments" \
+              > ".github/review_comments/pr_${PR_NUM}_issue_comments.json" 2>/dev/null || echo "[]" > ".github/review_comments/pr_${PR_NUM}_issue_comments.json"
+          done
+
+      - name: Process and Create Issues
+        id: process
+        env:
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          ARCHIVE_ONLY: ${{ inputs.archive_only || 'false' }}
+          TARGET_BRANCH: ${{ github.event.pull_request.head.ref || github.head_ref || github.ref_name }}
+        run: |
+          # Write Python script to temp file to avoid YAML heredoc issues
+          cat > /tmp/process_comments.py << 'SCRIPT_EOF'
+          import json
+          import os
+          import subprocess
+          from datetime import datetime
+          from pathlib import Path
+
+          archive_only = os.environ.get('ARCHIVE_ONLY', 'false') == 'true'
+          comments_dir = Path('.github/review_comments')
+          archive_dir = Path('docs/review_archive')
+          archive_dir.mkdir(parents=True, exist_ok=True)
+
+          # Track created issues
+          created_issues = []
+          archived_comments = []
+
+          def load_json_file(path: Path, default):
+              if not path.exists():
+                  return default
+              try:
+                  if path.stat().st_size == 0:
+                      return default
+                  with open(path, 'r', encoding='utf-8') as f:
+                      return json.load(f)
+              except (json.JSONDecodeError, OSError):
+                  return default
+
+          # Load existing issue tracking to avoid duplicates
+          tracking_file = archive_dir / 'comment_tracking.json'
+          tracking = load_json_file(
+              tracking_file,
+              {'processed_comments': [], 'created_issues': {}}
+          )
+
+          # Find all PR details files
+          for details_file in comments_dir.glob('pr_*_details.json'):
+              pr_num = details_file.stem.split('_')[1]
+
+              pr_details = load_json_file(details_file, {})
+              if not pr_details:
+                  continue
+
+              pr_title = pr_details.get('title', f'PR #{pr_num}')
+              pr_author = pr_details.get('author', {}).get('login', 'unknown')
+              pr_branch = pr_details.get('headRefName', 'unknown')
+
+              # Load review comments
+              review_file = comments_dir / f'pr_{pr_num}_review_comments.json'
+              review_comments = load_json_file(review_file, [])
+
+              # Process each review comment
+              for comment in review_comments:
+                  comment_id = str(comment.get('id', ''))
+                  if comment_id in tracking['processed_comments']:
+                      continue
+
+                  author = comment.get('user', {}).get('login', 'unknown')
+                  body = comment.get('body', '')
+                  file_path = comment.get('path', '')
+                  line = comment.get('line', comment.get('original_line', 0))
+                  created_at = comment.get('created_at', '')
+                  html_url = comment.get('html_url', '')
+
+                  # Categorize by author
+                  if author == 'Copilot':
+                      source = 'GitHub Copilot'
+                      label = 'copilot-review'
+                  elif author == 'google-labs-jules' or (author == 'github-actions[bot]' and 'jules' in body.lower()):
+                      source = 'Jules'
+                      label = 'jules-review'
+                  elif 'cursor' in author.lower() or 'bugbot' in author.lower():
+                      source = 'Cursor/BugBot'
+                      label = 'cursor-review'
+                  else:
+                      source = f'Reviewer ({author})'
+                      label = 'human-review'
+
+                  # Determine if this is actionable (has a suggestion)
+                  has_suggestion = '```suggestion' in body
+                  is_actionable = has_suggestion or any(word in body.lower() for word in
+                      ['should', 'could', 'fix', 'change', 'update', 'remove', 'add', 'consider'])
+
+                  # Archive to markdown
+                  archive_entry = {
+                      'pr_number': pr_num,
+                      'pr_title': pr_title,
+                      'comment_id': comment_id,
+                      'source': source,
+                      'author': author,
+                      'file': file_path,
+                      'line': line,
+                      'body': body,
+                      'url': html_url,
+                      'created_at': created_at,
+                      'has_suggestion': has_suggestion,
+                      'is_actionable': is_actionable
+                  }
+                  archived_comments.append(archive_entry)
+
+                  # Create issue if actionable and not archive_only
+                  if is_actionable and not archive_only:
+                      # Check if issue already exists for this comment
+                      if comment_id in tracking['created_issues']:
+                          continue
+
+                      issue_title = f"[review] [{source}] Feedback on {file_path}:{line}"
+                      if len(issue_title) > 100:
+                          issue_title = issue_title[:97] + "..."
+
+                      issue_body = "\n".join([
+                          f"## Review Comment from {source}",
+                          "",
+                          f"**Source PR:** #{pr_num} - {pr_title}",
+                          f"**File:** `{file_path}` (line {line})",
+                          f"**Original Comment:** {html_url}",
+                          "",
+                          "---",
+                          "",
+                          "### Feedback",
+                          "",
+                          body,
+                          "",
+                          "---",
+                          "",
+                          "### Context",
+                          "",
+                          f"- **PR Author:** @{pr_author}",
+                          f"- **Branch:** `{pr_branch}`",
+                          f"- **Reviewed by:** {author}",
+                          f"- **Date:** {created_at}",
+                          "",
+                          "---",
+                          "",
+                          "*This issue was auto-generated from a PR review comment.*",
+                      ])
+
+                      # Create the issue
+                      try:
+                          result = subprocess.run([
+                              'gh', 'issue', 'create',
+                              '--title', issue_title,
+                              '--body', issue_body,
+                              '--label', f'{label},review-feedback,auto-generated'
+                          ], capture_output=True, text=True)
+
+                          if result.returncode == 0:
+                              issue_url = result.stdout.strip()
+                              created_issues.append({
+                                  'comment_id': comment_id,
+                                  'issue_url': issue_url,
+                                  'source': source
+                              })
+                              tracking['created_issues'][comment_id] = issue_url
+                              print(f"Created issue: {issue_url}")
+                          else:
+                              print(f"Failed to create issue: {result.stderr}")
+                      except Exception as e:
+                          print(f"Error creating issue: {e}")
+
+                  # Mark as processed
+                  tracking['processed_comments'].append(comment_id)
+
+          # Write archive markdown
+          if archived_comments:
+              date_str = datetime.now().strftime('%Y-%m-%d')
+              archive_md = archive_dir / f'review_comments_{date_str}.md'
+
+              with open(archive_md, 'w') as f:
+                  f.write(f"# Review Comments Archive - {date_str}\n\n")
+                  f.write(f"Generated: {datetime.now().isoformat()}\n\n")
+
+                  # Group by source
+                  by_source = {}
+                  for c in archived_comments:
+                      src = c['source']
+                      if src not in by_source:
+                          by_source[src] = []
+                      by_source[src].append(c)
+
+                  for source, comments in by_source.items():
+                      f.write(f"## {source} ({len(comments)} comments)\n\n")
+                      for c in comments:
+                          f.write(f"### PR #{c['pr_number']}: {c['file']}:{c['line']}\n\n")
+                          f.write(f"Actionable: {'Yes' if c['is_actionable'] else 'No'}\n")
+                          f.write(f"Has Suggestion: {'Yes' if c['has_suggestion'] else 'No'}\n\n")
+                          body_preview = c['body'][:500] + ('...' if len(c['body']) > 500 else '')
+                          f.write(f"```\n{body_preview}\n```\n\n")
+                          f.write(f"[View on GitHub]({c['url']})\n\n---\n\n")
+
+              print(f"Archived {len(archived_comments)} comments to {archive_md}")
+
+          # Save tracking file
+          with open(tracking_file, 'w') as f:
+              json.dump(tracking, f, indent=2)
+
+          # Output summary
+          print(f"\nSummary:")
+          print(f"  - Archived: {len(archived_comments)} comments")
+          print(f"  - Created: {len(created_issues)} issues")
+
+          with open(os.environ.get('GITHUB_OUTPUT', '/dev/null'), 'a') as f:
+              f.write(f"archived_count={len(archived_comments)}\n")
+              f.write(f"created_count={len(created_issues)}\n")
+          SCRIPT_EOF
+
+          python3 /tmp/process_comments.py
+
+      - name: Commit Archive
+        env:
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          TARGET_BRANCH: ${{ github.event.pull_request.head.ref || github.head_ref || github.ref_name }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add docs/review_archive/ docs/review_archive/comment_tracking.json || true
+
+          if ! git diff --staged --quiet; then
+            git commit -m "docs: archive review comments from PRs"
+            git push origin HEAD:"$TARGET_BRANCH"
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Summary
+        run: |
+          echo "## Review Comment Processing Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Archived:** ${{ steps.process.outputs.archived_count }} comments" >> $GITHUB_STEP_SUMMARY
+          echo "- **Issues Created:** ${{ steps.process.outputs.created_count }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Check \`docs/review_archive/\` for the full archive." >> $GITHUB_STEP_SUMMARY
