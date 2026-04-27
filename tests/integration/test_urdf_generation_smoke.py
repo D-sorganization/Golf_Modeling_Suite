@@ -13,10 +13,10 @@ Generates a humanoid URDF from default body parameters and verifies that:
 from __future__ import annotations
 
 import tempfile
-import defusedxml.ElementTree as DefusedET  # noqa: S314  # Security: defusedxml prevents XML attacks
 import xml.etree.ElementTree as ET  # stdlib for Element/SubElement
 from pathlib import Path
 
+import defusedxml.ElementTree as DefusedET  # noqa: S314  # Security: defusedxml prevents XML attacks
 import pytest
 from humanoid_character_builder.core.body_parameters import BodyParameters
 from humanoid_character_builder.generators.urdf_generator import (
@@ -86,9 +86,9 @@ class TestURDFStructuralValidity:
             if joint.get("type") == "revolute":
                 limit = joint.find("limit")
                 joint_name = joint.get("name")
-                assert limit is not None, (
-                    f"Revolute joint '{joint_name}' missing <limit>"
-                )
+                assert (
+                    limit is not None
+                ), f"Revolute joint '{joint_name}' missing <limit>"
                 assert "lower" in limit.attrib
                 assert "upper" in limit.attrib
 
@@ -105,12 +105,12 @@ class TestURDFStructuralValidity:
             assert child is not None
             parent_link = parent.get("link")
             child_link = child.get("link")
-            assert parent_link in link_names, (
-                f"Joint '{joint_name}' parent '{parent_link}' not found in links"
-            )
-            assert child_link in link_names, (
-                f"Joint '{joint_name}' child '{child_link}' not found in links"
-            )
+            assert (
+                parent_link in link_names
+            ), f"Joint '{joint_name}' parent '{parent_link}' not found in links"
+            assert (
+                child_link in link_names
+            ), f"Joint '{joint_name}' child '{child_link}' not found in links"
 
     def test_no_xml_declaration(self, default_urdf: str) -> None:
         """URDF output must not carry an XML declaration header."""

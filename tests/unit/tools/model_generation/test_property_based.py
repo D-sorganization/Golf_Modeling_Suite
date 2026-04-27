@@ -13,8 +13,6 @@ References:
 from __future__ import annotations
 
 import defusedxml.ElementTree as DefusedET  # noqa: S314  # Security: defusedxml prevents XML attacks
-import xml.etree.ElementTree as ET  # stdlib for Element/SubElement
-
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 from model_generation.builders.manual_builder import ManualBuilder
@@ -478,12 +476,12 @@ class TestMirrorInvolution:
         result_joint = builder.joints[0]
 
         for i in range(3):
-            assert abs(result_joint.origin.xyz[i] - joint_origin[i]) < 1e-10, (
-                f"joint origin[{i}] mismatch after double mirror({axis})"
-            )
-            assert abs(result_joint.axis[i] - joint_axis[i]) < 1e-10, (
-                f"joint axis[{i}] mismatch after double mirror({axis})"
-            )
+            assert (
+                abs(result_joint.origin.xyz[i] - joint_origin[i]) < 1e-10
+            ), f"joint origin[{i}] mismatch after double mirror({axis})"
+            assert (
+                abs(result_joint.axis[i] - joint_axis[i]) < 1e-10
+            ), f"joint axis[{i}] mismatch after double mirror({axis})"
 
     @given(axis=mirror_axis_strategy)
     @settings(max_examples=30, suppress_health_check=[HealthCheck.too_slow])
