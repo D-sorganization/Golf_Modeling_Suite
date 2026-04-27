@@ -637,7 +637,8 @@ jobs:
 
   rust-quickstart:
     name: Rust Quickstart
-    runs-on: d-sorg-fleet
+    needs: pick-runner
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
