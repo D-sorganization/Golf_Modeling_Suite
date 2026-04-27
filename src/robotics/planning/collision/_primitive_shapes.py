@@ -98,16 +98,18 @@ class Box(GeometricPrimitive):
     def _get_corners(self) -> np.ndarray:
         """Get all 8 corners of the box in world frame."""
         h = self.half_extents
-        local_corners = np.array([
-            [-h[0], -h[1], -h[2]],
-            [-h[0], -h[1], h[2]],
-            [-h[0], h[1], -h[2]],
-            [-h[0], h[1], h[2]],
-            [h[0], -h[1], -h[2]],
-            [h[0], -h[1], h[2]],
-            [h[0], h[1], -h[2]],
-            [h[0], h[1], h[2]],
-        ])
+        local_corners = np.array(
+            [
+                [-h[0], -h[1], -h[2]],
+                [-h[0], -h[1], h[2]],
+                [-h[0], h[1], -h[2]],
+                [-h[0], h[1], h[2]],
+                [h[0], -h[1], -h[2]],
+                [h[0], -h[1], h[2]],
+                [h[0], h[1], -h[2]],
+                [h[0], h[1], h[2]],
+            ]
+        )
         return (self.rotation @ local_corners.T).T + self.center
 
     def contains_point(self, point: np.ndarray) -> bool:
