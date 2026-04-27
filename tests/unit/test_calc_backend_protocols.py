@@ -3,7 +3,6 @@
 These tests verify the structural typing contracts and data validation
 without requiring FastAPI or external calculator packages.
 """
-# noqa: I001
 
 
 from __future__ import annotations
