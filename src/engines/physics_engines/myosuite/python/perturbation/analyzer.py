@@ -191,6 +191,24 @@ class MyoSuitePerturbationAnalyzer(PerturbationAnalyzerBase):
             Name of the end-effector body.  Defaults to the last body.
         """
         super().__init__()
+        self._t_end = t_end
+        self._nq = 0
+        self._nv = 0
+        self._nu = 0
+        self._use_gym = False
+        self._env: Any = None
+        self._model: Any = None
+
+        if env_id is not None:
+            self._init_myosuite(env_id)
+        elif model_xml is not None or model_path is not None:
+            self._init_mujoco_fallback(model_xml, model_path)
+        else:
+            # Try default env if myosuite available
+            if MYOSUITE_AVAILABLE:
+                self._init_myosuite(_DEFAULT_ENV_ID)
+            else:
+                self._init_mujoco_fallback(None, None)
 
         logger.info(
             "MyoSuitePerturbationAnalyzer: nq=%d, nu=%d, t_end=%.2f, use_gym=%s",
