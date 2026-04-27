@@ -510,3 +510,5 @@ pytest tests/ --cov=src --cov-fail-under=70
   5. VERSION: Bump the Spec Version field when making substantive changes.
      Use semver: major (structure change), minor (new features), patch (corrections).
 -->
+## Changes
+- Optimized `np.linalg.norm` to `np.sqrt(np.vdot(..., ...))` in `src/robotics/planning/collision/_distance_queries.py` and `src/robotics/planning/collision/_primitive_shapes.py` to boost performance during collision queries.
