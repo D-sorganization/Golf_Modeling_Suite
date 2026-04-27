@@ -13,10 +13,10 @@ Generates a humanoid URDF from default body parameters and verifies that:
 from __future__ import annotations
 
 import tempfile
-import defusedxml.ElementTree as DefusedET  # noqa: S314  # Security: defusedxml prevents XML attacks
 import xml.etree.ElementTree as ET  # stdlib for Element/SubElement
 from pathlib import Path
 
+import defusedxml.ElementTree as DefusedET  # noqa: S314  # Security: defusedxml prevents XML attacks
 import pytest
 from humanoid_character_builder.core.body_parameters import BodyParameters
 from humanoid_character_builder.generators.urdf_generator import (
