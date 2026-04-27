@@ -86,5 +86,3 @@ jobs:
             --branch ${{ github.ref_name }} \
             --parallel 3
 
-=======
->>>>>>> 4f648914e78b6f8f7aae53bb19f2921b48c857f1

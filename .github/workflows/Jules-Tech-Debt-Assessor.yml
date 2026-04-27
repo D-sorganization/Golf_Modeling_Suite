@@ -583,5 +583,3 @@ jobs:
           [View Full Report](https://github.com/${{ github.repository }}/blob/main/${{ steps.report.outputs.report_file }})
           EOF
 
-=======
->>>>>>> 4f648914e78b6f8f7aae53bb19f2921b48c857f1

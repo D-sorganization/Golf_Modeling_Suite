@@ -224,5 +224,3 @@ jobs:
           fi
 
           echo "Assessment generation complete. Jules will create a PR with the results."
-=======
->>>>>>> 4f648914e78b6f8f7aae53bb19f2921b48c857f1
