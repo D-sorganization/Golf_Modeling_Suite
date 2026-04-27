@@ -41,7 +41,9 @@ class Sphere(GeometricPrimitive):
         if not (point is not None):
             raise ValueError("point must be provided")
         point = np.asarray(point)
-        return float(np.linalg.norm(point - self.center)) <= self.radius
+        diff = point - self.center
+        # ⚡ Bolt: Element-wise norm computation is faster than np.linalg.norm(..., axis=None) for tiny vectors
+        return float(np.sqrt(np.vdot(diff, diff))) <= self.radius
 
     def compute_support(self, direction: np.ndarray) -> np.ndarray:
         """Compute support point."""
@@ -50,7 +52,7 @@ class Sphere(GeometricPrimitive):
         if not (direction is not None):
             raise ValueError("direction must be provided")
         direction = np.asarray(direction)
-        norm = np.linalg.norm(direction)
+        norm = np.sqrt(np.vdot(direction, direction))
         if norm < 1e-10:
             return self.center.copy()
         return self.center + self.radius * direction / norm
@@ -96,18 +98,16 @@ class Box(GeometricPrimitive):
     def _get_corners(self) -> np.ndarray:
         """Get all 8 corners of the box in world frame."""
         h = self.half_extents
-        local_corners = np.array(
-            [
-                [-h[0], -h[1], -h[2]],
-                [-h[0], -h[1], h[2]],
-                [-h[0], h[1], -h[2]],
-                [-h[0], h[1], h[2]],
-                [h[0], -h[1], -h[2]],
-                [h[0], -h[1], h[2]],
-                [h[0], h[1], -h[2]],
-                [h[0], h[1], h[2]],
-            ]
-        )
+        local_corners = np.array([
+            [-h[0], -h[1], -h[2]],
+            [-h[0], -h[1], h[2]],
+            [-h[0], h[1], -h[2]],
+            [-h[0], h[1], h[2]],
+            [h[0], -h[1], -h[2]],
+            [h[0], -h[1], h[2]],
+            [h[0], h[1], -h[2]],
+            [h[0], h[1], h[2]],
+        ])
         return (self.rotation @ local_corners.T).T + self.center
 
     def contains_point(self, point: np.ndarray) -> bool:
@@ -173,13 +173,15 @@ class Capsule(GeometricPrimitive):
     @property
     def length(self) -> float:
         """Get capsule length (distance between endpoints)."""
-        return float(np.linalg.norm(self.point_b - self.point_a))
+        diff = self.point_b - self.point_a
+        # ⚡ Bolt: Element-wise norm computation is faster than np.linalg.norm(..., axis=None) for tiny vectors
+        return float(np.sqrt(np.vdot(diff, diff)))
 
     @property
     def axis(self) -> np.ndarray:
         """Get capsule axis direction (normalized)."""
         diff = self.point_b - self.point_a
-        length = np.linalg.norm(diff)
+        length = np.sqrt(np.vdot(diff, diff))
         if length < 1e-10:
             return np.array([0.0, 0.0, 1.0])
         return diff / length
@@ -215,7 +217,9 @@ class Capsule(GeometricPrimitive):
             raise ValueError("point must be provided")
         point = np.asarray(point)
         closest = self._closest_point_on_segment(point)
-        return float(np.linalg.norm(point - closest)) <= self.radius
+        diff = point - closest
+        # ⚡ Bolt: Element-wise norm computation is faster than np.linalg.norm(..., axis=None) for tiny vectors
+        return float(np.sqrt(np.vdot(diff, diff))) <= self.radius
 
     def compute_support(self, direction: np.ndarray) -> np.ndarray:
         """Compute support point."""
@@ -224,7 +228,7 @@ class Capsule(GeometricPrimitive):
         if not (direction is not None):
             raise ValueError("direction must be provided")
         direction = np.asarray(direction)
-        norm = np.linalg.norm(direction)
+        norm = np.sqrt(np.vdot(direction, direction))
         if norm < 1e-10:
             return self.point_a.copy()
         d = direction / norm
@@ -267,7 +271,7 @@ class Cylinder(GeometricPrimitive):
             raise ValueError("height must be positive")
 
         # Normalize axis
-        norm = np.linalg.norm(self.axis)
+        norm = np.sqrt(np.vdot(self.axis, self.axis))
         if norm < 1e-10:
             raise ValueError("axis must be non-zero")
         self.axis = self.axis / norm
@@ -315,7 +319,7 @@ class Cylinder(GeometricPrimitive):
 
         # Check radius (perpendicular distance)
         perp = to_point - along_axis * self.axis
-        return float(np.linalg.norm(perp)) <= self.radius
+        return float(np.sqrt(np.vdot(perp, perp))) <= self.radius
 
     def compute_support(self, direction: np.ndarray) -> np.ndarray:
         """Compute support point."""
@@ -324,7 +328,7 @@ class Cylinder(GeometricPrimitive):
         if not (direction is not None):
             raise ValueError("direction must be provided")
         direction = np.asarray(direction)
-        norm = np.linalg.norm(direction)
+        norm = np.sqrt(np.vdot(direction, direction))
         if norm < 1e-10:
             return self.center.copy()
 
@@ -342,7 +346,7 @@ class Cylinder(GeometricPrimitive):
             axis_support = self.center - self.half_height * self.axis
 
         # Support on radius (perpendicular)
-        perp_norm = np.linalg.norm(d_perp)
+        perp_norm = np.sqrt(np.vdot(d_perp, d_perp))
         if perp_norm > 1e-10:
             return axis_support + self.radius * d_perp / perp_norm
 
@@ -396,7 +400,7 @@ class ConvexHull(GeometricPrimitive):
         # Simple heuristic: point is inside if closer to center than
         # all vertices in the same direction
         to_point = point - self.center
-        norm = np.linalg.norm(to_point)
+        norm = np.sqrt(np.vdot(to_point, to_point))
         if norm < 1e-10:
             return True  # At center
 
