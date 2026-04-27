@@ -4,7 +4,6 @@ These tests verify the structural typing contracts and data validation
 without requiring FastAPI or external calculator packages.
 """
 
-
 from __future__ import annotations
 
 import pytest
