@@ -152,6 +152,7 @@ include = [
 path = "build_hooks.py"
 
 [tool.ruff]
+src = ["src"]
 line-length = 88
 target-version = "py310"
 # Exclude third-party model files (legacy Python 2 scripts from OpenSim)

@@ -202,7 +202,6 @@ class TestSecurityManagerTokens:
             os.environ, {"GOLF_API_SECRET_KEY": "test-secret-key-32chars-long!!"}
         ):
             from fastapi import HTTPException
-
             from src.api.auth.security import SecurityManager
 
             manager = SecurityManager(secret_key="test-secret-32-chars-long!!")
@@ -219,7 +218,6 @@ class TestSecurityManagerTokens:
             os.environ, {"GOLF_API_SECRET_KEY": "test-secret-key-32chars-long!!"}
         ):
             from fastapi import HTTPException
-
             from src.api.auth.security import SecurityManager
 
             manager = SecurityManager(secret_key="test-secret-32-chars-long!!")
