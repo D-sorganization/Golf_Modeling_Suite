@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import defusedxml.ElementTree as DefusedET  # noqa: S314  # Security: defusedxml prevents XML attacks
 import xml.etree.ElementTree as ET  # stdlib retained for Element/SubElement
 from pathlib import Path
 
-import defusedxml.ElementTree as DefusedET  # noqa: S314  # Security: defusedxml prevents XML attacks
+import defusedxml.ElementTree as DefusedET
 
 from src.shared.python.core.constants import GRAVITY_M_S2 as GRAVITY_STANDARD_M_S2
 from src.shared.python.core.constants import PI

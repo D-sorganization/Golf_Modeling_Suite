@@ -7,10 +7,11 @@ Provides :class:`_URDFValidationMixin` which is mixed into
 from __future__ import annotations
 
 import re
+import defusedxml.ElementTree as DefusedET  # noqa: S314  # Security: defusedxml prevents XML attacks
 import xml.etree.ElementTree as ET  # stdlib retained for Element/SubElement
 from typing import TYPE_CHECKING
 
-import defusedxml.ElementTree as DefusedET  # noqa: S314  # Security: defusedxml prevents XML attacks
+import defusedxml.ElementTree as DefusedET
 
 from ._text_editor_models import ValidationMessage, ValidationSeverity
 
