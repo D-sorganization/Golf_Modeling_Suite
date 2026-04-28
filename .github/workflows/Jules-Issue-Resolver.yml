@@ -109,7 +109,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
         run: |
           # Check for existing open PR from this workflow
           EXISTING_PR=$(gh pr list --state open --json number,headRefName,title \
-            --jq '[.[] | select(.headRefName | test("^fix/jules-issue-resolver-"))] | .[0]')
+            --jq '[.[] | select(.headRefName | test("^fix/jules-issue-resolver-|^jules/issue-resolver-"))] | .[0]')
 
           if [ -n "$EXISTING_PR" ] && [ "$EXISTING_PR" != "null" ]; then
             # Reuse existing branch
