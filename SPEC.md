@@ -511,3 +511,5 @@ pytest tests/ --cov=src --cov-fail-under=70
   5. VERSION: Bump the Spec Version field when making substantive changes.
      Use semver: major (structure change), minor (new features), patch (corrections).
 -->
+## Branch Naming Policy Update
+As of April 2026, Jules machine-generated branches MUST utilize semantic prefixes (e.g., `fix/` or `docs/`) instead of the unstructured `jules/` prefix to ensure traceability and compatibility with CI cleanup routines.
