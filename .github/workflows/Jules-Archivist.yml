@@ -60,9 +60,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN || github.token }}
         run: |
-          # Fetch list of merged PR branches starting with 'jules/'
+          # Fetch list of merged PR branches
           # Note: We filter by the branch prefix used by your agent
-          BRANCHES=$(gh pr list --state merged --limit 100 --json headRefName --jq '.[] | select(.headRefName | startswith("jules/")) | .headRefName')
+          BRANCHES=$(gh pr list --state merged --limit 100 --json headRefName --jq '.[] | select(.headRefName | startswith("fix/auto-fix-consolidated-") or startswith("fix/code-quality-fix-") or startswith("fix/comment-fixes-") or startswith("docs/critics-comments-") or startswith("fix/issue-resolver-") or startswith("docs/laymans-terms-") or startswith("fix/compiled-")) | .headRefName')
 
           if [ -z "$BRANCHES" ]; then
             echo "No branches to cleanup."
