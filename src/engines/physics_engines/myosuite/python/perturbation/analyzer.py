@@ -39,9 +39,9 @@ for environments that expose the underlying ``model`` and ``data`` attributes.
 
 from __future__ import annotations
 
-import logging
 from typing import Any
 from dataclasses import dataclass
+import logging
 from pathlib import Path
 
 import numpy as np
