@@ -30,6 +30,7 @@ jobs:
     steps:
       - name: Check for self-hosted runner
         id: check
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
@@ -53,6 +54,7 @@ jobs:
     steps:
       - name: Filter Bot Comments
         id: filter
+        shell: bash
         run: |
           ACTOR="${{ github.actor }}"
 
@@ -72,6 +74,7 @@ jobs:
       - name: Get PR State
         id: pr_state
         if: steps.filter.outputs.is_bot != 'true'
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
@@ -102,6 +105,7 @@ jobs:
       - name: Analyze Comment
         id: analyze
         if: steps.filter.outputs.is_bot != 'true' && steps.pr_state.outputs.should_skip != 'true'
+        shell: bash
         env:
           COMMENT_BODY_JSON: ${{ toJson(github.event.comment.body) }}
         run: |
@@ -132,6 +136,7 @@ jobs:
           steps.filter.outputs.is_bot != 'true' &&
           steps.pr_state.outputs.should_skip != 'true' &&
           steps.analyze.outputs.is_actionable == 'true'
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
           COMMENT_BODY_JSON: ${{ toJson(github.event.comment.body) }}
@@ -212,6 +217,7 @@ jobs:
           steps.filter.outputs.is_bot != 'true' &&
           steps.pr_state.outputs.should_skip != 'true' &&
           steps.analyze.outputs.is_actionable == 'true'
+        shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
