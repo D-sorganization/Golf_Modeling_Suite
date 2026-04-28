@@ -39,17 +39,17 @@ for environments that expose the underlying ``model`` and ``data`` attributes.
 
 from __future__ import annotations
 
-from typing import Any
 from dataclasses import dataclass
 import logging
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
 from src.shared.python.engine_core.engine_availability import is_engine_available
 from src.shared.python.perturbation.perturbation_base import (
-    MANDATORY_METRICS,
     ComparisonReport,
+    MANDATORY_METRICS,
     PerturbationAnalyzerBase,
 )
 
