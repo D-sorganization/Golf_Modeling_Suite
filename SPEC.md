@@ -308,6 +308,7 @@ UpstreamDrift employs a comprehensive test pyramid with multiple specialized cat
 
 | Tool       | Version | Purpose                | Blocking? |
 | ---------- | ------- | ---------------------- | --------- |
+| 2026-04-28 | 1.0.85  | Bolt: Optimize sum of squares in ball_simulator using einsum. |
 | 2026-04-27 | 1.0.83  | Fixed Bandit B604 false positive alerts in test files by adding nosec annotations. |
 | ruff       | latest  | Linting and formatting | Yes       |
 | mypy       | 1.7+    | Static type checking   | Yes       |
@@ -376,6 +377,7 @@ Beyond standard tools, CI enforces custom checks:
 
 | Package    | Version | Purpose                |
 | ---------- | ------- | ---------------------- |
+| 2026-04-28 | 1.0.85  | Bolt: Optimize sum of squares in ball_simulator using einsum. |
 | 2026-04-27 | 1.0.83  | Fixed Bandit B604 false positive alerts in test files by adding nosec annotations. |
 | pytest     | 7.0+    | Testing framework      |
 | pytest-cov | 4.0+    | Coverage measurement   |
@@ -468,6 +470,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 ## 12. Change Log
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------- |
+| 2026-04-28 | 1.0.85  | Bolt: Optimize sum of squares in ball_simulator using einsum. |
 | 2026-04-27 | 1.0.83  | Fixed Bandit B604 false positive alerts in test files by adding nosec annotations. |
 | 2026-04-27 | 1.0.84  | Bolt: Replace np.linalg.norm with math.hypot in collision queries. |
 | 2026-04-26 | 1.0.81  | fix: Restore missing jobs in `Code-Metrics.yml` and `release.yml`; correct non-UTF-8 characters in 55 workflows causing 0s CI failures. |
