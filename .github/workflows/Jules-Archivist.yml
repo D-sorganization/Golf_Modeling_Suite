@@ -74,4 +74,3 @@ jobs:
             # Delete remote branch
             git push origin --delete "$BRANCH" || true
           done
-
