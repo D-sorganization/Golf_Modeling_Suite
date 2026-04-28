@@ -510,4 +510,4 @@ pytest tests/ --cov=src --cov-fail-under=70
 
   5. VERSION: Bump the Spec Version field when making substantive changes.
      Use semver: major (structure change), minor (new features), patch (corrections).
--->
+-->Update SPEC.md for PR \#3320\n\n- Used semantic branches for Jules agents\n
