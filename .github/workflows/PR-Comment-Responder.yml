@@ -57,7 +57,7 @@ jobs:
           ACTOR="${{ github.actor }}"
 
           # List of bot actors to ignore
-          BOTS="copilot-pull-request-reviewer[bot] cursor[bot] dependabot[bot] github-actions[bot] renovate[bot] codecov[bot] sonarcloud[bot]"
+          BOTS="chatgpt-codex-connector[bot] google-labs-jules[bot] copilot-pull-request-reviewer[bot] cursor[bot] dependabot[bot] github-actions[bot] renovate[bot] codecov[bot] sonarcloud[bot]"
 
           for bot in $BOTS; do
             if [ "$ACTOR" = "$bot" ]; then
