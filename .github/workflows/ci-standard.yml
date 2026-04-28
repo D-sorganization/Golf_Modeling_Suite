@@ -63,7 +63,7 @@ jobs:
     name: Reject hosted runner routing
     runs-on: d-sorg-fleet
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Run local-only workflow guard
         shell: bash
         run: |
