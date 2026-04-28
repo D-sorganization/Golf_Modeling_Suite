@@ -67,8 +67,8 @@ jobs:
         shell: bash
         run: |
           # Get the list of changed files in this PR
-          git diff --name-only origin/${{ github.base_ref }}...HEAD > /tmp/changed_files.txt
-          CHANGED_FILES=$(cat /tmp/changed_files.txt)
+          git diff --name-only origin/${{ github.base_ref }}...HEAD > changed_files.txt
+          CHANGED_FILES=$(cat changed_files.txt)
 
           echo "Changed files:"
           echo "$CHANGED_FILES"
@@ -99,7 +99,8 @@ jobs:
                [[ "$file" == requirements.txt ]]; then
               SOURCE_CHANGED=true
             fi
-            done < /tmp/changed_files.txt
+            done < changed_files.txt
+            rm changed_files.txt
           fi
 
           echo "source_changed=$SOURCE_CHANGED" >> "$GITHUB_OUTPUT"
