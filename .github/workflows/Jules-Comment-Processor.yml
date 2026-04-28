@@ -83,6 +83,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
           python-version: "3.11"
 
       - name: Check Queue
+        shell: bash
         id: queue
         run: |
           QUEUE_FILE=".jules/pending/pr_comments.json"
@@ -113,6 +114,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
           echo "Queue is empty - exiting gracefully."
 
       - name: Analyze and Deduplicate Queue
+        shell: bash
         id: analyze
         if: steps.queue.outputs.has_comments == 'true'
         run: |
@@ -310,6 +312,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
           done
 
       - name: Clear Processed Queue
+        shell: bash
         if: steps.queue.outputs.has_comments == 'true' && inputs.dry_run != 'true'
         run: |
           # Archive processed comments
@@ -324,6 +327,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
           echo "Queue cleared"
 
       - name: Commit and Create PR
+        shell: bash
         if: steps.queue.outputs.has_comments == 'true' && inputs.dry_run != 'true'
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
