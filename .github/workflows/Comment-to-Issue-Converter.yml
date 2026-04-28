@@ -91,9 +91,9 @@ jobs:
           mkdir -p docs/review_archive
 
           # Determine which PRs to process
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.pr_number }}" ]; then
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ inputs.pr_number }}" ]; then
             PR_NUMBERS="${{ inputs.pr_number }}"
-          elif [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ github.event_name }}" = "pull_request_review_comment" ]; then
+          elif [ "${{ github.event_name }}" == "pull_request" ] || [ "${{ github.event_name }}" == "pull_request_review_comment" ]; then
             PR_NUMBERS="${{ github.event.pull_request.number }}"
           else
             # Get all open PRs

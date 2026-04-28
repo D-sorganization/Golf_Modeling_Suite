@@ -75,7 +75,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
-          if [ "${{ github.event_name }}" = "pull_request_review_comment" ]; then
+          if [ "${{ github.event_name }}" == "pull_request_review_comment" ]; then
             PR_NUMBER="${{ github.event.pull_request.number }}"
           else
             PR_NUMBER="${{ github.event.issue.number }}"
@@ -148,7 +148,7 @@ jobs:
           TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           PR_NUMBER="${{ steps.pr_state.outputs.pr_number }}"
 
-          if [ "${{ github.event_name }}" = "pull_request_review_comment" ]; then
+          if [ "${{ github.event_name }}" == "pull_request_review_comment" ]; then
             COMMENT_ID="${{ github.event.comment.id }}"
             COMMENT_PATH="${{ github.event.comment.path }}"
             COMMENT_LINE="${{ github.event.comment.line }}"
