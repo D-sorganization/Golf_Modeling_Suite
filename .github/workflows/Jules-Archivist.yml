@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   check-kill-switch:
-    runs-on: ubuntu-latest
+    runs-on: d-sorg-fleet
     outputs:
       enabled: ${{ steps.check.outputs.enabled }}
     steps:
@@ -60,9 +60,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN || github.token }}
         run: |
-          # Fetch list of merged PR branches starting with 'jules/'
+          # Fetch list of merged PR branches starting with 'jules/' or semantic variants
           # Note: We filter by the branch prefix used by your agent
-          BRANCHES=$(gh pr list --state merged --limit 100 --json headRefName --jq '.[] | select(.headRefName | startswith("jules/")) | .headRefName')
+          BRANCHES=$(gh pr list --state merged --limit 100 --json headRefName --jq '.[] | select(.headRefName | test("^jules/|^fix/.*jules|^fix/pragmatic|^fix/code-quality|^fix/automation-assessment-reports|^fix/auto-fix-consolidated|^fix/comment-fixes|^docs/critics-comments|^fix/issue-resolver|^docs/laymans-terms")) | .headRefName')
 
           if [ -z "$BRANCHES" ]; then
             echo "No branches to cleanup."
