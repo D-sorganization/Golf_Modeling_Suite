@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   check-kill-switch:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       enabled: ${{ steps.check.outputs.enabled }}
     steps:
@@ -62,7 +62,7 @@ jobs:
         run: |
           # Fetch list of merged PR branches starting with 'jules/'
           # Note: We filter by the branch prefix used by your agent
-          BRANCHES=$(gh pr list --state merged --limit 100 --json headRefName --jq '.[] | select(.headRefName | startswith("jules/")) | .headRefName')
+          BRANCHES=$(gh pr list --state merged --limit 100 --json headRefName --jq '.[] | select(.headRefName | (startswith("fix/") or startswith("refactor/") or startswith("docs/") or startswith("jules/"))) | .headRefName')
 
           if [ -z "$BRANCHES" ]; then
             echo "No branches to cleanup."
