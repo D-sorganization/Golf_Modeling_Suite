@@ -15,6 +15,7 @@ jobs:
           fetch-depth: 0
 
       - name: Check PDF sizes
+        shell: bash
         run: |
           echo "Checking for new or modified PDFs larger than 1MB..."
 

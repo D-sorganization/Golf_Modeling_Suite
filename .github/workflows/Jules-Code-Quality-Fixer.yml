@@ -32,6 +32,7 @@ jobs:
     steps:
       - name: Check Jules Kill Switch
         id: check
+        shell: bash
         run: |
           if [ "${{ vars.JULES_ENABLED }}" = "false" ]; then
             echo "Jules is DISABLED via kill switch."
@@ -52,6 +53,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -83,6 +85,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
           node-version: "24"
 
       - name: Install Dependencies
+        shell: bash
         run: |
           pip install -r requirements.txt || true
           pip install ruff mypy || true
@@ -92,6 +95,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
         id: branch
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           # Check for existing open PR from this workflow
           EXISTING_PR=$(gh pr list --state open --json number,headRefName,title \
@@ -122,6 +126,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
           JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
           ASSESSMENT_FILE: ${{ inputs.assessment_file || 'docs/assessments/Code_Quality_Review_Latest.md' }}
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           set -e
           DATE=$(date +%Y-%m-%d)
@@ -232,6 +237,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
           REUSING_PR: ${{ steps.branch.outputs.reusing_pr }}
           EXISTING_PR_NUM: ${{ steps.branch.outputs.existing_pr_num }}
+        shell: bash
         run: |
           git add -A
           if ! git diff --staged --quiet; then

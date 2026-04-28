@@ -21,6 +21,7 @@ jobs:
     steps:
       - name: Check Jules Kill Switch
         id: check
+        shell: bash
         run: |
           if [ "${{ vars.JULES_ENABLED }}" = "false" ]; then
             echo "Jules is DISABLED via kill switch."
@@ -41,6 +42,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -69,11 +71,13 @@ jobs:
           python-version: "3.11"
 
       - name: Install Documentation Tools
+        shell: bash
         run: |
           pip install pydocstyle interrogate darglint
 
       - name: Scan for Missing Docstrings
         id: scan
+        shell: bash
         run: |
           echo "## Documentation Audit Report" > /tmp/doc_report.md
           echo "" >> /tmp/doc_report.md
@@ -126,6 +130,7 @@ jobs:
           echo "missing_func=$MISSING_FUNC" >> $GITHUB_OUTPUT
 
       - name: Check Documentation Organization
+        shell: bash
         run: |
           echo "" >> /tmp/doc_report.md
           echo "### Documentation Organization" >> /tmp/doc_report.md
@@ -166,6 +171,7 @@ jobs:
           fi
 
       - name: Save Report
+        shell: bash
         run: |
           mkdir -p docs/assessments/documentation
           DATE=$(date +%Y-%m-%d)
@@ -183,6 +189,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
           COVERAGE: ${{ steps.scan.outputs.coverage }}
+        shell: bash
         run: |
           # Check if issue already exists
           EXISTING=$(gh issue list --state open --label "documentation" --search "Documentation Coverage" --json number --jq 'length')
@@ -205,6 +212,7 @@ jobs:
           fi
 
       - name: Generate Summary
+        shell: bash
         run: |
           echo "## Documentation Audit Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY

@@ -24,6 +24,7 @@ jobs:
     steps:
       - name: Check Jules Kill Switch
         id: check
+        shell: bash
         run: |
           if [ "${{ vars.JULES_ENABLED }}" = "false" ]; then
             echo "Jules is DISABLED via kill switch."
@@ -44,6 +45,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -69,6 +71,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
+        shell: bash
         run: |
           gh issue comment "$ISSUE_NUMBER" --body "$(cat <<'EOF'
           - **Jules here!** I've received your request and I'm analyzing this issue now.
@@ -89,6 +92,7 @@ jobs:
           ISSUE_TITLE: ${{ github.event.issue.title }}
           COMMENT_BODY: ${{ github.event.comment.body }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        shell: bash
         run: |
           set -e
           REPO="${{ github.repository }}"
@@ -233,6 +237,7 @@ jobs:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           PR_URL: ${{ steps.jules.outputs.pr_url }}
+        shell: bash
         run: |
           if [ -n "$PR_URL" ]; then
             MESSAGE="- **Done!** I've created a PR with the fix: $PR_URL
@@ -254,6 +259,7 @@ jobs:
 
       - name: Summary
         if: always()
+        shell: bash
         run: |
           echo "## Jules Issue Fixer Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY

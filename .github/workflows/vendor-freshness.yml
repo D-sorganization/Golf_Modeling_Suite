@@ -31,6 +31,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -63,6 +64,7 @@ jobs:
 
       - name: Run freshness check
         id: check
+        shell: bash
         run: |
           python scripts/check_vendor_updates.py --no-network --json > vendor_status.json 2>&1 || true
           cat vendor_status.json
@@ -98,11 +100,13 @@ jobs:
           fetch-depth: 0
 
       - name: Configure git identity
+        shell: bash
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Update vendor/ud-tools to latest Tools main
+        shell: bash
         run: |
           git submodule update --remote vendor/ud-tools
           NEW_SHA=$(git -C vendor/ud-tools rev-parse HEAD)
@@ -110,6 +114,7 @@ jobs:
 
       - name: Check for actual changes
         id: diff
+        shell: bash
         run: |
           if git diff --quiet HEAD -- vendor/ud-tools; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
@@ -119,6 +124,7 @@ jobs:
 
       - name: Create bump branch
         if: steps.diff.outputs.changed == 'true'
+        shell: bash
         run: |
           BRANCH="chore/bump-ud-tools-$(date +%Y%m%d)"
           echo "BRANCH=$BRANCH" >> "$GITHUB_ENV"
@@ -135,6 +141,7 @@ jobs:
         if: steps.diff.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           SHORT="${NEW_SHA:0:12}"
           gh pr create \

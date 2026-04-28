@@ -41,6 +41,7 @@ jobs:
     steps:
       - name: Check Jules Kill Switch
         id: check
+        shell: bash
         run: |
           if [ "${{ vars.JULES_ENABLED }}" = "false" ]; then
             echo "Jules is DISABLED via kill switch."
@@ -61,6 +62,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -92,11 +94,13 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
           node-version: "24"
 
       - name: Install Dependencies
+        shell: bash
         run: |
           pip install -r requirements.txt || true
           npm install -g @google/jules
 
       - name: Initialize Review Tracking
+        shell: bash
         run: |
           mkdir -p .jules/critics_data
           mkdir -p .jules/review_logs
@@ -110,6 +114,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
 
       - name: Scan Articles for Critics Comments Status
         id: scan
+        shell: bash
         run: |
           # Find all article .qmd files
           find articles -name "*.qmd" -type f > .jules/critics_data/all_articles.txt 2>/dev/null || true
@@ -148,6 +153,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
         env:
           REVIEW_LOG_PATH: ${{ env.REVIEW_LOG }}
           MODE: ${{ steps.scan.outputs.mode }}
+        shell: bash
         run: |
           MAX_REVIEWS=5
 
@@ -213,6 +219,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
 
       - name: Skip if Complete
         if: steps.select.outputs.skip == 'true'
+        shell: bash
         run: |
           echo "✅ All articles have completed their review cycles (5 reviews each)."
           echo "📊 Fully reviewed: ${{ steps.select.outputs.fully_reviewed }} articles"
@@ -220,6 +227,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
 
       - name: Create Working Branch
         if: steps.select.outputs.skip != 'true'
+        shell: bash
         run: |
           BRANCH_NAME="docs/critics-comments-$(date +%Y%m%d-%H%M)"
           git checkout -b "$BRANCH_NAME"
@@ -232,6 +240,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
           TARGET_FILE: ${{ steps.select.outputs.target }}
           MODE: ${{ steps.scan.outputs.mode }}
           REVIEW_NUM: ${{ steps.select.outputs.current_review }}
+        shell: bash
         run: |
           set -e
           DATE=$(date +%Y-%m-%d)
@@ -402,6 +411,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
         env:
           REVIEW_LOG_PATH: ${{ env.REVIEW_LOG }}
           TARGET: ${{ steps.select.outputs.target }}
+        shell: bash
         run: |
           python3 << 'PYEOF'
           import json
@@ -428,6 +438,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
         if: steps.select.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           git add -A
           if ! git diff --staged --quiet; then

@@ -16,6 +16,7 @@ jobs:
     steps:
       - name: Check Jules Kill Switch
         id: check
+        shell: bash
         run: |
           if [ "${{ vars.JULES_ENABLED }}" = "false" ]; then
             echo "Jules is DISABLED via kill switch."
@@ -36,6 +37,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -59,6 +61,7 @@ jobs:
       - name: Cleanup Merged Branches
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN || github.token }}
+        shell: bash
         run: |
           # Fetch list of merged PR branches starting with semantic prefixes
           # Note: We filter by the branch prefix used by your agent

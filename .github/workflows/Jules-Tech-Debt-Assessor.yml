@@ -33,6 +33,7 @@ jobs:
     steps:
       - name: Check Jules Kill Switch
         id: check
+        shell: bash
         run: |
           if [ "${{ vars.JULES_ENABLED }}" = "false" ]; then
             echo "Jules is DISABLED via kill switch."
@@ -53,6 +54,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -84,6 +86,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
           node-version: "24"
 
       - name: Install Dependencies
+        shell: bash
         run: |
           pip install ruff==0.14.10 mypy bandit radon pip-audit vulture
           pip install -e .[dev] || pip install -r requirements.txt || true
@@ -94,6 +97,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
 
       - name: Analyze Code Complexity
         id: complexity
+        shell: bash
         run: |
           echo "## Code Complexity Analysis" > /tmp/complexity_report.md
           echo "" >> /tmp/complexity_report.md
@@ -128,6 +132,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
 
       - name: Analyze Incomplete Implementations
         id: incomplete
+        shell: bash
         run: |
           echo "## Incomplete Implementations" > /tmp/incomplete_report.md
           echo "" >> /tmp/incomplete_report.md
@@ -163,6 +168,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
 
       - name: Analyze Type Coverage
         id: types
+        shell: bash
         run: |
           echo "## Type Annotation Coverage" > /tmp/types_report.md
           echo "" >> /tmp/types_report.md
@@ -190,6 +196,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
 
       - name: Analyze Dead Code
         id: deadcode
+        shell: bash
         run: |
           echo "## Dead Code Analysis" > /tmp/deadcode_report.md
           echo "" >> /tmp/deadcode_report.md
@@ -206,6 +213,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
 
       - name: Analyze Security Debt
         id: security
+        shell: bash
         run: |
           echo "## Security Debt" > /tmp/security_report.md
           echo "" >> /tmp/security_report.md
@@ -231,6 +239,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
 
       - name: Analyze Linting Debt
         id: linting
+        shell: bash
         run: |
           echo "## Linting Debt" > /tmp/linting_report.md
           echo "" >> /tmp/linting_report.md
@@ -256,6 +265,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
 
       - name: Analyze Test Coverage Debt
         id: coverage
+        shell: bash
         run: |
           echo "## Test Coverage Debt" > /tmp/coverage_report.md
           echo "" >> /tmp/coverage_report.md
@@ -309,6 +319,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
           SECURITY: ${{ steps.security.outputs.security_issues }}
           LINT: ${{ steps.linting.outputs.lint_count }}
           UNTESTED: ${{ steps.coverage.outputs.untested_modules }}
+        shell: bash
         run: |
           DATE=$(date +%Y-%m-%d)
           REPORT_FILE="docs/assessments/tech_debt/Technical_Debt_Report_${DATE}.md"
@@ -444,6 +455,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
           echo "severity_emoji=$SEVERITY_EMOJI" >> $GITHUB_OUTPUT
 
       - name: Update Latest Report Link
+        shell: bash
         run: |
           DATE=$(date +%Y-%m-%d)
           cat > docs/assessments/tech_debt/README.md << EOF
@@ -495,6 +507,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
           DEBT_SCORE: ${{ steps.report.outputs.debt_score }}
           SEVERITY: ${{ steps.report.outputs.severity }}
           REPORT_FILE: ${{ steps.report.outputs.report_file }}
+        shell: bash
         run: |
           # Only create issue if debt score is high
           if [ "$(echo "$DEBT_SCORE > 50" | bc)" -eq 1 ]; then
@@ -547,6 +560,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
       - name: Commit and Push Report
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -566,6 +580,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
           fi
 
       - name: Job Summary
+        shell: bash
         run: |
           DATE=$(date +%Y-%m-%d)
           cat >> $GITHUB_STEP_SUMMARY << EOF

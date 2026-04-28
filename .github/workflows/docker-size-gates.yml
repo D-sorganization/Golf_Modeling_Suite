@@ -17,6 +17,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -50,6 +51,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Verify Image Size Budget
+        shell: bash
         run: |
           # Runtime image budget: slim venv (~1 GB) + src/ models (~650 MB) + base + libs - 4 GB
           MAX_SIZE_MB=4000
@@ -71,6 +73,7 @@ jobs:
           fi
 
       - name: Run Basic Health Checks
+        shell: bash
         run: |
           docker run --rm upstream-drift:runtime python -c "import mujoco, numpy, scipy; print('Core physics stack OK')"
           docker run --rm upstream-drift:runtime python -c "import fastapi, uvicorn; print('API server stack OK')"

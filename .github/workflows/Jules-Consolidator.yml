@@ -33,6 +33,7 @@ jobs:
     steps:
       - name: Check Jules Kill Switch
         id: check
+        shell: bash
         run: |
           if [ "${{ vars.JULES_ENABLED }}" = "false" ]; then
             echo "Jules is DISABLED via kill switch."
@@ -53,6 +54,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -79,6 +81,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
           EXCLUDE_PRS: ${{ inputs.exclude_prs }}
+        shell: bash
         run: |
           prs=$(gh pr list --base main --state open --json number,title,author,labels,mergeable \
             --jq '[.[] | select(
@@ -111,6 +114,7 @@ jobs:
           token: ${{ secrets.RUNNER_CHECK_TOKEN }}
 
       - name: Configure Git
+        shell: bash
         run: |
           git config user.name "jules-bot"
           git config user.email "jules-bot@users.noreply.github.com"
@@ -119,6 +123,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
           PR_LIST: ${{ needs.discover.outputs.pr_list }}
+        shell: bash
         run: |
           BRANCH_NAME="consolidated-prs-$(date +%Y-%m-%d)"
           git checkout -b "$BRANCH_NAME" origin/main
