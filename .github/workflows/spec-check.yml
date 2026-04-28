@@ -33,6 +33,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -63,9 +64,11 @@ jobs:
 
       - name: Check if source files changed without SPEC.md update
         id: check
+        shell: bash
         run: |
           # Get the list of changed files in this PR
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          git diff --name-only origin/${{ github.base_ref }}...HEAD > changed_files.txt
+          CHANGED_FILES=$(cat changed_files.txt)
 
           echo "Changed files:"
           echo "$CHANGED_FILES"
@@ -75,7 +78,8 @@ jobs:
           SOURCE_CHANGED=false
           SPEC_CHANGED=false
 
-          while IFS= read -r file; do
+          if [ -n "$CHANGED_FILES" ]; then
+            while IFS= read -r file || [ -n "$file" ]; do
             # Check if SPEC.md was modified
             if [[ "$file" == "SPEC.md" ]]; then
               SPEC_CHANGED=true
@@ -95,7 +99,9 @@ jobs:
                [[ "$file" == requirements.txt ]]; then
               SOURCE_CHANGED=true
             fi
-          done <<< "$CHANGED_FILES"
+            done < changed_files.txt
+            rm changed_files.txt
+          fi
 
           echo "source_changed=$SOURCE_CHANGED" >> "$GITHUB_OUTPUT"
           echo "spec_changed=$SPEC_CHANGED" >> "$GITHUB_OUTPUT"
@@ -149,6 +155,7 @@ jobs:
 
       - name: Fail if spec is stale
         if: steps.check.outputs.needs_update == 'true'
+        shell: bash
         run: |
           echo "::error::Source files changed but SPEC.md was not updated."
           echo "Update SPEC.md or add the 'spec-exempt' label to bypass."
@@ -156,6 +163,7 @@ jobs:
 
       - name: Spec check passed
         if: steps.check.outputs.needs_update == 'false'
+        shell: bash
         run: |
           echo "- Spec check passed."
           if [[ "${{ steps.check.outputs.spec_changed }}" == "true" ]]; then
