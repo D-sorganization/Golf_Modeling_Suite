@@ -83,6 +83,7 @@ jobs:
           python-version: "3.11"
 
       - name: Collect Review Comments
+        shell: bash
         id: collect
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
@@ -335,6 +336,7 @@ jobs:
           python3 /tmp/process_comments.py
 
       - name: Commit Archive
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
           TARGET_BRANCH: ${{ github.event.pull_request.head.ref || github.head_ref || github.ref_name }}

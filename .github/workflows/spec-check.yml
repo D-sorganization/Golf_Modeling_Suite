@@ -31,6 +31,8 @@ jobs:
     steps:
       - name: Check for self-hosted runner
         id: check
+        shell: bash
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
@@ -63,6 +65,8 @@ jobs:
 
       - name: Check if source files changed without SPEC.md update
         id: check
+        shell: bash
+        shell: bash
         run: |
           # Get the list of changed files in this PR
           CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
