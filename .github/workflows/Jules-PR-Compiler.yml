@@ -60,7 +60,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
   pr-compiler:
     needs: [check-kill-switch, pick-runner]
     if: needs.check-kill-switch.outputs.enabled == 'true'
-    runs-on: self-hosted
+    runs-on: [self-hosted, linux]
     steps:
       - uses: actions/checkout@v6
         with:

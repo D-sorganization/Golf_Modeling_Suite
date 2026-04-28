@@ -40,7 +40,7 @@ jobs:
   verify-critical-files:
     needs: pick-runner
     name: Verify Critical Files Exist
-    runs-on: self-hosted
+    runs-on: [self-hosted, linux]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6

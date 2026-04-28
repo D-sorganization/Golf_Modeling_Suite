@@ -41,7 +41,7 @@ jobs:
           fi
   control:
     needs: pick-runner
-    runs-on: self-hosted
+    runs-on: [self-hosted, linux]
     permissions:
       contents: write
     steps:

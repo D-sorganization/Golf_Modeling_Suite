@@ -71,7 +71,7 @@ jobs:
           fi
   optional-stack-check:
     needs: pick-runner
-    runs-on: self-hosted
+    runs-on: [self-hosted, linux]
     timeout-minutes: 30
     continue-on-error: true # Pre-existing optional-stack test failures tracked separately
     strategy:

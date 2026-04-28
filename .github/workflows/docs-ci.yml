@@ -56,7 +56,7 @@ jobs:
   quality-gate:
     name: quality-gate
     needs: pick-runner
-    runs-on: self-hosted
+    runs-on: [self-hosted, linux]
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v6
