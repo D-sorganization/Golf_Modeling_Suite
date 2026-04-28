@@ -59,6 +59,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
+          if [ -n "${GITHUB_OUTPUT:-}" ]; then
+            mkdir -p "$(dirname "$GITHUB_OUTPUT")"
+          fi
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
             2>/dev/null || echo "0")
@@ -71,7 +74,7 @@ jobs:
           fi
   optional-stack-check:
     needs: pick-runner
-    runs-on: self-hosted
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
     timeout-minutes: 30
     continue-on-error: true # Pre-existing optional-stack test failures tracked separately
     strategy:
