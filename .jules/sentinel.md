@@ -84,3 +84,7 @@
 **Vulnerability:** Direct use of `subprocess.Popen` without command validation in `ProcessWorker`.
 **Learning:** Raw subprocess calls can allow arbitrary command injection if unsanitized inputs are provided as command arguments.
 **Prevention:** Always use the custom `secure_popen` wrapper from `src.shared.python.security.secure_subprocess` which provides validation against allowed commands and prevents dangerous arguments like `shell=True`.
+## 2024-05-18 - Ensure automated PR cleanup does not affect human branches
+**Vulnerability:** Automated PR cleanup workflows capturing human branches
+**Learning:** Using generic semantic prefixes like `fix/` instead of dedicated bot prefixes (like `jules/`) opens the door for automated workflows to accidentally delete human-created branches.
+**Prevention:** Filter automatically created PRs with exact regex matching on known prefix permutations.

@@ -7,3 +7,6 @@
 **Action:** Use `np.vdot(diff, diff) / diff.size` instead of `np.mean(diff**2)` when calculating MSE in hot paths.## 2025-04-27 - [Optimize norm calculation for collision checking]
 **Learning:** Element-wise norm computations or generic `np.linalg.norm(..., axis=None)` applied to 3D arrays are slower than leveraging `math.hypot(*v)`. Since robotics frequently computes distances between points, optimizing Euclidean distance computation brings measurable speedups.
 **Action:** Replace `np.linalg.norm(v)` with `math.hypot(*v)` where `v` is a small fixed-length vector (e.g., 3D point) in high-frequency distance queries like collision checks.
+## 2024-05-18 - Replacing specific jules prefixes with standard fix prefixes
+**Learning:** Broad regexes such as `test("^fix/")` can mistakenly capture human-created branches. Be careful to narrow these regexes down to the specific branch names being generated.
+**Action:** Use narrower regexes such as `test("^fix/(auto-fix-consolidated|code-quality-fix)")`
