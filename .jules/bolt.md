@@ -7,3 +7,6 @@
 **Action:** Use `np.vdot(diff, diff) / diff.size` instead of `np.mean(diff**2)` when calculating MSE in hot paths.## 2025-04-27 - [Optimize norm calculation for collision checking]
 **Learning:** Element-wise norm computations or generic `np.linalg.norm(..., axis=None)` applied to 3D arrays are slower than leveraging `math.hypot(*v)`. Since robotics frequently computes distances between points, optimizing Euclidean distance computation brings measurable speedups.
 **Action:** Replace `np.linalg.norm(v)` with `math.hypot(*v)` where `v` is a small fixed-length vector (e.g., 3D point) in high-frequency distance queries like collision checks.
+## 2026-04-28 - Optimize batched sum of squares along axis
+**Learning:** When computing sum of squares across arrays over a specific axis, `np.einsum('i...,i...->...', x, x)` is faster than `np.sum(x**2, axis=0)` because it avoids the memory allocation overhead of creating a temporary squared array.
+**Action:** Use `np.einsum` equivalents instead of `np.sum(x**2, axis=...)` when computing batched lengths or norms in hot paths.
