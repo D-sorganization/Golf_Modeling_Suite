@@ -65,4 +65,3 @@ Good catch! I've updated the `jq` filter to include the legacy `^jules/code-qual
 [View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3356#discussion_r3153408186)
 
 ---
-
