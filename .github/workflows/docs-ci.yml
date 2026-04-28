@@ -71,20 +71,22 @@ jobs:
 
           # Confirm this PR truly only touches docs/markdown
           SOURCE_CHANGED=false
-          while IFS= read -r file; do
-            if [[ "$file" == src/* ]] || \
-               [[ "$file" == tests/* ]] || \
-               [[ "$file" == scripts/* ]] || \
-               [[ "$file" == rust/* ]] || \
-               [[ "$file" == pyproject.toml ]] || \
-               [[ "$file" == requirements*.txt ]] || \
-               [[ "$file" == requirements*.lock ]] || \
-               [[ "$file" == Dockerfile* ]] || \
-               [[ "$file" == docker-compose* ]]; then
-              SOURCE_CHANGED=true
-              echo "::warning::Source file changed: $file"
-            fi
-          done <<< "$CHANGED"
+          if [ -n "$CHANGED" ]; then
+            while IFS= read -r file; do
+              if [[ "$file" == src/* ]] || \
+                 [[ "$file" == tests/* ]] || \
+                 [[ "$file" == scripts/* ]] || \
+                 [[ "$file" == rust/* ]] || \
+                 [[ "$file" == pyproject.toml ]] || \
+                 [[ "$file" == requirements*.txt ]] || \
+                 [[ "$file" == requirements*.lock ]] || \
+                 [[ "$file" == Dockerfile* ]] || \
+                 [[ "$file" == docker-compose* ]]; then
+                SOURCE_CHANGED=true
+                echo "::warning::Source file changed: $file"
+              fi
+            done <<< "$CHANGED"
+          fi
 
           if [[ "$SOURCE_CHANGED" == "true" ]]; then
             echo "::notice::Source files changed; ci-standard.yml is responsible for substantive checks."

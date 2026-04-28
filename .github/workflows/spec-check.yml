@@ -75,27 +75,29 @@ jobs:
           SOURCE_CHANGED=false
           SPEC_CHANGED=false
 
-          while IFS= read -r file; do
-            # Check if SPEC.md was modified
-            if [[ "$file" == "SPEC.md" ]]; then
-              SPEC_CHANGED=true
-            fi
+          if [ -n "$CHANGED_FILES" ]; then
+            while IFS= read -r file; do
+              # Check if SPEC.md was modified
+              if [[ "$file" == "SPEC.md" ]]; then
+                SPEC_CHANGED=true
+              fi
 
-            # Check if source files were modified
-            # Add or remove patterns as appropriate for your repo
-            # Note: .github/workflows/ is excluded  -  CI-only changes rarely
-            # affect documented behavior. Use spec-exempt if needed.
-            if [[ "$file" == src/* ]] || \
-               [[ "$file" == tests/* ]] || \
-               [[ "$file" == config/* ]] || \
-               [[ "$file" == pyproject.toml ]] || \
-               [[ "$file" == Cargo.toml ]] || \
-               [[ "$file" == CMakeLists.txt ]] || \
-               [[ "$file" == package.json ]] || \
-               [[ "$file" == requirements.txt ]]; then
-              SOURCE_CHANGED=true
-            fi
-          done <<< "$CHANGED_FILES"
+              # Check if source files were modified
+              # Add or remove patterns as appropriate for your repo
+              # Note: .github/workflows/ is excluded  -  CI-only changes rarely
+              # affect documented behavior. Use spec-exempt if needed.
+              if [[ "$file" == src/* ]] || \
+                 [[ "$file" == tests/* ]] || \
+                 [[ "$file" == config/* ]] || \
+                 [[ "$file" == pyproject.toml ]] || \
+                 [[ "$file" == Cargo.toml ]] || \
+                 [[ "$file" == CMakeLists.txt ]] || \
+                 [[ "$file" == package.json ]] || \
+                 [[ "$file" == requirements.txt ]]; then
+                SOURCE_CHANGED=true
+              fi
+            done <<< "$CHANGED_FILES"
+          fi
 
           echo "source_changed=$SOURCE_CHANGED" >> "$GITHUB_OUTPUT"
           echo "spec_changed=$SPEC_CHANGED" >> "$GITHUB_OUTPUT"

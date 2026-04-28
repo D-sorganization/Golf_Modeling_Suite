@@ -91,8 +91,9 @@ jobs:
           mkdir -p docs/review_archive
 
           # Determine which PRs to process
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.pr_number }}" ]; then
-            PR_NUMBERS="${{ inputs.pr_number }}"
+          INPUT_PR="${{ inputs.pr_number }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "$INPUT_PR" ]; then
+            PR_NUMBERS="$INPUT_PR"
           elif [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ github.event_name }}" = "pull_request_review_comment" ]; then
             PR_NUMBERS="${{ github.event.pull_request.number }}"
           else
