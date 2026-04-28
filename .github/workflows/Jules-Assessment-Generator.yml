@@ -29,7 +29,9 @@ jobs:
           fi
 
   pick-runner:
-    runs-on: ubuntu-latest
+    needs: check-kill-switch
+    if: needs.check-kill-switch.outputs.enabled == 'true'
+    runs-on: d-sorg-fleet
     timeout-minutes: 2
     outputs:
       runner: ${{ steps.check.outputs.runner }}
@@ -42,17 +44,19 @@ jobs:
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
             2>/dev/null || echo "0")
-          if [[ "$ONLINE" =~ ^[0-9]+$ ]] && [[ "$ONLINE" -gt 0 ]]; then
+if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
+          if [[ "$ONLINE" -gt 0 ]]; then
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
             echo "Self-hosted runner online - routing locally"
           else
-            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
-            echo "No local self-hosted runner available; falling open to ubuntu-latest"
+            echo "::error::No local self-hosted runner available; failing closed"
+            exit 1
           fi
+
   assessment-generator:
     needs: [check-kill-switch, pick-runner]
     if: needs.check-kill-switch.outputs.enabled == 'true'
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v6
         with:

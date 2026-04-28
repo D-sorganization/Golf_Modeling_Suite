@@ -74,3 +74,13 @@
 **Vulnerability:** String-based query construction allows potential SQL injection (Bandit B608).
 **Learning:** For dynamic column selection where parameterization is not possible, hardcoded query mapping prevents SQL injection and satisfies static analysis without needing nosec annotations.
 **Prevention:** Use dictionary mapping with static SQL strings for queries that depend on variable column names.
+
+## 2026-04-27 - Annotate B404/B604 in test cases
+
+**Vulnerability:** Subprocess `shell=True` (Bandit B604) flagged in testing files intentionally checking security blocks.
+**Learning:** Static analysis tools flag intentional security failures in tests unless explicitly suppressed.
+**Prevention:** Added `# nosec` annotations to intentional `shell=True` tests.
+## 2024-04-27 - Command Injection Risk in Process Worker
+**Vulnerability:** Direct use of `subprocess.Popen` without command validation in `ProcessWorker`.
+**Learning:** Raw subprocess calls can allow arbitrary command injection if unsanitized inputs are provided as command arguments.
+**Prevention:** Always use the custom `secure_popen` wrapper from `src.shared.python.security.secure_subprocess` which provides validation against allowed commands and prevents dangerous arguments like `shell=True`.

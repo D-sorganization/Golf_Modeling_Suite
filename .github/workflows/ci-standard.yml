@@ -59,9 +59,20 @@ permissions:
   contents: read
 
 jobs:
+  local-only-workflows:
+    name: Reject hosted runner routing
+    runs-on: d-sorg-fleet
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run local-only workflow guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/check_local_only_workflows.py
+
   # -- Dispatcher: route to self-hosted if available --------------------------
   pick-runner:
-    runs-on: ubuntu-latest
+    runs-on: d-sorg-fleet
     timeout-minutes: 2
     outputs:
       runner: ${{ steps.check.outputs.runner }}
@@ -78,8 +89,8 @@ jobs:
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
             echo "Self-hosted runner online - routing locally"
           else
-            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
-            echo "No local self-hosted runner available; falling open to ubuntu-latest"
+            echo "::error::No local self-hosted runner available; failing closed"
+            exit 1
           fi
   quality-gate:
     needs: pick-runner
@@ -337,7 +348,7 @@ jobs:
           failed=$(grep -c "FAILED" cross-engine-results.txt || echo "0")
           echo "- Passed: $passed | - Failed: $failed" >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v6
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         if: env.CODECOV_TOKEN != ''
@@ -470,7 +481,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: matlab-actions/setup-matlab@v2
+      - uses: matlab-actions/setup-matlab@v3
       - uses: matlab-actions/run-command@v2
         with:
           command: |
@@ -637,8 +648,7 @@ jobs:
 
   rust-quickstart:
     name: Rust Quickstart
-    needs: pick-runner
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: d-sorg-fleet
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6

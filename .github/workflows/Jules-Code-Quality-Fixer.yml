@@ -41,7 +41,9 @@ jobs:
           fi
 
   pick-runner:
-    runs-on: ubuntu-latest
+    needs: check-kill-switch
+    if: needs.check-kill-switch.outputs.enabled == 'true'
+    runs-on: d-sorg-fleet
     timeout-minutes: 2
     outputs:
       runner: ${{ steps.check.outputs.runner }}
@@ -54,17 +56,19 @@ jobs:
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
             2>/dev/null || echo "0")
-          if [[ "$ONLINE" =~ ^[0-9]+$ ]] && [[ "$ONLINE" -gt 0 ]]; then
+if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
+          if [[ "$ONLINE" -gt 0 ]]; then
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
             echo "Self-hosted runner online - routing locally"
           else
-            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
-            echo "No local self-hosted runner available; falling open to ubuntu-latest"
+            echo "::error::No local self-hosted runner available; failing closed"
+            exit 1
           fi
+
   code-quality-fixer:
     needs: [check-kill-switch, pick-runner]
     if: needs.check-kill-switch.outputs.enabled == 'true'
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v6
         with:
@@ -91,7 +95,7 @@ jobs:
         run: |
           # Check for existing open PR from this workflow
           EXISTING_PR=$(gh pr list --state open --json number,headRefName,title \
-            --jq '[.[] | select(.headRefName | startswith("jules/code-quality-fix-"))] | .[0]')
+            --jq '[.[] | select(.headRefName | startswith("fix/code-quality-fix-"))] | .[0]')
 
           if [ -n "$EXISTING_PR" ] && [ "$EXISTING_PR" != "null" ]; then
             # Reuse existing branch
@@ -104,7 +108,7 @@ jobs:
             echo "existing_pr_num=$PR_NUM" >> $GITHUB_OUTPUT
           else
             # Create new branch
-            BRANCH_NAME="jules/code-quality-fix-$(date +%Y%m%d-%H%M%S)"
+            BRANCH_NAME="fix/code-quality-fix-$(date +%Y%m%d-%H%M%S)"
             git checkout -b "$BRANCH_NAME"
             echo "reusing_pr=false" >> $GITHUB_OUTPUT
           fi

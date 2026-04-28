@@ -47,7 +47,9 @@ jobs:
           fi
   # -- Dispatcher: route to self-hosted if available --------------------------
   pick-runner:
-    runs-on: ubuntu-latest
+    needs: check-kill-switch
+    if: needs.check-kill-switch.outputs.enabled == 'true'
+    runs-on: d-sorg-fleet
     timeout-minutes: 2
     outputs:
       runner: ${{ steps.check.outputs.runner }}
@@ -64,14 +66,14 @@ jobs:
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
             echo "Self-hosted runner online - routing locally"
           else
-            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
-            echo "No local self-hosted runner available; falling open to ubuntu-latest"
+            echo "::error::No local self-hosted runner available; failing closed"
+            exit 1
           fi
   cleanup:
     needs: [check-kill-switch, pick-runner]
     if: needs.check-kill-switch.outputs.enabled == 'true'
     name: Cleanup Stale Jules PRs
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
 
     steps:
       - name: Find Stale Jules PRs
@@ -89,7 +91,7 @@ jobs:
           # Find Jules-generated PRs (by branch name pattern)
           JULES_PRS=$(gh pr list --state open --json number,title,headRefName,updatedAt,labels \
             --jq "[.[] | select(
-              (.headRefName | test(\"^jules/|^fix/.*jules|^fix/pragmatic|^fix/code-quality\")) and
+              (.headRefName | test(\"^fix/auto-fix-consolidated-|^fix/code-quality-fix-|^fix/comment-fixes-|^fix/critics-comments-|^fix/issue-resolver-|^docs/laymans-terms-|^fix/pragmatic|^fix/compiled-|^fix/consolidated-prs-\")) and
               (.updatedAt < \"$CUTOFF_DATE\") and
               (.labels | map(.name) | contains([\"jules-keep\"]) | not)
             )]")

@@ -86,9 +86,9 @@ class TestURDFStructuralValidity:
             if joint.get("type") == "revolute":
                 limit = joint.find("limit")
                 joint_name = joint.get("name")
-                assert limit is not None, (
-                    f"Revolute joint '{joint_name}' missing <limit>"
-                )
+                assert (
+                    limit is not None
+                ), f"Revolute joint '{joint_name}' missing <limit>"
                 assert "lower" in limit.attrib
                 assert "upper" in limit.attrib
 
@@ -105,12 +105,12 @@ class TestURDFStructuralValidity:
             assert child is not None
             parent_link = parent.get("link")
             child_link = child.get("link")
-            assert parent_link in link_names, (
-                f"Joint '{joint_name}' parent '{parent_link}' not found in links"
-            )
-            assert child_link in link_names, (
-                f"Joint '{joint_name}' child '{child_link}' not found in links"
-            )
+            assert (
+                parent_link in link_names
+            ), f"Joint '{joint_name}' parent '{parent_link}' not found in links"
+            assert (
+                child_link in link_names
+            ), f"Joint '{joint_name}' child '{child_link}' not found in links"
 
     def test_no_xml_declaration(self, default_urdf: str) -> None:
         """URDF output must not carry an XML declaration header."""
@@ -191,7 +191,7 @@ class TestURDFMuJoCoLoad:
             assert model.nbody >= 1
         except AttributeError:
             pytest.skip("mujoco.MjModel.from_xml_path not available in this version")
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             pytest.fail(f"MuJoCo failed to load generated URDF: {exc}")
 
 
@@ -217,7 +217,7 @@ class TestURDFDrakeLoad:
                 parser.AddModelFromFile(str(default_urdf_path))
             plant.Finalize()
             assert plant.num_bodies() >= 1
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             pytest.fail(f"Drake failed to load generated URDF: {exc}")
 
 
@@ -243,5 +243,5 @@ class TestURDFPinocchioLoad:
             # nq is an int in real pinocchio; skip nq check if it's not comparable
             if isinstance(model.nq, int):
                 assert model.nq >= 0
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             pytest.fail(f"Pinocchio failed to load generated URDF: {exc}")

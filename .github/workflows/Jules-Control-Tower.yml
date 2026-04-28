@@ -59,7 +59,7 @@ permissions:
 jobs:
   # -- Dispatcher: route to self-hosted if available --------------------------
   pick-runner:
-    runs-on: ubuntu-latest
+    runs-on: d-sorg-fleet
     timeout-minutes: 2
     outputs:
       runner: ${{ steps.check.outputs.runner }}
@@ -76,35 +76,25 @@ jobs:
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
             echo "Self-hosted runner online - routing locally"
           else
-            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
-            echo "No local self-hosted runner available; falling open to ubuntu-latest"
+            echo "::error::No local self-hosted runner available; failing closed"
+            exit 1
           fi
   triage:
     needs: pick-runner
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: self-hosted
     # Removed global actor check to allow scheduled runs even if file modified by bot
     outputs:
       target: ${{ steps.decide.outputs.target }}
-      jules_enabled: ${{ steps.check-kill-switch.outputs.enabled }}
     steps:
-      - name: Check Jules Kill Switch
-        id: check-kill-switch
-        run: |
-          if [ "${{ vars.JULES_ENABLED }}" = "false" ]; then
-            echo "Jules is DISABLED via kill switch."
-            echo "enabled=false" >> $GITHUB_OUTPUT
-          else
-            echo "enabled=true" >> $GITHUB_OUTPUT
-          fi
       # SAFEGUARD: Check if we've exceeded max repair iterations in the time window
       - name: Check Iteration Limits
         id: check-limits
-        if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure'
+        if: github.event_name == 'workflow_run' && (github.event.workflow_run && github.event.workflow_run.conclusion) == 'failure'
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
           echo "Checking repair iteration limits..."
-          BRANCH="${{ github.event.workflow_run.head_branch }}"
+          BRANCH="${{ (github.event.workflow_run && github.event.workflow_run.head_branch) }}"
           HOURS_AGO=$(date -u -d "${{ env.MAX_ITERATIONS_WINDOW_HOURS }} hours ago" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -v-${{ env.MAX_ITERATIONS_WINDOW_HOURS }}H +%Y-%m-%dT%H:%M:%SZ)
 
           FAILURE_COUNT=$(gh run list \
@@ -248,31 +238,31 @@ jobs:
 
   call-repair:
     needs: triage
-    if: needs.triage.outputs.jules_enabled == 'true' && needs.triage.outputs.target == 'auto-repair'
+    if: needs.triage.outputs.target == 'auto-repair'
     uses: ./.github/workflows/Jules-Auto-Repair.yml
     with:
-      run_id: ${{ format('{0}', github.event.workflow_run.id) }}
-      branch: ${{ github.event.workflow_run.head_branch || '' }}
+      run_id: ${{ format('{0}', (github.event.workflow_run && github.event.workflow_run.id)) }}
+      branch: ${{ (github.event.workflow_run && github.event.workflow_run.head_branch) || '' }}
     secrets: inherit
 
   call-hotfix-creator:
     needs: triage
-    if: needs.triage.outputs.jules_enabled == 'true' && needs.triage.outputs.target == 'hotfix-creator'
+    if: needs.triage.outputs.target == 'hotfix-creator'
     uses: ./.github/workflows/Jules-Hotfix-Creator.yml
     with:
-      run_id: ${{ format('{0}', github.event.workflow_run.id) }}
-      failed_branch: ${{ github.event.workflow_run.head_branch || '' }}
+      run_id: ${{ format('{0}', (github.event.workflow_run && github.event.workflow_run.id)) }}
+      failed_branch: ${{ (github.event.workflow_run && github.event.workflow_run.head_branch) || '' }}
     secrets: inherit
 
   call-scribe:
     needs: triage
-    if: needs.triage.outputs.jules_enabled == 'true' && needs.triage.outputs.target == 'doc-scribe'
+    if: needs.triage.outputs.target == 'doc-scribe'
     uses: ./.github/workflows/Jules-Documentation-Scribe.yml
     secrets: inherit
 
   call-tests:
     needs: triage
-    if: needs.triage.outputs.jules_enabled == 'true' && needs.triage.outputs.target == 'test-generator'
+    if: needs.triage.outputs.target == 'test-generator'
     uses: ./.github/workflows/Jules-Test-Generator.yml
     secrets: inherit
 
@@ -281,48 +271,48 @@ jobs:
 
   call-archivist:
     needs: triage
-    if: needs.triage.outputs.jules_enabled == 'true' && needs.triage.outputs.target == 'archivist'
+    if: needs.triage.outputs.target == 'archivist'
     uses: ./.github/workflows/Jules-Archivist.yml
     secrets: inherit
 
   call-sentinel:
     needs: triage
-    if: needs.triage.outputs.jules_enabled == 'true' && needs.triage.outputs.target == 'sentinel'
+    if: needs.triage.outputs.target == 'sentinel'
     uses: ./.github/workflows/Jules-Sentinel.yml
     secrets: inherit
 
   call-code-quality-reviewer:
     needs: triage
-    if: needs.triage.outputs.jules_enabled == 'true' && needs.triage.outputs.target == 'code-quality-reviewer'
+    if: needs.triage.outputs.target == 'code-quality-reviewer'
     uses: ./.github/workflows/Jules-Code-Quality-Reviewer.yml
     secrets: inherit
 
   call-assessment-generator:
     needs: triage
-    if: needs.triage.outputs.jules_enabled == 'true' && needs.triage.outputs.target == 'assessment-generator'
+    if: needs.triage.outputs.target == 'assessment-generator'
     uses: ./.github/workflows/Jules-Assessment-Generator.yml
     secrets: inherit
 
   call-issue-resolver:
     needs: triage
-    if: needs.triage.outputs.jules_enabled == 'true' && needs.triage.outputs.target == 'issue-resolver'
+    if: needs.triage.outputs.target == 'issue-resolver'
     uses: ./.github/workflows/Jules-Issue-Resolver.yml
     secrets: inherit
 
   call-completist:
     needs: triage
-    if: needs.triage.outputs.jules_enabled == 'true' && needs.triage.outputs.target == 'completist'
+    if: needs.triage.outputs.target == 'completist'
     uses: ./.github/workflows/Jules-Completist.yml
     secrets: inherit
 
   call-documentation-auditor:
     needs: triage
-    if: needs.triage.outputs.jules_enabled == 'true' && needs.triage.outputs.target == 'documentation-auditor'
+    if: needs.triage.outputs.target == 'documentation-auditor'
     uses: ./.github/workflows/Jules-Documentation-Auditor.yml
     secrets: inherit
 
   call-pr-compiler:
     needs: triage
-    if: needs.triage.outputs.jules_enabled == 'true' && needs.triage.outputs.target == 'pr-compiler'
+    if: needs.triage.outputs.target == 'pr-compiler'
     uses: ./.github/workflows/Jules-PR-Compiler.yml
     secrets: inherit

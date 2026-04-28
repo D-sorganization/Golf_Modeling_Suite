@@ -74,12 +74,7 @@ def _load_video_pipeline_classes() -> tuple[type, type]:
 
 @router.post("/analyze/video", response_model=VideoAnalysisResponse)
 @precondition(  # fmt: skip
-    lambda file=None,
-    estimator_type="mediapipe",
-    min_confidence=0.5,
-    enable_smoothing=True,
-    video_pipeline=None,
-    logger=None: (
+    lambda file=None, estimator_type="mediapipe", min_confidence=0.5, enable_smoothing=True, video_pipeline=None, logger=None: (
         estimator_type is not None
         and len(estimator_type.strip()) > 0
         and 0.0 <= min_confidence <= 1.0
@@ -184,12 +179,7 @@ async def analyze_video(
 
 @router.post("/analyze/video/async")
 @precondition(  # fmt: skip
-    lambda background_tasks=None,
-    file=None,
-    estimator_type="mediapipe",
-    min_confidence=0.5,
-    video_pipeline=None,
-    task_manager=None: (
+    lambda background_tasks=None, file=None, estimator_type="mediapipe", min_confidence=0.5, video_pipeline=None, task_manager=None: (
         estimator_type is not None
         and len(estimator_type.strip()) > 0
         and 0.0 <= min_confidence <= 1.0
@@ -243,10 +233,13 @@ async def analyze_video_async(
     temp_path = Path(temp_file_name)
     await write_upload_file_to_path(file, temp_path)
 
-    task_manager[task_id] = {
-        "status": "started",
-        "created_at": datetime.now(UTC),
-    }
+    await task_manager.set(
+        task_id,
+        {
+            "status": "started",
+            "created_at": datetime.now(UTC),
+        },
+    )
 
     background_tasks.add_task(
         _process_video_background,
@@ -280,14 +273,17 @@ async def _process_video_background(
         task_manager: Task manager for status updates.
     """
     try:
-        task_data = task_manager.get(task_id) or {}
+        task_data = await task_manager.get(task_id) or {}
         created_at = task_data.get("created_at", datetime.now(UTC))
 
-        task_manager[task_id] = {
-            "status": "processing",
-            "progress": 0,
-            "created_at": created_at,
-        }
+        await task_manager.set(
+            task_id,
+            {
+                "status": "processing",
+                "progress": 0,
+                "created_at": created_at,
+            },
+        )
 
         from src.shared.python.gui_pkg.video_pose_pipeline import (
             VideoPosePipeline,
@@ -301,30 +297,36 @@ async def _process_video_background(
 
         result = pipeline.process_video(video_path)
 
-        task_data = task_manager.get(task_id) or {}
+        task_data = await task_manager.get(task_id) or {}
         created_at = task_data.get("created_at", datetime.now(UTC))
 
-        task_manager[task_id] = {
-            "status": "completed",
-            "created_at": created_at,
-            "result": {
-                "filename": filename,
-                "total_frames": result.total_frames,
-                "valid_frames": result.valid_frames,
-                "average_confidence": result.average_confidence,
-                "quality_metrics": result.quality_metrics,
+        await task_manager.set(
+            task_id,
+            {
+                "status": "completed",
+                "created_at": created_at,
+                "result": {
+                    "filename": filename,
+                    "total_frames": result.total_frames,
+                    "valid_frames": result.valid_frames,
+                    "average_confidence": result.average_confidence,
+                    "quality_metrics": result.quality_metrics,
+                },
             },
-        }
+        )
 
     except (RuntimeError, ValueError, OSError, ImportError) as e:
-        task_data = task_manager.get(task_id) or {}
+        task_data = await task_manager.get(task_id) or {}
         created_at = task_data.get("created_at", datetime.now(UTC))
 
-        task_manager[task_id] = {
-            "status": "failed",
-            "error": str(e),
-            "created_at": created_at,
-        }
+        await task_manager.set(
+            task_id,
+            {
+                "status": "failed",
+                "error": str(e),
+                "created_at": created_at,
+            },
+        )
     finally:
         if video_path.exists():
             video_path.unlink()
