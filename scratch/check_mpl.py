@@ -1,4 +1,3 @@
-
 import matplotlib.axes
 
 print(f"Axes.set_xticks type: {type(matplotlib.axes.Axes.set_xticks)}")

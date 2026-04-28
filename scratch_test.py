@@ -29,27 +29,37 @@ pkg_mocks = {
 with patch.dict(sys.modules, pkg_mocks):
     import recording_library
 
+
 def test_get_unique_values():
     lib_path = Path("scratch/test_lib")
     lib_path.mkdir(parents=True, exist_ok=True)
     lib = recording_library.RecordingLibrary(str(lib_path))
-    
+
     # Add some data
     conn = sqlite3.connect(str(lib.db_path))
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO recordings (golfer_name, club_type, filename) VALUES (?, ?, ?)", ("Alice", "Driver", "a.json"))
-    cursor.execute("INSERT INTO recordings (golfer_name, club_type, filename) VALUES (?, ?, ?)", ("Bob", "Putter", "b.json"))
-    cursor.execute("INSERT INTO recordings (golfer_name, club_type, filename) VALUES (?, ?, ?)", ("Alice", "Iron", "c.json"))
+    cursor.execute(
+        "INSERT INTO recordings (golfer_name, club_type, filename) VALUES (?, ?, ?)",
+        ("Alice", "Driver", "a.json"),
+    )
+    cursor.execute(
+        "INSERT INTO recordings (golfer_name, club_type, filename) VALUES (?, ?, ?)",
+        ("Bob", "Putter", "b.json"),
+    )
+    cursor.execute(
+        "INSERT INTO recordings (golfer_name, club_type, filename) VALUES (?, ?, ?)",
+        ("Alice", "Iron", "c.json"),
+    )
     conn.commit()
     conn.close()
-    
+
     # Test get_unique_values
     golfers = lib.get_unique_values("golfer_name")
     assert golfers == ["Alice", "Bob"]
-    
+
     clubs = lib.get_unique_values("club_type")
     assert clubs == ["Driver", "Iron", "Putter"]
-    
+
     # Test invalid field
     try:
         lib.get_unique_values("invalid_field")
@@ -58,6 +68,7 @@ def test_get_unique_values():
         assert "Invalid field" in str(e)
 
     print("Test get_unique_values passed!")
+
 
 if __name__ == "__main__":
     test_get_unique_values()
