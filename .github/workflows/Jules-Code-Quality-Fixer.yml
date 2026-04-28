@@ -26,7 +26,7 @@ concurrency:
 
 jobs:
   check-kill-switch:
-    runs-on: ubuntu-latest
+    runs-on: d-sorg-fleet
     outputs:
       enabled: ${{ steps.check.outputs.enabled }}
     steps:
@@ -108,7 +108,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
             echo "existing_pr_num=$PR_NUM" >> $GITHUB_OUTPUT
           else
             # Create new branch
-            BRANCH_NAME="jules/code-quality-fix-$(date +%Y%m%d-%H%M%S)"
+            BRANCH_NAME="fix/jules-code-quality-$(date +%Y%m%d-%H%M%S)"
             git checkout -b "$BRANCH_NAME"
             echo "reusing_pr=false" >> $GITHUB_OUTPUT
           fi

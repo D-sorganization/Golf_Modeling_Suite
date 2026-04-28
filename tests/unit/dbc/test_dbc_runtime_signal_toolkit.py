@@ -9,9 +9,13 @@ from __future__ import annotations
 import unittest
 
 import numpy as np
-
-from src.shared.python.core.contracts import PreconditionError
 from src.shared.python.signal_toolkit.core import Signal
+from src.shared.python.signal_toolkit.filters import (
+    FilterDesigner,
+    FilterType,
+    apply_exponential_smoothing,
+    apply_gaussian_smoothing,
+)
 from src.shared.python.signal_toolkit.limits import (
     apply_deadband,
     apply_rate_limiter,
@@ -23,12 +27,7 @@ from src.shared.python.signal_toolkit.noise import (
 )
 
 from src.shared.python.core.contracts import PreconditionError
-from src.shared.python.signal_toolkit.filters import (
-    FilterDesigner,
-    FilterType,
-    apply_exponential_smoothing,
-    apply_gaussian_smoothing,
-)
+
 
 def _make_signal(
     duration: float = 1.0,
