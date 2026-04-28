@@ -81,7 +81,7 @@ jobs:
           if [ -n "$CHANGED_FILES" ]; then
             while IFS= read -r file || [ -n "$file" ]; do
             # Check if SPEC.md was modified
-            if [[ "$file" == "SPEC.md" ]]; then
+            if [ "$file" = "SPEC.md" ]; then
               SPEC_CHANGED=true
             fi
 
@@ -89,16 +89,12 @@ jobs:
             # Add or remove patterns as appropriate for your repo
             # Note: .github/workflows/ is excluded  -  CI-only changes rarely
             # affect documented behavior. Use spec-exempt if needed.
-            if [[ "$file" == src/* ]] || \
-               [[ "$file" == tests/* ]] || \
-               [[ "$file" == config/* ]] || \
-               [[ "$file" == pyproject.toml ]] || \
-               [[ "$file" == Cargo.toml ]] || \
-               [[ "$file" == CMakeLists.txt ]] || \
-               [[ "$file" == package.json ]] || \
-               [[ "$file" == requirements.txt ]]; then
-              SOURCE_CHANGED=true
-            fi
+            case "$file" in
+              src/*|tests/*|config/*|pyproject.toml|Cargo.toml|CMakeLists.txt|package.json|requirements.txt)
+                SOURCE_CHANGED=true
+                ;;
+            esac
+
             done < changed_files.txt
             rm changed_files.txt
           fi
@@ -106,7 +102,7 @@ jobs:
           echo "source_changed=$SOURCE_CHANGED" >> "$GITHUB_OUTPUT"
           echo "spec_changed=$SPEC_CHANGED" >> "$GITHUB_OUTPUT"
 
-          if [[ "$SOURCE_CHANGED" == "true" ]] && [[ "$SPEC_CHANGED" == "false" ]]; then
+          if [ "$SOURCE_CHANGED" = "true" ] && [ "$SPEC_CHANGED" = "false" ]; then
             echo "needs_update=true" >> "$GITHUB_OUTPUT"
           else
             echo "needs_update=false" >> "$GITHUB_OUTPUT"
