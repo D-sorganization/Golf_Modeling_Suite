@@ -40,6 +40,7 @@ for environments that expose the underlying ``model`` and ``data`` attributes.
 from __future__ import annotations
 
 import logging
+from typing import Any
 from dataclasses import dataclass
 from pathlib import Path
 
