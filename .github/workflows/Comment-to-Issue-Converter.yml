@@ -202,7 +202,7 @@ jobs:
                       label = 'cursor-review'
                   else:
                       source = f'Reviewer ({author})'
-                      label = 'human-review'
+                      label = ''
 
                   # Determine if this is actionable (has a suggestion)
                   has_suggestion = '```suggestion' in body
@@ -342,11 +342,11 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add docs/review_archive/ docs/review_archive/comment_tracking.json || true
+          git add -f docs/review_archive/ docs/review_archive/comment_tracking.json || true
 
           if ! git diff --staged --quiet; then
             git commit -m "docs: archive review comments from PRs"
-            git push origin HEAD:"$TARGET_BRANCH"
+            git pull --rebase origin "$TARGET_BRANCH" && git push origin HEAD:"$TARGET_BRANCH"
           else
             echo "No changes to commit"
           fi

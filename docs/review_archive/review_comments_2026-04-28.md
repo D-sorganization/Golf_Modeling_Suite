@@ -50,4 +50,3 @@ Switching this workflow to `docs/laymans-terms-*` makes its PRs invisible to sha
 [View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3350#discussion_r3152755368)
 
 ---
-
