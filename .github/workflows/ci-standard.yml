@@ -208,6 +208,7 @@ jobs:
         with:
           name: matlab-quality-report
           path: matlab_quality_report.txt
+          if-no-files-found: ignore
 
   tests:
     needs: [pick-runner, quality-gate]
