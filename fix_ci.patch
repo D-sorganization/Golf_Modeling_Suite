@@ -1,0 +1,14 @@
+--- a/.github/workflows/spec-check.yml
++++ b/.github/workflows/spec-check.yml
+@@ -62,7 +62,11 @@
+           # Get the list of changed files in this PR
+           CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+
+           echo "Changed files:"
+           echo "$CHANGED_FILES"
++
++          if [ -z "$CHANGED_FILES" ]; then
++             CHANGED_FILES=""
++          fi
+
+           # Define source patterns that require spec updates
