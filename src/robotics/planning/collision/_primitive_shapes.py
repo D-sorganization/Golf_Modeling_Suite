@@ -42,7 +42,9 @@ class Sphere(GeometricPrimitive):
         if not (point is not None):
             raise ValueError("point must be provided")
         point = np.asarray(point)
-        return float(np.linalg.norm(point - self.center)) <= self.radius
+        # ⚡ Bolt: math.hypot is faster than np.linalg.norm for small arrays
+        diff = point - self.center
+        return math.hypot(*diff) <= self.radius
 
     def compute_support(self, direction: np.ndarray) -> np.ndarray:
         """Compute support point."""
@@ -97,18 +99,16 @@ class Box(GeometricPrimitive):
     def _get_corners(self) -> np.ndarray:
         """Get all 8 corners of the box in world frame."""
         h = self.half_extents
-        local_corners = np.array(
-            [
-                [-h[0], -h[1], -h[2]],
-                [-h[0], -h[1], h[2]],
-                [-h[0], h[1], -h[2]],
-                [-h[0], h[1], h[2]],
-                [h[0], -h[1], -h[2]],
-                [h[0], -h[1], h[2]],
-                [h[0], h[1], -h[2]],
-                [h[0], h[1], h[2]],
-            ]
-        )
+        local_corners = np.array([
+            [-h[0], -h[1], -h[2]],
+            [-h[0], -h[1], h[2]],
+            [-h[0], h[1], -h[2]],
+            [-h[0], h[1], h[2]],
+            [h[0], -h[1], -h[2]],
+            [h[0], -h[1], h[2]],
+            [h[0], h[1], -h[2]],
+            [h[0], h[1], h[2]],
+        ])
         return (self.rotation @ local_corners.T).T + self.center
 
     def contains_point(self, point: np.ndarray) -> bool:
@@ -174,7 +174,9 @@ class Capsule(GeometricPrimitive):
     @property
     def length(self) -> float:
         """Get capsule length (distance between endpoints)."""
-        return float(np.linalg.norm(self.point_b - self.point_a))
+        # ⚡ Bolt: math.hypot is faster than np.linalg.norm for small arrays
+        diff = self.point_b - self.point_a
+        return math.hypot(*diff)
 
     @property
     def axis(self) -> np.ndarray:
@@ -216,7 +218,9 @@ class Capsule(GeometricPrimitive):
             raise ValueError("point must be provided")
         point = np.asarray(point)
         closest = self._closest_point_on_segment(point)
-        return float(np.linalg.norm(point - closest)) <= self.radius
+        # ⚡ Bolt: math.hypot is faster than np.linalg.norm for small arrays
+        diff = point - closest
+        return math.hypot(*diff) <= self.radius
 
     def compute_support(self, direction: np.ndarray) -> np.ndarray:
         """Compute support point."""
@@ -268,7 +272,8 @@ class Cylinder(GeometricPrimitive):
             raise ValueError("height must be positive")
 
         # Normalize axis
-        norm = np.linalg.norm(self.axis)
+        # ⚡ Bolt: math.hypot is faster than np.linalg.norm for small arrays
+        norm = math.hypot(*self.axis)
         if norm < 1e-10:
             raise ValueError("axis must be non-zero")
         self.axis = self.axis / norm
