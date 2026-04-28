@@ -71,7 +71,7 @@ jobs:
 
           # Confirm this PR truly only touches docs/markdown
           SOURCE_CHANGED=false
-          while IFS= read -r file; do
+          while read -r file; do
             if [[ "$file" == src/* ]] || \
                [[ "$file" == tests/* ]] || \
                [[ "$file" == scripts/* ]] || \

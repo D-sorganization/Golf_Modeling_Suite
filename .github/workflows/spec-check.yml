@@ -75,7 +75,7 @@ jobs:
           SOURCE_CHANGED=false
           SPEC_CHANGED=false
 
-          while IFS= read -r file; do
+          while read -r file; do
             # Check if SPEC.md was modified
             if [[ "$file" == "SPEC.md" ]]; then
               SPEC_CHANGED=true
