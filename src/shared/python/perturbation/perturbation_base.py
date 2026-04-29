@@ -30,7 +30,6 @@ Design by Contract
 from __future__ import annotations
 
 import logging
-import math
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -278,10 +277,9 @@ class PerturbationAnalyzerBase(ABC):
         joint_velocities_final = v_traj[last].copy()
         ee_pos_final = r.ee_pos_traj[last].copy()  # type: ignore[union-attr,attr-defined]
         ee_vel_final = r.ee_vel_traj[last].copy()  # type: ignore[union-attr,attr-defined]
-        ee_speed_final = float(math.hypot(*ee_vel_final))
+        ee_speed_final = float(np.linalg.norm(ee_vel_final))
 
-        # ⚡ Bolt: np.einsum is ~3x faster than np.linalg.norm(..., axis=1) for computing euclidean norms
-        speeds = np.sqrt(np.einsum("ij,ij->i", r.ee_vel_traj, r.ee_vel_traj))  # type: ignore[union-attr,attr-defined]
+        speeds = np.linalg.norm(r.ee_vel_traj, axis=1)  # type: ignore[union-attr,attr-defined]
         peak_speed = float(np.max(speeds))
 
         total_energy_final = float(
@@ -294,13 +292,8 @@ class PerturbationAnalyzerBase(ABC):
         if self._nominal_result is not None:
             nom_q = self._get_q_traj(self._nominal_result)
             n_cmp = min(len(q_traj), len(nom_q))
-            diff = q_traj[:n_cmp] - nom_q[:n_cmp]
-            # ⚡ Bolt: np.einsum is ~3x faster than np.linalg.norm(..., axis=1)
-            deviations = np.sqrt(np.einsum("ij,ij->i", diff, diff))
-            # ⚡ Bolt: np.vdot is ~2x faster than np.mean(deviations**2)
-            trajectory_rmse = float(
-                np.sqrt(np.vdot(deviations, deviations) / deviations.size)
-            )
+            deviations = np.linalg.norm(q_traj[:n_cmp] - nom_q[:n_cmp], axis=1)
+            trajectory_rmse = float(np.sqrt(np.mean(deviations**2)))
             trajectory_max_deviation = float(np.max(deviations))
 
         motion_duration = float(
@@ -355,7 +348,7 @@ class PerturbationAnalyzerBase(ABC):
                 for m in scalar_metric_names:
                     v = metrics[m]
                     if isinstance(v, np.ndarray):
-                        v = float(math.hypot(*v.flatten()))
+                        v = float(np.linalg.norm(v))
                     metric_lists[m].append(float(v))
                 n_success += 1
             except Exception:  # noqa: BLE001
@@ -434,7 +427,7 @@ class PerturbationAnalyzerBase(ABC):
                     m_dict = self.extract_metrics(sim)
                     v = m_dict[metric]
                     if isinstance(v, np.ndarray):
-                        v = float(math.hypot(*v.flatten()))
+                        v = float(np.linalg.norm(v))
                     values.append(float(v))
                 except Exception:  # noqa: BLE001
                     pass

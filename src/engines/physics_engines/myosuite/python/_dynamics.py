@@ -14,9 +14,7 @@ class DynamicsMixin:
     # Attributes provided by EngineInitMixin.__init__; declared here for type checking.
     if TYPE_CHECKING:
         sim: Any
-
-        @property
-        def is_initialized(self) -> bool: ...
+        is_initialized: bool
 
     @precondition(lambda self: self.is_initialized, "Engine must be initialized")
     @postcondition(check_finite, "Mass matrix must contain finite values")

@@ -17,10 +17,7 @@ class SimulationCoreMixin:
         sim: Any
         _terminated: bool
         _dt: float
-
-        @property
-        def is_initialized(self) -> bool: ...
-
+        is_initialized: bool
         _last_action: np.ndarray | None
 
     @precondition(lambda self: self.env is not None, "Environment must be loaded")

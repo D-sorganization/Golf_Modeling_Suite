@@ -64,9 +64,7 @@ from humanoid_character_builder.generators.urdf_xml_builder import (
 from humanoid_character_builder.generators.urdf_xml_builder import (
     add_link_element as _add_link_element,
 )
-from humanoid_character_builder.generators.urdf_xml_builder import (
-    build_urdf_xml,
-)
+from humanoid_character_builder.generators.urdf_xml_builder import build_urdf_xml
 from humanoid_character_builder.mesh.inertia_calculator import (
     InertiaMode,
     InertiaResult,

@@ -49,7 +49,7 @@ import numpy as np
 import pandas as pd
 
 if TYPE_CHECKING:
-    from matplotlib.figure import Figure
+    import matplotlib.pyplot as plt
 
 
 # Centralized conversion factors for maintainability (DRY, Orthogonality)
@@ -195,7 +195,7 @@ def plot_joint_trajectories(
     data: pd.DataFrame,
     title: str = "Joint Trajectories",
     save_path: Path | None = None,
-) -> Figure:
+) -> plt.Figure:
     """Create standardized joint trajectory plots.
 
     Args:

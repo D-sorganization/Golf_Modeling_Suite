@@ -15,12 +15,10 @@ import typing
 
 if typing.TYPE_CHECKING:
     from collections.abc import Callable, Iterable
-
 from dataclasses import dataclass
 
 # Security: Use simpleeval for safe expression evaluation instead of eval()
 from simpleeval import SimpleEval
-
 from src.shared.python.core.constants import GRAVITY_M_S2
 
 # Physical constants with documented units and references
