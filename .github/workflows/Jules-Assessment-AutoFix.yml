@@ -43,6 +43,7 @@ jobs:
     steps:
       - name: Check Jules Kill Switch
         id: check
+        shell: bash
         run: |
           if [ "${{ vars.JULES_ENABLED }}" = "false" ]; then
             echo "Jules is DISABLED via kill switch."
@@ -63,6 +64,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -86,6 +88,7 @@ jobs:
           fetch-depth: 0 # Full history for git analysis
 
       - name: Prepare assessment branch
+        shell: bash
         run: |
           BRANCH_NAME="docs/assessment-reports"
           git fetch origin main
@@ -98,6 +101,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
+        shell: bash
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
@@ -105,12 +109,14 @@ jobs:
 
       - name: Run Assessment A (Architecture)
         id: assessment_a
+        shell: bash
         run: |
           echo "Running Architecture Assessment..."
           python scripts/run_assessment.py --assessment A --output docs/assessments/Assessment_A_Results_$(date +%Y-%m-%d).md
 
       - name: Run Assessment B (Hygiene & Quality)
         id: assessment_b
+        shell: bash
         run: |
           echo "Running Hygiene & Quality Assessment..."
           # Count print statements
@@ -126,23 +132,28 @@ jobs:
           python scripts/run_assessment.py --assessment B --output docs/assessments/Assessment_B_Results_$(date +%Y-%m-%d).md
 
       - name: Run Assessment C (Documentation)
+        shell: bash
         run: |
           python scripts/run_assessment.py --assessment C --output docs/assessments/Assessment_C_Results_$(date +%Y-%m-%d).md
 
       - name: Run Assessment D (User Experience)
+        shell: bash
         run: |
           python scripts/run_assessment.py --assessment D --output docs/assessments/Assessment_D_Results_$(date +%Y-%m-%d).md
 
       - name: Run Assessment E (Performance)
+        shell: bash
         run: |
           python scripts/run_assessment.py --assessment E --output docs/assessments/Assessment_E_Results_$(date +%Y-%m-%d).md
 
       - name: Run Assessment F (Installation)
+        shell: bash
         run: |
           python scripts/run_assessment.py --assessment F --output docs/assessments/Assessment_F_Results_$(date +%Y-%m-%d).md
 
       - name: Run Assessment G (Testing)
         id: assessment_g
+        shell: bash
         run: |
           # Check test collection
           pytest --collect-only -q > test_collection.log 2>&1 || true
@@ -152,10 +163,12 @@ jobs:
           python scripts/run_assessment.py --assessment G --output docs/assessments/Assessment_G_Results_$(date +%Y-%m-%d).md
 
       - name: Run Assessment H (Error Handling)
+        shell: bash
         run: |
           python scripts/run_assessment.py --assessment H --output docs/assessments/Assessment_H_Results_$(date +%Y-%m-%d).md
 
       - name: Run Assessment I (Security)
+        shell: bash
         run: |
           # Run security scans
           pip-audit --output security_audit.json --format json || true
@@ -164,6 +177,7 @@ jobs:
           python scripts/run_assessment.py --assessment I --output docs/assessments/Assessment_I_Results_$(date +%Y-%m-%d).md
 
       - name: Run Assessment J-O (Remaining)
+        shell: bash
         run: |
           for assessment in J K L M N O; do
             python scripts/run_assessment.py --assessment $assessment --output docs/assessments/Assessment_${assessment}_Results_$(date +%Y-%m-%d).md
@@ -171,6 +185,7 @@ jobs:
 
       - name: Generate Comprehensive Summary
         id: analyze
+        shell: bash
         run: |
           python scripts/generate_assessment_summary.py \
             --input docs/assessments/Assessment_*_Results_$(date +%Y-%m-%d).md \
@@ -197,6 +212,7 @@ jobs:
       - name: Commit Assessment Reports
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           git config user.name "Jules Assessment Bot"
           git config user.email "jules-bot@gasification-model.local"
@@ -260,12 +276,14 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
+        shell: bash
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt || true
           pip install ruff mypy pip-tools
 
       - name: Create consolidated fix branch
+        shell: bash
         run: |
           # HARDENING: Single branch for all fixes
           BRANCH_NAME="fix/auto-fix-consolidated-$(date +%Y%m%d)"
@@ -275,6 +293,7 @@ jobs:
       - name: Auto-fix Linting Issues
         id: fix_linting
         continue-on-error: true
+        shell: bash
         run: |
           echo "=== Running Linting Fixes ==="
           CHANGES_BEFORE=$(git status --porcelain | wc -l)
@@ -295,6 +314,7 @@ jobs:
       - name: Auto-fix Dependencies
         id: fix_deps
         continue-on-error: true
+        shell: bash
         run: |
           echo "=== Running Dependency Fixes ==="
           CHANGES_BEFORE=$(git status --porcelain | wc -l)
@@ -314,6 +334,7 @@ jobs:
       - name: Auto-fix Tests
         id: fix_tests
         continue-on-error: true
+        shell: bash
         run: |
           echo "=== Running Test Fixes ==="
           # Fix common import issues if script exists
@@ -326,6 +347,7 @@ jobs:
 
       - name: Check for changes
         id: check_changes
+        shell: bash
         run: |
           if git diff --quiet && git diff --staged --quiet; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
@@ -338,6 +360,7 @@ jobs:
 
       - name: Commit and push consolidated changes
         if: steps.check_changes.outputs.has_changes == 'true'
+        shell: bash
         run: |
           git config user.name "Jules Auto-Fix Bot"
           git config user.email "jules-autofix@gasification-model.local"
@@ -365,6 +388,7 @@ jobs:
         if: steps.check_changes.outputs.has_changes == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           # HARDENING: Check if PR already exists for this branch
           EXISTING_PR=$(gh pr list --head "$BRANCH_NAME" --state open --json number --jq '.[0].number // empty')
@@ -434,6 +458,7 @@ jobs:
       - name: Create issues for critical findings
         env:
           GITHUB_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           python scripts/create_issues_from_assessment.py \
             --input assessment_summary.json \
@@ -443,6 +468,7 @@ jobs:
       - name: Comment on assessment summary
         env:
           GITHUB_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           # Create or update issue with weekly assessment summary
           gh issue list --label "assessment-summary" --json number --jq '.[0].number // ""' > issue_num.txt
@@ -475,6 +501,7 @@ jobs:
       - name: Close superseded PR
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           SOURCE_PR="${{ inputs.source_pr_to_close }}"
 
@@ -518,6 +545,7 @@ jobs:
       - name: Generate dry run report
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           cat >> $GITHUB_STEP_SUMMARY << 'EOF'
           # - Dry Run Summary

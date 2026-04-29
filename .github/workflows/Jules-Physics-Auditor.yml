@@ -30,6 +30,7 @@ jobs:
     steps:
       - name: Check Jules Kill Switch
         id: check
+        shell: bash
         run: |
           if [ "${{ vars.JULES_ENABLED }}" = "false" ]; then
             echo "Jules is DISABLED via kill switch."
@@ -50,6 +51,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -81,11 +83,13 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
           node-version: "24"
 
       - name: Install Dependencies
+        shell: bash
         run: |
           pip install -r requirements.txt || true
           npm install -g @google/jules
 
       - name: Identify Physics-Critical Files
+        shell: bash
         run: |
           mkdir -p .jules/physics_data
 
@@ -114,6 +118,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
         env:
           JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
           FOCUS_AREA: ${{ inputs.focus_area || 'all' }}
+        shell: bash
         run: |
           set -e
           DATE=$(date +%Y-%m-%d)

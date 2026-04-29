@@ -59,6 +59,7 @@ jobs:
     steps:
       - name: Check Jules Kill Switch
         id: check
+        shell: bash
         run: |
           if [ "${{ vars.JULES_ENABLED }}" = "false" ]; then
             echo "Jules is DISABLED via kill switch."
@@ -79,6 +80,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -108,6 +110,7 @@ jobs:
           DRY_RUN: ${{ inputs.dry_run || 'false' }}
           SPECIFIC_ISSUE: ${{ inputs.specific_issue || '' }}
           REPO: ${{ github.repository }}
+        shell: bash
         run: |
           set -e
 
@@ -289,6 +292,7 @@ jobs:
           SKIPPED: ${{ steps.assign.outputs.skipped || 'none' }}
           COUNT: ${{ steps.assign.outputs.count || '0' }}
           DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        shell: bash
         run: |
           echo "# Jules Assessment Remediator Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY

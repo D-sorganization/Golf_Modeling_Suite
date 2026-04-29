@@ -33,6 +33,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -63,6 +64,7 @@ jobs:
           cache: pip
 
       - name: Install system display dependencies
+        shell: bash
         run: |
           sudo apt-get -o DPkg::Lock::Timeout=300 update -qq
           sudo apt-get -o DPkg::Lock::Timeout=300 install -y --no-install-recommends \
@@ -74,6 +76,7 @@ jobs:
 
       - name: Install Python dependencies
         timeout-minutes: 20
+        shell: bash
         run: |
           pip install --upgrade pip
           if [ -f pyproject.toml ]; then pip install -e ".[dev,test]" || pip install -e .; fi
@@ -94,6 +97,7 @@ jobs:
             pytest pytest-cov pytest-timeout pytest-xdist
 
       - name: Verify heavy dependencies
+        shell: bash
         run: |
           python -c "
           import sys
@@ -112,6 +116,7 @@ jobs:
 
       - name: Run heavy integration tests
         timeout-minutes: 60
+        shell: bash
         run: |
           xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" \
             pytest \
@@ -131,6 +136,7 @@ jobs:
 
       - name: Summarize heavy test results
         if: always()
+        shell: bash
         run: |
           echo "## Heavy Integration Test Report - UpstreamDrift" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
@@ -175,6 +181,7 @@ jobs:
 
       - name: Notify on failure
         if: failure() && env.HEAVY_TEST_SLACK_WEBHOOK != ''
+        shell: bash
         run: |
           curl -s -X POST "$HEAVY_TEST_SLACK_WEBHOOK" \
             -H 'Content-type: application/json' \

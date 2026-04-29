@@ -21,6 +21,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -43,6 +44,7 @@ jobs:
           fetch-depth: 0
 
       - name: Organize Review Archive
+        shell: bash
         run: |
           mkdir -p docs/review_archive
           # Group files by month if there are many
@@ -51,6 +53,7 @@ jobs:
           find docs/review_archive -maxdepth 1 -name "*.md" -mtime +30 -exec gzip {} \; || true
 
       - name: Update Workflow Documentation
+        shell: bash
         run: |
           mkdir -p docs/maintenance
           cat > docs/maintenance/WORKFLOWS.md << 'EOF'
@@ -80,6 +83,7 @@ jobs:
           EOF
 
       - name: Cleanup Temporary Files
+        shell: bash
         run: |
           # Clean up any leftover jules data or temp files
           rm -rf .jules/temp_* || true

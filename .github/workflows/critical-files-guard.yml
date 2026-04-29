@@ -26,6 +26,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -46,6 +47,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Check Critical Files
+        shell: bash
         run: |
           echo "- Verifying critical files exist at repository root..."
 
@@ -95,6 +97,7 @@ jobs:
           echo "- All critical files verified!"
 
       - name: Check for Deletion Attempts
+        shell: bash
         run: |
           echo "- Checking for deletion attempts in this PR..."
 

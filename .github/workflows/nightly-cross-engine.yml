@@ -46,6 +46,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -77,12 +78,14 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Initialize artifact directories
+        shell: bash
         run: |
           mkdir -p test-results coverage
           echo '{"status": "setup_failed"}' > test-results/setup-status.json
 
       - name: Install dependencies
         id: install_deps
+        shell: bash
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev,drake,pinocchio,opensim,myosuite]"
@@ -91,6 +94,7 @@ jobs:
 
       - name: Summarize dependency failure
         if: failure() && steps.install_deps.outcome == 'failure'
+        shell: bash
         run: |
           echo "## Dependency Installation Failed" >> $GITHUB_STEP_SUMMARY
           echo "Cross-engine validation aborted due to environment setup failure." >> $GITHUB_STEP_SUMMARY
@@ -100,6 +104,7 @@ jobs:
         env:
           UPSTREAM_DRIFT_STRICT_ENGINE_PROBES: "true"
           UPSTREAM_DRIFT_MODEL_REGISTRY_STRICT: "true"
+        shell: bash
         run: |
           python scripts/check_native_engine_imports.py \
             --json-output test-results/native-engine-imports.json \
@@ -110,6 +115,7 @@ jobs:
         env:
           UPSTREAM_DRIFT_STRICT_ENGINE_PROBES: "true"
           UPSTREAM_DRIFT_MODEL_REGISTRY_STRICT: "true"
+        shell: bash
         run: |
           pytest tests/heavy_integration/test_cross_engine_integration.py \
             -v \
@@ -135,6 +141,7 @@ jobs:
       - name: Summarize validation results
         id: summarize
         if: always()
+        shell: bash
         run: |
           python - <<'PY'
           import os
@@ -241,6 +248,7 @@ jobs:
           path: test-results/
 
       - name: Generate validation dashboard
+        shell: bash
         run: |
           if [ -f "test-results/cross-engine-junit.xml" ]; then
             # TODO: Generate HTML dashboard showing:
