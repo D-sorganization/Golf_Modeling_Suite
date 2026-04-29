@@ -1,52 +1,36 @@
 # Review Comments Archive - 2026-04-29
 
-<<<<<<< HEAD
-Generated: 2026-04-29T06:48:42.047744
+Generated: 2026-04-29T10:22:20.365365
 
-## Reviewer (chatgpt-codex-connector[bot]) (1 comments)
+## Reviewer (chatgpt-codex-connector[bot]) (2 comments)
 
-### PR #3440: src/robotics/planning/collision/_primitive_shapes.py:45
+### PR #3469: src/robotics/planning/collision/_primitive_shapes.py:45
 
 Actionable: No
 Has Suggestion: No
 
 ```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Preserve ndarray input compatibility in contains_point**
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Keep point arrays 1D before calling math.hypot**
 
-Switching to `math.hypot(*(point - self.center))` narrows accepted input shapes and now throws `TypeError` when `point` is a non-1D ndarray (for example `(1, 3)` row vectors commonly produced by slicing/batching). The previous `np.linalg.norm(...)` accepted these ndarray forms, so this introduces a runtime regression for existing callers that pass 2D s...
+`Sphere.contains_point` no longer squeezes the input delta before unpacking into `math.hypot`, so valid NumPy row-vector inputs like shape `(1, 3)` now raise `TypeError` (`only 0-dimensional arrays can be converted to Python scalars`) instead of returning a boolean. Because this method accepts a generic `np.ndarray` and does not enforce `(3,)`, callers that pa...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3440#discussion_r3161491112)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3469#discussion_r3162894805)
 
 ---
-=======
-Generated: 2026-04-29T08:26:07.292160
 
-## Reviewer (chatgpt-codex-connector[bot]) (1 comments)
-
-### PR #3450: src/robotics/planning/collision/_primitive_shapes.py:45
->>>>>>> origin/main
+### PR #3469: src/robotics/planning/collision/_primitive_shapes.py:219
 
 Actionable: Yes
 Has Suggestion: No
 
 ```
-<<<<<<< HEAD
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Keep distance checks compatible with row-vector points**
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Normalize capsule distance vector before hypot unpacking**
 
-Replacing `np.linalg.norm(point - self.center)` with `math.hypot(*(point - self.center))` changes accepted input shapes: a point shaped `(1, 3)` now raises `TypeError` because `math.hypot` receives a 1D array argument, while the previous implementation returned a valid scalar norm. This is a behavior regression for callers that pass row slices (e.g. `p...
+`Capsule.contains_point` has the same regression: unpacking `point - closest` directly into `math.hypot` breaks when `point` is not strictly 1D (for example `(1, 3)` arrays), causing a runtime `TypeError`. The prior implementation handled these shapes by squeezing/normalizing first, so this change can crash collision checks for callers using batched/...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3448#discussion_r3161810460)
-=======
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Normalize point shape before unpacking into math.hypot**
-
-This `contains_point` path no longer handles row/column vector inputs: `point` is only converted with `np.asarray`, so shapes like `(1, 3)` or `(3, 1)` reach `math.hypot(*(point - self.center))` and raise `TypeError` because unpacked elements are arrays, not scalars. Before this commit, `np.linalg.norm` accepted these common single-point layouts, so th...
-```
-
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3450#discussion_r3161871320)
->>>>>>> origin/main
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3469#discussion_r3162894813)
 
 ---
 
->>>>>>> origin/main
