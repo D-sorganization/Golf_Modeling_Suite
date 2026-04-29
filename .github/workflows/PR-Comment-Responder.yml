@@ -32,6 +32,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -53,6 +54,7 @@ jobs:
     steps:
       - name: Filter Bot Comments
         id: filter
+        shell: bash
         run: |
           ACTOR="${{ github.actor }}"
 
@@ -74,6 +76,7 @@ jobs:
         if: steps.filter.outputs.is_bot != 'true'
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           if [ "${{ github.event_name }}" = "pull_request_review_comment" ]; then
             PR_NUMBER="${{ github.event.pull_request.number }}"
@@ -104,6 +107,7 @@ jobs:
         if: steps.filter.outputs.is_bot != 'true' && steps.pr_state.outputs.should_skip != 'true'
         env:
           COMMENT_BODY_JSON: ${{ toJson(github.event.comment.body) }}
+        shell: bash
         run: |
           # Check if comment is actionable (contains request-like words)
           BODY_LOWER=$(printf '%s' "$COMMENT_BODY_JSON" | tr '[:upper:]' '[:lower:]')
@@ -135,6 +139,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
           COMMENT_BODY_JSON: ${{ toJson(github.event.comment.body) }}
+        shell: bash
         run: |
           mkdir -p .jules/pending
           QUEUE_FILE=".jules/pending/pr_comments.json"
@@ -212,6 +217,7 @@ jobs:
           steps.filter.outputs.is_bot != 'true' &&
           steps.pr_state.outputs.should_skip != 'true' &&
           steps.analyze.outputs.is_actionable == 'true'
+        shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

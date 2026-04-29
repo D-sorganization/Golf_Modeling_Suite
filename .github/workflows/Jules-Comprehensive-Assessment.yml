@@ -18,6 +18,7 @@ jobs:
     steps:
       - name: Check Jules Kill Switch
         id: check
+        shell: bash
         run: |
           if [ "${{ vars.JULES_ENABLED }}" = "false" ]; then
             echo "Jules is DISABLED via kill switch."
@@ -38,6 +39,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -62,6 +64,7 @@ jobs:
 
       - name: Set Date
         id: date
+        shell: bash
         run: echo "date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
 
       - name: Setup Python
@@ -75,6 +78,7 @@ jobs:
           node-version: "24"
 
       - name: Install Dependencies
+        shell: bash
         run: |
           pip install -r requirements.txt || true
           # Install tabulate for reports if needed
@@ -85,6 +89,7 @@ jobs:
       # ---------------------------------------------------------
       - name: Run Pragmatic Programmer Review
         id: pragmatic
+        shell: bash
         run: |
           if [ -f "scripts/pragmatic_programmer_review.py" ]; then
             echo "Running Pragmatic Programmer Review..."
@@ -100,6 +105,7 @@ jobs:
       # Component 2: Completist Audit (Data Collection)
       # ---------------------------------------------------------
       - name: Run Completist Data Collection
+        shell: bash
         run: |
           echo "Collecting incomplete implementation patterns..."
           mkdir -p .jules/completist_data
@@ -128,6 +134,7 @@ jobs:
       # Archive Old Data
       # ---------------------------------------------------------
       - name: Archive Existing Assessments
+        shell: bash
         run: |
           mkdir -p docs/assessments/archive
           DATE=$(date +%Y-%m-%d)
@@ -158,6 +165,7 @@ jobs:
         env:
           JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           set -e
           DATE=$(date +%Y-%m-%d)
@@ -284,6 +292,7 @@ jobs:
         if: always()
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           DATE=$(date +%Y-%m-%d)
           EXPECTED_TITLE="[${{ github.event.repository.name }}] [docs] Assessment Generation - $DATE"

@@ -11,6 +11,7 @@ jobs:
     steps:
       - name: Check Jules Kill Switch
         id: check
+        shell: bash
         run: |
           if [ "${{ vars.JULES_ENABLED }}" = "false" ]; then
             echo "Jules is DISABLED via kill switch."
@@ -31,6 +32,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -69,6 +71,7 @@ jobs:
           REVIEW_BODY: ${{ github.event.review.body }}
           REVIEW_STATE: ${{ github.event.review.state }}
           REPO: ${{ github.repository }}
+        shell: bash
         run: |
           # SECURITY: Use environment variables instead of direct interpolation
           echo "Reviewer: $REVIEWER_LOGIN" > feedback.txt
@@ -90,6 +93,7 @@ jobs:
           JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
+        shell: bash
         run: |
           # SECURITY: Use environment variables and read feedback from file
           FEEDBACK_CONTENT=$(cat feedback.txt)

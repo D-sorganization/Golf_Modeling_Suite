@@ -26,6 +26,7 @@ jobs:
         id: status
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
         run: |
           # Check if JULES_ENABLED is set to true
           VAL=$(gh variable list --json name,value -q '.[] | select(.name == "JULES_ENABLED") | .value' || echo "false")
@@ -39,6 +40,7 @@ jobs:
         if: github.event.inputs.action == 'enable'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
         run: |
           # Add/Update repository variable to enable Jules
           gh variable set JULES_ENABLED --value "true"
@@ -48,6 +50,7 @@ jobs:
         if: github.event.inputs.action == 'disable'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
         run: |
           # Update repository variable to disable Jules
           gh variable set JULES_ENABLED --value "false"
@@ -58,6 +61,7 @@ jobs:
         if: github.event.inputs.action == 'status'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
         run: |
           echo "## Jules Automation Status" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -74,6 +78,7 @@ jobs:
         if: github.event.inputs.action != 'status'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
         run: |
           ACTION="${{ github.event.inputs.action }}"
           STATUS=$([ "$ACTION" = "enable" ] && echo "ENABLED" || echo "DISABLED")
