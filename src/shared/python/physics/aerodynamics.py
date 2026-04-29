@@ -754,7 +754,7 @@ class WindModel:
             base_dir = self.config.direction
             random_perturb = self._rng.standard_normal(3) * 0.3
             gust_dir = base_dir + random_perturb
-            gust_dir = gust_dir / (np.linalg.norm(gust_dir) + 1e-10)
+            gust_dir = gust_dir / (math.hypot(*gust_dir) + 1e-10)
 
             gust = WindGust(
                 start_time=t,
