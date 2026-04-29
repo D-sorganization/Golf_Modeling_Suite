@@ -53,7 +53,7 @@ env:
 
 jobs:
   check-kill-switch:
-    runs-on: ubuntu-latest
+    runs-on: d-sorg-fleet
     outputs:
       enabled: ${{ steps.check.outputs.enabled }}
     steps:
@@ -322,4 +322,3 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
           echo "*Jules Assessment Remediator - Rate limited to prevent PR explosion*" >> $GITHUB_STEP_SUMMARY
-

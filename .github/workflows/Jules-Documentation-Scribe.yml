@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   check-kill-switch:
-    runs-on: ubuntu-latest
+    runs-on: d-sorg-fleet
     outputs:
       enabled: ${{ steps.check.outputs.enabled }}
     steps:
@@ -130,4 +130,3 @@ jobs:
             # 2. FORCE READY STATE (Fixes Draft Issue)
             gh pr ready "$PR_URL" || true
           fi
-

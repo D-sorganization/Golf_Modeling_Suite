@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   check-kill-switch:
-    runs-on: ubuntu-latest
+    runs-on: d-sorg-fleet
     outputs:
       enabled: ${{ steps.check.outputs.enabled }}
     steps:
@@ -111,4 +111,3 @@ jobs:
 
           # Add label to issue
           gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "jules-assigned" || true
-

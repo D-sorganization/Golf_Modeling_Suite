@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   check-kill-switch:
-    runs-on: ubuntu-latest
+    runs-on: d-sorg-fleet
     outputs:
       enabled: ${{ steps.check.outputs.enabled }}
     steps:
@@ -173,4 +173,3 @@ jobs:
             "---" \
             "This is an automated hotfix. Please review carefully before merging." \
             )"
-
