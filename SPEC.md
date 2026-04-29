@@ -513,3 +513,8 @@ pytest tests/ --cov=src --cov-fail-under=70
 -->
 ## 2026-04-28 Spec Bump
 Bumped spec file slightly to bypass the spec check in CI.
+
+## PR 3426
+
+- Replaced `np.linalg.norm` with `math.hypot` in `_primitive_shapes.py` to optimize Euclidean distance calculation for arrays representing 3D coordinates.
+- Fixed an issue with 2D sliced array input compatibility in the PR.
