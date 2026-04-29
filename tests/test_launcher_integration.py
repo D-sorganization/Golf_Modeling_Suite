@@ -50,20 +50,19 @@ class TestLauncherIntegration(unittest.TestCase):
 
         for file_name in required_files:
             file_path = urdf_dir / file_name
-            self.assertTrue(
-                file_path.exists(), f"Required file {file_name} should exist"
-            )
+            self.assertTrue(file_path.exists(), f"Required file {file_name} should exist")
 
     def test_shared_modules_importable(self) -> None:
         """Test that shared modules can be imported."""
         try:
+            from src.shared.python.process_worker import ProcessWorker
+
             from src.shared.python.config.configuration_manager import (
                 ConfigurationManager,
             )
             from src.shared.python.engine_core.engine_manager import (
                 EngineManager,
             )
-            from src.shared.python.process_worker import ProcessWorker
 
             # Test basic instantiation with required arguments
             config_manager = ConfigurationManager(Path("dummy_config.json"))
