@@ -42,7 +42,7 @@ class Sphere(GeometricPrimitive):
         if not (point is not None):
             raise ValueError("point must be provided")
         point = np.asarray(point).ravel()
-        return math.hypot(*(point - self.center)) <= self.radius
+        return math.hypot(*np.asarray(point - self.center).reshape(-1)) <= self.radius
 
     def compute_support(self, direction: np.ndarray) -> np.ndarray:
         """Compute support point."""
@@ -216,7 +216,7 @@ class Capsule(GeometricPrimitive):
             raise ValueError("point must be provided")
         point = np.asarray(point).ravel()
         closest = self._closest_point_on_segment(point)
-        return math.hypot(*(point - closest)) <= self.radius
+        return math.hypot(*np.asarray(point - closest).reshape(-1)) <= self.radius
 
     def compute_support(self, direction: np.ndarray) -> np.ndarray:
         """Compute support point."""
