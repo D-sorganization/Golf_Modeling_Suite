@@ -19,6 +19,8 @@
 
 ## 1. Identity
 
+* Update: Replaced `np.linalg.norm` with `math.hypot` in 3D distance primitives.
+
 | Field                   | Value                                              |
 | ----------------------- | -------------------------------------------------- |
 | **Repository Name**     | `UpstreamDrift`                                    |

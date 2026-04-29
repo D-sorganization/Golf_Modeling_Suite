@@ -15,6 +15,7 @@ jobs:
     steps:
       - name: Check Jules Kill Switch
         id: check
+        shell: bash
         run: |
           if [ "${{ vars.JULES_ENABLED }}" = "false" ]; then
             echo "Jules is DISABLED via kill switch."
@@ -35,6 +36,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -59,6 +61,7 @@ jobs:
 
       - name: Identify Changed Files
         id: changes
+        shell: bash
         run: |
           # FIX: Compare the immediate last commit (HEAD) with its parent (HEAD^)
           # This accurately captures "what just changed" in the push
@@ -81,6 +84,7 @@ jobs:
 
       - name: Install & Auth Jules
         if: steps.changes.outputs.files != ''
+        shell: bash
         run: |
           npm install -g @google/jules
           jules auth --token ${{ secrets.JULES_API_KEY }}
@@ -88,6 +92,7 @@ jobs:
       - name: Create Docs Branch
         if: steps.changes.outputs.files != ''
         id: branch
+        shell: bash
         run: |
           BRANCH_NAME="docs/update-$(date +%s)"
           git checkout -b $BRANCH_NAME
@@ -99,6 +104,7 @@ jobs:
         env:
           FILES: ${{ steps.changes.outputs.files }}
           BRANCH: ${{ steps.branch.outputs.name }}
+        shell: bash
         run: |
           jules task fix \
             --branch $BRANCH \
@@ -109,6 +115,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
           BRANCH: ${{ steps.branch.outputs.name }}
+        shell: bash
         run: |
           git fetch origin $BRANCH
 

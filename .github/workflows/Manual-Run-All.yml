@@ -35,6 +35,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -65,6 +66,7 @@ jobs:
 
       - name: Wait for Assessment
         if: inputs.workflows == 'all' || inputs.workflows == 'assessments-only'
+        shell: bash
         run: sleep 10
 
       - name: Dispatch Code Quality Reviewer
@@ -82,6 +84,7 @@ jobs:
 
       - name: Wait for Quality Review
         if: inputs.workflows == 'all' || inputs.workflows == 'assessments-only'
+        shell: bash
         run: sleep 10
 
       - name: Dispatch Completist
@@ -99,6 +102,7 @@ jobs:
 
       - name: Wait for Completist
         if: inputs.workflows == 'all' || inputs.workflows == 'assessments-only'
+        shell: bash
         run: sleep 10
 
       - name: Dispatch Sentinel
@@ -116,6 +120,7 @@ jobs:
 
       - name: Wait for Sentinel
         if: inputs.workflows == 'all'
+        shell: bash
         run: sleep 10
 
       - name: Dispatch Issue Resolver
@@ -133,6 +138,7 @@ jobs:
 
       - name: Wait for Issue Resolver
         if: inputs.workflows == 'all' || inputs.workflows == 'fixes-only'
+        shell: bash
         run: sleep 10
 
       - name: Dispatch PR Compiler
@@ -151,6 +157,7 @@ jobs:
             console.log('Dispatched PR Compiler');
 
       - name: Summary
+        shell: bash
         run: |
           echo "## Workflows Dispatched" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY

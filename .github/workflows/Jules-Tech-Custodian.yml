@@ -10,6 +10,7 @@ jobs:
     steps:
       - name: Check Jules Kill Switch
         id: check
+        shell: bash
         run: |
           if [ "${{ vars.JULES_ENABLED }}" = "false" ]; then
             echo "Jules is DISABLED via kill switch."
@@ -30,6 +31,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -58,6 +60,7 @@ jobs:
 
       - name: Identify Target File
         id: target
+        shell: bash
         run: |
           WORST_FILE=$(ruff check . --output-format text --select ALL 2>/dev/null | cut -d: -f1 | sort | uniq -c | sort -nr | head -n1 | awk '{print $2}')
           if [ -z "$WORST_FILE" ]; then
@@ -72,6 +75,7 @@ jobs:
         id: branch # FIX: Added ID so we can output data
         env:
           TARGET: ${{ steps.target.outputs.file }}
+        shell: bash
         run: |
           BRANCH_NAME="refactor/custodian-$(date +%Y%m%d%H%M%S)-$(basename "$TARGET")"
           git checkout -b $BRANCH_NAME
@@ -81,6 +85,7 @@ jobs:
 
       - name: Authenticate Jules
         if: steps.target.outputs.has_issues == 'true'
+        shell: bash
         run: jules auth --token ${{ secrets.JULES_API_KEY }}
 
       - name: Dispatch Jules
@@ -89,6 +94,7 @@ jobs:
           TARGET: ${{ steps.target.outputs.file }}
           # FIX: Reference the correct step output
           BRANCH: ${{ steps.branch.outputs.branch_name }}
+        shell: bash
         run: |
           jules task fix \
             --branch $BRANCH \
@@ -100,6 +106,7 @@ jobs:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
           BRANCH: ${{ steps.branch.outputs.branch_name }}
           TARGET: ${{ steps.target.outputs.file }}
+        shell: bash
         run: |
           # 1. Create the PR (Capture the URL)
           PR_URL=$(gh pr create \

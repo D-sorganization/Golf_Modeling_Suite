@@ -11,6 +11,7 @@ jobs:
     steps:
       - name: Check Jules Kill Switch
         id: check
+        shell: bash
         run: |
           if [ "${{ vars.JULES_ENABLED }}" = "false" ]; then
             echo "Jules is DISABLED via kill switch."
@@ -31,6 +32,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -54,6 +56,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
 
       - name: Identify New/Modified Files
         id: files
+        shell: bash
         run: |
           # Use origin/${{ github.base_ref }}...HEAD if base_ref exists (PR), else HEAD^
           if [ -n "${{ github.base_ref }}" ]; then
@@ -82,6 +85,7 @@ if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
         env:
           JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
           FILES: ${{ steps.files.outputs.files }}
+        shell: bash
         run: |
           # Request 3 parallel sessions. Jules will try 3 different testing strategies.
           jules remote new \

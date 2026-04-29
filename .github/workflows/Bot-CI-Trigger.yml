@@ -49,6 +49,7 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -84,6 +85,7 @@ jobs:
 
       - name: Check Loop Prevention
         id: loop-check
+        shell: bash
         run: |
           # Check recent commits for loop indicators
           loop_count=0
@@ -110,6 +112,7 @@ jobs:
           GH_TOKEN: ${{ env.BOT_TRIGGER_TOKEN }}
           INPUT_PR: ${{ inputs.pr_number }}
           FORCE: ${{ inputs.force }}
+        shell: bash
         run: |
           prs_to_trigger=""
 
@@ -168,6 +171,7 @@ jobs:
         if: steps.loop-check.outputs.skip != 'true' && steps.find-prs.outputs.prs != ''
         env:
           GH_TOKEN: ${{ env.BOT_TRIGGER_TOKEN }}
+        shell: bash
         run: |
           for pr in ${{ steps.find-prs.outputs.prs }}; do
             echo "Triggering CI for PR #$pr"
@@ -207,6 +211,7 @@ jobs:
         if: always()
         env:
           CAN_TRIGGER: ${{ secrets.BOT_PAT != '' || secrets.RUNNER_CHECK_TOKEN != '' }}
+        shell: bash
         run: |
           echo "## Bot CI Trigger Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
