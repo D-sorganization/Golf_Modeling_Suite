@@ -835,3 +835,23 @@ class TestIssue2499CollisionDistanceEarlyExit:
             ),
         )
         assert abs(result_no_limit.distance - result_with_limit.distance) < 1e-6
+
+    def test_sphere_contains_point_2d(self) -> None:
+        """Test point containment handles 2D inputs properly."""
+        sphere = Sphere(center=np.zeros(3), radius=1.0)
+        assert sphere.contains_point(np.array([[0.5, 0.0, 0.0]]))  # Row vector (1, 3)
+        assert sphere.contains_point(
+            np.array([[0.5], [0.0], [0.0]])
+        )  # Column vector (3, 1)
+
+    def test_sphere_compute_support_2d(self) -> None:
+        """Test compute_support handles 2D inputs properly."""
+        sphere = Sphere(center=np.array([1.0, 0.0, 0.0]), radius=0.5)
+
+        dir_row = np.array([[1.0, 0.0, 0.0]])
+        support_row = sphere.compute_support(dir_row)
+        assert np.allclose(support_row, [1.5, 0.0, 0.0])
+
+        dir_col = np.array([[1.0], [0.0], [0.0]])
+        support_col = sphere.compute_support(dir_col)
+        assert np.allclose(support_col, [1.5, 0.0, 0.0])
