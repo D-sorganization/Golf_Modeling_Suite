@@ -1,21 +1,21 @@
 # Review Comments Archive - 2026-04-29
 
-Generated: 2026-04-29T08:14:43.408808
+Generated: 2026-04-29T08:26:07.292160
 
 ## Reviewer (chatgpt-codex-connector[bot]) (1 comments)
 
-### PR #3453: src/robotics/planning/collision/_primitive_shapes.py:45
+### PR #3450: src/robotics/planning/collision/_primitive_shapes.py:45
 
-Actionable: No
+Actionable: Yes
 Has Suggestion: No
 
 ```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Preserve non-1D input handling in point distance checks**
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Normalize point shape before unpacking into math.hypot**
 
-Switching from `np.linalg.norm` to `math.hypot(*(point - self.center))` makes `contains_point` raise `TypeError` for valid NumPy point arrays that are not 1D (for example shape `(1, 3)` or `(3, 1)`), because `math.hypot` only accepts scalar arguments after unpacking. This is a behavioral regression from the previous implementation, which computed a sc...
+This `contains_point` path no longer handles row/column vector inputs: `point` is only converted with `np.asarray`, so shapes like `(1, 3)` or `(3, 1)` reach `math.hypot(*(point - self.center))` and raise `TypeError` because unpacked elements are arrays, not scalars. Before this commit, `np.linalg.norm` accepted these common single-point layouts, so th...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3453#discussion_r3162089618)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3450#discussion_r3161871320)
 
 ---
 
