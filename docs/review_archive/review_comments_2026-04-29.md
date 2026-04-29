@@ -18,4 +18,3 @@ Switching to `math.hypot(*(point - self.center))` makes `Sphere.contains_point` 
 [View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3439#discussion_r3161446551)
 
 ---
-
