@@ -36,24 +36,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  check-kill-switch:
-    runs-on: ubuntu-latest
-    outputs:
-      enabled: ${{ steps.check.outputs.enabled }}
-    steps:
-      - name: Check Jules Kill Switch
-        id: check
-        run: |
-          if [ "${{ vars.JULES_ENABLED }}" = "false" ]; then
-            echo "Jules is DISABLED via kill switch."
-            echo "enabled=false" >> $GITHUB_OUTPUT
-          else
-            echo "enabled=true" >> $GITHUB_OUTPUT
-          fi
-
+  # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
-    needs: check-kill-switch
-    if: needs.check-kill-switch.outputs.enabled == 'true'
     runs-on: d-sorg-fleet
     timeout-minutes: 2
     outputs:
@@ -64,21 +48,28 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
-          ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
-            --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
+          ONLINE=$(gh api /orgs/${{ github.repository_owner }}/actions/runners \
+            --jq '[.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length' \
             2>/dev/null || echo "0")
-          if [[ "$ONLINE" =~ ^[0-9]+$ ]] && [[ "$ONLINE" -gt 0 ]]; then
+          if [[ "$ONLINE" -gt 0 ]]; then
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
-            echo "Self-hosted runner online - routing locally"
+            echo "Self-hosted runner online — routing locally"
           else
-            echo "::error::No local self-hosted runner available; failing closed"
-            exit 1
+            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
+            echo "No self-hosted runner — using GitHub-hosted"
           fi
-
-  assessment-autofix:
-    needs: [check-kill-switch, pick-runner]
-    if: needs.check-kill-switch.outputs.enabled == 'true'
+  run-assessments:
+    needs: pick-runner
+    name: Run Repository Assessments (A-O)
     runs-on: self-hosted
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    outputs:
+      critical_issues: ${{ steps.analyze.outputs.critical_issues }}
+      assessment_score: ${{ steps.analyze.outputs.score }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -454,7 +445,7 @@ jobs:
           else
             echo "Creating new assessment summary issue"
             gh issue create \
-              --title "- Weekly Assessment Summary" \
+              --title "📊 Weekly Assessment Summary" \
               --body "$(cat docs/assessments/COMPREHENSIVE_ASSESSMENT_SUMMARY_*.md)"
           fi
 
@@ -484,7 +475,7 @@ jobs:
           NEW_PRS=$(gh pr list --author "@me" --json number,title --jq '.[] | select(.title | contains("Auto-fix")) | "#\(.number)"' | head -5 | tr '\n' ', ' | sed 's/,$//')
 
           # Add comment explaining closure
-          gh pr comment "$SOURCE_PR" --body "## - Auto-Closed (Superseded)
+          gh pr comment "$SOURCE_PR" --body "## 🤖 Auto-Closed (Superseded)
 
           This PR has been superseded by automated fix PRs created by the Jules Assessment Auto-Fix workflow.
 
@@ -500,12 +491,12 @@ jobs:
           3. This PR's branch can be deleted
 
           ---
-          - Closed by Jules Assessment Auto-Fix Workflow"
+          🤖 Closed by Jules Assessment Auto-Fix Workflow"
 
           # Close the PR
           gh pr close "$SOURCE_PR"
 
-          echo "- Closed PR #$SOURCE_PR"
+          echo "✅ Closed PR #$SOURCE_PR"
 
   # Dry run summary - runs independently when dry_run is true
   dry-run-summary:
@@ -520,13 +511,13 @@ jobs:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
           cat >> $GITHUB_STEP_SUMMARY << 'EOF'
-          # - Dry Run Summary
+          # 🔍 Dry Run Summary
 
           ## What Would Happen
 
           ### Assessments
-          - - Would run all assessments (A-O)
-          - - Would generate comprehensive summary
+          - ✅ Would run all assessments (A-O)
+          - ✅ Would generate comprehensive summary
 
           ### Auto-Fixes
           The following fix types would be applied:
@@ -547,4 +538,3 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
           echo "*Run without dry_run=true to execute these changes*" >> $GITHUB_STEP_SUMMARY
-

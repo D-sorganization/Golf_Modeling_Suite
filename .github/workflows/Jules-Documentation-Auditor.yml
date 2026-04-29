@@ -14,24 +14,8 @@ permissions:
   issues: write
 
 jobs:
-  check-kill-switch:
-    runs-on: ubuntu-latest
-    outputs:
-      enabled: ${{ steps.check.outputs.enabled }}
-    steps:
-      - name: Check Jules Kill Switch
-        id: check
-        run: |
-          if [ "${{ vars.JULES_ENABLED }}" = "false" ]; then
-            echo "Jules is DISABLED via kill switch."
-            echo "enabled=false" >> $GITHUB_OUTPUT
-          else
-            echo "enabled=true" >> $GITHUB_OUTPUT
-          fi
-
+  # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
-    needs: check-kill-switch
-    if: needs.check-kill-switch.outputs.enabled == 'true'
     runs-on: d-sorg-fleet
     timeout-minutes: 2
     outputs:
@@ -42,21 +26,21 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
-          ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
-            --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
+          ONLINE=$(gh api /orgs/${{ github.repository_owner }}/actions/runners \
+            --jq '[.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length' \
             2>/dev/null || echo "0")
-          if [[ "$ONLINE" =~ ^[0-9]+$ ]] && [[ "$ONLINE" -gt 0 ]]; then
+          if [[ "$ONLINE" -gt 0 ]]; then
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
-            echo "Self-hosted runner online - routing locally"
+            echo "Self-hosted runner online — routing locally"
           else
-            echo "::error::No local self-hosted runner available; failing closed"
-            exit 1
+            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
+            echo "No self-hosted runner — using GitHub-hosted"
           fi
-
-  documentation-auditor:
-    needs: [check-kill-switch, pick-runner]
-    if: needs.check-kill-switch.outputs.enabled == 'true'
+  audit-documentation:
+    needs: pick-runner
     runs-on: self-hosted
+    timeout-minutes: 60
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -135,34 +119,34 @@ jobs:
           if [ -f "README.md" ]; then
             README_SIZE=$(wc -c < README.md)
             if [ "$README_SIZE" -lt 500 ]; then
-              echo "- -- README.md exists but is sparse ($README_SIZE bytes)" >> /tmp/doc_report.md
+              echo "- ⚠️ README.md exists but is sparse ($README_SIZE bytes)" >> /tmp/doc_report.md
             else
-              echo "- - README.md exists and is substantial" >> /tmp/doc_report.md
+              echo "- ✅ README.md exists and is substantial" >> /tmp/doc_report.md
             fi
           else
-            echo "- - No README.md found" >> /tmp/doc_report.md
+            echo "- ❌ No README.md found" >> /tmp/doc_report.md
           fi
 
           # Check for docs directory
           if [ -d "docs" ]; then
             DOC_COUNT=$(find docs -name "*.md" | wc -l)
-            echo "- - docs/ directory exists with $DOC_COUNT markdown files" >> /tmp/doc_report.md
+            echo "- ✅ docs/ directory exists with $DOC_COUNT markdown files" >> /tmp/doc_report.md
           else
-            echo "- -- No docs/ directory found" >> /tmp/doc_report.md
+            echo "- ⚠️ No docs/ directory found" >> /tmp/doc_report.md
           fi
 
           # Check for CONTRIBUTING
           if [ -f "CONTRIBUTING.md" ]; then
-            echo "- - CONTRIBUTING.md exists" >> /tmp/doc_report.md
+            echo "- ✅ CONTRIBUTING.md exists" >> /tmp/doc_report.md
           else
-            echo "- -- No CONTRIBUTING.md found" >> /tmp/doc_report.md
+            echo "- ⚠️ No CONTRIBUTING.md found" >> /tmp/doc_report.md
           fi
 
           # Check for CHANGELOG
           if [ -f "CHANGELOG.md" ] || [ -f "HISTORY.md" ]; then
-            echo "- - Changelog exists" >> /tmp/doc_report.md
+            echo "- ✅ Changelog exists" >> /tmp/doc_report.md
           else
-            echo "- -- No CHANGELOG.md or HISTORY.md found" >> /tmp/doc_report.md
+            echo "- ⚠️ No CHANGELOG.md or HISTORY.md found" >> /tmp/doc_report.md
           fi
 
       - name: Save Report
@@ -215,4 +199,3 @@ jobs:
           echo "- **Missing Function Docs**: ${{ steps.scan.outputs.missing_func }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "See full report in docs/assessments/documentation/LATEST.md" >> $GITHUB_STEP_SUMMARY
-

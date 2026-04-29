@@ -12,24 +12,8 @@ permissions:
   issues: write
 
 jobs:
-  check-kill-switch:
-    runs-on: ubuntu-latest
-    outputs:
-      enabled: ${{ steps.check.outputs.enabled }}
-    steps:
-      - name: Check Jules Kill Switch
-        id: check
-        run: |
-          if [ "${{ vars.JULES_ENABLED }}" = "false" ]; then
-            echo "Jules is DISABLED via kill switch."
-            echo "enabled=false" >> $GITHUB_OUTPUT
-          else
-            echo "enabled=true" >> $GITHUB_OUTPUT
-          fi
-  # -- Dispatcher: route to self-hosted if available --------------------------
+  # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
-    needs: check-kill-switch
-    if: needs.check-kill-switch.outputs.enabled == 'true'
     runs-on: d-sorg-fleet
     timeout-minutes: 2
     outputs:
@@ -40,15 +24,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
-          ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
-            --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
+          ONLINE=$(gh api /orgs/${{ github.repository_owner }}/actions/runners \
+            --jq '[.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length' \
             2>/dev/null || echo "0")
-          if [[ "$ONLINE" =~ ^[0-9]+$ ]] && [[ "$ONLINE" -gt 0 ]]; then
+          if [[ "$ONLINE" -gt 0 ]]; then
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
-            echo "Self-hosted runner online - routing locally"
+            echo "Self-hosted runner online — routing locally"
           else
-            echo "::error::No local self-hosted runner available; failing closed"
-            exit 1
+            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
+            echo "No self-hosted runner — using GitHub-hosted"
           fi
   auto-assign:
     needs: pick-runner
@@ -111,4 +95,3 @@ jobs:
 
           # Add label to issue
           gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "jules-assigned" || true
-

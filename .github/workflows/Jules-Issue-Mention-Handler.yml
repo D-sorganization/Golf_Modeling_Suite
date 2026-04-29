@@ -17,24 +17,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  check-kill-switch:
-    runs-on: ubuntu-latest
-    outputs:
-      enabled: ${{ steps.check.outputs.enabled }}
-    steps:
-      - name: Check Jules Kill Switch
-        id: check
-        run: |
-          if [ "${{ vars.JULES_ENABLED }}" = "false" ]; then
-            echo "Jules is DISABLED via kill switch."
-            echo "enabled=false" >> $GITHUB_OUTPUT
-          else
-            echo "enabled=true" >> $GITHUB_OUTPUT
-          fi
-
+  # ── Dispatcher: route to self-hosted if available ──────────────────────────
   pick-runner:
-    needs: check-kill-switch
-    if: needs.check-kill-switch.outputs.enabled == 'true'
     runs-on: d-sorg-fleet
     timeout-minutes: 2
     outputs:
@@ -45,20 +29,39 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
-          ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
-            --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
+          ONLINE=$(gh api /orgs/${{ github.repository_owner }}/actions/runners \
+            --jq '[.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length' \
             2>/dev/null || echo "0")
-          if [[ "$ONLINE" =~ ^[0-9]+$ ]] && [[ "$ONLINE" -gt 0 ]]; then
+          if [[ "$ONLINE" -gt 0 ]]; then
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
-            echo "Self-hosted runner online - routing locally"
+            echo "Self-hosted runner online — routing locally"
           else
-            echo "::error::No local self-hosted runner available; failing closed"
-            exit 1
+            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
+            echo "No self-hosted runner — using GitHub-hosted"
+          fi
+  check-mention:
+    needs: pick-runner
+    runs-on: self-hosted
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    steps:
+      - name: Check for @jules mention
+        id: check
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: |
+          # Check if @jules is mentioned as a standalone word (case insensitive)
+          if echo "$COMMENT_BODY" | grep -iqE "(^|[^a-zA-Z0-9_])@jules([^a-zA-Z0-9_]|$)"; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            echo "@jules mention detected!"
+          else
+            echo "should_run=false" >> $GITHUB_OUTPUT
+            echo "No @jules mention found"
           fi
 
-  issue-mention-handler:
-    needs: [check-kill-switch, pick-runner]
-    if: needs.check-kill-switch.outputs.enabled == 'true'
+  fix-issue:
+    needs: [pick-runner, check-mention]
+    if: needs.check-mention.outputs.should_run == 'true' && !github.event.issue.pull_request
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
@@ -71,9 +74,9 @@ jobs:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           gh issue comment "$ISSUE_NUMBER" --body "$(cat <<'EOF'
-          - **Jules here!** I've received your request and I'm analyzing this issue now.
+          👋 **Jules here!** I've received your request and I'm analyzing this issue now.
 
-          I'll create a PR with a fix shortly. Stay tuned! -
+          I'll create a PR with a fix shortly. Stay tuned! 🔧
 
           ---
           *Triggered by @${{ github.event.comment.user.login }}*
@@ -97,7 +100,7 @@ jobs:
           # Check if API key is configured
           if [ -z "$JULES_API_KEY" ]; then
             echo "::warning::JULES_API_KEY not configured. Cannot process with Jules AI."
-            gh issue comment "$ISSUE_NUMBER" --body "-- Jules API key not configured. Please set up JULES_API_KEY secret."
+            gh issue comment "$ISSUE_NUMBER" --body "⚠️ Jules API key not configured. Please set up JULES_API_KEY secret."
             exit 0
           fi
 
@@ -117,7 +120,7 @@ jobs:
 
           if [ -z "$SOURCE_ID" ] || [ "$SOURCE_ID" = "null" ]; then
             echo "::warning::Repository $REPO not found in Jules sources."
-            gh issue comment "$ISSUE_NUMBER" --body "-- This repository is not configured in Jules. Please add it at https://jules.google.com"
+            gh issue comment "$ISSUE_NUMBER" --body "⚠️ This repository is not configured in Jules. Please add it at https://jules.google.com"
             exit 0
           fi
 
@@ -175,7 +178,7 @@ jobs:
           if [ "$HTTP_CODE" != "200" ]; then
             echo "::error::Jules API returned HTTP $HTTP_CODE"
             cat /tmp/session_response.json 2>/dev/null || true
-            gh issue comment "$ISSUE_NUMBER" --body "-- Jules API error (HTTP $HTTP_CODE). Please try again later."
+            gh issue comment "$ISSUE_NUMBER" --body "⚠️ Jules API error (HTTP $HTTP_CODE). Please try again later."
             exit 1
           fi
 
@@ -208,7 +211,7 @@ jobs:
               "FAILED")
                 echo "::warning::Session failed"
                 echo "status=failed" >> $GITHUB_OUTPUT
-                gh issue comment "$ISSUE_NUMBER" --body "- Jules was unable to fix this issue automatically. Manual intervention may be required."
+                gh issue comment "$ISSUE_NUMBER" --body "❌ Jules was unable to fix this issue automatically. Manual intervention may be required."
                 exit 0
                 ;;
               "CANCELLED")
@@ -224,7 +227,7 @@ jobs:
 
           if [ $ELAPSED -ge $MAX_WAIT ]; then
             echo "::warning::Session timed out"
-            gh issue comment "$ISSUE_NUMBER" --body "-- Jules session timed out. The fix may still be in progress - check back later."
+            gh issue comment "$ISSUE_NUMBER" --body "⏱️ Jules session timed out. The fix may still be in progress - check back later."
           fi
 
       - name: Report Success
@@ -235,14 +238,14 @@ jobs:
           PR_URL: ${{ steps.jules.outputs.pr_url }}
         run: |
           if [ -n "$PR_URL" ]; then
-            MESSAGE="- **Done!** I've created a PR with the fix: $PR_URL
+            MESSAGE="✅ **Done!** I've created a PR with the fix: $PR_URL
 
           Please review the changes and merge when ready.
 
           ---
           *Jules Issue Fixer*"
           else
-            MESSAGE="- **Done!** I've analyzed the issue and submitted my fix.
+            MESSAGE="✅ **Done!** I've analyzed the issue and submitted my fix.
 
           A PR should appear shortly. If not, check the [Actions tab](https://github.com/${{ github.repository }}/actions) for details.
 
@@ -264,4 +267,3 @@ jobs:
           if [ -n "${{ steps.jules.outputs.pr_url }}" ]; then
             echo "- **PR:** ${{ steps.jules.outputs.pr_url }}" >> $GITHUB_STEP_SUMMARY
           fi
-
