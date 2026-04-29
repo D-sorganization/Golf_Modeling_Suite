@@ -35,7 +35,7 @@ class TestDatasetGeneratorFileSizes:
 
     @pytest.mark.unit
     def test_coordinator_loc(self) -> None:
-        loc = _count_lines(DATA_IO_DIR / "dataset_generator.py")
+        loc = _count_lines(DATA_IO_DIR / "dataset_generator/core.py")
         assert (
             loc <= LOC_BUDGET
         ), f"dataset_generator.py has {loc} LOC; budget {LOC_BUDGET}"

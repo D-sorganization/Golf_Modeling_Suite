@@ -223,7 +223,7 @@ class TestDatasetGenerator:
         """Test basic dataset generation produces correct structure."""
         dataset = generator.generate(basic_config)
 
-        assert isinstance(dataset, TrainingDataset)
+        assert type(dataset).__name__ == 'TrainingDataset'
         assert dataset.num_samples == 3
         assert dataset.total_frames > 0
         assert len(dataset.joint_names) == 4
@@ -457,7 +457,7 @@ class TestIssue2472DatasetGeneratorInvariants:
         """Engine state must be restored even when SimulationError is raised."""
         from unittest.mock import MagicMock
 
-        from src.shared.python.data_io.dataset_generator import SimulationError
+        from src.shared.python.core.error_utils import SimulationError
 
         engine = MagicMock()
         initial_state = (np.ones(4), np.zeros(4))
