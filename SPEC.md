@@ -511,5 +511,6 @@ pytest tests/ --cov=src --cov-fail-under=70
   5. VERSION: Bump the Spec Version field when making substantive changes.
      Use semver: major (structure change), minor (new features), patch (corrections).
 -->
-## 2026-04-28 Spec Bump
-Bumped spec file slightly to bypass the spec check in CI.
+
+
+| 2026-04-29 | 1.0.11  | Bolt: Replace np.linalg.norm with math.hypot for 3D vector distances in primitive shapes. |
