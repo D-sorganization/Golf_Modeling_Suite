@@ -43,6 +43,9 @@ class Sphere(GeometricPrimitive):
             raise ValueError("point must be provided")
         point = np.asarray(point)
 <<<<<<< HEAD
+        return float(math.hypot(*np.atleast_1d(np.squeeze(point - self.center)))) <= self.radius
+=======
+<<<<<<< HEAD
         return math.hypot(*(point - self.center)) <= self.radius
 =======
 <<<<<<< HEAD
@@ -187,6 +190,9 @@ class Capsule(GeometricPrimitive):
     def length(self) -> float:
         """Get capsule length (distance between endpoints)."""
 <<<<<<< HEAD
+        return float(math.hypot(*np.atleast_1d(np.squeeze(self.point_b - self.point_a))))
+=======
+<<<<<<< HEAD
         return math.hypot(*(self.point_b - self.point_a))
 =======
 <<<<<<< HEAD
@@ -240,6 +246,9 @@ class Capsule(GeometricPrimitive):
             raise ValueError("point must be provided")
         point = np.asarray(point)
         closest = self._closest_point_on_segment(point)
+<<<<<<< HEAD
+        return float(math.hypot(*np.atleast_1d(np.squeeze(point - closest)))) <= self.radius
+=======
 <<<<<<< HEAD
         return math.hypot(*(point - closest)) <= self.radius
 =======
