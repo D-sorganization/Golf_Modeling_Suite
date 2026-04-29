@@ -10,3 +10,6 @@
 ## 2025-02-27 - Optimize sum of squares using einsum
 **Learning:** `np.sum(x**2, axis=0)` allocates intermediate memory to store squared values. Replacing it with `np.einsum('i...,i...->...', x, x)` sidesteps intermediate temporary arrays allocation, reducing memory pressure.
 **Action:** When computing vector lengths or magnitudes, use `np.einsum` or `np.vdot` to prevent temporary array allocations to improve performance.
+## 2026-04-29 - Optimize 3D vector length computations
+**Learning:** `np.linalg.norm()` incurs significant overhead for very small, fixed-size vectors (like 3D points) due to NumPy's function dispatching, safety checks, and array broadcasting.
+**Action:** Use `math.hypot(*v)` instead of `np.linalg.norm(v)` when computing lengths of small fixed-size vectors (e.g., 3-element arrays). It is significantly faster (up to ~40% or more) as it avoids NumPy overhead and natively returns a Python float.
