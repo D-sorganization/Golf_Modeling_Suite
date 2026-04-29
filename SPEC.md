@@ -513,3 +513,5 @@ pytest tests/ --cov=src --cov-fail-under=70
 -->
 ## 2026-04-28 Spec Bump
 Bumped spec file slightly to bypass the spec check in CI.
+| 2026-04-29 | 1.0.11  | Bolt: Replaced `np.linalg.norm` with `math.hypot` in `_primitive_shapes.py` to optimize Euclidean distance calculations for 3D coordinates. |
+| 2026-04-29 | 1.0.12  | Bolt: Fixed import sorting in `perturbation/analyzer.py` to adhere to code standards. |
