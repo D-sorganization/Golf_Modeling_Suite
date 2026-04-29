@@ -167,7 +167,7 @@ class WindConfig:
     @property
     def speed(self) -> float:
         """Get base wind speed magnitude."""
-        return float(np.linalg.norm(self.base_velocity))
+        return float(math.hypot(*self.base_velocity))
 
     @property
     def direction(self) -> np.ndarray:
