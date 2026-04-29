@@ -123,7 +123,7 @@ jobs:
 
   create-release:
     needs: [pick-runner, build]
-    runs-on: self-hosted
+    runs-on: d-sorg-fleet
     # Gate: only create the GitHub Release when the triggering event is a
     # release tag push AND the build job completed successfully (issue #3067).
     if: >-
