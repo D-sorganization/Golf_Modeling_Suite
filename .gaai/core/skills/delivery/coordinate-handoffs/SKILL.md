@@ -64,9 +64,6 @@ The Orchestrator cannot proceed to the next phase until it has validated the cur
           10. Update backlog (push with retry-rebase pattern), cleanup worktree + delete remote branch
            **NEVER leave a PR open. NEVER merge to production (staging only).**
 
-      ======= 10. Update backlog (push with retry-rebase pattern), cleanup worktree + delete remote branch
-      **NEVER leave a PR open. NEVER merge to production (staging only).**
-
 
     - **FAIL**: spawn count < 2? → **RE-SPAWN** Implementation Sub-Agent with qa-report, then re-spawn QA Sub-Agent
     - **FAIL** after 2 cycles: → **ESCALATE**
