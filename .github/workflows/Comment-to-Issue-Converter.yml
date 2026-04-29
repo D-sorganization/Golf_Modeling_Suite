@@ -49,12 +49,18 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
+          if [ -n "${GITHUB_OUTPUT:-}" ]; then
+            mkdir -p "$(dirname "$GITHUB_OUTPUT")"
+          fi
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
             2>/dev/null || echo "0")
           if [[ "$ONLINE" =~ ^[0-9]+$ ]] && [[ "$ONLINE" -gt 0 ]]; then
-            mkdir -p "$(dirname "$GITHUB_OUTPUT")"
+            if [ -n "${GITHUB_OUTPUT:-}" ]; then
+              mkdir -p "$(dirname "$GITHUB_OUTPUT")"
+            fi
             echo "runner=d-sorg-fleet" >> "$GITHUB_OUTPUT"
             echo "Self-hosted runner online - routing locally"
           else
@@ -87,6 +93,7 @@ jobs:
         id: collect
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
           mkdir -p .github/review_comments
           mkdir -p docs/review_archive
@@ -126,6 +133,7 @@ jobs:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
           ARCHIVE_ONLY: ${{ inputs.archive_only || 'false' }}
           TARGET_BRANCH: ${{ github.event.pull_request.head.ref || github.head_ref || github.ref_name }}
+        shell: bash
         run: |
           # Write Python script to temp file to avoid YAML heredoc issues
           cat > /tmp/process_comments.py << 'SCRIPT_EOF'
@@ -270,7 +278,7 @@ jobs:
                               'gh', 'issue', 'create',
                               '--title', issue_title,
                               '--body', issue_body,
-                              '--label', f'{label},review-feedback,auto-generated'
+                              '--label', 'review-feedback,auto-generated'
                           ], capture_output=True, text=True)
 
                           if result.returncode == 0:
@@ -339,6 +347,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
           TARGET_BRANCH: ${{ github.event.pull_request.head.ref || github.head_ref || github.ref_name }}
+        shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -353,6 +362,7 @@ jobs:
           fi
 
       - name: Summary
+        shell: bash
         run: |
           echo "## Review Comment Processing Complete" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
