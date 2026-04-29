@@ -42,7 +42,7 @@ class Sphere(GeometricPrimitive):
         if not (point is not None):
             raise ValueError("point must be provided")
         point = np.asarray(point)
-        return math.hypot(*(point - self.center)) <= self.radius
+        return math.hypot(*(point - self.center).reshape(-1)) <= self.radius
 
     def compute_support(self, direction: np.ndarray) -> np.ndarray:
         """Compute support point."""
@@ -174,7 +174,7 @@ class Capsule(GeometricPrimitive):
     @property
     def length(self) -> float:
         """Get capsule length (distance between endpoints)."""
-        return math.hypot(*(self.point_b - self.point_a))
+        return math.hypot(*(self.point_b - self.point_a).reshape(-1))
 
     @property
     def axis(self) -> np.ndarray:
@@ -216,7 +216,7 @@ class Capsule(GeometricPrimitive):
             raise ValueError("point must be provided")
         point = np.asarray(point)
         closest = self._closest_point_on_segment(point)
-        return math.hypot(*(point - closest)) <= self.radius
+        return math.hypot(*(point - closest).reshape(-1)) <= self.radius
 
     def compute_support(self, direction: np.ndarray) -> np.ndarray:
         """Compute support point."""
@@ -316,7 +316,7 @@ class Cylinder(GeometricPrimitive):
 
         # Check radius (perpendicular distance)
         perp = to_point - along_axis * self.axis
-        return math.hypot(*perp) <= self.radius
+        return math.hypot(*perp.reshape(-1)) <= self.radius
 
     def compute_support(self, direction: np.ndarray) -> np.ndarray:
         """Compute support point."""
@@ -397,7 +397,7 @@ class ConvexHull(GeometricPrimitive):
         # Simple heuristic: point is inside if closer to center than
         # all vertices in the same direction
         to_point = point - self.center
-        norm = math.hypot(*to_point)
+        norm = math.hypot(*to_point.reshape(-1))
         if norm < 1e-10:
             return True  # At center
 
