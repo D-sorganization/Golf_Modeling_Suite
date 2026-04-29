@@ -177,7 +177,10 @@ class Capsule(GeometricPrimitive):
     @property
     def length(self) -> float:
         """Get capsule length (distance between endpoints)."""
-        return float(math.hypot(*(self.point_b - self.point_a)))
+        diff = self.point_b - self.point_a
+        if diff.ndim > 1:
+            diff = diff.flatten()
+        return float(math.hypot(*diff))
 
     @property
     def axis(self) -> np.ndarray:
@@ -274,7 +277,10 @@ class Cylinder(GeometricPrimitive):
             raise ValueError("height must be positive")
 
         # Normalize axis
-        norm = float(math.hypot(*self.axis))
+        diff = self.axis
+        if diff.ndim > 1:
+            diff = diff.flatten()
+        norm = float(math.hypot(*diff))
         if norm < 1e-10:
             raise ValueError("axis must be non-zero")
         self.axis = self.axis / norm
