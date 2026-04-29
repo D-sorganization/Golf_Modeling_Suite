@@ -41,7 +41,7 @@ class Sphere(GeometricPrimitive):
             raise ValueError("point must be provided")
         if not (point is not None):
             raise ValueError("point must be provided")
-        point = np.asarray(point)
+        point = np.asarray(point).reshape(-1)
         return math.hypot(*(point - self.center)) <= self.radius
 
     def compute_support(self, direction: np.ndarray) -> np.ndarray:
@@ -50,7 +50,7 @@ class Sphere(GeometricPrimitive):
             raise ValueError("direction must be provided")
         if not (direction is not None):
             raise ValueError("direction must be provided")
-        direction = np.asarray(direction)
+        direction = np.asarray(direction).reshape(-1)
         norm = math.hypot(*direction)
         if norm < 1e-10:
             return self.center.copy()
@@ -117,7 +117,7 @@ class Box(GeometricPrimitive):
             raise ValueError("point must be provided")
         if not (point is not None):
             raise ValueError("point must be provided")
-        point = np.asarray(point)
+        point = np.asarray(point).reshape(-1)
         # Transform to local frame
         local_point = self.rotation.T @ (point - self.center)
         return bool(np.all(np.abs(local_point) <= self.half_extents))
@@ -128,7 +128,7 @@ class Box(GeometricPrimitive):
             raise ValueError("direction must be provided")
         if not (direction is not None):
             raise ValueError("direction must be provided")
-        direction = np.asarray(direction)
+        direction = np.asarray(direction).reshape(-1)
         # Transform direction to local frame
         local_dir = self.rotation.T @ direction
         # Support in local frame
@@ -174,13 +174,13 @@ class Capsule(GeometricPrimitive):
     @property
     def length(self) -> float:
         """Get capsule length (distance between endpoints)."""
-        return math.hypot(*(self.point_b - self.point_a))
+        return math.hypot(*np.asarray(self.point_b - self.point_a).reshape(-1))
 
     @property
     def axis(self) -> np.ndarray:
         """Get capsule axis direction (normalized)."""
         diff = self.point_b - self.point_a
-        length = math.hypot(*diff)
+        length = math.hypot(*np.asarray(diff).reshape(-1))
         if length < 1e-10:
             return np.array([0.0, 0.0, 1.0])
         return diff / length
@@ -214,7 +214,7 @@ class Capsule(GeometricPrimitive):
             raise ValueError("point must be provided")
         if not (point is not None):
             raise ValueError("point must be provided")
-        point = np.asarray(point)
+        point = np.asarray(point).reshape(-1)
         closest = self._closest_point_on_segment(point)
         return math.hypot(*(point - closest)) <= self.radius
 
@@ -224,7 +224,7 @@ class Capsule(GeometricPrimitive):
             raise ValueError("direction must be provided")
         if not (direction is not None):
             raise ValueError("direction must be provided")
-        direction = np.asarray(direction)
+        direction = np.asarray(direction).reshape(-1)
         norm = math.hypot(*direction)
         if norm < 1e-10:
             return self.point_a.copy()
@@ -268,7 +268,7 @@ class Cylinder(GeometricPrimitive):
             raise ValueError("height must be positive")
 
         # Normalize axis
-        norm = math.hypot(*self.axis)
+        norm = math.hypot(*np.asarray(self.axis).reshape(-1))
         if norm < 1e-10:
             raise ValueError("axis must be non-zero")
         self.axis = self.axis / norm
@@ -305,7 +305,7 @@ class Cylinder(GeometricPrimitive):
             raise ValueError("point must be provided")
         if not (point is not None):
             raise ValueError("point must be provided")
-        point = np.asarray(point)
+        point = np.asarray(point).reshape(-1)
         # Project onto axis
         to_point = point - self.center
         along_axis = np.dot(to_point, self.axis)
@@ -316,7 +316,7 @@ class Cylinder(GeometricPrimitive):
 
         # Check radius (perpendicular distance)
         perp = to_point - along_axis * self.axis
-        return math.hypot(*perp) <= self.radius
+        return math.hypot(*np.asarray(perp).reshape(-1)) <= self.radius
 
     def compute_support(self, direction: np.ndarray) -> np.ndarray:
         """Compute support point."""
@@ -324,7 +324,7 @@ class Cylinder(GeometricPrimitive):
             raise ValueError("direction must be provided")
         if not (direction is not None):
             raise ValueError("direction must be provided")
-        direction = np.asarray(direction)
+        direction = np.asarray(direction).reshape(-1)
         norm = math.hypot(*direction)
         if norm < 1e-10:
             return self.center.copy()
@@ -343,7 +343,7 @@ class Cylinder(GeometricPrimitive):
             axis_support = self.center - self.half_height * self.axis
 
         # Support on radius (perpendicular)
-        perp_norm = math.hypot(*d_perp)
+        perp_norm = math.hypot(*np.asarray(d_perp).reshape(-1))
         if perp_norm > 1e-10:
             return axis_support + self.radius * d_perp / perp_norm
 
@@ -393,11 +393,11 @@ class ConvexHull(GeometricPrimitive):
             raise ValueError("point must be provided")
         if not (point is not None):
             raise ValueError("point must be provided")
-        point = np.asarray(point)
+        point = np.asarray(point).reshape(-1)
         # Simple heuristic: point is inside if closer to center than
         # all vertices in the same direction
         to_point = point - self.center
-        norm = math.hypot(*to_point)
+        norm = math.hypot(*np.asarray(to_point).reshape(-1))
         if norm < 1e-10:
             return True  # At center
 
@@ -412,7 +412,7 @@ class ConvexHull(GeometricPrimitive):
             raise ValueError("direction must be provided")
         if not (direction is not None):
             raise ValueError("direction must be provided")
-        direction = np.asarray(direction)
+        direction = np.asarray(direction).reshape(-1)
         # Find vertex with maximum dot product
         dots = self.vertices @ direction
         idx = np.argmax(dots)
