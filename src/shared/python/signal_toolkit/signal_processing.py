@@ -197,6 +197,9 @@ def _dtw_path_core(
 
             dtw_matrix[i, j] = cost + min_prev
 
+    if dtw_matrix[n, m] == np.inf:
+        return float("inf"), np.empty(0, dtype=np.int32), np.empty(0, dtype=np.int32)
+
     distance = float(np.sqrt(dtw_matrix[n, m]))
 
     # Backtrack

@@ -99,10 +99,8 @@ class DatasetGenerator:
 
                     try:
                         self.engine.step(tau, dt)
-                    except AttributeError:
-                        logger.warning(
-                            "Engine does not support step. Trying to advance state directly"
-                        )
+                    except AttributeError as e:
+                        raise RuntimeError("Engine must support step") from e
 
                     recorder.record_step(tau)
 
