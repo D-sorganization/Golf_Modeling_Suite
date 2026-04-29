@@ -22,8 +22,9 @@ pytestmark: list[pytest.MarkDecorator] = [pytest.mark.integration]
 C3D_IMPORTS_AVAILABLE = False
 if PYQT6_AVAILABLE:
     try:
-        from apps.c3d_viewer import C3DDataModel, C3DViewerMainWindow
         from c3d_reader import C3DDataReader
+
+        from apps.c3d_viewer import C3DDataModel, C3DViewerMainWindow
 
         C3D_IMPORTS_AVAILABLE = True
     except (ImportError, OSError):
@@ -93,7 +94,9 @@ def test_reader_ingestion(mock_c3d_file, mock_ezc3d, tmp_path) -> None:
         WorkflowDiagnosticContext,
     )
 
-    with WorkflowDiagnosticContext(dump_dir=str(tmp_path), workflow_name="c3d_ingestion") as ctx:
+    with WorkflowDiagnosticContext(
+        dump_dir=str(tmp_path), workflow_name="c3d_ingestion"
+    ) as ctx:
         reader = C3DDataReader(mock_c3d_file)
         meta = reader.get_metadata()
         ctx.record_state(
