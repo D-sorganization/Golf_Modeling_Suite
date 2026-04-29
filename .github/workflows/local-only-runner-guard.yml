@@ -23,8 +23,11 @@ jobs:
           auth_header="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
           git init "$GITHUB_WORKSPACE"
           cd "$GITHUB_WORKSPACE"
-          git remote remove origin 2>/dev/null || true
-          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          if git remote get-url origin >/dev/null 2>&1; then
+            git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          else
+            git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          fi
           git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth_header}" fetch --depth=1 origin "$GITHUB_SHA"
           git checkout --force FETCH_HEAD
           git clean -ffdx
