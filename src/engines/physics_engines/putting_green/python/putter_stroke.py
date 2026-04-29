@@ -17,6 +17,7 @@ References:
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -479,7 +480,7 @@ class PutterStroke:
         if not (ball_position is not None):
             raise ValueError("ball_position must be provided")
         to_target = target - ball_position
-        distance = np.linalg.norm(to_target)
+        distance = math.hypot(*(to_target))
 
         if distance < 1e-10:
             return target
