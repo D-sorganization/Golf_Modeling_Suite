@@ -527,3 +527,6 @@ Bumped spec file slightly to bypass the spec check in CI.
 | 2026-04-29 | 1.0.11  | Bolt: Replaced np.linalg.norm with math.hypot in collision shapes for 3D vector distance optimization |
 >>>>>>> origin/main
 >>>>>>> origin/main
+
+## 3D Vector Distances Note
+Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linalg.norm` to prevent `TypeError` on non-1D ndarrays.
