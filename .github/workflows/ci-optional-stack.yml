@@ -80,7 +80,7 @@ jobs:
         python: ["3.11"]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Reject Raw Merge Conflict Markers
         run: |
@@ -105,7 +105,7 @@ jobs:
             libxcb-xinerama0 \
             libxcb-xkb1
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
 
@@ -300,7 +300,7 @@ jobs:
           done
 
       - name: Upload Test Logs
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: optional-stack-test-logs-${{ matrix.python }}

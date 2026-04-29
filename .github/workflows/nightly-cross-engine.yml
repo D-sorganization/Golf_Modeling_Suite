@@ -69,10 +69,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -120,14 +120,14 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: cross-engine-test-results
           path: test-results/
 
       - name: Upload coverage
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: cross-engine-coverage
           path: coverage/
@@ -233,7 +233,7 @@ jobs:
 
     steps:
       - name: Download test results
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v4
         continue-on-error: true
         id: download_tests
         with:

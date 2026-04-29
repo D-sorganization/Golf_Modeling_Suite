@@ -70,7 +70,7 @@ jobs:
     if: needs.check-kill-switch.outputs.enabled == 'true'
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -105,7 +105,7 @@ jobs:
     if: needs.discover.outputs.should_consolidate == 'true' && inputs.dry_run != 'true'
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.RUNNER_CHECK_TOKEN }}
