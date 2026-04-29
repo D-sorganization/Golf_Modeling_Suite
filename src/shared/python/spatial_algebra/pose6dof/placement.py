@@ -102,12 +102,12 @@ class EntityPlacement:
         if point is None:
             raise ValueError("point must be provided")
         point = np.asarray(point, dtype=np.float64)
-        diff = np.ravel(self.pose.position - point)
-        return 0.0 if diff.size == 0 else float(math.hypot(*diff))
+        arr = np.ravel(self.pose.position - point)
+        return 0.0 if arr.size == 0 else math.hypot(*arr)
 
     def distance_to_entity(self, other: "EntityPlacement") -> float:
-        diff = np.ravel(self.pose.position - other.pose.position)
-        return 0.0 if diff.size == 0 else float(math.hypot(*diff))
+        arr = np.ravel(self.pose.position - other.pose.position)
+        return 0.0 if arr.size == 0 else math.hypot(*arr)
 
     def to_transform(self) -> Transform6DOF:
         return Transform6DOF.from_pose(self.pose)
