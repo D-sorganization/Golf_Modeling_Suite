@@ -278,7 +278,7 @@ class PerturbationAnalyzerBase(ABC):
         joint_velocities_final = v_traj[last].copy()
         ee_pos_final = r.ee_pos_traj[last].copy()  # type: ignore[union-attr,attr-defined]
         ee_vel_final = r.ee_vel_traj[last].copy()  # type: ignore[union-attr,attr-defined]
-        ee_speed_final = float(math.hypot(*ee_vel_final))
+        ee_speed_final = float(math.hypot(*np.ravel(ee_vel_final)))
 
         # ⚡ Bolt: np.einsum is ~3x faster than np.linalg.norm(..., axis=1) for computing euclidean norms
         speeds = np.sqrt(np.einsum("ij,ij->i", r.ee_vel_traj, r.ee_vel_traj))  # type: ignore[union-attr,attr-defined]

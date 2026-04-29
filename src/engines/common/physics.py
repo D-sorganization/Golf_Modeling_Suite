@@ -197,7 +197,7 @@ class AerodynamicsCalculator:
             raise ValueError("velocity must be provided")
         if not (velocity is not None):
             raise ValueError("velocity must be provided")
-        speed = float(math.hypot(*velocity))
+        speed = float(math.hypot(*np.ravel(velocity)))
         if speed < 1e-6:
             return np.zeros(3)
 
@@ -227,7 +227,7 @@ class AerodynamicsCalculator:
             raise ValueError("velocity must be provided")
         if not (velocity is not None):
             raise ValueError("velocity must be provided")
-        speed = float(math.hypot(*velocity))
+        speed = float(math.hypot(*np.ravel(velocity)))
         if speed < 1e-6:
             return np.zeros(3)
 
@@ -238,10 +238,10 @@ class AerodynamicsCalculator:
         # Lift direction: perpendicular to velocity, in spin plane
         # For backspin, this creates upward force
         # ⚡ Bolt: math.hypot is much faster than np.linalg.norm for small arrays
-        spin_axis = spin / (math.hypot(*spin) + 1e-10)
+        spin_axis = spin / (math.hypot(*np.ravel(spin)) + 1e-10)
         lift_dir = np.cross(spin_axis, velocity)
-        # ⚡ Bolt: math.hypot(*vec) is ~5x faster than np.linalg.norm for small magnitudes
-        lift_norm = math.hypot(*lift_dir)
+        # ⚡ Bolt: math.hypot(*np.ravel(vec)) is ~5x faster than np.linalg.norm for small magnitudes
+        lift_norm = math.hypot(*np.ravel(lift_dir))
 
         if lift_norm < 1e-6:
             return np.zeros(3)
@@ -272,15 +272,15 @@ class AerodynamicsCalculator:
             raise ValueError("velocity must be provided")
         if not (velocity is not None):
             raise ValueError("velocity must be provided")
-        speed = float(math.hypot(*velocity))
-        spin_mag = float(math.hypot(*spin))
+        speed = float(math.hypot(*np.ravel(velocity)))
+        spin_mag = float(math.hypot(*np.ravel(spin)))
 
         if speed < 1e-6 or spin_mag < 1e-6:
             return np.zeros(3)
 
         # Magnus direction: ω × v
         magnus_dir = np.cross(spin, velocity)
-        magnus_norm = math.hypot(*magnus_dir)
+        magnus_norm = math.hypot(*np.ravel(magnus_dir))
 
         if magnus_norm < 1e-6:
             return np.zeros(3)
@@ -379,7 +379,7 @@ class AerodynamicsCalculator:
             raise ValueError("speed must be provided")
         speed = float(speed)
         # ⚡ Bolt: math.hypot is ~5x faster than np.linalg.norm for 3D vectors
-        spin_mag = math.hypot(*spin)
+        spin_mag = math.hypot(*np.ravel(spin))
         return self.ball.radius * spin_mag / (speed + 1e-10)
 
 

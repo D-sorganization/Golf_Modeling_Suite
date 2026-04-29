@@ -252,7 +252,7 @@ class DragModel:
         require_finite(velocity, "velocity")
         require(air_density > 0, "air_density must be positive", air_density)
         velocity_vec = np.asarray(velocity, dtype=float).reshape(-1)
-        # ⚡ Bolt: math.hypot(*vec) is ~5x faster than np.linalg.norm(vec) for 3D magnitudes
+        # ⚡ Bolt: math.hypot(*np.ravel(vec)) is ~5x faster than np.linalg.norm(vec) for 3D magnitudes
         speed = _vector_magnitude(velocity_vec)
         if speed < 1e-10:
             return np.zeros_like(velocity_vec)
@@ -287,7 +287,7 @@ class DragModel:
         if not self.reynolds_correction:
             return self.base_coefficient
 
-        # ⚡ Bolt: math.hypot(*vec) is ~5x faster than np.linalg.norm(vec) for 3D magnitudes
+        # ⚡ Bolt: math.hypot(*np.ravel(vec)) is ~5x faster than np.linalg.norm(vec) for 3D magnitudes
         speed = _vector_magnitude(velocity)
         if speed < 1e-10:
             return self.base_coefficient
@@ -368,7 +368,7 @@ class LiftModel:
         require(air_density > 0, "air_density must be positive", air_density)
         velocity_vec = np.asarray(velocity, dtype=float).reshape(-1)
         spin_vec = np.asarray(spin, dtype=float).reshape(-1)
-        # ⚡ Bolt: math.hypot(*vec) is ~5x faster than np.linalg.norm(vec) for 3D magnitudes
+        # ⚡ Bolt: math.hypot(*np.ravel(vec)) is ~5x faster than np.linalg.norm(vec) for 3D magnitudes
         speed = _vector_magnitude(velocity_vec)
         # ⚡ Bolt: math.hypot is ~5x faster than np.linalg.norm for small arrays
         spin_magnitude = _vector_magnitude(spin_vec)
@@ -379,7 +379,7 @@ class LiftModel:
         # Lift direction: perpendicular to velocity, in spin plane
         spin_axis = spin_vec / spin_magnitude
         lift_dir = np.cross(spin_axis, velocity_vec)
-        lift_norm = float(math.hypot(*lift_dir))
+        lift_norm = float(math.hypot(*np.ravel(lift_dir)))
 
         if lift_norm < 1e-10:
             return np.zeros_like(velocity_vec)
@@ -460,7 +460,7 @@ class MagnusModel:
         require(air_density > 0, "air_density must be positive", air_density)
         velocity_vec = np.asarray(velocity, dtype=float).reshape(-1)
         spin_vec = np.asarray(spin, dtype=float).reshape(-1)
-        # ⚡ Bolt: math.hypot(*vec) is ~5x faster than np.linalg.norm(vec) for 3D magnitudes
+        # ⚡ Bolt: math.hypot(*np.ravel(vec)) is ~5x faster than np.linalg.norm(vec) for 3D magnitudes
         speed = _vector_magnitude(velocity_vec)
         # ⚡ Bolt: math.hypot is ~5x faster than np.linalg.norm for small arrays
         spin_magnitude = _vector_magnitude(spin_vec)
@@ -470,7 +470,7 @@ class MagnusModel:
 
         # Magnus direction: spin x velocity
         magnus_dir = np.cross(spin_vec, velocity_vec)
-        magnus_norm = float(math.hypot(*magnus_dir))
+        magnus_norm = float(math.hypot(*np.ravel(magnus_dir)))
 
         if magnus_norm < 1e-10:
             return np.zeros_like(velocity_vec)
@@ -754,7 +754,7 @@ class WindModel:
             base_dir = self.config.direction
             random_perturb = self._rng.standard_normal(3) * 0.3
             gust_dir = base_dir + random_perturb
-            gust_dir = gust_dir / (math.hypot(*gust_dir) + 1e-10)
+            gust_dir = gust_dir / (math.hypot(*np.ravel(gust_dir)) + 1e-10)
 
             gust = WindGust(
                 start_time=t,

@@ -139,7 +139,7 @@ class GreenSurface(
 
         # Check for lip-out at high speeds
         if velocity is not None:
-            speed = math.hypot(*velocity)
+            speed = math.hypot(*np.ravel(velocity))
             # Empirical: ball lips out if going too fast near edge
             max_speed_at_edge = 1.5  # m/s
             if distance > self.hole_radius * 0.5 and speed > max_speed_at_edge:
