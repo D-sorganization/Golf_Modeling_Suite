@@ -44,6 +44,9 @@ jobs:
     timeout-minutes: 2
     outputs:
       runner: ${{ steps.check.outputs.runner }}
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Check for self-hosted runner
         id: check
@@ -74,6 +77,9 @@ jobs:
        github.actor != 'jules-ai[bot]' &&
        github.actor != 'google-labs-jules' &&
        github.actor != 'copilot-pull-request-reviewer[bot]')
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v6
         with:

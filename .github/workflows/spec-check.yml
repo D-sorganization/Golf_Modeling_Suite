@@ -30,6 +30,9 @@ jobs:
     timeout-minutes: 2
     outputs:
       runner: ${{ steps.check.outputs.runner }}
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Check for self-hosted runner
         id: check
@@ -58,6 +61,9 @@ jobs:
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'spec-exempt') }}
     timeout-minutes: 5
 
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Enable long Git paths
         run: git config --global core.longpaths true
