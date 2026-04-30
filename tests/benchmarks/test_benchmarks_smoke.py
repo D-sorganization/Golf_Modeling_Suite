@@ -24,14 +24,15 @@ pytest.importorskip("pytest_benchmark")
 np = pytest.importorskip("numpy")
 
 
+# Import the modules under benchmark at collection time so a real import
+# regression in src.shared.python.physics.aerodynamics fails the benchmark
+# suite loudly rather than silently skipping. Per review on PR #3516.
+from src.shared.python.physics.aerodynamics import DragModel, LiftModel  # noqa: E402
+
+
 @pytest.mark.benchmark
 def test_drag_model_calculate(benchmark: pytest.fixture) -> None:
     """Benchmark DragModel.calculate on a representative velocity vector."""
-    try:
-        from src.shared.python.physics.aerodynamics import DragModel
-    except ImportError:
-        pytest.skip("aerodynamics module not available")
-
     model = DragModel()
     velocity = np.array([50.0, 0.0, 5.0])
     result = benchmark(model.calculate, velocity)
@@ -41,11 +42,6 @@ def test_drag_model_calculate(benchmark: pytest.fixture) -> None:
 @pytest.mark.benchmark
 def test_lift_model_calculate(benchmark: pytest.fixture) -> None:
     """Benchmark LiftModel.calculate with backspin around the +Y axis."""
-    try:
-        from src.shared.python.physics.aerodynamics import LiftModel
-    except ImportError:
-        pytest.skip("aerodynamics module not available")
-
     model = LiftModel()
     velocity = np.array([50.0, 0.0, 5.0])
     spin = np.array([0.0, -300.0, 0.0])
