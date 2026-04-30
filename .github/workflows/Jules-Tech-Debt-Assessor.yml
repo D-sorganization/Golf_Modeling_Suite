@@ -52,7 +52,7 @@ jobs:
       - name: Check for self-hosted runner
         id: check
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -491,7 +491,7 @@ jobs:
       - name: Create GitHub Issue for Critical Debt
         if: inputs.create_issues != false
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEBT_SCORE: ${{ steps.report.outputs.debt_score }}
           SEVERITY: ${{ steps.report.outputs.severity }}
           REPORT_FILE: ${{ steps.report.outputs.report_file }}
@@ -546,7 +546,7 @@ jobs:
 
       - name: Commit and Push Report
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

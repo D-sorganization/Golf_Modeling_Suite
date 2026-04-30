@@ -80,7 +80,7 @@ jobs:
       - name: Check for self-hosted runner
         id: check
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ -n "${GITHUB_OUTPUT:-}" ]; then
             mkdir -p "$(dirname "$GITHUB_OUTPUT")"

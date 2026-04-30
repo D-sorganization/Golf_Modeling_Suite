@@ -31,7 +31,7 @@ jobs:
       - name: Check for self-hosted runner
         id: check
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -74,7 +74,7 @@ jobs:
         id: pr_state
         if: steps.filter.outputs.is_bot != 'true'
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ "${{ github.event_name }}" = "pull_request_review_comment" ]; then
             PR_NUMBER="${{ github.event.pull_request.number }}"
@@ -134,7 +134,7 @@ jobs:
           steps.pr_state.outputs.should_skip != 'true' &&
           steps.analyze.outputs.is_actionable == 'true'
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMENT_BODY_JSON: ${{ toJson(github.event.comment.body) }}
         run: |
           mkdir -p .jules/pending
