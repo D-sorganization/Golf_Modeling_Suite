@@ -95,9 +95,22 @@ jobs:
         with: { python-version: "3.11" }
       - run: pip install ruff==0.14.10 mypy>=1.15.0 bandit==1.7.7 pydocstyle==6.3.0
 
-      # FIX: Less aggressive Ruff (Errors, Warnings, Imports only)
       - name: Lint
-        run: ruff check .
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+            mapfile -d '' py_files < <(
+              git diff --name-only -z "origin/${{ github.base_ref }}" HEAD -- '*.py'
+            )
+            if [ "${#py_files[@]}" -eq 0 ]; then
+              echo "No changed Python files; skipping Ruff lint check."
+              exit 0
+            fi
+            ruff check "${py_files[@]}"
+          else
+            ruff check .
+          fi
 
       # Use ruff format (consistent with pre-commit hooks) - ruff format is
       # a strict superset of black's style; running both causes conflicts.
