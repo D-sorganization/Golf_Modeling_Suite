@@ -13,7 +13,6 @@ import math
 
 import numpy as np
 import pytest
-
 from src.shared.python.physics.atmosphere import (
     DRY_AIR_R_SPECIFIC_J_KG_K,
     ISA_RHO0_KG_M3,
@@ -133,7 +132,7 @@ class TestAirDensityISA:
         """Density must decrease monotonically up the troposphere."""
         alts = [0.0, 500.0, 1000.0, 2000.0, 4000.0, 6000.0, 8000.0]
         rhos = [air_density(a) for a in alts]
-        for prev, curr in zip(rhos, rhos[1:]):
+        for prev, curr in zip(rhos, rhos[1:], strict=False):
             assert curr < prev, f"Density not strictly decreasing: {rhos}"
 
     def test_air_density_temperature_effect(self) -> None:
@@ -230,10 +229,16 @@ class TestTrajectoryAltitudeIntegration:
         )
 
         sim_sea = EnhancedBallFlightSimulator(
-            environment=env_sea, aero_config=aero, seed=0
+            environment=env_sea,
+            aero_config=aero,
+            seed=0,
+            track_altitude_density=True,
         )
         sim_high = EnhancedBallFlightSimulator(
-            environment=env_high, aero_config=aero, seed=0
+            environment=env_high,
+            aero_config=aero,
+            seed=0,
+            track_altitude_density=True,
         )
 
         traj_sea = sim_sea.simulate_trajectory(launch, max_time=8.0, dt=0.01)
@@ -277,6 +282,84 @@ class TestTrajectoryAltitudeIntegration:
         # Run a few steps; the engine's _current_air_density must not change.
         sim.simulate_trajectory(launch, max_time=0.05, dt=0.01)
         assert math.isclose(sim._aero_engine._current_air_density, 1.0, rel_tol=1e-12)
+
+    def test_track_altitude_density_default_off_preserves_caller_density(
+        self,
+    ) -> None:
+        """Default behavior must not overwrite an explicitly supplied density.
+
+        Regression for the API-compat concern raised on PR #3522: a caller
+        that passes a humidity/weather-calibrated ``air_density`` should see
+        that value used, not the ISA-derived value.
+        """
+        from src.shared.python.physics.aerodynamics import AerodynamicsConfig
+        from src.shared.python.physics.ball_enhanced_simulator import (
+            EnhancedBallFlightSimulator,
+        )
+        from src.shared.python.physics.ball_launch_conditions import (
+            EnvironmentalConditions,
+            LaunchConditions,
+        )
+
+        launch = LaunchConditions(velocity=50.0, launch_angle=math.radians(10.0))
+        custom_rho = 1.111  # not equal to ISA at any of the standard altitudes
+        env = EnvironmentalConditions(air_density=custom_rho, altitude=1500.0)
+        sim = EnhancedBallFlightSimulator(
+            environment=env,
+            aero_config=AerodynamicsConfig(),
+            seed=0,
+            # No track_altitude_density argument -> default must be False.
+        )
+        sim.simulate_trajectory(launch, max_time=0.05, dt=0.01)
+        assert math.isclose(
+            sim._aero_engine._current_air_density, custom_rho, rel_tol=1e-12
+        ), "Default-init simulator must not overwrite caller-supplied air_density"
+
+    def test_pressure_override_propagates_to_per_step_updates(self) -> None:
+        """A non-default ``sea_level_pressure_pa`` must reach each step."""
+        from src.shared.python.physics.aerodynamics import AerodynamicsConfig
+        from src.shared.python.physics.atmosphere import air_density
+        from src.shared.python.physics.ball_enhanced_simulator import (
+            EnhancedBallFlightSimulator,
+        )
+        from src.shared.python.physics.ball_launch_conditions import (
+            EnvironmentalConditions,
+            LaunchConditions,
+        )
+
+        # Construct a low-pressure environment at altitude 0 so the pressure
+        # term dominates the density derivation.
+        low_pressure_pa = 95000.0
+        env = EnvironmentalConditions.from_altitude(
+            altitude_m=0.0, temperature_c=15.0, pressure_pa=low_pressure_pa
+        )
+        # Sanity: factory stored the pressure on the dataclass.
+        assert env.sea_level_pressure_pa == low_pressure_pa
+        # Sanity: construction-time density used the pressure override.
+        expected_rho = air_density(0.0, 15.0, low_pressure_pa)
+        assert math.isclose(env.air_density, expected_rho, rel_tol=1e-12)
+
+        sim = EnhancedBallFlightSimulator(
+            environment=env,
+            aero_config=AerodynamicsConfig(),
+            seed=0,
+            track_altitude_density=True,
+        )
+        launch = LaunchConditions(velocity=50.0, launch_angle=math.radians(10.0))
+        sim.simulate_trajectory(launch, max_time=0.05, dt=0.01)
+        # After tracking begins, the per-step update must use the same
+        # pressure override -- so density at z=0 stays at expected_rho.
+        # (At t~0.05s with launch_angle=10deg, z is small but >0; we accept
+        # a small ISA-driven decrease, but the value must be much closer to
+        # the override-derived density than to the ISA-default density.)
+        isa_default_rho = air_density(0.0, 15.0)  # 101325 Pa
+        actual = sim._aero_engine._current_air_density
+        # Override-derived density should be the dominant signal.
+        assert abs(actual - expected_rho) < abs(actual - isa_default_rho), (
+            f"per-step density {actual:.4f} closer to ISA default "
+            f"{isa_default_rho:.4f} than to override-derived {expected_rho:.4f} "
+            "-- pressure override is being dropped"
+        )
 
 
 # ---------------------------------------------------------------------------

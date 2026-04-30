@@ -43,6 +43,7 @@ class EnvironmentalConditions:
     gravity: float = float(GRAVITY_M_S2)
     altitude: float = 0.0
     temperature: float = 15.0
+    sea_level_pressure_pa: float | None = None
 
     @classmethod
     def from_altitude(
@@ -91,6 +92,9 @@ class EnvironmentalConditions:
             gravity=float(gravity),
             altitude=float(altitude_m),
             temperature=float(temperature_c),
+            sea_level_pressure_pa=(
+                float(pressure_pa) if pressure_pa is not None else None
+            ),
         )
 
 

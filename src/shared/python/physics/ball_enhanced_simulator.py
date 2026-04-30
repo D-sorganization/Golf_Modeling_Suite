@@ -71,7 +71,7 @@ class EnhancedBallFlightSimulator(TrajectoryAnalysisMixin):
         wind_config: WindConfig | None = None,
         randomization_config: RandomizationConfig | None = None,
         seed: int | None = None,
-        track_altitude_density: bool = True,
+        track_altitude_density: bool = False,
     ) -> None:
         """Initialize enhanced simulator.
 
@@ -82,12 +82,17 @@ class EnhancedBallFlightSimulator(TrajectoryAnalysisMixin):
             wind_config: Wind configuration (base wind, gusts, turbulence)
             randomization_config: Environment randomization configuration
             seed: Random seed for reproducibility
-            track_altitude_density: When ``True`` (default), the integrator
-                updates ``rho`` each step from the ISA-troposphere model
-                using the ball's current altitude (course altitude plus
-                trajectory z) and the environment's ground temperature. When
-                ``False`` the constant ``environment.air_density`` is used,
-                preserving legacy behaviour.
+            track_altitude_density: When ``True``, the integrator updates
+                ``rho`` each step from the ISA-troposphere model using the
+                ball's current altitude (course altitude plus trajectory z)
+                and the environment's ground temperature/pressure. Defaults
+                to ``False`` to preserve the supplied
+                ``environment.air_density`` (e.g. humidity- or
+                weather-calibrated values). Pair with
+                ``EnvironmentalConditions.from_altitude(...)`` to opt in to
+                ISA tracking; any non-``None``
+                ``environment.sea_level_pressure_pa`` is propagated to each
+                per-step density update.
         """
         # Import here to avoid circular dependency
         from src.shared.python.physics.aerodynamics import (
@@ -322,6 +327,7 @@ class EnhancedBallFlightSimulator(TrajectoryAnalysisMixin):
         rho = _isa_air_density(
             altitude_m=amsl,
             temperature_c=float(getattr(self.environment, "temperature", 15.0)),
+            pressure_pa=getattr(self.environment, "sea_level_pressure_pa", None),
         )
         self._aero_engine._current_air_density = rho
 
