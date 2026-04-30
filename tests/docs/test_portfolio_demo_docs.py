@@ -24,7 +24,7 @@ def test_portfolio_demo_has_reproducible_contract() -> None:
     doc = DEMO_DOC.read_text(encoding="utf-8")
 
     required_phrases = [
-        "python -m pip install -e \".[dev,rust]\"",
+        'python -m pip install -e ".[dev,rust]"',
         "python examples/basic_flight_simulation.py",
         "golf_modeling_demo_output.csv",
         "Measured input",
@@ -50,7 +50,9 @@ def test_portfolio_demo_output_artifact_is_parseable() -> None:
     assert {"measured_input", "assumption", "simulated_output"} <= categories
 
     carry_m = [
-        row for row in rows if row["quantity"] == "carry_distance" and row["unit"] == "m"
+        row
+        for row in rows
+        if row["quantity"] == "carry_distance" and row["unit"] == "m"
     ]
     assert carry_m
     assert float(carry_m[0]["value"]) > 0.0
