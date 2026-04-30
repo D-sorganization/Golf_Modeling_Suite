@@ -49,7 +49,7 @@ def get_commit_sha(github_api, owner_action, ref):
         return commit.sha[:40]  # Full SHA
     except Exception as e:
         print(f"ERROR resolving {owner_action}@{ref}: {e}", file=sys.stderr)
-        return None
+        sys.exit(1)
 
 
 def main():
