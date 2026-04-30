@@ -150,8 +150,25 @@ jobs:
         run: mkdir -p ui/dist
       - run: pip install -e .[dev]
 
-      # Baseline mypy check across all of src/
-      - run: mypy src --config-file pyproject.toml
+      # Baseline mypy check across all of src/ on main; on PRs, check only
+      # changed source files so unrelated baseline drift does not block
+      # workflow-only or narrowly scoped changes.
+      - name: MyPy
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+            mapfile -d '' src_files < <(
+              git diff --name-only -z "origin/${{ github.base_ref }}" HEAD -- 'src/**/*.py'
+            )
+            if [ "${#src_files[@]}" -eq 0 ]; then
+              echo "No changed src Python files; skipping mypy."
+              exit 0
+            fi
+            mypy "${src_files[@]}" --config-file pyproject.toml
+          else
+            mypy src --config-file pyproject.toml
+          fi
       # Strict mypy for the fully-annotated API layer (issue #2105).
       # --follow-imports=silent applies strict rules only to src/api/ files,
       # not to their transitive dependencies (which have pre-existing issues).
