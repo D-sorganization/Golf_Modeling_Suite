@@ -173,8 +173,21 @@ jobs:
       # --follow-imports=silent applies strict rules only to src/api/ files,
       # not to their transitive dependencies (which have pre-existing issues).
       - name: MyPy Strict (src/api)
-
-        run: mypy src/api --strict --follow-imports=silent --config-file pyproject.toml
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+            mapfile -d '' api_files < <(
+              git diff --name-only -z "origin/${{ github.base_ref }}" HEAD -- 'src/api/**/*.py'
+            )
+            if [ "${#api_files[@]}" -eq 0 ]; then
+              echo "No changed API Python files; skipping strict API mypy."
+              exit 0
+            fi
+            mypy "${api_files[@]}" --strict --follow-imports=silent --config-file pyproject.toml
+          else
+            mypy src/api --strict --follow-imports=silent --config-file pyproject.toml
+          fi
 
       - name: Dependency Direction Fitness Check
         run: python3 scripts/check_dependency_direction.py
