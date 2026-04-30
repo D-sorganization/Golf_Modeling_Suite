@@ -5,7 +5,7 @@ Unit tests for URDF I/O module.
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import defusedxml.ElementTree as ET
+import xml.etree.ElementTree as ET
 import numpy as np
 import pytest
 from src.shared.python.engine_core.engine_availability import (
