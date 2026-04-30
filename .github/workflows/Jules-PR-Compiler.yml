@@ -43,16 +43,11 @@ jobs:
       - name: Check for self-hosted runner
         id: check
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN || github.token }}
         run: |
-          if [ -z "$GH_TOKEN" ]; then
-            echo "GH_TOKEN is empty; assuming local runner is available."
-            ONLINE=1
-          else
-            ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
-              --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
-              2>/dev/null || echo "0")
-          fi
+          ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
+            --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
+            2>/dev/null || echo "0")
           if ! [[ "$ONLINE" =~ ^[0-9]+$ ]]; then ONLINE=0; fi
           if [[ "$ONLINE" -gt 0 ]]; then
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
@@ -67,14 +62,14 @@ jobs:
     if: needs.check-kill-switch.outputs.enabled == 'true'
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Analyze Open PRs
         id: analyze
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN || github.token }}
         run: |
           mkdir -p .jules/pr_compiler
 
@@ -145,7 +140,7 @@ jobs:
       - name: Compile PRs
         if: steps.analyze.outputs.skip != 'true' && steps.groups.outputs.has_compilable == 'true' && inputs.dry_run != true
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN || github.token }}
         run: |
           # Process each compilable group
           python3 << 'PYEOF'
@@ -286,7 +281,7 @@ jobs:
       - name: Cleanup Merged PR Branches
         if: steps.analyze.outputs.skip != 'true' && steps.groups.outputs.has_compilable == 'true' && inputs.dry_run != true
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN || github.token }}
         run: |
           # Note: Individual PRs are closed via "Closes #N" in the compiled PR body
           # This step just cleans up tracking

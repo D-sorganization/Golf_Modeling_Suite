@@ -45,16 +45,11 @@ jobs:
       - name: Check for self-hosted runner
         id: check
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN || github.token }}
         run: |
-          if [ -z "$GH_TOKEN" ]; then
-            echo "GH_TOKEN is empty; assuming local runner is available."
-            ONLINE=1
-          else
-            ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
-              --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
-              2>/dev/null || echo "0")
-          fi
+          ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
+            --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
+            2>/dev/null || echo "0")
           if [[ "$ONLINE" =~ ^[0-9]+$ ]] && [[ "$ONLINE" -gt 0 ]]; then
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
             echo "Self-hosted runner online - routing locally"
@@ -68,7 +63,7 @@ jobs:
     if: needs.check-kill-switch.outputs.enabled == 'true'
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@v6
         with:
           ref: ${{ steps.branch.outputs.failed_branch }}
           fetch-depth: 0
@@ -85,7 +80,7 @@ jobs:
             echo "enabled=true" >> $GITHUB_OUTPUT
           fi
 
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+      - uses: actions/setup-node@v4
         if: steps.jules.outputs.enabled == 'true'
         with: { node-version: "24" }
       - run: npm install -g @google/jules
@@ -97,7 +92,7 @@ jobs:
         id: hotfix
         if: steps.jules.outputs.enabled == 'true'
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN || github.token }}
         run: |
           TIMESTAMP=$(date +%Y%m%d-%H%M%S)
           HOTFIX_BRANCH="hotfix/ci-fail-${TIMESTAMP}"
@@ -111,7 +106,7 @@ jobs:
       - name: Fetch CI Logs & Auto-Fix
         if: steps.jules.outputs.enabled == 'true'
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN || github.token }}
           TARGET_RUN_ID: ${{ inputs.run_id }}
         run: |
           HOTFIX_BRANCH="${{ steps.hotfix.outputs.branch }}"
@@ -136,7 +131,7 @@ jobs:
       - name: Create Urgent PR
         if: steps.jules.outputs.enabled == 'true'
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN || github.token }}
         run: |
           HOTFIX_BRANCH="${{ steps.hotfix.outputs.branch }}"
           FAILED_BRANCH="${{ steps.branch.outputs.failed_branch }}"
