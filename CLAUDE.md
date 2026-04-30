@@ -1,5 +1,7 @@
 # CLAUDE.md — UpstreamDrift
 
+`CLAUDE.md` is the authoritative contributor and agent policy file.
+
 > **GAAI Fleet Member.** GAAI framework installed in `.gaai/`. Read `.gaai/core/GAAI.md` for full governance spec.
 > Rules: `@.gaai/core/contexts/rules/base.rules.md` and `@.gaai/project/contexts/rules/project.rules.md`
 > All work on `main` branch. PRs target `main`.
@@ -23,7 +25,7 @@ Optional Rust extensions built via Maturin for performance-critical paths.
 
 - **Python 3.10+**. Always `python3`, never `python`.
 
-- **Formatter:** Ruff format (NOT Black). 88-char line limit.
+- **Formatter:** Ruff format. 88-char line limit.
 - **Linter:** Ruff check. These are **separate CI steps** — both must pass independently.
 
 ## Development Commands
@@ -35,7 +37,7 @@ python3 -m ruff format .                          # auto-format
 python3 -m pytest -n auto --timeout=60            # full test suite
 python3 -m pytest -m unit -n auto --timeout=60    # unit tests only
 python3 -m pytest -m "not slow and not live_simulation" -n auto --timeout=60
-python3 scripts/check_file_size_budget.py         # file size check
+python3 scripts/ci/check_file_size_budget.py      # file size check
 maturin develop                                   # build Rust extensions locally
 ```
 
@@ -47,7 +49,7 @@ maturin develop                                   # build Rust extensions locall
 4. Module size budget: checked against `module_size_budget_baseline.json`
 
 5. No TODO/FIXME unless tied to a tracked GitHub issue
-6. pytest with `-n auto`, 60s timeout, **10% coverage minimum**
+6. pytest with `-n auto`, 60s timeout, **30% coverage minimum**
 7. No `print()` in `src/` — use logging
 
 ## Test Markers
