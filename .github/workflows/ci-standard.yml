@@ -226,7 +226,7 @@ jobs:
       # SECURITY FIX: Make security audit blocking (fail on vulnerabilities)
       - name: Security Audit
         run: |
-          pip install --upgrade pip
+          python -m pip install --ignore-installed --no-deps "pip>=26.1"
           # Force-reinstall sortedcontainers before pip-audit: the shared runner toolcache
           # can carry a half-installed sortedcontainers that makes cyclonedx (pip-audit dep) fail.
           pip install --ignore-installed --no-deps "sortedcontainers>=2.4.0"
