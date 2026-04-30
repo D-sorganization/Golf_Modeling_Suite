@@ -47,7 +47,7 @@ maturin develop                                   # build Rust extensions locall
 4. Module size budget: checked against `module_size_budget_baseline.json`
 
 5. No TODO/FIXME unless tied to a tracked GitHub issue
-6. pytest with `-n auto`, 60s timeout, **10% coverage minimum**
+6. pytest with `-n auto`, 60s timeout, **15% minimum** (enforced via pyproject.toml `fail_under` — single source of truth per #3064)
 7. No `print()` in `src/` — use logging
 
 ## Test Markers
