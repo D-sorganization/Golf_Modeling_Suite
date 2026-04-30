@@ -230,6 +230,8 @@ jobs:
           # Force-reinstall sortedcontainers before pip-audit: the shared runner toolcache
           # can carry a half-installed sortedcontainers that makes cyclonedx (pip-audit dep) fail.
           pip install --ignore-installed --no-deps "sortedcontainers>=2.4.0"
+          # Normalize shared-runner packages with known fixed releases before auditing.
+          pip install --upgrade "black>=26.3.1" "python-dotenv>=1.2.2"
           pip install pip-audit
 
           # Ignore CVEs with no fix version available or transitive dependencies:
@@ -237,7 +239,8 @@ jobs:
           # - CVE-2026-0994 (protobuf): No fix version available - transitive dep from dm_control
           # - CVE-2026-1703 (pip): pip upgrade may not persist in GHA runner env
           # - CVE-2026-4539 (pygments): No fix version available at time of writing
-          pip-audit --ignore-vuln CVE-2024-23342 --ignore-vuln CVE-2026-0994 --ignore-vuln CVE-2026-1703 --ignore-vuln CVE-2026-4539
+          # - PYSEC-2022-42969 (py): No fix version available
+          pip-audit --ignore-vuln CVE-2024-23342 --ignore-vuln CVE-2026-0994 --ignore-vuln CVE-2026-1703 --ignore-vuln CVE-2026-4539 --ignore-vuln PYSEC-2022-42969
 
       # SECURITY: Bandit static security analysis (Issue #782)
       # Blocking on medium+ severity, medium+ confidence findings (Issue #2067)
