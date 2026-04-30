@@ -538,26 +538,58 @@ jobs:
         working-directory: ./ui
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+
+      - name: Detect UI Changes
+        id: ui-changes
+        working-directory: .
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+            if git diff --quiet "origin/${{ github.base_ref }}" HEAD -- ui; then
+              echo "has_changes=false" >> "$GITHUB_OUTPUT"
+              echo "No UI changes detected; skipping frontend test steps."
+            else
+              echo "has_changes=true" >> "$GITHUB_OUTPUT"
+              echo "UI changes detected; running frontend test steps."
+            fi
+          else
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        if: steps.ui-changes.outputs.has_changes == 'true'
         with:
           node-version: "24"
           cache: "npm"
           cache-dependency-path: ui/package-lock.json
 
       - name: Install Dependencies
+        if: steps.ui-changes.outputs.has_changes == 'true'
         run: npm ci
 
       - name: Type Check
+        if: steps.ui-changes.outputs.has_changes == 'true'
         run: npm run type-check
 
       - name: Lint
+        if: steps.ui-changes.outputs.has_changes == 'true'
         run: npm run lint
 
       - name: Run Tests
+        if: steps.ui-changes.outputs.has_changes == 'true'
         run: npm run test:run
 
       - name: Build Check
+        if: steps.ui-changes.outputs.has_changes == 'true'
         run: npm run build
+
+      - name: Frontend Tests Skipped
+        if: steps.ui-changes.outputs.has_changes != 'true'
+        working-directory: .
+        run: echo "No UI changes detected; frontend tests are not required for this PR."
 
   # =============================================================================
   # MATLAB TESTS - DISABLED BY DEFAULT
