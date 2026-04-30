@@ -55,7 +55,7 @@ jobs:
     needs: pick-runner
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     env:
-      BOT_TRIGGER_TOKEN: ${{ secrets.BOT_PAT || secrets.RUNNER_CHECK_TOKEN || github.token }}
+      BOT_TRIGGER_TOKEN: ${{ github.token }}
     # Only run for bot-authored PRs or scheduled/manual runs
     if: |
       github.event_name == 'schedule' ||
