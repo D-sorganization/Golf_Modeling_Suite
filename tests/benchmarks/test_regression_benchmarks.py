@@ -65,9 +65,7 @@ def test_aerodynamics_engine_compute_forces_regression() -> None:
         engine.compute_forces, velocity, spin, iterations=500, warmup=20
     )
 
-    assert_within_regression_threshold(
-        "aerodynamics_engine_compute_forces", median
-    )
+    assert_within_regression_threshold("aerodynamics_engine_compute_forces", median)
 
 
 # ---------------------------------------------------------------------------
@@ -127,6 +125,4 @@ def test_simulation_request_deserialization_regression() -> None:
         warmup=50,
     )
 
-    assert_within_regression_threshold(
-        "simulation_request_model_validate", median
-    )
+    assert_within_regression_threshold("simulation_request_model_validate", median)
