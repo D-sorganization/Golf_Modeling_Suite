@@ -76,14 +76,14 @@
     {
       "path": "src/shared/python/spatial_algebra/pose6dof.py",
       "owner": "@physics-core",
-      "reason": "Pose6DOF at 1229 lines due to comprehensive SE(3) operations. Decomposition pending.",
-      "expires_on": "2027-06-30"
+      "reason": "6-DOF math library; needs split: pose_core.py, transformations.py, serialization.py",
+      "expires_on": "2026-05-31"
     },
     {
       "path": "src/shared/python/physics/terrain_representation.py",
       "owner": "@physics-core",
-      "reason": "Terrain representation at 1253 lines combines mesh, elevation, and surface-material models. Split into domain submodules planned, tracked in issue #2456.",
-      "expires_on": "2027-06-30"
+      "reason": "Complex terrain model; needs decomposition into:terrain_types.py, grid_builders.py, interpolation.py",
+      "expires_on": "2026-05-31"
     }
   ]
 }
