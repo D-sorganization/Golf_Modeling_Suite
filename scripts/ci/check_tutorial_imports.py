@@ -10,7 +10,12 @@ import sys
 import textwrap
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[2]
+
+
+ROOT = _repo_root()
 DOC_TARGETS = (
     ROOT / "docs" / "UPSTREAM_DRIFT_USER_MANUAL.md",
     *sorted((ROOT / "docs" / "tutorials" / "content").glob("*.md")),
