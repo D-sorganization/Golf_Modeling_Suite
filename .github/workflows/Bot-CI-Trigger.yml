@@ -69,7 +69,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          token: ${{ env.BOT_TRIGGER_TOKEN }}
+          token: ${{ github.token }}
           fetch-depth: 5
 
       - name: Check Loop Prevention

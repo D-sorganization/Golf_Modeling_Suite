@@ -66,8 +66,16 @@ jobs:
 
       - name: Install Linux dependencies
         run: |
-          sudo apt-get -o DPkg::Lock::Timeout=300 update
-          sudo apt-get -o DPkg::Lock::Timeout=300 install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          for attempt in 1 2 3; do
+            sudo apt-get -o DPkg::Lock::Timeout=300 update && break
+            if [ "$attempt" = "3" ]; then exit 1; fi
+            sleep 30
+          done
+          for attempt in 1 2 3; do
+            sudo apt-get -o DPkg::Lock::Timeout=300 install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf && break
+            if [ "$attempt" = "3" ]; then exit 1; fi
+            sleep 30
+          done
 
       - name: Install frontend dependencies
         working-directory: ui
@@ -127,8 +135,16 @@ jobs:
       - name: Install Linux dependencies
         if: matrix.platform == 'd-sorg-fleet'
         run: |
-          sudo apt-get -o DPkg::Lock::Timeout=300 update
-          sudo apt-get -o DPkg::Lock::Timeout=300 install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          for attempt in 1 2 3; do
+            sudo apt-get -o DPkg::Lock::Timeout=300 update && break
+            if [ "$attempt" = "3" ]; then exit 1; fi
+            sleep 30
+          done
+          for attempt in 1 2 3; do
+            sudo apt-get -o DPkg::Lock::Timeout=300 install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf && break
+            if [ "$attempt" = "3" ]; then exit 1; fi
+            sleep 30
+          done
 
       - name: Install frontend dependencies
         working-directory: ui

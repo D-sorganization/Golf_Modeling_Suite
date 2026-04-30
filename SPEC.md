@@ -27,8 +27,8 @@
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.84                                             |
-| **Last Spec Update**    | 2026-04-26                                         |
+| **Spec Version**        | 1.0.85                                             |
+| **Last Spec Update**    | 2026-04-30                                         |
 
 ## 2. Purpose & Mission
 
@@ -333,6 +333,7 @@ Beyond standard tools, CI enforces custom checks:
 - **Import Depth**: Maximum 4 import levels to prevent circular dependencies
 - **Physics Fitness**: Cross-engine validation must pass with <5% tolerance
 - **Docker Size Gate**: Built images must not exceed 800 MB
+- **GitHub Actions Pinning**: External workflow actions must be pinned to full 40-character commit SHAs
 
 ### CI/CD Pipeline
 
