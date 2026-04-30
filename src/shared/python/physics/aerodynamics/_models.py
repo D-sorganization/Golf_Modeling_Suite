@@ -19,6 +19,8 @@ from src.shared.python.core.physics_constants import (
     MAGNUS_COEFFICIENT,
 )
 
+from ._drag_curve import drag_coefficient
+
 
 class DragModel:
     """Model for aerodynamic drag force.
@@ -88,15 +90,13 @@ class DragModel:
         diameter = 2 * self.ball_radius
         re = air_density * speed * diameter / viscosity
 
-        laminar_cd = 0.5
-        turbulent_cd = self.base_coefficient
-
-        if re < 8e4:
-            return laminar_cd
-        if re < 2e5:
-            fraction = (re - 8e4) / (2e5 - 8e4)
-            return laminar_cd - fraction * (laminar_cd - turbulent_cd)
-        return turbulent_cd
+        # Drag-crisis-aware Cd(Re) for a dimpled sphere. Dimples trip the
+        # boundary layer earlier than on a smooth sphere, producing the
+        # sharp Cd drop near Re ~= 4e4-6e4 followed by a shallow basin
+        # and a gentle rise into the post-critical regime. The curve is
+        # multiplicatively rescaled by ``base_coefficient`` so user
+        # tuning remains continuous across the entire Re range.
+        return drag_coefficient(re, base_coefficient=self.base_coefficient)
 
 
 class LiftModel:

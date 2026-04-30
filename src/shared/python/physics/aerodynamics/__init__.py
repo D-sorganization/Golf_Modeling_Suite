@@ -20,6 +20,7 @@ References:
 from __future__ import annotations
 
 from ._config import AerodynamicsConfig, RandomizationConfig, WindConfig
+from ._drag_curve import drag_coefficient
 from ._engine import AerodynamicsEngine
 from ._environment import EnvironmentRandomizer, EnvironmentSnapshot
 from ._models import DragModel, LiftModel, MagnusModel
@@ -38,4 +39,5 @@ __all__ = [
     "WindConfig",
     "WindGust",
     "WindModel",
+    "drag_coefficient",
 ]
