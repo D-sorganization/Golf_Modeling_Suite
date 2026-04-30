@@ -113,9 +113,7 @@ class TestPolynomialFitter:
         sig = _make_signal(t, y)
         result = PolynomialFitter(order=order).fit(sig)
         for i, expected in enumerate(true_coeffs):
-            assert result.parameters[f"c{i}"] == pytest.approx(
-                expected, abs=1e-6
-            )
+            assert result.parameters[f"c{i}"] == pytest.approx(expected, abs=1e-6)
         assert result.r_squared == pytest.approx(1.0, abs=1e-9)
         assert result.rmse == pytest.approx(0.0, abs=1e-6)
 

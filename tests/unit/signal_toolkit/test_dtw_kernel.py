@@ -116,7 +116,7 @@ class TestDtwPath:
         a = rng.standard_normal(12)
         b = rng.standard_normal(15)
         _, path = compute_dtw_path(a, b)
-        for (i0, j0), (i1, j1) in zip(path[:-1], path[1:]):
+        for (i0, j0), (i1, j1) in zip(path[:-1], path[1:], strict=True):
             assert i1 >= i0 and j1 >= j0
             # at least one index must advance per step
             assert (i1 + j1) > (i0 + j0)

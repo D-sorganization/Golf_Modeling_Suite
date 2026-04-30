@@ -63,9 +63,7 @@ class TestCustomFunctionFitter:
 
     def test_from_expression_blocks_dunder(self) -> None:
         with pytest.raises(ValueError, match="forbidden"):
-            CustomFunctionFitter.from_expression(
-                "__import__('os').system('x')", ["t"]
-            )
+            CustomFunctionFitter.from_expression("__import__('os').system('x')", ["t"])
 
     def test_failed_fit_returns_success_false(self) -> None:
         # A function that triggers ValueError inside curve_fit, e.g. by
@@ -109,9 +107,7 @@ class TestComputeCwt:
         f0 = 10.0
         t = np.arange(0.0, 4.0, 1 / fs)
         x = np.sin(2 * np.pi * f0 * t)
-        freqs, _times, cwt = compute_cwt(
-            x, fs=fs, num_freqs=40, freq_range=(2.0, 50.0)
-        )
+        freqs, _times, cwt = compute_cwt(x, fs=fs, num_freqs=40, freq_range=(2.0, 50.0))
         # average magnitude across time, then find dominant frequency.
         mag = np.mean(np.abs(cwt), axis=1)
         peak_freq = freqs[int(np.argmax(mag))]
@@ -119,7 +115,7 @@ class TestComputeCwt:
         assert peak_freq == pytest.approx(f0, rel=0.2)
 
     def test_non_positive_fs_raises(self) -> None:
-        with pytest.raises(Exception):
+        with pytest.raises((ValueError, ZeroDivisionError, FloatingPointError)):
             compute_cwt(np.ones(64), fs=0.0)
 
     def test_non_positive_min_freq_raises(self) -> None:

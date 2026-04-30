@@ -171,7 +171,7 @@ class TestComputeCoherence:
         assert np.allclose(coh, 1.0, atol=1e-6)
 
     def test_unequal_length_raises(self) -> None:
-        with pytest.raises(Exception):
+        with pytest.raises((ValueError, IndexError)):
             compute_coherence(np.zeros(50), np.zeros(40), fs=100.0)
 
 
