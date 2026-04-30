@@ -49,7 +49,7 @@ env:
 
 jobs:
   check-kill-switch:
-    runs-on: ubuntu-latest
+    runs-on: d-sorg-fleet
     outputs:
       enabled: ${{ steps.check.outputs.enabled }}
     steps:
@@ -67,7 +67,7 @@ jobs:
   pick-runner:
     needs: check-kill-switch
     if: needs.check-kill-switch.outputs.enabled == 'true'
-    runs-on: ubuntu-latest
+    runs-on: d-sorg-fleet
     timeout-minutes: 2
     outputs:
       runner: ${{ steps.check.outputs.runner }}
