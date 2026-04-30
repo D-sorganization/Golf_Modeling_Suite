@@ -63,7 +63,7 @@ jobs:
     name: Reject hosted runner routing
     runs-on: d-sorg-fleet
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
       - name: Run local-only workflow guard
         shell: bash
         run: |
@@ -101,10 +101,10 @@ jobs:
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
         with: { python-version: "3.11" }
       - run: pip install ruff==0.14.10 mypy>=1.15.0 bandit==1.7.7 pydocstyle==6.3.0
 
@@ -221,7 +221,7 @@ jobs:
           cat matlab_quality_report.txt
 
       - name: Upload MATLAB Report
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3
         if: always()
         with:
           name: matlab-quality-report
@@ -235,7 +235,7 @@ jobs:
       matrix:
         python: ["3.10", "3.11", "3.12"]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
 
       - name: Install System Dependencies
         run: |
@@ -262,7 +262,7 @@ jobs:
             libxcb-shape0 \
             libxcb-xinerama0 \
             libxcb-xkb1
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
         with:
           python-version: ${{ matrix.python }}
 
@@ -366,7 +366,7 @@ jobs:
           failed=$(grep -c "FAILED" cross-engine-results.txt || echo "0")
           echo "- Passed: $passed | - Failed: $failed" >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: codecov/codecov-action@v6
+      - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2ed1ce1f25b945866b3f94e
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         if: env.CODECOV_TOKEN != ''
@@ -380,9 +380,9 @@ jobs:
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
       - name: Checkout Tools Hub
-        uses: actions/checkout@v6
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
         with:
           repository: ${{ vars.TOOLS_REPOSITORY || format('{0}/Tools', github.repository_owner) }}
           path: _tools_dep
@@ -420,7 +420,7 @@ jobs:
             libxcb-shape0 \
             libxcb-xinerama0 \
             libxcb-xkb1
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
         with:
           python-version: "3.11"
       - name: Create stub ui/dist for editable install
@@ -461,8 +461,8 @@ jobs:
       run:
         working-directory: ./ui
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
         with:
           node-version: "24"
           cache: "npm"
@@ -497,10 +497,10 @@ jobs:
     if: false # DISABLED - Requires MATLAB license not available in CI
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
 
-      - uses: matlab-actions/setup-matlab@v3
-      - uses: matlab-actions/run-command@v2
+      - uses: matlab-actions/setup-matlab@1770faad53f3e1b73e51246d84fbbca0745fc989
+      - uses: matlab-actions/run-command@0fb3db0ce40da62f6b55928f522bbf7dbbd9202a
         with:
           command: |
             addpath('matlab');
@@ -516,8 +516,8 @@ jobs:
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     if: false # DISABLED - No Arduino components in this project
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
         with: { python-version: "3.11" }
       - run: pip install platformio
       - name: Verify Build
@@ -535,7 +535,7 @@ jobs:
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
         with:
           fetch-depth: 0
 
@@ -576,7 +576,7 @@ jobs:
 
       - name: Install Rust toolchain
         if: steps.rust-changes.outputs.has_changes == 'true'
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8
         with:
           components: rustfmt, clippy
           targets: wasm32-unknown-unknown
@@ -584,7 +584,7 @@ jobs:
       - name: Cache Cargo registry
         if: steps.rust-changes.outputs.has_changes == 'true'
 
-        uses: actions/checkout@v6
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
         with:
           repository: ${{ vars.TOOLS_REPOSITORY || format('{0}/Tools', github.repository_owner) }}
           path: _tools_dep
@@ -599,7 +599,7 @@ jobs:
 
       - name: Cache Cargo registry and build
         if: steps.rust-changes.outputs.has_changes == 'true'
-        uses: actions/cache@v5
+        uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2
         with:
           path: |
             ~/.cargo/registry
@@ -673,7 +673,7 @@ jobs:
     runs-on: d-sorg-fleet
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
         with:
           fetch-depth: 0
 
@@ -703,17 +703,17 @@ jobs:
 
       - name: Setup Python
         if: steps.rust-changes.outputs.has_changes == 'true'
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
         with:
           python-version: "3.11"
 
       - name: Install Rust toolchain
         if: steps.rust-changes.outputs.has_changes == 'true'
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8
 
       - name: Cache Cargo registry
         if: steps.rust-changes.outputs.has_changes == 'true'
-        uses: actions/cache@v5
+        uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2
         with:
           path: |
             ~/.cargo/registry

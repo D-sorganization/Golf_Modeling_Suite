@@ -59,12 +59,12 @@ jobs:
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
         with:
           python-version: "3.11"
 
@@ -173,7 +173,7 @@ jobs:
           cp /tmp/doc_report.md "docs/assessments/documentation/LATEST.md"
 
       - name: Commit Report
-        uses: stefanzweifel/git-auto-commit-action@v7
+        uses: stefanzweifel/git-auto-commit-action@8756aa072ef5b4a081a4d13ffde3431688005370
         with:
           commit_message: "docs(audit): Documentation audit report"
           file_pattern: "docs/assessments/documentation/*"

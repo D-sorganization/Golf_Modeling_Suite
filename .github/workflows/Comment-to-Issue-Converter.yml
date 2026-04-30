@@ -75,11 +75,11 @@ jobs:
        github.actor != 'google-labs-jules' &&
        github.actor != 'copilot-pull-request-reviewer[bot]')
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
         with:
           python-version: "3.11"
 

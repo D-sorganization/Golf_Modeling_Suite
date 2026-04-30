@@ -56,7 +56,7 @@ jobs:
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
         with:
           fetch-depth: 0
 
@@ -65,12 +65,12 @@ jobs:
         run: echo "date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
         with:
           python-version: "3.11"
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
         with:
           node-version: "24"
 
@@ -144,7 +144,7 @@ jobs:
       # Commit Data for Agent Context
       # ---------------------------------------------------------
       - name: Commit Assessment Data
-        uses: stefanzweifel/git-auto-commit-action@v7
+        uses: stefanzweifel/git-auto-commit-action@8756aa072ef5b4a081a4d13ffde3431688005370
         with:
           commit_message: "docs(assessment): pre-assessment data collection"
           branch: "automation/assessment-${{ steps.date.outputs.date }}"
