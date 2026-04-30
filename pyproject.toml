@@ -322,7 +322,7 @@ markers = [
     "headless_safe: marks tests verified to work in headless mode",
     "slow_numba: Tests that require numba JIT or are heavy",
     "asyncio: marks tests as async tests",
-    "benchmark: marks tests as performance benchmarks",
+    "benchmark: performance benchmarks executed via pytest-benchmark; tracked in CI for regression detection (#3510)",
     "serial: marks tests that must not run in parallel (sys.modules manipulation)",
     "requires_network: marks tests that require network access (skip with '-m not requires_network')",
     "requires_gpu: marks tests that require a GPU (skip with '-m not requires_gpu')",

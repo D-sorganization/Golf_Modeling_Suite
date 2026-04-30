@@ -1,0 +1,73 @@
+name: Performance Benchmarks
+
+# ---------------------------------------------------------------------------
+# Performance benchmarks (issue #3510).
+#
+# Runs the pytest-benchmark suite under tests/benchmarks/ and uploads the
+# JSON results as an artifact. This workflow is intentionally NON-BLOCKING:
+# regression thresholds are not enforced yet. A follow-up PR will add
+# baseline comparison + fail-on-regression once we have a few runs of
+# historical data to set sensible thresholds against.
+# ---------------------------------------------------------------------------
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
+      - "LICENSE"
+      - ".gitignore"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  benchmarks:
+    name: Run pytest-benchmark suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Do not block PRs while we are still establishing baseline data.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Create stub ui/dist for editable install
+        run: mkdir -p ui/dist
+
+      - name: Install dev dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -e .[dev]
+          # Belt-and-braces: ensure pytest-benchmark is present even if the
+          # extras resolution above is partial.
+          python3 -m pip install "pytest-benchmark>=4.0"
+
+      - name: Run benchmarks
+        run: |
+          python3 -m pytest tests/benchmarks \
+            -m benchmark \
+            --benchmark-only \
+            --benchmark-json=benchmark.json \
+            --no-cov
+
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: benchmark-results-${{ github.sha }}
+          path: benchmark.json
+          if-no-files-found: warn
+          retention-days: 30
