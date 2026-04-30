@@ -1,21 +1,21 @@
 # Review Comments Archive - 2026-04-29
 
-Generated: 2026-04-29T15:28:26.209167
+Generated: 2026-04-29T20:24:53.359296
 
 ## Reviewer (chatgpt-codex-connector[bot]) (1 comments)
 
-### PR #3493: src/shared/python/physics/impact_model/models.py:163
+### PR #3497: CLAUDE.md:5
 
 Actionable: Yes
 Has Suggestion: No
 
 ```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Preserve complex components when computing vector magnitudes**
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Reinstate no-direct-push rule for main**
 
-This replacement changes behavior from `np.linalg.norm` to `math.hypot` after coercing to `dtype=float`, which silently discards imaginary components. In `RigidBodyImpactModel.solve`, complex-valued orientation/velocity inputs (which `np.linalg.norm` handled correctly) now get truncated to real parts, producing smaller magnitudes and incorrect no...
+This change removes the explicit safeguard `Never push directly to main`, and the new wording (`All work on main branch. PRs target main.`) can be interpreted by automation agents as permission to commit directly to `main`, bypassing review and CI gates that only run through PR flow. Because this file is used as operational guidance, losing that constraint can cause p...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3493#discussion_r3164510545)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3497#discussion_r3165434526)
 
 ---
 
