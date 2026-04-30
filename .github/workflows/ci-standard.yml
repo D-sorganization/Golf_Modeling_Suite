@@ -60,32 +60,6 @@ permissions:
 
 jobs:
 
-  audit-actions:
-    name: Audit GitHub Actions Pinning
-    runs-on: d-sorg-fleet
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
-
-      - name: Setup Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
-        with:
-          python-version: "3.11"
-
-      - name: Install dependencies
-        run: pip install PyGithub PyYAML
-
-      - name: Audit GitHub Actions pinning
-        run: |
-          # Check all actions are pinned to commit SHA
-          python scripts/pin_github_actions.py
-
-          # Fail if any unpinned found
-          if grep -qE "uses:.*@[vV][0-9]+" .github/workflows/*.yml; then
-            echo "ERROR: Some GitHub Actions not pinned to commit SHA"
-            echo "Run: python scripts/pin_github_actions.py"
-            bash -c 'exit 1'
-          fi
-
   local-only-workflows:
     name: Reject hosted runner routing
     runs-on: d-sorg-fleet
@@ -123,6 +97,33 @@ jobs:
             echo "::error::No local self-hosted runner available; failing closed"
             exit 1
           fi
+  audit-actions:
+    name: Audit GitHub Actions Pinning
+    needs: [pick-runner]
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install PyGithub PyYAML
+
+      - name: Audit GitHub Actions pinning
+        run: |
+          # Check all actions are pinned to commit SHA
+          python scripts/pin_github_actions.py
+
+          # Fail if any unpinned found
+          if grep -qE "uses:.*@[vV][0-9]+" .github/workflows/*.yml; then
+            echo "ERROR: Some GitHub Actions not pinned to commit SHA"
+            echo "Run: python scripts/pin_github_actions.py"
+            bash -c 'exit 1'
+          fi
+
   quality-gate:
     needs: pick-runner
     runs-on: ${{ needs.pick-runner.outputs.runner }}
