@@ -24,19 +24,20 @@ updates:
           - "minor"
           - "patch"
 
-  # GitHub Actions
+  # Pin GitHub Actions to commit SHA
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "ci/cd"
-      - "automated"
+      interval: "weekly"  # Check weekly for updates
     commit-message:
-      prefix: "chore(ci)"
+      prefix: "chore(ci): "
+      include: "scope"
+    pull-request-branch-name:
+      separator: "/"
+    reviewers:
+      - "dieterolson"  # Code owner
+    allow:
+      - dependency-type: "all"
 
   # npm (UI dependencies)
   - package-ecosystem: "npm"
