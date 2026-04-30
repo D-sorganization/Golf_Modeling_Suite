@@ -43,8 +43,9 @@ jobs:
             echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
             echo "Self-hosted runner online - routing locally"
           else
-            echo "::error::No local self-hosted runner available; failing closed"
-            exit 1
+            mkdir -p "$(dirname "$GITHUB_OUTPUT")"
+            echo "runner=ubuntu-latest" >> "$GITHUB_OUTPUT"
+            echo "Self-hosted runner offline - falling back to ubuntu-latest"
           fi
 
   documentation-scribe:

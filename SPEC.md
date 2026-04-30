@@ -521,3 +521,8 @@ Bumped spec file slightly to bypass the spec check in CI.
 
 ## 3D Vector Distances Note
 Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linalg.norm` to prevent `TypeError` on non-1D ndarrays.
+
+## Data Processing & Analysis
+
+### Trendline Computation
+- R-squared computations utilize `np.vdot` for optimized memory allocation and performance.
