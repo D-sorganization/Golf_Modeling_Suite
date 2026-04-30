@@ -17,7 +17,7 @@ from src.shared.python.core.contracts import precondition
 
 from ..dependencies import get_task_manager
 
-router = APIRouter()
+router = APIRouter(tags=["export"])
 
 
 @router.get("/export/{task_id}")

@@ -31,7 +31,7 @@ from ..models.responses import (
 if TYPE_CHECKING:
     from src.shared.python.engine_core.engine_manager import EngineManager
 
-router = APIRouter()
+router = APIRouter(tags=["control"])
 
 # Color mapping for force types. See issue #1199
 FORCE_TYPE_COLORS: dict[str, list[float]] = {
@@ -381,9 +381,13 @@ def _get_sim_time(engine_manager: EngineManager) -> float:
     response_model=ForceOverlayResponse,
 )
 @precondition(
-    lambda force_types="applied", color_by_magnitude=True, body_filter=None, show_labels=False, scale_factor=0.01, engine_manager=None, logger=None: (
-        scale_factor > 0 and len(force_types.strip()) > 0
-    ),
+    lambda force_types="applied",
+    color_by_magnitude=True,
+    body_filter=None,
+    show_labels=False,
+    scale_factor=0.01,
+    engine_manager=None,
+    logger=None: (scale_factor > 0 and len(force_types.strip()) > 0),
     "Scale factor must be positive and force_types must be non-empty",
 )
 @handle_api_errors

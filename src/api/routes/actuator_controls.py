@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
 _logger = _get_module_logger(__name__)
 
-router = APIRouter()
+router = APIRouter(tags=["control"])
 
 
 def _get_actuator_info(engine_manager: EngineManager) -> list[ActuatorInfo]:

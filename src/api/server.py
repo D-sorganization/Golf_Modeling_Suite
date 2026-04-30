@@ -24,12 +24,16 @@ from contextlib import asynccontextmanager
 from typing import Any
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
+
+from .schemas.errors import ErrorResponse
 
 from src.shared.python.config.environment import get_environment
 from src.shared.python.engine_core.engine_manager import EngineManager
@@ -206,6 +210,22 @@ app = FastAPI(
             "name": "models",
             "description": "URDF/MJCF model management and exploration",
         },
+        {
+            "name": "data",
+            "description": "Dataset generation and data exploration",
+        },
+        {
+            "name": "control",
+            "description": "Actuator control and force overlays",
+        },
+        {
+            "name": "physics",
+            "description": "Low-level physics queries (e.g. inverse dynamics)",
+        },
+        {
+            "name": "core",
+            "description": "Health checks, root metadata, and service status",
+        },
     ],
     responses={
         503: {"description": "Service not initialized"},
@@ -234,6 +254,26 @@ app.add_middleware(
 # Rate limiting
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
+
+
+async def validation_exception_handler(
+    _request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    """Return a standardized :class:`ErrorResponse` envelope for 422s.
+
+    FastAPI's default 422 body uses a bespoke ``{"detail": [...]}`` shape.
+    This handler wraps it in our :class:`ErrorResponse` model so clients
+    parse all 4xx errors uniformly.
+    """
+    payload = ErrorResponse(
+        detail="Request validation failed",
+        code="validation_error",
+        errors=[dict(err) for err in exc.errors()],
+    )
+    return JSONResponse(status_code=422, content=payload.model_dump())
+
+
+app.add_exception_handler(RequestValidationError, validation_exception_handler)  # type: ignore[arg-type]
 
 
 # SECURITY: middleware registration

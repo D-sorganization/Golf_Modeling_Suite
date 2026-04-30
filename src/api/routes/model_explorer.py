@@ -30,7 +30,7 @@ from ..models.responses import (
 )
 from ._route_utils import find_project_root
 
-router = APIRouter()
+router = APIRouter(tags=["models"])
 
 # Reuse model directory discovery from models.py
 _MODEL_DIRS = [

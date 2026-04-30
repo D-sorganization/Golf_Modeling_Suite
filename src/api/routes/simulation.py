@@ -11,7 +11,9 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from src.api.utils.datetime_compat import UTC
 from src.shared.python.core.contracts import precondition
@@ -23,23 +25,33 @@ from ..models.responses import SimulationResponse
 if TYPE_CHECKING:
     from ..services.simulation_service import SimulationService
 
-router = APIRouter()
+router = APIRouter(tags=["simulation"])
+
+# Use shared limiter - registered with app.state in server.py.
+# Per-IP rate limit for the synchronous /simulate endpoint (Issue #3508).
+# Conservative because synchronous physics simulation is CPU heavy.
+limiter = Limiter(key_func=get_remote_address)
+SIMULATE_RATE_LIMIT = "10/minute"
 
 
 @router.post("/simulate", response_model=SimulationResponse)
+@limiter.limit(SIMULATE_RATE_LIMIT)
 @precondition(
-    lambda request, service=None, logger=None: request is not None,
+    lambda request, sim_request=None, service=None, logger=None: sim_request
+    is not None,
     "Simulation request must not be None",
 )
 async def run_simulation(
-    request: SimulationRequest,
+    request: Request,
+    sim_request: SimulationRequest,
     service: SimulationService = Depends(get_simulation_service),
     logger: Any = Depends(get_logger),
 ) -> SimulationResponse:
-    """Run a physics simulation.
+    """Run a physics simulation (rate-limited per IP).
 
     Args:
-        request: Simulation parameters.
+        request: FastAPI request object (used by the rate limiter).
+        sim_request: Simulation parameters.
         service: Injected simulation service.
         logger: Injected logger.
 
@@ -50,7 +62,7 @@ async def run_simulation(
         HTTPException: On simulation failure.
     """
     try:
-        result = await service.run_simulation(request)
+        result = await service.run_simulation(sim_request)
         return result
     except TimeoutError as exc:
         if logger:

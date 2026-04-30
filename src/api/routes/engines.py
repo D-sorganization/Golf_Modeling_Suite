@@ -60,7 +60,7 @@ _NON_LEVEL_METADATA_KEYS: frozenset[str] = frozenset(
 )
 
 
-router = APIRouter()
+router = APIRouter(tags=["engines"])
 
 
 class EngineListResponse(BaseModel):

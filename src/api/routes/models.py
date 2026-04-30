@@ -29,7 +29,7 @@ from ..models.responses import (
 from ..utils.path_validation import resolve_contained_path
 from ._route_utils import find_project_root
 
-router = APIRouter()
+router = APIRouter(tags=["models"])
 
 # Base directories for model discovery
 _MODEL_DIRS = [

@@ -52,7 +52,7 @@ if TYPE_CHECKING:
 
 _logger = _get_module_logger(__name__)
 
-router = APIRouter()
+router = APIRouter(tags=["physics", "simulation"])
 _CONTROL_INTERFACE_CACHE: dict[int, Any] = {}
 _FEATURES_REGISTRY_CACHE: dict[int, Any] = {}
 

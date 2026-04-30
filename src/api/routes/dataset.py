@@ -21,8 +21,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from src.api.dependencies import get_engine_manager, get_logger
 from src.api.middleware.error_handler import handle_api_errors
@@ -37,7 +39,13 @@ if TYPE_CHECKING:
     from src.shared.python.engine_core.engine_manager import EngineManager
     from src.shared.python.engine_core.interfaces import PhysicsEngine
 
-router = APIRouter(prefix="/dataset", tags=["dataset"])
+router = APIRouter(prefix="/dataset", tags=["dataset", "data"])
+
+# Use shared limiter - registered with app.state in server.py.
+# Per-IP rate limit for the dataset generation endpoint (Issue #3508).
+# Very conservative since dataset generation kicks off many simulations.
+limiter = Limiter(key_func=get_remote_address)
+DATASET_GENERATE_RATE_LIMIT = "2/minute"
 
 
 # ---- Helpers ----
@@ -171,20 +179,22 @@ class FeatureExecuteRequest(BaseModel):
 
 
 @router.post("/generate", response_model=DatasetGenerationResponse)
+@limiter.limit(DATASET_GENERATE_RATE_LIMIT)
 async def generate_dataset(
-    request: DatasetGenerationRequest,
+    request: Request,
+    dataset_request: DatasetGenerationRequest,
     engine_manager: EngineManager = Depends(get_engine_manager),
     logger: Any = Depends(get_logger),
 ) -> DatasetGenerationResponse:
-    """Generate a training dataset from simulation runs.
+    """Generate a training dataset from simulation runs (rate-limited per IP).
 
     Varies inputs across simulations and records all kinematics, kinetics,
     and model data for neural network training.
 
     Requires a loaded engine (POST /engines/{type}/load first).
     """
-    if not (request is not None):
-        raise ValueError("request must be provided")
+    if not (dataset_request is not None):
+        raise ValueError("dataset_request must be provided")
     engine = _require_active_engine(engine_manager)
 
     try:
@@ -195,16 +205,16 @@ async def generate_dataset(
         )
 
         config = GeneratorConfig(
-            num_samples=request.num_samples,
-            duration=request.duration,
-            timestep=request.timestep,
-            seed=request.seed,
-            vary_initial_positions=request.vary_positions,
-            vary_initial_velocities=request.vary_velocities,
-            record_mass_matrix=request.record_mass_matrix,
-            record_bias_forces=request.record_dynamics,
-            record_gravity=request.record_dynamics,
-            record_drift_control=request.record_drift_control,
+            num_samples=dataset_request.num_samples,
+            duration=dataset_request.duration,
+            timestep=dataset_request.timestep,
+            seed=dataset_request.seed,
+            vary_initial_positions=dataset_request.vary_positions,
+            vary_initial_velocities=dataset_request.vary_velocities,
+            record_mass_matrix=dataset_request.record_mass_matrix,
+            record_bias_forces=dataset_request.record_dynamics,
+            record_gravity=dataset_request.record_dynamics,
+            record_drift_control=dataset_request.record_drift_control,
             control_profiles=[
                 ControlProfile(name="zero"),
                 ControlProfile(
@@ -217,7 +227,9 @@ async def generate_dataset(
         dataset = generator.generate(config)
 
         output_path = generator.export(
-            dataset, request.output_path, format=request.export_format
+            dataset,
+            dataset_request.output_path,
+            format=dataset_request.export_format,
         )
 
         return DatasetGenerationResponse(
@@ -225,7 +237,7 @@ async def generate_dataset(
             num_samples=dataset.num_samples,
             total_frames=dataset.total_frames,
             export_path=str(output_path),
-            export_format=request.export_format,
+            export_format=dataset_request.export_format,
         )
 
     except ImportError as exc:

@@ -21,7 +21,7 @@ from ..dependencies import get_engine_manager
 if TYPE_CHECKING:
     from src.shared.python.engine_core.engine_manager import EngineManager
 
-router = APIRouter()
+router = APIRouter(tags=["core"])
 
 
 @router.get("/")

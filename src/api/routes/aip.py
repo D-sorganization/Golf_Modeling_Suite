@@ -31,7 +31,7 @@ from ..models.responses import (
     AIPHandshakeResponse,
 )
 
-router = APIRouter()
+router = APIRouter(tags=["analysis"])
 
 # Create the method registry once at module level (stateless, safe)
 _registry = create_registry()
