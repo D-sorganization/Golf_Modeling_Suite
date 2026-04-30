@@ -1,52 +1,50 @@
-# Dependabot configuration (Issues #767, #1493)
-# Automatically creates PRs to update dependencies
-
 version: 2
 updates:
-  # Python dependencies
-  - package-ecosystem: "pip"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 10
-    labels:
-      - "dependencies"
-      - "automated"
-    commit-message:
-      prefix: "chore(deps)"
-    groups:
-      # Group minor/patch updates to reduce PR noise
-      python-minor-patch:
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
-
-  # GitHub Actions
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "ci/cd"
-      - "automated"
-    commit-message:
-      prefix: "chore(ci)"
-
-  # npm (UI dependencies)
-  - package-ecosystem: "npm"
-    directory: "/src/ui"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "frontend"
-      - "automated"
-    commit-message:
-      prefix: "chore(ui-deps)"
+- package-ecosystem: pip
+  directory: /
+  schedule:
+    interval: weekly
+    day: monday
+  open-pull-requests-limit: 10
+  labels:
+  - dependencies
+  - automated
+  commit-message:
+    prefix: chore(deps)
+  groups:
+    python-minor-patch:
+      patterns:
+      - '*'
+      update-types:
+      - minor
+      - patch
+- package-ecosystem: github-actions
+  directory: /
+  schedule:
+    interval: weekly
+    day: monday
+  open-pull-requests-limit: 5
+  labels:
+  - dependencies
+  - ci/cd
+  - automated
+  commit-message:
+    prefix: 'chore(ci): '
+    include: scope
+  pull-request-branch-name:
+    separator: /
+  reviewers:
+  - dieterolson
+  allow:
+  - dependency-type: all
+- package-ecosystem: npm
+  directory: /src/ui
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 5
+  labels:
+  - dependencies
+  - frontend
+  - automated
+  commit-message:
+    prefix: chore(ui-deps)
