@@ -63,7 +63,6 @@ jobs:
         with:
           fetch-depth: 0
 
-
       - name: Add spec-exempt label for Bolt optimizations or chores
         uses: actions/github-script@v8
         if: ${{ contains(github.event.pull_request.title, 'Bolt:') || contains(github.event.pull_request.title, 'chore:') }}
