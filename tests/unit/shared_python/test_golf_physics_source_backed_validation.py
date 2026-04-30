@@ -55,7 +55,7 @@ def test_source_map_tracks_selected_hard_coded_golf_assumptions() -> None:
         "COR sanity",
         "smash factor",
         "Spin decay rate",
-        "Illustrative placeholder",
+        "Illustrative assumption",
     ):
         assert required_phrase in text
 

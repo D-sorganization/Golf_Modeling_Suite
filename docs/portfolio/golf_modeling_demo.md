@@ -12,8 +12,8 @@ as Drake, Pinocchio, OpenSim, and MyoSuite are intentionally out of scope.
   flight calculation.
 - The model separates measured inputs, environmental assumptions, and simulated
   outputs.
-- The demo is suitable for downstream AI/ML work because its inputs and outputs
-  are tabular and reproducible.
+- The tabular inputs and outputs can be reused by downstream analysis,
+  model-comparison, or feature-engineering workflows.
 - The result is a physics demonstration, not a validated coaching prescription.
 
 ## Setup

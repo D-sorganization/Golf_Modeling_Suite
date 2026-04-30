@@ -15,7 +15,7 @@ not a full launch-monitor certification protocol.
 | Driver launch around 11 deg and spin around 2500-2700 rpm | `LaunchConditions` examples and docs | TrackMan tour averages and `docs/physics/BALL_FLIGHT_MODEL_DOCUMENTATION.md` validation targets | Typical measured launch-monitor quantities |
 | Aerodynamic drag coefficient base `cd0 = 0.21` | `BallProperties.cd0` | Existing model docs cite Waterloo / wind-tunnel-style coefficient fits. | Illustrative model coefficient |
 | Lift slope `cl1 = 0.38` and lift cap `MAX_LIFT_COEFFICIENT = 0.25` | `BallProperties.calculate_cl`; `ball_flight_physics.py` | Existing model docs cite spin-parameter coefficient fits. | Illustrative model coefficient and numerical guard |
-| Spin decay rate `SPIN_DECAY_RATE_S = 0.05 1/s` | `BallProperties.spin_decay_rate`; `compute_spin_decay` | Labeled as TrackMan-derived in constants, but no raw fitting dataset is bundled. | Illustrative placeholder; tests verify monotonic exponential behavior only |
+| Spin decay rate `SPIN_DECAY_RATE_S = 0.05 1/s` | `BallProperties.spin_decay_rate`; `compute_spin_decay` | Labeled as TrackMan-derived in constants, but no raw fitting dataset is bundled. | Illustrative assumption; tests verify monotonic exponential behavior only until a bundled fitting dataset is available |
 
 ## Validation Boundary
 
@@ -33,7 +33,7 @@ The focused tests verify that:
 
 The tests deliberately do not claim that the selected constants calibrate a
 specific ball, clubhead, player, or environment. Values without bundled primary
-data are treated as model assumptions or illustrative placeholders.
+data are treated as model assumptions.
 
 ## Sources
 
