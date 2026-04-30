@@ -77,9 +77,14 @@ jobs:
     outputs:
       runner: ${{ steps.check.outputs.runner }}
     steps:
-      - name: Set runner
+      - name: Check for self-hosted runner
         id: check
+        env:
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
+          if [ -n "${GITHUB_OUTPUT:-}" ]; then
+            mkdir -p "$(dirname "$GITHUB_OUTPUT")"
+          fi
           ONLINE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
             "https://api.github.com/repos/${{ github.repository }}/actions/runners" \
@@ -607,7 +612,7 @@ jobs:
 
       - name: Install Rust toolchain
         if: steps.rust-changes.outputs.has_changes == 'true'
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8
         with:
           components: rustfmt, clippy
           targets: wasm32-unknown-unknown
@@ -740,7 +745,7 @@ jobs:
 
       - name: Install Rust toolchain
         if: steps.rust-changes.outputs.has_changes == 'true'
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8
 
       - name: Cache Cargo registry
         if: steps.rust-changes.outputs.has_changes == 'true'

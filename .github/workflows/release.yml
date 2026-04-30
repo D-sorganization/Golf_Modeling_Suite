@@ -16,8 +16,10 @@ jobs:
     outputs:
       runner: ${{ steps.check.outputs.runner }}
     steps:
-      - name: Set runner
+      - name: Check for self-hosted runner
         id: check
+        env:
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
         run: |
           ONLINE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
@@ -72,7 +74,7 @@ jobs:
           path: dist/
 
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
           skip-existing: true
