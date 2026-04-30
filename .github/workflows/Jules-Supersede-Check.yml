@@ -45,7 +45,7 @@ jobs:
       - name: Check for self-hosted runner
         id: check
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -70,7 +70,7 @@ jobs:
       - name: Find Related Jules PRs
         id: find
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           echo "Checking for superseded Jules PRs after push to main..."
 
@@ -138,7 +138,7 @@ jobs:
       - name: Close Superseded PRs
         if: steps.find.outputs.superseded_count != '0'
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           echo "Closing superseded Jules PRs..."
 

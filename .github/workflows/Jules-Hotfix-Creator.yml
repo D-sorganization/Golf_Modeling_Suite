@@ -45,7 +45,7 @@ jobs:
       - name: Check for self-hosted runner
         id: check
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -92,7 +92,7 @@ jobs:
         id: hotfix
         if: steps.jules.outputs.enabled == 'true'
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           TIMESTAMP=$(date +%Y%m%d-%H%M%S)
           HOTFIX_BRANCH="hotfix/ci-fail-${TIMESTAMP}"
@@ -106,7 +106,7 @@ jobs:
       - name: Fetch CI Logs & Auto-Fix
         if: steps.jules.outputs.enabled == 'true'
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           TARGET_RUN_ID: ${{ inputs.run_id }}
         run: |
           HOTFIX_BRANCH="${{ steps.hotfix.outputs.branch }}"
@@ -131,7 +131,7 @@ jobs:
       - name: Create Urgent PR
         if: steps.jules.outputs.enabled == 'true'
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           HOTFIX_BRANCH="${{ steps.hotfix.outputs.branch }}"
           FAILED_BRANCH="${{ steps.branch.outputs.failed_branch }}"

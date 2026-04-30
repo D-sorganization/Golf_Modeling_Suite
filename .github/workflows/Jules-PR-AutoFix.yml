@@ -79,7 +79,7 @@ jobs:
       - name: Check for self-hosted runner
         id: check
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
             --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
@@ -110,7 +110,7 @@ jobs:
       - name: Get Branch Info
         id: branch
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           if [ -n "${{ github.event.inputs.branch }}" ]; then
             BRANCH="${{ github.event.inputs.branch }}"
@@ -147,7 +147,7 @@ jobs:
         id: limits
         if: steps.branch.outputs.skip != 'true'
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           BRANCH: ${{ steps.branch.outputs.branch }}
         run: |
           # Count recent autofix commits on this branch to prevent loops
@@ -199,7 +199,7 @@ jobs:
         id: fix-loop
         if: steps.branch.outputs.skip != 'true' && steps.limits.outputs.exceeded != 'true'
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           BRANCH: ${{ steps.branch.outputs.branch }}
           PR_NUMBER: ${{ steps.branch.outputs.pr_number }}
           MAX_ITERATIONS: ${{ steps.limits.outputs.remaining_attempts }}
@@ -382,7 +382,7 @@ jobs:
           steps.fix-loop.outputs.status != '' &&
           github.event.inputs.dry_run != 'true'
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ steps.branch.outputs.pr_number }}
           STATUS: ${{ steps.fix-loop.outputs.status }}
           ITERATIONS: ${{ steps.fix-loop.outputs.iterations_used }}
