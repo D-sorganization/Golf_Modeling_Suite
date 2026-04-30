@@ -31,12 +31,17 @@ jobs:
     outputs:
       runner: ${{ steps.check.outputs.runner }}
     steps:
-      - name: Set runner
+      - name: Check for self-hosted runner
         id: check
+        env:
+          GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
+        shell: bash
         run: |
-          echo "runner=d-sorg-fleet" >> $GITHUB_OUTPUT
-            --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
-            2>/dev/null || echo "0")
+
+          if [ -n "${GITHUB_OUTPUT:-}" ]; then
+            mkdir -p "$(dirname "$GITHUB_OUTPUT")"
+          fi
+          ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' 2>/dev/null || echo "0")
           if [[ "$ONLINE" =~ ^[0-9]+$ ]] && [[ "$ONLINE" -gt 0 ]]; then
             mkdir -p "$(dirname "$GITHUB_OUTPUT")"
             echo "runner=d-sorg-fleet" >> "$GITHUB_OUTPUT"
@@ -62,6 +67,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
 
       - name: Add spec-exempt label for Bolt optimizations or chores
         uses: actions/github-script@v8
