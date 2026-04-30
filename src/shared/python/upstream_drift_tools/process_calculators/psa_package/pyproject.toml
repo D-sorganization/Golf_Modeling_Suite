@@ -74,6 +74,12 @@ ignore = [
     "E501",  # line too long (handled by formatter)
 ]
 
+[tool.ruff.lint.per-file-ignores]
+# Jupyter notebooks: print() is the natural output mechanism for
+# interactive analysis. The "no print() in src/" rule targets *.py modules.
+"*.ipynb" = ["T201"]
+"**/*.ipynb" = ["T201"]
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
