@@ -28,6 +28,8 @@ UpstreamDrift (formerly Golf Modeling Suite) consolidates multiple golf swing mo
 - **MATLAB Integration**: Simscape Multibody models for additional analysis
 
 For detailed documentation, please visit the **[Documentation Hub](docs/README.md)**.
+For a narrow employer-facing walkthrough, start with the
+**[golf modeling portfolio demo](docs/portfolio/golf_modeling_demo.md)**.
 
 ## Key Features
 
