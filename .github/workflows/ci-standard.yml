@@ -63,7 +63,7 @@ jobs:
     name: Reject hosted runner routing
     runs-on: d-sorg-fleet
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - name: Run local-only workflow guard
         shell: bash
         run: |
@@ -101,10 +101,10 @@ jobs:
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: { python-version: "3.11" }
       - run: pip install ruff==0.14.10 mypy>=1.15.0 bandit==1.7.7 pydocstyle==6.3.0
 
@@ -221,7 +221,7 @@ jobs:
           cat matlab_quality_report.txt
 
       - name: Upload MATLAB Report
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
           name: matlab-quality-report
@@ -235,7 +235,7 @@ jobs:
       matrix:
         python: ["3.10", "3.11", "3.12"]
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Install System Dependencies
         run: |
@@ -262,7 +262,7 @@ jobs:
             libxcb-shape0 \
             libxcb-xinerama0 \
             libxcb-xkb1
-      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: ${{ matrix.python }}
 
@@ -380,9 +380,9 @@ jobs:
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - name: Checkout Tools Hub
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           repository: ${{ vars.TOOLS_REPOSITORY || format('{0}/Tools', github.repository_owner) }}
           path: _tools_dep
@@ -420,7 +420,7 @@ jobs:
             libxcb-shape0 \
             libxcb-xinerama0 \
             libxcb-xkb1
-      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: "3.11"
       - name: Create stub ui/dist for editable install
@@ -461,8 +461,8 @@ jobs:
       run:
         working-directory: ./ui
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
-      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
           node-version: "24"
           cache: "npm"
@@ -497,7 +497,7 @@ jobs:
     if: false # DISABLED - Requires MATLAB license not available in CI
     continue-on-error: true
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - uses: matlab-actions/setup-matlab@1770faad53f3e1b73e51246d84fbbca0745fc989
       - uses: matlab-actions/run-command@0fb3db0ce40da62f6b55928f522bbf7dbbd9202a
@@ -516,8 +516,8 @@ jobs:
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     if: false # DISABLED - No Arduino components in this project
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
-      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with: { python-version: "3.11" }
       - run: pip install platformio
       - name: Verify Build
@@ -535,7 +535,7 @@ jobs:
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 0
 
@@ -584,7 +584,7 @@ jobs:
       - name: Cache Cargo registry
         if: steps.rust-changes.outputs.has_changes == 'true'
 
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           repository: ${{ vars.TOOLS_REPOSITORY || format('{0}/Tools', github.repository_owner) }}
           path: _tools_dep
@@ -599,7 +599,7 @@ jobs:
 
       - name: Cache Cargo registry and build
         if: steps.rust-changes.outputs.has_changes == 'true'
-        uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
         with:
           path: |
             ~/.cargo/registry
@@ -673,7 +673,7 @@ jobs:
     runs-on: d-sorg-fleet
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 0
 
@@ -703,7 +703,7 @@ jobs:
 
       - name: Setup Python
         if: steps.rust-changes.outputs.has_changes == 'true'
-        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: "3.11"
 
@@ -713,7 +713,7 @@ jobs:
 
       - name: Cache Cargo registry
         if: steps.rust-changes.outputs.has_changes == 'true'
-        uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
         with:
           path: |
             ~/.cargo/registry
