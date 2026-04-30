@@ -70,6 +70,17 @@ jobs:
           set -euo pipefail
           python3 scripts/check_local_only_workflows.py
 
+  action-pinning:
+    name: Enforce action SHA pinning
+    runs-on: d-sorg-fleet
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: Audit GitHub Actions pinning
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/check_github_actions_pinned.py
+
   # -- Dispatcher: route to self-hosted if available --------------------------
   pick-runner:
     runs-on: d-sorg-fleet
