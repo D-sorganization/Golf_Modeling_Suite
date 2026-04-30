@@ -179,6 +179,7 @@ select = [
     "BLE",   # blind except (broad-exception-caught)
     "C90",   # mccabe cyclomatic complexity
 ]
+
 ignore = [
     "E501",    # line too long (handled by formatter)
     "B008",    # function call in default arg (FastAPI Depends)
