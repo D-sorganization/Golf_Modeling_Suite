@@ -41,9 +41,13 @@ jobs:
           if [ -n "${GITHUB_OUTPUT:-}" ]; then
             mkdir -p "$(dirname "$GITHUB_OUTPUT")"
           fi
-          ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
-            --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
-            2>/dev/null || echo "0")
+          if [ -z "${GH_TOKEN:-}" ]; then
+            ONLINE=1
+          else
+            ONLINE=$(gh api -H "Accept: application/vnd.github+json" /orgs/${{ github.repository_owner }}/actions/runners --paginate \
+              --jq 'if .runners then [.runners[] | select(.status == "online") | select(.labels[].name == "d-sorg-fleet")] | length else 0 end' \
+              2>/dev/null || echo "0")
+          fi
           if [[ "$ONLINE" =~ ^[0-9]+$ ]] && [[ "$ONLINE" -gt 0 ]]; then
             mkdir -p "$(dirname "$GITHUB_OUTPUT")"
             echo "runner=d-sorg-fleet" >> "$GITHUB_OUTPUT"
@@ -65,7 +69,7 @@ jobs:
         run: git config --global core.longpaths true
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
         with:
           fetch-depth: 0
 
@@ -118,7 +122,7 @@ jobs:
 
       - name: Post warning comment
         if: steps.check.outputs.needs_update == 'true'
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8
         with:
           script: |
             const body = `## -- SPEC.md Update Required
