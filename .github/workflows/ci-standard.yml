@@ -61,7 +61,7 @@ permissions:
 jobs:
   local-only-workflows:
     name: Reject hosted runner routing
-    runs-on: d-sorg-fleet
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
       - name: Run local-only workflow guard
@@ -72,7 +72,7 @@ jobs:
 
   # -- Dispatcher: route to self-hosted if available --------------------------
   pick-runner:
-    runs-on: d-sorg-fleet
+    runs-on: ubuntu-latest
     timeout-minutes: 2
     outputs:
       runner: ${{ steps.check.outputs.runner }}
@@ -669,7 +669,7 @@ jobs:
           echo "- - WASM: target compiled and verified" >> $GITHUB_STEP_SUMMARY
 
   audit-actions:
-    runs-on: d-sorg-fleet
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332a
       - name: audit GitHub Actions pinning
@@ -683,7 +683,7 @@ jobs:
 
   rust-quickstart:
     name: Rust Quickstart
-    runs-on: d-sorg-fleet
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6

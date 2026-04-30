@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   check-kill-switch:
-    runs-on: d-sorg-fleet
+    runs-on: ubuntu-latest
     outputs:
       enabled: ${{ steps.check.outputs.enabled }}
     steps:
@@ -29,7 +29,7 @@ jobs:
   pick-runner:
     needs: check-kill-switch
     if: needs.check-kill-switch.outputs.enabled == 'true'
-    runs-on: d-sorg-fleet
+    runs-on: ubuntu-latest
     timeout-minutes: 2
     outputs:
       runner: ${{ steps.check.outputs.runner }}

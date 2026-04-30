@@ -8,7 +8,7 @@ on:
 
 jobs:
   auto-rebase:
-    runs-on: d-sorg-fleet
+    runs-on: ubuntu-latest
     steps:
       - name: Placeholder
         run: |
