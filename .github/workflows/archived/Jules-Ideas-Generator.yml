@@ -27,11 +27,11 @@ jobs:
   generate-ideas:
     runs-on: d-sorg-fleet
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
         with:
           node-version: "24"
 
@@ -251,7 +251,7 @@ jobs:
           done
 
       - name: Commit Ideas Updates
-        uses: stefanzweifel/git-auto-commit-action@v7
+        uses: stefanzweifel/git-auto-commit-action@8756aa072ef5b4a081a4d13ffde3431688005370
         with:
           commit_message: "docs(ideas): augment research topics and resources"
           file_pattern: "docs/IDEAS.md"
