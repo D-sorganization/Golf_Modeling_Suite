@@ -1,21 +1,21 @@
 # Review Comments Archive - 2026-04-30
 
-Generated: 2026-04-30T09:38:24.891705
+Generated: 2026-04-30T22:39:12.305222
 
 ## Reviewer (chatgpt-codex-connector[bot]) (1 comments)
 
-### PR #3534: src/api/routes/simulation.py:38
+### PR #3563: scripts/ci/generate_portfolio_demo_output.py:None
 
-Actionable: No
+Actionable: Yes
 Has Suggestion: No
 
 ```
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Rename Request parameter to satisfy slowapi request lookup**
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Remove `sys.path` injection from CI generator**
 
-`slowapi`'s `@limiter.limit(...)` wrapper looks for a parameter literally named `request`/`websocket` and then checks that value is a `starlette.requests.Request`. In these handlers, `request` is the Pydantic body model while the actual HTTP request is named `http_request`, so the limiter reads the wrong object and raises before route logic execute...
+Prepending the repository root to `sys.path` here makes import resolution depend on whatever top-level files happen to exist in the checkout, so the generator can silently import shadow modules and produce inconsistent artifacts across environments. This also violates the repository guideline in `AGENTS.md` (`No Deprecated/Outdated Code`) that forbids `sys.path...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3534#discussion_r3169445739)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3563#discussion_r3172199418)
 
 ---
 
