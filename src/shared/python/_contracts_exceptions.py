@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 
-from shared.python._contracts_level import (
+from src.shared.python._contracts_level import (
     ContractLevel,
     _ContractState,
 )
