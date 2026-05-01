@@ -5,6 +5,7 @@ import csv
 from pathlib import Path
 
 import numpy as np
+
 from src.shared.python.physics.ball_flight_physics import (
     BallFlightSimulator,
     BallProperties,
