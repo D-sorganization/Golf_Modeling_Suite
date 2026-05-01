@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.92                                             |
+| **Spec Version**        | 1.0.93                                             |
 | **Last Spec Update**    | 2026-05-01                                         |
 
 ## 2. Purpose & Mission
@@ -471,6 +471,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 ## 12. Change Log
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------- |
+| 2026-05-01 | 1.0.93  | Updated portfolio demo documentation and examples with corrected simulation fixture numbers for basic flight. |
 | 2026-04-30 | 1.0.88  | Added an offline GitHub Actions supply-chain guard that rejects external workflow actions not pinned to commit SHAs. |
 | 2026-04-30 | 1.0.87  | Added source-backed golf ball-flight and impact validation contracts, including explicit altitude bounds for air-density computations and portfolio-facing golf modeling documentation. |
 | 2026-04-27 | 1.0.83  | Fixed Bandit B604 false positive alerts in test files by adding nosec annotations. |

@@ -123,9 +123,8 @@ class GreenContourResponse(BaseModel):
 @router.post("/simulate", response_model=PuttSimulationResponse)
 @limiter.limit(get_limit("API_LIMIT_PUTT_SIMULATE", "10/minute"))
 @precondition(
-    lambda http_request, request: (
-        request.direction_x != 0.0 or request.direction_y != 0.0
-    ),
+    lambda http_request, request: request.direction_x != 0.0
+    or request.direction_y != 0.0,
     "Putt direction vector must not be zero",
 )
 @handle_api_errors

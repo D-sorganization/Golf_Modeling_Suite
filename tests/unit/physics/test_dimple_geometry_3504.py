@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from src.shared.python.physics.dimple_geometry import (
     MAX_DRAG_REDUCTION,
     RE_TRANSITION,
