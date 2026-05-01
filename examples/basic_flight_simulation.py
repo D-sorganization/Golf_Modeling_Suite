@@ -72,7 +72,9 @@ def main() -> None:
         carry_m = float(landing_pts[-1].position[0])
         carry_yards = carry_m * 1.0936
         print(f"\nCarry distance: {carry_yards:.2f} yd ({carry_m:.2f} m)")
-        print("Physics: Features aerodynamic effects including lift (Magnus effect) and drag.")
+        print(
+            "Physics: Features aerodynamic effects including lift (Magnus effect) and drag."
+        )
     else:
         print("\nBall did not land (insufficient trajectory data)")
 
