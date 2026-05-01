@@ -31,7 +31,16 @@ def generate_portfolio_demo_output(output_path: Path | None = None) -> None:
         )
 
     # Match the values in docs/portfolio/golf_modeling_demo.md
-    ball = BallProperties()  # Use defaults
+    ball = BallProperties(
+        mass=0.0459,
+        diameter=0.04267,
+        cd0=0.25,
+        cd1=0.0,
+        cd2=0.0,
+        cl0=0.15,
+        cl1=0.0,
+        cl2=0.0,
+    )
     env = EnvironmentalConditions(
         gravity=9.81,
         air_density=1.225,
@@ -45,7 +54,7 @@ def generate_portfolio_demo_output(output_path: Path | None = None) -> None:
     )
 
     simulator = BallFlightSimulator(ball=ball, env=env)
-    trajectory = simulator.simulate_trajectory(launch, max_time=10.0, dt=0.01)
+    trajectory = simulator.simulate_trajectory(launch, max_time=10.0, dt=0.05)
 
     # Calculate outputs
     landing_pts = [p for p in trajectory if p.height <= 0.0]
