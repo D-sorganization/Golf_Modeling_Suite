@@ -52,7 +52,7 @@ function NavButton({
             aria-label={label}
             className="flex items-center gap-2 px-3 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 rounded-lg border border-blue-600/40 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
         >
-            <Icon className="w-5 h-5" aria-hidden="true" />
+            <Icon className="w-5 h-5" aria-hidden={true} />
             <span className="text-sm font-medium hidden sm:inline">{label}</span>
         </button>
     );
@@ -80,11 +80,11 @@ function getStatusChip(status: string): { label: string; color: string } {
 function CategoryIcon({ category }: { category: string }) {
     switch (category) {
         case 'physics_engine':
-            return <Zap className="w-3.5 h-3.5" aria-hidden="true" />;
+            return <Zap className="w-3.5 h-3.5" aria-hidden={true} />;
         case 'tool':
-            return <Wrench className="w-3.5 h-3.5" aria-hidden="true" />;
+            return <Wrench className="w-3.5 h-3.5" aria-hidden={true} />;
         case 'external':
-            return <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />;
+            return <ExternalLink className="w-3.5 h-3.5" aria-hidden={true} />;
         default:
             return null;
     }
@@ -136,7 +136,7 @@ function TileCard({
                     }}
                 />
                 {/* Fallback icon rendered behind the img; visible if img fails */}
-                <span className="absolute text-gray-400 opacity-0 group-[img-error]:opacity-100" aria-hidden="true">
+                <span className="absolute text-gray-400 opacity-0 group-[img-error]:opacity-100" aria-hidden={true}>
                     <CategoryIcon category={tile.category} />
                 </span>
             </div>
@@ -195,7 +195,7 @@ export function LauncherDashboard({
         return (
             <div className="flex items-center justify-center h-screen bg-gray-900" role="status" aria-label="Loading launcher">
                 <div className="text-center">
-                    <Loader2 className="w-10 h-10 animate-spin text-blue-400 mx-auto mb-4" aria-hidden="true" />
+                    <Loader2 className="w-10 h-10 animate-spin text-blue-400 mx-auto mb-4" aria-hidden={true} />
                     <p className="text-gray-400 text-sm">Loading launcher tiles...</p>
                 </div>
             </div>
@@ -206,14 +206,14 @@ export function LauncherDashboard({
         return (
             <div className="flex items-center justify-center h-screen bg-gray-900" role="alert">
                 <div className="text-center max-w-md">
-                    <AlertTriangle className="w-10 h-10 text-red-400 mx-auto mb-4" aria-hidden="true" />
+                    <AlertTriangle className="w-10 h-10 text-red-400 mx-auto mb-4" aria-hidden={true} />
                     <h2 className="text-lg font-semibold text-white mb-2">Failed to Load</h2>
                     <p className="text-sm text-gray-400 mb-4">{error || 'Could not connect to the launcher API.'}</p>
                     <button
                         onClick={onRefetch}
                         className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
                     >
-                        <RefreshCw className="w-4 h-4" aria-hidden="true" />
+                        <RefreshCw className="w-4 h-4" aria-hidden={true} />
                         Retry
                     </button>
                 </div>
@@ -239,7 +239,7 @@ export function LauncherDashboard({
                         aria-label="Help"
                         className="flex items-center gap-2 px-3 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 rounded-lg border border-blue-600/40 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
                     >
-                        <HelpCircle className="w-5 h-5" aria-hidden="true" />
+                        <HelpCircle className="w-5 h-5" aria-hidden={true} />
                         <span className="text-sm font-medium hidden sm:inline">Help</span>
                     </button>
                 </div>
@@ -251,7 +251,7 @@ export function LauncherDashboard({
                 {engines.length > 0 && (
                     <section aria-label="Physics Engines" className="mb-8">
                         <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-                            <Zap className="w-4 h-4" aria-hidden="true" />
+                            <Zap className="w-4 h-4" aria-hidden={true} />
                             Physics Engines
                         </h2>
                         <div
@@ -277,7 +277,7 @@ export function LauncherDashboard({
                 {toolsAndExternal.length > 0 && (
                     <section aria-label="Tools and Utilities" className="mb-8">
                         <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-                            <Wrench className="w-4 h-4" aria-hidden="true" />
+                            <Wrench className="w-4 h-4" aria-hidden={true} />
                             Tools & Utilities
                         </h2>
                         <div
@@ -329,7 +329,7 @@ export function LauncherDashboard({
                         }
           `}
                 >
-                    <Zap className="w-4 h-4" aria-hidden="true" />
+                    <Zap className="w-4 h-4" aria-hidden={true} />
                     Launch Simulation
                 </button>
             </footer>
