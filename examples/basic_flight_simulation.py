@@ -66,6 +66,8 @@ def main() -> None:
             f"{pt.height:<15.2f} {pt.speed:<12.2f}"
         )
 
+    print("\nPhysics: trajectory simulates lift and drag forces on the ball.")
+
     # --- Carry distance: last point before height < 0 ---
     landing_pts = [p for p in trajectory if p.height <= 0.0]
     if len(landing_pts) >= 2:
