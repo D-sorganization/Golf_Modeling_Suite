@@ -75,7 +75,9 @@ def main() -> None:
     else:
         print("\nBall did not land (insufficient trajectory data)")
 
-    print("\nPhysics: The simulation includes aerodynamic drag and lift forces based on the ball properties.")
+    print(
+        "\nPhysics: The simulation includes aerodynamic drag and lift forces based on the ball properties."
+    )
 
 
 if __name__ == "__main__":
