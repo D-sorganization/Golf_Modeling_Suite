@@ -42,7 +42,7 @@ def test_example_produces_output(example_file: Path) -> None:
     Run-only demos (aerodynamics_demo.py, etc.) just need to exit successfully.
     """
     repo_root = Path(__file__).parent.parent.parent
-    env = {**os.environ, "PYTHONPATH": f"{repo_root}:{repo_root}/src:{repo_root}/src/shared/python"}
+    env = {**os.environ, "PYTHONPATH": f"{repo_root}{os.pathsep}{repo_root}/src{os.pathsep}{repo_root}/src/shared/python"}
 
     result = subprocess.run(
         [sys.executable, str(example_file)],
@@ -83,7 +83,7 @@ def test_basic_flight_simulation_output() -> None:
         pytest.skip(f"Example file not found: {example}")
 
     repo_root = Path(__file__).parent.parent.parent
-    env = {**os.environ, "PYTHONPATH": f"{repo_root}:{repo_root}/src:{repo_root}/src/shared/python"}
+    env = {**os.environ, "PYTHONPATH": f"{repo_root}{os.pathsep}{repo_root}/src{os.pathsep}{repo_root}/src/shared/python"}
 
     result = subprocess.run(
         [sys.executable, str(example)],
