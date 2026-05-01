@@ -125,7 +125,9 @@ def generate_portfolio_demo_output(output_path: Path | None = None) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(
-            f, fieldnames=["quantity", "category", "value", "unit", "source"], lineterminator="\n"
+            f,
+            fieldnames=["quantity", "category", "value", "unit", "source"],
+            lineterminator="\n",
         )
         writer.writeheader()
         writer.writerows(rows)
