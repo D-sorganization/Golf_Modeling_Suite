@@ -62,6 +62,10 @@ For a focused reviewer walkthrough, start with the
 - **Comprehensive Plotting**: 10+ plot types including energy, phase diagrams, 3D trajectories
 - **Data Export**: CSV and JSON formats for external analysis
 - **Cross-Engine Comparison**: Validate results across different physics engines
+## 🏌️ For Employers / Reviewers
+
+If you are reviewing this repository to evaluate modeling, validation, or AI-readiness skills, please start with our **[Portfolio Demo path](docs/portfolio/golf_modeling_demo.md)**. It provides a single, reproducible, and narrowly-scoped artifact that demonstrates our core physics and kinematic validation capabilities without requiring deep setup.
+
 
 ## Quick Start
 
