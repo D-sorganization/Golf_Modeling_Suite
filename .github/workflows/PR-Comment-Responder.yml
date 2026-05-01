@@ -89,6 +89,7 @@ jobs:
         if: steps.filter.outputs.is_bot != 'true' && steps.pr_state.outputs.should_skip != 'true'
         with:
           fetch-depth: 1
+          ref: refs/heads/main
 
       - name: Analyze Comment
         id: analyze
