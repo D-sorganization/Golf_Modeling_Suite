@@ -57,6 +57,7 @@ def test_make_versioned_router_v1_prefix() -> None:
     """``make_versioned_router('v1')`` returns an APIRouter prefixed /v1."""
     pytest.importorskip("fastapi")
     from fastapi import APIRouter
+
     from src.api.versioning import make_versioned_router
 
     router = make_versioned_router("v1")
@@ -69,6 +70,7 @@ def test_make_versioned_router_v2_deprecated_with_sunset() -> None:
     """Deprecated router records the flag and registers a dependency hook."""
     pytest.importorskip("fastapi")
     from fastapi import APIRouter
+
     from src.api.versioning import make_versioned_router
 
     router = make_versioned_router(
@@ -88,6 +90,7 @@ def test_mounted_router_returns_deprecation_headers() -> None:
     pytest.importorskip("fastapi")
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
+
     from src.api.versioning import make_versioned_router
 
     sunset = "Wed, 11 Nov 2026 23:59:59 GMT"
@@ -114,6 +117,7 @@ def test_mounted_non_deprecated_router_omits_headers() -> None:
     pytest.importorskip("fastapi")
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
+
     from src.api.versioning import make_versioned_router
 
     router = make_versioned_router("v1")
