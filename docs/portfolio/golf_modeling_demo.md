@@ -72,7 +72,7 @@ The demo uses one driver-launch condition:
 | --- | ---: | --- |
 | Ball speed | 70.0 m/s | Measured input |
 | Launch angle | 12.0 deg | Measured input |
-| Backspin | 2700 rpm | Measured input |
+| Backspin | 2700.0 rpm | Measured input |
 | Air density | 1.225 kg/m^3 | Environmental assumption |
 | Gravity | 9.81 m/s^2 | Environmental assumption |
 
@@ -86,9 +86,9 @@ The committed reference fixture is
 
 | Output | Reference value | Interpretation |
 | --- | ---: | --- |
-| Carry distance | 218.4 m / 238.8 yd | Simulated landing range for the stated launch condition |
-| Peak height | 31.6 m | Simulated apex height |
-| Flight time | 6.4 s | Simulated time aloft |
+| Carry distance | 187.3 m / 204.9 yd | Simulated landing range for the stated launch condition |
+| Peak height | 42.4 m | Simulated apex height |
+| Flight time | 7.6 s | Simulated time aloft |
 
 Reviewers should treat these as model-conditioned outputs and sample fixture
 values. They are useful for checking output shape, units, and assumptions before
