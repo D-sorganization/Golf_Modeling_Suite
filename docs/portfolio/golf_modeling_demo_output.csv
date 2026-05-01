@@ -2,6 +2,8 @@ quantity,category,value,unit,source
 ball_speed,measured_input,70.0,m/s,driver launch-condition fixture
 launch_angle,measured_input,12.0,deg,driver launch-condition fixture
 backspin,measured_input,2700,rpm,driver launch-condition fixture
+cd0,assumption,0.25,dimensionless,ball aerodynamics fixture
+cl0,assumption,0.15,dimensionless,ball aerodynamics fixture
 air_density,assumption,1.225,kg/m^3,sea-level standard atmosphere
 gravity,assumption,9.81,m/s^2,default simulation environment
 carry_distance,simulated_output,186.9,m,portfolio reference fixture

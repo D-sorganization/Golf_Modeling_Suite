@@ -89,6 +89,20 @@ def generate_portfolio_demo_output(output_path: Path | None = None) -> None:
             "source": "driver launch-condition fixture",
         },
         {
+            "quantity": "cd0",
+            "category": "assumption",
+            "value": "0.25",
+            "unit": "dimensionless",
+            "source": "ball aerodynamics fixture",
+        },
+        {
+            "quantity": "cl0",
+            "category": "assumption",
+            "value": "0.15",
+            "unit": "dimensionless",
+            "source": "ball aerodynamics fixture",
+        },
+        {
             "quantity": "air_density",
             "category": "assumption",
             "value": "1.225",
