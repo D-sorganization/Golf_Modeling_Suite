@@ -63,6 +63,8 @@ For a focused reviewer walkthrough, start with the
 - **Data Export**: CSV and JSON formats for external analysis
 - **Cross-Engine Comparison**: Validate results across different physics engines
 
+For a focused reviewer walkthrough, check out the **[golf modeling portfolio demo](docs/portfolio/golf_modeling_demo.md)**.
+
 ## Quick Start
 
 ### Prerequisites
