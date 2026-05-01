@@ -21,9 +21,7 @@ from src.shared.python.physics.atmosphere import (
     MAX_VALID_ALTITUDE_M,
     MIN_VALID_ALTITUDE_M,
 )
-from src.shared.python.physics.atmosphere import (
-    air_density as _isa_air_density,
-)
+from src.shared.python.physics.atmosphere import air_density as _isa_air_density
 from src.shared.python.physics.ball_launch_conditions import (
     EnvironmentalConditions,
     LaunchConditions,
