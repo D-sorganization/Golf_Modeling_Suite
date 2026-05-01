@@ -19,6 +19,7 @@ _project_root = _this_file.parents[1]
 sys.path.insert(0, str(_project_root))
 
 import numpy as np  # noqa: E402
+
 from src.shared.python.physics.ball_flight_physics import (  # noqa: E402
     BallFlightSimulator,
     BallProperties,
@@ -74,7 +75,9 @@ def main() -> None:
         print(f"\nCarry distance: {carry_m:.2f} m ({carry_yd:.2f} yd)")
     else:
         print("\nBall did not land (insufficient trajectory data)")
-    print("\nPhysics: The ball experiences drag proportional to the square of its speed and lift due to its backspin, altering its trajectory compared to a vacuum.")
+    print(
+        "\nPhysics: The ball experiences drag proportional to the square of its speed and lift due to its backspin, altering its trajectory compared to a vacuum."
+    )
 
 
 if __name__ == "__main__":
