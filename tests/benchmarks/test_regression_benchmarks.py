@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+
 from src.api.models.requests import SimulationRequest
 from src.shared.python.physics.aerodynamics import (
     AerodynamicsEngine,
@@ -29,7 +30,6 @@ from src.shared.python.physics.aerodynamics import (
 )
 from src.shared.python.physics.ball_launch_conditions import LaunchConditions
 from src.shared.python.physics.ball_simulator import BallFlightSimulator
-
 from tests.benchmarks.regression_helpers import (
     assert_within_regression_threshold,
     measure_median_seconds,

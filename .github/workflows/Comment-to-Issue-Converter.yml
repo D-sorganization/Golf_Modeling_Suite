@@ -337,7 +337,7 @@ jobs:
 
           if ! git diff --staged --quiet; then
             git commit -m "docs: archive review comments from PRs"
-            git push origin HEAD:"$TARGET_BRANCH"
+            git pull --rebase origin "TARGET_BRANCH" && git push origin HEAD:"$TARGET_BRANCH"
           else
             echo "No changes to commit"
           fi
