@@ -20,7 +20,7 @@ We use the default, CI-supported MuJoCo environment profile.
 ```bash
 # From the repository root:
 # Install the core suite and supported MuJoCo tier
-python -m pip install -e ".[dev]"
+python -m pip install -e ".[dev,rust]"
 ```
 
 *Note: If you encounter issues or want to run on alternative engines (e.g., Drake, Pinocchio), refer to [docs/engines/support_tiers.md](../engines/support_tiers.md) for alternative install commands.*

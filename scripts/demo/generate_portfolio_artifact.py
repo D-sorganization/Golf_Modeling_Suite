@@ -9,9 +9,10 @@ validating our cross-engine pipeline.
 
 Run this script to generate `kinematic_summary.json` for portfolio inspection.
 """
+import json
 import os
 import sys
-import json
+
 import numpy as np
 
 # Ensure we can import from src even if not installed
@@ -26,6 +27,7 @@ from src.shared.python.physics.ball_flight_physics import (
     EnvironmentalConditions,
     LaunchConditions,
 )
+
 
 def main():
     output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "output", "portfolio_demo"))
@@ -80,7 +82,7 @@ def main():
     with open(json_path, "w") as f:
         json.dump(kinematic_summary, f, indent=2)
 
-    print(f"✅ Demo completed successfully.")
+    print("✅ Demo completed successfully.")
     print(f"Artifacts saved to: {output_dir}")
     print(f"  - {os.path.basename(json_path)} (Inspect this file for structural validation)")
 
