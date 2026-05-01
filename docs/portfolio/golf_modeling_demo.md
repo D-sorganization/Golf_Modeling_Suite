@@ -86,8 +86,8 @@ The committed reference fixture is
 
 | Output | Reference value | Interpretation |
 | --- | ---: | --- |
-| Carry distance | 187.2 m / 204.7 yd | Simulated landing range for the stated launch condition |
-| Peak height | 42.6 m | Simulated apex height |
+| Carry distance | 187.3 m / 204.9 yd | Simulated landing range for the stated launch condition |
+| Peak height | 42.2 m | Simulated apex height |
 | Flight time | 7.6 s | Simulated time aloft |
 
 Reviewers should treat these as model-conditioned outputs and sample fixture
