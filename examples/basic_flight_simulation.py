@@ -76,6 +76,7 @@ def main() -> None:
         print(f"\nCarry distance: {carry_m:.2f} m ({carry_yards:.2f} yd)")
     else:
         print("\nBall did not land (insufficient trajectory data)")
+    print("Physics: Simulation incorporates aerodynamic drag and Magnus lift.")
 
     print(
         "\nPhysics: The simulation includes aerodynamic drag and lift forces based on the ball properties."
