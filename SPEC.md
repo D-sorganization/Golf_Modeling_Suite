@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.87                                             |
+| **Spec Version**        | 1.0.88                                             |
 | **Last Spec Update**    | 2026-04-30                                         |
 
 ## 2. Purpose & Mission
@@ -471,7 +471,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 ## 12. Change Log
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------- |
-| 2026-04-30 | 1.0.87  | Added source-backed golf ball-flight and impact validation contracts, including explicit altitude bounds for air-density computations and portfolio-facing golf modeling documentation. |
+| 2026-04-30 | 1.0.88  | Added source-backed golf ball-flight and impact validation contracts, including explicit altitude bounds for air-density computations and portfolio-facing golf modeling documentation. Updated portfolio demo outputs with real values. |
 | 2026-04-27 | 1.0.83  | Fixed Bandit B604 false positive alerts in test files by adding nosec annotations. |
 | 2026-04-27 | 1.0.83  | Bolt: Replace np.linalg.norm with math.hypot in collision queries. |
 | 2026-04-26 | 1.0.81  | fix: Restore missing jobs in `Code-Metrics.yml` and `release.yml`; correct non-UTF-8 characters in 55 workflows causing 0s CI failures. |
