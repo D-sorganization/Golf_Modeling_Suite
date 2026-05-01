@@ -88,6 +88,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         if: steps.filter.outputs.is_bot != 'true' && steps.pr_state.outputs.should_skip != 'true'
         with:
+          ref: refs/heads/main
           fetch-depth: 1
 
       - name: Analyze Comment
@@ -217,7 +218,7 @@ jobs:
 
           This comment will be processed by Jules-Comment-Processor on the next scheduled run."
 
-            git push
+            git push origin HEAD:main
             echo "::notice::Comment queued for batch processing"
           else
             echo "No changes to commit"
