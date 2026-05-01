@@ -1,0 +1,14 @@
+{
+  "provenance": {
+    "software": "golf-modeling-suite v1.0.0-beta",
+    "timestamp_utc": "2026-05-01T08:01:47Z",
+    "git_commit": "0cf3a2d68f70093572366e1275335248bdabca7e",
+    "git_branch": "fix-3565",
+    "git_dirty": true,
+    "python_version": "3.12.13",
+    "numpy_version": "2.4.4"
+  },
+  "total_simulations": 12,
+  "max_range": 203.94,
+  "best_angle": 45
+}

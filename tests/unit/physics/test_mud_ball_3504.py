@@ -6,7 +6,6 @@ import math
 from itertools import pairwise
 
 import pytest
-
 from src.shared.python.physics.mud_ball import (
     MAX_CD_CLAMP,
     MAX_MUD_MASS_G,

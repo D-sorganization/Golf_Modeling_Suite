@@ -1,10 +1,13 @@
-# Exported by golf-modeling-suite v1.0.0-beta (git: 3e39df8d (branch: fix-3565))
-# Generated: 2026-05-01T07:51:46Z (UTC)
-# Local time: 2026-05-01T07:51:46.725882+00:00
+# Exported by golf-modeling-suite v1.0.0-beta (git: 0cf3a2d6 (branch: fix-3565) [UNCOMMITTED CHANGES])
+# Generated: 2026-05-01T08:01:47Z (UTC)
+# Local time: 2026-05-01T08:01:47.440505+00:00
 # Environment:
 #   Python: 3.12.13
 #   NumPy: 2.4.4
 #   MuJoCo: 3.8.0
+#
+# WARNING: Exported with uncommitted code changes!
+# Results may not be exactly reproducible from git SHA alone.
 #
 launch_angle_deg,velocity_ms,range_ideal_m,range_drag_m
 30,20.0,35.32,28.26
