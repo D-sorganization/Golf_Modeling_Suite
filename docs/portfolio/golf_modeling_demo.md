@@ -75,6 +75,12 @@ The demo uses one driver-launch condition:
 | Backspin | 2700 rpm | Measured input |
 | Air density | 1.225 kg/m^3 | Environmental assumption |
 | Gravity | 9.81 m/s^2 | Environmental assumption |
+| cd0 | 0.25 dimensionless | custom ball fixture |
+| cd1 | 0.0 dimensionless | custom ball fixture |
+| cd2 | 0.0 dimensionless | custom ball fixture |
+| cl0 | 0.15 dimensionless | custom ball fixture |
+| cl1 | 0.0 dimensionless | custom ball fixture |
+| cl2 | 0.0 dimensionless | custom ball fixture |
 
 These values describe a plausible driver shot. They are not presented as
 measured data from a named player, launch monitor, or published study.
