@@ -43,7 +43,7 @@ def test_example_produces_output(example_file: Path) -> None:
     """
     repo_root = Path(__file__).parent.parent.parent
     env = os.environ.copy()
-    env["PYTHONPATH"] = str(repo_root)
+    env["PYTHONPATH"] = f"{repo_root}:{repo_root}/src:{repo_root}/src/shared/python:{repo_root}/vendor/ud-tools/src/shared/python"
 
     result = subprocess.run(
         [sys.executable, str(example_file)],
