@@ -9,19 +9,11 @@ validating our cross-engine pipeline.
 
 Run this script to generate `kinematic_summary.json` for portfolio inspection.
 """
-
 import json
 import os
 import sys
 
 import numpy as np
-
-# Ensure we can import from src even if not installed
-_this_file = os.path.abspath(__file__)
-_project_root = os.path.abspath(os.path.join(os.path.dirname(_this_file), "..", ".."))
-if _project_root not in sys.path:
-    sys.path.insert(0, _project_root)
-
 from src.shared.python.physics.ball_flight_physics import (
     BallFlightSimulator,
     BallProperties,
@@ -29,11 +21,15 @@ from src.shared.python.physics.ball_flight_physics import (
     LaunchConditions,
 )
 
+# Ensure we can import from src even if not installed
+_this_file = os.path.abspath(__file__)
+_project_root = os.path.abspath(os.path.join(os.path.dirname(_this_file), "..", ".."))
+if _project_root not in sys.path:
+    sys.path.insert(0, _project_root)
+
 
 def main():
-    output_dir = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "..", "..", "output", "portfolio_demo")
-    )
+    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "output", "portfolio_demo"))
     os.makedirs(output_dir, exist_ok=True)
 
     print("Initializing Golf Kinematics Demo...")
@@ -42,12 +38,8 @@ def main():
     ball = BallProperties(
         mass=0.0459,  # kg
         diameter=0.04267,  # m
-        cd0=0.25,
-        cd1=0.0,
-        cd2=0.0,
-        cl0=0.15,
-        cl1=0.0,
-        cl2=0.0,
+        cd0=0.25, cd1=0.0, cd2=0.0,
+        cl0=0.15, cl1=0.0, cl2=0.0,
     )
     env = EnvironmentalConditions(
         gravity=9.81,
@@ -69,7 +61,7 @@ def main():
         "engine": "rust_physics_kernel",
         "model": "BallFlightSimulator",
         "validation_status": "Simulated (Rust Backed)",
-        "trajectory": [],
+        "trajectory": []
     }
 
     # Dump a subset of the trajectory state
@@ -78,7 +70,7 @@ def main():
             "time_s": round(pt.time, 3),
             "position_x_m": round(float(pt.position[0]), 3),
             "height_z_m": round(float(pt.height), 3),
-            "speed_ms": round(float(pt.speed), 3),
+            "speed_ms": round(float(pt.speed), 3)
         }
         kinematic_summary["trajectory"].append(state)
         if pt.height < 0:
@@ -91,10 +83,7 @@ def main():
 
     print("✅ Demo completed successfully.")
     print(f"Artifacts saved to: {output_dir}")
-    print(
-        f"  - {os.path.basename(json_path)} (Inspect this file for structural validation)"
-    )
-
+    print(f"  - {os.path.basename(json_path)} (Inspect this file for structural validation)")
 
 if __name__ == "__main__":
     main()
