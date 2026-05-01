@@ -104,7 +104,7 @@ def test_basic_flight_simulation_output() -> None:
     assert "z (m)" in output, "Missing trajectory height header"
     assert "|v| (m/s)" in output, "Missing velocity column header"
     assert "Carry distance:" in output, "Missing carry distance output"
-    assert "m (" in output and "yd)" in output, "Missing meters/yards output"
+    assert "yd (" in output and "m)" in output, "Missing meters/yards output"
     assert "Physics:" in output, "Missing physics explanation"
     assert "drag" in output.lower(), "Physics output should mention drag"
     assert "lift" in output.lower(), "Physics output should mention lift"
