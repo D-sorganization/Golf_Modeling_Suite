@@ -560,25 +560,49 @@ jobs:
         working-directory: ./ui
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Check for frontend changes
+        id: frontend-changes
+        working-directory: .
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+          if git diff --quiet "origin/${{ github.base_ref }}" HEAD -- ui; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "No ui/ changes detected; skipping frontend checks for this PR."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        if: steps.frontend-changes.outputs.skip != 'true'
         with:
           node-version: "24"
           cache: "npm"
           cache-dependency-path: ui/package-lock.json
 
       - name: Install Dependencies
+        if: steps.frontend-changes.outputs.skip != 'true'
         run: npm ci
 
       - name: Type Check
+        if: steps.frontend-changes.outputs.skip != 'true'
         run: npm run type-check
 
       - name: Lint
+        if: steps.frontend-changes.outputs.skip != 'true'
         run: npm run lint
 
       - name: Run Tests
+        if: steps.frontend-changes.outputs.skip != 'true'
         run: npm run test:run
 
       - name: Build Check
+        if: steps.frontend-changes.outputs.skip != 'true'
         run: npm run build
 
   # =============================================================================
