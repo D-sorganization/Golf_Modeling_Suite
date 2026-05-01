@@ -154,6 +154,7 @@ UpstreamDrift/
 ## 5. Desired Functionality
 
 ### Core Features
+- **Employer-Facing Demo**: A reproducible `docs/portfolio/golf_modeling_demo.md` and automated artifact generator (`scripts/demo/generate_portfolio_artifact.py`) designed to quickly demonstrate modeling capabilities and output validation for a fresh checkout.
 
 | #   | Feature                            | Status | Description                                                                                         |
 | --- | ---------------------------------- | ------ | --------------------------------------------------------------------------------------------------- |
