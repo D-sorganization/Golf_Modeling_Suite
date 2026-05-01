@@ -54,7 +54,7 @@ jobs:
         run: |
           mkdir -p "$(dirname "$GITHUB_OUTPUT")"
           echo "runner=d-sorg-fleet" >> "$GITHUB_OUTPUT"
-          echo "Routing CI to d-sorg-fleet."
+          echo "Self-hosted dispatcher selected d-sorg-fleet"
 
   discover:
     needs: [check-kill-switch, pick-runner]

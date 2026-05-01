@@ -34,7 +34,7 @@ jobs:
         run: |
           mkdir -p "$(dirname "$GITHUB_OUTPUT")"
           echo "runner=d-sorg-fleet" >> "$GITHUB_OUTPUT"
-          echo "Routing CI to d-sorg-fleet."
+          echo "Self-hosted dispatcher selected d-sorg-fleet"
   run-heavy-tests:
     needs: pick-runner
     name: Heavy Integration Tests

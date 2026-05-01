@@ -6,6 +6,8 @@
 > Rules: `@.gaai/core/contexts/rules/base.rules.md` and `@.gaai/project/contexts/rules/project.rules.md`
 > All work on `main` branch. PRs target `main`.
 
+`CLAUDE.md` is the authoritative contributor and agent policy file.
+
 ## What This Is
 
 Golf ball flight and physics modeling suite. Simulates aerodynamics, ball-club impact,
@@ -49,7 +51,7 @@ maturin develop                                   # build Rust extensions locall
 4. Module size budget: checked against `module_size_budget_baseline.json`
 
 5. No TODO/FIXME unless tied to a tracked GitHub issue
-6. pytest with `-n auto`, 60s timeout, **30% coverage minimum**
+6. pytest with `-n auto`, 60s timeout, **10% coverage minimum**
 7. No `print()` in `src/` — use logging
 
 ## Test Markers

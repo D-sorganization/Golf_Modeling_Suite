@@ -17,6 +17,7 @@ DEFAULT_CONFIG_PATH = Path("scripts/config/file_size_budget.json")
 
 
 def _repo_root() -> Path:
+    """Return the repository root for this script."""
     return Path(__file__).resolve().parents[2]
 
 
@@ -59,9 +60,10 @@ def _line_count(path: Path) -> int:
         return sum(1 for _ in handle)
 
 
-def _active_exceptions(config: dict) -> tuple[dict[str, dict], list[str]]:
+def _collect_active_exceptions(config: dict) -> tuple[dict[str, dict], list[str]]:
     active_exceptions: dict[str, dict] = {}
     invalid_exceptions: list[str] = []
+
     for exc in config.get("exceptions", []):
         path = str(exc.get("path", "")).strip()
         owner = str(exc.get("owner", "")).strip()
@@ -80,6 +82,7 @@ def _active_exceptions(config: dict) -> tuple[dict[str, dict], list[str]]:
             invalid_exceptions.append(
                 f"Invalid expires_on date in exception: {path} ({exc.get('expires_on')})"
             )
+
     return active_exceptions, invalid_exceptions
 
 
@@ -103,7 +106,8 @@ def main() -> int:
     repo_root = _repo_root()
     config = _load_config(repo_root, args.config_path)
     budget = int(config.get("max_lines", 1200))
-    active_exceptions, invalid_exceptions = _active_exceptions(config)
+
+    active_exceptions, invalid_exceptions = _collect_active_exceptions(config)
 
     try:
         changed_files = _changed_python_files(repo_root, args.base_ref)
