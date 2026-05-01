@@ -2,22 +2,22 @@
 """Generate the portfolio demo output artifact from the physics simulation."""
 
 import csv
-import sys
 from pathlib import Path
 
 import numpy as np
-
-_project_root = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(_project_root))
-
-from src.shared.python.physics.ball_flight_physics import (  # noqa: E402
+from src.shared.python.physics.ball_flight_physics import (
     BallFlightSimulator,
     BallProperties,
     EnvironmentalConditions,
     LaunchConditions,
 )
 
-OUTPUT_FILE = _project_root / "docs" / "portfolio" / "golf_modeling_demo_output.csv"
+OUTPUT_FILE = (
+    Path(__file__).resolve().parents[2]
+    / "docs"
+    / "portfolio"
+    / "golf_modeling_demo_output.csv"
+)
 
 
 def main() -> None:
