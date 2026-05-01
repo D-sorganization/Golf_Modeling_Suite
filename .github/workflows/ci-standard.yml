@@ -227,8 +227,8 @@ jobs:
         run: |
           # Force-reinstall sortedcontainers before pip-audit: the shared runner toolcache
           # can carry a half-installed sortedcontainers that makes cyclonedx (pip-audit dep) fail.
-          python -m pip install --ignore-installed --no-deps "sortedcontainers>=2.4.0"
-          python -m pip install --ignore-installed pip-audit
+          python -m pip install --force-reinstall --no-deps "sortedcontainers>=2.4.0"
+          python -m pip install --force-reinstall pip-audit
 
           # Ignore CVEs with no fix version available or transitive dependencies:
           # - CVE-2024-23342 (ecdsa): No fix version available
