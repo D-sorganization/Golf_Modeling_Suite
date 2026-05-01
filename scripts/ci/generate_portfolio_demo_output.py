@@ -31,7 +31,16 @@ def generate_portfolio_demo_output(output_path: Path | None = None) -> None:
         )
 
     # Match the values in docs/portfolio/golf_modeling_demo.md
-    ball = BallProperties(mass=0.0459, diameter=0.04267, cd0=0.25, cd1=0.0, cd2=0.0, cl0=0.15, cl1=0.0, cl2=0.0)
+    ball = BallProperties(
+        mass=0.0459,
+        diameter=0.04267,
+        cd0=0.25,
+        cd1=0.0,
+        cd2=0.0,
+        cl0=0.15,
+        cl1=0.0,
+        cl2=0.0,
+    )
     env = EnvironmentalConditions(
         gravity=9.81,
         air_density=1.225,
