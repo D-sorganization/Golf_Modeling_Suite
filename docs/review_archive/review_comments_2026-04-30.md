@@ -1,21 +1,36 @@
 # Review Comments Archive - 2026-04-30
 
-Generated: 2026-04-30T09:38:24.891705
+Generated: 2026-04-30T18:21:30.670915
 
-## Reviewer (chatgpt-codex-connector[bot]) (1 comments)
+## Reviewer (chatgpt-codex-connector[bot]) (2 comments)
 
-### PR #3534: src/api/routes/simulation.py:38
+### PR #3556: tests/test_portfolio_demo.py:24
 
 Actionable: No
 Has Suggestion: No
 
 ```
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Rename Request parameter to satisfy slowapi request lookup**
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Guard demo execution test on Rust-kernel availability**
 
-`slowapi`'s `@limiter.limit(...)` wrapper looks for a parameter literally named `request`/`websocket` and then checks that value is a `starlette.requests.Request`. In these handlers, `request` is the Pydantic body model while the actual HTTP request is named `http_request`, so the limiter reads the wrong object and raises before route logic execute...
+This test unconditionally requires `python scripts/demo/generate_portfolio_artifact.py` to succeed, but the script calls `BallFlightSimulator.simulate_trajectory(...)` (in `scripts/demo/generate_portfolio_artifact.py`) which raises `RuntimeError` when `upstream_physics` is not installed; I verified this locally and the repo’s core lane installs `.[dev]`...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3534#discussion_r3169445739)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3556#discussion_r3171591205)
+
+---
+
+### PR #3556: docs/portfolio/golf_modeling_demo.md:None
+
+Actionable: Yes
+Has Suggestion: No
+
+```
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Update demo setup to install required Rust dependency**
+
+The reproduction instructions say to install only `.[dev]`, then run the portfolio artifact script, but that script depends on the Rust-backed simulator path and fails without `upstream_physics`. Because `pyproject.toml` keeps Rust in a separate `rust` extra, following the documented steps currently leads to a runtime failure rather than a reproducible ...
+```
+
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/3556#discussion_r3171591211)
 
 ---
 
