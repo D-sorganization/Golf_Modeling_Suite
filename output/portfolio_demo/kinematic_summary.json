@@ -1,0 +1,91 @@
+{
+  "engine": "rust_physics_kernel",
+  "model": "BallFlightSimulator",
+  "validation_status": "Simulated (Rust Backed)",
+  "trajectory": [
+    {
+      "time_s": 0.0,
+      "position_x_m": 0.0,
+      "height_z_m": 0.0,
+      "speed_ms": 50.0
+    },
+    {
+      "time_s": 0.5,
+      "position_x_m": 20.674,
+      "height_z_m": 8.927,
+      "speed_ms": 40.395
+    },
+    {
+      "time_s": 1.0,
+      "position_x_m": 36.61,
+      "height_z_m": 17.581,
+      "speed_ms": 32.419
+    },
+    {
+      "time_s": 1.5,
+      "position_x_m": 49.094,
+      "height_z_m": 25.018,
+      "speed_ms": 25.95
+    },
+    {
+      "time_s": 2.0,
+      "position_x_m": 59.21,
+      "height_z_m": 30.814,
+      "speed_ms": 20.911
+    },
+    {
+      "time_s": 2.5,
+      "position_x_m": 67.793,
+      "height_z_m": 34.782,
+      "speed_ms": 17.149
+    },
+    {
+      "time_s": 3.0,
+      "position_x_m": 75.407,
+      "height_z_m": 36.844,
+      "speed_ms": 14.688
+    },
+    {
+      "time_s": 3.5,
+      "position_x_m": 82.409,
+      "height_z_m": 36.99,
+      "speed_ms": 13.652
+    },
+    {
+      "time_s": 4.0,
+      "position_x_m": 89.026,
+      "height_z_m": 35.272,
+      "speed_ms": 13.981
+    },
+    {
+      "time_s": 4.5,
+      "position_x_m": 95.419,
+      "height_z_m": 31.799,
+      "speed_ms": 15.297
+    },
+    {
+      "time_s": 5.0,
+      "position_x_m": 101.726,
+      "height_z_m": 26.745,
+      "speed_ms": 17.106
+    },
+    {
+      "time_s": 5.5,
+      "position_x_m": 108.083,
+      "height_z_m": 20.329,
+      "speed_ms": 19.028
+    },
+    {
+      "time_s": 6.0,
+      "position_x_m": 114.616,
+      "height_z_m": 12.795,
+      "speed_ms": 20.833
+    },
+    {
+      "time_s": 6.5,
+      "position_x_m": 121.419,
+      "height_z_m": 4.38,
+      "speed_ms": 22.411
+    }
+  ]
+}
