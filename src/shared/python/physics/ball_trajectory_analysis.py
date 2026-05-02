@@ -8,8 +8,9 @@ decomposition (issue #2486).
 
 from __future__ import annotations
 
-import numpy as np
 import math
+
+import numpy as np
 
 from src.shared.python.physics.ball_launch_conditions import TrajectoryPoint
 from src.shared.python.physics.ball_properties import NUMERICAL_EPSILON
