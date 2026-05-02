@@ -52,7 +52,7 @@ def fit_box(mesh: Any) -> PrimitiveFit:
         )
 
         volume_ratio = mesh.volume / obb.volume
-        error = 1.0 - volume_ratio
+        error = abs(1.0 - volume_ratio)
 
         return PrimitiveFit(
             primitive_type="box",
@@ -78,7 +78,8 @@ def fit_sphere(mesh: Any) -> PrimitiveFit:
     try:
         center = tuple(mesh.centroid.tolist())
         vertices = mesh.vertices - mesh.centroid
-        radius = float(np.sqrt(np.max(np.einsum("ij,ij->i", vertices, vertices))))
+        vertices_f = np.asarray(vertices, dtype=np.float64)
+        radius = float(np.sqrt(np.max(np.einsum("ij,ij->i", vertices_f, vertices_f))))
 
         sphere_volume = (4 / 3) * np.pi * radius**3
         volume_ratio = mesh.volume / sphere_volume
@@ -89,7 +90,7 @@ def fit_sphere(mesh: Any) -> PrimitiveFit:
             dimensions=(radius,),
             rotation=(0, 0, 0, 1),
             volume_ratio=volume_ratio,
-            error_metric=1.0 - volume_ratio,
+            error_metric=abs(1.0 - volume_ratio),
         )
     except (ValueError, ZeroDivisionError, OverflowError, TypeError) as e:
         logger.warning(f"Sphere fitting failed: {e}")
@@ -136,7 +137,7 @@ def fit_cylinder(mesh: Any) -> PrimitiveFit:
             dimensions=(radius, height),
             rotation=quat,
             volume_ratio=volume_ratio,
-            error_metric=1.0 - volume_ratio,
+            error_metric=abs(1.0 - volume_ratio),
         )
     except ImportError as e:
         logger.warning(f"Cylinder fitting failed: {e}")
