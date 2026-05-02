@@ -43,9 +43,10 @@ def fit_box(mesh: Any) -> PrimitiveFit:
         from scipy.spatial.transform import Rotation
 
         rot = Rotation.from_matrix(transform[:3, :3])
-        q_list = rot.as_quat().tolist()
+        q_arr = rot.as_quat()
+        q_list: Any = q_arr.tolist() if hasattr(q_arr, "tolist") else list(q_arr)
         quat: tuple[float, float, float, float] = (
-            float(q_list[0]),
+            float(q_list[0]),  # type: ignore[index]
             float(q_list[1]),
             float(q_list[2]),
             float(q_list[3]),
@@ -122,9 +123,10 @@ def fit_cylinder(mesh: Any) -> PrimitiveFit:
         from scipy.spatial.transform import Rotation
 
         rot = Rotation.from_matrix(transform[:3, :3])
-        q_list = rot.as_quat().tolist()
+        q_arr = rot.as_quat()
+        q_list: Any = q_arr.tolist() if hasattr(q_arr, "tolist") else list(q_arr)
         quat: tuple[float, float, float, float] = (
-            float(q_list[0]),
+            float(q_list[0]),  # type: ignore[index]
             float(q_list[1]),
             float(q_list[2]),
             float(q_list[3]),
