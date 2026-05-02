@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import TYPE_CHECKING
@@ -59,18 +60,16 @@ class Obstacle:
         if not (point is not None):
             raise ValueError("point must be provided")
         if self.obstacle_type == ObstacleType.SPHERE:
-            return float(
-                np.linalg.norm(point - self.position)
-                - self.dimensions[0]
-                - self.inflation
-            )
+            diff = point - self.position
+            return float(math.hypot(*diff) - self.dimensions[0] - self.inflation)
 
         if self.obstacle_type in (ObstacleType.BOX, ObstacleType.HUMAN):
             # Box distance
             half_dims = self.dimensions / 2
             local_point = point - self.position
             clamped = np.clip(local_point, -half_dims, half_dims)
-            return float(np.linalg.norm(local_point - clamped) - self.inflation)
+            diff = local_point - clamped
+            return float(math.hypot(*diff) - self.inflation)
 
         if self.obstacle_type == ObstacleType.CYLINDER:
             # Cylinder distance (axis along z)
@@ -112,7 +111,7 @@ class Obstacle:
         )
         gradient = (dist_plus - dist_minus) / (2 * eps)
 
-        norm = np.linalg.norm(gradient)
+        norm = math.hypot(*gradient)
         if norm > eps:
             gradient /= norm
 
