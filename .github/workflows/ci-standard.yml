@@ -105,6 +105,8 @@ jobs:
       - name: Install Quality Tools
         run: |
           python -m ensurepip --upgrade || true
+          python -m pip install setuptools wheel || true
+          python -m pip install "pip<24.1" || true
           python -m pip install ruff==0.14.10 "mypy>=1.15.0" bandit==1.7.7 pydocstyle==6.3.0
 
       - name: Lint
