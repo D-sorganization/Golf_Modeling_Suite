@@ -470,6 +470,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 
 ## 12. Change Log
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| 2026-05-02 | 1.0.89  | Bolt: Optimize norm calculation in collision checker using `math.hypot` instead of `np.sqrt(np.vdot)`. |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------- |
 | 2026-04-30 | 1.0.88  | Added an offline GitHub Actions supply-chain guard that rejects external workflow actions not pinned to commit SHAs. |
 | 2026-04-30 | 1.0.87  | Added source-backed golf ball-flight and impact validation contracts, including explicit altitude bounds for air-density computations and portfolio-facing golf modeling documentation. |
