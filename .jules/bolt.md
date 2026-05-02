@@ -21,3 +21,7 @@
 ## 2025-05-18 - Optimize bounding sphere radius computation in mesh primitive fitting
 **Learning:** `np.linalg.norm` evaluates element-wise square roots and allocates intermediate temporary arrays. Since `max` and `sqrt` are commutative for positive numbers, computing the maximum sum-of-squares first using `np.einsum`, then applying `sqrt` avoids memory allocations and performs exactly 1 square root instead of N square roots.
 **Action:** Replace `np.max(np.linalg.norm(vertices, axis=1))` with `np.sqrt(np.max(np.einsum('ij,ij->i', vertices, vertices)))` when calculating bounding sphere radii from mesh vertices to improve performance.
+
+## 2026-05-02 - Ensure float input for np.einsum
+**Learning:** When using `np.einsum` to optimize operations like squared distances on mesh vertices, passing integer-type arrays can lead to integer overflow or unexpected results (like negative sums or NaNs). `np.linalg.norm` implicitly upcasts to float, but `np.einsum` does not.
+**Action:** Explicitly ensure the input array is cast to a float type (e.g., `np.asarray(vertices, dtype=np.float64)`) before the `einsum` operation.
