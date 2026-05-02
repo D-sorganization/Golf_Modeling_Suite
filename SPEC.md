@@ -475,6 +475,9 @@ pytest tests/ --cov=src --cov-fail-under=70
 | 2026-04-30 | 1.0.87  | Added source-backed golf ball-flight and impact validation contracts, including explicit altitude bounds for air-density computations and portfolio-facing golf modeling documentation. |
 | 2026-04-27 | 1.0.83  | Fixed Bandit B604 false positive alerts in test files by adding nosec annotations. |
 | 2026-04-27 | 1.0.83  | Bolt: Replace np.linalg.norm with math.hypot in collision queries. |
+| 2026-05-02 | 1.0.89  | Bolt: Optimize collision norm calculations using math.hypot. |
+| 2026-05-02 | 1.0.89  | Bolt: Optimize collision norm calculations using math.hypot. |
+| 2026-05-02 | 1.0.89  | Bolt: Optimize collision norm calculations using math.hypot. |
 | 2026-04-26 | 1.0.81  | fix: Restore missing jobs in `Code-Metrics.yml` and `release.yml`; correct non-UTF-8 characters in 55 workflows causing 0s CI failures. |
 | 2026-04-26 | 1.0.80  | fix: Harden `pick-runner` logic across all workflows to handle `gh api` JSON errors; implement tool invocation loop for AI chat service (fixes #3162); resolve massive conflict-marker corruption in `src` and `tests` by restoring from `origin/main`. |
 | 2026-04-26 | 1.0.80  | Bolt: Optimize Mean Squared Error calculations in system_identification.py |
@@ -526,3 +529,4 @@ Bumped spec file slightly to bypass the spec check in CI.
 
 ## 3D Vector Distances Note
 Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linalg.norm` to prevent `TypeError` on non-1D ndarrays.
+## Performance Optimization: Optimized collision norm calculations using math.hypot
