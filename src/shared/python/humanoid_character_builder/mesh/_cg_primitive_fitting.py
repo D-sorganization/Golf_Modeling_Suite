@@ -43,7 +43,13 @@ def fit_box(mesh: Any) -> PrimitiveFit:
         from scipy.spatial.transform import Rotation
 
         rot = Rotation.from_matrix(transform[:3, :3])
-        quat = tuple(rot.as_quat().tolist())
+        q = rot.as_quat()
+        quat: tuple[float, float, float, float] = (
+            float(q[0]),
+            float(q[1]),
+            float(q[2]),
+            float(q[3]),
+        )
 
         volume_ratio = mesh.volume / obb.volume
         error = 1.0 - volume_ratio
@@ -72,7 +78,8 @@ def fit_sphere(mesh: Any) -> PrimitiveFit:
     try:
         center = tuple(mesh.centroid.tolist())
         vertices = mesh.vertices - mesh.centroid
-        radius = float(np.sqrt(np.max(np.einsum("ij,ij->i", vertices, vertices))))
+        vertices_f = vertices.astype(float, copy=False)
+        radius = float(np.sqrt(np.max(np.einsum("ij,ij->i", vertices_f, vertices_f))))
 
         sphere_volume = (4 / 3) * np.pi * radius**3
         volume_ratio = mesh.volume / sphere_volume
@@ -116,7 +123,13 @@ def fit_cylinder(mesh: Any) -> PrimitiveFit:
         from scipy.spatial.transform import Rotation
 
         rot = Rotation.from_matrix(transform[:3, :3])
-        quat = tuple(rot.as_quat().tolist())
+        q = rot.as_quat()
+        quat: tuple[float, float, float, float] = (
+            float(q[0]),
+            float(q[1]),
+            float(q[2]),
+            float(q[3]),
+        )
 
         return PrimitiveFit(
             primitive_type="cylinder",

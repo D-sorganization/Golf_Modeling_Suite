@@ -205,3 +205,4 @@ venv/
 test_venv/
 .claude/worktrees/
 .jules/pending/
+.jules/pending
