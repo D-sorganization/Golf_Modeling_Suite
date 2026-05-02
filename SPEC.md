@@ -500,6 +500,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 | 2026-03-29 | 1.0.1   | Performance optimization in validation package: explicitly computing magnitudes instead of using `np.linalg.norm` to avoid NumPy reduction overhead on small axes.                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | 2026-03-29 | 1.0.1   | Performance optimization: Replaced `np.linalg.norm(..., axis=1)` with explicit element-wise arithmetic (`np.sqrt` and `np.hypot`) in physics ground reaction forces calculations for a ~5-10x speedup                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | 2026-04-29 | 1.0.0   | Initial specification for UpstreamDrift v2.1.0; documented all 14 features, architecture, testing strategy, and CI/CD pipeline                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| 2026-05-02 | 1.0.87  | Bolt: Optimized `np.linalg.norm` to use `math.hypot` in high-frequency collision checks |
 
 ---
 
@@ -526,3 +527,5 @@ Bumped spec file slightly to bypass the spec check in CI.
 
 ## 3D Vector Distances Note
 Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linalg.norm` to prevent `TypeError` on non-1D ndarrays.
+
+| 2026-05-02 | 1.0.87  | Bolt: Optimized `np.linalg.norm` to use `math.hypot` in high-frequency collision checks |
