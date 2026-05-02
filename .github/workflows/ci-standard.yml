@@ -145,10 +145,14 @@ jobs:
             ruff format --check .
           fi
 
-      - run: pip install mypy types-PyYAML types-requests
+      - run: |
+          python -m ensurepip --upgrade || true
+          python -m pip install mypy types-PyYAML types-requests
       - name: Create stub ui/dist for editable install (quality checks only)
         run: mkdir -p ui/dist
-      - run: pip install -e .[dev]
+      - run: |
+          python -m ensurepip --upgrade || true
+          python -m pip install -e .[dev]
 
       # Baseline mypy check across all of src/. On PRs, only check changed
       # source files so unrelated repository-wide type debt does not block
