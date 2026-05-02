@@ -729,11 +729,10 @@ class MeshLoader:
         if "meshes" not in gltf or not gltf["meshes"]:
             raise MeshLoadError("No meshes found in GLTF", str(path))
 
-        # For basic loading, create placeholder mesh
-        return LoadedMesh(
-            name=path.stem,
-            vertices=[MeshVertex(position=np.array([0.0, 0.0, 0.0]))],
-            faces=[MeshFace(indices=np.array([0, 0, 0]))],
+        # Without trimesh, we cannot reliably load glTF accessor/buffer data
+        raise MeshLoadError(
+            "GLTF loading requires trimesh library to parse accessors/buffers properly",
+            str(path),
         )
 
     def _load_fbx(self, path: Path) -> LoadedMesh:
