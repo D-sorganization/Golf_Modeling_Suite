@@ -43,7 +43,8 @@ def fit_box(mesh: Any) -> PrimitiveFit:
         from scipy.spatial.transform import Rotation
 
         rot = Rotation.from_matrix(transform[:3, :3])
-        quat = tuple(rot.as_quat().tolist())
+        q_list = [float(x) for x in rot.as_quat().tolist()[:4]]
+        quat = (q_list[0], q_list[1], q_list[2], q_list[3]) if len(q_list) == 4 else (0.0, 0.0, 0.0, 1.0)
 
         volume_ratio = mesh.volume / obb.volume
         error = 1.0 - volume_ratio
@@ -116,7 +117,8 @@ def fit_cylinder(mesh: Any) -> PrimitiveFit:
         from scipy.spatial.transform import Rotation
 
         rot = Rotation.from_matrix(transform[:3, :3])
-        quat = tuple(rot.as_quat().tolist())
+        q_list = [float(x) for x in rot.as_quat().tolist()[:4]]
+        quat = (q_list[0], q_list[1], q_list[2], q_list[3]) if len(q_list) == 4 else (0.0, 0.0, 0.0, 1.0)
 
         return PrimitiveFit(
             primitive_type="cylinder",
