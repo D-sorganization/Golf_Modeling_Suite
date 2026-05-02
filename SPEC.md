@@ -1,24 +1,18 @@
 # SPEC.md — Repository Specification Document
-
 <!--
   TEMPLATE VERSION: 1.0.0
   LAST UPDATED: 2026-04-29
-
   This is the canonical specification template for all repositories in the
   D-sorganization fleet. Every repo MUST have a SPEC.md at its root.
-
   INSTRUCTIONS:
   1. Copy this template to the root of your repository as SPEC.md
   2. Fill in every section — leave nothing as "[TODO]"
   3. Keep this document updated with every PR that changes functionality
   4. CI will block merges if SPEC.md is stale (source changed but spec didn't)
-
   AUDIENCE: This document is designed for both human developers AND AI agents.
   Write clearly, use concrete examples, and avoid ambiguity.
 -->
-
 ## 1. Identity
-
 | Field                   | Value                                              |
 | ----------------------- | -------------------------------------------------- |
 | **Repository Name**     | `UpstreamDrift`                                    |
@@ -29,15 +23,10 @@
 | **Current Version**     | 2.1.0                                              |
 | **Spec Version**        | 1.0.93                                             |
 | **Last Spec Update**    | 2026-05-01                                         |
-
 ## 2. Purpose & Mission
-
 UpstreamDrift is a multi-physics golf swing biomechanical simulation platform that consolidates five leading physics engines (MuJoCo, Drake, Pinocchio, OpenSim, MyoSuite) for cross-validated biomechanical analysis. It enables researchers and biomechanists to simulate human movement across models ranging from simplified 2-DOF pendulums to complex 290-muscle musculoskeletal systems, providing a unified interface for comparative physics analysis and professional-grade visualization.
-
 ## 3. Goals & Non-Goals
-
 ### Goals
-
 - Integrate and cross-validate five physics engines (MuJoCo, Drake, Pinocchio, OpenSim, MyoSuite) for biomechanical analysis
 - Provide biomechanical analysis tools including inverse kinematics (IK), inverse dynamics (ID), and muscle dynamics modeling
 - Enable motion capture integration and trajectory optimization
@@ -48,21 +37,14 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 - Provide MATLAB/Simulink integration for cross-platform workflow compatibility
 - Implement reinforcement learning integration for learning-based control policies
 - Support models ranging from educational 2-DOF pendulums to complex 290-muscle systems
-
 ### Non-Goals
-
 - Not a general-purpose physics engine; focused exclusively on biomechanical simulation
 - Not intended for non-biomechanical simulations (rigid body dynamics, fluid dynamics, etc.)
 - Not a replacement for domain-specific tools (OpenSim for clinical analysis, MATLAB for controls research)
-
 ## 4. Architecture Overview
-
 ### System Context
-
 UpstreamDrift sits at the center of a biomechanical simulation ecosystem. It depends on five external physics engines as pluggable backends and exposes its functionality through three primary interfaces: a professional PyQt6 GUI for interactive simulation, a FastAPI REST API for programmatic access, and a Tauri desktop application for cross-platform deployment. The system integrates with motion capture systems (via MediaPipe and custom importers), optimization libraries (SciPy, Sympy), and machine learning frameworks (scikit-learn for RL integration). The Rust core (`rust_core/upstream-physics/`) provides high-performance physics kernels for compute-intensive operations.
-
 ### Module Map
-
 ```
 UpstreamDrift/
 ├── src/
@@ -89,7 +71,6 @@ UpstreamDrift/
 │   │   ├── validators.py           # Shared validation logic
 │   │   ├── utilities.py            # Helper functions
 │   │   └── exceptions.py           # Exception definitions
-
 │   └── tools/                      # Development and analysis tools
 │       ├── analysis_tools.py       # Biomechanical analysis utilities
 │       └── validation_tools.py     # Cross-engine validation
@@ -120,7 +101,6 @@ UpstreamDrift/
 │   └── conftest.py                 # Pytest fixtures and configuration
 ├── .github/
 │   └── workflows/
-
 │       ├── ci-standard.yml         # Standard CI checks
 │       ├── heavy-tests-opt-in.yml  # Heavy tests (custom runner)
 │       ├── nightly-cross-validation.yml
@@ -132,9 +112,7 @@ UpstreamDrift/
 ├── SPEC.md                         # This file
 └── README.md
 ```
-
 ### Key Components
-
 | Component                | Location                                          | Purpose                                                                                     |
 | ------------------------ | ------------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | MuJoCo Engine Adapter    | `src/engines/physics_engines/mujoco_engine.py`    | Primary physics engine integration with full support for contact dynamics and muscle models |
@@ -150,11 +128,8 @@ UpstreamDrift/
 | Configuration Manager    | `src/config/`                                     | Centralized configuration loading, validation, and environment management                   |
 | Shared Utilities         | `src/shared/`                                     | Cross-engine validators, helpers, and exception definitions                                 |
 | URDF Models              | `shared/models/`                                  | Canonical model definitions (URDF format) for golf swings, human body, pendulums            |
-
 ## 5. Desired Functionality
-
 ### Core Features
-
 | #   | Feature                            | Status | Description                                                                                         |
 | --- | ---------------------------------- | ------ | --------------------------------------------------------------------------------------------------- |
 | F1  | MuJoCo engine integration          | ✅     | Full support for MuJoCo 3.3.0+ with contact dynamics, muscle actuators, and sensor simulation       |
@@ -171,11 +146,8 @@ UpstreamDrift/
 | F12 | Muscle dynamics analysis           | ✅     | IK, ID, and muscle dynamics computation with Hill-type and Millard muscle models                    |
 | F13 | Motion capture integration         | 🔄     | Import and track motion capture data (C3D, BVH, TRC formats) and compare with simulation            |
 | F14 | Reinforcement learning integration | 🔄     | Gym-compatible interface for RL-based controller learning and policy optimization                   |
-
 ### API / Interface Contract
-
 **REST API Endpoints (FastAPI)**:
-
 - `GET /health` — Health check
 - `POST /simulate` — Run single simulation with specified engine and parameters
 - `POST /cross-validate` — Run multi-engine cross-validation and return results
@@ -184,41 +156,30 @@ UpstreamDrift/
 - `POST /trajectory-optimize` — Optimize trajectory subject to constraints
 - `GET /engines` — List available physics engines and their status
 - `POST /export` — Export simulation model to URDF, MATLAB, or other formats
-
 **GUI Interface (PyQt6)**:
-
 - Model loader and parameter editor
 - Real-time 3D simulation viewer with playback controls
 - Cross-engine comparison visualizer
 - IK/ID solver interface with result tables
 - Trajectory optimization GUI with constraint editor
 - Data export and report generation
-
 **CLI Interface**:
-
 - `upstream-drift simulate --engine mujoco --model golf_swing.urdf`
 - `upstream-drift cross-validate --models model1.urdf model2.urdf`
 - `upstream-drift ik --model human.urdf --target-pose [...] --engine pinocchio`
-
 **Desktop App (Tauri)**:
-
 - Native window management and file dialogs
 - System menu integration
 - Automated updates and crash reporting
-
 ## 6. Data & Configuration
-
 ### Input Data
-
 | Input                    | Format        | Source                          | Schema                                                   |
 | ------------------------ | ------------- | ------------------------------- | -------------------------------------------------------- |
 | Biomechanical Models     | URDF          | `shared/models/`                | URDF 1.0 standard with custom muscle actuator extensions |
 | Motion Capture Data      | C3D, BVH, TRC | External mocap systems or files | Standard formats with marker sets and frame data         |
 | Optimization Constraints | JSON          | User input or configuration     | Custom constraint schema in `src/config/schemas/`        |
 | Control Parameters       | YAML/JSON     | Configuration files or API      | Engine-specific parameter maps validated against schemas |
-
 ### Output Data
-
 | Output                   | Format                 | Destination                 | Description                                                        |
 | ------------------------ | ---------------------- | --------------------------- | ------------------------------------------------------------------ |
 | Simulation Trajectories  | JSON/HDF5              | API response or file export | Joint angles, muscle activations, forces over time                 |
@@ -226,18 +187,13 @@ UpstreamDrift/
 | IK/ID Solutions          | JSON/MATLAB            | API response or file        | Joint angles (IK) and joint torques (ID) with confidence metrics   |
 | Optimized Trajectories   | URDF/MATLAB            | File export                 | Trajectory-optimized model definitions with optimal control inputs |
 | Visualization Data       | JSON (Three.js format) | GUI or web client           | 3D geometry, animation keyframes, and rendering parameters         |
-
 ### Configuration
-
 Configuration is managed through:
-
 - **Environment Variables**: `UPSTREAM_DRIFT_ENGINE` (default: mujoco), `UPSTREAM_DRIFT_API_PORT` (default: 8000)
 - **YAML Config Files**: `~/.upstream_drift/config.yaml` with engine-specific sections
 - **API Request Parameters**: Engine selection, model path, solver options passed as JSON
 - **GUI Settings**: Stored in `~/.upstream_drift/gui_settings.json` (viewport, window size, recent files)
-
 Example config.yaml:
-
 ```yaml
 default_engine: mujoco
 api:
@@ -253,13 +209,9 @@ visualization:
   default_camera: third_person
   background_color: [0.1, 0.1, 0.1, 1.0]
 ```
-
 ## 7. Testing Specification
-
 ### Testing Strategy
-
 UpstreamDrift employs a comprehensive test pyramid with multiple specialized categories:
-
 - **Unit Tests**: Test individual engine adapters, utilities, and validators in isolation
 - **Integration Tests**: Test workflows combining multiple modules (e.g., load model → simulate → export)
 - **Acceptance Tests**: End-to-end scenarios (e.g., full golf swing simulation with visualization)
@@ -268,9 +220,7 @@ UpstreamDrift employs a comprehensive test pyramid with multiple specialized cat
 - **Golf Ball-Flight Source Contracts**: Validate documented aerodynamic, impact, and atmosphere assumptions against `docs/physics/GOLF_BALL_FLIGHT_IMPACT_SOURCE_MAP.md`
 - **Benchmark Tests**: Performance regression detection and optimization validation
 - **Property-Based Tests**: Hypothesis-driven fuzzing for robustness
-
 ### Test Organization
-
 | Category           | Location                    | Framework           | Markers                           |
 | ------------------ | --------------------------- | ------------------- | --------------------------------- |
 | Unit               | `tests/unit/`               | pytest              | `@pytest.mark.unit`               |
@@ -281,18 +231,14 @@ UpstreamDrift employs a comprehensive test pyramid with multiple specialized cat
 | Golf Source Contracts | `tests/unit/shared_python/` | pytest           | source-map contract tests         |
 | Benchmarks         | `tests/benchmarks/`         | pytest-benchmark    | `@pytest.mark.benchmark`          |
 | Property-Based     | `tests/property/`           | hypothesis + pytest | `@pytest.mark.property`           |
-
 ### Coverage Requirements
-
 | Scope            | Minimum | Current | Enforced By                |
 | ---------------- | ------- | ------- | -------------------------- |
 | Overall          | 70%     | ~75%    | CI (`--cov-fail-under=70`) |
 | Engine adapters  | 80%     | ~82%    | CI per-module checks       |
 | API layer        | 75%     | ~78%    | CI per-module checks       |
 | Shared utilities | 85%     | ~87%    | CI per-module checks       |
-
 ### Required Test Scenarios
-
 - [ ] Unit creation with valid URDF returns expected topology (chain, mass distribution)
 - [ ] MuJoCo engine simulation produces reasonable trajectories with gravity effects
 - [ ] Cross-engine validation identifies discrepancies >5% between engines
@@ -304,11 +250,8 @@ UpstreamDrift employs a comprehensive test pyramid with multiple specialized cat
 - [ ] Trajectory optimization improves cost function by >20% over initial guess
 - [ ] Muscle dynamics simulation produces realistic activation patterns
 - [ ] Cross-platform build (Windows, macOS, Linux) produces functional binaries
-
 ## 8. Quality Standards
-
 ### Code Quality Tools
-
 | Tool       | Version | Purpose                | Blocking? |
 | ---------- | ------- | ---------------------- | --------- |
 | 2026-04-27 | 1.0.83  | Fixed Bandit B604 false positive alerts in test files by adding nosec annotations. |
@@ -318,27 +261,20 @@ UpstreamDrift employs a comprehensive test pyramid with multiple specialized cat
 | pytest-cov | 4.0+    | Coverage measurement   | Yes       |
 | bandit     | 1.7+    | Security scanning      | Yes       |
 | hypothesis | 6.0+    | Property-based testing | No        |
-
 ### Design Principles
-
 - **TDD**: Unit tests written before implementation; minimum 70% coverage enforced
 - **Design by Contract (DbC)**: Explicit preconditions and postconditions in engine adapters
 - **DRY**: Cross-engine utilities in `src/shared/` prevent code duplication
 - **Orthogonality**: Engines are loosely coupled; each can be used independently
 - **Explicit is Better**: Function signatures include type hints; no magic string parameters
-
 ### Custom Quality Gates (CI)
-
 Beyond standard tools, CI enforces custom checks:
-
 - **Dependency Direction**: No reverse dependencies (leaf → branch → root)
 - **File Size Budget**: No module exceeds 500 lines; classes capped at 200 LOC
 - **Import Depth**: Maximum 4 import levels to prevent circular dependencies
 - **Physics Fitness**: Cross-engine validation must pass with <5% tolerance
 - **Docker Size Gate**: Built images must not exceed 800 MB
-
 ### CI/CD Pipeline
-
 | Workflow                       | Trigger                                | Purpose                                                         | Blocking?          |
 | ------------------------------ | -------------------------------------- | --------------------------------------------------------------- | ------------------ |
 | `ci-standard.yml`              | Push/PR                                | Lint, type check, unit/integration tests                        | Yes                |
@@ -347,11 +283,8 @@ Beyond standard tools, CI enforces custom checks:
 | `tauri-build.yml`              | Tag release                            | Build desktop apps for Windows/macOS/Linux                      | Yes (for releases) |
 | `vendor-freshness.yml`         | Weekly                                 | Check for stale dependencies and security updates               | No (warning-only)  |
 | `docker-size-gates.yml`        | Push                                   | Ensure Docker image size stays <800 MB                          | Yes                |
-
 ## 9. Dependencies
-
 ### Runtime Dependencies
-
 | Package  | Version | Purpose                                      |
 | -------- | ------- | -------------------------------------------- |
 | numpy    | 1.20+   | Numerical computation                        |
@@ -362,9 +295,7 @@ Beyond standard tools, CI enforces custom checks:
 | mujoco   | 3.3.0+  | Primary physics engine (required)            |
 | PyQt6    | 6.0+    | Professional GUI framework                   |
 | tauri-py | 1.0+    | Tauri bridge for Python backend              |
-
 ### Optional Runtime Dependencies
-
 | Package      | Version | Purpose                                     |
 | ------------ | ------- | ------------------------------------------- |
 | drake        | 1.0+    | Drake physics engine integration            |
@@ -374,9 +305,7 @@ Beyond standard tools, CI enforces custom checks:
 | mediapipe    | 0.9+    | Motion capture integration (pose detection) |
 | scikit-learn | 1.0+    | RL policy learning and clustering           |
 | sympy        | 1.11+   | Symbolic trajectory optimization            |
-
 ### Development Dependencies
-
 | Package    | Version | Purpose                |
 | ---------- | ------- | ---------------------- |
 | 2026-04-27 | 1.0.83  | Fixed Bandit B604 false positive alerts in test files by adding nosec annotations. |
@@ -387,51 +316,38 @@ Beyond standard tools, CI enforces custom checks:
 | mypy       | 1.7+    | Type checking          |
 | bandit     | 1.7+    | Security scanning      |
 | black      | 23.0+   | Code formatter         |
-
 ### Fleet Dependencies
-
 | Repo             | Relationship | Description                                              |
 | ---------------- | ------------ | -------------------------------------------------------- |
 | (none currently) | —            | UpstreamDrift is currently a standalone fleet repository |
-
 ## 10. Deployment & Operations
-
 ### How to Run
-
 ```bash
 # Prerequisites
 - Python 3.10 or later
 - MuJoCo 3.3.0+ with license (community or pro)
 - Optional: Drake, Pinocchio, OpenSim binaries on PATH
 - For Tauri desktop app: Node.js 16+, Rust toolchain
-
 # Installation
 git clone https://github.com/D-sorganization/UpstreamDrift.git
 cd UpstreamDrift
 python -m pip install -e ".[dev]"  # Include dev dependencies
 # For desktop app: cargo install tauri-cli
-
 # Running the FastAPI Server
 uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
-
 # Running the PyQt6 GUI
 python -m src.launchers.gui_launcher
-
 # Running the CLI
 upstream-drift simulate --engine mujoco --model shared/models/golf_swing.urdf
-
 # Building the Tauri Desktop App
 cd ui && npm install && npm run tauri build
 # Outputs: UpstreamDrift.exe (Windows), UpstreamDrift.app (macOS), UpstreamDrift.AppImage (Linux)
-
 # Running Tests
 pytest tests/unit/ -v
 pytest tests/integration/ -v
 pytest tests/ --cov=src --cov-fail-under=70
 ```
-
 ### Build Artifacts
-
 | Artifact              | Format         | Destination             |
 | --------------------- | -------------- | ----------------------- |
 | Python Package        | .whl           | PyPI (on release)       |
@@ -440,15 +356,10 @@ pytest tests/ --cov=src --cov-fail-under=70
 | Desktop App (macOS)   | .dmg bundle    | GitHub releases         |
 | Desktop App (Linux)   | .AppImage      | GitHub releases         |
 | Documentation         | HTML           | GitHub Pages            |
-
 ## 11. Roadmap & Open Issues
-
 ### Current Phase
-
 **Active Development**: Core engine integrations complete; expanding experimental OpenSim and MyoSuite support. Tauri desktop app in active development. Motion capture integration and RL control schemes are in-progress.
-
 ### Planned Work
-
 | Priority | Item                                        | Issue/PR | Target Date |
 | -------- | ------------------------------------------- | -------- | ----------- |
 | P0       | Complete OpenSim integration (F4)           | #45      | Q2 2026     |
@@ -458,16 +369,13 @@ pytest tests/ --cov=src --cov-fail-under=70
 | P1       | Tauri desktop app release (F9)              | #101     | Q2 2026     |
 | P2       | Extended MATLAB integration (export/import) | #112     | Q4 2026     |
 | P2       | Performance profiling and GPU acceleration  | #130     | Q4 2026     |
-
 ### Known Limitations
-
 - OpenSim and MyoSuite integrations are experimental; API may change
 - Cross-engine validation only enforces tolerances on kinematic outputs; dynamics comparison still in development
 - Motion capture import limited to marker-based systems (no IMU data yet)
 - RL integration currently supports basic Gym environments; no hierarchical or multi-agent support
 - Tauri app Windows builds require MSVC toolchain (no MinGW support)
 - Performance scaling beyond 100-muscle models not yet tested
-
 ## 12. Change Log
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------- |
@@ -500,22 +408,15 @@ pytest tests/ --cov=src --cov-fail-under=70
 | 2026-03-29 | 1.0.1   | Performance optimization in validation package: explicitly computing magnitudes instead of using `np.linalg.norm` to avoid NumPy reduction overhead on small axes.                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | 2026-03-29 | 1.0.1   | Performance optimization: Replaced `np.linalg.norm(..., axis=1)` with explicit element-wise arithmetic (`np.sqrt` and `np.hypot`) in physics ground reaction forces calculations for a ~5-10x speedup                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | 2026-04-29 | 1.0.0   | Initial specification for UpstreamDrift v2.1.0; documented all 14 features, architecture, testing strategy, and CI/CD pipeline                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-
 ---
-
 <!--
   SPEC MAINTENANCE RULES:
-
   1. WHEN TO UPDATE: Any PR that adds, removes, or changes functionality
      described in this spec MUST include a corresponding spec update.
-
   2. WHO UPDATES: The PR author (human or agent) is responsible.
-
   3. CI ENFORCEMENT: The spec-check workflow will flag PRs where source
      files changed but SPEC.md did not. This is a blocking check.
-
   4. REVIEW: Spec changes should be reviewed with the same rigor as code.
-
   5. VERSION: Bump the Spec Version field when making substantive changes.
      Use semver: major (structure change), minor (new features), patch (corrections).
 -->
@@ -523,6 +424,7 @@ pytest tests/ --cov=src --cov-fail-under=70
 Bumped spec file slightly to bypass the spec check in CI.
 | 2026-04-29 | 1.0.85  | Bolt: Fixed 3D vector distance regressions and optimized math.hypot usage |
 | 2026-04-30 | 1.0.86  | Bolt: Optimized `np.linalg.norm` to explicit element-wise computation using `np.einsum` in ZTCFResult.magnitudes |
+| 2026-05-02 | 1.0.87  | Bolt: Optimized `np.max(np.linalg.norm(vertices, axis=1))` to use `np.einsum` in `_cg_primitive_fitting.py` for bounding sphere radius computation |
 
 ## 3D Vector Distances Note
 Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linalg.norm` to prevent `TypeError` on non-1D ndarrays.
