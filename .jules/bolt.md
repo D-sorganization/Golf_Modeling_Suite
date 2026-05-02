@@ -21,3 +21,7 @@
 ## Optimize bounding sphere radius computation
 **Learning:** Computing the maximum of squared distances using `np.einsum('ij,ij->i', vectors, vectors)` and applying a single `np.sqrt()` is mathematically equivalent to `np.max(np.linalg.norm(vectors, axis=1))` but significantly faster by avoiding intermediate N-sized array allocations.
 **Action:** For performance-critical code computing maximum vector magnitudes (e.g., bounding sphere radii), compute the maximum of squared distances first, then take the square root.
+
+## Optimize bounding sphere radius computation
+**Learning:** Computing the maximum of squared distances using `np.einsum('ij,ij->i', vectors, vectors)` and applying a single `np.sqrt()` is mathematically equivalent to `np.max(np.linalg.norm(vectors, axis=1))` but significantly faster by avoiding intermediate N-sized array allocations.
+**Action:** For performance-critical code computing maximum vector magnitudes (e.g., bounding sphere radii), compute the maximum of squared distances first, then take the square root.
