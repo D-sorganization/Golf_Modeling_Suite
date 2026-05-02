@@ -228,6 +228,7 @@ jobs:
         run: |
           # Force-reinstall sortedcontainers before pip-audit: the shared runner toolcache
           # can carry a half-installed sortedcontainers that makes cyclonedx (pip-audit dep) fail.
+          python -m ensurepip --upgrade || true
           python -m pip install --ignore-installed --no-deps "sortedcontainers>=2.4.0"
           python -m pip install --ignore-installed pip-audit
 
@@ -751,6 +752,7 @@ jobs:
         run: |
           python3 -m venv "$RUNNER_TEMP/rust-venv"
           source "$RUNNER_TEMP/rust-venv/bin/activate"
+          python -m ensurepip --upgrade || true
           python -m pip install --upgrade pip maturin
           cd rust_core/upstream-physics
           python -m maturin build --interpreter python --features python --release
@@ -761,6 +763,7 @@ jobs:
         if: steps.rust-changes.outputs.has_changes == 'true'
         run: |
           source "$RUNNER_TEMP/rust-venv/bin/activate"
+          python -m ensurepip --upgrade || true
           python -m pip install target/wheels/upstream_physics-*.whl
           python -c "
           import upstream_physics
@@ -854,6 +857,7 @@ jobs:
         run: |
           python -m venv "$RUNNER_TEMP/rust-quickstart-venv"
           source "$RUNNER_TEMP/rust-quickstart-venv/bin/activate"
+          python -m ensurepip --upgrade || true
           python -m pip install --upgrade pip maturin
           cd rust_core/upstream-physics
           python -m maturin develop --features python
