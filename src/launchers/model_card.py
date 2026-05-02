@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from PyQt6.QtCore import QMimeData, QPoint, Qt
-from PyQt6.QtGui import QDrag, QDragEnterEvent, QDropEvent, QFont, QMouseEvent, QPixmap
+from PyQt6.QtGui import QDrag, QDragEnterEvent, QDropEvent, QMouseEvent, QPixmap
 from PyQt6.QtWidgets import (
     QApplication,
     QFrame,
@@ -21,6 +21,7 @@ from PyQt6.QtWidgets import (
 
 from src.shared.python.logging_pkg.logging_config import get_logger
 from src.shared.python.theme.style_constants import Styles
+from src.shared.python.theme.typography import Weights, get_qfont
 
 from .startup import ASSETS_DIR, _get_theme_colors
 
@@ -86,35 +87,43 @@ class DraggableModelCard(QFrame):
 
         self.setup_ui()
 
+    @staticmethod
+    def _resolve_image_from_model_id(
+        model_id: str, model_type: str, engine_type: str
+    ) -> str | None:
+        """Map model identifiers to launcher tile artwork."""
+        token_map = (
+            ("mujoco", "mujoco_humanoid.png"),
+            ("drake", "drake.png"),
+            ("pinocchio", "pinocchio.png"),
+            ("opensim", "opensim.png"),
+            ("myosim", "myosim.png"),
+            ("myosuite", "myosim.png"),
+            ("matlab", "matlab_logo.png"),
+            ("motion", "c3d_icon.png"),
+            ("capture", "c3d_icon.png"),
+            ("c3d", "c3d_icon.png"),
+            ("model_explorer", "urdf_icon.png"),
+            ("urdf", "urdf_icon.png"),
+        )
+        for token, image_name in token_map:
+            if token in model_id:
+                return image_name
+        if "engine_managed" in model_type and engine_type == "mujoco":
+            return "mujoco_humanoid.png"
+        return None
+
     def _resolve_image_name(self) -> str | None:
         """Determine the image filename for this model card."""
         img_name = MODEL_IMAGES.get(self.model.name)
         if img_name:
             return img_name
 
-        model_id = self.model.id.lower()
-        if "mujoco" in model_id:
-            return "mujoco_humanoid.png"
-        if "drake" in model_id:
-            return "drake.png"
-        if "pinocchio" in model_id:
-            return "pinocchio.png"
-        if "opensim" in model_id:
-            return "opensim.png"
-        if "myosim" in model_id or "myosuite" in model_id:
-            return "myosim.png"
-        if "matlab" in model_id:
-            return "matlab_logo.png"
-        if "motion" in model_id or "capture" in model_id or "c3d" in model_id:
-            return "c3d_icon.png"
-        if "model_explorer" in model_id or "urdf" in model_id:
-            return "urdf_icon.png"
-        if (
-            "engine_managed" in getattr(self.model, "type", "")
-            and getattr(self.model, "engine_type", "") == "mujoco"
-        ):
-            return "mujoco_humanoid.png"
-        return None
+        return self._resolve_image_from_model_id(
+            self.model.id.lower(),
+            getattr(self.model, "type", ""),
+            getattr(self.model, "engine_type", ""),
+        )
 
     @staticmethod
     def _find_image_path(img_name: str | None) -> Path | None:
@@ -177,7 +186,7 @@ class DraggableModelCard(QFrame):
         status_text, status_color, text_color = self._get_status_info()
         lbl_status = QLabel(status_text)
         lbl_status.setObjectName("StatusChip")
-        lbl_status.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        lbl_status.setFont(get_qfont(size=8, weight=Weights.BOLD))
         lbl_status.setStyleSheet(Styles.status_chip(status_color, text_color))
         lbl_status.setAlignment(Qt.AlignmentFlag.AlignCenter)
         lbl_status.setMinimumWidth(80)
@@ -196,13 +205,13 @@ class DraggableModelCard(QFrame):
         self._create_image_widget(layout)
 
         lbl_name = QLabel(self.model.name)
-        lbl_name.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+        lbl_name.setFont(get_qfont(size=11, weight=Weights.BOLD))
         lbl_name.setWordWrap(True)
         lbl_name.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(lbl_name)
 
         lbl_desc = QLabel(self.model.description)
-        lbl_desc.setFont(QFont("Segoe UI", 9))
+        lbl_desc.setFont(get_qfont(size=9, weight=Weights.NORMAL))
         lbl_desc.setObjectName("CardDescription")
         lbl_desc.setWordWrap(True)
         lbl_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)

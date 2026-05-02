@@ -14,7 +14,6 @@ from typing import TYPE_CHECKING, Any
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import (
     QAction,
-    QFont,
     QKeySequence,
     QShortcut,
 )
@@ -37,6 +36,7 @@ from PyQt6.QtWidgets import (
 
 from src.shared.python.logging_pkg.logging_config import get_logger
 from src.shared.python.theme.style_constants import Styles
+from src.shared.python.theme.typography import Weights, get_qfont
 
 if TYPE_CHECKING:
     pass
@@ -386,7 +386,7 @@ class LauncherUISetupMixin:
         self.btn_launch = QPushButton("Select a Model")
         self.btn_launch.setEnabled(False)
         self.btn_launch.setFixedHeight(50)
-        self.btn_launch.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
+        self.btn_launch.setFont(get_qfont(size=12, weight=Weights.BOLD))
         self.btn_launch.setStyleSheet(Styles.BTN_LAUNCH_READY)
         self.btn_launch.clicked.connect(self.launch_simulation)
         self.btn_launch.setCursor(Qt.CursorShape.PointingHandCursor)
