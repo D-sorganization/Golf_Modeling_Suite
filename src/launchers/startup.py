@@ -41,7 +41,9 @@ try:
     THEME_AVAILABLE = True
 except ImportError:
     THEME_AVAILABLE = False
-    CSS_FONT_DISPLAY = '"Outfit", "Inter", "SF Pro Display", "Segoe UI", "Roboto", sans-serif'
+    CSS_FONT_DISPLAY = (
+        '"Outfit", "Inter", "SF Pro Display", "Segoe UI", "Roboto", sans-serif'
+    )
     CSS_FONT_UI = '"Outfit", "Inter", "SF Pro Display", "Segoe UI", "Roboto", "Helvetica Neue", system-ui, sans-serif'
 
 
