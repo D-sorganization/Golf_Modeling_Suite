@@ -284,11 +284,14 @@ jobs:
         run: |
           apt_retry() {
             for attempt in {1..12}; do
+              sudo killall -9 apt-get apt || true
+              sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/cache/apt/archives/lock /var/lib/apt/lists/lock
+              sudo dpkg --configure -a || true
               if sudo apt-get -o DPkg::Lock::Timeout=300 -o APT::Get::Lock-Timeout=300 "$@"; then
                 return 0
               fi
               echo "apt-get $* failed on attempt $attempt; retrying after lock backoff"
-              sleep 10
+              sleep $((10 + $RANDOM % 20))
             done
             sudo apt-get -o DPkg::Lock::Timeout=300 -o APT::Get::Lock-Timeout=300 "$@"
           }
@@ -477,7 +480,7 @@ jobs:
   shared-tools-consumer-contracts:
     needs: [pick-runner, quality-gate]
     runs-on: ${{ needs.pick-runner.outputs.runner }}
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - name: Checkout Tools Hub
@@ -498,11 +501,14 @@ jobs:
         run: |
           apt_retry() {
             for attempt in {1..12}; do
+              sudo killall -9 apt-get apt || true
+              sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/cache/apt/archives/lock /var/lib/apt/lists/lock
+              sudo dpkg --configure -a || true
               if sudo apt-get -o DPkg::Lock::Timeout=300 -o APT::Get::Lock-Timeout=300 "$@"; then
                 return 0
               fi
               echo "apt-get $* failed on attempt $attempt; retrying after lock backoff"
-              sleep 10
+              sleep $((10 + $RANDOM % 20))
             done
             sudo apt-get -o DPkg::Lock::Timeout=300 -o APT::Get::Lock-Timeout=300 "$@"
           }
