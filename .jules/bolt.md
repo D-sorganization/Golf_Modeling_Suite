@@ -17,3 +17,7 @@
 ## 2026-05-01 - [Optimize UI re-rendering and data resorting during filtering]
 **Learning:** In React, typing rapidly into an input field (like a data filter) that triggers state updates at the root component level can cause severe performance lag if expensive operations like array sorting (`[...rows].sort()`) or rendering large child components (like a `DataTable`) are executed synchronously on every single keystroke render cycle.
 **Action:** Always wrap expensive derived computations in `useMemo()` with appropriate dependency arrays so they only re-compute when their specific inputs change, and wrap large, purely presentational child components in `React.memo()` so they don't blindly re-render when a parent's unrelated state (like the filter input text) changes.
+
+## 2026-05-02 - Optimize norm calculation for 3D vectors
+**Learning:** `np.linalg.norm()` carries significant dispatch and validation overhead for small, fixed-length vectors (e.g., 3D points). Unpacking the array into the Python standard library's `math.hypot(*array)` bypasses this overhead and is significantly faster (e.g. ~33% faster for a 3-element array) while still performing the correct Euclidean distance calculation.
+**Action:** Replace `np.linalg.norm(v)` with `math.hypot(*v)` in high-frequency loops (like collision checking) where `v` is known to be a small 1D array. Always include an explanatory comment, as mixing `math` and numpy can appear unidiomatic without context.
