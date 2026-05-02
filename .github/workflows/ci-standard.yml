@@ -282,14 +282,18 @@ jobs:
       - name: Install System Dependencies
         run: |
           apt_retry() {
-            for attempt in {1..12}; do
-              if sudo apt-get -o DPkg::Lock::Timeout=300 -o APT::Get::Lock-Timeout=300 "$@"; then
+            while sudo lsof /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || sudo lsof /var/lib/dpkg/lock >/dev/null 2>&1 || sudo lsof /var/lib/apt/lists/lock >/dev/null 2>&1 || sudo lsof /var/cache/apt/archives/lock >/dev/null 2>&1; do
+              echo "Waiting for other software managers to finish..."
+              sleep 10
+            done
+            for attempt in {1..24}; do
+              if sudo apt-get -o DPkg::Lock::Timeout=300 "$@"; then
                 return 0
               fi
               echo "apt-get $* failed on attempt $attempt; retrying after lock backoff"
-              sleep 10
+              sleep 15
             done
-            sudo apt-get -o DPkg::Lock::Timeout=300 -o APT::Get::Lock-Timeout=300 "$@"
+            sudo apt-get -o DPkg::Lock::Timeout=300 "$@"
           }
           apt_retry update
           apt_retry install -y \
@@ -496,14 +500,18 @@ jobs:
       - name: Install System Dependencies
         run: |
           apt_retry() {
-            for attempt in {1..12}; do
-              if sudo apt-get -o DPkg::Lock::Timeout=300 -o APT::Get::Lock-Timeout=300 "$@"; then
+            while sudo lsof /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || sudo lsof /var/lib/dpkg/lock >/dev/null 2>&1 || sudo lsof /var/lib/apt/lists/lock >/dev/null 2>&1 || sudo lsof /var/cache/apt/archives/lock >/dev/null 2>&1; do
+              echo "Waiting for other software managers to finish..."
+              sleep 10
+            done
+            for attempt in {1..24}; do
+              if sudo apt-get -o DPkg::Lock::Timeout=300 "$@"; then
                 return 0
               fi
               echo "apt-get $* failed on attempt $attempt; retrying after lock backoff"
-              sleep 10
+              sleep 15
             done
-            sudo apt-get -o DPkg::Lock::Timeout=300 -o APT::Get::Lock-Timeout=300 "$@"
+            sudo apt-get -o DPkg::Lock::Timeout=300 "$@"
           }
           apt_retry update
           apt_retry install -y \
