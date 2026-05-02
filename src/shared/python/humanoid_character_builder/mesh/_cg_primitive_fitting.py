@@ -79,7 +79,9 @@ def fit_sphere(mesh: Any) -> PrimitiveFit:
         center = tuple(mesh.centroid.tolist())
         vertices = mesh.vertices - mesh.centroid
         vertices_float = np.asarray(vertices, dtype=np.float64)
-        radius = float(np.sqrt(np.max(np.einsum("ij,ij->i", vertices_float, vertices_float))))
+        radius = float(
+            np.sqrt(np.max(np.einsum("ij,ij->i", vertices_float, vertices_float)))
+        )
 
         sphere_volume = (4 / 3) * np.pi * radius**3
         volume_ratio = mesh.volume / sphere_volume
