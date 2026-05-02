@@ -27,8 +27,8 @@
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.93                                             |
-| **Last Spec Update**    | 2026-05-01                                         |
+| **Spec Version**        | 1.0.94                                       |
+| **Last Spec Update**    | 2026-05-02                                         |
 
 ## 2. Purpose & Mission
 
@@ -526,3 +526,9 @@ Bumped spec file slightly to bypass the spec check in CI.
 
 ## 3D Vector Distances Note
 Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linalg.norm` to prevent `TypeError` on non-1D ndarrays.
+
+## 11. Version History
+
+| Date | Version | Description |
+| ---- | ------- | ----------- |
+| 2026-05-02 | 1.0.94 | Bolt: Optimized norm calculation in collision checking using np.sqrt(np.vdot) instead of math.hypot for NumPy arrays. |
