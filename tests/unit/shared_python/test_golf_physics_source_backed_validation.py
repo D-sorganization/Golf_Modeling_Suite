@@ -7,7 +7,6 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-
 from src.shared.python.core.contracts import ContractViolationError
 from src.shared.python.core.physics_constants import (
     DRIVER_COR,
