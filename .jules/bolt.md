@@ -17,3 +17,7 @@
 ## 2026-05-01 - [Optimize UI re-rendering and data resorting during filtering]
 **Learning:** In React, typing rapidly into an input field (like a data filter) that triggers state updates at the root component level can cause severe performance lag if expensive operations like array sorting (`[...rows].sort()`) or rendering large child components (like a `DataTable`) are executed synchronously on every single keystroke render cycle.
 **Action:** Always wrap expensive derived computations in `useMemo()` with appropriate dependency arrays so they only re-compute when their specific inputs change, and wrap large, purely presentational child components in `React.memo()` so they don't blindly re-render when a parent's unrelated state (like the filter input text) changes.
+
+## 2026-05-18 - Optimize bounding sphere radius computation
+**Learning:** `np.max(np.linalg.norm(vertices, axis=1))` allocates an intermediate N-sized array to store the distances. `np.sqrt(np.max(np.einsum('ij,ij->i', vertices, vertices)))` computes the identical bounding sphere radius but avoids the intermediate array allocations by applying `np.einsum`, yielding performance speedups.
+**Action:** When computing bounding sphere radius in mesh primitive fitting, replace `np.max(np.linalg.norm(vertices, axis=1))` with `np.sqrt(np.max(np.einsum('ij,ij->i', vertices, vertices)))`.
