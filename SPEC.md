@@ -524,7 +524,6 @@ Bumped spec file slightly to bypass the spec check in CI.
 | 2026-04-29 | 1.0.85  | Bolt: Fixed 3D vector distance regressions and optimized math.hypot usage |
 | 2026-04-30 | 1.0.86  | Bolt: Optimized `np.linalg.norm` to explicit element-wise computation using `np.einsum` in ZTCFResult.magnitudes |
 
-| 2026-05-18 | 1.0.87  | Bolt: Optimized `np.linalg.norm(..., axis=1)` to `np.sqrt(np.max(np.einsum('ij,ij->i', x, x)))` for bounding sphere radius computation |
-
 ## 3D Vector Distances Note
 Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linalg.norm` to prevent `TypeError` on non-1D ndarrays.
+| 2026-05-18 | 1.0.87  | Bolt: Optimized `np.linalg.norm(..., axis=1)` to `np.sqrt(np.max(np.einsum('ij,ij->i', x, x)))` for bounding sphere radius computation |
