@@ -44,7 +44,7 @@ def fit_box(mesh: Any) -> PrimitiveFit:
 
         rot = Rotation.from_matrix(transform[:3, :3])
         quat_arr = rot.as_quat()
-        quat = (
+        quat: tuple[float, float, float, float] = (
             float(quat_arr[0]),
             float(quat_arr[1]),
             float(quat_arr[2]),
@@ -123,7 +123,7 @@ def fit_cylinder(mesh: Any) -> PrimitiveFit:
 
         rot = Rotation.from_matrix(transform[:3, :3])
         quat_arr = rot.as_quat()
-        quat = (
+        quat: tuple[float, float, float, float] = (
             float(quat_arr[0]),
             float(quat_arr[1]),
             float(quat_arr[2]),
