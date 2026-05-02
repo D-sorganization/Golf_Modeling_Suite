@@ -32,8 +32,6 @@ def compute_primitive_distance(
     # Dispatch based on primitive types for specialized algorithms
     if not (prim_a is not None):
         raise ValueError("prim_a must be provided")
-    if not (prim_a is not None):
-        raise ValueError("prim_a must be provided")
     if isinstance(prim_a, Sphere) and isinstance(prim_b, Sphere):
         return _sphere_sphere_distance(prim_a, prim_b)
     if isinstance(prim_a, Sphere) and isinstance(prim_b, Capsule):
@@ -198,8 +196,6 @@ def _gjk_distance(
     consider using a proper GJK library.
     """
     # Initial direction from A to B
-    if not (prim_a is not None):
-        raise ValueError("prim_a must be provided")
     if not (prim_a is not None):
         raise ValueError("prim_a must be provided")
     direction = prim_b.compute_support(np.array([1, 0, 0])) - prim_a.compute_support(
