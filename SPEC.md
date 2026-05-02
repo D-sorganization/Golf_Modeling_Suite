@@ -526,3 +526,5 @@ Bumped spec file slightly to bypass the spec check in CI.
 
 ## 3D Vector Distances Note
 Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linalg.norm` to prevent `TypeError` on non-1D ndarrays.
+
+* Performance Optimization: Optimized bounding sphere radius computation in mesh primitive fitting using np.einsum to avoid intermediate temporary array allocations.
