@@ -525,5 +525,7 @@ Bumped spec file slightly to bypass the spec check in CI.
 | 2026-04-30 | 1.0.86  | Bolt: Optimized `np.linalg.norm` to explicit element-wise computation using `np.einsum` in ZTCFResult.magnitudes |
 | 2026-05-02 | 1.0.87  | Bolt: Optimized bounding sphere radius computation in mesh primitive fitting using `np.einsum` instead of `np.linalg.norm` |
 
+| 2026-05-02 | 1.0.88  | Bolt: Replaced `np.linalg.norm` with `math.hypot` for 3D vector magnitudes in collision checking |
+
 ## 3D Vector Distances Note
 Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linalg.norm` to prevent `TypeError` on non-1D ndarrays.
