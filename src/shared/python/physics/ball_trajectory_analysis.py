@@ -9,6 +9,7 @@ decomposition (issue #2486).
 from __future__ import annotations
 
 import numpy as np
+import math
 
 from src.shared.python.physics.ball_launch_conditions import TrajectoryPoint
 from src.shared.python.physics.ball_properties import NUMERICAL_EPSILON
@@ -24,7 +25,7 @@ class TrajectoryAnalysisMixin:
         if not trajectory:
             return 0.0
         last_pos = trajectory[-1].position
-        return float(np.sqrt(last_pos[0] ** 2 + last_pos[1] ** 2))
+        return float(math.hypot(last_pos[0], last_pos[1]))
 
     def calculate_max_height(self, trajectory: list[TrajectoryPoint]) -> float:
         """Calculate maximum height achieved in meters."""
@@ -49,7 +50,7 @@ class TrajectoryAnalysisMixin:
         if len(trajectory) < 2:
             return 0.0
         v = trajectory[-1].velocity
-        v_horiz = np.linalg.norm(v[:2])
+        v_horiz = math.hypot(v[0], v[1])
         if v_horiz < NUMERICAL_EPSILON:
             return 90.0
         return float(np.degrees(np.arctan2(-v[2], v_horiz)))

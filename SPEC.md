@@ -526,3 +526,4 @@ Bumped spec file slightly to bypass the spec check in CI.
 
 ## 3D Vector Distances Note
 Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linalg.norm` to prevent `TypeError` on non-1D ndarrays.
+| 2026-05-02 | 1.0.11  | Performance optimization in ball trajectory analysis: explicitly computing 2D vector magnitude via `math.hypot` to avoid `np.linalg.norm` overhead. |

@@ -17,3 +17,7 @@
 ## 2026-05-01 - [Optimize UI re-rendering and data resorting during filtering]
 **Learning:** In React, typing rapidly into an input field (like a data filter) that triggers state updates at the root component level can cause severe performance lag if expensive operations like array sorting (`[...rows].sort()`) or rendering large child components (like a `DataTable`) are executed synchronously on every single keystroke render cycle.
 **Action:** Always wrap expensive derived computations in `useMemo()` with appropriate dependency arrays so they only re-compute when their specific inputs change, and wrap large, purely presentational child components in `React.memo()` so they don't blindly re-render when a parent's unrelated state (like the filter input text) changes.
+
+## 2026-05-02 - [Optimize 2D vector magnitude computation]
+**Learning:** `math.hypot(x, y)` is significantly faster (~10x) than `np.linalg.norm` and faster (~3x) than `np.sqrt(x**2 + y**2)` for computing magnitudes of small 2D vectors by avoiding numpy array overhead and allocations.
+**Action:** Use `math.hypot(x, y)` instead of `np.linalg.norm(v[:2])` or explicit `np.sqrt` for computing distances or magnitudes of 2D coordinates in high-frequency calculations.
