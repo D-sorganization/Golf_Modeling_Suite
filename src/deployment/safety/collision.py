@@ -61,11 +61,7 @@ class Obstacle:
             raise ValueError("point must be provided")
         if self.obstacle_type == ObstacleType.SPHERE:
             diff = point - self.position
-            return float(
-                math.hypot(*diff)
-                - self.dimensions[0]
-                - self.inflation
-            )
+            return float(math.hypot(*diff) - self.dimensions[0] - self.inflation)
 
         if self.obstacle_type in (ObstacleType.BOX, ObstacleType.HUMAN):
             # Box distance
