@@ -325,7 +325,7 @@ jobs:
           python="$RUNNER_TEMP/core-ci-venv/bin/python"
           "$python" -m pip install --force-reinstall --no-deps "sortedcontainers>=2.4.0" "hypothesis>=6.0.0"
           "$python" -m pip install -e ".[dev,gui-test]"
-          "$python" -m pip install --force-reinstall --no-cache-dir "numpy==2.2.6" "scipy==1.15.3"
+          "$python" -m pip install --force-reinstall --no-cache-dir "numpy>=2.4" "scipy>=1.15.3"
 
       - name: Document Native Engine Coverage In Core Lane
         run: |
@@ -538,7 +538,7 @@ jobs:
           python="$RUNNER_TEMP/shared-contracts-venv/bin/python"
           "$python" -m pip install --force-reinstall --no-deps "sortedcontainers>=2.4.0" "hypothesis>=6.0.0"
           "$python" -m pip install -e ".[dev,gui-test]"
-          "$python" -m pip install --force-reinstall --no-cache-dir "numpy==2.2.6" "scipy==1.15.3"
+          "$python" -m pip install --force-reinstall --no-cache-dir "numpy>=2.4" "scipy>=1.15.3"
       - name: Run Shared Tools Consumer Contracts
         env:
           QT_QPA_PLATFORM: offscreen
