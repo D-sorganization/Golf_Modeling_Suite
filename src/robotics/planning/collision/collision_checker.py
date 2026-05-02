@@ -179,6 +179,38 @@ class CollisionChecker:
         """Remove all environment primitives."""
         self._environment_primitives.clear()
 
+    def _check_environment_collisions(self, query: CollisionQuery, colliding_pairs: list[CollisionPair], num_contacts: int) -> int:
+        body_names = self._engine.get_body_names()
+        for body_name in body_names:
+            for env_name, env_prim in self._environment_primitives.items():
+                env_pair = CollisionPair(body_name, env_name)
+                if not query.should_check_pair(env_pair):
+                    continue
+                if self._check_body_environment_collision(
+                    body_name, env_prim, self._config.default_margin
+                ):
+                    colliding_pairs.append(env_pair)
+                    num_contacts += 1
+                    if query.early_exit:
+                        return num_contacts
+        return num_contacts
+
+    def _check_environment_collisions(self, query: CollisionQuery, colliding_pairs: list[CollisionPair], num_contacts: int) -> int:
+        body_names = self._engine.get_body_names()
+        for body_name in body_names:
+            for env_name, env_prim in self._environment_primitives.items():
+                env_pair = CollisionPair(body_name, env_name)
+                if not query.should_check_pair(env_pair):
+                    continue
+                if self._check_body_environment_collision(
+                    body_name, env_prim, self._config.default_margin
+                ):
+                    colliding_pairs.append(env_pair)
+                    num_contacts += 1
+                    if query.early_exit:
+                        return num_contacts
+        return num_contacts
+
     def check_collision(
         self,
         q: np.ndarray,
@@ -191,9 +223,9 @@ class CollisionChecker:
                 - q.shape matches robot DOF
                 - All values in q are finite
 
-            Postconditions:
-                - Returns CollisionResult with accurate status
-                - Engine state is restored to original
+        Postconditions:
+            - Returns CollisionResult with accurate status
+            - Engine state is restored to original
 
         Args:
             q: Robot configuration to check.
@@ -227,41 +259,22 @@ class CollisionChecker:
                 if self._check_pair_collision(pair, self._config.default_margin):
                     colliding_pairs.append(pair)
                     num_contacts += 1
-
                     if query.early_exit:
                         break
 
             # Check environment collisions
             if not (query.early_exit and colliding_pairs):
-                body_names = self._engine.get_body_names()
-                for body_name in body_names:
-                    for env_name, env_prim in self._environment_primitives.items():
-                        env_pair = CollisionPair(body_name, env_name)
-                        if not query.should_check_pair(env_pair):
-                            continue
-
-                        if self._check_body_environment_collision(
-                            body_name, env_prim, self._config.default_margin
-                        ):
-                            colliding_pairs.append(env_pair)
-                            num_contacts += 1
-
-                            if query.early_exit:
-                                break
-                    if query.early_exit and colliding_pairs:
-                        break
-
-            computation_time = time.perf_counter() - start_time
+                num_contacts = self._check_environment_collisions(query, colliding_pairs, num_contacts)
 
             return CollisionResult(
                 in_collision=len(colliding_pairs) > 0,
                 collision_pairs=colliding_pairs,
                 num_contacts=num_contacts,
-                computation_time=computation_time,
+                computation_time=time.perf_counter() - start_time,
             )
 
         finally:
-            # Restore original state
+            # Restore state
             self._engine.set_state(q_orig, v_orig)
 
     def _check_pair_collision(
@@ -336,6 +349,48 @@ class CollisionChecker:
         # Check overlap
         return bool(np.all(max_a >= min_b) and np.all(max_b >= min_a))
 
+    def _compute_environment_distances(self, query: CollisionQuery, min_distance: float, closest_pair: CollisionPair | None, point_a: np.ndarray | None, point_b: np.ndarray | None, normal: np.ndarray | None) -> tuple[float, CollisionPair | None, np.ndarray | None, np.ndarray | None, np.ndarray | None]:
+        body_names = self._engine.get_body_names()
+        for body_name in body_names:
+            for env_name, env_prim in self._environment_primitives.items():
+                env_pair = CollisionPair(body_name, env_name)
+                if not query.should_check_pair(env_pair):
+                    continue
+                dist, pa, pb = self._compute_body_environment_distance(
+                    body_name, env_prim
+                )
+                if dist < min_distance:
+                    min_distance = dist
+                    closest_pair = env_pair
+                    point_a = pa
+                    point_b = pb
+                    diff = pb - pa
+                    norm = np.sqrt(np.vdot(diff, diff))
+                    if norm > 1e-10:
+                        normal = diff / norm
+        return min_distance, closest_pair, point_a, point_b, normal
+
+    def _compute_environment_distances(self, query: CollisionQuery, min_distance: float, closest_pair: CollisionPair | None, point_a: np.ndarray | None, point_b: np.ndarray | None, normal: np.ndarray | None) -> tuple[float, CollisionPair | None, np.ndarray | None, np.ndarray | None, np.ndarray | None]:
+        body_names = self._engine.get_body_names()
+        for body_name in body_names:
+            for env_name, env_prim in self._environment_primitives.items():
+                env_pair = CollisionPair(body_name, env_name)
+                if not query.should_check_pair(env_pair):
+                    continue
+                dist, pa, pb = self._compute_body_environment_distance(
+                    body_name, env_prim
+                )
+                if dist < min_distance:
+                    min_distance = dist
+                    closest_pair = env_pair
+                    point_a = pa
+                    point_b = pb
+                    diff = pb - pa
+                    norm = np.sqrt(np.vdot(diff, diff))
+                    if norm > 1e-10:
+                        normal = diff / norm
+        return min_distance, closest_pair, point_a, point_b, normal
+
     def compute_distance(
         self,
         q: np.ndarray,
@@ -348,10 +403,10 @@ class CollisionChecker:
                 - q.shape matches robot DOF
                 - All values in q are finite
 
-            Postconditions:
-                - Returns DistanceResult with signed distance
-                - Negative distance indicates penetration
-                - Engine state is restored to original
+        Postconditions:
+            - Returns DistanceResult with signed distance
+            - Negative distance indicates penetration
+            - Engine state is restored to original
 
         Args:
             q: Robot configuration to check.
@@ -397,36 +452,17 @@ class CollisionChecker:
                         normal = diff / norm
 
             # Check environment
-            body_names = self._engine.get_body_names()
-            for body_name in body_names:
-                for env_name, env_prim in self._environment_primitives.items():
-                    env_pair = CollisionPair(body_name, env_name)
-                    if not query.should_check_pair(env_pair):
-                        continue
-
-                    dist, pa, pb = self._compute_body_environment_distance(
-                        body_name, env_prim
-                    )
-                    if dist < min_distance:
-                        min_distance = dist
-                        closest_pair = env_pair
-                        point_a = pa
-                        point_b = pb
-                        diff = pb - pa
-                        # ⚡ Bolt: np.sqrt(np.vdot) is ~1.5x faster and shape/type safe
-                        norm = np.sqrt(np.vdot(diff, diff))
-                        if norm > 1e-10:
-                            normal = diff / norm
-
-            computation_time = time.perf_counter() - start_time
+            min_distance, closest_pair, point_a, point_b, normal = self._compute_environment_distances(
+                query, min_distance, closest_pair, point_a, point_b, normal
+            )
 
             return DistanceResult(
-                distance=min_distance if min_distance < float("inf") else 0.0,
+                distance=min_distance,
                 closest_pair=closest_pair,
                 point_a=point_a,
                 point_b=point_b,
                 normal=normal,
-                computation_time=computation_time,
+                computation_time=time.perf_counter() - start_time,
             )
 
         finally:

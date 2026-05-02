@@ -237,8 +237,10 @@ def _gjk_distance(
                 # Origin at support point (collision)
                 return 0.0, support_a, support_b
             direction = direction / norm
-        elif len(simplex) == 2:
-            # Line case
+        else:
+            # Line case / For simplicity, just use last two points
+            if len(simplex) > 2:
+                simplex = simplex[-2:]
             ab = simplex[1] - simplex[0]
             ao = -simplex[0]
             t = np.dot(ao, ab) / (np.dot(ab, ab) + 1e-10)
@@ -249,25 +251,13 @@ def _gjk_distance(
                 # Origin very close to simplex (collision)
                 return 0.0, support_a, support_b
             direction = -closest / dist
-        else:
-            # For simplicity, just use last two points
-            simplex = simplex[-2:]
-            ab = simplex[1] - simplex[0]
-            ao = -simplex[0]
-            t = np.dot(ao, ab) / (np.dot(ab, ab) + 1e-10)
-            t = np.clip(t, 0.0, 1.0)
-            closest = simplex[0] + t * ab
-            dist = float(float(np.sqrt(np.vdot(closest, closest))))
-            if dist < 1e-6:
-                return 0.0, support_a, support_b
-            direction = -closest / dist
+
 
     # Max iterations reached, estimate distance
     support_a = prim_a.compute_support(direction)
     support_b = prim_b.compute_support(-direction)
     diff = support_b - support_a
     return float(float(np.sqrt(np.vdot(diff, diff)))), support_a, support_b
-
 
 def check_primitive_collision(
     prim_a: GeometricPrimitive,
