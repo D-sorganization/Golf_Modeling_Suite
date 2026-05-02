@@ -12,6 +12,7 @@ from __future__ import annotations
 import asyncio
 
 import pytest
+
 from src.api.task_manager import TaskManager
 
 
@@ -25,9 +26,9 @@ async def test_lock_and_semaphore_are_asyncio_primitives() -> None:
             "TaskManager._lock must be asyncio.Lock to avoid deadlock with "
             "asyncio.Semaphore (#3506)"
         )
-        assert isinstance(tm._engine_semaphore, asyncio.Semaphore), (
-            "TaskManager._engine_semaphore must be asyncio.Semaphore (#3506)"
-        )
+        assert isinstance(
+            tm._engine_semaphore, asyncio.Semaphore
+        ), "TaskManager._engine_semaphore must be asyncio.Semaphore (#3506)"
         assert isinstance(tm.engine_semaphore, asyncio.Semaphore)
     finally:
         await tm.shutdown()
