@@ -145,6 +145,7 @@ jobs:
             ruff format --check .
           fi
 
+      - run: python -m ensurepip --upgrade || true
       - run: pip install mypy types-PyYAML types-requests
       - name: Create stub ui/dist for editable install (quality checks only)
         run: mkdir -p ui/dist
