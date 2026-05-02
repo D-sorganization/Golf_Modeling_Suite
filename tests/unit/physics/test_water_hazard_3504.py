@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 
 import pytest
+
 from src.shared.python.physics.water_hazard import (
     WaterEntryResult,
     water_entry_kinematics,

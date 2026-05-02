@@ -16,6 +16,7 @@ _project_root = _this_file.parents[2]
 sys.path.insert(0, str(_project_root))
 
 import numpy as np  # noqa: E402
+
 from src.shared.python.physics.ball_flight_physics import (  # noqa: E402
     BallFlightSimulator,
     BallProperties,
