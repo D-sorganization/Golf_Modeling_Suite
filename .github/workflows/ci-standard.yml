@@ -104,7 +104,6 @@ jobs:
         with: { python-version: "3.11" }
       - name: Install Quality Tools
         run: |
-          python -m ensurepip --upgrade || true
           python -m pip install ruff==0.14.10 "mypy>=1.15.0" bandit==1.7.7 pydocstyle==6.3.0
 
       - name: Lint
@@ -228,9 +227,7 @@ jobs:
         run: |
           # Force-reinstall sortedcontainers before pip-audit: the shared runner toolcache
           # can carry a half-installed sortedcontainers that makes cyclonedx (pip-audit dep) fail.
-          python -m ensurepip --upgrade || true
           python -m pip install --ignore-installed --no-deps "sortedcontainers>=2.4.0"
-          python -m ensurepip --upgrade || true
           python -m pip install --ignore-installed pip-audit
 
           # Ignore CVEs with no fix version available or transitive dependencies:
@@ -753,7 +750,6 @@ jobs:
         run: |
           python3 -m venv "$RUNNER_TEMP/rust-venv"
           source "$RUNNER_TEMP/rust-venv/bin/activate"
-          python -m ensurepip --upgrade || true
           python -m pip install --upgrade pip maturin
           cd rust_core/upstream-physics
           python -m maturin build --interpreter python --features python --release
@@ -764,7 +760,6 @@ jobs:
         if: steps.rust-changes.outputs.has_changes == 'true'
         run: |
           source "$RUNNER_TEMP/rust-venv/bin/activate"
-          python -m ensurepip --upgrade || true
           python -m pip install target/wheels/upstream_physics-*.whl
           python -c "
           import upstream_physics
@@ -858,7 +853,6 @@ jobs:
         run: |
           python -m venv "$RUNNER_TEMP/rust-quickstart-venv"
           source "$RUNNER_TEMP/rust-quickstart-venv/bin/activate"
-          python -m ensurepip --upgrade || true
           python -m pip install --upgrade pip maturin
           cd rust_core/upstream-physics
           python -m maturin develop --features python
