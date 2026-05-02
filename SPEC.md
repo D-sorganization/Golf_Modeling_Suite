@@ -526,3 +526,4 @@ Bumped spec file slightly to bypass the spec check in CI.
 
 ## 3D Vector Distances Note
 Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linalg.norm` to prevent `TypeError` on non-1D ndarrays.
+| Performance Optimization | Replaced np.max(np.linalg.norm(vertices, axis=1)) with np.sqrt(np.max(np.einsum('ij,ij->i', vertices, vertices))) in _cg_primitive_fitting.py to avoid intermediate array allocation and reduce square root computations. |
