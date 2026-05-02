@@ -21,3 +21,7 @@
 ## 2025-05-18 - Optimize bounding sphere radius computation in mesh primitive fitting
 **Learning:** `np.linalg.norm` evaluates element-wise square roots and allocates intermediate temporary arrays. Since `max` and `sqrt` are commutative for positive numbers, computing the maximum sum-of-squares first using `np.einsum`, then applying `sqrt` avoids memory allocations and performs exactly 1 square root instead of N square roots.
 **Action:** Replace `np.max(np.linalg.norm(vertices, axis=1))` with `np.sqrt(np.max(np.einsum('ij,ij->i', vertices, vertices)))` when calculating bounding sphere radii from mesh vertices to improve performance.
+
+## 2026-05-02 - Spec Bump Warning
+**Learning:** If the problem description asks to "update SPEC.md", ensure that you do not accidentally duplicate a changelog entry if one already exists for your specific change. Check SPEC.md first to see if your entry is already there before appending.
+**Action:** Always verify the contents of SPEC.md before modifying it to prevent duplicating changelog entries.
