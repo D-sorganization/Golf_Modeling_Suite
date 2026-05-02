@@ -132,7 +132,9 @@ jobs:
         # toolcache can carry a half-installed sortedcontainers that is missing
         # SortedSet, causing hypothesis to fail its import at pytest startup.
         run: |
+          python -m ensurepip --upgrade || true
           pip install --force-reinstall --no-deps "sortedcontainers>=2.4.0" "hypothesis>=6.0.0"
+          python -m ensurepip --upgrade || true
           pip install -e ".[dev,gui-test]"
 
       - name: Install API Extras
@@ -142,7 +144,9 @@ jobs:
         # (installed as a transitive dep) that lacks uts46_remap, breaking
         # email-validator which email validation tests depend on.
         run: |
+          python -m ensurepip --upgrade || true
           pip install "fastapi[all]" httpx
+          python -m ensurepip --upgrade || true
           pip install --force-reinstall "idna[uts46]>=3.4" "email-validator>=2.0.0"
 
       - name: Attempt Pinocchio Ecosystem Installation
@@ -153,6 +157,7 @@ jobs:
         id: pinocchio_install
         continue-on-error: true
         run: |
+          python -m ensurepip --upgrade || true
           pip install pin pink crocoddyl 2>&1 | tee /tmp/pinocchio_install.log
           if python3 -c "import pinocchio" 2>/dev/null; then
             echo "available=true" >> "$GITHUB_OUTPUT"

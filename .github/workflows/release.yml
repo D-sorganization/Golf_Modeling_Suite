@@ -32,6 +32,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install build tools
+        run: python -m ensurepip --upgrade || true
         run: pip install build twine
       - name: Build package
         run: python -m build
