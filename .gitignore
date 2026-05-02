@@ -205,3 +205,6 @@ venv/
 test_venv/
 .claude/worktrees/
 .jules/pending/
+
+# Jules comments batch
+.jules/pending/
