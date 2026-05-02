@@ -118,7 +118,11 @@ class DistanceResult:
             # Normalize the normal vector
             # ⚡ Bolt: Element-wise norm computation is faster than np.linalg.norm(..., axis=None) for tiny vectors
             # using np.sqrt(np.vdot) equivalent
-            norm = 0.0 if self.normal.size == 0 else np.sqrt(np.vdot(self.normal, self.normal))
+            norm = (
+                0.0
+                if self.normal.size == 0
+                else np.sqrt(np.vdot(self.normal, self.normal))
+            )
             if norm > 1e-10:
                 object.__setattr__(self, "normal", self.normal / norm)
 
