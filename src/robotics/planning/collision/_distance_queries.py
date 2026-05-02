@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import math
-
 import numpy as np
 
 from ._primitive_shapes import Capsule, Sphere
@@ -60,7 +58,7 @@ def _sphere_sphere_distance(
     if not (sphere_a is not None):
         raise ValueError("sphere_a must be provided")
     diff = sphere_b.center - sphere_a.center
-    center_dist = math.hypot(*diff)
+    center_dist = float(np.sqrt(np.vdot(diff, diff)))
 
     if center_dist < 1e-10:
         # Concentric spheres
@@ -89,7 +87,7 @@ def _sphere_capsule_distance(
 
     # Now it's sphere-sphere distance
     diff = sphere.center - closest_on_axis
-    center_dist = math.hypot(*diff)
+    center_dist = float(np.sqrt(np.vdot(diff, diff)))
 
     if center_dist < 1e-10:
         # Sphere center on capsule axis
@@ -121,7 +119,7 @@ def _capsule_capsule_distance(
     )
 
     diff = closest_b - closest_a
-    center_dist = math.hypot(*diff)
+    center_dist = float(np.sqrt(np.vdot(diff, diff)))
 
     if center_dist < 1e-10:
         direction = np.array([1.0, 0.0, 0.0])
@@ -207,10 +205,10 @@ def _gjk_distance(
     direction = prim_b.compute_support(np.array([1, 0, 0])) - prim_a.compute_support(
         np.array([-1, 0, 0])
     )
-    if math.hypot(*direction) < 1e-10:
+    if float(np.sqrt(np.vdot(direction, direction))) < 1e-10:
         direction = np.array([1.0, 0.0, 0.0])
     else:
-        direction = direction / math.hypot(*direction)
+        direction = direction / float(np.sqrt(np.vdot(direction, direction)))
 
     # Simplex vertices
     simplex: list[np.ndarray] = []
@@ -226,7 +224,7 @@ def _gjk_distance(
         if np.dot(support, direction) < 0 and len(simplex) == 0:
             # Return distance between supports
             diff = support_b - support_a
-            dist = float(math.hypot(*diff))
+            dist = float(np.sqrt(np.vdot(diff, diff)))
             return dist, support_a, support_b
 
         simplex.append(support)
@@ -234,7 +232,7 @@ def _gjk_distance(
         # Update simplex and direction
         if len(simplex) == 1:
             direction = -simplex[0]
-            norm = math.hypot(*direction)
+            norm = float(np.sqrt(np.vdot(direction, direction)))
             if norm < 1e-10:
                 # Origin at support point (collision)
                 return 0.0, support_a, support_b
@@ -246,7 +244,7 @@ def _gjk_distance(
             t = np.dot(ao, ab) / (np.dot(ab, ab) + 1e-10)
             t = np.clip(t, 0.0, 1.0)
             closest = simplex[0] + t * ab
-            dist = float(math.hypot(*closest))
+            dist = float(np.sqrt(np.vdot(closest, closest)))
             if dist < 1e-6:
                 # Origin very close to simplex (collision)
                 return 0.0, support_a, support_b
@@ -259,7 +257,7 @@ def _gjk_distance(
             t = np.dot(ao, ab) / (np.dot(ab, ab) + 1e-10)
             t = np.clip(t, 0.0, 1.0)
             closest = simplex[0] + t * ab
-            dist = float(math.hypot(*closest))
+            dist = float(np.sqrt(np.vdot(closest, closest)))
             if dist < 1e-6:
                 return 0.0, support_a, support_b
             direction = -closest / dist
@@ -268,7 +266,7 @@ def _gjk_distance(
     support_a = prim_a.compute_support(direction)
     support_b = prim_b.compute_support(-direction)
     diff = support_b - support_a
-    return float(math.hypot(*diff)), support_a, support_b
+    return float(np.sqrt(np.vdot(diff, diff))), support_a, support_b
 
 
 def check_primitive_collision(
