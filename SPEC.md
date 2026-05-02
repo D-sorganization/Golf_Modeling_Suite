@@ -526,3 +526,4 @@ Bumped spec file slightly to bypass the spec check in CI.
 
 ## 3D Vector Distances Note
 Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linalg.norm` to prevent `TypeError` on non-1D ndarrays.
+| 2026-03-31 | 1.0.4   | Performance optimization: Replaced `np.linalg.norm` with `math.hypot` for 3D vector magnitudes in high-frequency collision checks within `src/deployment/safety/collision.py` to avoid NumPy array allocation overhead. |
