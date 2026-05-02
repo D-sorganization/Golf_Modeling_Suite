@@ -142,7 +142,9 @@ def test_splash_screen_resolve_theme_colors_fallback(mock_theme_unavailable) -> 
 
 
 def test_fallback_qfont_uses_standardized_stack() -> None:
-    font = _fallback_qfont('"Outfit", "Inter", "Segoe UI", sans-serif', 11, QFont.Weight.Bold)
+    font = _fallback_qfont(
+        '"Outfit", "Inter", "Segoe UI", sans-serif', 11, QFont.Weight.Bold
+    )
     assert font.pointSize() == 11
     assert font.weight() == QFont.Weight.Bold
     assert "Outfit" in font.families()

@@ -230,7 +230,9 @@ def test_model_card_uses_shared_typography(mock_model, parent_launcher, qapp) ->
     card = DraggableModelCard(mock_model, parent_launcher)
     labels = card.findChildren(QLabel)
     target_labels = [
-        label for label in labels if label.text() in {"MuJoCo", "Test Description", "GUI Ready"}
+        label
+        for label in labels
+        if label.text() in {"MuJoCo", "Test Description", "GUI Ready"}
     ]
     assert target_labels
     for label in target_labels:
