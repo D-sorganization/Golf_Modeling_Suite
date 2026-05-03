@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.94                                             |
+| **Spec Version**        | 1.0.95                                             |
 | **Last Spec Update**    | 2026-05-03                                         |
 
 ## 2. Purpose & Mission
@@ -332,7 +332,7 @@ UpstreamDrift employs a comprehensive test pyramid with multiple specialized cat
 Beyond standard tools, CI enforces custom checks:
 
 - **Dependency Direction**: No reverse dependencies (leaf → branch → root)
-- **File Size Budget**: No module exceeds 500 lines; classes capped at 200 LOC
+- **File Size Budget**: Changed Python files are capped at 1200 lines; owned exceptions are limited to five entries, must expire within 90 days, and files at or above 90% of the cap are reported with CODEOWNERS-derived ownership.
 - **Import Depth**: Maximum 4 import levels to prevent circular dependencies
 - **Physics Fitness**: Cross-engine validation must pass with <5% tolerance
 - **Docker Size Gate**: Built images must not exceed 800 MB

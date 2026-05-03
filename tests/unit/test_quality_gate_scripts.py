@@ -40,3 +40,69 @@ def test_file_size_budget_script_resolves_repo_root() -> None:
     module = _load_script_module("check_file_size_budget")
 
     assert module._repo_root() == Path(__file__).resolve().parents[2]
+
+
+def test_file_size_budget_rejects_exception_growth() -> None:
+    module = _load_script_module("check_file_size_budget")
+    config = {
+        "exceptions": [
+            {"path": f"src/file_{index}.py", "owner": "@team", "reason": "split"}
+            for index in range(6)
+        ]
+    }
+
+    active, invalid = module._collect_active_exceptions(config)
+
+    assert active == {}
+    assert invalid == ["Too many file-size exceptions: 6 entries (maximum=5)"]
+
+
+def test_file_size_budget_rejects_long_exception_windows() -> None:
+    module = _load_script_module("check_file_size_budget")
+    config = {
+        "exceptions": [
+            {
+                "path": "src/large.py",
+                "owner": "@team",
+                "reason": "split",
+                "expires_on": "2026-09-01",
+            }
+        ]
+    }
+
+    active, invalid = module._collect_active_exceptions(
+        config, today=module.date(2026, 5, 3)
+    )
+
+    assert active == {}
+    assert invalid == [
+        "Exception window too long: src/large.py "
+        "(owner=@team, expires_on=2026-09-01, maximum_days=90)"
+    ]
+
+
+def test_file_size_budget_watchlist_uses_codeowners(tmp_path) -> None:
+    module = _load_script_module("check_file_size_budget")
+    repo_root = tmp_path
+    source_dir = repo_root / "src" / "shared"
+    source_dir.mkdir(parents=True)
+    watched_file = source_dir / "near_budget.py"
+    watched_file.write_text("x = 1\n" * 9, encoding="utf-8")
+    codeowners = repo_root / ".github" / "CODEOWNERS"
+    codeowners.parent.mkdir()
+    codeowners.write_text("/src/ @core\n/src/shared/ @physics-core\n", encoding="utf-8")
+
+    entries = module._collect_watchlist(
+        repo_root=repo_root,
+        files=[watched_file],
+        budget=10,
+        codeowners=module._load_codeowners(repo_root),
+    )
+
+    assert entries == [
+        module.WatchlistEntry(
+            path="src/shared/near_budget.py",
+            line_count=9,
+            owner="@physics-core",
+        )
+    ]
