@@ -584,6 +584,7 @@ Bumped spec file slightly to bypass the spec check in CI.
 | 2026-04-29 | 1.0.85 | Bolt: Fixed 3D vector distance regressions and optimized math.hypot usage |
 | 2026-04-30 | 1.0.86 | Bolt: Optimized `np.linalg.norm` to explicit element-wise computation using `np.einsum` in ZTCFResult.magnitudes |
 | 2026-05-02 | 1.0.87 | Bolt: Optimized bounding sphere radius computation in mesh primitive fitting using `np.einsum` instead of `np.linalg.norm` |
+| 2026-05-03 | 1.0.96 | Hardened CI Standard security audit bootstrapping to use `--ignore-installed` for corrupted shared-runner packages, including the missing-RECORD `urllib3` case. |
 
 ## 3D Vector Distances Note
 
