@@ -137,14 +137,14 @@ UpstreamDrift/
 
 | Component                | Location                                          | Purpose                                                                                     |
 | ------------------------ | ------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| MuJoCo Engine Adapter    | `src/engines/physics_engines/mujoco_engine.py`    | Primary physics engine integration with full support for contact dynamics and muscle models |
-| Drake Engine Adapter     | `src/engines/physics_engines/drake_engine.py`     | Extended Drake support for trajectory optimization and manipulation tasks                   |
-| Pinocchio Engine Adapter | `src/engines/physics_engines/pinocchio_engine.py` | Extended Pinocchio support for efficient rigid-body dynamics computation                    |
-| OpenSim Engine Adapter   | `src/engines/physics_engines/opensim_engine.py`   | Experimental OpenSim integration for clinical biomechanics workflows                        |
-| MyoSuite Engine Adapter  | `src/engines/physics_engines/myosuite_engine.py`  | Experimental MyoSuite integration for detailed muscle physiology simulation                 |
+| MuJoCo Engine Adapter    | `src/engines/physics_engines/mujoco/`             | Primary physics engine integration with full support for contact dynamics and muscle models |
+| Drake Engine Adapter     | `src/engines/physics_engines/drake/`              | Extended Drake support for trajectory optimization and manipulation tasks                   |
+| Pinocchio Engine Adapter | `src/engines/physics_engines/pinocchio/`          | Extended Pinocchio support for efficient rigid-body dynamics computation                    |
+| OpenSim Engine Adapter   | `src/engines/physics_engines/opensim/`            | Experimental OpenSim integration for clinical biomechanics workflows                        |
+| MyoSuite Engine Adapter  | `src/engines/physics_engines/myosuite/`           | Experimental MyoSuite integration for detailed muscle physiology simulation                 |
 | Pendulum Models          | `src/engines/pendulum_models/`                    | Educational simplified models for learning and quick prototyping                            |
 | FastAPI Backend          | `src/api/`                                        | REST API exposing simulation, IK/ID, trajectory optimization, and control endpoints         |
-| PyQt6 GUI                | `src/launchers/gui_launcher.py`                   | Professional interactive GUI with real-time 3D visualization                                |
+| PyQt6 GUI                | `src/launchers/unified_launcher.py`               | Professional interactive GUI with real-time 3D visualization                                |
 | Tauri Desktop App        | `ui/`                                             | Cross-platform desktop application wrapper (Windows, macOS, Linux)                          |
 | Rust Physics Kernels     | `rust_core/upstream-physics/`                     | High-performance compiled physics routines for critical paths                               |
 | Configuration Manager    | `src/config/`                                     | Centralized configuration loading, validation, and environment management                   |

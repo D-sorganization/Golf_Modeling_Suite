@@ -1,0 +1,40 @@
+{
+  "waivers": [
+    {
+      "vuln_id": "CVE-2024-23342",
+      "reason": "No fix version available for ecdsa",
+      "expires": "2026-08-01",
+      "ticket": "https://github.com/d-sorganization/upstreamdrift/issues/3844"
+    },
+    {
+      "vuln_id": "CVE-2026-0994",
+      "reason": "No fix version available - transitive dep from dm_control (protobuf)",
+      "expires": "2026-08-01",
+      "ticket": "https://github.com/d-sorganization/upstreamdrift/issues/3844"
+    },
+    {
+      "vuln_id": "CVE-2026-1703",
+      "reason": "pip upgrade may not persist in GHA runner env",
+      "expires": "2026-08-01",
+      "ticket": "https://github.com/d-sorganization/upstreamdrift/issues/3844"
+    },
+    {
+      "vuln_id": "CVE-2026-3219",
+      "reason": "audit-tool dependency in the shared runner env (pip)",
+      "expires": "2026-08-01",
+      "ticket": "https://github.com/d-sorganization/upstreamdrift/issues/3844"
+    },
+    {
+      "vuln_id": "CVE-2026-4539",
+      "reason": "No fix version available at time of writing for pygments",
+      "expires": "2026-08-01",
+      "ticket": "https://github.com/d-sorganization/upstreamdrift/issues/3844"
+    },
+    {
+      "vuln_id": "PYSEC-2022-42969",
+      "reason": "No fix version reported by pip-audit for py",
+      "expires": "2026-08-01",
+      "ticket": "https://github.com/d-sorganization/upstreamdrift/issues/3844"
+    }
+  ]
+}
