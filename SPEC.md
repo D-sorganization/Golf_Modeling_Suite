@@ -17,6 +17,17 @@
   Write clearly, use concrete examples, and avoid ambiguity.
 -->
 
+## SPEC Ownership and Update Cadence
+
+- **Owner:** @diete (responsible for accepting SPEC.md edits)
+- **Update triggers (mandatory):**
+  - Any PR that adds, removes, or moves a top-level `src/` package or a public
+    engine adapter must update §6 (Component Locations) and §7 (Feature Status).
+  - Any PR that changes the version in `pyproject.toml` must update §1 (Identity).
+  - Any PR that changes a CI gate threshold must update §X (Quality Gates).
+- **Review cadence:** SPEC.md is reviewed for staleness on every release
+  (per `docs/operations/release-runbook.md`, see #3842).
+
 ## 1. Identity
 
 | Field                   | Value                                              |
@@ -99,7 +110,7 @@ UpstreamDrift/
 │   │   ├── endpoints/              # REST endpoint definitions
 │   │   └── models.py               # Pydantic request/response models
 │   ├── config/                     # Configuration management
-│   │   └── configuration.py        # Config loading and validation
+│   │   └── launcher_manifest_loader.py # Config loading and validation
 │   ├── shared/                     # Cross-engine utilities
 │   │   ├── validators.py           # Shared validation logic
 │   │   ├── utilities.py            # Helper functions
@@ -282,7 +293,6 @@ UpstreamDrift employs a comprehensive test pyramid with multiple specialized cat
 - **Physics Validation Tests**: Verify results against known ground truth (analytical solutions, published benchmarks)
 - **Golf Ball-Flight Source Contracts**: Validate documented aerodynamic, impact, and atmosphere assumptions against `docs/physics/GOLF_BALL_FLIGHT_IMPACT_SOURCE_MAP.md`
 - **Benchmark Tests**: Performance regression detection and optimization validation
-- **Property-Based Tests**: Hypothesis-driven fuzzing for robustness
 
 ### Test Organization
 
