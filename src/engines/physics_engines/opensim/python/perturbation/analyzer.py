@@ -280,7 +280,7 @@ class OpenSimPerturbationAnalyzer(PerturbationAnalyzerBase):
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _simulate(self, coeffs: list[list[float]]) -> OpenSimSimResult:
+    def _simulate(self, coeffs: list[list[float]]) -> OpenSimSimResult:  # noqa: C901
         """Run an OpenSim forward simulation with polynomial torques.
 
         Each actuator's control follows ctrl_j(t) = sum_k c_jk * t^k.

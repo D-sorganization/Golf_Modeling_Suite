@@ -462,7 +462,7 @@ class PendulumPerturbationAnalyzer:
     # Profile comparison
     # ------------------------------------------------------------------
 
-    def compare_profiles(
+    def compare_profiles(  # noqa: C901
         self,
         profile_a: object,
         profile_b: object,

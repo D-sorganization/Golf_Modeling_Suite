@@ -59,7 +59,12 @@ else:
     CREATE_NO_WINDOW = 0
     CREATE_NEW_CONSOLE = 0
 
-_assign_to_job = lambda proc: None
+
+def _assign_to_job(proc: subprocess.Popen[bytes]) -> None:
+    """Attach a child process to the platform cascade-termination guard."""
+
+
+_preexec_fn: Callable[[], None] | None = None
 if sys.platform == "win32":
     try:
         import win32api
@@ -67,27 +72,41 @@ if sys.platform == "win32":
         import win32job
 
         _job = win32job.CreateJobObject(None, "")
-        _info = win32job.QueryInformationJobObject(_job, win32job.JobObjectExtendedLimitInformation)
-        _info["BasicLimitInformation"]["LimitFlags"] = win32job.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
-        win32job.SetInformationJobObject(_job, win32job.JobObjectExtendedLimitInformation, _info)
+        _info = win32job.QueryInformationJobObject(
+            _job,
+            win32job.JobObjectExtendedLimitInformation,
+        )
+        _info["BasicLimitInformation"]["LimitFlags"] = (
+            win32job.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+        )
+        win32job.SetInformationJobObject(
+            _job,
+            win32job.JobObjectExtendedLimitInformation,
+            _info,
+        )
 
         def _assign_to_job(proc: subprocess.Popen[bytes]) -> None:
             try:
-                handle = win32api.OpenProcess(win32con.PROCESS_SET_QUOTA | win32con.PROCESS_TERMINATE, False, proc.pid)
+                handle = win32api.OpenProcess(
+                    win32con.PROCESS_SET_QUOTA | win32con.PROCESS_TERMINATE,
+                    False,
+                    proc.pid,
+                )
                 win32job.AssignProcessToJobObject(_job, handle)
-            except Exception as e:  # noqa: BLE001
-                logger.debug("Failed to assign process to job object: %s", e)
+            except (OSError, RuntimeError, TypeError) as exc:
+                logger.debug("Failed to assign process to job object: %s", exc)
     except ImportError:
         logger.debug("win32job not available, orphaned processes may leak on crash")
-    _preexec_fn = None
 else:
     try:
         import ctypes
         import signal
+
         libc = ctypes.CDLL("libc.so.6")
+
         def _preexec_fn() -> None:
             libc.prctl(1, signal.SIGTERM)
-    except Exception:  # noqa: BLE001
+    except (AttributeError, OSError):
         _preexec_fn = None
 
 # VcXsrv paths for Windows X11 support
@@ -514,7 +533,7 @@ class ProcessManager:
             logger.error(f"Failed to launch {name}: {e}")
             return None
 
-    def launch_module(
+    def launch_module(  # noqa: C901
         self,
         name: str,
         module_name: str,

@@ -281,7 +281,7 @@ class CrossEngineDashboardWindow:
         )
 
 
-def _create_dashboard_window_class() -> type:
+def _create_dashboard_window_class() -> type:  # noqa: C901
     """Construct and return the _Window class with deferred Qt/mpl imports.
 
     Returns
