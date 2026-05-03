@@ -589,6 +589,10 @@ jobs:
         if: steps.frontend-changes.outputs.skip != 'true'
         run: npm ci
 
+      - name: UI Security Audit
+        if: steps.frontend-changes.outputs.skip != 'true'
+        run: npm audit --audit-level=high
+
       - name: Type Check
         if: steps.frontend-changes.outputs.skip != 'true'
         run: npm run type-check
