@@ -53,7 +53,7 @@ def _evaluate_precondition(
     except (TypeError, ValueError) as exc:
         raise ContractEvaluationError(
             f"Failed to bind arguments for precondition of {func.__qualname__}: {exc}"
-        )
+        ) from exc
 
     # Fall back to positional call
     try:
@@ -61,7 +61,7 @@ def _evaluate_precondition(
     except TypeError as exc:
         raise ContractEvaluationError(
             f"Failed to evaluate precondition for {func.__qualname__}: {exc}"
-        )
+        ) from exc
 
 
 def precondition(
@@ -121,7 +121,7 @@ def postcondition(
             except (TypeError, ValueError, ZeroDivisionError, AttributeError, KeyError, ArithmeticError) as exc:
                 raise ContractEvaluationError(
                     f"Failed to evaluate postcondition for {func.__qualname__}: {exc}"
-                )
+                ) from exc
 
             if not check:
                 _handle_violation("post-condition", message, result)
