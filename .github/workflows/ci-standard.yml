@@ -203,6 +203,9 @@ jobs:
       - name: Agent Docs Consistency Check
         run: python3 scripts/check_agent_docs_consistency.py
 
+      - name: Security Workflow Silent-Failure Guard
+        run: python3 scripts/check_workflows_no_silent_failures.py
+
       - name: Tutorial Import Check
         run: python3 scripts/ci/check_tutorial_imports.py
 
@@ -239,14 +242,11 @@ jobs:
           python -m pip install --ignore-installed --no-deps "black>=26.3.1"
           python -m pip install --ignore-installed pip-audit
 
-          # Ignore CVEs with no fix version available or transitive dependencies:
-          # - CVE-2024-23342 (ecdsa): No fix version available
-          # - CVE-2026-0994 (protobuf): No fix version available - transitive dep from dm_control
-          # - CVE-2026-1703 (pip): pip upgrade may not persist in GHA runner env
-          # - CVE-2026-3219 (pip): audit-tool dependency in the shared runner env
-          # - CVE-2026-4539 (pygments): No fix version available at time of writing
-          # - PYSEC-2022-42969 (py): No fix version reported by pip-audit
-          pip-audit --ignore-vuln CVE-2024-23342 --ignore-vuln CVE-2026-0994 --ignore-vuln CVE-2026-1703 --ignore-vuln CVE-2026-3219 --ignore-vuln CVE-2026-4539 --ignore-vuln PYSEC-2022-42969
+          mapfile -t pip_audit_waiver_flags < <(
+            python3 scripts/ci/check_pip_audit_waivers.py \
+              --waiver-file scripts/config/pip_audit_waivers.json
+          )
+          pip-audit "${pip_audit_waiver_flags[@]}"
 
       # SECURITY: Bandit static security analysis (Issue #782)
       # Blocking on medium+ severity, medium+ confidence findings (Issue #2067)
