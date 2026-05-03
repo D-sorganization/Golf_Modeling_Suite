@@ -482,6 +482,41 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
 
+  core-only-install:
+    name: Core-only install — verify core-tier engines import cleanly
+    needs: [pick-runner, quality-gate]
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.11"
+      - name: Create stub ui/dist for editable install
+        run: mkdir -p ui/dist
+      - name: Install core dependencies only
+        run: |
+          python -m venv "$RUNNER_TEMP/core-only-venv"
+          echo "$RUNNER_TEMP/core-only-venv/bin" >> "$GITHUB_PATH"
+          echo "VIRTUAL_ENV=$RUNNER_TEMP/core-only-venv" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/core-only-venv/bin/python" -m pip install --upgrade pip
+          "$RUNNER_TEMP/core-only-venv/bin/python" -m pip install -e ".[core]"
+      - name: Verify core-tier engine imports cleanly
+        run: |
+          python -c "
+          from src.engines.physics_engines.mujoco import _tier
+          assert _tier.TIER == 'core', f'Expected core, got {_tier.TIER}'
+          print('core-tier assertion passed: mujoco._tier.TIER == \"core\"')
+          "
+      - name: Verify tier registry loads in core environment
+        run: |
+          python -c "
+          from src.engines.physics_engines._registry import TIER_REGISTRY
+          assert 'mujoco' in TIER_REGISTRY
+          assert TIER_REGISTRY['mujoco']['tier'] == 'core'
+          print('TIER_REGISTRY loaded successfully in core-only environment')
+          "
+
   shared-tools-consumer-contracts:
     needs: [pick-runner, quality-gate]
     runs-on: ${{ needs.pick-runner.outputs.runner }}
