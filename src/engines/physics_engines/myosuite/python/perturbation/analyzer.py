@@ -243,7 +243,7 @@ class MyoSuitePerturbationAnalyzer(PerturbationAnalyzerBase):
                 self._nq = self._nu
                 self._nv = self._nu
             self._use_gym = True
-        except Exception as exc:  # noqa: BLE001
+        except (ValueError, RuntimeError) as exc:
             logger.warning("MyoSuite init failed (%s), falling back to MuJoCo", exc)
             self._init_mujoco_fallback(None, None)
 
@@ -369,7 +369,7 @@ class MyoSuitePerturbationAnalyzer(PerturbationAnalyzerBase):
                         mujoco.mj_energyVel(mj_model, mj_data)
                         pe = float(mj_data.energy[0])
                         ke = float(mj_data.energy[1])
-                    except Exception:  # noqa: BLE001
+                    except (ValueError, RuntimeError):
                         pass
 
             t_list.append(t)

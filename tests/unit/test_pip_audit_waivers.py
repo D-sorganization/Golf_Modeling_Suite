@@ -90,16 +90,19 @@ def test_load_waivers_rejects_missing_fields(tmp_path):
 
 def test_load_waivers_requires_supported_tier(tmp_path):
     module = _load_script_module("check_pip_audit_waivers")
-    waiver_file = tmp_path / "waivers.yml"
+    waiver_file = tmp_path / "waivers.json"
     waiver_file.write_text(
-        """
-waivers:
-  - id: CVE-2024-0001
-    package: demo
-    tier: unsupported
-    reason: Waiting for upstream fix.
-    expires_at: 2099-01-01
-""".strip(),
+        """{
+  "waivers": [
+    {
+      "id": "CVE-2024-0001",
+      "package": "demo",
+      "tier": "unsupported",
+      "reason": "Waiting for upstream fix.",
+      "expires_at": "2099-01-01"
+    }
+  ]
+}""",
         encoding="utf-8",
     )
 

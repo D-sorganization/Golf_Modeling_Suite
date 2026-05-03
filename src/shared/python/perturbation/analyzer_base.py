@@ -213,7 +213,7 @@ class PerturbationAnalyzerBase(ABC):
                     if isinstance(metric_value, np.ndarray):
                         metric_value = float(np.linalg.norm(metric_value))
                     metric_lists[metric_name].append(float(metric_value))
-            except Exception as exc:  # noqa: BLE001
+            except (ValueError, RuntimeError) as exc:
                 failures.append(
                     self._build_trial_failure(
                         trial_index=trial_index,
@@ -345,7 +345,7 @@ class PerturbationAnalyzerBase(ABC):
                 if isinstance(metric_value, np.ndarray):
                     metric_value = float(np.linalg.norm(metric_value))
                 values.append(float(metric_value))
-            except Exception as exc:  # noqa: BLE001
+            except (ValueError, RuntimeError) as exc:
                 failures.append(
                     self._build_trial_failure(
                         trial_index=trial_index,
