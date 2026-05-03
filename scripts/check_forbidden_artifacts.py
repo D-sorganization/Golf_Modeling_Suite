@@ -4,8 +4,8 @@
 from __future__ import annotations
 
 import argparse
-import fnmatch
 import logging
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -23,14 +23,17 @@ FORBIDDEN_FILES = frozenset(
     }
 )
 FORBIDDEN_DIR_PREFIXES = (".jules/completist_data/",)
-FORBIDDEN_PATTERNS = (
-    "*.bak",
-    "*.swp",
-    "*.orig",
-    "*.rej",
-    "pr_body_*.md",
-    "fix_*.py",
-    ".ci_trigger*",
+FORBIDDEN_REGEXES = tuple(
+    re.compile(pattern)
+    for pattern in (
+        r"(^|/)[^/]+\.bak$",
+        r"(^|/)[^/]+\.orig$",
+        r"(^|/)[^/]+\.rej$",
+        r"(^|/)[^/]+\.swp$",
+        r"^\.ci_trigger.*$",
+        r"^fix_[^/]+\.py$",
+        r"^pr_body_[^/]+\.md$",
+    )
 )
 
 
@@ -49,13 +52,7 @@ def is_forbidden_artifact(path: str | Path) -> bool:
         return True
     if any(normalized.startswith(prefix) for prefix in FORBIDDEN_DIR_PREFIXES):
         return True
-
-    # Check patterns against the filename part (or the whole path if it matches)
-    name = Path(path).name
-    return any(
-        fnmatch.fnmatch(name, pat) or fnmatch.fnmatch(normalized, pat)
-        for pat in FORBIDDEN_PATTERNS
-    )
+    return any(pattern.search(normalized) for pattern in FORBIDDEN_REGEXES)
 
 
 def find_forbidden_artifacts(
