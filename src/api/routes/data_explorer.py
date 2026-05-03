@@ -8,6 +8,7 @@ See issue #1206
 
 from __future__ import annotations
 
+import asyncio
 import contextlib
 import csv
 import io
@@ -92,6 +93,7 @@ class ImportResponse(BaseModel):
 # ── In-memory dataset cache ──
 
 _loaded_datasets: dict[str, dict[str, Any]] = {}
+_cache_lock = asyncio.Lock()
 
 
 def _get_output_dir() -> Path:
@@ -162,17 +164,18 @@ async def list_datasets() -> DatasetListResponse:
                 )
 
     # Also include any loaded (imported) datasets
-    for name, ds in _loaded_datasets.items():
-        if not any(d.name == name for d in datasets):
-            datasets.append(
-                DatasetInfo(
-                    name=name,
-                    path="(imported)",
-                    format=ds.get("format", "unknown"),
-                    size_bytes=0,
-                    columns=ds.get("columns", []),
+    async with _cache_lock:
+        for name, ds in _loaded_datasets.items():
+            if not any(d.name == name for d in datasets):
+                datasets.append(
+                    DatasetInfo(
+                        name=name,
+                        path="(imported)",
+                        format=ds.get("format", "unknown"),
+                        size_bytes=0,
+                        columns=ds.get("columns", []),
+                    )
                 )
-            )
 
     return DatasetListResponse(
         datasets=datasets,
@@ -193,16 +196,17 @@ async def preview_dataset(name: str, limit: int = 50) -> DatasetPreviewResponse:
     See issue #1206
     """
     # Check in-memory cache first
-    if name in _loaded_datasets:
-        ds = _loaded_datasets[name]
-        rows = ds["rows"][:limit]
-        return DatasetPreviewResponse(
-            name=name,
-            columns=ds["columns"],
-            rows=rows,
-            total_rows=len(ds["rows"]),
-            format=ds["format"],
-        )
+    async with _cache_lock:
+        if name in _loaded_datasets:
+            ds = _loaded_datasets[name]
+            rows = ds["rows"][:limit]
+            return DatasetPreviewResponse(
+                name=name,
+                columns=ds["columns"],
+                rows=rows,
+                total_rows=len(ds["rows"]),
+                format=ds["format"],
+            )
 
     # Try to load from disk
     output_dir = _get_output_dir()
@@ -243,11 +247,15 @@ async def dataset_stats(name: str) -> DatasetStatsResponse:
     See issue #1206
     """
     # Get dataset rows
-    if name in _loaded_datasets:
-        ds = _loaded_datasets[name]
-        columns = ds["columns"]
-        rows = ds["rows"]
-    else:
+    in_cache = False
+    async with _cache_lock:
+        if name in _loaded_datasets:
+            ds = _loaded_datasets[name]
+            columns = ds["columns"]
+            rows = ds["rows"]
+            in_cache = True
+    
+    if not in_cache:
         output_dir = _get_output_dir()
         matches = list(output_dir.rglob(name))
         if not matches:
@@ -316,11 +324,12 @@ async def import_dataset(file: UploadFile) -> ImportResponse:
     else:
         columns, rows = _parse_json_content(content)
 
-    _loaded_datasets[file.filename] = {
-        "columns": columns,
-        "rows": rows,
-        "format": suffix.lstrip("."),
-    }
+    async with _cache_lock:
+        _loaded_datasets[file.filename] = {
+            "columns": columns,
+            "rows": rows,
+            "format": suffix.lstrip("."),
+        }
 
     return ImportResponse(
         name=file.filename,
@@ -343,12 +352,16 @@ async def filter_dataset(
     See issue #1206
     """
     # First get the dataset
-    if name in _loaded_datasets:
-        ds = _loaded_datasets[name]
-        columns = ds["columns"]
-        rows = ds["rows"]
-        fmt = ds["format"]
-    else:
+    in_cache = False
+    async with _cache_lock:
+        if name in _loaded_datasets:
+            ds = _loaded_datasets[name]
+            columns = ds["columns"]
+            rows = ds["rows"]
+            fmt = ds["format"]
+            in_cache = True
+            
+    if not in_cache:
         output_dir = _get_output_dir()
         matches = list(output_dir.rglob(name))
         if not matches:
