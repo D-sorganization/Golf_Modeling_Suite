@@ -111,11 +111,17 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
-            mapfile -d '' py_files < <(
+            mapfile -d '' changed_py_files < <(
               git diff --name-only -z "origin/${{ github.base_ref }}" HEAD -- '*.py'
             )
+            py_files=()
+            for file in "${changed_py_files[@]}"; do
+              if [ -f "$file" ]; then
+                py_files+=("$file")
+              fi
+            done
             if [ "${#py_files[@]}" -eq 0 ]; then
-              echo "No changed Python files; skipping Ruff lint check."
+              echo "No existing changed Python files; skipping Ruff lint check."
               exit 0
             fi
             ruff check "${py_files[@]}"
@@ -132,11 +138,17 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
-            mapfile -d '' py_files < <(
+            mapfile -d '' changed_py_files < <(
               git diff --name-only -z "origin/${{ github.base_ref }}" HEAD -- '*.py'
             )
+            py_files=()
+            for file in "${changed_py_files[@]}"; do
+              if [ -f "$file" ]; then
+                py_files+=("$file")
+              fi
+            done
             if [ "${#py_files[@]}" -eq 0 ]; then
-              echo "No changed Python files; skipping Ruff format check."
+              echo "No existing changed Python files; skipping Ruff format check."
               exit 0
             fi
             ruff format --check "${py_files[@]}"
