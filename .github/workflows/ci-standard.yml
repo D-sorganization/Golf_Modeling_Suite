@@ -200,6 +200,9 @@ jobs:
       - name: Tutorial Import Check
         run: python3 scripts/ci/check_tutorial_imports.py
 
+      - name: SPEC.md Path Check
+        run: python3 scripts/check_spec_paths.py
+
       - name: Module Size Budget Check
         run: python3 scripts/check_module_size_budget.py --max-lines 1500 --include src
 
