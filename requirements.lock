@@ -71,11 +71,17 @@ jinja2==3.1.6
     # via
     #   bokeh
     #   flask
+markdown-it-py==4.0.0
+    # via rich
 markupsafe==3.0.3
     # via
     #   flask
     #   jinja2
     #   werkzeug
+mdurl==0.1.2
+    # via markdown-it-py
+meshio==5.3.5
+    # via upstream-drift (pyproject.toml)
 mujoco==3.8.0
     # via upstream-drift (pyproject.toml)
 narwhals==2.20.0
@@ -85,6 +91,7 @@ numpy==1.26.4
     #   bokeh
     #   contourpy
     #   h5py
+    #   meshio
     #   mujoco
     #   scipy
     #   upstream-drift (pyproject.toml)
@@ -100,6 +107,8 @@ pydantic==2.12.5
     #   upstream-drift (pyproject.toml)
 pydantic-core==2.41.5
     # via pydantic
+pygments==2.20.0
+    # via rich
 pyopengl==3.1.10
     # via mujoco
 python-dotenv==1.2.2
@@ -110,6 +119,8 @@ pyyaml==6.0.2
     #   uvicorn
 requests==2.33.1
     # via upstream-drift (pyproject.toml)
+rich==15.0.0
+    # via meshio
 scipy==1.13.1
     # via upstream-drift (pyproject.toml)
 simpleeval==1.0.5

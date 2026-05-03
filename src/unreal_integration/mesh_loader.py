@@ -72,6 +72,7 @@ class MeshFormat(Enum):
     """Supported mesh file formats."""
 
     OBJ = "obj"
+    MSH = "msh"
     STL = "stl"
     GLTF = "gltf"
     GLB = "glb"
@@ -136,6 +137,8 @@ class MeshFace:
 
     indices: np.ndarray
     material_index: int = 0
+    cell_type: str | None = None
+    physical_group_id: int | None = None
 
     @property
     def is_triangle(self) -> bool:
@@ -429,7 +432,7 @@ class MeshLoader:
         """Clear mesh cache."""
         self._cache.clear()
 
-    def load(self, path: str) -> LoadedMesh:
+    def load(self, path: str) -> LoadedMesh:  # noqa: C901
         """Load mesh from file.
 
         Preconditions:
@@ -469,6 +472,8 @@ class MeshLoader:
         try:
             if fmt == MeshFormat.OBJ:
                 mesh = self._load_obj(path_obj)
+            elif fmt == MeshFormat.MSH:
+                mesh = self._load_msh(path_obj)
             elif fmt == MeshFormat.STL:
                 mesh = self._load_stl(path_obj)
             elif fmt in (MeshFormat.GLTF, MeshFormat.GLB):
@@ -499,7 +504,7 @@ class MeshLoader:
         except (RuntimeError, TypeError, ValueError) as e:
             raise MeshLoadError(f"Failed to load mesh: {e}", path, e) from e
 
-    def _load_obj(self, path: Path) -> LoadedMesh:
+    def _load_obj(self, path: Path) -> LoadedMesh:  # noqa: C901
         """Load OBJ format mesh.
 
         Args:
@@ -655,6 +660,36 @@ class MeshLoader:
             faces=faces,
         )
 
+    def _load_msh(self, path: Path) -> LoadedMesh:
+        """Load Gmsh .msh cells through meshio without PyVista cell slicing."""
+        if path is None:
+            raise ValueError("path must be provided")
+
+        from src.unreal_integration.meshio_import import load_meshio_cells
+
+        parsed = load_meshio_cells(path)
+        vertices = [MeshVertex(position=node) for node in parsed.nodes]
+        faces: list[MeshFace] = []
+        for block in parsed.cell_blocks:
+            for cell, physical_group_id in zip(
+                block.cells,
+                block.physical_group_ids,
+                strict=True,
+            ):
+                faces.append(
+                    MeshFace(
+                        indices=np.asarray(cell, dtype=int),
+                        cell_type=block.cell_type,
+                        physical_group_id=int(physical_group_id),
+                    )
+                )
+
+        return LoadedMesh(
+            name=path.stem,
+            vertices=vertices,
+            faces=faces,
+        )
+
     def _load_gltf(self, path: Path) -> LoadedMesh:
         """Load GLTF/GLB format mesh.
 
@@ -729,11 +764,9 @@ class MeshLoader:
         if "meshes" not in gltf or not gltf["meshes"]:
             raise MeshLoadError("No meshes found in GLTF", str(path))
 
-        # For basic loading, create placeholder mesh
-        return LoadedMesh(
-            name=path.stem,
-            vertices=[MeshVertex(position=np.array([0.0, 0.0, 0.0]))],
-            faces=[MeshFace(indices=np.array([0, 0, 0]))],
+        raise MeshLoadError(
+            "GLTF accessor/buffer parsing requires the trimesh library",
+            str(path),
         )
 
     def _load_fbx(self, path: Path) -> LoadedMesh:

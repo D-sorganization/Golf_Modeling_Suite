@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.98                                             |
+| **Spec Version**        | 1.0.99                                             |
 | **Last Spec Update**    | 2026-05-03                                         |
 
 ## SPEC Ownership and Update Cadence
@@ -603,6 +603,7 @@ Bumped spec file slightly to bypass the spec check in CI.
 | 2026-04-30 | 1.0.86 | Bolt: Optimized `np.linalg.norm` to explicit element-wise computation using `np.einsum` in ZTCFResult.magnitudes |
 | 2026-05-02 | 1.0.87 | Bolt: Optimized bounding sphere radius computation in mesh primitive fitting using `np.einsum` instead of `np.linalg.norm` |
 | 2026-05-03 | 1.0.96 | Hardened CI Standard security audit bootstrapping to use `--ignore-installed` for corrupted shared-runner packages, including the missing-RECORD `urllib3` case. |
+| 2026-05-03 | 1.0.99 | Added deterministic meshio-backed Gmsh `.msh` import for UI mesh reloading, preserving supported cells and physical group IDs while failing loudly on unsupported cell types. |
 
 ## 3D Vector Distances Note
 
