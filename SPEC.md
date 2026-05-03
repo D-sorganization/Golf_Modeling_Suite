@@ -177,6 +177,18 @@ UpstreamDrift/
 | Shared Utilities         | `src/shared/`                            | Cross-engine validators, helpers, and exception definitions                                 |
 | URDF Models              | `shared/models/`                         | Canonical model definitions (URDF format) for golf swings, human body, pendulums            |
 
+### Engine Tier Policy
+
+| Tier         | Examples                | Stability bar                                            | Deps installed by default | Vulnerability SLA |
+| ------------ | ----------------------- | -------------------------------------------------------- | ------------------------- | ----------------- |
+| core         | MuJoCo, FastAPI, shared | Must pass on every PR; semver-stable public API; no skip | yes                       | High/Critical: 7d |
+| extended     | Drake, Pinocchio        | Must pass nightly; semver-stable in major versions       | only with extra           | High: 30d         |
+| experimental | OpenSim, MyoSuite       | Best-effort; may be skipped; API may break               | only with extra; warning  | Best effort       |
+| archived     | (none today)            | Read-only; not built; not tested                         | no                        | n/a               |
+
+Engine tier metadata is declared in each in-scope engine package with
+`_tier.py` and enforced by `scripts/check_engine_tiers.py`.
+
 ## 5. Desired Functionality
 
 ### Core Features
@@ -293,6 +305,7 @@ UpstreamDrift employs a comprehensive test pyramid with multiple specialized cat
 - **Physics Validation Tests**: Verify results against known ground truth (analytical solutions, published benchmarks)
 - **Golf Ball-Flight Source Contracts**: Validate documented aerodynamic, impact, and atmosphere assumptions against `docs/physics/GOLF_BALL_FLIGHT_IMPACT_SOURCE_MAP.md`
 - **Dependency Source Contracts**: Validate generated dependency artifacts against `pyproject.toml` and fail CI when lockfiles or `environment.yml` drift
+- **Documentation Governance Contracts**: Validate the canonical `docs/index.md` directory catalog, rendered documentation hub link, and Markdown/Quarto size budget.
 - **Benchmark Tests**: Performance regression detection and optimization validation
 - **Property-Based Tests**: Hypothesis-driven fuzzing for robustness
 
@@ -309,6 +322,12 @@ UpstreamDrift employs a comprehensive test pyramid with multiple specialized cat
 | Dependency Source Contracts | `tests/unit/scripts/`  | pytest              | generated dependency contract tests |
 | Benchmarks            | `tests/benchmarks/`         | pytest-benchmark    | `@pytest.mark.benchmark`          |
 | Property-Based        | `tests/unit/`               | hypothesis + pytest | `@pytest.mark.property`           |
+
+Issue #3841 moved stable flat tests and the launcher `src/**/tests` package into
+topic directories under `tests/`, documented the fixture scopes in
+`tests/README.md`, and added `scripts/check_test_layout.py` as the blocking CI
+guard against new flat test files, new in-tree `src/**/tests` directories, and
+overlapping fixture names in nested conftests.
 
 ### Coverage Requirements
 
@@ -361,6 +380,7 @@ Beyond standard tools, CI enforces custom checks:
 
 - **Dependency Direction**: No reverse dependencies (leaf → branch → root)
 - **File Size Budget**: No module exceeds 500 lines; classes capped at 200 LOC
+- **Documentation Catalog and Size Budget**: Every top-level `docs/` directory is listed in `docs/index.md`; oversized Markdown/Quarto docs require owned, expiring exceptions.
 - **Import Depth**: Maximum 4 import levels to prevent circular dependencies
 - **Physics Fitness**: Cross-engine validation must pass with <5% tolerance
 - **Security Audit Isolation**: `pip-audit` runs from a dedicated virtualenv plus `scripts/config/pip_audit_waivers.json` so self-hosted runner toolcache drift cannot mask or invent vulnerabilities
@@ -510,9 +530,13 @@ blocks Python package publication on the built-wheel smoke matrix.
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-05-03 | 1.0.96  | Guarded local diagnostic and debug API endpoints in production mode unless `UPSTREAM_DRIFT_DEBUG_ENDPOINTS=true` is explicitly set.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | 2026-05-03 | 1.0.96  | Established `pyproject.toml` as the canonical Python dependency source, generated `environment.yml` from it, added `make sync-deps`, promoted documented CVE floors to runtime dependencies, removed the deprecated root CRA UI build, and added dependency-consistency CI drift/audit coverage.                                                                                                                                                                                                                                                                                                                                     |
+| 2026-05-03 | 1.0.96  | Added tier-aware vulnerability SLA policy, pip-audit waiver tier validation, OSV triage deadline helpers, and local per-tier SBOM metadata generation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 2026-05-03 | 1.0.96  | Added documentation catalog and size-budget governance checks for issue #3839, including owned temporary exceptions for oversized legacy docs.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | 2026-05-03 | 1.0.95  | Added a mypy exclusion budget and ratchet checker so path exclusions have explicit owner, reason, expiry, and scheduled shrinkage metadata.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | 2026-05-03 | 1.0.96  | Added a workflow and agent-configuration inventory guard that documents active workflow ownership, records consolidation candidates, blocks undocumented workflow growth, and rejects unsafe `permissions: write-all`.                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | 2026-05-03 | 1.0.95  | Added the canonical production artifact contract, compatibility matrix, runtime support warning, and release-blocking Python wheel smoke-test matrix for issue #3852.                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 2026-05-03 | 1.0.95  | Added release governance for issue #3842: version consistency checks, CI wiring, release and production-readiness operations docs, Rust version metadata alignment, release SBOM generation, and artifact attestations.                                                                                                                                                                                                                                                                                                                                                                                                                |
+| 2026-05-03 | 1.0.96  | Migrated stable flat tests and launcher in-tree tests into topic directories under `tests/`, documented the test layout and fixture scopes, and added the blocking `scripts/check_test_layout.py` CI guard for issue #3841.                                                                                                                                                                                                                                                                                                                                               |
 | 2026-05-03 | 1.0.94  | Hardened the standard CI security-audit bootstrap to install a patched Black before `pip-audit`, preventing shared-runner cache drift from failing docs/governance PRs on CVE-2026-32274.                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | 2026-05-03 | 1.0.93  | Normalized contributor governance docs around `CLAUDE.md`, added stronger agent-doc consistency checks for coverage/path drift and duplicate paragraphs, and aligned the standard CI coverage gate with `pyproject.toml`.                                                                                                                                                                                                                                                                                                                                                                                                             |
 | 2026-05-02 | 1.0.93  | UI: converted the launcher's global sidebar to icon-first navigation with accessible Home, Engines, Settings, and Documentation controls.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
@@ -572,6 +596,7 @@ Bumped spec file slightly to bypass the spec check in CI.
 | 2026-04-29 | 1.0.85 | Bolt: Fixed 3D vector distance regressions and optimized math.hypot usage |
 | 2026-04-30 | 1.0.86 | Bolt: Optimized `np.linalg.norm` to explicit element-wise computation using `np.einsum` in ZTCFResult.magnitudes |
 | 2026-05-02 | 1.0.87 | Bolt: Optimized bounding sphere radius computation in mesh primitive fitting using `np.einsum` instead of `np.linalg.norm` |
+| 2026-05-03 | 1.0.96 | Hardened CI Standard security audit bootstrapping to use `--ignore-installed` for corrupted shared-runner packages, including the missing-RECORD `urllib3` case. |
 
 ## 3D Vector Distances Note
 
