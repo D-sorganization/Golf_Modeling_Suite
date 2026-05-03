@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import ast
 import math
+import operator
 from typing import Any
 
 import numpy as np
@@ -212,6 +213,98 @@ def validate_expression(
     return tree
 
 
+_OPERATORS = {
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.truediv,
+    ast.FloorDiv: operator.floordiv,
+    ast.Mod: operator.mod,
+    ast.Pow: operator.pow,
+    ast.LShift: operator.lshift,
+    ast.RShift: operator.rshift,
+    ast.BitOr: operator.or_,
+    ast.BitXor: operator.xor,
+    ast.BitAnd: operator.and_,
+    ast.MatMult: operator.matmul,
+    ast.Eq: operator.eq,
+    ast.NotEq: operator.ne,
+    ast.Lt: operator.lt,
+    ast.LtE: operator.le,
+    ast.Gt: operator.gt,
+    ast.GtE: operator.ge,
+    ast.Is: operator.is_,
+    ast.IsNot: operator.is_not,
+    ast.In: lambda a, b: a in b,
+    ast.NotIn: lambda a, b: a not in b,
+    ast.UAdd: operator.pos,
+    ast.USub: operator.neg,
+    ast.Not: operator.not_,
+    ast.Invert: operator.invert,
+}
+
+def _eval_ast(node: ast.AST, namespace: dict[str, Any]) -> Any:
+    if isinstance(node, ast.Expression):
+        return _eval_ast(node.body, namespace)
+    elif isinstance(node, ast.Constant):
+        return node.value
+    elif isinstance(node, ast.Name):
+        if node.id in namespace:
+            return namespace[node.id]
+        raise NameError(f"name '{node.id}' is not defined")
+    elif isinstance(node, ast.BinOp):
+        left = _eval_ast(node.left, namespace)
+        right = _eval_ast(node.right, namespace)
+        return _OPERATORS[type(node.op)](left, right)
+    elif isinstance(node, ast.UnaryOp):
+        operand = _eval_ast(node.operand, namespace)
+        return _OPERATORS[type(node.op)](operand)
+    elif isinstance(node, ast.Compare):
+        left = _eval_ast(node.left, namespace)
+        for op, right_node in zip(node.ops, node.comparators):
+            right = _eval_ast(right_node, namespace)
+            if not _OPERATORS[type(op)](left, right):
+                return False
+            left = right
+        return True
+    elif isinstance(node, ast.BoolOp):
+        values = [_eval_ast(v, namespace) for v in node.values]
+        if isinstance(node.op, ast.And):
+            return all(values)
+        elif isinstance(node.op, ast.Or):
+            return any(values)
+    elif isinstance(node, ast.Call):
+        func = _eval_ast(node.func, namespace)
+        # Handle ast.Starred for *args
+        args = []
+        for arg in node.args:
+            if isinstance(arg, ast.Starred):
+                args.extend(_eval_ast(arg.value, namespace))
+            else:
+                args.append(_eval_ast(arg, namespace))
+        kwargs = {kw.arg: _eval_ast(kw.value, namespace) for kw in node.keywords if kw.arg}
+        return func(*args, **kwargs)
+    elif isinstance(node, ast.Subscript):
+        value = _eval_ast(node.value, namespace)
+        slice_val = _eval_ast(node.slice, namespace)
+        return value[slice_val]
+    elif isinstance(node, ast.Index): # Python 3.8 compat
+        return _eval_ast(node.value, namespace)
+    elif isinstance(node, ast.Slice):
+        lower = _eval_ast(node.lower, namespace) if node.lower else None
+        upper = _eval_ast(node.upper, namespace) if node.upper else None
+        step = _eval_ast(node.step, namespace) if node.step else None
+        return slice(lower, upper, step)
+    elif isinstance(node, ast.IfExp):
+        test = _eval_ast(node.test, namespace)
+        if test:
+            return _eval_ast(node.body, namespace)
+        else:
+            return _eval_ast(node.orelse, namespace)
+    else:
+        raise ValueError(f"Unsupported AST node: {type(node).__name__}")
+
+
 def safe_eval(
     expression: str,
     namespace: dict[str, Any],
@@ -243,8 +336,7 @@ def safe_eval(
         allowed_names = set(namespace.keys())
 
     tree = validate_expression(expression, allowed_names)
-    code = compile(tree, "<safe_eval>", "eval")
-    return eval(code, {"__builtins__": {}}, namespace)  # noqa: S307  # nosec B307 - AST validated by validate_expression before eval
+    return _eval_ast(tree, namespace)
 
 
 def safe_eval_math(
