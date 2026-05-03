@@ -27,7 +27,7 @@
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.94                                             |
+| **Spec Version**        | 1.0.95                                             |
 | **Last Spec Update**    | 2026-05-03                                         |
 
 ## 2. Purpose & Mission
@@ -541,6 +541,7 @@ Bumped spec file slightly to bypass the spec check in CI.
 | 2026-04-29 | 1.0.85 | Bolt: Fixed 3D vector distance regressions and optimized math.hypot usage |
 | 2026-04-30 | 1.0.86 | Bolt: Optimized `np.linalg.norm` to explicit element-wise computation using `np.einsum` in ZTCFResult.magnitudes |
 | 2026-05-02 | 1.0.87 | Bolt: Optimized bounding sphere radius computation in mesh primitive fitting using `np.einsum` instead of `np.linalg.norm` |
+| 2026-05-03 | 1.0.95 | Hardened CI Standard security audit bootstrapping to force a patched `black==26.3.1` and fresh `pip-audit` install on shared runners. |
 
 ## 3D Vector Distances Note
 

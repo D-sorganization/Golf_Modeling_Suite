@@ -230,11 +230,12 @@ jobs:
         run: |
           # Force-reinstall sortedcontainers before pip-audit: the shared runner toolcache
           # can carry a half-installed sortedcontainers that makes cyclonedx (pip-audit dep) fail.
-          python -m pip install --ignore-installed --no-deps "sortedcontainers>=2.4.0"
-          # Force a patched Black into the audit environment so pip-audit does not
-          # fail on a vulnerable formatter version lingering in the shared runner cache.
-          python -m pip install --ignore-installed --no-deps "black>=26.3.1"
-          python -m pip install --ignore-installed pip-audit
+          python -m pip install --upgrade --force-reinstall --no-deps "sortedcontainers>=2.4.0"
+          # Remove any stale Black wheel before reinstalling the patched version:
+          # shared runner site-packages can otherwise leave 26.1.0 active for pip-audit.
+          python -m pip uninstall -y black || true
+          python -m pip install --upgrade --force-reinstall --no-deps "black==26.3.1"
+          python -m pip install --upgrade --force-reinstall pip-audit
 
           # Ignore CVEs with no fix version available or transitive dependencies:
           # - CVE-2024-23342 (ecdsa): No fix version available
