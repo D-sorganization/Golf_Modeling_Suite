@@ -45,7 +45,7 @@ def _looks_like_path(token: str) -> bool:
 def _in_fenced_block(line: str, inside_fence: bool) -> bool:
     """Return True when the line is a fence delimiter (``` or ~~~)."""
     stripped = line.strip()
-    return stripped.startswith("```") or stripped.startswith("~~~")
+    return stripped.startswith(("```", "~~~"))
 
 
 def collect_paths(spec_text: str) -> list[str]:
@@ -65,9 +65,8 @@ def collect_paths(spec_text: str) -> list[str]:
             continue
         for match in _INLINE_BACKTICK_RE.finditer(line):
             token = match.group(1).strip()
-            if _looks_like_path(token):
-                if token not in found:
-                    found.append(token)
+            if _looks_like_path(token) and token not in found:
+                found.append(token)
 
     return found
 

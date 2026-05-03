@@ -188,6 +188,9 @@ jobs:
             mypy src/api --strict --follow-imports=silent --config-file pyproject.toml
           fi
 
+      - name: SPEC.md Path Integrity Check
+        run: python3 scripts/check_spec_paths.py
+
       - name: Dependency Direction Fitness Check
         run: python3 scripts/check_dependency_direction.py
 
