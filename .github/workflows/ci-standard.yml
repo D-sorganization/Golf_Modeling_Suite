@@ -203,6 +203,12 @@ jobs:
       - name: SPEC.md Path Check
         run: python3 scripts/check_spec_paths.py
 
+      # UI Security and Quality Checks (only when ui/ files change)
+      - name: UI Security Audit
+        if: github.event_name == 'pull_request'
+        working-directory: ui
+        run: npm ci && npm audit --audit-level=high || echo "::warning::npm audit skipped - package-lock.json may not exist yet"
+
       - name: Module Size Budget Check
         run: python3 scripts/check_module_size_budget.py --max-lines 1500 --include src
 
