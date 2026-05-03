@@ -36,6 +36,22 @@ pip install -e ".[dev,all-engines]"
 See `docs/engines/support_tiers.md` before enabling heavier or experimental
 engine combinations.
 
+### Where dependencies live
+
+- Python runtime: `pyproject.toml [project] dependencies`
+- Python optional features: `pyproject.toml [project.optional-dependencies]`
+- Python pinned for CI: `requirements.lock` and `requirements-dev.lock`
+  generated from `pyproject.toml`
+- Conda convenience: `environment.yml` generated from `pyproject.toml`
+- Rust extension: `Cargo.toml`, `Cargo.lock`, and `rust_core/upstream-physics/`
+- UI build: `ui/package.json` only; the deprecated root Create React App
+  build was removed in favor of the Vite + Tauri surface
+- DB migrations: `alembic.ini`
+
+Adding a new Python dependency starts in `pyproject.toml`. Run
+`make sync-deps` to regenerate the lockfiles and `environment.yml`, then commit
+the canonical source and generated artifacts together.
+
 ### Rust kernel development
 
 The Rust workspace no longer requires a sibling `../Tools` checkout just to
@@ -56,6 +72,25 @@ python -m maturin develop --features python
 If you need editable cross-repository Python integration code from
 `D-sorganization/Tools`, run `scripts/setup_tools_workspace.sh` to attach the
 optional sibling workspace and helper `PYTHONPATH` entries.
+
+### Building the UI
+
+The UI lives under `ui/`. It is built with Vite, packaged with Tauri 2,
+and bundled into the Python wheel via the hatch custom build hook
+(`build_hooks.py`).
+
+To develop:
+
+```bash
+cd ui && npm install && npm run dev
+```
+
+To build for distribution:
+
+```bash
+cd ui && npm run build
+# ui/dist is then included in `pip install -e .` builds via build_hooks.py.
+```
 
 ## ✅ Code Standards
 

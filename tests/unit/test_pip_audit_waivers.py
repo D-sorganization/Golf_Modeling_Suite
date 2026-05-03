@@ -22,16 +22,19 @@ def _load_script_module(name: str):
 
 def test_load_waivers_and_emit_ignore_flags(tmp_path):
     module = _load_script_module("check_pip_audit_waivers")
-    waiver_file = tmp_path / "waivers.yml"
+    waiver_file = tmp_path / "waivers.json"
     waiver_file.write_text(
-        """
-waivers:
-  - id: CVE-2024-0001
-    package: demo
-    tier: core
-    reason: Waiting for upstream fix.
-    expires_at: 2099-01-01
-""".strip(),
+        """{
+  "waivers": [
+    {
+      "id": "CVE-2024-0001",
+      "package": "demo",
+      "tier": "core",
+      "reason": "Waiting for upstream fix.",
+      "expires_at": "2099-01-01"
+    }
+  ]
+}""",
         encoding="utf-8",
     )
 
@@ -43,16 +46,19 @@ waivers:
 
 def test_find_expired_waivers_detects_past_dates(tmp_path):
     module = _load_script_module("check_pip_audit_waivers")
-    waiver_file = tmp_path / "waivers.yml"
+    waiver_file = tmp_path / "waivers.json"
     waiver_file.write_text(
-        """
-waivers:
-  - id: CVE-2024-0001
-    package: demo
-    tier: extended
-    reason: Waiting for upstream fix.
-    expires_at: 2020-01-01
-""".strip(),
+        """{
+  "waivers": [
+    {
+      "id": "CVE-2024-0001",
+      "package": "demo",
+      "tier": "extended",
+      "reason": "Waiting for upstream fix.",
+      "expires_at": "2020-01-01"
+    }
+  ]
+}""",
         encoding="utf-8",
     )
 
@@ -64,14 +70,17 @@ waivers:
 
 def test_load_waivers_rejects_missing_fields(tmp_path):
     module = _load_script_module("check_pip_audit_waivers")
-    waiver_file = tmp_path / "waivers.yml"
+    waiver_file = tmp_path / "waivers.json"
     waiver_file.write_text(
-        """
-waivers:
-  - id: CVE-2024-0001
-    package: demo
-    tier: core
-""".strip(),
+        """{
+  "waivers": [
+    {
+      "id": "CVE-2024-0001",
+      "package": "demo",
+      "tier": "core"
+    }
+  ]
+}""",
         encoding="utf-8",
     )
 
