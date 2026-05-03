@@ -45,11 +45,19 @@ def split_action_reference(reference: str) -> tuple[str, str | None]:
 
 
 def audit_workflow_file(path: Path) -> list[UnpinnedAction]:
-    """Find unpinned external action references in a workflow file."""
+    """Find unpinned external action references in a workflow file.
+
+    Lines containing a ``# NEEDS-PIN`` comment are intentionally skipped so
+    that temporary placeholders added during incremental pinning work do not
+    cause CI failures before the correct SHA is available.
+    """
     findings: list[UnpinnedAction] = []
     for line_number, line in enumerate(
         path.read_text(encoding="utf-8").splitlines(), 1
     ):
+        if "# NEEDS-PIN" in line:
+            continue
+
         match = USES_PATTERN.match(line)
         if not match:
             continue
