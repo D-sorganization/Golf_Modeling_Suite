@@ -1,5 +1,6 @@
 """Database configuration and session management."""
 
+import logging
 import os
 from collections.abc import Generator
 
@@ -8,6 +9,8 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from src.api.auth.models import Base
+
+logger = logging.getLogger(__name__)
 
 # Database configuration
 DATABASE_URL = os.getenv(
@@ -35,7 +38,18 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 def create_tables() -> None:
-    """Create all database tables."""
+    """Create all database tables.
+
+    Raises RuntimeError in production environments to prevent silent schema
+    drift — use ``alembic upgrade head`` instead.
+    """
+    env = os.getenv("ENVIRONMENT", os.getenv("APP_ENV", "development")).lower()
+    if env == "production":
+        raise RuntimeError(
+            "create_all() is disabled in production. "
+            "Run `alembic upgrade head` to apply migrations."
+        )
+    logger.warning("Using create_all() — not suitable for production")
     Base.metadata.create_all(bind=engine)
 
 
@@ -50,10 +64,7 @@ def get_db() -> Generator[Session, None, None]:
 
 def init_db() -> None:
     """Initialize database with tables and default data."""
-    import logging
     import secrets
-
-    logger = logging.getLogger(__name__)
 
     create_tables()
 
