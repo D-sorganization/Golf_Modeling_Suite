@@ -175,6 +175,9 @@ jobs:
       - name: Dependency Direction Fitness Check
         run: python3 scripts/check_dependency_direction.py
 
+      - name: Engine Tier Metadata Check
+        run: python3 scripts/check_engine_tiers.py
+
       - name: Changed-File Size Budget Check
         run: python3 scripts/ci/check_file_size_budget.py
 

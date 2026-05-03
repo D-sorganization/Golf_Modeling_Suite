@@ -177,6 +177,18 @@ UpstreamDrift/
 | Shared Utilities         | `src/shared/`                            | Cross-engine validators, helpers, and exception definitions                                 |
 | URDF Models              | `shared/models/`                         | Canonical model definitions (URDF format) for golf swings, human body, pendulums            |
 
+### Engine Tier Policy
+
+| Tier         | Examples                | Stability bar                                            | Deps installed by default | Vulnerability SLA |
+| ------------ | ----------------------- | -------------------------------------------------------- | ------------------------- | ----------------- |
+| core         | MuJoCo, FastAPI, shared | Must pass on every PR; semver-stable public API; no skip | yes                       | High/Critical: 7d |
+| extended     | Drake, Pinocchio        | Must pass nightly; semver-stable in major versions       | only with extra           | High: 30d         |
+| experimental | OpenSim, MyoSuite       | Best-effort; may be skipped; API may break               | only with extra; warning  | Best effort       |
+| archived     | (none today)            | Read-only; not built; not tested                         | no                        | n/a               |
+
+Engine tier metadata is declared in each in-scope engine package with
+`_tier.py` and enforced by `scripts/check_engine_tiers.py`.
+
 ## 5. Desired Functionality
 
 ### Core Features
