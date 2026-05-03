@@ -457,24 +457,12 @@ def _register_launcher_endpoints(app: FastAPI) -> None:
         return {"status": "stopped", "name": name}
 
 
-def _register_health_and_diagnostic_endpoints(
-    app: FastAPI, engine_manager: EngineManager
-) -> None:
-    """Register health check and diagnostic endpoints."""
+def _register_debug_endpoints(app: FastAPI) -> None:
+    """Register debug-only endpoints (only when DEBUG env var is set).
 
-    if not (app is not None):
-        raise ValueError("app must be provided")
-
-    @app.get("/api/health")
-    async def health_check() -> dict[str, Any]:
-        """Return server health status and available engines."""
-        return {
-            "status": "healthy",
-            "mode": "local",
-            "auth_required": False,
-            "engines": [e.value for e in engine_manager.get_available_engines()],
-            "ui_available": _startup_metrics.get("static_files_mounted", False),
-        }
+    Endpoints: /api/diagnostics, /api/diagnostics/html,
+    /api/debug/routes, /api/debug/static.
+    """
 
     @app.get("/api/diagnostics")
     async def get_diagnostics() -> dict[str, Any]:
@@ -496,14 +484,14 @@ def _register_health_and_diagnostic_endpoints(
     @app.get("/api/debug/routes")
     async def debug_routes() -> dict[str, Any]:
         """List all registered API routes for debugging."""
-        routes = []
-        for route in app.routes:
-            route_info = {
+        routes = [
+            {
                 "path": getattr(route, "path", "unknown"),
                 "methods": list(getattr(route, "methods", [])),
                 "name": getattr(route, "name", "unnamed"),
             }
-            routes.append(route_info)
+            for route in app.routes
+        ]
         return {
             "total_routes": len(routes),
             "routes": sorted(routes, key=lambda x: x["path"]),
@@ -529,6 +517,29 @@ def _register_health_and_diagnostic_endpoints(
                 details["css_files"] = [f.name for f in css_files]
 
         return details
+
+
+def _register_health_and_diagnostic_endpoints(
+    app: FastAPI, engine_manager: EngineManager
+) -> None:
+    """Register health check and, when DEBUG is set, diagnostic endpoints."""
+
+    if not (app is not None):
+        raise ValueError("app must be provided")
+
+    @app.get("/api/health")
+    async def health_check() -> dict[str, Any]:
+        """Return server health status and available engines."""
+        return {
+            "status": "healthy",
+            "mode": "local",
+            "auth_required": False,
+            "engines": [e.value for e in engine_manager.get_available_engines()],
+            "ui_available": _startup_metrics.get("static_files_mounted", False),
+        }
+
+    if os.environ.get("DEBUG", "").lower() in {"1", "true", "yes"}:
+        _register_debug_endpoints(app)
 
 
 def _mount_logos_directory(app: FastAPI) -> None:

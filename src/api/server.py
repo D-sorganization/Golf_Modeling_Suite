@@ -19,14 +19,23 @@ API Versioning (#1488):
     compatibility.
 """
 
+import time as _time
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import Any
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import PlainTextResponse
+from prometheus_client import (
+    CONTENT_TYPE_LATEST,
+    Counter,
+    Gauge,
+    Histogram,
+    generate_latest,
+)
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
@@ -42,7 +51,7 @@ from .config import (
     get_server_host,
     get_server_port,
 )
-from .database import init_db
+from .database import SessionLocal, init_db
 from .middleware.security_headers import add_security_headers
 from .middleware.upload_limits import validate_upload_size
 from .rate_limit import limiter
@@ -59,6 +68,29 @@ logger = get_logger(__name__)
 # API version constant
 API_VERSION = "v1"
 API_PREFIX = f"/api/{API_VERSION}"
+
+# ---------------------------------------------------------------------------
+# Prometheus metrics (issue #3843)
+# ---------------------------------------------------------------------------
+_http_requests_total = Counter(
+    "upstreamdrift_http_requests_total",
+    "Total HTTP requests handled",
+    ["method", "path", "status"],
+)
+
+_http_request_duration_seconds = Histogram(
+    "upstreamdrift_http_request_duration_seconds",
+    "HTTP request duration in seconds",
+    ["method", "path"],
+)
+
+_info_gauge = Gauge(
+    "upstreamdrift_info",
+    "Build / version information",
+    ["version"],
+)
+# Initialise the info gauge once; value 1 signals "this version is running".
+_info_gauge.labels(version=get_app_version()).set(1)
 
 
 def _init_video_pipeline() -> Any:
@@ -240,6 +272,69 @@ app.middleware("http")(validate_upload_size)
 # TRACEABILITY: Request tracing middleware for diagnostics
 _tracer = RequestTracer()
 app.middleware("http")(_tracer.trace_request)
+
+
+# OBSERVABILITY: Prometheus request-metrics middleware (issue #3843)
+@app.middleware("http")
+async def _prometheus_middleware(request: Request, call_next: Any) -> Response:
+    """Record per-request Prometheus counter and duration metrics."""
+    path = request.url.path
+    method = request.method
+    start = _time.monotonic()
+    response: Response = await call_next(request)
+    duration = _time.monotonic() - start
+    status = str(response.status_code)
+    _http_requests_total.labels(method=method, path=path, status=status).inc()
+    _http_request_duration_seconds.labels(method=method, path=path).observe(duration)
+    return response
+
+
+# ---------------------------------------------------------------------------
+# Kubernetes probe and Prometheus metrics endpoints (issue #3843)
+# ---------------------------------------------------------------------------
+
+
+@app.get("/healthz", tags=["observability"])
+async def liveness_probe() -> dict[str, str]:
+    """Kubernetes liveness probe.
+
+    Always returns 200 while the process is running.
+    """
+    return {"status": "ok"}
+
+
+@app.get("/readyz", tags=["observability"])
+async def readiness_probe() -> dict[str, str]:
+    """Kubernetes readiness probe.
+
+    Returns 200 when the database is reachable; 503 otherwise.
+    """
+    from fastapi.responses import JSONResponse
+    from sqlalchemy import text
+    from sqlalchemy.exc import SQLAlchemyError
+
+    try:
+        db = SessionLocal()
+        try:
+            db.execute(text("SELECT 1"))
+        finally:
+            db.close()
+    except SQLAlchemyError:
+        logger.warning("Readiness check failed: database unreachable")
+        return JSONResponse(  # type: ignore[return-value]
+            status_code=503,
+            content={"status": "not_ready", "reason": "db_unavailable"},
+        )
+    return {"status": "ready"}
+
+
+@app.get("/metrics", tags=["observability"])
+async def metrics_endpoint() -> PlainTextResponse:
+    """Prometheus metrics exposition endpoint (text format)."""
+    return PlainTextResponse(
+        content=generate_latest().decode("utf-8"),
+        media_type=CONTENT_TYPE_LATEST,
+    )
 
 
 # All services are stored in app.state and accessed via Depends() in routes.

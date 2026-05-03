@@ -34,7 +34,8 @@ dependencies = [
     # Structured logging (OBS-001: required for observability)
     "structlog>=24.1.0",
     "h5py>=3.0.0",
-    
+    # Prometheus metrics exposition (issue #3843)
+    "prometheus_client>=0.20.0",
 ]
 
 [project.optional-dependencies]
