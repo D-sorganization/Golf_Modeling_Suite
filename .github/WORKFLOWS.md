@@ -3,7 +3,7 @@
 This inventory is the ownership ledger for active GitHub Actions workflows.
 Archived workflows under `.github/workflows/archived/` are intentionally excluded.
 
-The current durable guardrail is a no-growth cap at 58 active workflows. The
+The current durable guardrail is a no-growth cap at 59 active workflows. The
 consolidation target for issue #3835 remains 25 active workflows or fewer after
 owners validate low-risk removals.
 
@@ -13,6 +13,26 @@ jobs that target it fail or remain queued rather than silently passing. Because
 the runner executes jobs with workflow-scoped `GITHUB_TOKEN` permissions and any
 secrets explicitly exposed by each workflow, every write scope must be visible in
 this table and treated as a security boundary.
+
+## Agent Automation Budget Contract
+
+Mutating workflows owned by `@agents` are permitted only under these default
+guardrails until the active workflow count reaches the 25-workflow target:
+
+- **Max wall time:** each mutating agent workflow must set a workflow or job
+  timeout and fail closed when the budget is exhausted.
+- **Max parallel sessions:** agent launchers must keep explicit parallelism
+  limits in workflow inputs or command arguments; unbounded fan-out is not
+  allowed.
+- **Concurrency:** queue writers and branch mutators must document the
+  concurrency group, queue lock, or idempotency key that prevents duplicate
+  writes.
+- **Audit artifact:** prompts, target refs, modified files, approvals, command
+  outcomes, and generated PR/issue links must be reconstructable from workflow
+  logs or durable artifacts without exposing secrets.
+- **Human approval:** destructive, release-impacting, or security-impacting
+  agent actions require owner review before merge, release, or workflow-control
+  mutation.
 
 | File | Trigger | Owner | Permissions | Purpose | Replaceable by |
 |------|---------|-------|-------------|---------|----------------|
@@ -70,6 +90,7 @@ this table and treated as a security boundary.
 | pr-auto-labeler.yml | pull_request | @triage | pull-requests: write | KEEP: PR labeling. | n/a |
 | PR-Comment-Responder.yml | issue_comment/workflow_dispatch | @triage | issues/pull-requests: write | KEEP: canonical PR comment responder. | n/a |
 | release.yml | push/workflow_dispatch | @release | contents: write | KEEP: build and publish releases. | n/a |
+| security-osv-monitor.yml | schedule/workflow_dispatch | @security | contents/issues/security-events: write | KEEP: scheduled OSV vulnerability triage SLA monitor. | n/a |
 | spec-check.yml | pull_request/workflow_dispatch | @core | contents: read | KEEP: SPEC freshness validation. | n/a |
 | stale-cleanup.yml | schedule/workflow_dispatch | @infra | issues/pull-requests: write | KEEP: stale issue and PR cleanup. | n/a |
 | tauri-build.yml | push/pull_request/workflow_dispatch | @desktop | contents: read | KEEP: Tauri desktop build. | n/a |

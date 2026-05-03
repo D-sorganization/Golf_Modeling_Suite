@@ -38,19 +38,8 @@
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.96                                             |
+| **Spec Version**        | 1.0.99                                             |
 | **Last Spec Update**    | 2026-05-03                                         |
-
-## SPEC Ownership and Update Cadence
-
-- **Owner:** D-sorganization (responsible for accepting SPEC.md edits)
-- **Update triggers (mandatory):**
-  - Any PR that adds, removes, or moves a top-level `src/` package or a public
-    engine adapter must update §6 (Component Locations) and §7 (Feature Status).
-  - Any PR that changes the version in `pyproject.toml` must update §1 (Identity).
-  - Any PR that changes a CI gate threshold must update §X (Quality Gates).
-- **Review cadence:** SPEC.md is reviewed for staleness on every release
-  (per `docs/operations/release-runbook.md`, see #3842).
 
 ## 2. Purpose & Mission
 
@@ -93,6 +82,7 @@ UpstreamDrift/
 │   │   │   ├── mujoco/             # MuJoCo backend (supported)
 │   │   │   ├── drake/              # Drake backend (extended)
 │   │   │   ├── pinocchio/          # Pinocchio backend (extended)
+│   │   │   ├── openfoam/           # OpenFOAM CFD execution helpers (experimental)
 │   │   │   ├── opensim/            # OpenSim backend (experimental)
 │   │   │   ├── myosuite/           # MyoSuite backend (experimental)
 │   │   │   ├── pendulum/           # Simplified educational models
@@ -166,6 +156,7 @@ UpstreamDrift/
 | MuJoCo Engine Adapter    | `src/engines/physics_engines/mujoco/`    | Primary physics engine integration with full support for contact dynamics and muscle models |
 | Drake Engine Adapter     | `src/engines/physics_engines/drake/`     | Extended Drake support for trajectory optimization and manipulation tasks                   |
 | Pinocchio Engine Adapter | `src/engines/physics_engines/pinocchio/` | Extended Pinocchio support for efficient rigid-body dynamics computation                    |
+| OpenFOAM Execution       | `src/engines/physics_engines/openfoam/`  | Experimental OpenFOAM CFD command plumbing with sequential and MPI execution support        |
 | OpenSim Engine Adapter   | `src/engines/physics_engines/opensim/`   | Experimental OpenSim integration for clinical biomechanics workflows                        |
 | MyoSuite Engine Adapter  | `src/engines/physics_engines/myosuite/`  | Experimental MyoSuite integration for detailed muscle physiology simulation                 |
 | Pendulum Models          | `src/engines/physics_engines/pendulum/`  | Educational simplified models for learning and quick prototyping                            |
@@ -200,15 +191,16 @@ Engine tier metadata is declared in each in-scope engine package with
 | F3  | Pinocchio engine integration       | ✅     | Extended Pinocchio support for efficient rigid-body dynamics and jacobian computation               |
 | F4  | OpenSim engine integration         | 🔄     | Experimental OpenSim integration for clinical biomechanics and musculoskeletal analysis             |
 | F5  | MyoSuite engine integration        | 🔄     | Experimental MyoSuite integration for detailed muscle physiology and motor control                  |
-| F6  | Cross-engine validation            | ✅     | Automated cross-validation framework comparing results across all engines with tolerance thresholds |
-| F7  | FastAPI REST API                   | ✅     | Programmatic access to simulation, IK/ID, trajectory optimization, and control endpoints            |
-| F8  | PyQt6 professional GUI             | ✅     | Interactive desktop GUI with real-time 3D rendering, parameter adjustment, and result export        |
-| F9  | Tauri desktop application          | 🔄     | Cross-platform desktop app bundling the GUI and API with native OS integration                      |
-| F10 | MATLAB/Simulink integration        | ✅     | Export models to MATLAB format and integrate with Simulink via MEX interface                        |
-| F11 | Trajectory optimization            | ✅     | SciPy-based trajectory optimization with constraint support and custom cost functions               |
-| F12 | Muscle dynamics analysis           | ✅     | IK, ID, and muscle dynamics computation with Hill-type and Millard muscle models                    |
-| F13 | Motion capture integration         | 🔄     | Import and track motion capture data (C3D, BVH, TRC formats) and compare with simulation            |
-| F14 | Reinforcement learning integration | 🔄     | Gym-compatible interface for RL-based controller learning and policy optimization                   |
+| F6  | OpenFOAM CFD execution             | 🔄     | Experimental OpenFOAM case execution with `decomposeParDict` generation and MPI command plumbing   |
+| F7  | Cross-engine validation            | ✅     | Automated cross-validation framework comparing results across all engines with tolerance thresholds |
+| F8  | FastAPI REST API                   | ✅     | Programmatic access to simulation, IK/ID, trajectory optimization, and control endpoints            |
+| F9  | PyQt6 professional GUI             | ✅     | Interactive desktop GUI with real-time 3D rendering, parameter adjustment, and result export        |
+| F10 | Tauri desktop application          | 🔄     | Cross-platform desktop app bundling the GUI and API with native OS integration                      |
+| F11 | MATLAB/Simulink integration        | ✅     | Export models to MATLAB format and integrate with Simulink via MEX interface                        |
+| F12 | Trajectory optimization            | ✅     | SciPy-based trajectory optimization with constraint support and custom cost functions               |
+| F13 | Muscle dynamics analysis           | ✅     | IK, ID, and muscle dynamics computation with Hill-type and Millard muscle models                    |
+| F14 | Motion capture integration         | 🔄     | Import and track motion capture data (C3D, BVH, TRC formats) and compare with simulation            |
+| F15 | Reinforcement learning integration | 🔄     | Gym-compatible interface for RL-based controller learning and policy optimization                   |
 
 ### API / Interface Contract
 
@@ -333,10 +325,13 @@ overlapping fixture names in nested conftests.
 
 | Scope            | Minimum | Current | Enforced By                |
 | ---------------- | ------- | ------- | -------------------------- |
-| Overall          | 70%     | ~75%    | CI (`--cov-fail-under=70`) |
-| Engine adapters  | 80%     | ~82%    | CI per-module checks       |
-| API layer        | 75%     | ~78%    | CI per-module checks       |
-| Shared utilities | 85%     | ~87%    | CI per-module checks       |
+| Overall          | 45%     | CI baseline | `pyproject.toml` and `ci-standard.yml` |
+| API routes       | 30%     | Ratchet baseline | `scripts/config/mypy_exclusion_budget.json` |
+| Data I/O         | 30%     | Ratchet baseline | `scripts/config/mypy_exclusion_budget.json` |
+| Execution/checkpointing | 30% | Ratchet baseline | `scripts/config/mypy_exclusion_budget.json` |
+| Deployment       | 30%     | Ratchet baseline | `scripts/config/mypy_exclusion_budget.json` |
+| Optimization     | 30%     | Ratchet baseline | `scripts/config/mypy_exclusion_budget.json` |
+| Engine adapters  | 30%     | Ratchet baseline | `scripts/config/mypy_exclusion_budget.json` |
 
 ### Required Test Scenarios
 
@@ -368,7 +363,7 @@ overlapping fixture names in nested conftests.
 
 ### Design Principles
 
-- **TDD**: Unit tests written before implementation; minimum 70% coverage enforced
+- **TDD**: Unit tests written before implementation; the current global coverage floor is 45%, with per-package production ratchets tracked toward higher thresholds.
 - **Design by Contract (DbC)**: Explicit preconditions and postconditions in engine adapters
 - **DRY**: Cross-engine utilities in `src/shared/` prevent code duplication
 - **Orthogonality**: Engines are loosely coupled; each can be used independently
@@ -383,14 +378,16 @@ Beyond standard tools, CI enforces custom checks:
 - **Documentation Catalog and Size Budget**: Every top-level `docs/` directory is listed in `docs/index.md`; oversized Markdown/Quarto docs require owned, expiring exceptions.
 - **Import Depth**: Maximum 4 import levels to prevent circular dependencies
 - **Physics Fitness**: Cross-engine validation must pass with <5% tolerance
-- **Security Audit Isolation**: `pip-audit` runs from a dedicated virtualenv plus `scripts/config/pip_audit_waivers.json` so self-hosted runner toolcache drift cannot mask or invent vulnerabilities
+- **Security Audit Isolation**: `pip-audit` runs with `scripts/config/pip_audit_waivers.json` and `scripts/ci/check_pip_audit_waivers.py` so waivers require issue tracking, expiry, and current pip-audit findings before ignore flags are emitted
+- **Blocking SAST and Secret Scans**: `ci-standard.yml` runs blocking Bandit, Semgrep, pip-audit, and Trivy filesystem scans for pull requests and pushes
+- **Type and Coverage Ratchets**: `scripts/check_mypy_exclusion_budget.py` blocks unowned mypy exclusions, non-monotonic exclusion schedules, and missing production package coverage-ratchet metadata.
 - **Docker Size Gate**: Built images must not exceed 800 MB
 
 ### CI/CD Pipeline
 
 | Workflow                       | Trigger                                | Purpose                                                         | Blocking?          |
 | ------------------------------ | -------------------------------------- | --------------------------------------------------------------- | ------------------ |
-| `ci-standard.yml`              | Push/PR                                | Lint, type check, unit/integration tests, workflow inventory     | Yes                |
+| `ci-standard.yml`              | Push/PR                                | Lint, type check, unit/integration tests, workflow inventory, blocking security scans | Yes                |
 | `heavy-tests-opt-in.yml`       | Manual dispatch or `/heavy-test` label | Cross-engine and physics validation (long-running)              | No (opt-in)        |
 | `nightly-cross-validation.yml` | Daily 2:00 UTC                         | Full multi-engine validation suite against all model variations | No (informational) |
 | `tauri-build.yml`              | Tag release                            | Build desktop apps for Windows/macOS/Linux                      | Yes (for releases) |
@@ -478,7 +475,7 @@ cd ui && npm install && npm run tauri build
 # Running Tests
 pytest tests/unit/ -v
 pytest tests/integration/ -v
-pytest tests/ --cov=src --cov-fail-under=70
+pytest tests/ --cov=src --cov-fail-under=45
 ```
 
 ### Build Artifacts
@@ -528,6 +525,9 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-05-03 | 1.0.98  | Added experimental OpenFOAM CFD execution support to the engine inventory, including `decomposeParDict` generation and MPI command plumbing for parallel OpenFOAM runs. |
+| 2026-05-03 | 1.0.99  | Tightened issue #3912 quality ratchets by adding a 2026-08-01 mypy exclusion cap reduction to 44, validating monotonic exclusion schedules, and adding owned production package coverage-ratchet metadata for API routes, data I/O, execution/checkpointing, deployment, optimization, and engine adapters. |
+| 2026-05-03 | 1.0.97  | Hardened issue #3844 security CI acceptance: added blocking Semgrep and Trivy filesystem scans to `ci-standard.yml`, moved pip-audit waivers to the documented issue/expiry schema with stale-waiver detection, added CODEOWNERS backup owners, documented branch protection, and added Trivy secret-scan test coverage. |
 | 2026-05-03 | 1.0.96  | Guarded local diagnostic and debug API endpoints in production mode unless `UPSTREAM_DRIFT_DEBUG_ENDPOINTS=true` is explicitly set.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | 2026-05-03 | 1.0.96  | Established `pyproject.toml` as the canonical Python dependency source, generated `environment.yml` from it, added `make sync-deps`, promoted documented CVE floors to runtime dependencies, removed the deprecated root CRA UI build, and added dependency-consistency CI drift/audit coverage.                                                                                                                                                                                                                                                                                                                                     |
 | 2026-05-03 | 1.0.96  | Added tier-aware vulnerability SLA policy, pip-audit waiver tier validation, OSV triage deadline helpers, and local per-tier SBOM metadata generation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
