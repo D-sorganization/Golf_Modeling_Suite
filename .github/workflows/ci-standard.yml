@@ -66,7 +66,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - name: Run GitHub Actions pinning guard
         shell: bash
-        run: python3 scripts/check_github_actions_pinned.py
+        run: python3 scripts/check_actions_pinned.py
 
   # -- Dispatcher: route to self-hosted if available --------------------------
   pick-runner:
