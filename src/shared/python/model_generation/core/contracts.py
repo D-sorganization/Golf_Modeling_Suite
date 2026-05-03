@@ -20,7 +20,6 @@ from src.shared.python.contracts import (
     InvariantError,
     PostconditionError,
     PreconditionError,
-    class_invariant as invariant,
     contract,
     ensure_valid_result,
     has_finite_elements,
@@ -33,6 +32,9 @@ from src.shared.python.contracts import (
     require_positive,
     require_unit_vector,
     set_contracts_enabled,
+)
+from src.shared.python.contracts import (
+    class_invariant as invariant,
 )
 
 # Backward-compatible alias: the old module exposed ``ContractViolation``
