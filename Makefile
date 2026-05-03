@@ -8,7 +8,7 @@
 #   make test     - Run tests
 #   make clean    - Clean build artifacts
 
-.PHONY: help lint format test test-unit test-int clean install check all docs
+.PHONY: help lint format test test-unit test-int clean install check all docs sbom
 
 # Default target
 help:
@@ -23,6 +23,7 @@ help:
 	@echo "  make check     - Run all checks (lint + test)"
 	@echo "  make clean     - Remove build artifacts"
 	@echo "  make docs      - Build documentation"
+	@echo "  make sbom      - Generate core, extended, and full SBOMs"
 	@echo "  make all       - Install, format, lint, test"
 	@echo ""
 
@@ -73,6 +74,12 @@ check: lint test
 docs:
 	@echo "Building documentation..."
 	cd docs && make html || echo "Sphinx not configured"
+
+sbom:
+	@echo "Generating per-tier SBOMs..."
+	bash scripts/security/generate_sbom.sh core
+	bash scripts/security/generate_sbom.sh extended
+	bash scripts/security/generate_sbom.sh full
 
 # Clean build artifacts
 clean:
