@@ -634,9 +634,12 @@ class MakeHumanMeshGenerator(MeshGeneratorInterface):
         obj_path_str = str(body_obj_path).replace("\\", "/")
         json_path_str = str(groups_json_path).replace("\\", "/")
         return f"""# Auto-generated MakeHuman scripted-mode script
+import logging
 import mh
 import human as mh_human
 import json
+
+_log = logging.getLogger(__name__)
 
 def exportOBJ(h, path):
     \"\"\"Minimal OBJ export shim.\"\"\"
@@ -657,7 +660,7 @@ def generate_human():
         try:
             h.setDetail(key, value)
         except Exception as exc:  # noqa: BLE001
-            print(f'Warning: modifier {{key}}={{value}}: {{exc}}')
+            _log.warning('modifier %s=%s: %s', key, value, exc)
 
     exportOBJ(h, '{obj_path_str}')
 
