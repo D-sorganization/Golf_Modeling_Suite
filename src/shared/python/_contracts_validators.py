@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import Any
-
 from src.shared.python._contracts_exceptions import PostconditionError, PreconditionError
 from src.shared.python._contracts_level import ContractLevel, _ContractState
 from src.shared.python._contracts_primitives import require
+
+from typing import Any
 
 
 def check_positive(value: float, name: str = "value") -> None:
