@@ -8,7 +8,7 @@
 #   make test     - Run tests
 #   make clean    - Clean build artifacts
 
-.PHONY: help lint format test test-unit test-int clean install check all docs
+.PHONY: help lint format test test-unit test-int smoke clean install check all docs sync-deps sbom
 
 # Default target
 help:
@@ -20,9 +20,12 @@ help:
 	@echo "  make test      - Run pytest"
 	@echo "  make test-unit - Run unit tests only"
 	@echo "  make test-int  - Run integration tests only"
+	@echo "  make smoke     - Run release smoke tests for available artifacts"
 	@echo "  make check     - Run all checks (lint + test)"
 	@echo "  make clean     - Remove build artifacts"
 	@echo "  make docs      - Build documentation"
+	@echo "  make sbom      - Generate core, extended, and full SBOMs"
+	@echo "  make sync-deps - Regenerate Python lockfiles and environment.yml"
 	@echo "  make all       - Install, format, lint, test"
 	@echo ""
 
@@ -50,6 +53,13 @@ format:
 	@echo "Running ruff fix..."
 	ruff check . --fix || true
 
+# Regenerate dependency artifacts from pyproject.toml, the canonical Python source.
+sync-deps:
+	python3 -m pip install "pip-tools>=7.4" "tomli>=2.0.0; python_version<'3.11'"
+	python3 -m piptools compile -o requirements.lock pyproject.toml
+	python3 -m piptools compile --extra dev -o requirements-dev.lock pyproject.toml
+	python3 scripts/sync_environment_yml.py
+
 # Run all tests
 test:
 	@echo "Running pytest..."
@@ -65,6 +75,25 @@ test-int:
 	@echo "Running integration tests..."
 	pytest tests/integration/ -v --tb=short
 
+# Run smoke tests against locally built release artifacts
+smoke:
+	@echo "Running Python wheel smoke tests..."
+	pytest tests/smoke/python_wheel
+	@if command -v docker >/dev/null 2>&1 && [ -n "$$UPSTREAM_DRIFT_API_IMAGE" ]; then \
+		echo "Running Docker API smoke tests..."; \
+		pytest tests/smoke/docker_api; \
+	else \
+		echo "Skipping Docker API smoke tests; docker or UPSTREAM_DRIFT_API_IMAGE unavailable."; \
+	fi
+	@if [ -n "$$UPSTREAM_DRIFT_TAURI_BUNDLE" ] || [ -d ui/dist ]; then \
+		echo "Running Tauri desktop smoke tests..."; \
+		pytest tests/smoke/tauri_desktop; \
+	else \
+		echo "Skipping Tauri desktop smoke tests; no bundle path or ui/dist present."; \
+	fi
+	@echo "Running Rust crate smoke tests..."
+	pytest tests/smoke/rust_crate
+
 # Run all checks
 check: lint test
 	@echo "All checks complete."
@@ -73,6 +102,12 @@ check: lint test
 docs:
 	@echo "Building documentation..."
 	cd docs && make html || echo "Sphinx not configured"
+
+sbom:
+	@echo "Generating per-tier SBOMs..."
+	bash scripts/security/generate_sbom.sh core
+	bash scripts/security/generate_sbom.sh extended
+	bash scripts/security/generate_sbom.sh full
 
 # Clean build artifacts
 clean:

@@ -4,12 +4,14 @@
 from __future__ import annotations
 
 import argparse
+import json
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
-import yaml
+import json
 
+SUPPORTED_TIERS = frozenset({"core", "extended", "experimental", "archived"})
 
 @dataclass(frozen=True)
 class Waiver:
@@ -17,13 +19,26 @@ class Waiver:
 
     id: str
     package: str
+    tier: str
     reason: str
     expires_at: date
 
 
 def load_waivers(path: Path) -> list[Waiver]:
-    """Load waiver definitions from YAML."""
-    raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    """Load waiver definitions from JSON.
+
+    Preconditions:
+        path points to a JSON object with a top-level ``waivers`` list.
+
+    Postconditions:
+        Every returned waiver has non-empty metadata, an expiry date, and a
+        tier from ``SUPPORTED_TIERS``.
+    """
+    if not path.exists():
+        raise FileNotFoundError(f"pip-audit waiver file not found: {path}")
+    raw = json.loads(path.read_text(encoding="utf-8") or "{}")
+    if not isinstance(raw, dict):
+        raise ValueError("waiver file must contain a JSON object")
     items = raw.get("waivers", [])
     if not isinstance(items, list):
         raise ValueError("waivers must be a list")
@@ -36,6 +51,7 @@ def load_waivers(path: Path) -> list[Waiver]:
             waiver = Waiver(
                 id=str(item["id"]).strip(),
                 package=str(item["package"]).strip(),
+                tier=str(item["tier"]).strip(),
                 reason=str(item["reason"]).strip(),
                 expires_at=date.fromisoformat(str(item["expires_at"]).strip()),
             )
@@ -44,6 +60,8 @@ def load_waivers(path: Path) -> list[Waiver]:
 
         if not waiver.id or not waiver.package or not waiver.reason:
             raise ValueError("waiver id, package, and reason must be non-empty")
+        if waiver.tier not in SUPPORTED_TIERS:
+            raise ValueError(f"unsupported waiver tier: {waiver.tier}")
         waivers.append(waiver)
 
     return waivers
@@ -71,7 +89,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--waiver-file",
         type=Path,
-        default=Path(".github/security/pip-audit-ignore.yml"),
+        default=Path("scripts/config/pip_audit_waivers.json"),
         help="Path to the pip-audit waiver manifest.",
     )
     return parser.parse_args()
