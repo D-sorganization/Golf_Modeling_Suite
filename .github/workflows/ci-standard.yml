@@ -197,6 +197,9 @@ jobs:
       - name: Agent Docs Consistency Check
         run: python3 scripts/check_agent_docs_consistency.py
 
+      - name: SPEC Component Path Check
+        run: python3 scripts/check_spec_paths.py
+
       - name: Tutorial Import Check
         run: python3 scripts/ci/check_tutorial_imports.py
 

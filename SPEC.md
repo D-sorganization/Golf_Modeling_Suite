@@ -68,31 +68,28 @@ UpstreamDrift/
 ├── src/
 │   ├── engines/
 │   │   ├── physics_engines/        # Engine adapters and integrations
-│   │   │   ├── mujoco_engine.py    # MuJoCo backend (supported)
-│   │   │   ├── drake_engine.py     # Drake backend (extended)
-│   │   │   ├── pinocchio_engine.py # Pinocchio backend (extended)
-│   │   │   ├── opensim_engine.py   # OpenSim backend (experimental)
-│   │   │   └── myosuite_engine.py  # MyoSuite backend (experimental)
-│   │   └── pendulum_models/        # Simplified educational models
-│   │       ├── twodof_pendulum.py
-│   │       └── biomechanical_pendulum.py
-│   ├── launchers/                  # GUI/CLI entry points
-│   │   ├── gui_launcher.py         # PyQt6 professional GUI
-│   │   └── cli_launcher.py         # Command-line interface
+│   │   │   ├── mujoco/python/mujoco_humanoid_golf/physics_engine.py
+│   │   │   ├── drake/python/drake_physics_engine.py
+│   │   │   ├── pinocchio/python/pinocchio_physics_engine.py
+│   │   │   ├── opensim/python/opensim_physics_engine.py
+│   │   │   └── myosuite/python/myosuite_physics_engine.py
+│   │   └── pendulum_models/python/ # Simplified educational models
+│   ├── launchers/                  # GUI entry points and dashboards
+│   │   └── golf_suite_launcher.py  # PyQt6 professional GUI
 │   ├── api/                        # FastAPI REST backend
-│   │   ├── main.py                 # API entry point
-│   │   ├── endpoints/              # REST endpoint definitions
-│   │   └── models.py               # Pydantic request/response models
+│   │   ├── server.py               # API entry point
+│   │   ├── routes/                 # REST endpoint definitions
+│   │   └── models/                 # Pydantic request/response models
 │   ├── config/                     # Configuration management
-│   │   └── configuration.py        # Config loading and validation
-│   ├── shared/                     # Cross-engine utilities
-│   │   ├── validators.py           # Shared validation logic
-│   │   ├── utilities.py            # Helper functions
+│   │   └── launcher_manifest_loader.py
+│   ├── shared/python/              # Cross-engine utilities
+│   │   ├── validation_pkg/         # Shared validation logic
+│   │   ├── cli_utils.py            # Helper functions
 │   │   └── exceptions.py           # Exception definitions
 
 │   └── tools/                      # Development and analysis tools
-│       ├── analysis_tools.py       # Biomechanical analysis utilities
-│       └── validation_tools.py     # Cross-engine validation
+│       ├── check_markdown_links.py # Documentation link checks
+│       └── code_quality_check.py   # Repository quality diagnostics
 ├── rust_core/
 │   └── upstream-physics/           # Rust physics kernels
 │       ├── src/
@@ -101,9 +98,9 @@ UpstreamDrift/
 │       └── Cargo.toml
 ├── ui/
 │   ├── src/
-│   │   ├── main.ts                 # Tauri app entry point
-│   │   └── components/             # React/Vue components
-│   ├── tauri.conf.json
+│   │   └── App.tsx                 # Frontend app entry point
+│   ├── src-tauri/
+│   │   └── tauri.conf.json
 │   └── package.json
 ├── shared/
 │   └── models/                     # URDF/model definitions
@@ -137,19 +134,29 @@ UpstreamDrift/
 
 | Component                | Location                                          | Purpose                                                                                     |
 | ------------------------ | ------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| MuJoCo Engine Adapter    | `src/engines/physics_engines/mujoco_engine.py`    | Primary physics engine integration with full support for contact dynamics and muscle models |
-| Drake Engine Adapter     | `src/engines/physics_engines/drake_engine.py`     | Extended Drake support for trajectory optimization and manipulation tasks                   |
-| Pinocchio Engine Adapter | `src/engines/physics_engines/pinocchio_engine.py` | Extended Pinocchio support for efficient rigid-body dynamics computation                    |
-| OpenSim Engine Adapter   | `src/engines/physics_engines/opensim_engine.py`   | Experimental OpenSim integration for clinical biomechanics workflows                        |
-| MyoSuite Engine Adapter  | `src/engines/physics_engines/myosuite_engine.py`  | Experimental MyoSuite integration for detailed muscle physiology simulation                 |
+| MuJoCo Engine Adapter    | `src/engines/physics_engines/mujoco/python/mujoco_humanoid_golf/physics_engine.py` | Primary physics engine integration with full support for contact dynamics and muscle models |
+| Drake Engine Adapter     | `src/engines/physics_engines/drake/python/drake_physics_engine.py` | Extended Drake support for trajectory optimization and manipulation tasks                   |
+| Pinocchio Engine Adapter | `src/engines/physics_engines/pinocchio/python/pinocchio_physics_engine.py` | Extended Pinocchio support for efficient rigid-body dynamics computation                    |
+| OpenSim Engine Adapter   | `src/engines/physics_engines/opensim/python/opensim_physics_engine.py` | Experimental OpenSim integration for clinical biomechanics workflows                        |
+| MyoSuite Engine Adapter  | `src/engines/physics_engines/myosuite/python/myosuite_physics_engine.py` | Experimental MyoSuite integration for detailed muscle physiology simulation                 |
 | Pendulum Models          | `src/engines/pendulum_models/`                    | Educational simplified models for learning and quick prototyping                            |
 | FastAPI Backend          | `src/api/`                                        | REST API exposing simulation, IK/ID, trajectory optimization, and control endpoints         |
-| PyQt6 GUI                | `src/launchers/gui_launcher.py`                   | Professional interactive GUI with real-time 3D visualization                                |
+| PyQt6 GUI                | `src/launchers/golf_suite_launcher.py`            | Professional interactive GUI with real-time 3D visualization                                |
 | Tauri Desktop App        | `ui/`                                             | Cross-platform desktop application wrapper (Windows, macOS, Linux)                          |
 | Rust Physics Kernels     | `rust_core/upstream-physics/`                     | High-performance compiled physics routines for critical paths                               |
 | Configuration Manager    | `src/config/`                                     | Centralized configuration loading, validation, and environment management                   |
 | Shared Utilities         | `src/shared/`                                     | Cross-engine validators, helpers, and exception definitions                                 |
 | URDF Models              | `shared/models/`                                  | Canonical model definitions (URDF format) for golf swings, human body, pendulums            |
+
+### Component Path Ownership
+
+| Path | Owner | Validation |
+| --- | --- | --- |
+| `SPEC.md` | Architecture owners | Source of truth for documented component paths |
+| `scripts/check_spec_paths.py` | Architecture owners | Validates SPEC component and ownership paths in CI |
+| `tests/architecture/test_spec_engine_paths.py` | Architecture owners | Prevents engine and component path drift from returning |
+| `.github/workflows/ci-standard.yml` | CI owners | Runs the SPEC path checker in the standard quality gate |
+| `docs/operations/release-runbook.md` | Release owners | Carries the release-time SPEC path checklist |
 
 ## 5. Desired Functionality
 
@@ -469,6 +476,10 @@ pytest tests/ --cov=src --cov-fail-under=70
 - Performance scaling beyond 100-muscle models not yet tested
 
 ## 12. Change Log
+
+2026-05-03 / 1.0.94: Reconciled SPEC component paths with the current engine
+adapter and launcher layout, added component path ownership, and documented the
+CI guard for SPEC path drift.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
