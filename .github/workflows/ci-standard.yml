@@ -104,7 +104,10 @@ jobs:
         with: { python-version: "3.11" }
       - name: Install Quality Tools
         run: |
-          python -m pip install ruff==0.14.10 "mypy>=1.15.0" bandit==1.7.7 pydocstyle==6.3.0
+          # Shared self-hosted runners can retain broken tool packages without
+          # RECORD metadata. Ignore ambient installs so pip lays down clean
+          # copies instead of trying to uninstall corrupted cache entries.
+          python -m pip install --ignore-installed ruff==0.14.10 "mypy>=1.15.0" bandit==1.7.7 pydocstyle==6.3.0
 
       - name: Lint
         shell: bash
@@ -233,14 +236,29 @@ jobs:
 
       # SECURITY FIX: Make security audit blocking (fail on vulnerabilities)
       - name: Security Audit
+        shell: bash
         run: |
-          # Force-reinstall sortedcontainers before pip-audit: the shared runner toolcache
-          # can carry a half-installed sortedcontainers that makes cyclonedx (pip-audit dep) fail.
-          python -m pip install --ignore-installed --no-deps "sortedcontainers>=2.4.0"
-          # Force a patched Black into the audit environment so pip-audit does not
-          # fail on a vulnerable formatter version lingering in the shared runner cache.
-          python -m pip install --ignore-installed --no-deps "black>=26.3.1"
+          # Force-reinstall sortedcontainers after the editable install: the shared
+          # runner toolcache can carry a half-installed copy that breaks cyclonedx.
+          python -m pip install --force-reinstall --no-deps "sortedcontainers>=2.4.0"
+          # Remove any runner-bundled Black before installing the patched release.
+          python -m pip uninstall -y black || true
+          python -m pip install --force-reinstall --no-deps "black==26.3.1"
           python -m pip install --ignore-installed pip-audit
+
+          audit_black_version="$(python - <<'PY'
+          from importlib import metadata
+
+          try:
+              print(metadata.version("black"))
+          except metadata.PackageNotFoundError:
+              print("")
+          PY
+          )"
+          if [ "$audit_black_version" != "26.3.1" ]; then
+            echo "::error::Security audit expected black==26.3.1 but found '$audit_black_version'"
+            exit 1
+          fi
 
           mapfile -t pip_audit_waiver_flags < <(
             python3 scripts/ci/check_pip_audit_waivers.py \
