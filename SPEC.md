@@ -214,7 +214,7 @@ UpstreamDrift/
 | ------------------------ | ------------- | ------------------------------- | -------------------------------------------------------- |
 | Biomechanical Models     | URDF          | `shared/models/`                | URDF 1.0 standard with custom muscle actuator extensions |
 | Motion Capture Data      | C3D, BVH, TRC | External mocap systems or files | Standard formats with marker sets and frame data         |
-| Optimization Constraints | JSON          | User input or configuration     | Custom constraint schema in `src/config/schemas/`        |
+| Optimization Constraints | JSON          | User input or configuration     | Custom constraint schema in `src/config/`                |
 | Control Parameters       | YAML/JSON     | Configuration files or API      | Engine-specific parameter maps validated against schemas |
 
 ### Output Data
@@ -280,7 +280,7 @@ UpstreamDrift employs a comprehensive test pyramid with multiple specialized cat
 | Physics Validation    | `tests/physics_validation/` | pytest              | `@pytest.mark.physics_validation` |
 | Golf Source Contracts | `tests/unit/shared_python/` | pytest              | source-map contract tests         |
 | Benchmarks            | `tests/benchmarks/`         | pytest-benchmark    | `@pytest.mark.benchmark`          |
-| Property-Based        | `tests/property/`           | hypothesis + pytest | `@pytest.mark.property`           |
+| Property-Based        | `tests/unit/`               | hypothesis + pytest | `@pytest.mark.property`           |
 
 ### Coverage Requirements
 
