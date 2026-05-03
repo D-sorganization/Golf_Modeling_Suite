@@ -3,6 +3,7 @@
 import numpy as np
 import pytest
 from model_generation.core.contracts import (
+    ContractEvaluationError,
     InvariantError,
     PostconditionError,
     PreconditionError,
@@ -201,6 +202,57 @@ class TestConvenienceFunctions:
             require_unit_vector(np.array([2.0, 0.0, 0.0]), "test")
         with pytest.raises(PreconditionError):
             require_unit_vector(np.array([0.0, 0.0, 0.0]), "test")
+
+
+class TestContractEvaluationError:
+    """Tests for ContractEvaluationError (fail-closed behavior)."""
+
+    def test_precondition_with_no_matching_params_raises(self) -> None:
+        """Test that precondition with *args only raises when function has no *args."""
+
+        @precondition(lambda *args: args[0] > 0, "requires positional arg")
+        def sqrt(x: float) -> float:
+            return x ** 0.5
+
+        # This should work since *args catches positional args
+        result = sqrt(4.0)
+        assert result == 2.0
+
+    def test_precondition_type_error_raises(self) -> None:
+        """Test that precondition causing TypeError raises ContractEvaluationError."""
+
+        @precondition(lambda x: x + "string" > 0, "type mismatch")
+        def sqrt(x: float) -> float:
+            return x ** 0.5
+
+        with pytest.raises(ContractEvaluationError) as exc_info:
+            sqrt(4.0)
+
+        assert "Failed to bind arguments" in str(exc_info.value) or "Failed to evaluate precondition" in str(exc_info.value)
+
+    def test_postcondition_type_error_raises(self) -> None:
+        """Test that postcondition causing TypeError raises ContractEvaluationError."""
+
+        @postcondition(lambda result: result + "string" > 0, "type mismatch")
+        def sqrt(x: float) -> float:
+            return x ** 0.5
+
+        with pytest.raises(ContractEvaluationError) as exc_info:
+            sqrt(4.0)
+
+        assert "Failed to evaluate postcondition" in str(exc_info.value)
+
+    def test_postcondition_attribute_error_raises(self) -> None:
+        """Test that postcondition causing AttributeError raises ContractEvaluationError."""
+
+        @postcondition(lambda result: result.nonexistent_attr > 0, "attribute error")
+        def sqrt(x: float) -> float:
+            return x ** 0.5
+
+        with pytest.raises(ContractEvaluationError) as exc_info:
+            sqrt(4.0)
+
+        assert "Failed to evaluate postcondition" in str(exc_info.value)
 
 
 class TestContractsToggle:

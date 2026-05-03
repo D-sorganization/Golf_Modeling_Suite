@@ -34,8 +34,6 @@ def _evaluate_precondition(
     """
     if not (condition is not None):
         raise ValueError("condition must be provided")
-    if not (condition is not None):
-        raise ValueError("condition must be provided")
     
     # Try name-based binding first
     try:
@@ -76,8 +74,6 @@ def precondition(
 
     if not (condition is not None):
         raise ValueError("condition must be provided")
-    if not (condition is not None):
-        raise ValueError("condition must be provided")
 
     def decorator(func: F) -> F:
         if _ContractState.level == ContractLevel.OFF:
@@ -103,8 +99,6 @@ def postcondition(
 ) -> Callable[[F], F]:
     """Decorator to enforce a postcondition on a function's return value."""
 
-    if not (condition is not None):
-        raise ValueError("condition must be provided")
     if not (condition is not None):
         raise ValueError("condition must be provided")
 
@@ -161,8 +155,6 @@ def contract(
 
     if not (pre_msg is not None):
         raise ValueError("pre_msg must be provided")
-    if not (pre_msg is not None):
-        raise ValueError("pre_msg must be provided")
 
     def decorator(func: F) -> F:
         result_func = func
@@ -213,8 +205,6 @@ def _wrap_method_with_invariant(
 
     if not (orig_method is not None):
         raise ValueError("orig_method must be provided")
-    if not (orig_method is not None):
-        raise ValueError("orig_method must be provided")
 
     @functools.wraps(orig_method)
     def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
@@ -248,8 +238,6 @@ def class_invariant(
                 self.count -= 1
     """
 
-    if not (condition is not None):
-        raise ValueError("condition must be provided")
     if not (condition is not None):
         raise ValueError("condition must be provided")
 
