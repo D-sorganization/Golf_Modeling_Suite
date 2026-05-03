@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for quota dependency defaults on protected API routes."""
 
-from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 

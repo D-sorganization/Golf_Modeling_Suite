@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Physics validation tests for PendulumPutterModel.
 
 Tests that the generated URDF model meets physics engine requirements
 and has correct physical properties.
 """
 
-from __future__ import annotations
 
 from pathlib import Path
 from typing import Any

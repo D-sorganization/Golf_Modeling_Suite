@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for critical/blocker GitHub issue fixes.
 
 Covers:
@@ -8,7 +9,6 @@ Covers:
 - #1777: motion_training __getattr__ must return real objects, not None
 """
 
-from __future__ import annotations
 
 import importlib
 import secrets

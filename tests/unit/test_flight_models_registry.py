@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for flight model registry coverage."""
 
-from __future__ import annotations
 
 import math
 

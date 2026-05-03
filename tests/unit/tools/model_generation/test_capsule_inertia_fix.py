@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 TDD tests for capsule inertia parallel axis theorem fix.
 
@@ -22,7 +23,6 @@ These tests cover:
 - Physical properties: positive definiteness, triangle inequality
 """
 
-from __future__ import annotations
 
 import math
 

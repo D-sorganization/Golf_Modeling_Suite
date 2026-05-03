@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.config.handedness_support (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

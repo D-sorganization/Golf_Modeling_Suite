@@ -1,3 +1,19 @@
+from __future__ import annotations
+
+import os
+import sys
+
+def _should_skip_gui_import() -> bool:
+    if os.environ.get("HEADLESS_CI") == "1":
+        return True
+    if any("pytest" in arg for arg in sys.argv) and not os.environ.get("FORCE_GUI_TESTS"):
+        return True
+    return False
+
+if _should_skip_gui_import():
+    import pytest
+    pytest.skip("Skipping GUI tests in headless mode", allow_module_level=True)
+
 """Shared fixtures for cross-engine validation tests.
 
 This module provides pytest fixtures for loading test models into
@@ -7,7 +23,6 @@ Fixtures follow Guideline M2 (deterministic seeds, gold-standard models)
 and P3 (tolerance-based validation).
 """
 
-from __future__ import annotations
 
 import os
 from collections.abc import Callable

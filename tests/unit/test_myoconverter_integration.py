@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for MyoConverter integration module.
 
 Tests the OpenSim to MuJoCo model conversion interface and error handling.
@@ -5,7 +6,6 @@ Tests the OpenSim to MuJoCo model conversion interface and error handling.
 Refactored to use shared engine availability module (DRY principle).
 """
 
-from __future__ import annotations
 
 import xml.etree.ElementTree as ET  # stdlib for Element/SubElement
 from pathlib import Path

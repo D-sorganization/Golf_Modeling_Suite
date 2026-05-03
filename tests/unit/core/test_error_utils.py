@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.core.error_utils module."""
 
-from __future__ import annotations
 
 from pathlib import Path
 

@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.api.utils.error_codes module."""
 
-from __future__ import annotations
 
 import pytest
 from src.api.utils.error_codes import (

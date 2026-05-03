@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for auth-bypass default security (issue #2449).
 
 Engine mutation endpoints must require authentication by default.
@@ -5,7 +6,6 @@ Auth bypass must only activate when GOLF_SUITE_MODE=local is explicitly set,
 not when the variable is absent.
 """
 
-from __future__ import annotations
 
 import os
 from unittest.mock import patch

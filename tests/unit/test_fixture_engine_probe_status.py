@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for integration fixture engine probe status handling."""
 
-from __future__ import annotations
 
 import pytest
 

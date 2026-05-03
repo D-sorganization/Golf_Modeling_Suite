@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for Phase 4 API: Force overlays, actuator controls, model explorer, AIP.
 
 Validates Pydantic contract models and route logic for:
@@ -9,7 +10,6 @@ Validates Pydantic contract models and route logic for:
 See issue #1199, #1198, #1200, #763
 """
 
-from __future__ import annotations
 
 import pytest
 from pydantic import ValidationError

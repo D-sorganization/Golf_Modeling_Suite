@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Cross-language parity tests: Rust kernel vs Python implementations.
 
 Verifies that the Rust physics kernels produce results consistent
@@ -10,7 +11,6 @@ Principles:
 - **DRY**: Tests run against both backends, no test duplication.
 """
 
-from __future__ import annotations
 
 import math
 

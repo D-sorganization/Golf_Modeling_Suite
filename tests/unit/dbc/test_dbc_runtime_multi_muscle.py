@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Runtime DbC tests for multi_muscle.py.
 
 Tests that require()/ensure() contracts fire correctly at runtime for
@@ -5,7 +6,6 @@ MuscleGroup.add_muscle, MuscleGroup.compute_net_torque, and
 AntagonistPair.compute_net_torque.
 """
 
-from __future__ import annotations
 
 import unittest
 

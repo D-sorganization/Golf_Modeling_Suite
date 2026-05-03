@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Parity tests: Rust aerodynamics vs Python AerodynamicsCalculator.
 
 TDD-driven tests verifying that the Rust ``upstream_physics`` aerodynamics
@@ -10,7 +11,6 @@ Design by Contract:
     - Zero-velocity/zero-spin edge cases must match exactly (zero forces)
 """
 
-from __future__ import annotations
 
 import math
 

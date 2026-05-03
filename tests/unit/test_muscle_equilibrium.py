@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Tests for muscle equilibrium solver.
 
 Tests the muscle-tendon equilibrium computation that solves for fiber length
 and velocity given muscle-tendon unit kinematics.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

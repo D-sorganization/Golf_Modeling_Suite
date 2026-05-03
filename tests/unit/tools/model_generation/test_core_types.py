@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Comprehensive unit tests for model_generation core types.
 
@@ -9,7 +10,6 @@ Tests cover all data classes in model_generation.core.types:
 - Link and Joint: from_dict/to_dict roundtrip, DOF counting
 """
 
-from __future__ import annotations
 
 import math
 

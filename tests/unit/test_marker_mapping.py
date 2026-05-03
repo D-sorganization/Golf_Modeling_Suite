@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for marker-to-model mapping (Guideline A2 - Mandatory)."""
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

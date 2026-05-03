@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Test suite for MuJoCo mechanism definitions.
 
 Verifies that mechanism definitions (joints, actuators, constraints)
 are structurally correct and physically plausible.
 """
 
-from __future__ import annotations
 
 import mujoco
 import pytest

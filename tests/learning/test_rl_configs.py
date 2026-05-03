@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Smoke tests for learning.rl.configs module."""
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

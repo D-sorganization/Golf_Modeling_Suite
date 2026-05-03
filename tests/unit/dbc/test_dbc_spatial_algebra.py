@@ -1,3 +1,4 @@
+from __future__ import annotations
 """DbC tests for spatial algebra modules (spatial_vectors, transforms, inertia).
 
 Validates that shape checks, rotation matrix validation, mass positivity,
@@ -6,7 +7,6 @@ computations produce correct algebraic properties (skew-symmetry,
 transform invertibility, inertia symmetry).
 """
 
-from __future__ import annotations
 
 import os
 import unittest

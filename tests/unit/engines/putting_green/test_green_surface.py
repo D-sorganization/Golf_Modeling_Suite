@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Unit tests for GreenSurface module.
 
 TDD Tests - These tests define the expected behavior of the GreenSurface
 module for handling slopes, undulations, and surface contours.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

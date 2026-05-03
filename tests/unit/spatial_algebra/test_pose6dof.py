@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.spatial_algebra.pose6dof module."""
 
-from __future__ import annotations
 
 import math
 

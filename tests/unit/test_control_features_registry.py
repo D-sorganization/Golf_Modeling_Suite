@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for the Control Features Registry module.
 
 Tests feature discovery, availability checking, execution, and serialization.
@@ -5,7 +6,6 @@ Tests feature discovery, availability checking, execution, and serialization.
 Follows TDD and Design by Contract principles.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

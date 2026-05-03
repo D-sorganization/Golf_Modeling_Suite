@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Comprehensive tests for src.shared.python.biomechanics package.
 
 Covers hill_muscle (MuscleParameters, MuscleState, HillMuscleModel),
@@ -5,7 +6,6 @@ activation_dynamics (ActivationDynamics), and swing_plane_analysis
 (SwingPlaneAnalyzer, SwingPlaneMetrics).
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

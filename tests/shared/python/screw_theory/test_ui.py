@@ -1,10 +1,25 @@
+from __future__ import annotations
+
+import os
+import sys
+
+def _should_skip_gui_import() -> bool:
+    if os.environ.get("HEADLESS_CI") == "1":
+        return True
+    if any("pytest" in arg for arg in sys.argv) and not os.environ.get("FORCE_GUI_TESTS"):
+        return True
+    return False
+
+if _should_skip_gui_import():
+    import pytest
+    pytest.skip("Skipping GUI tests in headless mode", allow_module_level=True)
+
 """Tests for ScrewVisualizationTab UI component.
 
 Validates that the shared Screw Theory visualization tab can be instantiated
 and provides the expected interface: is_active() and get_target_body().
 """
 
-from __future__ import annotations
 
 import pytest
 from src.shared.python.engine_core.engine_availability import (

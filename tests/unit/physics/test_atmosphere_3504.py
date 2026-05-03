@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for atmospheric and drag-crisis helpers added under issue #3504.
 
 Covers:
@@ -7,7 +8,6 @@ Covers:
   produces longer carries at higher altitude (less drag).
 """
 
-from __future__ import annotations
 
 import math
 

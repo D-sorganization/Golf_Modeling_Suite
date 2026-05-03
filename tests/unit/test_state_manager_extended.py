@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for src/shared/python/upstream_drift_tools/utils/state_manager.py.
 
 Tests cover safe_read_json, safe_write_json, StateManager CRUD operations,
@@ -5,7 +6,6 @@ protect/unprotect, export/import, session save/load, and get_state_manager.
 All tests use tmp_path to avoid writing to the production filesystem.
 """
 
-from __future__ import annotations
 
 import json
 from pathlib import Path

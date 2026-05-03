@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for control module.
 
 Tests cover:
@@ -6,7 +7,6 @@ Tests cover:
     - Whole-body controller functionality
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

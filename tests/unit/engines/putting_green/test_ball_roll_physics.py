@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Unit tests for BallRollPhysics module.
 
 TDD Tests - These tests define the expected behavior of the ball rolling
 physics including sliding, rolling, spin decay, and energy conservation.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

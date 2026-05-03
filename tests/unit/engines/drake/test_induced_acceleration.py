@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Unit tests for Drake Induced Acceleration Analyzer."""
 
-from __future__ import annotations
 
 import sys
 from unittest.mock import MagicMock, patch

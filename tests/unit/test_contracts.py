@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for contracts module (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import pytest
 from src.shared.python.contracts import (

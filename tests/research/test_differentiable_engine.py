@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Smoke tests for research differentiable engine module."""
 
-from __future__ import annotations
 
 from unittest.mock import MagicMock
 

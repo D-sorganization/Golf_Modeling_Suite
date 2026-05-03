@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for pose estimation GUI integration.
 
 Tests cover:
@@ -9,7 +10,6 @@ Tests cover:
 These tests DO NOT require mediapipe or pyopenpose to be installed.
 """
 
-from __future__ import annotations
 
 from unittest.mock import patch
 

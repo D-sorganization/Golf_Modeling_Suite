@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for src/shared/python/model_generation/core/physics_validation.py.
 
 Tests cover PhysicsValidator.validate_inertia_tensor, the result dataclasses,
@@ -5,7 +6,6 @@ and the basic validator interface. All tests are headless-safe and require
 only numpy and model_generation (available via pytest pythonpath).
 """
 
-from __future__ import annotations
 
 import pytest
 

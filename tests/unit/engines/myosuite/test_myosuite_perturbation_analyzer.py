@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for MyoSuitePerturbationAnalyzer (#1982).
 
 All tests run when myosuite or mujoco is installed.  Tests skip gracefully when not.
@@ -9,7 +10,6 @@ Design by Contract
 - Post: extract_metrics() returns all MANDATORY_METRICS for valid MyoSuiteSimResult.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for _text_editor_validation.py dead-code removal and robustness.
 
 Covers:
@@ -5,7 +6,6 @@ Covers:
 - _find_element_line uses splitlines() for cross-platform compatibility
 """
 
-from __future__ import annotations
 
 import xml.etree.ElementTree as ET  # stdlib for Element/SubElement
 

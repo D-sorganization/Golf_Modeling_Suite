@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Regression tests for URDF/MJCF model path containment."""
 
-from __future__ import annotations
 
 import asyncio
 from pathlib import Path

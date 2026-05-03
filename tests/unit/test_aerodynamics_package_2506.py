@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Contract tests for issue #2506: aerodynamics.py split to package.
 
 These tests define acceptance criteria — they run red before the split
 and green after.
 """
 
-from __future__ import annotations
 
 from pathlib import Path
 

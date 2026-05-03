@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.security.env_validator (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import secrets
 

@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Tests for OpenSimScrewKinematics (Guideline C3 - Required).
 
 OpenSim is rarely installed in CI, so most tests use mocked bindings.
 The availability guard and ``ImportError`` path are always tested.
 """
 
-from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 

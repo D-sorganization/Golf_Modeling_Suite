@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 End-to-end integration tests for URDF model generation.
 
@@ -11,7 +12,6 @@ References:
   - GitHub issue #1694 (end-to-end integration tests)
 """
 
-from __future__ import annotations
 
 import defusedxml.ElementTree as DefusedET  # noqa: S314  # Security: defusedxml prevents XML attacks
 import pytest

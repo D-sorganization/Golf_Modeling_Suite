@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for engine_core.unified_engine_interface (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 from src.shared.python.engine_core.unified_engine_interface import (
     EngineManager,

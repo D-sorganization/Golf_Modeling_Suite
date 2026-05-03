@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Runtime DbC tests for GRF metrics contracts.
 
 Tests the ensure() postconditions added to compute_grf_metrics:
@@ -7,7 +8,6 @@ Tests the ensure() postconditions added to compute_grf_metrics:
 - cop_path_length is finite
 """
 
-from __future__ import annotations
 
 import unittest
 from unittest.mock import MagicMock

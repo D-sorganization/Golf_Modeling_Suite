@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for UnrealBridgeBackend initialization correctness (issue #2475).
 
 When the background streaming server fails to bind (e.g., port in use),
@@ -5,7 +6,6 @@ initialize() must raise RuntimeError and must NOT set _is_initialized=True.
 The backend must not report successful initialization if the socket layer failed.
 """
 
-from __future__ import annotations
 
 import contextlib
 from unittest.mock import AsyncMock, MagicMock, patch

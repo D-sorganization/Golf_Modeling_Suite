@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for Phase 5 API: Tool pages - Putting Green, Data Explorer, Motion Capture.
 
 Validates Pydantic contract models and route logic for:
@@ -8,7 +9,6 @@ Validates Pydantic contract models and route logic for:
 See issue #1206
 """
 
-from __future__ import annotations
 
 import pytest
 from pydantic import ValidationError

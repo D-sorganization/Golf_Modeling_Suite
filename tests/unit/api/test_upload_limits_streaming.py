@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Regression tests for streamed upload enforcement.
 
 These tests lock in the body-size contract for upload handling:
@@ -7,7 +8,6 @@ These tests lock in the body-size contract for upload handling:
   Content-Length is absent from the call path
 """
 
-from __future__ import annotations
 
 from collections.abc import Sequence
 from pathlib import Path

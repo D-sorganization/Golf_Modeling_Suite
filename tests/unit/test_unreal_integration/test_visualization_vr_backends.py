@@ -1,9 +1,9 @@
+from __future__ import annotations
 """Unit tests for visualization, VR interaction, and viewer backends.
 
 TDD tests for the remaining Unreal Engine integration components.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Tests for energy conservation monitoring.
 
 Tests the energy drift detection system that implements Guideline O3
 for ensuring physical validity of conservative system integrations.
 """
 
-from __future__ import annotations
 
 from typing import NoReturn
 

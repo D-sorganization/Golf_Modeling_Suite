@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Unit tests for the extracted SyngasCompressionEngine module."""
 
-from __future__ import annotations
 
 import pytest
 

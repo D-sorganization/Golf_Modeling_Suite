@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.config.config_utils (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import json
 from pathlib import Path

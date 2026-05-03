@@ -1,3 +1,4 @@
+from __future__ import annotations
 """TDD tests for API route prefix consistency (issue #2451).
 
 Five route modules hardcode the "/api/" segment in their APIRouter prefix.
@@ -12,7 +13,6 @@ The server must also change the root-level registration to use prefix="/api"
 so that legacy "/api/launcher/..." clients still work.
 """
 
-from __future__ import annotations
 
 import pytest
 

@@ -1,9 +1,9 @@
+from __future__ import annotations
 """Tests for Swing Plane Visualization.
 
 Guideline L1 implementation tests.
 """
 
-from __future__ import annotations
 
 from pathlib import Path
 

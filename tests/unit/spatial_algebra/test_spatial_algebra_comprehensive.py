@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Comprehensive tests for src.shared.python.spatial_algebra package.
 
 Covers spatial_vectors, transforms, inertia, and joints modules.
@@ -5,7 +6,6 @@ Tests verify mathematical properties (antisymmetry, orthogonality, Jacobi identi
 and physical correctness of the spatial algebra implementation.
 """
 
-from __future__ import annotations
 
 from collections.abc import Callable
 

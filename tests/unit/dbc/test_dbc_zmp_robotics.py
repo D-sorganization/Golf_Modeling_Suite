@@ -1,3 +1,4 @@
+from __future__ import annotations
 """DbC tests for ZMP computation and robotics locomotion.
 
 Validates that:
@@ -8,7 +9,6 @@ Validates that:
 - Free-fall detection (zero denominator) returns invalid result
 """
 
-from __future__ import annotations
 
 import os
 import unittest

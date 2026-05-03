@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for collision detection module.
 
 Tests cover:
@@ -7,7 +8,6 @@ Tests cover:
 - CollisionChecker configuration-space collision detection
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

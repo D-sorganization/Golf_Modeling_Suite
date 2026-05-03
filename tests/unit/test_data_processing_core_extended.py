@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Extended unit tests for DataProcessorEngine and helpers in data_processing/core.py.
 
 Tests cover:
@@ -13,7 +14,6 @@ Tests cover:
 All tests are headless-safe with no heavy dependencies beyond pandas/numpy.
 """
 
-from __future__ import annotations
 
 from typing import TYPE_CHECKING
 

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for the SwingOptimizationBridge module.
 
 Tests cover:
@@ -11,7 +12,6 @@ Tests cover:
 - Convergence and iteration behaviour
 """
 
-from __future__ import annotations
 
 from unittest.mock import MagicMock
 

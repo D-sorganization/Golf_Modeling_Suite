@@ -1,3 +1,4 @@
+from __future__ import annotations
 """TDD Tests for Launcher Manifest Loader.
 
 Tests the shared launcher manifest system that ensures parity between
@@ -12,7 +13,6 @@ Test Categories:
     6. Categories — verify physics_engine, tool, external groupings
 """
 
-from __future__ import annotations
 
 import json
 from pathlib import Path

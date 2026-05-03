@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Unit tests for PuttingGreenSimulator module.
 
 TDD Tests - These tests define the expected behavior of the main
 putting green simulator engine that implements the PhysicsEngine protocol.
 """
 
-from __future__ import annotations
 
 import json
 import tempfile

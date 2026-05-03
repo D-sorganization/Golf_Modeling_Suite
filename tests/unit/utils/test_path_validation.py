@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.api.utils.path_validation module."""
 
-from __future__ import annotations
 
 import pytest
 from fastapi import HTTPException

@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for upstream_drift_tools.bootstrap (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import sys
 from pathlib import Path

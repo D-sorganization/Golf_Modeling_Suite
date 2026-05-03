@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for plot_theme.integration module (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 from src.shared.python.plot_theme.integration import (
     PlotTheme,

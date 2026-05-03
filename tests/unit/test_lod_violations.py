@@ -1,3 +1,4 @@
+from __future__ import annotations
 """TDD tests for LOD (Law of Demeter) violations fixed in issue #2507.
 
 Three violations:
@@ -9,7 +10,6 @@ Three violations:
    Fix: import SUITE_ROOT from src.shared.python.
 """
 
-from __future__ import annotations
 
 import ast
 from pathlib import Path

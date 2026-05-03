@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for src/shared/python/contracts.py.
 
 Tests cover the DbC (Design by Contract) helpers: ContractLevel enum,
@@ -7,7 +8,6 @@ decorators, set_contract_level/get_contract_level, and all exception types.
 All tests are headless-safe (no display server, no heavy deps).
 """
 
-from __future__ import annotations
 
 import pytest
 

@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.analysis.nonlinear_dynamics (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import numpy as np
 from src.shared.python.analysis.nonlinear_dynamics import NonlinearDynamicsMixin

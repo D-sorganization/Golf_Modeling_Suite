@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.logging_pkg.logger_utils (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import logging
 import time

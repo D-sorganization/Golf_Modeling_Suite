@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.core.numerical_constants (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 from src.shared.python.core.numerical_constants import (
     CONDITION_NUMBER_CRITICAL_THRESHOLD,

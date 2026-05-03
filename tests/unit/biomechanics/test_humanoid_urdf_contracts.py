@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for the humanoid URDF contract validator (issue #2802)."""
 
-from __future__ import annotations
 
 from pathlib import Path
 

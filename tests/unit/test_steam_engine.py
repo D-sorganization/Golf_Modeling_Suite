@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Tests for SteamCalculationEngine using the simplified (fallback) engine.
 
 These tests exercise the pure-Python simplified calculation path which
 does not require CoolProp or Cantera, so they run in all environments.
 """
 
-from __future__ import annotations
 
 from typing import Any
 

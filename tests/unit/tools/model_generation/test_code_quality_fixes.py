@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Tests for code quality fixes from the URDF review.
 
@@ -8,7 +9,6 @@ Validates:
 4. _get_writable_model() helper works correctly in editor_modifications
 """
 
-from __future__ import annotations
 
 import logging
 from unittest.mock import MagicMock, patch

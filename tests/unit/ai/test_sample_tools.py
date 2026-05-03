@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Unit tests for sample tools."""
 
-from __future__ import annotations
 
 from src.shared.python.ai.sample_tools import (
     register_golf_suite_tools,

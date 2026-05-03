@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Heavy integration tests for the motion training / IK pipeline (fixes #1990).
 
 Tests DualHandIKSolver instantiation with a Pinocchio model, IK solving
@@ -5,7 +6,6 @@ for a reachable target pose, and MotionVisualizer headless recording.
 All tests skip gracefully when pinocchio, pink, or meshcat are absent.
 """
 
-from __future__ import annotations
 
 from pathlib import Path
 

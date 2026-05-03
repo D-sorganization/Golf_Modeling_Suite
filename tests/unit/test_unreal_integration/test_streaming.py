@@ -1,9 +1,9 @@
+from __future__ import annotations
 """Unit tests for Unreal Engine WebSocket streaming.
 
 TDD tests for the streaming server that sends data to Unreal Engine.
 """
 
-from __future__ import annotations
 
 import asyncio
 import json

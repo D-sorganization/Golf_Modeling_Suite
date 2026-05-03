@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for the SwingOptimizer module.
 
 Tests cover:
@@ -8,7 +9,6 @@ Tests cover:
 - Edge cases
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

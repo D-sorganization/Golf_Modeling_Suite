@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Comprehensive tests for src.shared.python.physics package.
 
 Covers equipment (CLUB_CONFIGS, get_club_config), flight_model_options
@@ -6,7 +7,6 @@ energy_monitor (EnergySnapshot, ConservationMonitor — standalone parts),
 and physics_validation dataclasses.
 """
 
-from __future__ import annotations
 
 import math
 

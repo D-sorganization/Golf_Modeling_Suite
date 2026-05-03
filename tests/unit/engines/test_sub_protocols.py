@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.engine_core.sub_protocols (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 from typing import Any
 

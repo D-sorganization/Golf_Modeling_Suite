@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Comprehensive unit tests for ManualBuilder.mirror().
 
@@ -10,7 +11,6 @@ Tests cover:
 - Roundtrip: mirror(Y) then mirror(Y) returns to original
 """
 
-from __future__ import annotations
 
 import pytest
 from model_generation.builders.manual_builder import Handedness, ManualBuilder

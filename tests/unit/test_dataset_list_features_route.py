@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Regression tests for dataset list-features query handling."""
 
-from __future__ import annotations
 
 from unittest.mock import MagicMock
 

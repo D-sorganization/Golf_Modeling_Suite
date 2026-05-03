@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Unit tests for the shared model-pack manifest contract."""
 
-from __future__ import annotations
 
 from pathlib import Path
 

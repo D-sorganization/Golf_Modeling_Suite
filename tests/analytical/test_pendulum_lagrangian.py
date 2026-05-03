@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Analytical benchmark tests for simple pendulum dynamics.
 
 Verifies physics engines against closed-form Lagrangian solutions.
 Refactored for orthogonality using shared fixtures.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

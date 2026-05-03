@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Tests for analysis.angular_momentum module.
 
 Validates AngularMomentumMetricsMixin.compute_angular_momentum_metrics()
 using a minimal stub object that provides the required attributes.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Heavy Integration Contracts — UpstreamDrift
 ============================================
@@ -11,7 +12,6 @@ Each test is a REPO-SPECIFIC CONTRACT, not a generic smoke test:
   • Each test documents what it proves and what would break if it fails
 """
 
-from __future__ import annotations
 
 import subprocess
 import sys

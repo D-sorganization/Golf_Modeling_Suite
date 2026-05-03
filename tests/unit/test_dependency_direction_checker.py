@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Unit tests for the dependency direction checker script."""
 
-from __future__ import annotations
 
 import importlib.util
 import types

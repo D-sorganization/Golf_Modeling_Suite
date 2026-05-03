@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Tests for indexed acceleration analysis module.
 
 Tests the indexed acceleration decomposition that implements Section H2
 closure-verified acceleration decomposition.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

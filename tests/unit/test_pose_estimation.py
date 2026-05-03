@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for pose_estimation.interface (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import numpy as np
 from src.shared.python.pose_estimation.interface import (

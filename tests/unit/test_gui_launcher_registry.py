@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for gui_launcher.registry (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 from src.shared.python.gui_launcher.registry import (
     GUIRegistration,

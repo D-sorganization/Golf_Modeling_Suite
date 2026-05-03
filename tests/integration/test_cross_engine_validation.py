@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Cross-engine validation integration tests.
 
 Tests the CrossEngineValidator against actual physics engines to ensure
@@ -7,7 +8,6 @@ This module implements the acceptance test suite required by Section M2
 of the Project Design Guidelines.
 """
 
-from __future__ import annotations
 
 import numpy as np
 from src.shared.python.engine_core.cross_engine_validator import CrossEngineValidator

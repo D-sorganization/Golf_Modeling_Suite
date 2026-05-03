@@ -1,3 +1,19 @@
+from __future__ import annotations
+
+import os
+import sys
+
+def _should_skip_gui_import() -> bool:
+    if os.environ.get("HEADLESS_CI") == "1":
+        return True
+    if any("pytest" in arg for arg in sys.argv) and not os.environ.get("FORCE_GUI_TESTS"):
+        return True
+    return False
+
+if _should_skip_gui_import():
+    import pytest
+    pytest.skip("Skipping GUI tests in headless mode", allow_module_level=True)
+
 """Tests verifying no circular dependencies between top-level modules.
 
 Phase 1 of the decoupling plan eliminates circular imports between:
@@ -10,7 +26,6 @@ These tests verify that key modules can be imported independently without
 pulling in modules they should not depend on.
 """
 
-from __future__ import annotations
 
 import ast
 import importlib

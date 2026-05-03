@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for real-time control module."""
 
-from __future__ import annotations
 
 import time
 

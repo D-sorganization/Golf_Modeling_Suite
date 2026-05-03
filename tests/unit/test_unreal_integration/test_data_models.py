@@ -1,9 +1,9 @@
+from __future__ import annotations
 """Unit tests for Unreal Engine data models.
 
 Following TDD principles - tests written first to define expected behavior.
 """
 
-from __future__ import annotations
 
 import json
 import math

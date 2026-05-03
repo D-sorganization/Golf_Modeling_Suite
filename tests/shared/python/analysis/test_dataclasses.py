@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Tests for analysis.dataclasses module.
 
 Validates dataclass construction, field access, pre-defined citations,
 backward-compatible aliases, and cross-engine validation utility functions.
 """
 
-from __future__ import annotations
 
 import dataclasses
 

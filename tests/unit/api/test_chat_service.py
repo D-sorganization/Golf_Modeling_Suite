@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Tests for ChatService - Server-side AI chat session management.
 
 Verifies session CRUD, TTL eviction, message handling,
 adapter loading, and disk persistence.
 """
 
-from __future__ import annotations
 
 import time
 from typing import Any

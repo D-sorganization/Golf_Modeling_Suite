@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Contract parity tests for API request/response models.
 
 Validates that Pydantic precondition validators on request models and
@@ -8,7 +9,6 @@ registry.
 Fixes #1131 (Phase 2)
 """
 
-from __future__ import annotations
 
 import pytest
 from pydantic import ValidationError

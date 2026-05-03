@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Heavy integration tests for ezdxf CAD export capability (fixes #1986).
 
 Tests that ezdxf can create, populate, and round-trip DXF documents.
 All tests skip gracefully when ezdxf is not installed.
 """
 
-from __future__ import annotations
 
 import tempfile
 from pathlib import Path

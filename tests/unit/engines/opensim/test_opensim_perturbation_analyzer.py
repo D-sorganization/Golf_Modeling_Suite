@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for OpenSimPerturbationAnalyzer (#1981).
 
 All tests run when opensim is installed.  Tests skip gracefully when not.
@@ -9,7 +10,6 @@ Design by Contract
 - Post: extract_metrics() returns all MANDATORY_METRICS for valid OpenSimSimResult.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

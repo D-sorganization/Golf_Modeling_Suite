@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Comprehensive third-party integration audit tests.
 
 This module provides adversarial TDD tests for all third-party package
@@ -12,7 +13,6 @@ structured to verify:
 Issues: #1810, #1811, #1812, #1813, #1814, #1815, #1816, #1817, #1818
 """
 
-from __future__ import annotations
 
 from pathlib import Path
 from unittest.mock import MagicMock

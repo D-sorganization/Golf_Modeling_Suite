@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Unit tests for CI quality gate scripts."""
 
-from __future__ import annotations
 
 import importlib.util
 import types

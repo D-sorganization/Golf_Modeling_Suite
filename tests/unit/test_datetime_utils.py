@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for datetime_utils module.
 
 Tests the centralized datetime utilities for timestamp formatting,
@@ -6,7 +7,6 @@ parsing, duration formatting, and time calculations.
 
 # ruff: noqa: UP017  # Use timezone.utc for Python 3.10 compatibility
 
-from __future__ import annotations
 
 from collections.abc import Callable
 from datetime import datetime, timedelta, timezone

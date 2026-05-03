@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for EnhancedBallFlightSimulator.
 
 Tests verify:
@@ -14,7 +15,6 @@ Following Pragmatic Programmer principles:
 - Orthogonal: Independent test cases
 """
 
-from __future__ import annotations
 
 import math
 

@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for plot_engine.matplotlib_renderer and plot_engine.plotly_converter (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 from src.shared.python.plot_engine.matplotlib_renderer import MatplotlibRenderer
 from src.shared.python.plot_engine.plotly_converter import PlotlyConverter

@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Smoke tests for learning.rl.humanoid_envs module."""
 
-from __future__ import annotations
 
 from unittest.mock import MagicMock
 

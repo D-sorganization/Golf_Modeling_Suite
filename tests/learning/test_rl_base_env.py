@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Smoke tests for learning.rl.base_env module."""
 
-from __future__ import annotations
 
 from unittest.mock import MagicMock
 

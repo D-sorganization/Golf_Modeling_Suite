@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Unit tests for shared/python/ai/workflow_engine.py."""
 
-from __future__ import annotations
 
 from unittest.mock import MagicMock
 

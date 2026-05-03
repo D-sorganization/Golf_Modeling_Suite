@@ -1,3 +1,4 @@
+from __future__ import annotations
 """DbC tests for Hill-type muscle model and biomechanics modules.
 
 Validates that:
@@ -9,7 +10,6 @@ Validates that:
 - Biomechanics kinematic sequence analysis validates input dimensions
 """
 
-from __future__ import annotations
 
 import os
 import unittest

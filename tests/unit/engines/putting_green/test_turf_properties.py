@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for TurfProperties module.
 
 TDD Tests - These tests define the expected behavior of the TurfProperties
@@ -8,7 +9,6 @@ Following Pragmatic Programmer principles:
 - Orthogonality: Each test is independent
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

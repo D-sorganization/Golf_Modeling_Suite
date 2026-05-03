@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Tests for cli_utils module.
 
 Tests command-line utility functions for argument parsing
 and validation across the codebase.
 """
 
-from __future__ import annotations
 
 import argparse
 from pathlib import Path

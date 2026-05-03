@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for terrain/environment API routes.
 
 Validates environment presets, terrain queries, material listing,
@@ -7,7 +8,6 @@ Fixes #1145 (engine-agnostic environment system)
 Fixes #1142 (expandable environment system beyond putting green)
 """
 
-from __future__ import annotations
 
 import pytest
 

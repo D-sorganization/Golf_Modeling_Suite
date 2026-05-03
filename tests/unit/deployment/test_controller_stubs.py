@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for real-time controller stub detection (issue #2450).
 
 Hardware-protocol connect paths (_connect_ros2, _connect_udp, _connect_ethercat)
@@ -6,7 +7,6 @@ protocols must raise RuntimeError rather than returning fabricated zero values o
 dropping commands silently.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

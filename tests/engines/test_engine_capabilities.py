@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for Engine Capabilities, Export, and Simulation Control modules.
 
 TDD tests covering:
@@ -9,7 +10,6 @@ TDD tests covering:
     - PhysicsEngine.get_capabilities() default
 """
 
-from __future__ import annotations
 
 import json
 import tempfile

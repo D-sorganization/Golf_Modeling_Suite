@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Tests for the einsum max-distance calculation in golf_visualizer_widget.py.
 
 Validates the np.einsum-based distance computation against the original
 np.linalg.norm reference for representative inputs (issue #2799).
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

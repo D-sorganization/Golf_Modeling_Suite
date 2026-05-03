@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Comprehensive unit tests for the validation_pkg package.
 
 Tests cover:
@@ -15,7 +16,6 @@ Tests cover:
   AMATEUR_AVERAGES, ALL_VALIDATION_DATA, get_validation_data_for_club
 """
 
-from __future__ import annotations
 
 import math
 import warnings

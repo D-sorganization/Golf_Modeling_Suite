@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Unit tests for PutterStroke module.
 
 TDD Tests - These tests define the expected behavior of putter-ball
 interaction including strike, energy transfer, and different putter types.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

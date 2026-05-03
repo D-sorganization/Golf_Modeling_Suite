@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Importability tests for upstream_drift_tools internal test modules (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 from src.shared.python.upstream_drift_tools.tests.calculators.conversion.test_conversion import (
     TestUnitConversion,

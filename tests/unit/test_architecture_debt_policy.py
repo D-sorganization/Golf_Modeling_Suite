@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Structural regression tests for issues #2382, #2383, and #2388."""
 
-from __future__ import annotations
 
 import ast
 import json

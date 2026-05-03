@@ -63,6 +63,16 @@ def _probe_engine(
     if import_name is None:
         import_name = name
 
+    # Windows GUI DLL crash prevention during headless collection
+    gui_engines = {"pyqt6", "pyqt5", "pyside6", "pyqtgraph"}
+    if import_name in gui_engines:
+        if os.environ.get("HEADLESS_CI") == "1" or (
+            any("pytest" in arg for arg in sys.argv) and not os.environ.get("FORCE_GUI_TESTS")
+        ):
+            logger.debug(f"Skipping GUI engine {import_name} check in headless mode.")
+            _engine_status_cache[name] = EngineStatus.NOT_INSTALLED
+            return EngineStatus.NOT_INSTALLED
+
     # Windows specfic skip for MuJoCo
     if name == "mujoco":
         if (

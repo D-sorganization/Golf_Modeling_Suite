@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for cross_engine_perturbation module.
 
 Covers GH2021: Cross-engine perturbation consistency normalisation.
@@ -5,7 +6,6 @@ Covers GH2021: Cross-engine perturbation consistency normalisation.
 All tests use mock engines — no real physics engine dependencies required.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

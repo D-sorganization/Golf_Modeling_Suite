@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for security and module fixes.
 
 Covers issues:
@@ -8,7 +9,6 @@ Covers issues:
 - #1787: Module-level docstrings missing from physics modules
 """
 
-from __future__ import annotations
 
 import importlib
 import types

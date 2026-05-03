@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Regression guards for the provider-migration boundary modules."""
 
-from __future__ import annotations
 
 from pathlib import Path
 

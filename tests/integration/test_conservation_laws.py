@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Property-based tests for conservation laws.
 
 Tests fundamental physics constraints that must hold for any valid simulation:
@@ -12,7 +13,6 @@ Uses inline XML models to avoid external file dependencies, following
 the Self-Contained Physics Testing Pattern from Assessment B-005.
 """
 
-from __future__ import annotations
 
 from typing import Any
 

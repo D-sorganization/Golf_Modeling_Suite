@@ -1,3 +1,4 @@
+from __future__ import annotations
 """TDD tests for Simscape dataset pipeline contracts (issue #2491).
 
 Two bugs:
@@ -8,7 +9,6 @@ Two bugs:
    then uses interp1(..., 'extrap'), fabricating values outside the recorded data span.
 """
 
-from __future__ import annotations
 
 from pathlib import Path
 

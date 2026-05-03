@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Extended tests for engine_availability module.
 
 Tests the helper functions, decorators, and availability flag
 lookup logic in engine_availability.
 """
 
-from __future__ import annotations
 
 import pytest
 

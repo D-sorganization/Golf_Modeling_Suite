@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for Phase 3 API: URDF/MJCF rendering, analysis tools, simulation controls.
 
 Validates Pydantic contract models and route logic for:
@@ -8,7 +9,6 @@ Validates Pydantic contract models and route logic for:
 See issue #1201, #1203, #1179
 """
 
-from __future__ import annotations
 
 import pytest
 from pydantic import ValidationError

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for Phase 2 physics API routes.
 
 Validates the shared physics backend REST API (#1209),
@@ -13,7 +14,6 @@ Tests cover:
 - Simulation controls (speed, camera, recording, stats)
 """
 
-from __future__ import annotations
 
 from collections.abc import Generator
 

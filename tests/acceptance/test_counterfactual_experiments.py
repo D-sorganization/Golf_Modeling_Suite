@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Acceptance tests for ZTCF/ZVCF Counterfactual Experiments.
 
 Guideline G1 (ZTCF) and G2 (ZVCF) Implementation Tests.
@@ -11,7 +12,6 @@ Tests:
 3. Causal Decomposition: Verify a_full = a_drift + a_control
 """
 
-from __future__ import annotations
 
 from typing import TYPE_CHECKING
 

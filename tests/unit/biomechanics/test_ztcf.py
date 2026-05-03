@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for Zero-Torque Counterfactual (ZTCF) force computation.
 
 Covers:
@@ -8,7 +9,6 @@ Covers:
 - Edge cases: zero velocity, zero gravity, single joint
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

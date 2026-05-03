@@ -1,3 +1,4 @@
+from __future__ import annotations
 """TDD tests for correct asset path resolution in setup scripts (issue #2495).
 
 Two bugs:
@@ -7,7 +8,6 @@ Two bugs:
    "shared" / "urdf" / ..., etc. — all the real paths are under "src/".
 """
 
-from __future__ import annotations
 
 import ast
 from pathlib import Path

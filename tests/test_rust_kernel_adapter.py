@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for the Rust kernel Python adapter module.
 
 Validates:
@@ -6,7 +7,6 @@ Validates:
 - Diagnostic info correctness.
 """
 
-from __future__ import annotations
 
 import pytest
 from src.shared.python.physics.rust_kernel import (

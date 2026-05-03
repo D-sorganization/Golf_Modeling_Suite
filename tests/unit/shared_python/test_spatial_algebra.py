@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Unit tests for spatial_algebra modules (spatial_vectors, inertia, joints)."""
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

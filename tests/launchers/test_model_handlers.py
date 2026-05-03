@@ -1,3 +1,19 @@
+from __future__ import annotations  # noqa: E402
+
+import os
+import sys
+
+def _should_skip_gui_import() -> bool:
+    if os.environ.get("HEADLESS_CI") == "1":
+        return True
+    if any("pytest" in arg for arg in sys.argv) and not os.environ.get("FORCE_GUI_TESTS"):
+        return True
+    return False
+
+if _should_skip_gui_import():
+    import pytest
+    pytest.skip("Skipping GUI tests in headless mode", allow_module_level=True)
+
 """TDD Tests for Model Launch Handlers.
 
 Tests the SpecialAppHandler and PuttingGreenHandler to ensure
@@ -5,7 +21,6 @@ motion_capture, model_explorer, matlab_unified, and putting_green
 tiles can be launched correctly.
 """
 
-from __future__ import annotations  # noqa: E402
 
 from dataclasses import dataclass  # noqa: E402
 from pathlib import Path  # noqa: E402

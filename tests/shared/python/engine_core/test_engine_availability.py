@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for engine_availability module.
 
 Validates the public API of the engine availability checking utilities:
@@ -10,7 +11,6 @@ Validates the public API of the engine availability checking utilities:
 - Module-level __getattr__ for XXXX_AVAILABLE pattern
 """
 
-from __future__ import annotations
 
 from unittest.mock import patch
 

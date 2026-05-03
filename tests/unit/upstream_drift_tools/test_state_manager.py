@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.upstream_drift_tools.utils.state_manager (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 from pathlib import Path
 

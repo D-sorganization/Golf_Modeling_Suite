@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for terrain API correctness (issue #2473).
 
 Covers three semantic bugs:
@@ -6,7 +7,6 @@ Covers three semantic bugs:
 3. terrain_engine / terrain_mixin return fabricated 0.0 on out-of-bounds queries.
 """
 
-from __future__ import annotations
 
 from typing import Any
 

@@ -1,9 +1,9 @@
+from __future__ import annotations
 """Tests for OpenSim core module.
 
 These tests verify that OpenSim failures produce clear errors, not silent fallbacks.
 """
 
-from __future__ import annotations
 
 import sys
 from collections.abc import Generator

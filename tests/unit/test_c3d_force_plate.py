@@ -1,9 +1,9 @@
+from __future__ import annotations
 """Tests for C3D force plate parsing functionality.
 
 Implements Guideline E5: Ground Reaction Forces.
 """
 
-from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 

@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for method citation metadata and cross-engine validation (Issue #777)."""
 
-from __future__ import annotations
 
 import numpy as np
 from src.shared.python.analysis.dataclasses import (

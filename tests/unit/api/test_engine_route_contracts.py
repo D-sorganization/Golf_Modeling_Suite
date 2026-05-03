@@ -1,3 +1,4 @@
+from __future__ import annotations
 """TDD tests for engine route/frontend alignment (issue #2482).
 
 Five bugs:
@@ -10,7 +11,6 @@ Five bugs:
 5. ParameterPanel.tsx defines 'myosim' defaults but the engine identifier is 'myosuite'.
 """
 
-from __future__ import annotations
 
 from pathlib import Path
 

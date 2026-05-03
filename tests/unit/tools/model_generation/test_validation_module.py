@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Comprehensive unit tests for model_generation.core.validation.
 
@@ -10,7 +11,6 @@ Tests cover the Validator class methods:
 - validate_model: end-to-end full model validation
 """
 
-from __future__ import annotations
 
 from model_generation.core.types import (
     Inertia,

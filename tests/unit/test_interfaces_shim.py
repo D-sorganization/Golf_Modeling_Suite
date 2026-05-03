@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for interfaces shim module (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 from src.shared.python.interfaces import PhysicsEngine, RecorderInterface
 

@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Tests for security hardening: REST API auth/CORS/rate-limit, cache URL
 validation, and SMPL-X vertex range validation.
 
 Covers GitHub issues #1695, #1691, #1700.
 """
 
-from __future__ import annotations
 
 import os
 from pathlib import Path

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Performance benchmarks for core physics operations.
 
 Establishes baseline metrics for spatial algebra and physics computations
@@ -6,7 +7,6 @@ that are critical to simulation performance. Tracks regressions over time.
 Run with: pytest tests/benchmarks/test_physics_benchmarks.py --benchmark-only
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

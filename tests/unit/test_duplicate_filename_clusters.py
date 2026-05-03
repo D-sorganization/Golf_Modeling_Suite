@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Regression coverage for intentional duplicate filename clusters."""
 
-from __future__ import annotations
 
 from hashlib import sha256
 from pathlib import Path

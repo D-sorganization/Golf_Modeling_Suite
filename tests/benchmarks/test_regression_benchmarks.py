@@ -1,3 +1,4 @@
+from __future__ import annotations
 """CI-runnable regression benchmarks for critical hot paths (issue #3510).
 
 These benchmarks intentionally use ``time.perf_counter`` rather than
@@ -18,7 +19,6 @@ Run locally:
         -m benchmark --timeout=120 -v
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

@@ -1,9 +1,9 @@
+from __future__ import annotations
 """Contract tests for #2456: pressure_drop_calculation_engine.py split.
 
 Tests run red before the split and green after.
 """
 
-from __future__ import annotations
 
 from pathlib import Path
 

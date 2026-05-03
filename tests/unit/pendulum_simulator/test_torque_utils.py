@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.pendulum_simulator.torque_utils (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import pytest
 from src.shared.python.pendulum_simulator.torque_utils import make_polynomial_torque

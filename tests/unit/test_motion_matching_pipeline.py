@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for the complete motion matching pipeline (Issue #759).
 
 Covers:
@@ -7,7 +8,6 @@ Covers:
 - End-to-end pipeline validation
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

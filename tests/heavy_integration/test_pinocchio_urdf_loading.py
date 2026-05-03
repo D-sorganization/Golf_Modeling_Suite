@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Heavy integration tests for Pinocchio URDF loading (fixes #1988).
 
 Tests that pinocchio can load a URDF from disk and produce physically
@@ -6,7 +7,6 @@ consistent FK, inverse dynamics, and Jacobian computations.
 All tests skip gracefully when pinocchio is not installed.
 """
 
-from __future__ import annotations
 
 from pathlib import Path
 

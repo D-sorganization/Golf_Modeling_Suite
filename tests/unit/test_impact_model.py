@@ -1,9 +1,9 @@
+from __future__ import annotations
 """Tests for Modular Impact Model.
 
 Guideline K3 implementation tests.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

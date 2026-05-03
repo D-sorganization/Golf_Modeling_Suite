@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for pendulum_simulator.constraint_solver (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import numpy as np
 from src.shared.python.pendulum_simulator.constraint_solver import (

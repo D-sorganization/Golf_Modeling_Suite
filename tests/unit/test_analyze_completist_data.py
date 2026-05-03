@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for completist report generation."""
 
-from __future__ import annotations
 
 import importlib.util
 import types

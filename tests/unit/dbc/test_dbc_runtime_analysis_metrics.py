@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Runtime DbC tests for analysis metrics modules.
 
 Tests the ensure()/require() contracts added to:
@@ -6,7 +7,6 @@ Tests the ensure()/require() contracts added to:
 - angular_momentum.py (AngularMomentumMetricsMixin)
 """
 
-from __future__ import annotations
 
 import unittest
 

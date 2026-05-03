@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.engines.common.state module."""
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

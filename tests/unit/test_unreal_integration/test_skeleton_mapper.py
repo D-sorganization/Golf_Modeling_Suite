@@ -1,9 +1,9 @@
+from __future__ import annotations
 """Unit tests for skeleton mapping system.
 
 TDD tests for mapping gaming skeletons to physics model joints.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

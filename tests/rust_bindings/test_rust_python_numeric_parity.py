@@ -1,3 +1,4 @@
+from __future__ import annotations
 """True numeric parity tests: Rust vs Python side-by-side.
 
 These tests ensure that the Rust kernel produces **identical** (within
@@ -8,7 +9,6 @@ Issue #1662: Previous parity tests validated algebraic invariants
 numeric output of Rust vs Python on the same inputs.
 """
 
-from __future__ import annotations
 
 import math
 

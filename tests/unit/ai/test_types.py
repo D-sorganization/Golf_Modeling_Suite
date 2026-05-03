@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Unit tests for AI module types."""
 
-from __future__ import annotations
 
 from datetime import timezone
 

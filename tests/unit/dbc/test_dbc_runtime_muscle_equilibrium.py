@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Runtime DbC tests for muscle equilibrium solver contracts.
 
 Tests the require()/ensure() contracts added to:
@@ -8,7 +9,6 @@ Tests the require()/ensure() contracts added to:
 - compute_equilibrium_state (preconditions + postconditions)
 """
 
-from __future__ import annotations
 
 import unittest
 

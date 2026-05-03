@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.data_io.data_utils (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 from pathlib import Path
 

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Runtime DbC tests for coordination_metrics contracts.
 
 Tests the require()/ensure() contracts added to:
@@ -8,7 +9,6 @@ Tests the require()/ensure() contracts added to:
   ensure() correlations in [-1, 1]
 """
 
-from __future__ import annotations
 
 import unittest
 from unittest.mock import MagicMock

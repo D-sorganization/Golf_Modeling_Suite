@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for PerturbationAnalyzerBase (#2273).
 
 Tests the shared abstract base class in
@@ -6,7 +7,6 @@ subclass (``StubAnalyzer``) is used to exercise all base-class logic
 without requiring any physics engine to be installed.
 """
 
-from __future__ import annotations
 
 from dataclasses import dataclass
 

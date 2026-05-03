@@ -1,4 +1,16 @@
 import os  # noqa: E402
+import sys
+
+def _should_skip_gui_import() -> bool:
+    if os.environ.get("HEADLESS_CI") == "1":
+        return True
+    if any("pytest" in arg for arg in sys.argv) and not os.environ.get("FORCE_GUI_TESTS"):
+        return True
+    return False
+
+import pytest  # noqa: E402
+if _should_skip_gui_import():
+    pytest.skip("Skipping GUI tests in headless mode", allow_module_level=True)
 
 if not hasattr(os, "startfile"):
     os.startfile = lambda x: None  # type: ignore
@@ -8,7 +20,6 @@ if not hasattr(os, "startfile"):
 from pathlib import Path  # noqa: E402
 from unittest.mock import MagicMock, patch  # noqa: E402
 
-import pytest  # noqa: E402
 from src.launchers.base import BaseLauncher, LaunchItem, run_launcher  # noqa: E402
 
 

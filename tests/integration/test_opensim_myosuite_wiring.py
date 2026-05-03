@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Integration tests for OpenSim and MyoSuite engine wiring.
 
@@ -8,7 +9,6 @@ packages are automatically skipped when the packages are not installed.
 Fixes #1115, #1116
 """
 
-from __future__ import annotations
 
 from collections.abc import Generator
 from pathlib import Path

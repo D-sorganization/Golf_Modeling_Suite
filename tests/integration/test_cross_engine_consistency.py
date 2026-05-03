@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Integration test for verifying consistency across physics engines.
 
 Uses shared fixtures from tests/fixtures/conftest.py to load
@@ -7,7 +8,6 @@ available physics engines and compare results.
 Per Guideline M2/P3: Cross-engine validation with explicit tolerances.
 """
 
-from __future__ import annotations
 
 from typing import Any
 

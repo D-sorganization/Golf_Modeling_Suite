@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for contact dynamics module.
 
 Tests cover:
@@ -7,7 +8,6 @@ Tests cover:
     - Grasp analysis
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

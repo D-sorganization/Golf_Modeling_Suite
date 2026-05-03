@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for pendulum_simulator.simulation_core (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

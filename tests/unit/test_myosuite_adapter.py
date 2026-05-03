@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Tests for MyoSuite adapter module.
 
 Tests the MyoSuite muscle-driven environment adapter for integration
 with the Golf Modeling Suite.
 """
 
-from __future__ import annotations
 
 import sys
 from unittest.mock import MagicMock, patch

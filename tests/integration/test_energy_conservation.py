@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Energy conservation tests for physics validation.
 
 This module addresses Assessment B-005 by implementing comprehensive tests
@@ -7,7 +8,6 @@ These tests validate that the physics engine and analysis tools correctly
 implement Newtonian mechanics.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

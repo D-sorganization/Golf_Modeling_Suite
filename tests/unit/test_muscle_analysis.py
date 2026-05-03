@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Tests for muscle synergy analysis module.
 
 Tests the Non-negative Matrix Factorization (NMF) based muscle synergy
 extraction and analysis functionality.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

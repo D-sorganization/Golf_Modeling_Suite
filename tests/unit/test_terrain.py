@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for terrain modeling system (TDD: Tests First).
 
 Following the Pragmatic Programmer principles:
@@ -9,7 +10,6 @@ Following the Pragmatic Programmer principles:
 These tests define the expected behavior BEFORE implementation.
 """
 
-from __future__ import annotations
 
 import json
 import math

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Runtime DbC tests for nonlinear dynamics contracts.
 
 Tests the require()/ensure() contracts added to:
@@ -7,7 +8,6 @@ Tests the require()/ensure() contracts added to:
 - compute_fractal_dimension (precondition: k_max>=1; postcondition: finite)
 """
 
-from __future__ import annotations
 
 import unittest
 from unittest.mock import MagicMock

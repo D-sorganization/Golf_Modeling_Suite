@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Comprehensive unit tests for humanoid_character_builder.core.anthropometry.
 
@@ -12,7 +13,6 @@ Tests cover:
 - Segment name mapping
 """
 
-from __future__ import annotations
 
 import pytest
 from humanoid_character_builder.core.anthropometry import (

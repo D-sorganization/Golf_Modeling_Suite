@@ -1,9 +1,9 @@
+from __future__ import annotations
 """DbC runtime contract tests for analysis.basic_stats module.
 
 Verifies require() and ensure() contracts on BasicStatsMixin.
 """
 
-from __future__ import annotations
 
 import unittest
 

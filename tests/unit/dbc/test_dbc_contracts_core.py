@@ -1,3 +1,4 @@
+from __future__ import annotations
 """DbC tests for the core contracts module itself.
 
 Validates that the contracts infrastructure works correctly:
@@ -10,7 +11,6 @@ Validates that the contracts infrastructure works correctly:
 - require_state decorator works
 """
 
-from __future__ import annotations
 
 import os
 import unittest

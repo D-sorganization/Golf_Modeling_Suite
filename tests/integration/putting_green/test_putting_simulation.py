@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Integration tests for Putting Green Simulation.
 
 These tests verify that all components work together correctly:
@@ -7,7 +8,6 @@ These tests verify that all components work together correctly:
 - Full simulation end-to-end
 """
 
-from __future__ import annotations
 
 import json
 import tempfile

@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Unit tests for conventional external provider onboarding metadata."""
 
-from __future__ import annotations
 
 import os
 from pathlib import Path

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for src/shared/python/pendulum_simulator/physics.py.
 
 Tests cover PendulumParams, JointLimits, TorqueClamp, JointLimitsNDOF and all
@@ -9,7 +10,6 @@ total_energy).
 All tests are headless-safe and require only numpy (no Rust extension).
 """
 
-from __future__ import annotations
 
 import math
 

@@ -1,9 +1,9 @@
+from __future__ import annotations
 """Property-based tests for core mathematical operations.
 
 Uses hypothesis to verify mathematical invariants hold for arbitrary inputs.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for src.shared.python.physics.topography module.
 
 Covers:
@@ -12,7 +13,6 @@ Covers:
 - save_to_file / from_file round-trip (npy, csv, json)
 """
 
-from __future__ import annotations
 
 import math
 from pathlib import Path

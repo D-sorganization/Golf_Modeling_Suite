@@ -1,3 +1,4 @@
+from __future__ import annotations
 """TDD tests for upstream-physics Rust Python bindings.
 
 Validates that the PyO3-wrapped physics kernels provide correct
@@ -9,7 +10,6 @@ Principles:
 - DRY: Uses the same upstream_physics import downstream code will use.
 """
 
-from __future__ import annotations
 
 import pytest
 

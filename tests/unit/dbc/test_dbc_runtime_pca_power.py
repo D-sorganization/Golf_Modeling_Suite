@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Runtime DbC tests for PCA analysis and power/work contracts.
 
 Tests contracts added to:
@@ -7,7 +8,6 @@ Tests contracts added to:
   duration >= 0, path length >= 0
 """
 
-from __future__ import annotations
 
 import unittest
 from unittest.mock import MagicMock

@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Extended tests for src.shared.python.core.datetime_utils module.
 
 Covers time calculations (time_ago, add_days, start_of_day, end_of_day, is_expired),
 additional parsing formats, format_duration edge cases, and format_datetime error paths.
 """
 
-from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 

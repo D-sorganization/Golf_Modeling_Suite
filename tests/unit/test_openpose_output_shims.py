@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Importability tests for openpose_estimator and output_manager shims (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 from src.shared.python.output_manager import OutputFormat, OutputManager
 from src.shared.python.pose_estimation.openpose_estimator import OpenPoseEstimator

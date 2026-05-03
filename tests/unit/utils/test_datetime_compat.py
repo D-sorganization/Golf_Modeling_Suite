@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.api.utils.datetime_compat module."""
 
-from __future__ import annotations
 
 from datetime import datetime, timedelta
 

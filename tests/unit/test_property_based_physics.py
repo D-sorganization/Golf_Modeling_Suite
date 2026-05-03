@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Property-based tests for physics, dynamics, and planning modules.
 
 Uses the hypothesis library to verify invariants and mathematical properties
 that must hold across a wide range of randomly generated inputs.
 """
 
-from __future__ import annotations
 
 import math
 

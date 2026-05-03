@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.upstream_drift_tools.data_processing.core (Issues #1949, #1744, #2065)."""
 
-from __future__ import annotations
 
 import pandas as pd
 import pytest

@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Tests for chat WebSocket and REST endpoints.
 
 Uses FastAPI TestClient to verify the WebSocket protocol
 and REST fallback endpoints.
 """
 
-from __future__ import annotations
 
 from collections.abc import AsyncGenerator
 from unittest.mock import MagicMock

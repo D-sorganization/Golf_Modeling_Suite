@@ -1,10 +1,10 @@
+from __future__ import annotations
 """TDD tests for PlotSpec Pydantic contract hierarchy.
 
 Tests serialization roundtrips, field validation, defaults,
 and JSON schema generation for all spec types.
 """
 
-from __future__ import annotations
 
 import json
 

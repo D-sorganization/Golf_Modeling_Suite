@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.security.subprocess_utils (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import subprocess
 import sys

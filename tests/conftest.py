@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Shared fixtures and utilities for the Golf Modeling Suite test suite.
 
 This module centralizes common setup logic to improve test orthogonality
 and adherence to the DRY principle.
 """
 
-from __future__ import annotations
 
 import os
 import sys
@@ -40,10 +40,12 @@ def pytest_configure(config: pytest.Config) -> None:
 
     # Clean existing occurrences to enforce determinism (case-insensitive on Windows)
     clean_path = []
+    vendored_root = str((root_dir / "vendor/ud-tools").resolve())
+    
     for p in sys.path:
         try:
             resolved_p = str(Path(p).resolve()).lower()
-            if resolved_p not in (local_path.lower(), vendored_path.lower()):
+            if resolved_p not in (local_path.lower(), vendored_path.lower(), vendored_root.lower()):
                 clean_path.append(p)
         except Exception as e:  # noqa: BLE001, F841
             clean_path.append(p)
@@ -52,11 +54,13 @@ def pytest_configure(config: pytest.Config) -> None:
     if mode == "vendored":
         # Force vendored tools to have precedence
         sys.path.insert(0, vendored_path)
+        sys.path.insert(1, vendored_root)
         sys.path.append(local_path)
     else:
         # Force local shared codebase to have precedence
         sys.path.insert(0, local_path)
         sys.path.append(vendored_path)
+        sys.path.append(vendored_root)
 
     # Prevent dual-loading of shared contracts module under different path aliases.
     # With both '.' and 'src/shared/python' in sys.path, 'contracts' can be

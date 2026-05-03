@@ -1,9 +1,9 @@
+from __future__ import annotations
 """Comprehensive tests for src.shared.python.core.error_decorators module.
 
 Tests all decorators, context managers, and utility functions for error handling.
 """
 
-from __future__ import annotations
 
 import logging
 

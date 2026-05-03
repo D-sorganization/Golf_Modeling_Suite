@@ -1,9 +1,9 @@
+from __future__ import annotations
 """Contract tests for #2456: text_editor.py split.
 
 Tests run red before the split and green after.
 """
 
-from __future__ import annotations
 
 from pathlib import Path
 

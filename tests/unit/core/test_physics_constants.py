@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.core.physics_constants (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import math
 

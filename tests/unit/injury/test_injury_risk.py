@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.injury.injury_risk module."""
 
-from __future__ import annotations
 
 from src.shared.python.injury.injury_risk import (
     InjuryRiskReport,

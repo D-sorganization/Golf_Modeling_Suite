@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Extended unit tests for SteamCalculationEngine — complementing test_steam_engine.py.
 
 Covers methods not exercised by the basic import/init tests:
@@ -12,7 +13,6 @@ Covers methods not exercised by the basic import/init tests:
 All tests use the simplified calculation path (no CoolProp / Cantera required).
 """
 
-from __future__ import annotations
 
 import pytest
 

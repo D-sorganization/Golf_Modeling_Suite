@@ -1,3 +1,4 @@
+from __future__ import annotations
 """TDD Tests for Data Explorer Application.
 
 Tests the data explorer's dataset discovery, loading, and format
@@ -10,7 +11,6 @@ Tests:
     4. CSV/JSON parsing — extract column headers and keys
 """
 
-from __future__ import annotations
 
 import json
 from pathlib import Path

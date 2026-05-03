@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.ai.rag.simple_rag (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 from pathlib import Path
 

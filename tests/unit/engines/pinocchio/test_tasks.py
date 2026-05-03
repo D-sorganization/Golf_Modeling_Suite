@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for Pinocchio IK task creation."""
 
-from __future__ import annotations
 
 import sys
 from collections.abc import Generator

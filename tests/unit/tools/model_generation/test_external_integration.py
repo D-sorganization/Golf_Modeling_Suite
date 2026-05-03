@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Tests for external integration improvements.
 
@@ -8,7 +9,6 @@ Covers:
 - Model cache integrity verification
 """
 
-from __future__ import annotations
 
 import json
 import tempfile

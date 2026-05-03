@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Performance benchmark tests for establishing baseline metrics.
 
 These tests use pytest-benchmark to track performance over time.
 Run with: pytest tests/benchmarks/ -m benchmark --benchmark-autosave
 """
 
-from __future__ import annotations
 
 import math
 

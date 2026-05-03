@@ -1,3 +1,4 @@
+from __future__ import annotations
 """TDD tests for build_hooks.py and install.sh contracts (issue #2496).
 
 Two bugs:
@@ -9,7 +10,6 @@ Two bugs:
    clone the repo first or install from a remote URL.
 """
 
-from __future__ import annotations
 
 from pathlib import Path
 

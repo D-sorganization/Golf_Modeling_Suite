@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Test suite for MuJoCo dependency verification.
 
 Ensures that the MuJoCo physics engine environment is correctly configured
 and that all required libraries are importable and functional.
 """
 
-from __future__ import annotations
 
 import importlib
 import importlib.util

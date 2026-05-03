@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for the pip-audit waiver helper."""
 
-from __future__ import annotations
 
 import importlib.util
 import sys

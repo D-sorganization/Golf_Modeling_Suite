@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for DrakePerturbationAnalyzer (#1979).
 
 Tests are split into two groups:
@@ -11,7 +12,6 @@ Design by Contract
 - Post: extract_metrics() returns all MANDATORY_METRICS for valid DrakeSimResult.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

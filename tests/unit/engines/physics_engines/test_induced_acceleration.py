@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for Induced Acceleration Analysis across all physics engines."""
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

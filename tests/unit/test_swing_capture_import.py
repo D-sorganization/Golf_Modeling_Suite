@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for the Golf Swing Capture Import module.
 
 Tests import from CSV, JSON, and C3D formats, marker-to-joint conversion,
@@ -6,7 +7,6 @@ swing phase detection, and RL trajectory export.
 Follows TDD and Design by Contract principles.
 """
 
-from __future__ import annotations
 
 import json
 import tempfile

@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.injury.joint_stress (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import numpy as np
 from src.shared.python.injury.joint_stress import (

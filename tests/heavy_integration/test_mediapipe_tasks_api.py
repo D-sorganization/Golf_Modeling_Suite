@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Heavy integration tests for MediaPipe Tasks API (fixes #1987).
 
 Tests both the legacy mp.solutions.pose and the newer mp.tasks API
@@ -5,7 +6,6 @@ Tests both the legacy mp.solutions.pose and the newer mp.tasks API
 All tests skip gracefully when mediapipe is not installed.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

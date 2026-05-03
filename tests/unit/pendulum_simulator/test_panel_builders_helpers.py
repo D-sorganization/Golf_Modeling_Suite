@@ -1,13 +1,24 @@
+from __future__ import annotations
 """Tests for pendulum GUI panel builder helpers."""
 
-from __future__ import annotations
 
 import math
 import sys
+import os
 from types import ModuleType
 
 import numpy as np
 import pytest
+
+def _should_skip_gui_import() -> bool:
+    if os.environ.get("HEADLESS_CI") == "1":
+        return True
+    if any("pytest" in arg for arg in sys.argv) and not os.environ.get("FORCE_GUI_TESTS"):
+        return True
+    return False
+
+if _should_skip_gui_import():
+    pytest.skip("Skipping GUI tests in headless mode", allow_module_level=True)
 
 pytest.importorskip("PyQt6")
 
@@ -115,6 +126,7 @@ _saved_modules: dict[str, ModuleType | None] = {
 
 _install_fake_simulation_modules()
 _install_fake_perturbation_modules()
+
 
 try:
     from src.shared.python.pendulum_simulator.gui import panel_builders  # noqa: E402

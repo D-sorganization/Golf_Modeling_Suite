@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for database migration tooling.
 
 Verifies that:
@@ -12,7 +13,6 @@ Verifies that:
 Issue #2078: Add database migration tooling.
 """
 
-from __future__ import annotations
 
 import importlib
 from pathlib import Path

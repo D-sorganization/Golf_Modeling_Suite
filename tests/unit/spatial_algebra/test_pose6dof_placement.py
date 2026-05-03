@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Unit tests for 6DOF positioning module.
 
@@ -5,7 +6,6 @@ Tests for Pose6DOF, Transform6DOF, and EntityPlacement classes
 following TDD principles - tests written first.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

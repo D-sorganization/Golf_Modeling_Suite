@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Parity tests: Python ball_flight_physics vs Rust tools-core ball_flight.
 
 These tests generate reference trajectories from the Python simulator,
@@ -10,7 +11,6 @@ Principles:
 - DRY: Both implementations derive from the same canonical physics model.
 """
 
-from __future__ import annotations
 
 import json
 import logging

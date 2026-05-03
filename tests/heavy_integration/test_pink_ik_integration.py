@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Heavy Integration Contracts — Pink IK Solver
 =============================================
@@ -8,7 +9,6 @@ Contract: Pink inverse kinematics solver can build tasks and solve IK
 for a simple Pinocchio model.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

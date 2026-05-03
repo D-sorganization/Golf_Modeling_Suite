@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Tests for common export interfaces (Issue #1176).
 
 Validates the VideoConfig, VideoExportProtocol, DatasetExporter,
 and DatasetRecord classes in src/engines/common/export.py.
 """
 
-from __future__ import annotations
 
 from pathlib import Path
 

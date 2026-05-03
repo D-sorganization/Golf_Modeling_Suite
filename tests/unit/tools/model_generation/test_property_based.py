@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Hypothesis property-based tests for URDF model generation.
 
@@ -10,7 +11,6 @@ References:
   - GitHub issue #1694 (Hypothesis property-based tests)
 """
 
-from __future__ import annotations
 
 import defusedxml.ElementTree as DefusedET  # noqa: S314  # Security: defusedxml prevents XML attacks
 from hypothesis import HealthCheck, given, settings

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Heavy integration tests for humanoid character builder mesh pipeline (fixes #1993).
 
 Tests MeshProcessor, mesh loading/export, and inertia calculation using
@@ -5,7 +6,6 @@ the project's humanoid_character_builder package. All tests skip gracefully
 when trimesh or other optional dependencies are unavailable.
 """
 
-from __future__ import annotations
 
 import tempfile
 from pathlib import Path

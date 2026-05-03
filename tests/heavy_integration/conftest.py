@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 tests/heavy_integration/conftest.py
 ====================================
@@ -6,7 +7,6 @@ These fixtures are live_simulation-safe: they set up headless
 display, temp directories, and shared expensive resources.
 """
 
-from __future__ import annotations
 
 import os
 import tempfile

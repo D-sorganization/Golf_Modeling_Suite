@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for CrossEnginePerturbationRunner (#1983).
 
 Tests cover:
@@ -14,7 +15,6 @@ Design by Contract
 - Post: compute_consistency() returns one entry per shared metric with >= 2 engines.
 """
 
-from __future__ import annotations
 
 import pytest
 from src.shared.python.perturbation.config import (

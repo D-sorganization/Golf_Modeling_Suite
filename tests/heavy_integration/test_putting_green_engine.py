@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Heavy Integration Contracts — Putting Green Engine
 ====================================================
@@ -8,7 +9,6 @@ Contract: The putting green physics engine simulates ball rolling,
 putter strokes, and produces deterministic trajectories.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

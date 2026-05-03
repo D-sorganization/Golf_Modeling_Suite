@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Helpers for performance regression detection.
 
 This module provides a tiny dependency-free harness for measuring the
@@ -10,7 +11,6 @@ The intent is *regression detection* (catch a 5x slowdown), not micro-
 benchmarking; for fine-grained measurement use pytest-benchmark.
 """
 
-from __future__ import annotations
 
 import json
 import statistics

@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.validation_pkg.validation_helpers (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import warnings
 

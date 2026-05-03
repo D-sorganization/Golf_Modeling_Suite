@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Tests for manipulability and Jacobian conditioning module.
 
 Tests the Jacobian condition number monitoring and manipulability analysis
 that implements Guideline C2 for singularity detection.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

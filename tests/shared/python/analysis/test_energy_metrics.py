@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for analysis.energy_metrics module.
 
 Validates EnergyMetricsMixin.compute_energy_metrics() using a minimal
@@ -5,7 +6,6 @@ stub object. Tests cover precondition enforcement, metric correctness,
 optional club_head_speed path, and postcondition guarantees.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

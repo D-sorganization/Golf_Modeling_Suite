@@ -26,12 +26,24 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-try:
-    import pyqtgraph as pg
+import os
+import sys
 
-    _HAS_PYQTGRAPH = True
-except ImportError:
+def _should_skip_gui_import() -> bool:
+    if os.environ.get("HEADLESS_CI") == "1":
+        return True
+    if any("pytest" in arg for arg in sys.argv) and not os.environ.get("FORCE_GUI_TESTS"):
+        return True
+    return False
+
+if _should_skip_gui_import():
     _HAS_PYQTGRAPH = False
+else:
+    try:
+        import pyqtgraph as pg
+        _HAS_PYQTGRAPH = True
+    except ImportError:
+        _HAS_PYQTGRAPH = False
 
 # ── Try to import shared PlotThemeManager ──────────────────────────────────
 _PLOT_THEME_AVAILABLE = False

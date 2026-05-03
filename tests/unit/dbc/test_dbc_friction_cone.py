@@ -1,3 +1,4 @@
+from __future__ import annotations
 """DbC tests for friction cone and contact dynamics (robotics).
 
 Validates that:
@@ -9,7 +10,6 @@ Validates that:
 - compute_friction_cone_constraint returns valid structure
 """
 
-from __future__ import annotations
 
 import os
 import unittest

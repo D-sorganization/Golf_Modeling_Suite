@@ -1,3 +1,4 @@
+from __future__ import annotations
 """TDD tests for Simscape app false-success reports (issue #2490).
 
 Four bugs:
@@ -7,7 +8,6 @@ Four bugs:
 4. 3D run_all.m claims to run the Golf Model pipeline but runs a hand-coded Euler projectile.
 """
 
-from __future__ import annotations
 
 from pathlib import Path
 

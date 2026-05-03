@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for the engine plugin registry and discovery system.
 
 TDD: These tests define the contract for the plugin registry before
@@ -8,7 +9,6 @@ implementation. They cover:
 - Plugin metadata
 """
 
-from __future__ import annotations
 
 import threading
 from typing import Any

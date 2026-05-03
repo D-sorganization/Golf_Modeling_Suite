@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for plot_theme.manager, plot_theme.themes, and plot_theme.integration (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import pytest
 from src.shared.python.plot_theme.manager import (

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Tests for Design by Contract (DbC) decorators on FrankensteinEditor,
 ClipboardMixin, HumanoidURDFGenerator, and BaseURDFBuilder.
@@ -7,7 +8,6 @@ and raise PreconditionError / ContractViolationError for invalid inputs,
 while valid inputs still work correctly.
 """
 
-from __future__ import annotations
 
 import os
 from typing import Any

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """TDD tests for simulation WebSocket route fixes (issue #2481).
 
 Bugs covered:
@@ -12,7 +13,6 @@ Unit tests use helper functions extracted from simulation_ws and do NOT require
 httpx. Integration tests (TestClient) are skipped when httpx is not installed.
 """
 
-from __future__ import annotations
 
 import json
 from unittest.mock import MagicMock

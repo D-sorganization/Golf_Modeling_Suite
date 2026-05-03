@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for SupportPolygon.distance_to_edge scalar-math optimisation.
 
 Covers: projection before segment, projection after segment, projection onto
@@ -5,7 +6,6 @@ segment interior, degenerate (zero-length) edge, and a point outside the
 polygon (should return -1.0).
 """
 
-from __future__ import annotations
 
 import math
 

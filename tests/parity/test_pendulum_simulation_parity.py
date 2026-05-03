@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Pendulum simulation parity tests.
 
 Verifies that the pendulum physics engine produces consistent results
@@ -7,7 +8,6 @@ Test vectors use the double-pendulum model which is deterministic
 (no stochastic elements) and pure Python (no external dependencies).
 """
 
-from __future__ import annotations
 
 import math
 

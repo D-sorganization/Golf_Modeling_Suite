@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Runtime DbC tests for swing_metrics and phase_detection contracts.
 
 Tests contracts added to:
@@ -6,7 +7,6 @@ Tests contracts added to:
 - PhaseDetectionMixin: phase durations non-negative, start <= end
 """
 
-from __future__ import annotations
 
 import unittest
 from unittest.mock import MagicMock

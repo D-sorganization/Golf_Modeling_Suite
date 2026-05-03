@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for the output manager."""
 
-from __future__ import annotations
 
 import os
 from datetime import datetime, timedelta

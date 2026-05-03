@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Extended tests for src.shared.python.core.error_utils module.
 
 Covers all error classes, format factories, and helper functions not covered
 by the existing test_error_utils.py.
 """
 
-from __future__ import annotations
 
 import logging
 from pathlib import Path

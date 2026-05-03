@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for the Control Interface module.
 
 Tests control strategy management, torque application, gain configuration,
@@ -6,7 +7,6 @@ and feature registry.
 Follows TDD and Design by Contract principles.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Tests for src.shared.python.contracts (Issues #1949, #1744).
 
 Note: Tests for src.shared.python.core.contracts are in tests/unit/dbc/.
 This file tests the outer src.shared.python.contracts module.
 """
 
-from __future__ import annotations
 
 from collections.abc import Generator
 

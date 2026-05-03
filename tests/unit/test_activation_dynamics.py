@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Tests for activation dynamics module.
 
 Tests the neural excitation to muscle activation dynamics modeling,
 including first-order differential equations with asymmetric time constants.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

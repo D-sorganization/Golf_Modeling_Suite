@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Regression tests for double-pendulum mass matrix formula (issue #2498).
 
 These tests pin down the *correct* mass matrix values for the default
@@ -17,7 +18,6 @@ Reference formula (Spong et al., "Robot Modeling and Control"):
     m22 = I2
 """
 
-from __future__ import annotations
 
 import math
 

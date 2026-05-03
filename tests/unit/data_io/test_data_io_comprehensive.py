@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Comprehensive tests for src.shared.python.data_io package.
 
 Covers common_utils (convert_units, normalize_z_score, standardize_joint_angles,
@@ -5,7 +6,6 @@ CONVERSION_FACTORS), path_utils (get_repo_root, ensure_directory, find_file_in_p
 get_relative_path), and reproducibility (set_seeds, get_rng, log_execution_time).
 """
 
-from __future__ import annotations
 
 import random
 import time

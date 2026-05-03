@@ -1,9 +1,9 @@
+from __future__ import annotations
 """Tests for Ground Reaction Force Analysis.
 
 Guideline E5 implementation tests.
 """
 
-from __future__ import annotations
 
 from unittest.mock import MagicMock
 

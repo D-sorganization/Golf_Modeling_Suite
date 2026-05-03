@@ -1,3 +1,18 @@
+
+import os
+import sys
+
+def _should_skip_gui_import() -> bool:
+    if os.environ.get("HEADLESS_CI") == "1":
+        return True
+    if any("pytest" in arg for arg in sys.argv) and not os.environ.get("FORCE_GUI_TESTS"):
+        return True
+    return False
+
+if _should_skip_gui_import():
+    import pytest
+    pytest.skip("Skipping GUI tests in headless mode", allow_module_level=True)
+
 """Integration tests for C3D workflow: Ingest -> Analysis -> GUI.
 
 TEST-004: Added @pytest.mark.integration markers for test categorization.
@@ -12,7 +27,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from src.shared.python.engine_core.engine_availability import PYQT6_AVAILABLE
-from src.shared.python.gui_pkg.gui_utils import get_qapp
+
 
 # Mark all tests in this file as integration tests
 pytestmark: list[pytest.MarkDecorator] = [pytest.mark.integration]
@@ -153,6 +168,7 @@ def test_export_workflow(mock_c3d_file, mock_ezc3d, tmp_path) -> None:
 def qapp() -> Generator[Any, None, None]:
     """Manage a single QApplication instance for the test session."""
 
+    from src.shared.python.gui_pkg.gui_utils import get_qapp
     app = get_qapp()
     yield app
 

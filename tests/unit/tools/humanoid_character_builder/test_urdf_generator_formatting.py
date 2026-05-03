@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Tests for URDF XML formatting behavior.
 
@@ -6,7 +7,6 @@ Verifies that the pretty-print path does NOT inject an XML declaration
 generates valid XML that can be round-tripped through ElementTree.
 """
 
-from __future__ import annotations
 
 import defusedxml.ElementTree as DefusedET  # noqa: S314  # Security: defusedxml prevents XML attacks
 import pytest

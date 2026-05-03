@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Unit tests for kinematic sequence analysis."""
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

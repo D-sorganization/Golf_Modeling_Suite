@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Regression tests to ensure all examples produce expected output.
 
 This module verifies that:
@@ -6,7 +7,6 @@ This module verifies that:
 - Output examples contain expected unit suffixes (m, yd, N, kg, s, etc.)
 """
 
-from __future__ import annotations
 
 import os
 import subprocess

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for motion planning module.
 
 Tests cover:
@@ -7,7 +8,6 @@ Tests cover:
 - Path validation and collision checking integration
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

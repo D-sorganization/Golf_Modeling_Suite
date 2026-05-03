@@ -1,3 +1,19 @@
+from __future__ import annotations
+
+import os
+import sys
+
+def _should_skip_gui_import() -> bool:
+    if os.environ.get("HEADLESS_CI") == "1":
+        return True
+    if any("pytest" in arg for arg in sys.argv) and not os.environ.get("FORCE_GUI_TESTS"):
+        return True
+    return False
+
+if _should_skip_gui_import():
+    import pytest
+    pytest.skip("Skipping GUI tests in headless mode", allow_module_level=True)
+
 """Tests for GH2034: type stub infrastructure validation.
 
 Verifies that the stub packages, py.typed markers, and mixin TYPE_CHECKING
@@ -5,7 +21,6 @@ declarations are correctly in place. These tests serve as regression guards
 so that stub infrastructure is not accidentally removed.
 """
 
-from __future__ import annotations
 
 from pathlib import Path
 

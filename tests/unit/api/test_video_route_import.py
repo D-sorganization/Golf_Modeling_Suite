@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for video route optional-dependency graceful fallback (issue #2466).
 
 Verifies that src.api.routes.video has the `_VIDEO_DEPS_AVAILABLE` guard so
@@ -5,7 +6,6 @@ route_registry does not silently drop the video surface when the optional
 video-pose-pipeline package is unavailable.
 """
 
-from __future__ import annotations
 
 
 class TestVideoRouteImportFallback:

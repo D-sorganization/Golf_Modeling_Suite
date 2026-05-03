@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Cross-engine terrain integration tests.
 
 Tests that terrain features work consistently across all physics engines.
 Follows Pragmatic Programmer principles for orthogonal, well-tested code.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

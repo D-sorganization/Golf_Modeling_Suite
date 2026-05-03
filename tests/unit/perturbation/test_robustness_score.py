@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.perturbation.robustness_score (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import pytest
 from src.shared.python.perturbation.robustness_score import compute_robustness_score

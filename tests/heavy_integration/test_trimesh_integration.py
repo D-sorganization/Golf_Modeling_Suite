@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Heavy Integration Contracts — Trimesh
 ======================================
@@ -8,7 +9,6 @@ Contract: Trimesh can create meshes, compute inertia properties, perform
 boolean operations, and export — as used by the humanoid character builder.
 """
 
-from __future__ import annotations
 
 import tempfile
 from pathlib import Path

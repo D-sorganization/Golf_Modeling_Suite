@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for engine_loaders module (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 from src.shared.python.engine_loaders import LOADER_MAP
 

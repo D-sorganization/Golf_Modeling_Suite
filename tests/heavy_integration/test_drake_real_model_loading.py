@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Heavy integration tests for Drake real model loading (fixes #1985).
 
 When Drake IS installed in the heavy Docker image, these tests exercise actual
@@ -7,7 +8,6 @@ test_phase1_drake_integration.py belong in unit tests (tracked separately).
 All tests skip gracefully when Drake is unavailable.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

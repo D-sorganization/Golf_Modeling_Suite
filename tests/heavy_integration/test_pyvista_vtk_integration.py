@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Heavy Integration Contracts — PyVista / VTK
 =============================================
@@ -8,7 +9,6 @@ Contract: PyVista and VTK can create 3D meshes, perform operations,
 and render offscreen without crashing.
 """
 
-from __future__ import annotations
 
 import pytest
 

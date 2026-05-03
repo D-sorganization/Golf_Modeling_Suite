@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for plot_engine.specs, plot_engine.trendline, and plot_engine.protocols (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import numpy as np
 from src.shared.python.plot_engine.specs import (

@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for exceptions and core._core modules (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import pytest
 from src.shared.python.exceptions import EngineNotFoundError, GolfModelingError

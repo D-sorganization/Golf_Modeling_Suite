@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for sensing module.
 
 Tests cover:
@@ -6,7 +7,6 @@ Tests cover:
     - IMU sensor simulation
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

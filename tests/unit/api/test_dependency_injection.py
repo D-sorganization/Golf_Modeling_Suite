@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for Phase 3: Complete API dependency injection migration.
 
 Verifies that:
@@ -7,7 +8,6 @@ Verifies that:
 4. The server startup no longer calls configure() on any route module
 """
 
-from __future__ import annotations
 
 import ast
 import importlib

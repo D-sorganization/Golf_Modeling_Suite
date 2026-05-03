@@ -1,3 +1,4 @@
+from __future__ import annotations
 """TDD tests for issues #1783 and #1774.
 
 Issue #1783: Bare ``pass`` exception handlers in API routes swallow errors silently.
@@ -8,7 +9,6 @@ Issue #1774: Missing DbC preconditions on AerodynamicsEngine.
   - compute_acceleration() mass > 0 (already implemented; regression test only).
 """
 
-from __future__ import annotations
 
 import logging
 from unittest.mock import MagicMock

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """TDD Tests for Launcher API Parity.
 
 Tests that the /api/launcher/* endpoints serve the manifest correctly,
@@ -14,7 +15,6 @@ Tests:
     7. Response format matches what React frontend expects
 """
 
-from __future__ import annotations
 
 import pytest
 

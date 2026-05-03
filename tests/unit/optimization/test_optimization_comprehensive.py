@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Comprehensive unit tests for the optimization package.
 
 Tests cover:
@@ -10,7 +11,6 @@ Tests cover:
   trajectory conversion, bounds, constraints, objectives, and metrics
 """
 
-from __future__ import annotations
 
 import math
 

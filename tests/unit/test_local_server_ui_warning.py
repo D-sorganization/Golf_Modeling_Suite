@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for local server UI diagnostics and API versioning (#2070)."""
 
-from __future__ import annotations
 
 import logging
 from pathlib import Path

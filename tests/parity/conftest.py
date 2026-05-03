@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Parity test fixtures.
 
 Provides FastAPI test client and physics engine fixtures for
 engine-vs-API consistency testing.
 """
 
-from __future__ import annotations
 
 from collections.abc import Generator
 from typing import Any

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Contract tests: enforce <= 50-LOC function-size budget on nominated functions.
 
@@ -6,7 +7,6 @@ They serve as regression gates: if a function grows beyond the budget the test
 turns red immediately — before runtime or coverage issues surface.
 """
 
-from __future__ import annotations
 
 import ast
 from pathlib import Path

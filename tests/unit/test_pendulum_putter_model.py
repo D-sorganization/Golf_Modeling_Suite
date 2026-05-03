@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for PendulumPutterModel - TDD approach.
 
 Tests the Perfy-style pendulum putter model based on Dave Pelz's design.
@@ -10,7 +11,6 @@ Tests follow the Pragmatic Programmer principles:
 - Clear assertions with descriptive messages
 """
 
-from __future__ import annotations
 
 import math
 from pathlib import Path

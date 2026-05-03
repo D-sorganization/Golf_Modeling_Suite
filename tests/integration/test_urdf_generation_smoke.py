@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Integration smoke test: URDF generation and cross-engine load.
 
 Issue #2369 -- test(urdf): add cross-engine URDF generation and load smoke test.
@@ -10,7 +11,6 @@ Generates a humanoid URDF from default body parameters and verifies that:
 3. The output can be written to and read back from disk without corruption.
 """
 
-from __future__ import annotations
 
 import tempfile
 import xml.etree.ElementTree as ET  # stdlib for Element/SubElement

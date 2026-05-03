@@ -1,3 +1,4 @@
+from __future__ import annotations
 """TDD tests for 3D Simscape config/pipeline incompatibilities (issue #2489).
 
 Three bugs:
@@ -10,7 +11,6 @@ Three bugs:
    struct anyway — callers receive a config that cannot run.
 """
 
-from __future__ import annotations
 
 from pathlib import Path
 

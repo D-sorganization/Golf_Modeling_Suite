@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Cross-engine physics consistency tests (Issue #126).
 
 Verifies that physics engines produce consistent results for identical
@@ -10,7 +11,6 @@ Guideline references:
     P3 - Tolerance-based comparison
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

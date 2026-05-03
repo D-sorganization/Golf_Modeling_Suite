@@ -1,3 +1,4 @@
+from __future__ import annotations
 """DbC tests for impact model and ball flight physics.
 
 Validates that:
@@ -10,7 +11,6 @@ Validates that:
 - Impact produces finite results
 """
 
-from __future__ import annotations
 
 import os
 import unittest

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Tests for SE(3) transform composition in FrankensteinEditor.delete_link().
 
@@ -14,7 +15,6 @@ Fix: Compose SE(3) transforms properly:
     new_rotation = compose(parent_rpy, child_rpy)
 """
 
-from __future__ import annotations
 
 import math
 

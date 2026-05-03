@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.cors (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import os
 from unittest.mock import MagicMock, patch

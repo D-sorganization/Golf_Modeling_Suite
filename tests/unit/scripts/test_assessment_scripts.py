@@ -1,3 +1,4 @@
+from __future__ import annotations
 """TDD tests for assessment script bugs (issue #2497).
 
 Four bugs:
@@ -9,7 +10,6 @@ Four bugs:
 4. maintain_workflows.py __main__ block is a silent no-op (ends in `pass`).
 """
 
-from __future__ import annotations
 
 from pathlib import Path
 

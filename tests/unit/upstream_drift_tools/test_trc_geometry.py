@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.upstream_drift_tools.calculators.mechanical.trc_geometry (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import pytest
 from src.shared.python.upstream_drift_tools.calculators.mechanical.trc_geometry import (

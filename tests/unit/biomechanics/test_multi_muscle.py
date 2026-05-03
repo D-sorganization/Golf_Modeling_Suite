@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.biomechanics.multi_muscle (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import pytest
 from src.shared.python.biomechanics.hill_muscle import HillMuscleModel, MuscleParameters

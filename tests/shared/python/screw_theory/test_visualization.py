@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Tests for Screw Theory visualization utilities.
 
 Validates plot_screw_axis_3d using a mock matplotlib 3D axes to avoid
 requiring a display server.
 """
 
-from __future__ import annotations
 
 from unittest.mock import MagicMock
 

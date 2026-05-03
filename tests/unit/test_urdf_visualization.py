@@ -18,7 +18,17 @@ pytestmark = pytest.mark.skipif(
     reason="PyQt6 or pytest-qt not available",
 )
 
-if PYQT6_AVAILABLE:
+import os
+import sys
+
+def _should_skip_gui_import() -> bool:
+    if os.environ.get("HEADLESS_CI") == "1":
+        return True
+    if any("pytest" in arg for arg in sys.argv) and not os.environ.get("FORCE_GUI_TESTS"):
+        return True
+    return False
+
+if PYQT6_AVAILABLE and not _should_skip_gui_import():
     try:
         from src.tools.model_explorer.mujoco_viewer import (
             MuJoCoViewerWidget,

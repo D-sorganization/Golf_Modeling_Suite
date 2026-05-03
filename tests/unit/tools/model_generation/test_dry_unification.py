@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Tests for DRY unification: _HUMANOID_PRESETS module-level constant.
 
@@ -7,7 +8,6 @@ Verifies that:
 - The preset dict has exactly the expected keys and values
 """
 
-from __future__ import annotations
 
 import types
 from unittest.mock import MagicMock, patch

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for local server path traversal hardening (#2805).
 
 These tests verify that the local server's logo lookup and SPA static file
@@ -5,7 +6,6 @@ helpers refuse traversal, absolute paths, NUL bytes, and symlink escape so
 that callers cannot read files outside the intended asset/UI roots.
 """
 
-from __future__ import annotations
 
 import os
 from pathlib import Path

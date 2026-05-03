@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for the UpstreamDrift double pendulum model (DoublePendulumDynamics).
 
 Ported and extended from the Tools repository test suite.
@@ -14,7 +15,6 @@ Test Coverage
 - Physical parameter defaults
 """
 
-from __future__ import annotations
 
 import math
 

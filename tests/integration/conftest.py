@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Integration test configuration and shared fixtures.
 
 This conftest.py makes fixtures from tests/fixtures/fixtures_lib.py available
@@ -6,7 +7,6 @@ to all integration tests via pytest's automatic fixture discovery.
 
 # mypy: ignore-errors
 
-from __future__ import annotations
 
 from src.shared.python.data_io.path_utils import get_tests_root
 

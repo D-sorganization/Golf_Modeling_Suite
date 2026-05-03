@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Regression test for plot_engine test return annotations."""
 
-from __future__ import annotations
 
 import ast
 from pathlib import Path

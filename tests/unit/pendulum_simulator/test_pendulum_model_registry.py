@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.pendulum_simulator.model_registry (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import pytest
 from src.shared.python.pendulum_simulator.model_registry import (

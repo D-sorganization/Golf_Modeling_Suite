@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for imitation learning module."""
 
-from __future__ import annotations
 
 import tempfile
 from pathlib import Path

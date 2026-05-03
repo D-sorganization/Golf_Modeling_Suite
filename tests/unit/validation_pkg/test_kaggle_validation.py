@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.validation_pkg.kaggle_validation (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 import numpy as np
 import pandas as pd

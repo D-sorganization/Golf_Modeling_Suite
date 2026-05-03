@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Unit tests for SMPL-X and MakeHuman mesh generators.
 
@@ -8,7 +9,6 @@ packages.
 See issues #979 (MakeHuman) and #980 (SMPL-X).
 """
 
-from __future__ import annotations
 
 import json
 import textwrap

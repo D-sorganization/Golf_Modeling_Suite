@@ -1,9 +1,9 @@
+from __future__ import annotations
 """Unit tests for mesh loading system.
 
 TDD tests for multi-format mesh loading (GLTF/GLB/FBX/OBJ).
 """
 
-from __future__ import annotations
 
 import json
 from pathlib import Path

@@ -1,9 +1,9 @@
+from __future__ import annotations
 """Tests for Left-Handed Player Support.
 
 Guideline B6 implementation tests.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

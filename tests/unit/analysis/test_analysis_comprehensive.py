@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Comprehensive tests for src.shared.python.analysis package.
 
 Tests the analysis mixin components directly by creating lightweight
@@ -7,7 +8,6 @@ Covers: basic_stats, energy_metrics, stability_metrics, angular_momentum,
 grf_metrics, pca_analysis, and swing_metrics.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

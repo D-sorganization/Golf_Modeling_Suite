@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Regression test for a bounded source-level return-annotation slice."""
 
-from __future__ import annotations
 
 import ast
 from pathlib import Path

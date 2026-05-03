@@ -1,9 +1,9 @@
+from __future__ import annotations
 """Tests for Reference Frame Transformations.
 
 Guideline E4 implementation tests.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

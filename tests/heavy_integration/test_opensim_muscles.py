@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for OpenSim integration (Section J).
 
 Verifies:
@@ -9,7 +10,6 @@ Verifies:
 Refactored to use shared engine availability module (DRY principle).
 """
 
-from __future__ import annotations
 
 from typing import Any
 

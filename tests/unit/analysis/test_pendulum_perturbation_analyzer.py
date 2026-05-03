@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Unit tests for PendulumPerturbationAnalyzer (#1977).
 
 Tests the reference implementation of the PerturbationAnalyzer protocol
@@ -10,7 +11,6 @@ Design by Contract
 - Post: extract_metrics() returns all MANDATORY_METRICS for valid sim results.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

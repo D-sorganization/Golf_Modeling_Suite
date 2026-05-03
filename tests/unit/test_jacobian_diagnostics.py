@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Tests for cross-engine Jacobian diagnostics (Issue #760).
 
 Validates JacobianDiagnostics, ConstraintDiagnostics, nullspace
 projection, cross-engine validation, and task-point diagnostics.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

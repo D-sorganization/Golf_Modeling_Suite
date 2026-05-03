@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.launcher_factory (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 

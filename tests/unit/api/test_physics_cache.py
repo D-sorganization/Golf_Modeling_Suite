@@ -1,10 +1,10 @@
+from __future__ import annotations
 """Tests for physics control-metadata cache invalidation (issue #2468).
 
 These tests do not require httpx/starlette testclient — they test the
 cache functions directly.
 """
 
-from __future__ import annotations
 
 from unittest.mock import MagicMock
 

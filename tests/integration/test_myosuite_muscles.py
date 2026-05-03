@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for MyoSuite integration (Section K).
 
 Verifies:
@@ -10,7 +11,6 @@ Verifies:
 Refactored to use shared engine availability module (DRY principle).
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

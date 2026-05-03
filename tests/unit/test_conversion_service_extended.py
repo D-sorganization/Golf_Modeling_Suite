@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Extended unit tests for UnitConversionService.
 
 Tests cover the full conversion API including:
@@ -14,7 +15,6 @@ Tests cover the full conversion API including:
 All tests are headless-safe with no heavy dependencies.
 """
 
-from __future__ import annotations
 
 import pytest
 

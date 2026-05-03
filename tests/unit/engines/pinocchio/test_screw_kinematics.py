@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for PinocchioScrewKinematics (Guideline C3 - Required).
 
 Pinocchio may not be installed in the test environment, so tests that
@@ -5,7 +6,6 @@ require the library are marked with ``pytest.importorskip``.  The
 availability guard and ``ImportError`` path are always tested.
 """
 
-from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 

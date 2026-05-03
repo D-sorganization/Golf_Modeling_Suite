@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Tests for API diagnostics module.
 
@@ -9,7 +10,6 @@ Tests cover:
 - Performance metrics
 """
 
-from __future__ import annotations
 
 import time
 from collections.abc import Generator

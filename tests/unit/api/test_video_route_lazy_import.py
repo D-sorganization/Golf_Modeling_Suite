@@ -1,3 +1,19 @@
+from __future__ import annotations
+
+import os
+import sys
+
+def _should_skip_gui_import() -> bool:
+    if os.environ.get("HEADLESS_CI") == "1":
+        return True
+    if any("pytest" in arg for arg in sys.argv) and not os.environ.get("FORCE_GUI_TESTS"):
+        return True
+    return False
+
+if _should_skip_gui_import():
+    import pytest
+    pytest.skip("Skipping GUI tests in headless mode", allow_module_level=True)
+
 """Regression tests for issue #2809: video route lazy import.
 
 The slim runtime image intentionally omits ``cv2`` and ``mediapipe``. Before
@@ -14,7 +30,6 @@ The contract these tests lock in:
    ``HTTPException`` with a clear, actionable message.
 """
 
-from __future__ import annotations
 
 import importlib
 import sys

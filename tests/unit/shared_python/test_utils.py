@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Test utilities for eliminating test code duplication.
 
 This module provides reusable test patterns and fixtures.
@@ -14,7 +15,6 @@ Usage:
         pass
 """
 
-from __future__ import annotations
 
 import tempfile
 from collections.abc import Callable

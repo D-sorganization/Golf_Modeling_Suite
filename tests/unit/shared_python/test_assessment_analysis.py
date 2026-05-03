@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Unit tests for shared/python/assessment/analysis.py and assessment/reporting.py."""
 
-from __future__ import annotations
 
 from pathlib import Path
 

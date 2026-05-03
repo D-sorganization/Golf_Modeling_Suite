@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Smoke tests for slowapi rate limiting on expensive API endpoints (#3508).
 
 These tests verify the wiring rather than the engines: a request inside the
@@ -6,7 +7,6 @@ should produce a 429 with a ``Retry-After`` header. Engine work is mocked so
 the tests can run on the unit lane without the full physics stack.
 """
 
-from __future__ import annotations
 
 import importlib
 

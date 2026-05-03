@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Runtime DbC tests for ActivationDynamics.
 
 Tests that the require()/ensure() contracts added to the source module
@@ -5,7 +6,6 @@ fire correctly at runtime — these are NOT just unit tests, they validate
 the *contract enforcement mechanism* itself.
 """
 
-from __future__ import annotations
 
 import unittest
 

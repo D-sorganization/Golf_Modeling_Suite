@@ -1,6 +1,6 @@
+from __future__ import annotations
 """Tests for src.shared.python.ai.glossary_data_core/extended (Issues #1949, #1744)."""
 
-from __future__ import annotations
 
 from src.shared.python.ai.glossary_data_core import get_core_entries
 

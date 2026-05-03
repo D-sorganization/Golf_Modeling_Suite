@@ -1,9 +1,9 @@
+from __future__ import annotations
 """Tests for Contact-Based Grip Model.
 
 Guideline K2 implementation tests.
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Runtime DbC tests for kinematic_sequence and swing_plane_analysis contracts.
 
 Tests contracts added to:
@@ -7,7 +8,6 @@ Tests contracts added to:
   ensure() unit normal, rmse >= 0, max_deviation >= 0, steepness in [0,180]
 """
 
-from __future__ import annotations
 
 import unittest
 
