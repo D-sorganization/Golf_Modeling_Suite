@@ -186,6 +186,12 @@ jobs:
       - name: Changed-File Size Budget Check
         run: python3 scripts/ci/check_file_size_budget.py
 
+      - name: Repo Root Clutter Check
+        run: python3 scripts/check_root_clutter.py
+
+      - name: SPEC Drift Check
+        run: python3 scripts/check_spec_paths.py
+
       - name: Agent Docs Consistency Check
         run: python3 scripts/check_agent_docs_consistency.py
 
@@ -226,6 +232,9 @@ jobs:
           # Force-reinstall sortedcontainers before pip-audit: the shared runner toolcache
           # can carry a half-installed sortedcontainers that makes cyclonedx (pip-audit dep) fail.
           python -m pip install --ignore-installed --no-deps "sortedcontainers>=2.4.0"
+          # Force a patched Black into the audit environment so pip-audit does not
+          # fail on a vulnerable formatter version lingering in the shared runner cache.
+          python -m pip install --ignore-installed --no-deps "black>=26.3.1"
           python -m pip install --ignore-installed pip-audit
 
           # Check that no waivers have expired before running pip-audit.
@@ -407,7 +416,7 @@ jobs:
             --cov-report=xml:coverage.xml \
             --cov-config=pyproject.toml \
 
-            --cov-fail-under=10 \
+            --cov-fail-under=45 \
             --tb=short \
             -v
 
