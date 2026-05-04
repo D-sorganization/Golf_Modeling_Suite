@@ -1,6 +1,6 @@
 # Stage 1: Builder — install all Python dependencies into an isolated venv
 # Base image pinned by digest for reproducible builds
-FROM python:3.12-slim@sha256:1c06ee4d6097075cbace4f13c2955852b2642ae0a3a481d0a3a4f9760b8f4a08 AS builder
+FROM python:3.12-slim@sha256:4386a385d81dba9f72ed72a6fe4237755d7f5440c84b417650f38336bbc43117 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PIP_NO_CACHE_DIR=1
@@ -60,7 +60,7 @@ RUN pip install \
 
 # Stage 2: Runtime — slim production image for the API server
 # Base image pinned by digest for reproducible builds
-FROM python:3.12-slim@sha256:1c06ee4d6097075cbace4f13c2955852b2642ae0a3a481d0a3a4f9760b8f4a08 AS runtime
+FROM python:3.12-slim@sha256:4386a385d81dba9f72ed72a6fe4237755d7f5440c84b417650f38336bbc43117 AS runtime
 
 ENV DEBIAN_FRONTEND=noninteractive
 
