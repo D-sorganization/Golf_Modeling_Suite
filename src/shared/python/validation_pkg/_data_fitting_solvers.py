@@ -8,8 +8,7 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
-from scipy import optimize, sparse
-from scipy.sparse.linalg import LinearOperator
+from scipy import optimize
 
 from src.shared.python.logging_pkg.logging_config import get_logger
 
@@ -161,18 +160,11 @@ class InverseKinematicsSolver:
         # Condition number from Jacobian
         try:
             jac = result.jac
-            if jac is None or isinstance(jac, LinearOperator):
-                cond = float("inf")
+            if jac is not None and getattr(jac, "size", 0) > 0:
+                s = np.linalg.svd(np.asarray(jac, dtype=np.float64), compute_uv=False)
+                cond = float(s[0] / s[-1]) if s[-1] > 1e-10 else float("inf")
             else:
-                jac_array = np.asarray(
-                    jac.toarray() if sparse.issparse(jac) else jac,
-                    dtype=float,
-                )
-                if jac_array.size > 0:
-                    s = np.linalg.svd(jac_array, compute_uv=False)
-                    cond = float(s[0] / s[-1]) if s[-1] > 1e-10 else float("inf")
-                else:
-                    cond = float("inf")
+                cond = float("inf")
         except (ValueError, TypeError, RuntimeError):
             cond = float("inf")
 
