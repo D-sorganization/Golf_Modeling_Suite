@@ -21,6 +21,9 @@ The companion club-control strategy is documented in `CONTROL_STRATEGY.md`.
 - `extract_dynamics_dataset.py` projects the 9 GB source parquet into a compact numeric parquet.
 - `extract_club_datasets.py` creates direct torque-to-club and body-to-club datasets.
 - `prepare_club_target_trajectory.py` converts the measured TW/GW workbook sheets into club target CSV files.
+- `slice_club_target.py` creates full-swing or downswing-only target trajectories.
+- `calibrate_club_target_to_sim.py` fits measured club coordinates into the Simscape club-log frame.
+- `compare_simulated_club_motion.py` reports target-vs-simulated club motion error and can write a comparison plot.
 - `create_reference_body_state.py` writes a seed body-state CSV for club inverse optimization.
 - `train_dynamics_surrogate.py` trains a PyTorch MLP on the reduced parquet.
 - `optimize_torque_sequence_for_club.py` optimizes a torque timeseries against a measured club target.
@@ -28,6 +31,9 @@ The companion club-control strategy is documented in `CONTROL_STRATEGY.md`.
 - `optimize_body_kinematics_for_club.py` starts the two-stage club-control phase by finding body kinematics that match a desired club state.
 - `export_torque_polynomials.py` converts optimized torque timeseries into MATLAB sixth-order polynomial coefficient MAT files.
 - `matlab/run_ml_polynomial_input_swing.m` loads those coefficients and runs `GolfSwing3D_Kinetic`.
+- `matlab/export_start_state_from_input_file.m` exports address or top-of-backswing start positions/velocities into a separate MAT file.
+- `matlab/export_simulated_club_csv.m` writes Simscape club-head logs to CSV for calibration and comparison.
+- `matlab/ml_workflow_gui.m` provides a GUI for the full workflow.
 - `CONTROL_STRATEGY.md` documents the one-stage and two-stage control approaches, commands, and current metrics.
 - `data/processed/` is the default generated-data output location.
 - `runs/` is the default model/checkpoint output location.
@@ -160,6 +166,17 @@ py -3.12 src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\pre
   --output src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\TW_ProV1_club_target.csv
 ```
 
+Create a scenario target. Use `full-swing` for the full measured motion or
+`downswing` when starting the model at the top of backswing:
+
+```powershell
+py -3.12 src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\slice_club_target.py `
+  --input-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\TW_ProV1_club_target.csv `
+  --output-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\TW_ProV1_downswing_club_target.csv `
+  --scenario downswing `
+  --reset-time
+```
+
 Extract the club surrogate datasets:
 
 ```powershell
@@ -229,10 +246,54 @@ Run MATLAB with those coefficients:
 
 ```matlab
 cd('C:\Users\diete\Repositories\UpstreamDrift\src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning')
-simOut = matlab.run_ml_polynomial_input_swing( ...
+addpath(fullfile(pwd, 'matlab'))
+export_start_state_from_input_file( ...
+    "downswing", ...
+    fullfile(pwd, 'data', 'processed', 'ml_downswing_start_state.mat'));
+simOut = run_ml_polynomial_input_swing( ...
     fullfile(pwd, 'data', 'processed', 'ml_torque_polynomial_inputs.mat'), ...
-    'GolfSwing3D_Kinetic');
+    'GolfSwing3D_Kinetic', ...
+    fullfile(pwd, 'data', 'processed', 'ml_downswing_start_state.mat'));
+export_simulated_club_csv( ...
+    simOut, ...
+    fullfile(pwd, 'data', 'processed', 'simulated_club_motion.csv'));
 ```
+
+Calibrate the measured target into the Simscape club-log frame after a baseline
+or replay simulation is available:
+
+```powershell
+py -3.12 src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\calibrate_club_target_to_sim.py `
+  --target-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\TW_ProV1_downswing_club_target.csv `
+  --sim-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\simulated_club_motion.csv `
+  --output-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\TW_ProV1_downswing_club_target_calibrated.csv `
+  --output-json src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\club_target_calibration.json
+```
+
+Compare the simulated motion to the calibrated desired target:
+
+```powershell
+py -3.12 src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\compare_simulated_club_motion.py `
+  --target-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\TW_ProV1_downswing_club_target_calibrated.csv `
+  --sim-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\simulated_club_motion.csv `
+  --output-json src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\club_motion_comparison.json `
+  --output-png src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\club_motion_comparison.png
+```
+
+## GUI Workflow
+
+Open the MATLAB GUI from the ML folder:
+
+```matlab
+cd('C:\Users\diete\Repositories\UpstreamDrift\src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning')
+addpath(fullfile(pwd, 'matlab'))
+ml_workflow_gui
+```
+
+The GUI exposes the same steps as the scripts: prepare target, slice full swing
+or downswing, calibrate target coordinates, export the scenario start state,
+optimize torques, export sixth-order polynomial inputs, run the Simscape model,
+and compare the generated club motion against the target.
 
 ## Expected Runtime
 

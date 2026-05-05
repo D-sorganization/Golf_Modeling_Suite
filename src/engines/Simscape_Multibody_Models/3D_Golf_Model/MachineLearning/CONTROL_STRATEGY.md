@@ -197,6 +197,79 @@ columns: sample, time, clubface_x, clubface_y, clubface_z, clubface_vx, clubface
 
 The workbook coordinates use the documented global coordinate system in the `Definitions` sheet. The current exporter keeps those measured coordinates as-is. Alignment from measured clubface coordinates to Simscape `ClubLogs_CHGlobal*` coordinates should be verified before using the target in closed-loop optimization.
 
+## Starting State Strategy
+
+The first smoke workflow used row 0 from `club_direct_dynamics.parquet` as the
+reference body state for torque optimization and otherwise relied on the model
+input file already loaded by the MATLAB model. That was enough to prove the
+polynomial input bridge, but it did not explicitly choose an address position.
+
+The start-state workflow is now explicit and separate from the polynomial torque
+inputs:
+
+```text
+start-state MAT file -> StartPosition/StartVelocity variables
+polynomial MAT file  -> sixth-order torque coefficient variables
+```
+
+Two scenarios are supported:
+
+- `full-swing`: exports start positions and velocities from `3DModelInputs.mat`.
+  Use this for an address-position workflow. This should be reviewed visually
+  against the measured motion-capture address before trusting the target match.
+- `downswing`: exports start positions and velocities from
+  `3DModelInputs_TopofBackswing.mat`. Use this when the current model start is
+  already a good end-of-backswing pose and the target is sliced to the downswing.
+
+Export a start state:
+
+```matlab
+cd('C:\Users\diete\Repositories\UpstreamDrift\src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning')
+addpath(fullfile(pwd, 'matlab'))
+export_start_state_from_input_file( ...
+    "downswing", ...
+    fullfile(pwd, 'data', 'processed', 'ml_downswing_start_state.mat'));
+```
+
+Run the model with both the start-state MAT and polynomial MAT:
+
+```matlab
+simOut = run_ml_polynomial_input_swing( ...
+    fullfile(pwd, 'data', 'processed', 'ml_torque_polynomial_inputs.mat'), ...
+    'GolfSwing3D_Kinetic', ...
+    fullfile(pwd, 'data', 'processed', 'ml_downswing_start_state.mat'));
+```
+
+This is deliberately not blended into the polynomial coefficient file. Starting
+pose and actuator forcing are different control surfaces in the Simscape model
+and should remain separately inspectable.
+
+## Coordinate Calibration
+
+The measured workbook club coordinates and the Simscape club-head logs can have
+different origin, scale, and axis orientation. The calibration script fits either
+a similarity transform or a full affine transform from measured clubface
+positions to Simscape `ClubLogs_CHGlobalPosition_*` positions:
+
+```powershell
+py -3.12 src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\calibrate_club_target_to_sim.py `
+  --target-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\TW_ProV1_downswing_club_target.csv `
+  --sim-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\simulated_club_motion.csv `
+  --output-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\TW_ProV1_downswing_club_target_calibrated.csv `
+  --output-json src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\club_target_calibration.json
+```
+
+Default `similarity` mode applies:
+
+```text
+club_sim = scale * club_measured * rotation + translation
+```
+
+Velocities and accelerations receive the linear part of the transform without
+the translation. The direct torque optimizer can now consume either workbook
+column names (`clubface_x`, `clubface_vx`, `clubface_ax`) or calibrated
+Simscape target column names (`ClubLogs_CHGlobalPosition_1`, etc.).
+
 ## One-Model Control Workflow
 
 Use the direct torque-to-club model:
@@ -251,14 +324,27 @@ Risks:
 
 ## Next Required Refinements
 
-Before applying optimized torques back into the MATLAB model, add these controls:
+Before relying on optimized torques in production model studies, add these controls:
 
-1. Coordinate alignment between the measured workbook target and Simscape club-head coordinates.
+1. Visual address-pose validation for `3DModelInputs.mat` against the motion-capture address frame.
 2. Bounds for actuator torque/force columns.
-3. Smoothness penalties across adjacent samples.
+3. Joint-specific smoothness and effort penalties across adjacent samples.
 4. A held-out swing split in addition to the current random row split.
-5. Closed-loop replay tests in MATLAB/Simscape.
+5. Closed-loop replay tests in MATLAB/Simscape for both full-swing and downswing scenarios.
 6. A sequence-level optimizer that solves the whole club trajectory instead of one timestep at a time.
+
+## MATLAB GUI
+
+`matlab/ml_workflow_gui.m` provides a step-by-step UI for the workflow:
+
+```matlab
+cd('C:\Users\diete\Repositories\UpstreamDrift\src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning')
+addpath(fullfile(pwd, 'matlab'))
+ml_workflow_gui
+```
+
+The GUI is intentionally thin. It calls the same Python and MATLAB scripts
+documented here so that every button has a reproducible command-line equivalent.
 
 ## MATLAB Polynomial Input Bridge
 
