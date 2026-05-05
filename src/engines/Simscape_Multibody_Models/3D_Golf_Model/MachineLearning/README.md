@@ -21,9 +21,13 @@ The companion club-control strategy is documented in `CONTROL_STRATEGY.md`.
 - `extract_dynamics_dataset.py` projects the 9 GB source parquet into a compact numeric parquet.
 - `extract_club_datasets.py` creates direct torque-to-club and body-to-club datasets.
 - `prepare_club_target_trajectory.py` converts the measured TW/GW workbook sheets into club target CSV files.
+- `create_reference_body_state.py` writes a seed body-state CSV for club inverse optimization.
 - `train_dynamics_surrogate.py` trains a PyTorch MLP on the reduced parquet.
+- `optimize_torque_sequence_for_club.py` optimizes a torque timeseries against a measured club target.
 - `optimize_torques_for_desired_kinematics.py` starts the inverse-control phase by optimizing torque inputs against the trained forward surrogate.
 - `optimize_body_kinematics_for_club.py` starts the two-stage club-control phase by finding body kinematics that match a desired club state.
+- `export_torque_polynomials.py` converts optimized torque timeseries into MATLAB sixth-order polynomial coefficient MAT files.
+- `matlab/run_ml_polynomial_input_swing.m` loads those coefficients and runs `GolfSwing3D_Kinetic`.
 - `CONTROL_STRATEGY.md` documents the one-stage and two-stage control approaches, commands, and current metrics.
 - `data/processed/` is the default generated-data output location.
 - `runs/` is the default model/checkpoint output location.
@@ -181,6 +185,53 @@ py -3.12 src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\tra
   --output-dir src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\runs\body_to_club_10_cpu `
   --epochs 10 `
   --batch-size 8192
+```
+
+## Torque Polynomial Export For MATLAB
+
+The Simscape model already uses sixth-order polynomial input functions:
+
+```text
+A*x^6 + B*x^5 + C*x^4 + D*x^3 + E*x^2 + F*x + G
+```
+
+The ML bridge optimizes a torque timeseries, fits one sixth-order polynomial per
+controlled joint axis, and writes scalar MATLAB variables such as `LSInputXA`,
+`LSInputXB`, ..., `LSInputXG`.
+
+Create a seed body state from the extracted simulator data:
+
+```powershell
+py -3.12 src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\create_reference_body_state.py `
+  --dataset src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\club_direct_dynamics.parquet `
+  --output src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\reference_body_state.csv
+```
+
+Optimize torques for the prepared club trajectory:
+
+```powershell
+py -3.12 src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\optimize_torque_sequence_for_club.py `
+  --checkpoint src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\runs\club_direct_10_cpu\best_model.pt `
+  --desired-club-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\TW_ProV1_club_target.csv `
+  --reference-body-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\reference_body_state.csv `
+  --output-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\optimized_club_torques.csv
+```
+
+Fit MATLAB polynomial coefficients:
+
+```powershell
+py -3.12 src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\export_torque_polynomials.py `
+  --torque-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\optimized_club_torques.csv `
+  --output-mat src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\ml_torque_polynomial_inputs.mat
+```
+
+Run MATLAB with those coefficients:
+
+```matlab
+cd('C:\Users\diete\Repositories\UpstreamDrift\src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning')
+simOut = matlab.run_ml_polynomial_input_swing( ...
+    fullfile(pwd, 'data', 'processed', 'ml_torque_polynomial_inputs.mat'), ...
+    'GolfSwing3D_Kinetic');
 ```
 
 ## Expected Runtime

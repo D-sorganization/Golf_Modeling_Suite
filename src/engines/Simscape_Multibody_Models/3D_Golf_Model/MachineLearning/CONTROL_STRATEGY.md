@@ -204,6 +204,8 @@ Use the direct torque-to-club model:
 ```text
 desired club trajectory
     -> optimize tau in f_club_direct(q, qdot, tau)
+    -> fit sixth-order torque polynomials
+    -> write MATLAB coefficient MAT file
     -> torque timeseries
     -> MATLAB/Simscape replay
 ```
@@ -229,6 +231,8 @@ desired club trajectory
     -> optimize q, qdot, qddot in f_body_to_club(q, qdot, qddot)
     -> desired body kinematic trajectory
     -> optimize tau in f_body(q, qdot, tau) to match desired q, qdot, qddot
+    -> fit sixth-order torque polynomials
+    -> write MATLAB coefficient MAT file
     -> torque timeseries
     -> MATLAB/Simscape replay
 ```
@@ -255,3 +259,99 @@ Before applying optimized torques back into the MATLAB model, add these controls
 4. A held-out swing split in addition to the current random row split.
 5. Closed-loop replay tests in MATLAB/Simscape.
 6. A sequence-level optimizer that solves the whole club trajectory instead of one timestep at a time.
+
+## MATLAB Polynomial Input Bridge
+
+The kinetic Simscape model already has a polynomial input path. The relevant
+MATLAB pieces are:
+
+```text
+matlab/src/functions/HexPolyInputFunction.m
+matlab/src/functions/dataset_generator/getPolynomialParameterInfo.m
+matlab/src/functions/dataset_generator/setPolynomialCoefficients.m
+matlab/src/functions/dataset_generator/loadInputFile.m
+matlab/src/model/PolynomialInputValues.mat
+matlab/src/model/Inputs_GolfSwing3D_Kinetic.mat
+```
+
+`HexPolyInputFunction.m` evaluates:
+
+```text
+A*x^6 + B*x^5 + C*x^4 + D*x^3 + E*x^2 + F*x + G
+```
+
+`PolynomialInputValues.mat` contains coefficient variables such as:
+
+```text
+LScapInputXA ... LScapInputXG
+LScapInputYA ... LScapInputYG
+LSInputXA ... LSInputXG
+LSInputYA ... LSInputYG
+LSInputZA ... LSInputZG
+RSInputXA ... RSInputXG
+RSInputYA ... RSInputYG
+RSInputZA ... RSInputZG
+HipInputXA ... HipInputXG
+HipInputYA ... HipInputYG
+HipInputZA ... HipInputZG
+TranslationInputXA ... TranslationInputXG
+TranslationInputYA ... TranslationInputYG
+TranslationInputZA ... TranslationInputZG
+SpineInputXA ... SpineInputXG
+SpineInputYA ... SpineInputYG
+```
+
+The ML bridge maps optimized torque columns to those coefficient bases:
+
+```text
+LScapLogs_ActuatorTorqueX -> LScapInputX
+LScapLogs_ActuatorTorqueY -> LScapInputY
+RScapLogs_ActuatorTorqueX -> RScapInputX
+RScapLogs_ActuatorTorqueY -> RScapInputY
+LSLogs_ActuatorTorqueX -> LSInputX
+LSLogs_ActuatorTorqueY -> LSInputY
+LSLogs_ActuatorTorqueZ -> LSInputZ
+RSLogs_ActuatorTorqueX -> RSInputX
+RSLogs_ActuatorTorqueY -> RSInputY
+RSLogs_ActuatorTorqueZ -> RSInputZ
+SpineLogs_ActuatorTorqueX -> SpineInputX
+SpineLogs_ActuatorTorqueY -> SpineInputY
+HipLogs_TranslationForceXInput -> TranslationInputX
+HipLogs_TranslationForceYInput -> TranslationInputY
+HipLogs_TranslationForceZInput -> TranslationInputZ
+HipLogs_HipTorqueXInput -> HipInputX
+HipLogs_HipTorqueYInput -> HipInputY
+HipLogs_HipTorqueZInput -> HipInputZ
+```
+
+End-to-end one-model command sequence:
+
+```powershell
+py -3.12 src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\create_reference_body_state.py `
+  --dataset src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\club_direct_dynamics.parquet `
+  --output src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\reference_body_state.csv
+
+py -3.12 src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\optimize_torque_sequence_for_club.py `
+  --checkpoint src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\runs\club_direct_10_cpu\best_model.pt `
+  --desired-club-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\TW_ProV1_club_target.csv `
+  --reference-body-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\reference_body_state.csv `
+  --output-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\optimized_club_torques.csv
+
+py -3.12 src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\export_torque_polynomials.py `
+  --torque-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\optimized_club_torques.csv `
+  --output-mat src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\ml_torque_polynomial_inputs.mat
+```
+
+Then run in MATLAB:
+
+```matlab
+cd('C:\Users\diete\Repositories\UpstreamDrift\src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning')
+simOut = matlab.run_ml_polynomial_input_swing( ...
+    fullfile(pwd, 'data', 'processed', 'ml_torque_polynomial_inputs.mat'), ...
+    'GolfSwing3D_Kinetic');
+```
+
+This is now enough to generate model-importable polynomial coefficients. The
+remaining scientific issue is not the file format; it is closing the loop by
+running Simscape, comparing the resulting club trajectory to the target, and
+iterating with coordinate alignment, torque bounds, and sequence smoothness.
