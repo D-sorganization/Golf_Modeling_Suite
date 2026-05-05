@@ -176,6 +176,55 @@ club acceleration normalized RMSE: [0.001749, 0.002436, 0.002921]
 
 This path is more controllable than the direct torque-to-club path because it can impose body-motion efficiency terms before solving for torques.
 
+## Matching Objective And Diagnostics
+
+The redundant-control problem should be optimized as a weighted trajectory
+objective, not as a single inverse model lookup. A practical objective is:
+
+```text
+minimize J =
+  || club(q, qdot, qddot) - club_target ||_W^2
+  + lambda_work * integral(sum(max(tau_i * qdot_i, 0)), dt)
+  + lambda_tau * integral(||tau||_2^2, dt)
+  + lambda_smooth * integral(||d tau / dt||_2^2, dt)
+  + lambda_motion * integral(||q - q_reference||_2^2, dt)
+  + lambda_limits * joint_velocity_torque_limit_penalties
+```
+
+The first term is the club-tracking target. The other terms choose among the
+many torque and body-motion solutions that can produce similar club motion.
+Positive mechanical work is the physically meaningful energy term, because net
+work can cancel across accelerating and braking phases. When paired joint
+velocities are not exported with the torque sequence, use squared torque,
+absolute torque impulse, peak control magnitude, and torque-rate smoothness as
+lower-fidelity effort proxies.
+
+`evaluate_matching_workflow.py` is the current non-blocking feedback harness. It
+does not decide whether a run is acceptable. It writes repeatable metrics and
+plots so each optimization attempt can be compared against previous runs:
+
+```powershell
+py -3.12 src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\evaluate_matching_workflow.py `
+  --target-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\TW_ProV1_downswing_club_target_calibrated.csv `
+  --sim-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\simulated_club_motion.csv `
+  --torque-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\optimized_club_torques.csv `
+  --scenario downswing `
+  --run-label downswing_trial_001
+```
+
+Use the resulting JSON/Markdown report to compare:
+
+- whole-trajectory normalized RMSE for club position, velocity, and acceleration
+- impact-window RMSE near ball contact
+- L2 torque effort, L1 torque impulse, peak absolute torque, and torque smoothness
+- weighted objective changes as `lambda_work`, `lambda_tau`, and
+  `lambda_smooth` are swept
+
+This gives a practical way to minimize work required to match the club motion:
+run a Pareto sweep over tracking, effort, and smoothness weights, replay the
+best candidates in MATLAB, then select the lowest-effort candidate whose
+impact-window club error is still acceptable.
+
 ## Preparing A Measured Club Target
 
 The workbook target preparation command is:

@@ -24,6 +24,7 @@ The companion club-control strategy is documented in `CONTROL_STRATEGY.md`.
 - `slice_club_target.py` creates full-swing or downswing-only target trajectories.
 - `calibrate_club_target_to_sim.py` fits measured club coordinates into the Simscape club-log frame.
 - `compare_simulated_club_motion.py` reports target-vs-simulated club motion error and can write a comparison plot.
+- `evaluate_matching_workflow.py` writes non-blocking tracking, impact-window, and torque-effort diagnostics for each matching attempt.
 - `create_reference_body_state.py` writes a seed body-state CSV for club inverse optimization.
 - `train_dynamics_surrogate.py` trains a PyTorch MLP on the reduced parquet.
 - `optimize_torque_sequence_for_club.py` optimizes a torque timeseries against a measured club target.
@@ -279,6 +280,25 @@ py -3.12 src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\com
   --output-json src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\club_motion_comparison.json `
   --output-png src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\club_motion_comparison.png
 ```
+
+Create a non-blocking matching report after each replay or optimization run:
+
+```powershell
+py -3.12 src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\evaluate_matching_workflow.py `
+  --target-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\TW_ProV1_downswing_club_target_calibrated.csv `
+  --sim-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\simulated_club_motion.csv `
+  --torque-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\optimized_club_torques.csv `
+  --scenario downswing `
+  --run-label downswing_trial_001
+```
+
+The report writes JSON, Markdown, and optional PNG diagnostics under
+`data/processed/matching_reports/`. It includes whole-trajectory error,
+impact-window error, torque impulse, squared torque effort, peak control value,
+and torque-rate smoothness. Mechanical work can only be computed when joint
+velocities are available alongside torque columns, so the current report treats
+torque effort and smoothness as practical proxies until the closed-loop replay
+exports paired `qdot` logs.
 
 ## GUI Workflow
 
