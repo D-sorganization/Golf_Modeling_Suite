@@ -1,0 +1,256 @@
+# shared/models/golf_humanoid_dimensions.yaml
+#
+# Canonical anthropometric + inertial parameters for the cross-engine
+# golf humanoid. This file is the single source of truth consumed by:
+#
+#   * Drake     -> src/engines/physics_engines/drake/.../humanoid_urdf.py
+#   * Pinocchio -> models/generated/golfer.urdf (regenerated)
+#   * MuJoCo    -> generated MJCF
+#   * OpenSim   -> generated .osim
+#
+# Owned by issue #4093 (PARITY-DIMENSIONS). Until that issue lands its
+# canonical schema, this file is consumed verbatim by the Drake URDF
+# generator (issue #4108). Hand-edits to engine-specific URDF / MJCF /
+# .osim files are forbidden by CI gates (#4129).
+#
+# Units: SI (meters, kilograms, radians, kg*m^2).
+# Coordinate convention: Z up, golfer faces +X. Quaternion convention
+# for floating bases is [w, x, y, z] (Drake URDF default).
+
+schema_version: 1
+source: "Winter (2009) Biomechanics and Motor Control of Human Movement"
+
+# ---------------------------------------------------------------------------
+# Top-level anthropometry. Values are average adult male; the same shape
+# is overridable per-trial via load_humanoid_overrides().
+# ---------------------------------------------------------------------------
+anthropometry:
+  total_mass_kg: 75.0
+  total_height_m: 1.78
+  pelvis_to_shoulders_m: 0.50  # spine length, pelvis center to shoulder line
+  shoulder_width_m: 0.36       # acromion-to-acromion, used for arm origins
+  hand_spacing_m: 0.0762       # grip separation along club shaft
+
+# ---------------------------------------------------------------------------
+# Per-segment dimensions, mass, inertia, and joint topology.
+#
+# Each entry is consumed by build_humanoid_urdf() to emit a URDF link +
+# its parent joint. Joint encoding rules (see DRAKE_PARITY_SPEC §3.1):
+#   - "floating" joints become a Drake URDF <joint type="floating">.
+#   - "revolute" joints become <joint type="revolute"> directly.
+#   - "universal" joints decompose into 2 revolute joints + 1 dummy link.
+#   - "gimbal" joints decompose into 3 revolute joints + 2 dummy links.
+#   - "fixed" joints become <joint type="fixed">.
+#
+# DOF accounting for the canonical 23-DOF skeleton:
+#   pelvis (floating)             6
+#   spine_universal (universal)   2
+#   spine_twist (revolute)        1
+#   torso_weld (fixed)            0
+#   right scapula (universal)     2
+#   right shoulder (gimbal)       3
+#   right elbow (revolute)        1
+#   right wrist (universal)       2
+#   right hand weld (fixed)       0
+#   left  scapula (universal)     2
+#   left  shoulder (gimbal)       3
+#   left  elbow (revolute)        1
+#   left  wrist (universal)       2
+#   left  hand weld (fixed)       0
+#   club_grip (fixed)             0
+#   clubhead (fixed)              0
+# Total: 23 generalized velocities.
+# ---------------------------------------------------------------------------
+
+segments:
+
+  # -----------------------------------------------------------------------
+  # Root
+  # -----------------------------------------------------------------------
+  - name: pelvis
+    parent: world
+    joint:
+      name: pelvis_floating
+      type: floating
+    origin: { xyz: [0.0, 0.0, 1.0], rpy: [0.0, 0.0, 0.0] }
+    geometry: { type: box, size: [0.30, 0.20, 0.20] }
+    mass: 12.0
+    inertia: { ixx: 0.090, iyy: 0.130, izz: 0.130,
+               ixy: 0.0, ixz: 0.0, iyz: 0.0 }
+
+  # -----------------------------------------------------------------------
+  # Spine chain
+  # -----------------------------------------------------------------------
+  - name: lower_spine
+    parent: pelvis
+    joint:
+      name: spine_universal
+      type: universal
+      axes: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
+      limits: [[-0.6, 0.6], [-0.6, 0.6]]
+      damping: 0.5
+    origin: { xyz: [0.0, 0.0, 0.10], rpy: [0.0, 0.0, 0.0] }
+    geometry: { type: box, size: [0.20, 0.20, 0.25] }
+    mass: 7.5
+    inertia: { ixx: 0.060, iyy: 0.060, izz: 0.050,
+               ixy: 0.0, ixz: 0.0, iyz: 0.0 }
+
+  - name: upper_spine
+    parent: lower_spine
+    joint:
+      name: spine_twist
+      type: revolute
+      axis: [0.0, 0.0, 1.0]
+      limits: [-1.0, 1.0]
+      damping: 0.5
+    origin: { xyz: [0.0, 0.0, 0.25], rpy: [0.0, 0.0, 0.0] }
+    geometry: { type: box, size: [0.20, 0.20, 0.25] }
+    mass: 7.5
+    inertia: { ixx: 0.060, iyy: 0.060, izz: 0.050,
+               ixy: 0.0, ixz: 0.0, iyz: 0.0 }
+
+  - name: upper_torso_hub
+    parent: upper_spine
+    joint:
+      name: torso_weld
+      type: fixed
+    origin: { xyz: [0.0, 0.0, 0.25], rpy: [0.0, 0.0, 0.0] }
+    geometry: { type: box, size: [0.30, 0.30, 0.20] }
+    mass: 5.0
+    inertia: { ixx: 0.060, iyy: 0.060, izz: 0.075,
+               ixy: 0.0, ixz: 0.0, iyz: 0.0 }
+
+  # -----------------------------------------------------------------------
+  # Right arm chain
+  # -----------------------------------------------------------------------
+  - name: right_scapula_rod
+    parent: upper_torso_hub
+    joint:
+      name: right_scapula_universal
+      type: universal
+      axes: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
+      limits: [[-0.5, 0.5], [-0.5, 0.5]]
+      damping: 0.3
+    origin: { xyz: [0.0, -0.18, 0.10], rpy: [0.0, 0.0, 0.0] }
+    geometry: { type: cylinder, radius: 0.03, length: 0.12 }
+    mass: 1.0
+    inertia: { ixx: 0.0014, iyy: 0.0014, izz: 0.00045,
+               ixy: 0.0, ixz: 0.0, iyz: 0.0 }
+
+  - name: right_upper_arm
+    parent: right_scapula_rod
+    joint:
+      name: right_shoulder_gimbal
+      type: gimbal
+      axes: [[0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]
+      limits: [[-3.14, 3.14], [-1.5, 1.5], [-1.5, 1.5]]
+      damping: 0.3
+    origin: { xyz: [0.0, 0.0, 0.12], rpy: [0.0, 0.0, 0.0] }
+    geometry: { type: cylinder, radius: 0.04, length: 0.30 }
+    mass: 2.0
+    inertia: { ixx: 0.018, iyy: 0.018, izz: 0.0024,
+               ixy: 0.0, ixz: 0.0, iyz: 0.0 }
+
+  - name: right_forearm
+    parent: right_upper_arm
+    joint:
+      name: right_elbow
+      type: revolute
+      axis: [0.0, 1.0, 0.0]
+      limits: [-2.5, 0.0]
+      damping: 0.3
+    origin: { xyz: [0.0, 0.0, -0.30], rpy: [0.0, 0.0, 0.0] }
+    geometry: { type: cylinder, radius: 0.035, length: 0.27 }
+    mass: 1.5
+    inertia: { ixx: 0.012, iyy: 0.012, izz: 0.0014,
+               ixy: 0.0, ixz: 0.0, iyz: 0.0 }
+
+  - name: right_hand
+    parent: right_forearm
+    joint:
+      name: right_wrist_universal
+      type: universal
+      axes: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
+      limits: [[-1.0, 1.0], [-1.0, 1.0]]
+      damping: 0.2
+    origin: { xyz: [0.0, 0.0, -0.27], rpy: [0.0, 0.0, 0.0] }
+    geometry: { type: cylinder, radius: 0.03, length: 0.10 }
+    mass: 0.5
+    inertia: { ixx: 0.00057, iyy: 0.00057, izz: 0.000225,
+               ixy: 0.0, ixz: 0.0, iyz: 0.0 }
+
+  # -----------------------------------------------------------------------
+  # Left arm chain (mirrored y)
+  # -----------------------------------------------------------------------
+  - name: left_scapula_rod
+    parent: upper_torso_hub
+    joint:
+      name: left_scapula_universal
+      type: universal
+      axes: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
+      limits: [[-0.5, 0.5], [-0.5, 0.5]]
+      damping: 0.3
+    origin: { xyz: [0.0, 0.18, 0.10], rpy: [0.0, 0.0, 0.0] }
+    geometry: { type: cylinder, radius: 0.03, length: 0.12 }
+    mass: 1.0
+    inertia: { ixx: 0.0014, iyy: 0.0014, izz: 0.00045,
+               ixy: 0.0, ixz: 0.0, iyz: 0.0 }
+
+  - name: left_upper_arm
+    parent: left_scapula_rod
+    joint:
+      name: left_shoulder_gimbal
+      type: gimbal
+      axes: [[0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]
+      limits: [[-3.14, 3.14], [-1.5, 1.5], [-1.5, 1.5]]
+      damping: 0.3
+    origin: { xyz: [0.0, 0.0, 0.12], rpy: [0.0, 0.0, 0.0] }
+    geometry: { type: cylinder, radius: 0.04, length: 0.30 }
+    mass: 2.0
+    inertia: { ixx: 0.018, iyy: 0.018, izz: 0.0024,
+               ixy: 0.0, ixz: 0.0, iyz: 0.0 }
+
+  - name: left_forearm
+    parent: left_upper_arm
+    joint:
+      name: left_elbow
+      type: revolute
+      axis: [0.0, 1.0, 0.0]
+      limits: [-2.5, 0.0]
+      damping: 0.3
+    origin: { xyz: [0.0, 0.0, -0.30], rpy: [0.0, 0.0, 0.0] }
+    geometry: { type: cylinder, radius: 0.035, length: 0.27 }
+    mass: 1.5
+    inertia: { ixx: 0.012, iyy: 0.012, izz: 0.0014,
+               ixy: 0.0, ixz: 0.0, iyz: 0.0 }
+
+  - name: left_hand
+    parent: left_forearm
+    joint:
+      name: left_wrist_universal
+      type: universal
+      axes: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
+      limits: [[-1.0, 1.0], [-1.0, 1.0]]
+      damping: 0.2
+    origin: { xyz: [0.0, 0.0, -0.27], rpy: [0.0, 0.0, 0.0] }
+    geometry: { type: cylinder, radius: 0.03, length: 0.10 }
+    mass: 0.5
+    inertia: { ixx: 0.00057, iyy: 0.00057, izz: 0.000225,
+               ixy: 0.0, ixz: 0.0, iyz: 0.0 }
+
+  # -----------------------------------------------------------------------
+  # Club. URDF cannot express a closed-loop "both hands grip the club"
+  # constraint, so we weld the club to the right hand only and rely on
+  # the cost function (or AddBallConstraint at finalize-time) to keep the
+  # left hand on the grip. See DRAKE_PARITY_SPEC §7 risk #3.
+  # -----------------------------------------------------------------------
+  - name: club_shaft
+    parent: right_hand
+    joint:
+      name: grip_lead
+      type: fixed
+    origin: { xyz: [0.0, 0.0, -0.10], rpy: [0.0, 0.0, 0.0] }
+    geometry: { type: cylinder, radius: 0.012, length: 1.05 }
+    mass: 0.40
+    inertia: { ixx: 0.037, iyy: 0.037, izz: 0.0000288,
+               ixy: 0.0, ixz: 0.0, iyz: 0.0 }
