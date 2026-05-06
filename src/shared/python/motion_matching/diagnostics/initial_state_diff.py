@@ -249,7 +249,7 @@ def plot_skeleton_overlay(report: InitialStateDiffReport) -> Figure:
 
     ax.set_xlabel("x (m)")
     ax.set_ylabel("y (m)")
-    ax.set_zlabel("z (m)")
+    ax.set_zlabel("z (m)")  # type: ignore[attr-defined]
     ax.set_title("Initial pose: specified vs. constraint-resolved")
     if spec_pts:
         ax.legend(loc="best")
@@ -317,9 +317,9 @@ def plot_cartesian_delta_summary(report: InitialStateDiffReport) -> Figure:
         )
 
     for label, s, a in pairs:
-        ax.scatter(*s, color="tab:blue", marker="o", s=60)
-        ax.scatter(*a, color="tab:orange", marker="^", s=60)
-        ax.text(*s, f"{label} (spec)", fontsize=8)
+        ax.scatter(s[0], s[1], s[2], color="tab:blue", marker="o", s=60)  # type: ignore[misc]
+        ax.scatter(a[0], a[1], a[2], color="tab:orange", marker="^", s=60)  # type: ignore[misc]
+        ax.text(s[0], s[1], s[2], f"{label} (spec)", fontsize=8)  # type: ignore[call-arg]
         delta = a - s
         ax.quiver(
             s[0],
@@ -338,7 +338,7 @@ def plot_cartesian_delta_summary(report: InitialStateDiffReport) -> Figure:
 
     ax.set_xlabel("x (m)")
     ax.set_ylabel("y (m)")
-    ax.set_zlabel("z (m)")
+    ax.set_zlabel("z (m)")  # type: ignore[attr-defined]
     ax.set_title(
         f"Cartesian deltas (butt: {report.delta['r_butt_mm']:.2f} mm, "
         f"clubhead: {report.delta['r_clubhead_mm']:.2f} mm)"
