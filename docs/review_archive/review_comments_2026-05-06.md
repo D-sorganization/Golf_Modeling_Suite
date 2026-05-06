@@ -1,52 +1,36 @@
 # Review Comments Archive - 2026-05-06
 
-Generated: 2026-05-06T02:25:21.449696
+Generated: 2026-05-06T15:39:31.576229
 
-## Reviewer (chatgpt-codex-connector[bot]) (3 comments)
+## Reviewer (chatgpt-codex-connector[bot]) (2 comments)
 
-### PR #4061: src/engines/Simscape_Multibody_Models/3D_Golf_Model/MachineLearning/train_dynamics_surrogate.py:19
-
-Actionable: No
-Has Suggestion: No
-
-```
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Restore executable behavior for legacy shim scripts**
-
-This compatibility shim only re-exports symbols and emits a warning, but it never invokes `main()` under a `__name__ == "__main__"` guard. That means legacy entrypoints stop working when executed directly (for example `python .../train_dynamics_surrogate.py ...`), so callers that relied on the old script paths no longer run training/optimization/extractio...
-```
-
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4061#discussion_r3194332525)
-
----
-
-### PR #4061: src/shared/python/motion_matching/surrogate/perstep/optimize.py:251
+### PR #4141: src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/motion_matching/shared/prepare_fast_sim_input.m:92
 
 Actionable: No
 Has Suggestion: No
 
 ```
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Resolve relocated optimizer's control-name import**
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Reset MaxStep when high_precision is disabled**
 
-The relocated optimizer still does `from export_torque_polynomials import TORQUE_TO_POLYNOMIAL_BASE` inside `_control_columns`. After this move, `export_torque_polynomials.py` is no longer a sibling of `surrogate/perstep/optimize.py`, so `optimize_sequence` now fails with `ModuleNotFoundError` unless the old MachineLearning directory is manually injected in...
+`prepare_fast_sim_input` only sets `MaxStep` when `opts.high_precision` is true, so when callers pass an existing `Simulink.SimulationInput` (supported by this function) and later call it with `high_precision=false`, the previous `MaxStep` value is retained. This silently keeps high-precision behavior enabled (or any prior custom `MaxStep`), which can skew perf...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4061#discussion_r3194332530)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4141#discussion_r3197941463)
 
 ---
 
-### PR #4061: src/shared/python/motion_matching/surrogate/perstep/extract_dataset.py:23
+### PR #4141: src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/motion_matching/shared/scripts/perf_maxstep_sweep.m:163
 
 Actionable: No
 Has Suggestion: No
 
 ```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Point default manifest to an existing file after relocation**
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Validate max_steps ordering before choosing reference run**
 
-`DEFAULT_MANIFEST` is derived from the new `SCRIPT_DIR` (`surrogate/perstep`), but `column_manifest_inverse_ready.json` was not moved there. Running the extractor without `--manifest` now resolves to a non-existent file and errors before processing, whereas the pre-relocation default pointed at the checked-in manifest under `MachineLearning`.
-
-Use...
+`perf_maxstep_sweep` assumes the first `opts.max_steps` entry is the most accurate reference and computes all RMSE/work deltas against it, but the function never enforces or sorts that ordering. If a caller provides a custom unsorted `max_steps` vector (which the API allows), the reported accuracy metrics and final recommendation become systematical...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4061#discussion_r3194332537)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4141#discussion_r3197941465)
 
 ---
+
