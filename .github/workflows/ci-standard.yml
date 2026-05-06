@@ -362,11 +362,49 @@ jobs:
           echo "$bandit_output" >> "$GITHUB_STEP_SUMMARY"
           exit $exit_code
 
+      - name: Select Trivy PR scan target
+        id: trivy-pr-target
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+          mapfile -d '' trivy_targets < <(
+            git diff --name-only --diff-filter=ACMRT -z "origin/${{ github.base_ref }}" HEAD -- \
+              'Dockerfile' \
+              'Dockerfile.*' \
+              '**/Dockerfile' \
+              '**/Dockerfile.*' \
+              '**/Cargo.lock' \
+              '**/package-lock.json' \
+              '**/pnpm-lock.yaml' \
+              '**/yarn.lock' \
+              '**/environment.yml' \
+              '**/requirements*.txt'
+          )
+          if [ "${#trivy_targets[@]}" -eq 0 ]; then
+            echo "has_target=false" >> "$GITHUB_OUTPUT"
+            echo "No changed dependency/container/config files supported by Trivy; skipping PR Trivy delta scan."
+            exit 0
+          fi
+          echo "has_target=true" >> "$GITHUB_OUTPUT"
+          echo "scan_ref=${trivy_targets[0]}" >> "$GITHUB_OUTPUT"
+
       - name: Trivy Filesystem Security Scan
+        if: github.event_name != 'pull_request'
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
         with:
           scan-type: fs
           scan-ref: .
+          scanners: vuln,secret,misconfig
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+
+      - name: Trivy Filesystem Security Scan (PR Delta)
+        if: github.event_name == 'pull_request' && steps.trivy-pr-target.outputs.has_target == 'true'
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          scan-type: fs
+          scan-ref: ${{ steps.trivy-pr-target.outputs.scan_ref }}
           scanners: vuln,secret,misconfig
           severity: CRITICAL,HIGH
           exit-code: "1"
