@@ -1,52 +1,54 @@
 # Review Comments Archive - 2026-05-06
 
-Generated: 2026-05-06T02:25:21.449696
+Generated: 2026-05-06T15:06:20.930074
 
 ## Reviewer (chatgpt-codex-connector[bot]) (3 comments)
 
-### PR #4061: src/engines/Simscape_Multibody_Models/3D_Golf_Model/MachineLearning/train_dynamics_surrogate.py:19
+### PR #4092: src/engines/CROSS_ENGINE_PARITY_SPEC.md:5
 
 Actionable: No
 Has Suggestion: No
 
 ```
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Restore executable behavior for legacy shim scripts**
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Point the Simscape reference link to an existing spec file**
 
-This compatibility shim only re-exports symbols and emits a warning, but it never invokes `main()` under a `__name__ == "__main__"` guard. That means legacy entrypoints stop working when executed directly (for example `python .../train_dynamics_surrogate.py ...`), so callers that relied on the old script paths no longer run training/optimization/extractio...
+The opening paragraph links to `Simscape_Multibody_Models/3D_Golf_Model/PROJECT_SPEC.md`, but that file does not exist in the repository, so readers cannot reach the “production grade” reference this spec depends on. Because this document is meant to be the top-level contract for all engine work, a broken baseline reference makes the requirements a...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4061#discussion_r3194332525)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4092#discussion_r3197789997)
 
 ---
 
-### PR #4061: src/shared/python/motion_matching/surrogate/perstep/optimize.py:251
+### PR #4092: src/engines/CROSS_ENGINE_PARITY_SPEC.md:58
 
 Actionable: No
 Has Suggestion: No
 
 ```
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Resolve relocated optimizer's control-name import**
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Replace nonexistent canonical loader path**
 
-The relocated optimizer still does `from export_torque_polynomials import TORQUE_TO_POLYNOMIAL_BASE` inside `_control_columns`. After this move, `export_torque_polynomials.py` is no longer a sibling of `surrogate/perstep/optimize.py`, so `optimize_sequence` now fails with `ModuleNotFoundError` unless the old MachineLearning directory is manually injected in...
+This section mandates using `shared/python/motion_matching/load_club_target.py`, but that module is not present, so contributors cannot comply with the “engine-specific loaders are forbidden” rule as written. As a result, implementers are forced to guess an alternative loader (or violate the spec), which undermines the parity contract this document is introducing.
+...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4061#discussion_r3194332530)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4092#discussion_r3197789999)
 
 ---
 
-### PR #4061: src/shared/python/motion_matching/surrogate/perstep/extract_dataset.py:23
+### PR #4092: src/engines/CROSS_ENGINE_PARITY_SPEC.md:189
 
-Actionable: No
+Actionable: Yes
 Has Suggestion: No
 
 ```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Point default manifest to an existing file after relocation**
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Remove or defer links to missing per-engine spec docs**
 
-`DEFAULT_MANIFEST` is derived from the new `SCRIPT_DIR` (`surrogate/perstep`), but `column_manifest_inverse_ready.json` was not moved there. Running the extractor without `--manifest` now resolves to a non-existent file and errors before processing, whereas the pre-relocation default pointed at the checked-in manifest under `MachineLearning`.
+The document says detailed implementation plans “live” in these four per-engine spec files, but none of the linked files currently exist. That leaves readers at dead links exactly where they expect actionable architecture details, which blocks the workflow this parity spec is trying to coordinate.
 
-Use...
+Useful? React with 👍 / 👎.
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4061#discussion_r3194332537)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4092#discussion_r3197790006)
 
 ---
+
