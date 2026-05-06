@@ -245,6 +245,28 @@ end
 
 This is issue #030.
 
+## Per-step vs trajectory-level surrogates
+
+Option 2 admits two valid forward-surrogate instantiations. Both live side-by-side under this directory; the trajectory-level scaffold (the rest of this document) lives under `src/shared/python/motion_matching/surrogate/`, while the per-step variant from PR #3966 was relocated under `src/shared/python/motion_matching/surrogate/perstep/` per issue #4044.
+
+| Aspect | Per-step (PR #3966, `perstep/`) | Trajectory-level (this scaffold) |
+|---|---|---|
+| Mapping | `(q, q_dot, tau) -> (q, q_dot, q_ddot)` | `theta_coeffs -> kinematics(t)` |
+| Decision-space cardinality at inversion | `N x n_controls` | `7 x n_joints` |
+| Inversion algorithm | Adam-on-grid (`perstep/optimize.py`) | End-to-end differentiable (`invert.py`) |
+| Temporal context | None — frames are i.i.d. | Whole swing, FiLM-conditioned |
+| Training-data row | `(q, q_dot, tau, q_ddot)` | Whole swing per `trial_id` |
+| Training cost | Cheaper, smaller model | Higher, FiLM-MLP at fixed `N=300` |
+| Coefficient output | Post-fit polyfit via `export_torque_polynomials.py` | Direct decision variable |
+
+**Use per-step** when the parquet dataset has independent `(q, q_dot, tau) -> (q, q_dot, q_ddot)` rows. The Adam-on-grid inversion produces a torque timeseries; polynomial coefficients are recovered post-hoc with `export_torque_polynomials.py`.
+
+**Use trajectory-level** when the dataset has whole swings and you want a single forward pass to map a coefficient vector to a kinematic trajectory, plus a single backward pass to invert. Temporal coherence (smooth velocities, no per-frame jitter) is preserved by construction.
+
+Both routes can produce the polynomial coefficients in the end. The per-step path runs `export_torque_polynomials.py` on the optimized torque timeseries after Adam converges; the trajectory-level path is parameterised by coefficients from the start.
+
+A held-out RMSE comparison between the two architectures on a synthetic dataset lives in `tests/unit/motion_matching/test_surrogate_perstep_compare.py` (slow-marked).
+
 ## What we are explicitly not doing in v1
 
 - **Variable-length sequences.** Fixed `N=300`.
