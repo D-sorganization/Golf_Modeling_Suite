@@ -334,10 +334,29 @@ jobs:
       # SECURITY: Bandit static security analysis (Issue #782)
       # Blocking on medium+ severity, medium+ confidence findings (Issue #2067)
       - name: Bandit Security Scan
+        shell: bash
         run: |
-
-          bandit_output="$(bandit -r . -x ./tests,./archive,./legacy,./.git -ll -ii --format txt 2>&1)"
-          exit_code=$?
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+            mapfile -d '' bandit_targets < <(
+              git diff --name-only --diff-filter=ACMRT -z "origin/${{ github.base_ref }}" HEAD -- \
+                'src/**/*.py' \
+                'scripts/**/*.py'
+            )
+            if [ "${#bandit_targets[@]}" -eq 0 ]; then
+              echo "No changed source/application Python files supported by Bandit; skipping PR Bandit delta scan."
+              exit 0
+            fi
+            set +e
+            bandit_output="$(bandit "${bandit_targets[@]}" -ll -ii --format txt 2>&1)"
+            exit_code=$?
+            set -e
+          else
+            set +e
+            bandit_output="$(bandit -r . -x ./tests,./archive,./legacy,./.git -ll -ii --format txt 2>&1)"
+            exit_code=$?
+            set -e
+          fi
           echo "$bandit_output"
           echo "## Security Scan Results" >> "$GITHUB_STEP_SUMMARY"
           echo "$bandit_output" >> "$GITHUB_STEP_SUMMARY"
