@@ -16,12 +16,25 @@ function opts = default_cost_options()
 %     time_alignment      - "impact" | "address" | "none"      : "impact"
 %     resample_to_hz      - target sample rate                 : 1000
     opts = struct();
-    opts.w_position         = 1.0;
-    opts.w_orientation      = 0.1;
-    opts.w_anchor_impact    = 10.0;
+    % Position weights.  The GRIP is the rigid body→club interface, so
+    % it is the primary matching target.  Clubhead matching is kept as
+    % a low-weight secondary signal (zero by default to avoid penalising
+    % shaft-flex and club-length differences between the modeled club
+    % and the player's actual club; raise w_position_clubhead to a
+    % small positive number when you want soft clubhead supervision).
+    opts.w_position_grip      = 1.0;
+    opts.w_position_clubhead  = 0.0;
+    opts.w_orientation_grip   = 0.5;
+    opts.w_orientation_club   = 0.0;
+    opts.w_anchor_impact      = 10.0;   % multiplier on grip-position term at the impact frame
     opts.regularizer        = "total_work";
     opts.lambda             = 1e-4;
     opts.q_orientation_repr = "quaternion";
     opts.time_alignment     = "impact";
     opts.resample_to_hz     = 1000;
+    % Backward-compat aliases so existing callers that read
+    % opts.w_position or opts.w_orientation continue to work; the new
+    % primary fields above take precedence when set.
+    opts.w_position         = 1.0;
+    opts.w_orientation      = 0.1;
 end
