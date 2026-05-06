@@ -625,7 +625,9 @@ async def control_recording(
                 export_path = Path(tmp_path).name
                 if logger:
                     logger.info(
-                        "Trajectory exported to %s (%d frames)", export_path, frame_count
+                        "Trajectory exported to %s (%d frames)",
+                        export_path,
+                        frame_count,
                     )
             except Exception:
                 # Clean up on error
