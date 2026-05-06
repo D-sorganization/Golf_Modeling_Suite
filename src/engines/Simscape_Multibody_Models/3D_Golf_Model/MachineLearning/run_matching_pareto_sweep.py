@@ -446,11 +446,12 @@ def _write_markdown(
 def _write_plot(
     path: Path, runs: list[SweepRun], candidates: dict[str, SweepRun]
 ) -> None:
-    points = [
-        (run, _metric(run, "effort"), _metric(run, "error"))
-        for run in runs
-        if _metric(run, "effort") is not None and _metric(run, "error") is not None
-    ]
+    points: list[tuple[SweepRun, float, float]] = []
+    for run in runs:
+        effort = _metric(run, "effort")
+        error = _metric(run, "error")
+        if effort is not None and error is not None:
+            points.append((run, effort, error))
     if not points:
         return
     try:
