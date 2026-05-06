@@ -226,10 +226,10 @@ def _build_common_timegrid(
             "Aligned timegrids do not overlap; check time_alignment / inputs."
         )
     if opts.n_samples is not None and opts.n_samples >= 2:
-        return np.linspace(t_lo, t_hi, int(opts.n_samples))
+        return np.linspace(t_lo, t_hi, int(opts.n_samples), dtype=np.float64)
     dt = 1.0 / float(opts.sample_rate_hz)
     n = max(2, int(round((t_hi - t_lo) / dt)) + 1)
-    return np.linspace(t_lo, t_hi, n)
+    return np.linspace(t_lo, t_hi, n, dtype=np.float64)
 
 
 # --- Main API ----------------------------------------------------------------
