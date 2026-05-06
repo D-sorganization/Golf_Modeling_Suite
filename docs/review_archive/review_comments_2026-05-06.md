@@ -1,54 +1,51 @@
 # Review Comments Archive - 2026-05-06
 
-Generated: 2026-05-06T15:06:20.930074
+Generated: 2026-05-06T15:32:19.385100
 
 ## Reviewer (chatgpt-codex-connector[bot]) (3 comments)
 
-### PR #4092: src/engines/CROSS_ENGINE_PARITY_SPEC.md:5
+### PR #4090: src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/motion_matching/option4_python_bridge/tests/conftest.py:21
 
-Actionable: No
-Has Suggestion: No
-
-```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Point the Simscape reference link to an existing spec file**
-
-The opening paragraph links to `Simscape_Multibody_Models/3D_Golf_Model/PROJECT_SPEC.md`, but that file does not exist in the repository, so readers cannot reach the “production grade” reference this spec depends on. Because this document is meant to be the top-level contract for all engine work, a broken baseline reference makes the requirements a...
-```
-
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4092#discussion_r3197789997)
-
----
-
-### PR #4092: src/engines/CROSS_ENGINE_PARITY_SPEC.md:58
-
-Actionable: No
-Has Suggestion: No
-
-```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Replace nonexistent canonical loader path**
-
-This section mandates using `shared/python/motion_matching/load_club_target.py`, but that module is not present, so contributors cannot comply with the “engine-specific loaders are forbidden” rule as written. As a result, implementers are forced to guess an alternative loader (or violate the spec), which undermines the parity contract this document is introducing.
-...
-```
-
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4092#discussion_r3197789999)
-
----
-
-### PR #4092: src/engines/CROSS_ENGINE_PARITY_SPEC.md:189
 
 Actionable: Yes
 Has Suggestion: No
 
 ```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Remove or defer links to missing per-engine spec docs**
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Handle missing matlab package when checking marker availability**
 
-The document says detailed implementation plans “live” in these four per-engine spec files, but none of the linked files currently exist. That leaves readers at dead links exactly where they expect actionable architecture details, which blocks the workflow this parity spec is trying to coordinate.
-
-Useful? React with 👍 / 👎.
+`pytest_collection_modifyitems` calls `importlib.util.find_spec("matlab.engine")`, but on Python 3.10+ this raises `ModuleNotFoundError` when the parent `matlab` package is absent instead of returning `None`. On machines without MATLAB (the common CI/dev case this hook is meant to support), collection aborts with an INTERNALERROR before any sk...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4092#discussion_r3197790006)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4090#discussion_r3197765779)
 
 ---
 
+### PR #4090: src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/motion_matching/option4_python_bridge/fit_swing_python.py:104
+
+Actionable: No
+Has Suggestion: No
+
+```
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Validate theta0 before starting MATLAB engine**
+
+`fit_swing_scipy` starts the MATLAB engine before checking whether `options.theta0` has the correct length. That means a simple user-input error can trigger an unnecessary (and expensive) engine startup, and on hosts without MATLAB it will raise an engine startup failure instead of the intended `ValueError` for bad `theta0`, making argument validation unusable ...
+```
+
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4090#discussion_r3197765789)
+
+---
+
+### PR #4105: src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/motion_matching/shared/compute_skeleton_fk.m:203
+
+Actionable: Yes
+Has Suggestion: No
+
+```
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Remove extra torso-length step in angle fallback chain**
+
+When `sensor_anchored` mode is unavailable (or `force_angle_chain=true`), the fallback now advances the torso axis three times by `UpperTorsoLength/2` (`hip->spine`, `spine->torso`, and `torso->hub`). This adds an extra `UpperTorsoLength/2` translation compared to the prior legacy geometry and systematically biases every downstream joint in fallback mo...
+```
+
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4105#discussion_r3197917606)
+
+---
