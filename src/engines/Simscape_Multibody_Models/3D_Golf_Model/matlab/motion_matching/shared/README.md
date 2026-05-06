@@ -1,5 +1,7 @@
 # Shared utilities for motion matching
 
+> **Read first**: [PROJECT_SPEC.md](../../../PROJECT_SPEC.md), [MATLAB_GOLF_MODEL_GUIDE.md](../../MATLAB_GOLF_MODEL_GUIDE.md), [GRIP_FIT_PLAYBOOK.md](GRIP_FIT_PLAYBOOK.md).
+
 The four options consume the same contracts. This folder holds the specs (so any agent can implement to them) and will hold the reference implementations once the corresponding issues land.
 
 ## Specs (read these first)
@@ -61,3 +63,12 @@ The four options consume the same contracts. This folder holds the specs (so any
 ```
 
 This is the only place `simulate_with_coefficients` is allowed to be implemented. If an option needs a slightly different forward call, it parameterises this one rather than forking it.
+
+## Stage-1 starting-pose solver
+
+[`solve_starting_pose.m`](solve_starting_pose.m) implements the warm-start
+recipe described in [GRIP_FIT_PLAYBOOK.md §"Stage 1 — initial pose"](GRIP_FIT_PLAYBOOK.md).
+It produces the `input_overrides` struct that Stage-2 (`fit_swing_fmincon`)
+consumes via `opts.sim.input_overrides`, layering small perturbations on
+top of a base per-pose MAT (e.g. `3DModelInputs_Impact.mat`) so the model's
+mid-hands grip lands at the measured grip pose at the swing's address frame.
