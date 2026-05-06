@@ -230,6 +230,190 @@ def _torque_columns(frame: pd.DataFrame) -> list[str]:
     return preferred or numeric_columns
 
 
+def _joint_velocity_columns(frame: pd.DataFrame) -> list[str]:
+    numeric_columns = [
+        column
+        for column in frame.columns
+        if column != "time" and pd.api.types.is_numeric_dtype(frame[column])
+    ]
+    preferred = [
+        column
+        for column in numeric_columns
+        if "Velocity" in column
+        or "velocity" in column
+        or "qdot" in column
+        or "QDot" in column
+    ]
+    return preferred or numeric_columns
+
+
+def _column_tokens(column: str) -> list[str]:
+    tokens: list[str] = []
+    current = ""
+    for char in column:
+        if char.isalnum():
+            current += char.lower()
+        elif current:
+            tokens.append(current)
+            current = ""
+    if current:
+        tokens.append(current)
+    return tokens
+
+
+def _normalized_column_name(column: str) -> str:
+    return "".join(_column_tokens(column))
+
+
+def _signal_stem(column: str) -> str:
+    normalized = _normalized_column_name(column)
+    for token in ("angularvelocity", "velocity", "actuatortorque", "torque"):
+        normalized = normalized.replace(token, "")
+    return normalized
+
+
+def _axis_suffix(column: str) -> str | None:
+    tokens = _column_tokens(column)
+    if not tokens:
+        return None
+    last = tokens[-1]
+    if last in {"x", "y", "z"} or (len(last) == 1 and last.isdigit()):
+        return last
+    for suffix in ("x", "y", "z"):
+        if last.endswith(suffix):
+            return suffix
+    return None
+
+
+def pair_torque_velocity_columns(
+    torque_columns: list[str], velocity_columns: list[str]
+) -> dict[str, str]:
+    """Pair torque columns to joint-velocity columns with explicit heuristics."""
+    available = list(velocity_columns)
+    normalized_velocity = {
+        _normalized_column_name(column): column for column in available
+    }
+    stem_velocity = {_signal_stem(column): column for column in available}
+    pairs: dict[str, str] = {}
+
+    for torque_column in torque_columns:
+        candidates = [
+            torque_column,
+            torque_column.replace("Torque", "Velocity"),
+            torque_column.replace("torque", "velocity"),
+            torque_column.replace("Torque", "AngularVelocity"),
+            torque_column.replace("torque", "angularvelocity"),
+        ]
+        matched = next(
+            (
+                normalized_velocity[_normalized_column_name(candidate)]
+                for candidate in candidates
+                if _normalized_column_name(candidate) in normalized_velocity
+            ),
+            None,
+        )
+        if matched is None:
+            matched = stem_velocity.get(_signal_stem(torque_column))
+        if matched is None:
+            torque_axis = _axis_suffix(torque_column)
+            if torque_axis is not None:
+                axis_matches = [
+                    column
+                    for column in available
+                    if _axis_suffix(column) == torque_axis
+                ]
+                if len(axis_matches) == 1:
+                    matched = axis_matches[0]
+        if matched is not None:
+            pairs[torque_column] = matched
+            available.remove(matched)
+            normalized_velocity = {
+                _normalized_column_name(column): column for column in available
+            }
+            stem_velocity = {_signal_stem(column): column for column in available}
+
+    return pairs
+
+
+def _trapz(values: np.ndarray, time: np.ndarray) -> float:
+    if len(values) <= 1:
+        return 0.0
+    if hasattr(np, "trapezoid"):
+        return float(np.trapezoid(values, time))
+    return float(np.trapz(values, time))
+
+
+def compute_mechanical_work(
+    torque_frame: pd.DataFrame, velocity_frame: pd.DataFrame | None
+) -> dict[str, Any]:
+    torque_columns = _torque_columns(torque_frame)
+    if not torque_columns:
+        return {"available": False, "reason": "no numeric torque columns found"}
+    if velocity_frame is None:
+        return {
+            "available": False,
+            "reason": "joint velocity data was not provided",
+        }
+
+    velocity_columns = _joint_velocity_columns(velocity_frame)
+    if not velocity_columns:
+        return {
+            "available": False,
+            "reason": "no numeric joint velocity columns found",
+        }
+
+    pairs = pair_torque_velocity_columns(torque_columns, velocity_columns)
+    if not pairs:
+        return {
+            "available": False,
+            "reason": "no torque columns could be mapped to joint velocity columns",
+            "torque_columns": torque_columns,
+            "velocity_columns": velocity_columns,
+        }
+
+    time = _time_values(torque_frame)
+    query_time = _normalized_time(torque_frame)
+    torque_values = torque_frame[list(pairs)].to_numpy(dtype=float)
+    velocity_values = _interpolate(velocity_frame, list(pairs.values()), query_time)
+    joint_power = torque_values * velocity_values
+    positive_power = np.maximum(joint_power, 0.0)
+    negative_power_abs = np.maximum(-joint_power, 0.0)
+    net_power = np.sum(joint_power, axis=1)
+
+    per_joint: list[dict[str, Any]] = []
+    for idx, (torque_column, velocity_column) in enumerate(pairs.items()):
+        positive_work = _trapz(positive_power[:, idx], time)
+        negative_work_abs = _trapz(negative_power_abs[:, idx], time)
+        net_work = _trapz(joint_power[:, idx], time)
+        per_joint.append(
+            {
+                "torque_column": torque_column,
+                "velocity_column": velocity_column,
+                "positive_mechanical_work": positive_work,
+                "negative_mechanical_work_abs": negative_work_abs,
+                "net_mechanical_work": net_work,
+            }
+        )
+    per_joint.sort(
+        key=lambda item: float(item["positive_mechanical_work"]), reverse=True
+    )
+
+    return {
+        "available": True,
+        "rows": int(len(torque_frame)),
+        "paired_columns": pairs,
+        "unmapped_torque_columns": [
+            column for column in torque_columns if column not in pairs
+        ],
+        "positive_mechanical_work": _trapz(np.sum(positive_power, axis=1), time),
+        "negative_mechanical_work_abs": _trapz(
+            np.sum(negative_power_abs, axis=1), time
+        ),
+        "net_mechanical_work": _trapz(net_power, time),
+        "per_joint_ranking": per_joint,
+    }
+
+
 def _effort_metrics(frame: pd.DataFrame) -> dict[str, Any]:
     columns = _torque_columns(frame)
     if not columns:
@@ -279,6 +463,7 @@ def _weighted_tracking_score(
 def _weighted_objective(
     matching: dict[str, Any],
     effort: dict[str, Any] | None,
+    mechanical_work: dict[str, Any] | None,
     effort_weight: float,
     smoothness_weight: float,
 ) -> dict[str, Any]:
@@ -286,11 +471,17 @@ def _weighted_objective(
     objective = 0.0 if tracking is None else tracking
     terms: dict[str, Any] = {"tracking": tracking}
     if effort and effort.get("available"):
-        l2_effort = float(effort["l2_torque_effort"])
         smoothness = float(effort["smoothness_l2"])
-        terms["effort"] = effort_weight * l2_effort
         terms["smoothness"] = smoothness_weight * smoothness
-        objective += float(terms["effort"]) + float(terms["smoothness"])
+        objective += float(terms["smoothness"])
+        if mechanical_work and mechanical_work.get("available"):
+            effort_value = float(mechanical_work["positive_mechanical_work"])
+            terms["effort_source"] = "positive_mechanical_work"
+        else:
+            effort_value = float(effort["l2_torque_effort"])
+            terms["effort_source"] = "l2_torque_effort_proxy"
+        terms["effort"] = effort_weight * effort_value
+        objective += float(terms["effort"])
     return {
         "value": objective,
         "terms": terms,
@@ -404,6 +595,28 @@ def _summary_markdown(report: dict[str, Any]) -> str:
                 f"- Torque smoothness L2: `{effort['smoothness_l2']:.8g}`",
             ]
         )
+    mechanical_work = report.get("mechanical_work")
+    if mechanical_work and mechanical_work.get("available"):
+        lines.extend(
+            [
+                "",
+                "## Mechanical Work",
+                "- Positive mechanical work: "
+                f"`{mechanical_work['positive_mechanical_work']:.8g}`",
+                "- Negative mechanical work abs: "
+                f"`{mechanical_work['negative_mechanical_work_abs']:.8g}`",
+                "- Net mechanical work: "
+                f"`{mechanical_work['net_mechanical_work']:.8g}`",
+            ]
+        )
+    elif mechanical_work:
+        lines.extend(
+            [
+                "",
+                "## Mechanical Work",
+                f"- Unavailable: {mechanical_work['reason']}",
+            ]
+        )
     return "\n".join(lines) + "\n"
 
 
@@ -418,6 +631,8 @@ def evaluate(
     impact_window_s: float,
     effort_weight: float,
     smoothness_weight: float,
+    body_state_csv: Path | None = None,
+    joint_velocity_csv: Path | None = None,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     matching: dict[str, Any] | None = None
@@ -432,9 +647,15 @@ def evaluate(
             plots["tracking_residuals"] = str(plot_path)
 
     effort = None
+    mechanical_work = None
     if torque_csv is not None:
         torques = _load_frame(torque_csv)
         effort = _effort_metrics(torques)
+        velocity_csv = joint_velocity_csv or body_state_csv
+        velocities = _load_frame(velocity_csv) if velocity_csv else None
+        mechanical_work = compute_mechanical_work(torques, velocities)
+        if velocity_csv:
+            mechanical_work["velocity_csv"] = str(velocity_csv)
         plot_path = output_dir / f"{run_label}_torque_effort.png"
         if _plot_torques(torques, plot_path):
             plots["torque_effort"] = str(plot_path)
@@ -445,11 +666,15 @@ def evaluate(
         "target_csv": str(target_csv) if target_csv else None,
         "sim_csv": str(sim_csv) if sim_csv else None,
         "torque_csv": str(torque_csv) if torque_csv else None,
+        "body_state_csv": str(body_state_csv) if body_state_csv else None,
+        "joint_velocity_csv": str(joint_velocity_csv) if joint_velocity_csv else None,
         "matching": matching,
         "effort": effort,
+        "mechanical_work": mechanical_work,
         "objective": _weighted_objective(
             matching or {},
             effort,
+            mechanical_work,
             effort_weight=effort_weight,
             smoothness_weight=smoothness_weight,
         ),
@@ -468,6 +693,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--target-csv", type=Path)
     parser.add_argument("--sim-csv", type=Path)
     parser.add_argument("--torque-csv", type=Path)
+    parser.add_argument("--body-state-csv", type=Path)
+    parser.add_argument("--joint-velocity-csv", type=Path)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--scenario", default="downswing")
     parser.add_argument("--run-label", default="latest")
@@ -485,6 +712,8 @@ def main() -> None:
         target_csv=args.target_csv,
         sim_csv=args.sim_csv,
         torque_csv=args.torque_csv,
+        body_state_csv=args.body_state_csv,
+        joint_velocity_csv=args.joint_velocity_csv,
         output_dir=args.output_dir,
         scenario=args.scenario,
         run_label=args.run_label,

@@ -30,16 +30,16 @@
 
 ## 1. Identity
 
-| Field                   | Value                                                                |
-| ----------------------- | -------------------------------------------------------------------- |
-| **Repository Name**     | `UpstreamDrift`                                                      |
-| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift`                   |
-| **Owner**               | D-sorganization                                                      |
-| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                                       |
-| **License**             | MIT                                                                  |
-| **Current Version**     | 2.1.0                                                                |
-| **Spec Version**        | 1.0.112                                                              |
-| **Last Spec Update**    | 2026-05-05 (Golf ML matching diagnostics and optimization objective) |
+| Field                   | Value                                                     |
+| ----------------------- | --------------------------------------------------------- |
+| **Repository Name**     | `UpstreamDrift`                                           |
+| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift`        |
+| **Owner**               | D-sorganization                                           |
+| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                            |
+| **License**             | MIT                                                       |
+| **Current Version**     | 2.1.0                                                     |
+| **Spec Version**        | 1.0.113                                                   |
+| **Last Spec Update**    | 2026-05-06 (Golf ML matching workflow optimization suite) |
 
 ## 2. Purpose & Mission
 
@@ -542,6 +542,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-05-06 | 1.0.113 | Expanded the golf ML matching workflow with Pareto regularization sweeps, calibration validation reports and plots, positive mechanical-work diagnostics from paired torque/qdot logs, a tabbed MATLAB workflow GUI, and a frame-by-frame sequential torque-search fallback contract with manifest generation, parallel candidate evaluation structure, smoothing, and polynomial export hooks.                                                                                                                                                                                                                                                                                                                                                                                                             |
 | 2026-05-05 | 1.0.112 | Added non-blocking golf ML matching diagnostics for target-vs-Simscape club tracking, impact-window error, torque effort, torque impulse, peak control, and torque-rate smoothness; documented the weighted optimization objective for redundant torque and body-motion selection.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | 2026-05-05 | 1.0.111 | Removed the misplaced experimental OpenFOAM CFD execution helper from UpstreamDrift's biomechanical physics-engine inventory so OpenFOAM execution can live with the Tools_Private glass-model CFD stack where it is used.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | 2026-05-05 | 1.0.110 | Bolt: Optimized clubhead speed computation in swing kinematics by replacing `np.linalg.norm(clubhead_vel, axis=1)` with `np.sqrt(np.einsum("ij,ij->i", clubhead_vel, clubhead_vel))` to avoid temporary array allocations, achieving ~35% performance improvement.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |

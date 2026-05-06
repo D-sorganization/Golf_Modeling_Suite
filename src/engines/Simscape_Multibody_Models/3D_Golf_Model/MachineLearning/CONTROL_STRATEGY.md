@@ -208,6 +208,7 @@ py -3.12 src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\eva
   --target-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\TW_ProV1_downswing_club_target_calibrated.csv `
   --sim-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\simulated_club_motion.csv `
   --torque-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\optimized_club_torques.csv `
+  --joint-velocity-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\simulated_body_state.csv `
   --scenario downswing `
   --run-label downswing_trial_001
 ```
@@ -216,6 +217,7 @@ Use the resulting JSON/Markdown report to compare:
 
 - whole-trajectory normalized RMSE for club position, velocity, and acceleration
 - impact-window RMSE near ball contact
+- positive mechanical work when paired qdot is available
 - L2 torque effort, L1 torque impulse, peak absolute torque, and torque smoothness
 - weighted objective changes as `lambda_work`, `lambda_tau`, and
   `lambda_smooth` are swept
@@ -224,6 +226,25 @@ This gives a practical way to minimize work required to match the club motion:
 run a Pareto sweep over tracking, effort, and smoothness weights, replay the
 best candidates in MATLAB, then select the lowest-effort candidate whose
 impact-window club error is still acceptable.
+
+The Pareto sweep runner automates the first filtering pass:
+
+```powershell
+py -3.12 src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\run_matching_pareto_sweep.py `
+  --checkpoint src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\runs\club_direct_10_cpu\best_model.pt `
+  --desired-club-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\TW_ProV1_downswing_club_target_calibrated.csv `
+  --reference-body-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\reference_body_state.csv `
+  --output-dir src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\pareto_sweep `
+  --effort-weights 1e-8,1e-7,1e-6 `
+  --smoothness-weights 1e-10,1e-9,1e-8 `
+  --steps 500 `
+  --scenario downswing
+```
+
+Replay the sweep's `best_low_error`, `best_low_effort`, and `knee_point`
+candidates first. This is a practical way to manage redundant torques: search
+the regularization surface, then spend MATLAB time only on candidates that are
+clearly distinct in tracking/effort tradeoff.
 
 ## Preparing A Measured Club Target
 
@@ -319,6 +340,23 @@ the translation. The direct torque optimizer can now consume either workbook
 column names (`clubface_x`, `clubface_vx`, `clubface_ax`) or calibrated
 Simscape target column names (`ClubLogs_CHGlobalPosition_1`, etc.).
 
+Run the calibration validator before using the calibrated target as the
+optimization reference:
+
+```powershell
+py -3.12 src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\validate_club_calibration.py `
+  --measured-target-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\TW_ProV1_downswing_club_target.csv `
+  --calibrated-target-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\TW_ProV1_downswing_club_target_calibrated.csv `
+  --sim-csv src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\simulated_club_motion.csv `
+  --transform-json src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\club_target_calibration.json `
+  --output-dir src\engines\Simscape_Multibody_Models\3D_Golf_Model\MachineLearning\data\processed\calibration_validation
+```
+
+The JSON/Markdown report and optional plots make frame mistakes visible before
+optimization. Negative determinant, extreme scale, large impact-window
+residuals, and axis-skewed residuals should be treated as model setup issues,
+not tuning problems.
+
 ## One-Model Control Workflow
 
 Use the direct torque-to-club model:
@@ -371,6 +409,40 @@ Risks:
 - Requires careful scaling between measured club coordinates and simulated club coordinates.
 - Needs smoothing across the full trajectory; per-sample optimization can create discontinuous body targets or torques.
 
+## Sequential Frame-By-Frame Fallback
+
+The neural-network path is still the preferred fast iteration loop, but the
+project now also has a deterministic fallback for overnight experiments:
+
+```text
+current Simscape state
+    -> evaluate short-horizon constant-torque candidates
+    -> commit the best candidate for the next target frame
+    -> advance state and repeat
+    -> smooth the piecewise torque profile
+    -> export polynomial inputs
+    -> replay and evaluate target-vs-simulated club motion
+```
+
+This is a sequential optimal-control approximation. It is compute intensive,
+but it gives a concrete way to make progress when the surrogate optimizer is
+not yet faithful enough. The default `coordinate` candidate strategy evaluates
+the current torque plus one-axis perturbations, which scales as:
+
+```text
+1 + control_count * non_zero_candidate_levels
+```
+
+Use full Cartesian candidate sets only for very small control subsets. MATLAB
+candidate evaluation can use `parfor` when Parallel Computing Toolbox is
+available.
+
+The implementation currently includes the manifest builder, GUI tab, MATLAB
+candidate-loop skeleton, smoothing, and polynomial export. The remaining
+model-specific work is to implement the Simscape stepping hooks that restore
+state, apply a constant-torque candidate over the horizon, and extract the next
+state/club target values from `GolfSwing3D_Kinetic`.
+
 ## Next Required Refinements
 
 Before relying on optimized torques in production model studies, add these controls:
@@ -379,8 +451,9 @@ Before relying on optimized torques in production model studies, add these contr
 2. Bounds for actuator torque/force columns.
 3. Joint-specific smoothness and effort penalties across adjacent samples.
 4. A held-out swing split in addition to the current random row split.
-5. Closed-loop replay tests in MATLAB/Simscape for both full-swing and downswing scenarios.
-6. A sequence-level optimizer that solves the whole club trajectory instead of one timestep at a time.
+5. Model-specific frame-by-frame Simscape stepping hooks for the sequential fallback.
+6. Closed-loop replay tests in MATLAB/Simscape for both full-swing and downswing scenarios.
+7. A sequence-level optimizer that solves the whole club trajectory instead of one timestep at a time.
 
 ## MATLAB GUI
 
@@ -394,6 +467,8 @@ ml_workflow_gui
 
 The GUI is intentionally thin. It calls the same Python and MATLAB scripts
 documented here so that every button has a reproducible command-line equivalent.
+The tabs separate target/replay, surrogate sweeps, frame-by-frame fallback
+development, and diagnostics.
 
 ## MATLAB Polynomial Input Bridge
 
