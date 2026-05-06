@@ -1,52 +1,36 @@
 # Review Comments Archive - 2026-05-06
 
-Generated: 2026-05-06T02:25:21.449696
+Generated: 2026-05-06T14:54:59.762977
 
-## Reviewer (chatgpt-codex-connector[bot]) (3 comments)
+## Reviewer (chatgpt-codex-connector[bot]) (2 comments)
 
-### PR #4061: src/engines/Simscape_Multibody_Models/3D_Golf_Model/MachineLearning/train_dynamics_surrogate.py:19
-
-Actionable: No
-Has Suggestion: No
-
-```
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Restore executable behavior for legacy shim scripts**
-
-This compatibility shim only re-exports symbols and emits a warning, but it never invokes `main()` under a `__name__ == "__main__"` guard. That means legacy entrypoints stop working when executed directly (for example `python .../train_dynamics_surrogate.py ...`), so callers that relied on the old script paths no longer run training/optimization/extractio...
-```
-
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4061#discussion_r3194332525)
-
----
-
-### PR #4061: src/shared/python/motion_matching/surrogate/perstep/optimize.py:251
+### PR #4087: .github/workflows/docs-currency-warning.yml:69
 
 Actionable: No
 Has Suggestion: No
 
 ```
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Resolve relocated optimizer's control-name import**
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Prevent advisory job from failing on read-only PR tokens**
 
-The relocated optimizer still does `from export_torque_polynomials import TORQUE_TO_POLYNOMIAL_BASE` inside `_control_columns`. After this move, `export_torque_polynomials.py` is no longer a sibling of `surrogate/perstep/optimize.py`, so `optimize_sequence` now fails with `ModuleNotFoundError` unless the old MachineLearning directory is manually injected in...
+This workflow is documented as advisory-only, but `gh pr comment` runs under `set -e` and will exit non-zero when the `pull_request` event provides a read-only `GITHUB_TOKEN` (common for forked and Dependabot PRs). In those contexts the step fails instead of degrading gracefully, so the check can become a failing status even though it is intended to ...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4061#discussion_r3194332530)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4087#discussion_r3197730238)
 
 ---
 
-### PR #4061: src/shared/python/motion_matching/surrogate/perstep/extract_dataset.py:23
+### PR #4087: .github/workflows/docs-currency-warning.yml:48
 
-Actionable: No
+Actionable: Yes
 Has Suggestion: No
 
 ```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Point default manifest to an existing file after relocation**
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Restrict docs-match pattern to the three canonical docs**
 
-`DEFAULT_MANIFEST` is derived from the new `SCRIPT_DIR` (`surrogate/perstep`), but `column_manifest_inverse_ready.json` was not moved there. Running the extractor without `--manifest` now resolves to a non-existent file and errors before processing, whereas the pre-relocation default pointed at the checked-in manifest under `MachineLearning`.
-
-Use...
+The docs-currency policy says motion-matching PRs should update one of the three canonical docs, but this matcher treats any `*_SPEC.md`/`*_GUIDE.md`/`*_PLAYBOOK.md` anywhere in the repo as satisfying the requirement. A PR can therefore bypass the intended warning by touching an unrelated spec/guide/playbook file, producing false negatives in the advi...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4061#discussion_r3194332537)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4087#discussion_r3197730241)
 
 ---
+
