@@ -1,52 +1,36 @@
 # Review Comments Archive - 2026-05-06
 
-Generated: 2026-05-06T02:25:21.449696
+Generated: 2026-05-06T15:01:31.896824
 
-## Reviewer (chatgpt-codex-connector[bot]) (3 comments)
+## Reviewer (chatgpt-codex-connector[bot]) (2 comments)
 
-### PR #4061: src/engines/Simscape_Multibody_Models/3D_Golf_Model/MachineLearning/train_dynamics_surrogate.py:19
-
-Actionable: No
-Has Suggestion: No
-
-```
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Restore executable behavior for legacy shim scripts**
-
-This compatibility shim only re-exports symbols and emits a warning, but it never invokes `main()` under a `__name__ == "__main__"` guard. That means legacy entrypoints stop working when executed directly (for example `python .../train_dynamics_surrogate.py ...`), so callers that relied on the old script paths no longer run training/optimization/extractio...
-```
-
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4061#discussion_r3194332525)
-
----
-
-### PR #4061: src/shared/python/motion_matching/surrogate/perstep/optimize.py:251
+### PR #4090: src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/motion_matching/option4_python_bridge/tests/conftest.py:21
 
 Actionable: No
 Has Suggestion: No
 
 ```
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Resolve relocated optimizer's control-name import**
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Handle missing matlab package when checking marker availability**
 
-The relocated optimizer still does `from export_torque_polynomials import TORQUE_TO_POLYNOMIAL_BASE` inside `_control_columns`. After this move, `export_torque_polynomials.py` is no longer a sibling of `surrogate/perstep/optimize.py`, so `optimize_sequence` now fails with `ModuleNotFoundError` unless the old MachineLearning directory is manually injected in...
+`pytest_collection_modifyitems` calls `importlib.util.find_spec("matlab.engine")`, but on Python 3.10+ this raises `ModuleNotFoundError` when the parent `matlab` package is absent instead of returning `None`. On machines without MATLAB (the common CI/dev case this hook is meant to support), collection aborts with an INTERNALERROR before any sk...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4061#discussion_r3194332530)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4090#discussion_r3197765779)
 
 ---
 
-### PR #4061: src/shared/python/motion_matching/surrogate/perstep/extract_dataset.py:23
+### PR #4090: src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/motion_matching/option4_python_bridge/fit_swing_python.py:104
 
 Actionable: No
 Has Suggestion: No
 
 ```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Point default manifest to an existing file after relocation**
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Validate theta0 before starting MATLAB engine**
 
-`DEFAULT_MANIFEST` is derived from the new `SCRIPT_DIR` (`surrogate/perstep`), but `column_manifest_inverse_ready.json` was not moved there. Running the extractor without `--manifest` now resolves to a non-existent file and errors before processing, whereas the pre-relocation default pointed at the checked-in manifest under `MachineLearning`.
-
-Use...
+`fit_swing_scipy` starts the MATLAB engine before checking whether `options.theta0` has the correct length. That means a simple user-input error can trigger an unnecessary (and expensive) engine startup, and on hosts without MATLAB it will raise an engine startup failure instead of the intended `ValueError` for bad `theta0`, making argument validation unusable ...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4061#discussion_r3194332537)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4090#discussion_r3197765789)
 
 ---
+
