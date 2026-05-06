@@ -336,6 +336,7 @@ markers = [
     "requires_gpu: marks tests that require a GPU (skip with '-m not requires_gpu')",
     "smoke: release-blocking smoke tests for built production artifacts",
     "requires_matlab: tests that require the MATLAB Engine for Python (alias of live_simulation for the Simscape adapter)",
+    "requires_opensim: tests that require the OpenSim Python bindings (skipped when `import opensim` fails)",
 ]
 filterwarnings = [
     # Suppress hppfcl→coal rename noise (third-party, not actionable in this repo)
