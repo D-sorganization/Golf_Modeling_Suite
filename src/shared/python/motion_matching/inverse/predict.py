@@ -5,9 +5,9 @@ Public surface
 * :func:`predict_coefficients` - sample N candidates, optionally validate via
   a round-trip forward model, return the best one (lowest round-trip RMSE).
 * :class:`InverseFitResult` - frozen result bundle.
-* :class:`TrainedInverseCVAE` - lightweight wrapper bundling the
+* :class:`_InferenceBundle` - lightweight wrapper bundling the
   :class:`SwingInverseCVAE` model with the kinematics tensor it conditions on.
-  Once #033 lands its own ``TrainedInverseCVAE`` (with norm-stats and
+  Once #033 lands its own ``_InferenceBundle`` (with norm-stats and
   metadata) we will swap this class for that one; the duck-typed
   ``model`` / ``kinematics`` attributes preserve the call-site contract.
 
@@ -49,7 +49,7 @@ __all__ = [
     "ForwardFn",
     "InverseFitResult",
     "RoundTripOutput",
-    "TrainedInverseCVAE",
+    "_InferenceBundle",
     "ValidationReport",
     "predict_coefficients",
 ]
@@ -65,11 +65,11 @@ class _ForwardSurrogate(Protocol):
 
 
 @dataclass(frozen=True)
-class TrainedInverseCVAE:
+class _InferenceBundle:
     """Bundle of model + the kinematics tensor it conditions on.
 
     Once issue #033 (``train_inverse_cvae``) lands and emits its own
-    ``TrainedInverseCVAE`` dataclass with norm-stats / training metadata,
+    ``_InferenceBundle`` dataclass with norm-stats / training metadata,
     we'll re-export that one. Until then the inference surface only needs
     the two attributes below; both #033 and the test stubs satisfy this
     minimal contract.
@@ -108,16 +108,16 @@ class InverseFitResult:
 
 def _validate_args(
     target: ClubTarget,
-    model: TrainedInverseCVAE,
+    model: _InferenceBundle,
     n_samples: int,
     rmse_threshold_m: float,
 ) -> None:
     """Eager precondition checks (DbC)."""
     if not isinstance(target, ClubTarget):
         raise TypeError(f"target must be a ClubTarget; got {type(target).__name__}")
-    if not isinstance(model, TrainedInverseCVAE):
+    if not isinstance(model, _InferenceBundle):
         raise TypeError(
-            f"model must be a TrainedInverseCVAE bundle; got {type(model).__name__}"
+            f"model must be a _InferenceBundle bundle; got {type(model).__name__}"
         )
     if not isinstance(model.model, SwingInverseCVAE):
         raise TypeError(
@@ -136,7 +136,7 @@ def _validate_args(
 
 
 def _draw_samples(
-    bundle: TrainedInverseCVAE,
+    bundle: _InferenceBundle,
     n_samples: int,
 ) -> tuple[list[NDArray[np.float64]], EncoderOutput]:
     """Draw ``n_samples`` candidate coefficient vectors and the encoder output."""
@@ -247,7 +247,7 @@ def _select_best(
 
 def predict_coefficients(
     target: ClubTarget,
-    model: TrainedInverseCVAE,
+    model: _InferenceBundle,
     *,
     n_samples: int = DEFAULT_N_SAMPLES,
     forward_fn: Callable[[NDArray[np.float64]], object] | None = None,

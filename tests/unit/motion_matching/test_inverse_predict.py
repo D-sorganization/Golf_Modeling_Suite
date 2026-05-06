@@ -13,9 +13,9 @@ from src.shared.python.motion_matching.inverse import (
     CVAEConfig,
     InverseFitResult,
     SwingInverseCVAE,
-    TrainedInverseCVAE,
     predict_coefficients,
 )
+from src.shared.python.motion_matching.inverse.predict import _InferenceBundle
 
 from ._fixtures import make_target
 
@@ -30,7 +30,7 @@ ForwardFn = Callable[
 ]
 
 
-def _make_bundle() -> TrainedInverseCVAE:
+def _make_bundle() -> _InferenceBundle:
     cfg = CVAEConfig(
         n_joints=_N_JOINTS,
         n_timesteps=_TIMESTEPS,
@@ -45,7 +45,7 @@ def _make_bundle() -> TrainedInverseCVAE:
     torch.manual_seed(0)
     cvae = SwingInverseCVAE(cfg).eval()
     kin = torch.randn(1, _TIMESTEPS, _KIN_CHANNELS)
-    return TrainedInverseCVAE(model=cvae, kinematics=kin)
+    return _InferenceBundle(model=cvae, kinematics=kin)
 
 
 def _perfect_forward_fn(target_n: int) -> ForwardFn:

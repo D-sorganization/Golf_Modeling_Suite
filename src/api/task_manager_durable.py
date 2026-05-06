@@ -26,7 +26,7 @@ import threading
 import time
 import uuid
 from collections.abc import Generator
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Protocol
@@ -545,7 +545,7 @@ class DurableTaskManager:
                 count = self.backend.cleanup()
                 if count > 0:
                     logger.info("Cleaned up %d expired tasks", count)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.error("Cleanup error: %s", e)
 
     def create_task(
@@ -758,8 +758,7 @@ class DurableTaskManager:
         self._closed = True
         if self._cleanup_task:
             self._cleanup_task.cancel()
-            try:
+            with suppress(asyncio.CancelledError):
                 await self._cleanup_task
-            except asyncio.CancelledError:
-                pass
+
         logger.info("DurableTaskManager shutdown complete")
