@@ -11,11 +11,11 @@ the formal definitions; this doc is the recipe.
 
 ## What we are matching, and why
 
-| | What | Why |
-|---|---|---|
-| **Primary** | `target.grip` (mid-hands position on the shaft, world-frame metres) | Rigid body→club interface — independent of player club length and shaft flex |
-| **Primary** | `target.grip_quat` (mid-hands orientation, [w x y z]) | Sets the hand's rotational pose; clubhead position is derivable from grip pose + modeled shaft geometry |
-| **Secondary** (default off) | `target.clubhead`, `target.club_quat` | Subject to club-length differences and shaft flex — penalising them in the cost forces the optimizer to chase noise. Available if you want soft supervision. |
+|                             | What                                                                | Why                                                                                                                                                          |
+| --------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Primary**                 | `target.grip` (mid-hands position on the shaft, world-frame metres) | Rigid body→club interface — independent of player club length and shaft flex                                                                                 |
+| **Primary**                 | `target.grip_quat` (mid-hands orientation, [w x y z])               | Sets the hand's rotational pose; clubhead position is derivable from grip pose + modeled shaft geometry                                                      |
+| **Secondary** (default off) | `target.clubhead`, `target.club_quat`                               | Subject to club-length differences and shaft flex — penalising them in the cost forces the optimizer to chase noise. Available if you want soft supervision. |
 
 The cost function defaults
 ([default_cost_options.m](default_cost_options.m)) are already grip-primary:
@@ -72,21 +72,21 @@ regularizer fights with the position term. Decoupling fixes that:
 ### What you control (the inputs)
 
 The input MATs (e.g. `3DModelInputs_Impact.mat`) contain ~595 variables.
-The ones that move the *initial pose* are the `*StartPosition*` and
+The ones that move the _initial pose_ are the `*StartPosition*` and
 `*StartVelocity*` family for the floating root (Hip translation+rotation) plus
 each rotational joint:
 
-| Family | Joint | Variables |
-|---|---|---|
-| Hip translation | World | `TranslationStartPositionX/Y/Z`, `TranslationStartVelocityX/Y/Z` |
-| Hip rotation | Hip | `HipStartPositionX/Y/Z`, `HipStartVelocityX/Y/Z` |
-| Spine | Spine | `SpineStartPositionX/Y`, `SpineStartVelocityX/Y` |
-| Torso | Torso | `TorsoStartPosition`, `TorsoStartVelocity` |
-| Scapulae | LScap, RScap | `LScapStartPositionX/Y`, `RScapStartPositionX/Y` (+ velocities) |
-| Shoulders | LS, RS | `LSStartPositionX/Y/Z`, `RSStartPositionX/Y/Z` (+ velocities) |
-| Elbows | LE, RE | `LEStartPosition`, `REStartPosition` (+ velocities) |
-| Forearms | LF, RF | `LFStartPosition`, `RFStartPosition` (+ velocities) |
-| Wrists | LW, RW | `LWStartPositionX/Y`, `RWStartPositionX/Y` (+ velocities) |
+| Family          | Joint        | Variables                                                        |
+| --------------- | ------------ | ---------------------------------------------------------------- |
+| Hip translation | World        | `TranslationStartPositionX/Y/Z`, `TranslationStartVelocityX/Y/Z` |
+| Hip rotation    | Hip          | `HipStartPositionX/Y/Z`, `HipStartVelocityX/Y/Z`                 |
+| Spine           | Spine        | `SpineStartPositionX/Y`, `SpineStartVelocityX/Y`                 |
+| Torso           | Torso        | `TorsoStartPosition`, `TorsoStartVelocity`                       |
+| Scapulae        | LScap, RScap | `LScapStartPositionX/Y`, `RScapStartPositionX/Y` (+ velocities)  |
+| Shoulders       | LS, RS       | `LSStartPositionX/Y/Z`, `RSStartPositionX/Y/Z` (+ velocities)    |
+| Elbows          | LE, RE       | `LEStartPosition`, `REStartPosition` (+ velocities)              |
+| Forearms        | LF, RF       | `LFStartPosition`, `RFStartPosition` (+ velocities)              |
+| Wrists          | LW, RW       | `LWStartPositionX/Y`, `RWStartPositionX/Y` (+ velocities)        |
 
 (Search your loaded MAT for `*StartPosition*` to enumerate exactly what's
 present; the names follow the joint subsystem names listed in the
@@ -144,7 +144,7 @@ Inside `local_pose_cost` you call
 `||model.grip(0) - target.grip(impact_idx_or_address)||²`. The whole
 inner loop is fast because the sim is 5 ms.
 
-This is implemented in [`solve_starting_pose.m`](solve_starting_pose.m) (issue #4072).
+This is on the roadmap (see §"What's next") but not yet wired in this PR.
 
 ---
 
@@ -211,12 +211,12 @@ that's 23 minutes vs. 50 minutes — not life-changing but noticeable.
 
 ## Picking the right option (1 / 2 / 3 / 4)
 
-| Situation | Pick |
-|---|---|
-| First time fitting a swing, want a baseline you can trust | **Option 1** (fmincon) |
+| Situation                                                                    | Pick                                                                              |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| First time fitting a swing, want a baseline you can trust                    | **Option 1** (fmincon)                                                            |
 | Need to fit ≥10 swings interactively, can spare 8+ hours of training upfront | **Option 2** (NN surrogate) — train on 5k+ trials, then sub-second forward passes |
-| Need real-time inverse "given a club path, give me theta" | **Option 3** (inverse cVAE) — same training cost, then one forward pass per swing |
-| Want Python-side optimization (JAX, scipy.optimize) | **Option 4** (bridge) — solver in Python, sim still in MATLAB |
+| Need real-time inverse "given a club path, give me theta"                    | **Option 3** (inverse cVAE) — same training cost, then one forward pass per swing |
+| Want Python-side optimization (JAX, scipy.optimize)                          | **Option 4** (bridge) — solver in Python, sim still in MATLAB                     |
 
 For now Option 1 is the only fully working path. Options 2/3 have scaffolding
 but no trained models in the tree; Option 4 is spec-only.
@@ -236,7 +236,7 @@ After a fit, sanity-check:
 
 ## What's next (not in this PR)
 
-- [x] Implement `solve_starting_pose.m` (the Stage-1 numerical solver sketched above) — landed in PR for issue #4072.
+- [ ] Implement `solve_starting_pose.m` (the Stage-1 numerical solver sketched above).
 - [ ] Wire `opts.sim.input_overrides` through `simulate_with_coefficients` so Stage-1 results plumb through to Stage 2 cleanly.
 - [ ] Train an Option-2 surrogate on the dataset_generator output and add a `fit_swing_surrogate.m` analogous to `fit_swing_fmincon.m`.
 - [ ] Multi-start Option 1 with the n best basins kept; hybrid finishing pass to polish.
