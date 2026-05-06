@@ -153,6 +153,11 @@ class DualHandIKSolver:
         # Reference configuration (neutral pose)
         self.q_ref = pin.neutral(self.model)
 
+    @property
+    def model_dof_count(self) -> int:
+        """Number of configuration coordinates in the loaded model."""
+        return int(self.model.nq)
+
     def _setup_tasks(self) -> None:
         """Setup Pink IK tasks."""
         s = self.settings
@@ -412,6 +417,11 @@ class DualHandIKSolverFallback:
         self.right_hand_frame_id = self.model.getFrameId(right_hand_frame)
 
         self.q_ref = pin.neutral(self.model)
+
+    @property
+    def model_dof_count(self) -> int:
+        """Number of configuration coordinates in the loaded model."""
+        return int(self.model.nq)
 
     def solve_frame(
         self,

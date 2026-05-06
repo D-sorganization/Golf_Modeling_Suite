@@ -135,7 +135,7 @@ class MotionTrainingPipeline:
         logger.info(f"      Model: {self.config.golfer_urdf}")
         if not (self.ik_solver is not None):
             raise ValueError("DbC Blocked: Precondition failed.")
-        logger.info(f"      DOF: {self.ik_solver.model.nq}")
+        logger.info(f"      DOF: {self.ik_solver.model_dof_count}")
 
         # Step 3: Solve IK
         logger.info("\n[3/4] Solving inverse kinematics...")
