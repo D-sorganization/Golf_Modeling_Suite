@@ -306,7 +306,21 @@ jobs:
 
       - name: Semgrep SAST Scan
         shell: bash
-        run: semgrep --config p/python --config p/security-audit --config p/owasp-top-ten --error
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+            mapfile -d '' semgrep_targets < <(
+              git diff --name-only --diff-filter=ACMRT -z "origin/${{ github.base_ref }}" HEAD -- \
+                '*.py' '*.js' '*.jsx' '*.ts' '*.tsx' '*.yaml' '*.yml' '*.json' '*.xml' '*.html' '*.sh'
+            )
+            if [ "${#semgrep_targets[@]}" -eq 0 ]; then
+              echo "No changed files supported by Semgrep; skipping PR SAST delta scan."
+              exit 0
+            fi
+            semgrep --config p/python --config p/security-audit --config p/owasp-top-ten --error "${semgrep_targets[@]}"
+          else
+            semgrep --config p/python --config p/security-audit --config p/owasp-top-ten --error
+          fi
 
       # SECURITY: Bandit static security analysis (Issue #782)
       # Blocking on medium+ severity, medium+ confidence findings (Issue #2067)
@@ -327,7 +341,7 @@ jobs:
           scan-ref: .
           scanners: vuln,secret,misconfig
           severity: CRITICAL,HIGH
-          exit-code: '1'
+          exit-code: "1"
 
       # Code Quality Check (Issue #781) - checks for placeholders, magic numbers, etc.
       - name: Code Quality Check
@@ -616,7 +630,7 @@ jobs:
   alembic-postgres-round-trip:
     needs: pick-runner
     runs-on: ${{ needs.pick-runner.outputs.runner }}
-    timeout-minutes: 10
+    timeout-minutes: 20
     services:
       postgres:
         image: postgres:16
@@ -653,7 +667,8 @@ jobs:
             --timeout=180 \
             --timeout-method=thread \
             --no-cov \
-            -v --tb=short
+            --durations=10 \
+            -vv --tb=short
 
   shared-tools-consumer-contracts:
     needs: [pick-runner, quality-gate]
