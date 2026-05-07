@@ -18,6 +18,11 @@ Public API:
 from __future__ import annotations
 
 from ._normalize import NormalizationStats
+from .checkpoint import (
+    SurrogateArtifactPaths,
+    load_trained_surrogate,
+    save_trained_surrogate,
+)
 from .invert import FitResult, InvertOptions, fit_swing_via_surrogate
 from .model import ClubTrajectory, SurrogateConfig, SwingSurrogate
 from .train import TrainConfig, TrainedSurrogate, train_surrogate
@@ -27,8 +32,11 @@ __all__ = [
     "ClubTrajectory",
     "FitResult",
     "InvertOptions",
+    "load_trained_surrogate",
     "NormalizationStats",
+    "save_trained_surrogate",
     "SurrogateConfig",
+    "SurrogateArtifactPaths",
     "SwingSurrogate",
     "TrainConfig",
     "TrainedSurrogate",

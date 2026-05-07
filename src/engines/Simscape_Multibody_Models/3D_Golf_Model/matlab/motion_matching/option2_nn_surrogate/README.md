@@ -8,7 +8,11 @@
 
 ## Status
 
-Greenfield. Docs scaffolded; implementation delegated to issues #028–#031. **Blocked on the parquet dataset landing in the repo** — see [Dependencies](#dependencies).
+Partial implementation. The shared Python surrogate core now lives under
+`src/shared/python/motion_matching/surrogate/`, and this folder now ships a
+file-path training entrypoint that persists checkpoints, normalization stats,
+and metrics. Inversion, round-trip validation, and the MATLAB shim remain
+tracked follow-ups under issues #029–#031.
 
 ## When to use this option
 
@@ -25,12 +29,11 @@ When **not** to use it:
 
 | File | Purpose |
 |---|---|
-| `surrogate.py` | `SwingSurrogate(nn.Module)` — the differentiable forward model. Skeleton lives in this folder; agents fill in. |
-| `train.py` | `train_surrogate(dataset, config) -> TrainedSurrogate`. AdamW + cosine schedule + mixed precision. |
+| `surrogate.py` | Historical design stub retained for the issue docs; the live implementation is in `src/shared/python/motion_matching/surrogate/model.py`. |
+| `train.py` | File-path CLI wrapper around the shared Python trainer; writes `best.pt`, `last.pt`, `config.json`, `norm_stats.npz`, and `surrogate_v1_metrics.json`. |
 | `invert.py` | `fit_swing_via_surrogate(target, surrogate, opts) -> FitResult`. Adam over coefficients with bound projection + restarts. |
 | `validate.py` | `validate_against_simscape(result, sim_fn) -> ValidationReport`. Round-trips every fit through the true forward simulator. |
-| `dataset.py` | Dataset adapter wrapping `shared/load_sweep_dataset` (#019) into a PyTorch `Dataset`. |
-| `config.py` | `TrainConfig`, `InvertOptions`, `SurrogateConfig` dataclasses. |
+| `src/shared/python/motion_matching/surrogate/` | Live shared implementation for model, training, inversion, validation, and persisted checkpoint loading. |
 | `fit_swing_surrogate.m` | MATLAB shim that calls the Python entry-point via `pyrunfile`. |
 | `tests/` | `pytest` suite per [TESTING.md](TESTING.md). |
 | `models/` | Trained checkpoint store. Contents `.gitignore`'d (only `.gitkeep` is tracked). |
@@ -43,7 +46,10 @@ The contracts are in [INTERFACES.md](INTERFACES.md). The algorithm is in [APPROA
 
 ### Hard dependency: parquet dataset
 
-Option 2 cannot start training until the random-sweep parquet dataset is in the repo. The proposed schema is in [shared/DATASET_SCHEMA.md](../shared/DATASET_SCHEMA.md). The user has stated they will copy it in; until then this folder is documentation only.
+Production training still depends on the random-sweep parquet dataset. The
+shared trainer can run against the repo's synthetic sweep fixtures for unit
+tests and smoke checks, but a useful real checkpoint still requires the
+dataset described in [shared/DATASET_SCHEMA.md](../shared/DATASET_SCHEMA.md).
 
 **Flag for the human.** Confirm:
 

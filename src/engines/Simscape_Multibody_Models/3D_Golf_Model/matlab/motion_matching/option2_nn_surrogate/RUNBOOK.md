@@ -2,7 +2,9 @@
 
 Literal Python and MATLAB commands for the four operational tasks: train, fit, validate, hybrid.
 
-> **Status.** Most commands below are not yet executable — the implementation lands in issues #028–#031. This runbook is the spec the agents implement against. All paths are absolute or repo-relative as documented.
+> **Status.** The training entrypoint in step 1 is now executable and writes
+> persisted artifacts. The inversion, round-trip validation, and MATLAB shim
+> sections below remain the target contract for issues #029–#031.
 
 ## Conventions
 
@@ -26,15 +28,11 @@ If the dataset is not present, **stop**. See [DATA.md](DATA.md).
 ## 1. Train the surrogate from a fresh parquet
 
 ```bash
-python3 -m src.engines.Simscape_Multibody_Models.\
-3D_Golf_Model.matlab.motion_matching.option2_nn_surrogate.train \
+python3 src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/motion_matching/option2_nn_surrogate/train.py \
     --dataset-path data/sweep/20251030 \
     --output-dir src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/motion_matching/option2_nn_surrogate/models/20251030_run1 \
-    --architecture film_mlp \
-    --hidden-dim 256 \
-    --n-layers 4 \
-    --batch-size 32 \
-    --max-steps 50000 \
+    --n-epochs 50 \
+    --batch-size 16 \
     --lr 3e-4 \
     --seed 0xC0FFEE
 ```
@@ -44,29 +42,30 @@ python3 -m src.engines.Simscape_Multibody_Models.\
 1. Loads `trials.parquet` + `timesteps.parquet` via `load_sweep_dataset` (issue #019).
 2. Splits 80/10/10 by `trial_id` per [APPROACH.md § Data split](APPROACH.md#data-split).
 3. Computes per-feature normalization stats from the train split only.
-4. Trains the surrogate with AdamW + cosine schedule + mixed precision.
-5. Logs to TensorBoard if installed; always to JSONL at `<output_dir>/train_log.jsonl`.
-6. Saves `<output_dir>/best.pt` (best-on-val) and `<output_dir>/last.pt` (final step).
+4. Trains the surrogate with AdamW + cosine schedule + mixed precision when CUDA is available.
+5. Saves `<output_dir>/best.pt` and `<output_dir>/last.pt` (currently identical snapshots of the trained bundle).
 7. Saves `<output_dir>/config.json` (a `TrainConfig` dump including `git_commit`).
 8. Saves `<output_dir>/norm_stats.npz`.
+9. Saves `<output_dir>/surrogate_v1_metrics.json` with training-curve summary fields.
 
 **Wall-clock estimate**
 
-- ~5k trials × 300 timesteps × 50k steps = ~6 hours on a single mid-range GPU; ~2 days on CPU.
-- Use `--max-steps 5000` for a smoke test.
+- Large real datasets are still multi-hour work on CPU-only hosts.
+- Use `--n-epochs 1` for a smoke test.
 
 **Smoke test (no GPU, no real dataset)**
 
 ```bash
-python3 -m src.engines.Simscape_Multibody_Models.\
-3D_Golf_Model.matlab.motion_matching.option2_nn_surrogate.train \
+python3 src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/motion_matching/option2_nn_surrogate/train.py \
     --dataset-path tests/_fixtures/tiny_sweep \
     --output-dir /tmp/option2_smoke \
-    --max-steps 200 \
-    --batch-size 4
+    --n-epochs 1 \
+    --batch-size 4 \
+    --disable-amp
 ```
 
-Expected: completes in < 60 s; `best.pt` exists; final val RMSE is **not** required to be small.
+Expected: completes in < 60 s; `best.pt`, `config.json`, `norm_stats.npz`, and
+`surrogate_v1_metrics.json` exist; final val RMSE is **not** required to be small.
 
 ## 2. Fit a measured swing (Python entry-point)
 

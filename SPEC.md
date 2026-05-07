@@ -38,8 +38,8 @@
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                            |
 | **License**             | MIT                                                       |
 | **Current Version**     | 2.1.0                                                     |
-| **Spec Version**        | 1.0.125                                                   |
-| **Last Spec Update**    | 2026-05-06 (Pinocchio URDF scope headers)                 |
+| **Spec Version**        | 1.0.126                                                   |
+| **Last Spec Update**    | 2026-05-06 (Option 2 surrogate training artifacts)        |
 
 ## 2. Purpose & Mission
 
@@ -197,6 +197,7 @@ Engine tier metadata is declared in each in-scope engine package with
 | F12 | Muscle dynamics analysis           | ✅     | IK, ID, and muscle dynamics computation with Hill-type and Millard muscle models                    |
 | F13 | Motion capture integration         | 🔄     | Import and track motion capture data (C3D, BVH, TRC formats) and compare with simulation            |
 | F14 | Reinforcement learning integration | 🔄     | Gym-compatible interface for RL-based controller learning and policy optimization                   |
+| F15 | Motion-matching surrogate training | 🔄     | Option 2 Python training now persists checkpoints, norm stats, and metrics; MATLAB fitting remains follow-up work |
 
 ### API / Interface Contract
 
