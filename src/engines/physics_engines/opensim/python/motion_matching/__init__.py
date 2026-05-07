@@ -13,10 +13,26 @@ Public surface (lazily imported to keep ``import opensim`` optional):
   from a SimTK state given the OpenSim model.
 * ``fit_swing_opensim``: scipy.optimize.minimize(SLSQP) driver that fits
   polynomial torque coefficients to a measured ClubTarget (issue #4128).
+
+**Coordinate mapping (issue #4114):**
+* OpenSim ↔ Simscape coordinate-convention bridge (pure-Python).
 """
 
 from __future__ import annotations
 
+from src.engines.physics_engines.opensim.python.motion_matching.coord_map import (  # noqa: F401
+    OPENSIM_COORD_ORDER,
+    OPENSIM_NEUTRAL_POSE,
+    OPENSIM_SIGN_CONVENTION,
+    OPENSIM_TO_SIMSCAPE,
+    SIMSCAPE_COORD_ORDER,
+    frame_y_up_to_z_up,
+    frame_z_up_to_y_up,
+    from_simscape,
+    quat_canonical_to_eigen,
+    quat_eigen_to_canonical,
+    to_simscape,
+)
 from src.engines.physics_engines.opensim.python.motion_matching.fit_swing import (
     FitOptions,
     FitResult,
@@ -37,17 +53,32 @@ from src.engines.physics_engines.opensim.python.motion_matching.simulate import 
 )
 
 __all__ = [
+    # Coordinate mapping (issue #4114)
+    "OPENSIM_COORD_ORDER",
+    "OPENSIM_NEUTRAL_POSE",
+    "OPENSIM_SIGN_CONVENTION",
+    "OPENSIM_TO_SIMSCAPE",
+    "SIMSCAPE_COORD_ORDER",
+    "frame_y_up_to_z_up",
+    "frame_z_up_to_y_up",
+    "from_simscape",
+    "quat_canonical_to_eigen",
+    "quat_eigen_to_canonical",
+    "to_simscape",
+    # Forward simulation (issue #4120)
     "COEFFS_PER_JOINT",
-    "FitOptions",
-    "FitResult",
     "POLY_DEGREE",
     "SimOptions",
     "SimOut",
     "evaluate_polynomial_torque",
+    "simulate_with_coefficients",
+    # Forward kinematics (issue #4116)
     "extract_clubhead_pose",
     "extract_full_pose",
     "extract_grip_pose",
+    # Fitting (issue #4128)
+    "FitOptions",
+    "FitResult",
     "fit_swing_opensim",
-    "simulate_with_coefficients",
     "viz",
 ]
