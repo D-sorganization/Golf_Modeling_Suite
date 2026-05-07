@@ -30,16 +30,16 @@
 
 ## 1. Identity
 
-| Field                   | Value                                                     |
-| ----------------------- | --------------------------------------------------------- |
-| **Repository Name**     | `UpstreamDrift`                                           |
-| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift`        |
-| **Owner**               | D-sorganization                                           |
-| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                            |
-| **License**             | MIT                                                       |
-| **Current Version**     | 2.1.0                                                     |
-| **Spec Version**        | 1.0.128                                                   |
-| **Last Spec Update**    | 2026-05-07 (Cross-option leaderboard follow-up hardening) |
+| Field                   | Value                                                  |
+| ----------------------- | ------------------------------------------------------ |
+| **Repository Name**     | `UpstreamDrift`                                        |
+| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift`     |
+| **Owner**               | D-sorganization                                        |
+| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                         |
+| **License**             | MIT                                                    |
+| **Current Version**     | 2.1.0                                                  |
+| **Spec Version**        | 1.0.129                                                |
+| **Last Spec Update**    | 2026-05-07 (Drake fit determinism regression coverage) |
 
 ## 2. Purpose & Mission
 
@@ -553,6 +553,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-05-07 | 1.0.129 | Added Drake `fit_swing_drake` determinism regression coverage requiring repeated runs with the same target, warm start, and `rng_seed` to reproduce `theta_optimal`, history, final cost/RMSE, iteration count, evaluation count, and solver status across seeds 42, 1337, and 999. |
 | 2026-05-06 | 1.0.125 | Added scope header comments to the generated Pinocchio `golfer.urdf` and `golfer_ik.urdf` files so forward-simulation and body-only IK workflows clearly document when the welded-club model versus the external-club-tracking model should be used. |
 | 2026-05-06 | 1.0.114 | Expanded the golf ML matching workflow with Pareto regularization sweeps, calibration validation reports and plots, positive mechanical-work diagnostics from paired torque/qdot logs, a tabbed MATLAB workflow GUI, and a frame-by-frame sequential torque-search fallback contract with manifest generation, parallel candidate evaluation structure, smoothing, and polynomial export hooks.                                                                                                                                                                                                                                                                                                                                                                                                             |
 | 2026-05-05 | 1.0.112 | Added non-blocking golf ML matching diagnostics for target-vs-Simscape club tracking, impact-window error, torque effort, torque impulse, peak control, and torque-rate smoothness; documented the weighted optimization objective for redundant torque and body-motion selection.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
