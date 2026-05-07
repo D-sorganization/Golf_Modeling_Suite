@@ -13,6 +13,7 @@ Public surface (lazily imported to keep ``import opensim`` optional):
   from a SimTK state given the OpenSim model.
 * ``fit_swing_opensim``: scipy.optimize.minimize(SLSQP) driver that fits
   polynomial torque coefficients to a measured ClubTarget (issue #4128).
+* ``synthesize_target_from_coefficients``: TDD oracle (issue #4124).
 
 **Coordinate mapping (issue #4114):**
 * OpenSim ↔ Simscape coordinate-convention bridge (pure-Python).
@@ -51,6 +52,10 @@ from src.engines.physics_engines.opensim.python.motion_matching.simulate import 
     evaluate_polynomial_torque,
     simulate_with_coefficients,
 )
+from src.engines.physics_engines.opensim.python.motion_matching.synthesize import (
+    SynthOptions,
+    synthesize_target_from_coefficients,
+)
 
 __all__ = [
     # Coordinate mapping (issue #4114)
@@ -70,6 +75,7 @@ __all__ = [
     "POLY_DEGREE",
     "SimOptions",
     "SimOut",
+    "SynthOptions",
     "evaluate_polynomial_torque",
     "simulate_with_coefficients",
     # Forward kinematics (issue #4116)
@@ -80,5 +86,7 @@ __all__ = [
     "FitOptions",
     "FitResult",
     "fit_swing_opensim",
+    # Oracle (issue #4124)
+    "synthesize_target_from_coefficients",
     "viz",
 ]
