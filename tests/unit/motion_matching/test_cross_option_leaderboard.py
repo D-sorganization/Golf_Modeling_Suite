@@ -12,6 +12,8 @@ from pathlib import Path
 
 import pytest
 
+REPO_ROOT = Path(__file__).resolve().parents[3]
+
 
 def test_cross_option_leaderboard_cli_help():
     """Verify the CLI script loads and provides help."""
@@ -92,7 +94,7 @@ def test_cross_option_leaderboard_report_generation():
             capture_output=True,
             text=True,
             timeout=30,
-            cwd="/home/dieterolson/Repositories-WSL/UpstreamDrift",
+            cwd=REPO_ROOT,
         )
 
         assert result.returncode == 0, f"CLI failed: {result.stderr}"
@@ -124,7 +126,7 @@ def test_cross_option_leaderboard_report_generation():
 def test_cross_option_result_schema():
     """Verify OptionResult schema structure."""
     # Use inline schema definition to avoid import issues
-    from dataclasses import asdict, dataclass, field
+    from dataclasses import asdict, dataclass
     from typing import Any
 
     @dataclass(frozen=True)
@@ -201,7 +203,7 @@ def test_empty_results_handling():
             capture_output=True,
             text=True,
             timeout=30,
-            cwd="/home/dieterolson/Repositories-WSL/UpstreamDrift",
+            cwd=REPO_ROOT,
         )
 
         assert result.returncode == 0
