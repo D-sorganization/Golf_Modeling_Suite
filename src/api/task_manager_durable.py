@@ -29,7 +29,7 @@ from collections.abc import Generator
 from contextlib import contextmanager, suppress
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Protocol, cast
 
 from src.shared.python.logging_pkg.logging_config import get_logger
 
@@ -187,7 +187,7 @@ class SQLiteBackend:
             )
             self._local.conn.execute("PRAGMA journal_mode=WAL")
             self._local.conn.execute("PRAGMA busy_timeout=30000")
-        return self._local.conn
+        return cast(sqlite3.Connection, getattr(self._local, "conn", None))
 
     @contextmanager
     def _transaction(self) -> Generator[sqlite3.Connection, None, None]:
