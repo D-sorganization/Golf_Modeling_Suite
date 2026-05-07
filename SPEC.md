@@ -30,16 +30,16 @@
 
 ## 1. Identity
 
-| Field                   | Value                                              |
-| ----------------------- | -------------------------------------------------- |
-| **Repository Name**     | `UpstreamDrift`                                    |
-| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift` |
-| **Owner**               | D-sorganization                                    |
-| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
-| **License**             | MIT                                                |
-| **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.127                                            |
-| **Last Spec Update**    | 2026-05-07 (cross-engine CI workflow hardening)    |
+| Field                   | Value                                                     |
+| ----------------------- | --------------------------------------------------------- |
+| **Repository Name**     | `UpstreamDrift`                                           |
+| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift`        |
+| **Owner**               | D-sorganization                                           |
+| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                            |
+| **License**             | MIT                                                       |
+| **Current Version**     | 2.1.0                                                     |
+| **Spec Version**        | 1.0.128                                                   |
+| **Last Spec Update**    | 2026-05-07 (leaderboard compatibility and workflow hardening) |
 
 ## 2. Purpose & Mission
 
@@ -74,7 +74,7 @@ UpstreamDrift sits at the center of a biomechanical simulation ecosystem. It dep
 
 ### Module Map
 
-````
+```
 UpstreamDrift/
 ├── src/
 │   ├── engines/
@@ -553,8 +553,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-05-07 | 1.0.127 | Hardened the cross-engine equivalence workflow dependency bootstrap so self-hosted runners with RECORD-less `pip` installs can recover via an ignore-installed upgrade fallback, and refreshed the workflow inventory cap plus ownership rows for the active cross-engine leaderboard and humanoid-model drift workflows. |
-| 2026-05-07 | 1.0.126 | Restored the MATLAB motion-matching `leaderboard.m` results-directory compatibility path so fixture result structs can generate the #4080 comparison table, markdown output, CSV export, filtering, sorting, and malformed-result warnings while retaining the newer canonical `metrics.Metrics` record API. |
+| 2026-05-07 | 1.0.128 | Restored the MATLAB motion-matching `leaderboard.m` results-directory compatibility path for legacy result structs while preserving the canonical `metrics.Metrics` API, and hardened the cross-engine equivalence workflow bootstrap so self-hosted runners can recover from RECORD-less `pip` installs. |
 | 2026-05-06 | 1.0.125 | Added scope header comments to the generated Pinocchio `golfer.urdf` and `golfer_ik.urdf` files so forward-simulation and body-only IK workflows clearly document when the welded-club model versus the external-club-tracking model should be used. |
 | 2026-05-06 | 1.0.114 | Expanded the golf ML matching workflow with Pareto regularization sweeps, calibration validation reports and plots, positive mechanical-work diagnostics from paired torque/qdot logs, a tabbed MATLAB workflow GUI, and a frame-by-frame sequential torque-search fallback contract with manifest generation, parallel candidate evaluation structure, smoothing, and polynomial export hooks.                                                                                                                                                                                                                                                                                                                                                                                                             |
 | 2026-05-05 | 1.0.112 | Added non-blocking golf ML matching diagnostics for target-vs-Simscape club tracking, impact-window error, torque effort, torque impulse, peak control, and torque-rate smoothness; documented the weighted optimization objective for redundant torque and body-motion selection.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -657,4 +656,4 @@ Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linal
 | 2026-05-06 | 1.0.117 | Added unified Metrics schema for motion-matching (PR #4052). |
 | 2026-05-06 | 1.0.115 | Added motion-matching support for wiring Gears C3D marker maps to the physics models (PR #4048). |
 | 2026-05-06 | 1.0.116 | Added MachineLearning orientation and work-regularizer cost parity for motion-matching (PR #4053). |
-````
+| 2026-05-07 | 1.0.127 | Added cross-option leaderboard run + report (PR #4226), Option-2 NN surrogate training on 10k dataset (PR #4227), and Option-3 cVAE inverse model training (PR #4228). |
