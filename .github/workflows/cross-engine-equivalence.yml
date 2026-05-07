@@ -79,7 +79,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip || \
+            python -m pip install --ignore-installed --no-deps --upgrade pip
           # Always install the dev/test stack and the default mujoco engine.
           pip install -e ".[dev]" || pip install -e ".[dev]" --no-build-isolation
           # Optional engines: best-effort. The test self-skips when any of
