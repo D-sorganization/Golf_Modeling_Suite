@@ -614,8 +614,13 @@ jobs:
 
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+            base_sha="$(git merge-base "origin/${{ github.base_ref }}" HEAD || true)"
+            if [ -z "$base_sha" ]; then
+              echo "No merge-base with origin/${{ github.base_ref }}; skipping PR-scoped core tests."
+              exit 0
+            fi
             mapfile -t changed_tests < <(
-              git diff --name-only --diff-filter=ACMRT "origin/${{ github.base_ref }}" HEAD -- 'tests/**/*.py'
+              git diff --name-only --diff-filter=ACMRT "$base_sha" HEAD -- 'tests/**/*.py'
             )
 
             if [ "${#changed_tests[@]}" -eq 0 ]; then
