@@ -3,7 +3,7 @@
 This inventory is the ownership ledger for active GitHub Actions workflows.
 Archived workflows under `.github/workflows/archived/` are intentionally excluded.
 
-The current durable guardrail is a no-growth cap at 65 active workflows. The
+The current durable guardrail is a no-growth cap at 70 active workflows. The
 consolidation target for issue #3835 remains 25 active workflows or fewer after
 owners validate low-risk removals.
 
@@ -51,6 +51,7 @@ guardrails until the active workflow count reaches the 25-workflow target:
 | docs-ci.yml | pull_request/workflow_dispatch | @docs | contents: read | KEEP: documentation validation. | n/a |
 | docs-governance.yml | pull_request/workflow_dispatch | @docs | contents: read | KEEP: docs governance checks. | n/a |
 | heavy-tests-opt-in.yml | pull_request/workflow_dispatch | @core | contents: read | KEEP: manually opted heavy tests. | n/a |
+| humanoid-models-drift.yml | pull_request | @physics | contents/pull-requests: read/write | KEEP: PARITY-MODEL-BUILD drift gate (issue #4094, spec §2.6). | n/a |
 | Jules-Archivist.yml | workflow_dispatch/schedule | @agents | contents/issues: write | DISABLE: archive stale automation artifacts after owner review. | stale-cleanup.yml |
 | Jules-Assessment-AutoFix.yml | workflow_dispatch/issues | @agents | contents/pull-requests: write | MERGE: assessment-driven autofix; overlaps quality fixer. | Jules-Code-Quality-Fixer.yml |
 | Jules-Assessment-Generator.yml | workflow_dispatch/schedule | @agents | contents/issues: write | MERGE: generate assessment reports. | Jules-Comprehensive-Assessment.yml |
