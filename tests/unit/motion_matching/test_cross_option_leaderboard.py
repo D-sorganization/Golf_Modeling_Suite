@@ -182,12 +182,18 @@ def test_empty_results_handling():
     with tempfile.TemporaryDirectory() as tmpdir:
         results_dir = Path(tmpdir) / "empty"
         leaderboard_path = Path(tmpdir) / "LEADERBOARD.md"
+        report_path = Path(tmpdir) / "REPORT.md"
+        metrics_path = Path(tmpdir) / "metrics.json"
 
         result = _run_leaderboard_cli(
             "--results-dir",
             str(results_dir),
             "--leaderboard-path",
             str(leaderboard_path),
+            "--report-path",
+            str(report_path),
+            "--metrics-path",
+            str(metrics_path),
             "--skip-fits",
         )
 
