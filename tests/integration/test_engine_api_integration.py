@@ -27,8 +27,8 @@ except ImportError:
     pytest.skip("API server deps not available", allow_module_level=True)
 
 from src.shared.python.engine_core.engine_registry import EngineType
-pytestmark = pytest.mark.integration
 
+pytestmark = pytest.mark.integration
 
 
 @pytest.fixture(scope="module")
