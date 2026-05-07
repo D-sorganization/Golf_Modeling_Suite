@@ -599,7 +599,9 @@ class DurableTaskManager:
             task_type=task_type,
             input_data=input_data or {},
             config_hash=config_hash,
-            code_version=code_version or os.environ.get("APP_VERSION", "unknown"),
+            code_version=code_version
+            if code_version is not None
+            else str(os.environ.get("APP_VERSION", "unknown")),
             ttl_seconds=ttl_seconds,
             retention_seconds=retention_seconds,
             priority=priority,
@@ -718,7 +720,9 @@ class DurableTaskManager:
             TaskRecord if a task was acquired, None otherwise
         """
         if worker_id is None:
-            worker_id = f"{os.uname().nodename}-{os.getpid()}"
+            import socket
+
+            worker_id = f"{socket.gethostname()}-{os.getpid()}"
         return self.backend.acquire_task(worker_id)
 
     def release_task(self, task_id: str) -> bool:
