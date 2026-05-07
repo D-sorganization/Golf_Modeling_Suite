@@ -14,17 +14,16 @@ pytestmark = [pytest.mark.requires_mujoco, pytest.mark.unit]
 
 def test_synthesize_target_from_coefficients_is_exported() -> None:
     """The synthesize_target_from_coefficients function is public."""
-    # This test verifies issue #4247: ensure the function is exported
-    # in __all__ and importable from the module's __init__.py.
+    from src.engines.physics_engines.mujoco.python import motion_matching
     from src.engines.physics_engines.mujoco.python.motion_matching import (
         synthesize_target_from_coefficients,
     )
-
-    assert callable(synthesize_target_from_coefficients)
-    assert hasattr(synthesize_target_from_coefficients, "__doc__")
-    assert "synthesize_target_from_coefficients" in str(
-        synthesize_target_from_coefficients.__doc__
+    from src.engines.physics_engines.mujoco.python.motion_matching.synthesize import (
+        synthesize_target_from_coefficients as synthesize_impl,
     )
+
+    assert "synthesize_target_from_coefficients" in motion_matching.__all__
+    assert synthesize_target_from_coefficients is synthesize_impl
 
 
 def test_synthesize_target_from_coefficients_in_all() -> None:
