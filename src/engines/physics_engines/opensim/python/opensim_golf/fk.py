@@ -35,10 +35,18 @@ if TYPE_CHECKING:
     import opensim as osim
 
 __all__ = [
+    "GRIP_FRAME_NAME",
+    "CLUBHEAD_FRAME_NAME",
     "compute_grip",
     "compute_clubhead",
     "compute_skeleton_fk",
+    "extract_full_pose",
 ]
+
+GRIP_FRAME_NAME = "hand_r_grip_offset"
+CLUBHEAD_FRAME_NAME = "club_head_offset"
+_GRIP_FRAME_PATH = f"/jointset/hand_r_to_club/{GRIP_FRAME_NAME}"
+_CLUBHEAD_FRAME_PATH = f"/jointset/hand_r_to_club/{CLUBHEAD_FRAME_NAME}"
 
 
 def compute_grip(
@@ -61,72 +69,19 @@ def compute_grip(
         RuntimeError: If state is uninitialized.
 
     Notes:
-        The grip is defined as the geometric mean of the left-hand and
-        right-hand grip points in the address pose. This mirrors the
-        `mid_hands` virtual frame in the Pinocchio URDF (issue #4112).
+        The canonical OpenSim model exposes the grip as the
+        ``hand_r_grip_offset`` frame on the ``hand_r_to_club`` weld.
     """
-    try:
-        import opensim as osim
-    except ImportError as e:
-        raise ImportError(
-            "OpenSim not installed. Install with: `pip install opensim`"
-        ) from e
-
-    if not state.isValid():
-        raise RuntimeError("provided state is not valid")
-
+    _require_opensim()
+    _require_valid_state(state)
     model.realizePosition(state)
-
-    # Get the hand bodies from the model.
-    # These names must match the coordinate mapping established in issue #4114.
-    try:
-        hand_left_body = model.getBodySet().get("hand_left")
-        hand_right_body = model.getBodySet().get("hand_right")
-    except RuntimeError as e:
-        raise ValueError(
-            "Could not find 'hand_left' or 'hand_right' bodies in model. "
-            "Ensure the model has been built from the canonical golf humanoid "
-            "(see issue #4110)."
-        ) from e
-
-    # Get the grip point on each hand. These are defined relative to the hand
-    # body's reference frame. In the URDF, hand_left_tip and hand_right_tip are
-    # fixed frames 0.19 m below each hand.
-    # For OpenSim, we query the body origins or tip body positions.
-    left_grip_pos_body = hand_left_body.getPositionInGround(state)
-    right_grip_pos_body = hand_right_body.getPositionInGround(state)
-
-    # For now, use body origins. In a refined version, we would offset by
-    # the tip frame origins (issue #4110 dependency: model with explicit tip bodies).
-    left_grip_pos = np.array(
-        [left_grip_pos_body.get(0), left_grip_pos_body.get(1), left_grip_pos_body.get(2)]
+    grip_transform = _get_frame_transform(
+        model,
+        state,
+        _GRIP_FRAME_PATH,
+        GRIP_FRAME_NAME,
     )
-    right_grip_pos = np.array(
-        [
-            right_grip_pos_body.get(0),
-            right_grip_pos_body.get(1),
-            right_grip_pos_body.get(2),
-        ]
-    )
-
-    # Geometric mean of left and right hand positions.
-    grip_pos = (left_grip_pos + right_grip_pos) / 2.0
-
-    # For orientation, compute the average of the hand body orientations.
-    # (In a refined version, this would be replaced with the mid_hands frame
-    # orientation from the model; for now, we average the quaternions.)
-    left_rot = hand_left_body.getTransformInGround(state).R()
-    right_rot = hand_right_body.getTransformInGround(state).R()
-
-    # Convert rotation matrices to quaternions.
-    left_quat = _rotmat_to_quat(left_rot)
-    right_quat = _rotmat_to_quat(right_rot)
-
-    # Average quaternions (normalized SLERP would be more rigorous,
-    # but for small differences, linear average is acceptable).
-    grip_quat = _average_quaternions(left_quat, right_quat)
-
-    return grip_pos, grip_quat
+    return _vec3_to_array(grip_transform.p()), _rotmat_to_quat(grip_transform.R())
 
 
 def compute_clubhead(
@@ -149,47 +104,49 @@ def compute_clubhead(
         RuntimeError: If state is uninitialized.
 
     Notes:
-        The clubhead is a fixed offset (1.0 m distal along the shaft axis)
-        from the grip frame. In a full implementation, this would be read
-        from the model's club_head body (issue #4110).
+        The canonical OpenSim model exposes the clubhead as the
+        ``club_head_offset`` frame on the ``hand_r_to_club`` weld.
     """
-    try:
-        import opensim as osim
-    except ImportError as e:
-        raise ImportError(
-            "OpenSim not installed. Install with: `pip install opensim`"
-        ) from e
+    _require_opensim()
+    _require_valid_state(state)
+    model.realizePosition(state)
+    club_transform = _get_frame_transform(
+        model,
+        state,
+        _CLUBHEAD_FRAME_PATH,
+        CLUBHEAD_FRAME_NAME,
+    )
+    return _vec3_to_array(club_transform.p()), _rotmat_to_quat(club_transform.R())
 
-    if not state.isValid():
-        raise RuntimeError("provided state is not valid")
 
+def extract_full_pose(
+    model: osim.Model,
+    state: osim.State,
+) -> dict[str, NDArray[np.float64]]:
+    """Extract the canonical grip and clubhead poses from one model state."""
+    _require_opensim()
+    _require_valid_state(state)
     model.realizePosition(state)
 
-    # Get the clubhead body (or a proxy for it).
-    # This will be defined in issue #4110 (golf_humanoid.osim with welded club).
-    try:
-        clubhead_body = model.getBodySet().get("club_head")
-    except RuntimeError:
-        # Fallback: if clubhead is not a separate body, compute it as an offset
-        # from the grip frame. This is a temporary measure until #4110 is done.
-        grip_pos, grip_quat = compute_grip(model, state)
-        # Offset 1.0 m distally from grip (along grip z-axis in address pose).
-        clubhead_offset = np.array([0.0, 0.0, -1.0])
-        clubhead_pos = grip_pos + clubhead_offset
-        clubhead_quat = grip_quat  # Assume same orientation as grip for now.
-        return clubhead_pos, clubhead_quat
-
-    # Get the clubhead origin in the ground frame.
-    clubhead_pos_body = clubhead_body.getPositionInGround(state)
-    clubhead_pos = np.array(
-        [clubhead_pos_body.get(0), clubhead_pos_body.get(1), clubhead_pos_body.get(2)]
+    grip_transform = _get_frame_transform(
+        model,
+        state,
+        _GRIP_FRAME_PATH,
+        GRIP_FRAME_NAME,
+    )
+    club_transform = _get_frame_transform(
+        model,
+        state,
+        _CLUBHEAD_FRAME_PATH,
+        CLUBHEAD_FRAME_NAME,
     )
 
-    # Get the clubhead orientation.
-    clubhead_rot = clubhead_body.getTransformInGround(state).R()
-    clubhead_quat = _rotmat_to_quat(clubhead_rot)
-
-    return clubhead_pos, clubhead_quat
+    return {
+        "grip": _vec3_to_array(grip_transform.p()),
+        "grip_quat": _rotmat_to_quat(grip_transform.R()),
+        "clubhead": _vec3_to_array(club_transform.p()),
+        "club_quat": _rotmat_to_quat(club_transform.R()),
+    }
 
 
 def compute_skeleton_fk(
@@ -247,13 +204,12 @@ def compute_skeleton_fk(
     club_quat_array = np.zeros((n_samples, 4), dtype=np.float64)
 
     for i, state in enumerate(states):
-        grip_pos, grip_quat = compute_grip(model, state)
-        clubhead_pos, club_quat = compute_clubhead(model, state)
+        pose = extract_full_pose(model, state)
 
-        grip_pos_array[i] = grip_pos
-        grip_quat_array[i] = grip_quat
-        clubhead_pos_array[i] = clubhead_pos
-        club_quat_array[i] = club_quat
+        grip_pos_array[i] = pose["grip"]
+        grip_quat_array[i] = pose["grip_quat"]
+        clubhead_pos_array[i] = pose["clubhead"]
+        club_quat_array[i] = pose["club_quat"]
 
     return {
         "grip": grip_pos_array,
@@ -264,6 +220,41 @@ def compute_skeleton_fk(
 
 
 # --- Utilities ---------------------------------------------------------------
+
+
+def _require_opensim() -> None:
+    try:
+        import opensim as osim  # noqa: F401
+    except ImportError as e:
+        raise ImportError(
+            "OpenSim not installed. Install with: `pip install opensim`"
+        ) from e
+
+
+def _require_valid_state(state: object) -> None:
+    if not state.isValid():
+        raise RuntimeError("provided state is not valid")
+
+
+def _get_frame_transform(
+    model: object,
+    state: object,
+    component_path: str,
+    frame_name: str,
+) -> object:
+    try:
+        frame = model.getComponent(component_path)
+    except RuntimeError as e:
+        raise ValueError(
+            f"Could not find '{frame_name}' frame in model. "
+            "Ensure the model has been built from the canonical golf humanoid "
+            "(see issue #4110)."
+        ) from e
+    return frame.getTransformInGround(state)
+
+
+def _vec3_to_array(vec3: object) -> NDArray[np.float64]:
+    return np.array([vec3.get(0), vec3.get(1), vec3.get(2)], dtype=np.float64)
 
 
 def _rotmat_to_quat(rot_matrix: object) -> NDArray[np.float64]:
