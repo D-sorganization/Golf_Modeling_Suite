@@ -18,7 +18,7 @@ sharing, missing optional series) is gated.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import matplotlib
 
@@ -33,7 +33,7 @@ if matplotlib.get_backend().lower() == "agg" or "pytest" in matplotlib.rcParams.
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 from matplotlib.figure import Figure  # noqa: E402
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401, E402  # registers 3-D projection
+from mpl_toolkits.mplot3d import Axes3D  # noqa: E402  # registers 3-D projection
 
 from . import _adapters
 from ._adapters import (
@@ -115,8 +115,8 @@ def _plot_trajectory_overlay_matplotlib(
     t_sim = _adapters.normalise(sim_out)
 
     fig = plt.figure(figsize=(11.0, 5.0))
-    ax_meas = fig.add_subplot(1, 2, 1, projection="3d")
-    ax_sim = fig.add_subplot(1, 2, 2, projection="3d")
+    ax_meas = cast(Axes3D, fig.add_subplot(1, 2, 1, projection="3d"))
+    ax_sim = cast(Axes3D, fig.add_subplot(1, 2, 2, projection="3d"))
 
     _draw_club_path(ax_meas, t_meas, color=COLOR_MEASURED, label="measured")
     _draw_club_path(ax_sim, t_sim, color=COLOR_SIMULATED, label="simulated")
