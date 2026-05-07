@@ -612,10 +612,29 @@ jobs:
           export COVERAGE_FILE="$RUNNER_TEMP/.coverage"
 
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
-            mapfile -t changed_tests < <(
-              git diff --name-only --diff-filter=ACMRT "origin/${{ github.base_ref }}" HEAD -- 'tests/**/*.py'
-            )
+            # Fetch base branch with enough depth for merge-base resolution.
+            # When the base branch has advanced, shallow fetches may not have
+            # the merge-base, so we fetch with depth=10 to ensure common history.
+            git fetch --no-tags --depth=10 origin "${{ github.base_ref }}"
+            
+            # Try to compute merge-base for accurate diff. If merge-base fails
+            # (e.g., due to shallow history), fall back to direct base ref diff.
+            merge_base=$(git merge-base "origin/${{ github.base_ref }}" HEAD 2>/dev/null || echo "")
+            
+            if [ -n "$merge_base" ]; then
+              # Use merge-base for accurate three-way diff
+              mapfile -t changed_tests < <(
+                git diff --name-only --diff-filter=ACMRT "$merge_base" HEAD -- 'tests/**/*.py'
+              )
+            else
+              # Merge-base not available (shallow history), fall back to
+              # direct diff against base ref. This may include extra changes
+              # but ensures tests run rather than silently skipping.
+              echo "NOTE: merge-base unavailable; using direct diff against origin/${{ github.base_ref }}"
+              mapfile -t changed_tests < <(
+                git diff --name-only --diff-filter=ACMRT "origin/${{ github.base_ref }}" HEAD -- 'tests/**/*.py'
+              )
+            fi
 
             if [ "${#changed_tests[@]}" -eq 0 ]; then
               echo "No Python test changes detected; skipping PR-scoped core tests."
