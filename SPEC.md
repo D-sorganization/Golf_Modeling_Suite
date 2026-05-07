@@ -30,16 +30,16 @@
 
 ## 1. Identity
 
-| Field                   | Value                                                     |
-| ----------------------- | --------------------------------------------------------- |
-| **Repository Name**     | `UpstreamDrift`                                           |
-| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift`        |
-| **Owner**               | D-sorganization                                           |
-| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                            |
-| **License**             | MIT                                                       |
-| **Current Version**     | 2.1.0                                                     |
-| **Spec Version**        | 1.0.125                                                   |
-| **Last Spec Update**    | 2026-05-06 (Pinocchio URDF scope headers)                 |
+| Field                   | Value                                              |
+| ----------------------- | -------------------------------------------------- |
+| **Repository Name**     | `UpstreamDrift`                                    |
+| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift` |
+| **Owner**               | D-sorganization                                    |
+| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
+| **License**             | MIT                                                |
+| **Current Version**     | 2.1.0                                              |
+| **Spec Version**        | 1.0.128                                            |
+| **Last Spec Update**    | 2026-05-07 (surrogate checkpoint CI hygiene)       |
 
 ## 2. Purpose & Mission
 
@@ -74,7 +74,7 @@ UpstreamDrift sits at the center of a biomechanical simulation ecosystem. It dep
 
 ### Module Map
 
-```
+````
 UpstreamDrift/
 ├── src/
 │   ├── engines/
@@ -553,6 +553,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-05-07 | 1.0.128 | Refreshed the checked-in dependency locks for the C3D optional dependency surface, removed the stray root-level merge helper script, and updated workflow inventory rows plus the active-workflow cap so the surrogate checkpoint PR satisfies the repository CI hygiene gates. |
 | 2026-05-07 | 1.0.127 | Added checkpoint persistence for the Python motion-matching Option-2 `SwingSurrogate` training bundle, including model/config/normalization/curve round-tripping, `load_trained_surrogate`, and a metrics JSON artifact to support the future MATLAB `fit_swing_surrogate.m` shim. |
 | 2026-05-06 | 1.0.125 | Added scope header comments to the generated Pinocchio `golfer.urdf` and `golfer_ik.urdf` files so forward-simulation and body-only IK workflows clearly document when the welded-club model versus the external-club-tracking model should be used. |
 | 2026-05-06 | 1.0.114 | Expanded the golf ML matching workflow with Pareto regularization sweeps, calibration validation reports and plots, positive mechanical-work diagnostics from paired torque/qdot logs, a tabbed MATLAB workflow GUI, and a frame-by-frame sequential torque-search fallback contract with manifest generation, parallel candidate evaluation structure, smoothing, and polynomial export hooks.                                                                                                                                                                                                                                                                                                                                                                                                             |
@@ -656,3 +657,4 @@ Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linal
 | 2026-05-06 | 1.0.117 | Added unified Metrics schema for motion-matching (PR #4052). |
 | 2026-05-06 | 1.0.115 | Added motion-matching support for wiring Gears C3D marker maps to the physics models (PR #4048). |
 | 2026-05-06 | 1.0.116 | Added MachineLearning orientation and work-regularizer cost parity for motion-matching (PR #4053). |
+````
