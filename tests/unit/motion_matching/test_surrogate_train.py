@@ -13,6 +13,7 @@ from src.shared.python.motion_matching.dataset import (
 )
 from src.shared.python.motion_matching.surrogate import (
     TrainConfig,
+    load_trained_surrogate,
     train_surrogate,
 )
 from src.shared.python.motion_matching.surrogate._normalize import zscore_coeffs
@@ -118,6 +119,34 @@ def test_train_surrogate_split_is_stratified(tmp_path: Path) -> None:
     # We can only observe stratification's effect indirectly: that training
     # ran and produced a (possibly NaN) val curve of the right length.
     assert len(result.curves.val_loss) == 1
+
+
+@pytest.mark.unit
+def test_checkpoint_round_trip(tmp_path: Path) -> None:
+    """Saved surrogate checkpoints reload with identical predictions."""
+    ds = _make_dataset(tmp_path, n_trials=6, n_joints=3, n_timesteps=15)
+    output_dir = tmp_path / "checkpoint"
+    cfg = TrainConfig(
+        n_epochs=2,
+        batch_size=2,
+        val_fraction=0.2,
+        test_fraction=0.0,
+        output_dir=output_dir,
+        use_amp=False,
+    )
+    trained = train_surrogate(ds, cfg)
+    loaded = load_trained_surrogate(trained.checkpoint_path)
+
+    coeffs = torch.zeros(1, trained.config.coeff_dim)
+    with torch.no_grad():
+        expected = trained.model(zscore_coeffs(coeffs, trained.norm_stats)).clubhead
+        actual = loaded.model(zscore_coeffs(coeffs, loaded.norm_stats)).clubhead
+
+    assert trained.checkpoint_path.is_file()
+    assert (output_dir / "surrogate_metrics.json").is_file()
+    torch.testing.assert_close(actual, expected)
+    assert loaded.joint_names == trained.joint_names
+    assert loaded.seq_len == trained.seq_len
 
 
 # ---------------------------------------------------------------------------

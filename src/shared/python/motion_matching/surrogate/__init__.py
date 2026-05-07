@@ -13,6 +13,7 @@ Public API:
     TrainConfig      -- training hyperparameters and loss weights.
     TrainedSurrogate -- bundle of (model, stats, curves) returned by training.
     train_surrogate  -- end-to-end training entry-point.
+    load_trained_surrogate -- restore a persisted training checkpoint.
 """
 
 from __future__ import annotations
@@ -20,7 +21,12 @@ from __future__ import annotations
 from ._normalize import NormalizationStats
 from .invert import FitResult, InvertOptions, fit_swing_via_surrogate
 from .model import ClubTrajectory, SurrogateConfig, SwingSurrogate
-from .train import TrainConfig, TrainedSurrogate, train_surrogate
+from .train import (
+    TrainConfig,
+    TrainedSurrogate,
+    load_trained_surrogate,
+    train_surrogate,
+)
 from .validate import ValidationReport, validate_against_simscape
 
 __all__ = [
@@ -34,6 +40,7 @@ __all__ = [
     "TrainedSurrogate",
     "ValidationReport",
     "fit_swing_via_surrogate",
+    "load_trained_surrogate",
     "train_surrogate",
     "validate_against_simscape",
 ]
