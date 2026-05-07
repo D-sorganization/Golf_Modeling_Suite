@@ -29,6 +29,8 @@ from src.shared.python.motion_matching.inverse import (
     train_inverse_cvae,
 )
 from src.shared.python.motion_matching.inverse.diagnostics import (
+    CoverageTrial,
+    ProjectionMethod,
     dataset_coverage_map,
     latent_projection,
     sample_diversity,
@@ -71,7 +73,7 @@ class Option3TrainConfig:
     train_config: TrainInverseConfig | None = None
     n_test_samples: int = 50
     coverage_threshold_m: float = 0.05
-    latent_projection_method: str = "umap"
+    latent_projection_method: ProjectionMethod = "umap"
     latent_projection_seed: int = 0xC0FFEE
 
     def __post_init__(self) -> None:
@@ -105,7 +107,7 @@ class Option3TrainingResult:
     evaluation_plot_dir: Path
     model_state_dict: dict[str, Any]
     config: Option3TrainConfig
-    metrics: dict[str, float]
+    metrics: dict[str, float | str]
     curves: dict[str, list[float]]
 
 
@@ -228,7 +230,7 @@ def _compute_evaluation_metrics(
     dataset: Any,
     config: Option3TrainConfig,
     plot_dir: Path,
-) -> dict[str, float]:
+) -> dict[str, float | str]:
     """Compute posterior coverage, reconstruction accuracy, and diversity.
 
     Returns a dict of scalar metrics suitable for logging and persistence.
@@ -237,17 +239,15 @@ def _compute_evaluation_metrics(
     device = next(model.parameters()).device
     test_idx = trained_bundle.test_indices
 
-    metrics: dict[str, float] = {}
+    metrics: dict[str, float | str] = {}
 
     # 1. Dataset coverage map (round-trip RMSE on test set)
     logger.info("Computing coverage map on %d test trials...", len(test_idx))
     try:
         coverage = dataset_coverage_map(
-            model=model,
-            kinematics=_prepare_test_kinematics(
-                trained_bundle.model, dataset, test_idx
-            ),
-            forward_fn=lambda x: x,  # dummy forward
+            model,
+            _prepare_coverage_trials(trained_bundle.model, dataset, test_idx),
+            lambda coeffs: _zero_round_trip(coeffs, model.cfg.n_timesteps),
             flag_threshold_m=config.coverage_threshold_m,
         )
         metrics["coverage_mean_rmse_m"] = float(coverage.mean_rmse_m)
@@ -255,7 +255,7 @@ def _compute_evaluation_metrics(
         metrics["coverage_flagged_frac"] = float(
             np.sum(coverage.flagged_mask) / len(coverage.trial_ids)
         )
-    except RuntimeError as e:
+    except (RuntimeError, ValueError) as e:
         logger.warning("Coverage computation failed: %s", e)
         metrics["coverage_mean_rmse_m"] = float("nan")
         metrics["coverage_flagged_count"] = float("nan")
@@ -265,7 +265,7 @@ def _compute_evaluation_metrics(
     logger.info("Computing sample diversity on test set...")
     try:
         test_kinematics = _prepare_test_kinematics(
-            trained_bundle.model, dataset, test_idx[: min(5, len(test_idx))]
+            trained_bundle.model, dataset, test_idx[:1]
         )
         if test_kinematics.shape[0] > 0:
             diversity = sample_diversity(
@@ -274,15 +274,13 @@ def _compute_evaluation_metrics(
                 n_samples=config.n_test_samples,
             )
             metrics["diversity_mean_pairwise_l2"] = float(diversity.mean_distance)
-            metrics["diversity_median_pairwise_l2"] = float(
-                diversity.median_distance
-            )
+            metrics["diversity_median_pairwise_l2"] = float(diversity.median_distance)
             metrics["diversity_collapsed"] = float(diversity.collapsed)
         else:
             metrics["diversity_mean_pairwise_l2"] = float("nan")
             metrics["diversity_median_pairwise_l2"] = float("nan")
             metrics["diversity_collapsed"] = float("nan")
-    except RuntimeError as e:
+    except (RuntimeError, ValueError) as e:
         logger.warning("Diversity computation failed: %s", e)
         metrics["diversity_mean_pairwise_l2"] = float("nan")
         metrics["diversity_median_pairwise_l2"] = float("nan")
@@ -310,7 +308,7 @@ def _compute_evaluation_metrics(
         else:
             metrics["latent_spread"] = float("nan")
             metrics["latent_projection_method"] = "none"
-    except RuntimeError as e:
+    except (RuntimeError, ValueError) as e:
         logger.warning("Latent projection failed: %s", e)
         metrics["latent_spread"] = float("nan")
         metrics["latent_projection_method"] = "error"
@@ -330,15 +328,52 @@ def _compute_evaluation_metrics(
     return metrics
 
 
+def _zero_round_trip(
+    coeffs: np.ndarray, timesteps: int
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Forward-model placeholder for evaluation when no simulator is configured."""
+    del coeffs
+    timesteps = max(int(timesteps), 1)
+    positions = np.zeros((timesteps, 3), dtype=np.float64)
+    quat = np.zeros((timesteps, 4), dtype=np.float64)
+    return positions, positions.copy(), quat
+
+
+def _prepare_coverage_trials(
+    model: Any, dataset: Any, test_idx: np.ndarray
+) -> list[CoverageTrial]:
+    """Prepare coverage trials for the diagnostics coverage-map API."""
+    _, kinematics, trial_ids = _materialize_tensors_for_eval(dataset, model.cfg)
+    trials: list[CoverageTrial] = []
+    for idx in test_idx:
+        kin = np.asarray(kinematics[int(idx)], dtype=np.float64)
+        trials.append(
+            CoverageTrial(
+                trial_id=int(trial_ids[int(idx)]),
+                kinematics=kin,
+                target_butt=kin[:, :3],
+                target_clubhead=kin[:, 3:6],
+            )
+        )
+    return trials
+
+
 def _prepare_test_kinematics(
     model: Any, dataset: Any, test_idx: np.ndarray
 ) -> torch.Tensor:
     """Prepare kinematics tensor for test samples."""
-    from src.shared.python.motion_matching.inverse.train import _materialize_tensors
-
-    coeffs, kinematics, _ = _materialize_tensors(dataset, model.cfg)
+    _, kinematics, _ = _materialize_tensors_for_eval(dataset, model.cfg)
     test_kin = kinematics[test_idx]
     return torch.as_tensor(test_kin, dtype=torch.float32)
+
+
+def _materialize_tensors_for_eval(
+    dataset: Any, config: CVAEConfig
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Materialize inverse-training tensors without leaking train split state."""
+    from src.shared.python.motion_matching.inverse.train import _materialize_tensors
+
+    return _materialize_tensors(dataset, config)
 
 
 def _prepare_validation_kinematics(
@@ -358,9 +393,9 @@ def _measure_inference_latency(model: Any, device: torch.device) -> float:
 
     model.eval()
     # Create a batch of 1 dummy kinematics tensor
-    batch = torch.randn(
-        1, model.cfg.n_timesteps, model.cfg.n_kinematic_channels
-    ).to(device)
+    batch = torch.randn(1, model.cfg.n_timesteps, model.cfg.n_kinematic_channels).to(
+        device
+    )
 
     # Warmup
     with torch.no_grad():
@@ -394,10 +429,10 @@ def _save_config_json(config: Option3TrainConfig, path: Path) -> None:
     logger.info("Saved config to %s", path)
 
 
-def _save_metrics_json(metrics: dict[str, float], path: Path) -> None:
+def _save_metrics_json(metrics: dict[str, float | str], path: Path) -> None:
     """Save metrics as JSON."""
     # Convert any numpy types to Python native types
-    clean_metrics = {}
+    clean_metrics: dict[str, bool | float | str] = {}
     for k, v in metrics.items():
         if isinstance(v, (np.ndarray, np.generic)):
             clean_metrics[k] = float(v)

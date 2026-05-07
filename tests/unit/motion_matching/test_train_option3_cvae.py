@@ -306,3 +306,61 @@ def test_evaluation_metrics_exist(tmp_path: Path) -> None:
     for key in required_keys:
         assert key in metrics, f"Missing metric: {key}"
         assert np.isfinite(metrics[key])
+
+
+@pytest.mark.unit
+def test_evaluation_diversity_uses_single_test_trial(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """sample_diversity requires conditioning from exactly one trial."""
+    import src.shared.python.motion_matching.inverse.train_option3_cvae as train_module
+
+    seen_shapes: list[tuple[int, ...]] = []
+
+    class _Diversity:
+        mean_distance = 0.1
+        median_distance = 0.1
+        collapsed = False
+
+    class _Coverage:
+        mean_rmse_m = 0.0
+        flagged_mask = np.array([False])
+        trial_ids = np.array([0])
+
+    class _Projection:
+        coords = np.zeros((2, 2), dtype=float)
+        method = "pca"
+
+    def _record_sample_diversity(*, model: object, kinematics: object, n_samples: int):
+        del model, n_samples
+        seen_shapes.append(tuple(kinematics.shape))
+        return _Diversity()
+
+    monkeypatch.setattr(train_module, "sample_diversity", _record_sample_diversity)
+    monkeypatch.setattr(
+        train_module, "dataset_coverage_map", lambda *args, **kwargs: _Coverage()
+    )
+    monkeypatch.setattr(
+        train_module, "latent_projection", lambda *args, **kwargs: _Projection()
+    )
+
+    dataset_path = make_synthetic_sweep(
+        tmp_path / "sweep",
+        n_trials=_N_TRIALS,
+        n_joints=_N_JOINTS,
+        n_timesteps=_N_TIMESTEPS,
+        seed=42,
+    )
+    output_dir = tmp_path / "output"
+
+    config = Option3TrainConfig(
+        dataset_path=dataset_path,
+        output_dir=output_dir,
+        cvae_config=_make_cvae_config(),
+        train_config=_make_train_config(n_epochs=1),
+    )
+
+    train_option3_inverse_cvae(config)
+
+    assert seen_shapes
+    assert seen_shapes[0] == (1, _N_TIMESTEPS, 12)
