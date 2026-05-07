@@ -12,7 +12,9 @@ when CUDA is available, and the loop runs in plain fp32 otherwise.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+import json
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -52,6 +54,7 @@ class TrainConfig:
         test_fraction: Held-out test fraction (by trial).
         use_amp: Enable mixed-precision when CUDA is available.
         device: ``"cpu"``, ``"cuda"``, or ``"auto"``.
+        output_dir: Optional directory for checkpoint and metrics artifacts.
     """
 
     n_epochs: int = 50
@@ -68,6 +71,7 @@ class TrainConfig:
     test_fraction: float = 0.1
     use_amp: bool = True
     device: str = "auto"
+    output_dir: Path | None = None
 
 
 @dataclass
@@ -98,6 +102,8 @@ class TrainedSurrogate:
         joint_names: Joint ordering inherited from the dataset.
         seq_len: Number of timesteps the model was trained on.
         final_val_loss: Final-epoch validation loss (``NaN`` if no val).
+        checkpoint_path: Persisted checkpoint path, if ``TrainConfig.output_dir`` was set.
+        metrics_path: Persisted metrics JSON path, if ``TrainConfig.output_dir`` was set.
     """
 
     model: SwingSurrogate
@@ -108,6 +114,8 @@ class TrainedSurrogate:
     joint_names: list[str]
     seq_len: int
     final_val_loss: float
+    checkpoint_path: Path | None = None
+    metrics_path: Path | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -176,7 +184,7 @@ def train_surrogate(
     )
 
     final_val = curves.val_loss[-1] if curves.val_loss else float("nan")
-    return TrainedSurrogate(
+    result = TrainedSurrogate(
         model=model,
         config=surrogate_cfg,
         train_config=cfg,
@@ -186,6 +194,119 @@ def train_surrogate(
         seq_len=seq_len,
         final_val_loss=final_val,
     )
+    if cfg.output_dir is not None:
+        result = _persist_trained_surrogate(result, cfg.output_dir)
+    return result
+
+
+def load_trained_surrogate(checkpoint_path: Path | str) -> TrainedSurrogate:
+    """Load a :class:`TrainedSurrogate` persisted by :func:`train_surrogate`.
+
+    The loaded model is returned in ``eval`` mode on CPU so callers get stable
+    inference behavior before explicitly moving it to another device.
+    """
+    path = Path(checkpoint_path)
+    checkpoint = torch.load(path, map_location="cpu", weights_only=False)
+    config = SurrogateConfig(**checkpoint["config"])
+    train_config = _train_config_from_state(checkpoint["train_config"])
+    norm_stats = _norm_stats_from_state(checkpoint["norm_stats"])
+    curves = TrainingCurves(**checkpoint["curves"])
+    model = SwingSurrogate(config)
+    model.load_state_dict(checkpoint["model_state"])
+    model.eval()
+    return TrainedSurrogate(
+        model=model,
+        config=config,
+        train_config=train_config,
+        norm_stats=norm_stats,
+        curves=curves,
+        joint_names=list(checkpoint["joint_names"]),
+        seq_len=int(checkpoint["seq_len"]),
+        final_val_loss=float(checkpoint["final_val_loss"]),
+        checkpoint_path=path,
+        metrics_path=_metrics_path_from_checkpoint(path),
+    )
+
+
+def _persist_trained_surrogate(
+    result: TrainedSurrogate,
+    output_dir: Path,
+) -> TrainedSurrogate:
+    """Write checkpoint + metrics artifacts and return ``result`` with paths."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    checkpoint_path = output_dir / "surrogate_checkpoint.pt"
+    metrics_path = output_dir / "surrogate_metrics.json"
+    torch.save(_checkpoint_state(result), checkpoint_path)
+    metrics_path.write_text(
+        json.dumps(_metrics_state(result), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    result.checkpoint_path = checkpoint_path
+    result.metrics_path = metrics_path
+    return result
+
+
+def _checkpoint_state(result: TrainedSurrogate) -> dict[str, Any]:
+    """Convert a trained bundle into a torch-serializable checkpoint dict."""
+    return {
+        "model_state": result.model.state_dict(),
+        "config": asdict(result.config),
+        "train_config": _train_config_state(result.train_config),
+        "norm_stats": _norm_stats_state(result.norm_stats),
+        "curves": asdict(result.curves),
+        "joint_names": result.joint_names,
+        "seq_len": result.seq_len,
+        "final_val_loss": result.final_val_loss,
+    }
+
+
+def _train_config_state(config: TrainConfig) -> dict[str, Any]:
+    state = asdict(config)
+    if state["output_dir"] is not None:
+        state["output_dir"] = str(state["output_dir"])
+    return state
+
+
+def _train_config_from_state(state: dict[str, Any]) -> TrainConfig:
+    data = dict(state)
+    if data.get("output_dir") is not None:
+        data["output_dir"] = Path(data["output_dir"])
+    return TrainConfig(**data)
+
+
+def _norm_stats_state(stats: NormalizationStats) -> dict[str, np.ndarray]:
+    return asdict(stats)
+
+
+def _norm_stats_from_state(state: dict[str, np.ndarray]) -> NormalizationStats:
+    return NormalizationStats(
+        coeffs_mean=np.asarray(state["coeffs_mean"], dtype=np.float32),
+        coeffs_std=np.asarray(state["coeffs_std"], dtype=np.float32),
+        butt_mean=np.asarray(state["butt_mean"], dtype=np.float32),
+        butt_std=np.asarray(state["butt_std"], dtype=np.float32),
+        clubhead_mean=np.asarray(state["clubhead_mean"], dtype=np.float32),
+        clubhead_std=np.asarray(state["clubhead_std"], dtype=np.float32),
+    )
+
+
+def _metrics_state(result: TrainedSurrogate) -> dict[str, Any]:
+    return {
+        "final_val_loss": result.final_val_loss,
+        "final_val_clubhead_rmse_m": (
+            result.curves.val_clubhead_rmse_m[-1]
+            if result.curves.val_clubhead_rmse_m
+            else float("nan")
+        ),
+        "n_epochs": result.train_config.n_epochs,
+        "seq_len": result.seq_len,
+        "n_joints": result.config.n_joints,
+        "joint_names": result.joint_names,
+    }
+
+
+def _metrics_path_from_checkpoint(checkpoint_path: Path) -> Path | None:
+    metrics_path = checkpoint_path.with_name("surrogate_metrics.json")
+    return metrics_path if metrics_path.exists() else None
 
 
 # ---------------------------------------------------------------------------
