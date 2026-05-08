@@ -9,7 +9,7 @@ Required vocabulary:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from src.tools.starting_pose_matcher.skeleton_provider import ProviderMetadata
 
@@ -60,6 +60,17 @@ MATCHER_TO_DRAKE: dict[str, str] = {
 }
 
 
+def _infer_model_file_type(model_xml: str) -> str:
+    """Infer the Drake parser file type for an in-memory model XML string."""
+    xml = model_xml.lstrip()
+    if xml.startswith("<?xml"):
+        _, _, xml = xml.partition("?>")
+        xml = xml.lstrip()
+    if xml.startswith("<robot"):
+        return "urdf"
+    return "sdf"
+
+
 class DrakeNotAvailableError(Exception):
     """Raised when Drake is not installed but a Drake provider is requested."""
 
@@ -97,6 +108,7 @@ class DrakeSkeletonProvider:
         """
         try:
             from pydrake.multibody.plant import MultibodyPlant
+            from pydrake.multibody.tree import BodyIndex
             from pydrake.systems.framework import DiagramBuilder
         except ImportError as e:
             raise DrakeNotAvailableError(
@@ -105,6 +117,7 @@ class DrakeSkeletonProvider:
 
         self._MultibodyPlant = MultibodyPlant
         self._DiagramBuilder = DiagramBuilder
+        self._BodyIndex = BodyIndex
 
         if model_path is None and model_xml is None:
             raise DrakeProviderError("Either model_path or model_xml must be provided")
@@ -124,7 +137,7 @@ class DrakeSkeletonProvider:
             from pydrake.multibody.parser import Parser
 
             parser = Parser(self.plant)
-            parser.AddModelFromString(model_xml)
+            parser.AddModelsFromString(model_xml, _infer_model_file_type(model_xml))
         else:
             from pydrake.multibody.parser import Parser
 
@@ -135,10 +148,11 @@ class DrakeSkeletonProvider:
         self.plant.Finalize()
 
         # Build body name to index mapping
-        self._body_name_to_index: dict[str, int] = {}
+        self._body_name_to_index: dict[str, Any] = {}
         for i in range(self.plant.num_bodies()):
-            body = self.plant.get_body(i)
-            self._body_name_to_index[body.name()] = i
+            body_index = self._BodyIndex(i)
+            body = self.plant.get_body(body_index)
+            self._body_name_to_index[body.name()] = body_index
 
         # Validate that required vocabulary is available
         self._validate_vocabulary()
@@ -156,7 +170,7 @@ class DrakeSkeletonProvider:
             )
 
     def _get_body_position(
-        self, body_index: int, context
+        self, body_index: Any, context: Any
     ) -> tuple[float, float, float]:
         """Get the position of a body in world coordinates.
 
@@ -168,7 +182,7 @@ class DrakeSkeletonProvider:
             Tuple of (x, y, z) coordinates in meters.
         """
         body = self.plant.get_body(body_index)
-        pose = body.EvalBodyPoseInWorld(context)
+        pose = body.EvalPoseInWorld(context)
         position = pose.translation()
         return (float(position[0]), float(position[1]), float(position[2]))
 

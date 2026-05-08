@@ -12,6 +12,7 @@ import logging
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -144,7 +145,7 @@ def _extract_event_markers(df: pd.DataFrame) -> ExcelEventMarkers:
         if pd.isna(val):
             continue
         try:
-            setattr(ev, label_to_field[label], float(val))
+            setattr(ev, label_to_field[label], float(cast(Any, val)))
         except (ValueError, TypeError):
             continue
     return ev
@@ -190,7 +191,7 @@ def read_excel_event_markers(path: Path | str, sheet: str) -> ExcelEventMarkers:
         if pd.isna(val):
             continue
         try:
-            setattr(ev, label_to_field[label], float(val))
+            setattr(ev, label_to_field[label], float(cast(Any, val)))
         except (ValueError, TypeError):
             continue
     return ev
