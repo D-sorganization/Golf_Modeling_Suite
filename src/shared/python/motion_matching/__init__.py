@@ -48,6 +48,11 @@ from .align_to_simulation_grid import (
     align_to_simulation_grid,
     detect_impact_index,
 )
+from .body_skeleton import (
+    BodySegment,
+    BodySegmentGroup,
+    default_body_segments,
+)
 from .compute_total_work import compute_total_work
 from .cost import (
     CostBreakdown,
@@ -71,6 +76,7 @@ from .load_club_target import (
     load_club_target,
     load_club_target_c3d,
     load_club_target_excel,
+    load_club_target_mat,
 )
 from .plot_error_timecourse import plot_error_timecourse
 from .plot_fit_quality_card import (
@@ -88,8 +94,11 @@ from .synthesize_target_from_coefficients import (
 )
 from .target import (
     AlignOptions,
+    BallImpactState,
+    ClubBallTarget,
     ClubTarget,
     SourceProvenance,
+    extract_ball_impact_from_clubtarget,
 )
 from .validate_theta import (
     COEFFS_PER_JOINT,
@@ -110,10 +119,14 @@ __all__ = [
     "AlignOptions",
     "AlignedTrajectory",
     "BODY_TARGET_SCHEMA_VERSION",
+    "BallImpactState",
     "BodyEvent",
+    "BodySegment",
+    "BodySegmentGroup",
     "BodyTarget",
     "COEFFS_PER_JOINT",
     "CanonicalFitResult",
+    "ClubBallTarget",
     "ClubTarget",
     "CostBreakdown",
     "CostOptions",
@@ -131,13 +144,16 @@ __all__ = [
     "align_to_simulation_grid",
     "compute_cost",
     "compute_total_work",
+    "default_body_segments",
     "detect_impact_index",
+    "extract_ball_impact_from_clubtarget",
     "fit_quality_summary",
     "load_body_target",
     "load_body_target_c3d",
     "load_club_target",
     "load_club_target_c3d",
     "load_club_target_excel",
+    "load_club_target_mat",
     "must_be_finite_vector",
     "must_be_monotonic_time",
     "must_be_regularizer_kind",
