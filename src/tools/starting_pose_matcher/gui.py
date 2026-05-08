@@ -108,6 +108,15 @@ from src.tools.starting_pose_matcher.skeleton_provider import (
     JsonSkeletonProvider,
     SkeletonProvider,
 )
+from src.tools.starting_pose_matcher.providers.simscape import (
+    SimscapeMatEditorError,
+    SimscapeMatField,
+    apply_matcher_transform_overlay,
+    default_simscape_output_mat_path,
+    load_simscape_input_mat,
+    save_simscape_input_mat,
+    validate_simscape_start_fields,
+)
 
 # Shared 3D-rendering helpers (per #4376 — DRY with the rest of the
 # motion-matching diagnostics).  Used by ``_setup_axes`` to fit the view
@@ -519,6 +528,11 @@ class StartingPoseMatcher(QMainWindow):
             if "hub" in slot.skeleton.joints:
                 self.transform.pivot = tuple(slot.skeleton.joints["hub"])
                 break
+        self._simscape_mat_path: str | None = None
+        self._simscape_mat_written_path: str | None = None
+        self._simscape_mat_data: dict[str, object] | None = None
+        self._simscape_mat_fields: list[SimscapeMatField] = []
+        self._simscape_mat_spins: dict[str, QDoubleSpinBox] = {}
 
         self.show_clubhead_trace = False
         self.show_midhands_trace = False
@@ -1226,6 +1240,36 @@ class StartingPoseMatcher(QMainWindow):
         self.btn_save.clicked.connect(self._on_save_clicked)
         v.addWidget(self.btn_save)
 
+        mat_box = QGroupBox("Simscape Input MAT")
+        mat_layout = QVBoxLayout(mat_box)
+        mat_layout.setSpacing(6)
+        mat_row = QHBoxLayout()
+        self.btn_load_simscape_mat = QPushButton("Load MAT…")
+        self.btn_load_simscape_mat.clicked.connect(self._on_load_simscape_mat_clicked)
+        mat_row.addWidget(self.btn_load_simscape_mat)
+        self.btn_save_simscape_mat = QPushButton("Save MAT copy…")
+        self.btn_save_simscape_mat.clicked.connect(self._on_save_simscape_mat_clicked)
+        self.btn_save_simscape_mat.setEnabled(False)
+        mat_row.addWidget(self.btn_save_simscape_mat)
+        mat_layout.addLayout(mat_row)
+        self.cb_simscape_overlay = QCheckBox("Overlay matcher transform")
+        self.cb_simscape_overlay.setChecked(True)
+        mat_layout.addWidget(self.cb_simscape_overlay)
+        self.lbl_simscape_mat = QLabel("(no Simscape MAT loaded)")
+        self.lbl_simscape_mat.setWordWrap(True)
+        mat_layout.addWidget(self.lbl_simscape_mat)
+        self.simscape_mat_fields_widget = QWidget()
+        self.simscape_mat_fields_layout = QGridLayout(self.simscape_mat_fields_widget)
+        self.simscape_mat_fields_layout.setContentsMargins(0, 0, 0, 0)
+        self.simscape_mat_fields_layout.setHorizontalSpacing(6)
+        self.simscape_mat_fields_layout.setVerticalSpacing(3)
+        mat_scroll = QScrollArea()
+        mat_scroll.setWidgetResizable(True)
+        mat_scroll.setMaximumHeight(220)
+        mat_scroll.setWidget(self.simscape_mat_fields_widget)
+        mat_layout.addWidget(mat_scroll)
+        v.addWidget(mat_box)
+
         ses_row = QHBoxLayout()
         self.btn_save_session = QPushButton("Save session…")
         self.btn_save_session.clicked.connect(self._on_save_session_clicked)
@@ -1883,6 +1927,93 @@ class StartingPoseMatcher(QMainWindow):
         self._notify(f"Saved: {Path(path).name}")
         logger.info("Wrote %s", path)
 
+    def _on_load_simscape_mat_clicked(self) -> None:
+        start = self._simscape_mat_path or str(
+            Path(__file__).parents[2]
+            / "engines"
+            / "Simscape_Multibody_Models"
+            / "3D_Golf_Model"
+            / "matlab"
+            / "src"
+            / "model"
+            / "inputs"
+        )
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Load Simscape input MAT",
+            start,
+            "MAT files (*.mat)",
+        )
+        if not path:
+            return
+        try:
+            mat_data = load_simscape_input_mat(path)
+            fields = validate_simscape_start_fields(mat_data)
+        except SimscapeMatEditorError as exc:
+            QMessageBox.warning(self, "Simscape MAT load failed", str(exc))
+            return
+        self._simscape_mat_path = path
+        self._simscape_mat_written_path = None
+        self._simscape_mat_data = mat_data
+        self._simscape_mat_fields = fields
+        self._render_simscape_mat_fields()
+        self.btn_save_simscape_mat.setEnabled(True)
+        self.lbl_simscape_mat.setText(f"Loaded {Path(path).name}: {len(fields)} fields")
+        self._notify(f"Loaded Simscape MAT: {Path(path).name}")
+
+    def _render_simscape_mat_fields(self) -> None:
+        while self.simscape_mat_fields_layout.count():
+            item = self.simscape_mat_fields_layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+        self._simscape_mat_spins = {}
+        self.simscape_mat_fields_layout.addWidget(QLabel("Field"), 0, 0)
+        self.simscape_mat_fields_layout.addWidget(QLabel("Value"), 0, 1)
+        self.simscape_mat_fields_layout.addWidget(QLabel("Unit"), 0, 2)
+        for row, field in enumerate(self._simscape_mat_fields, start=1):
+            spin = QDoubleSpinBox()
+            spin.setDecimals(6)
+            spin.setRange(-1_000_000.0, 1_000_000.0)
+            spin.setSingleStep(0.01 if field.unit.startswith("deg") else 0.001)
+            spin.setValue(field.value)
+            self._simscape_mat_spins[field.name] = spin
+            self.simscape_mat_fields_layout.addWidget(QLabel(field.name), row, 0)
+            self.simscape_mat_fields_layout.addWidget(spin, row, 1)
+            self.simscape_mat_fields_layout.addWidget(QLabel(field.unit), row, 2)
+
+    def _on_save_simscape_mat_clicked(self) -> None:
+        if self._simscape_mat_data is None or self._simscape_mat_path is None:
+            return
+        base_edits = {
+            name: float(spin.value()) for name, spin in self._simscape_mat_spins.items()
+        }
+        edits = (
+            apply_matcher_transform_overlay(base_edits, self.transform)
+            if self.cb_simscape_overlay.isChecked()
+            else base_edits
+        )
+        default_path = default_simscape_output_mat_path(self._simscape_mat_path)
+        path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save Simscape input MAT copy",
+            str(default_path),
+            "MAT files (*.mat)",
+        )
+        if not path:
+            return
+        try:
+            written = save_simscape_input_mat(self._simscape_mat_data, edits, path)
+        except SimscapeMatEditorError as exc:
+            QMessageBox.warning(self, "Simscape MAT save failed", str(exc))
+            return
+        self._simscape_mat_written_path = str(written)
+        self.lbl_simscape_mat.setText(
+            f"Loaded {Path(self._simscape_mat_path).name}; wrote {written.name}"
+        )
+        self._notify(f"Saved Simscape MAT copy: {written.name}")
+        logger.info("Wrote Simscape MAT copy %s", written)
+
     # ---------- session save / load --------------------------------------- #
 
     def _serialize_session(self) -> dict[str, Any]:
@@ -1892,6 +2023,10 @@ class StartingPoseMatcher(QMainWindow):
             "saved_at": pd.Timestamp.now().isoformat(),
             "xlsx_path": self._xlsx_path,
             "sheet": self.sheet_combo.currentText(),
+            "simscape_mat": {
+                "source_path": self._simscape_mat_path,
+                "written_path": self._simscape_mat_written_path,
+            },
             "transform": {
                 "tx": self.transform.tx,
                 "ty": self.transform.ty,
@@ -2005,6 +2140,15 @@ class StartingPoseMatcher(QMainWindow):
             self._load_xlsx(xlsx)
         elif xlsx:
             logger.warning("Saved xlsx not found: %s", xlsx)
+
+        simscape_mat = d.get("simscape_mat") or {}
+        self._simscape_mat_path = simscape_mat.get("source_path")
+        self._simscape_mat_written_path = simscape_mat.get("written_path")
+        if self._simscape_mat_path:
+            text = f"Session MAT source: {Path(self._simscape_mat_path).name}"
+            if self._simscape_mat_written_path:
+                text += f"; wrote {Path(self._simscape_mat_written_path).name}"
+            self.lbl_simscape_mat.setText(text)
 
         # 2. Event overrides (applied on top of the freshly-loaded events).
         evo = d.get("event_overrides") or {}
