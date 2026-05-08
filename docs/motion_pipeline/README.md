@@ -2,104 +2,85 @@
 
 > Part of epic #4558. Make the new pipeline immediately usable by anyone joining the project.
 
-## From Video to Tracked Golf Swing in 5 Commands
+## Quick Start
 
-This guide walks you through processing a golf swing video into a fully tracked motion using the UpstreamDrift motion pipeline.
+The motion pipeline processes motion capture data through these stages:
 
-### Step 1: Extract Frames from Video
+1. **Adapter** - Load source data (C3D, TRC, BVH, JSON, MAT, FBX)
+2. **Preprocessing** - Clean, filter, interpolate
+3. **Scaling** - Scale skeleton to subject
+4. **Inverse Kinematics** - Compute joint angles from markers
+5. **Motion Matching** - Refine trajectory via optimization
 
-```bash
-python3 -m src.shared.python.motion_pipeline.extract_frames \
-    --input swing_video.mp4 \
-    --output frames/ \
-    --fps 60
-```
-
-### Step 2: Run Pose Estimation (OpenPose or MediaPipe)
+### CLI Usage
 
 ```bash
-# Option A: OpenPose (higher accuracy, requires GPU)
-python3 -m src.shared.python.motion_pipeline.pose_estimation \
-    --input frames/ \
-    --output pose_2d.json \
-    --engine openpose
+# Run pipeline on motion capture file
+python -m motion_pipeline run <input_file> --engine <engine> --output <output_file>
 
-# Option B: MediaPipe (CPU-friendly, faster)
-python3 -m src.shared.python.motion_pipeline.pose_estimation \
-    --input frames/ \
-    --output pose_2d.json \
-    --engine mediapipe
+# Example: Process C3D file with MuJoCo backend
+python -m motion_pipeline run capture.c3d --engine mujoco --output result.json
+
+# Example: Process BVH file with Drake backend
+python -m motion_pipeline run motion.bvh --engine drake --output drake_result.json
 ```
 
-### Step 3: Lift 2D to 3D (Optional — Use Existing Mocap)
+### CLI Options
+
+| Option | Description | Default | Choices |
+|--------|-------------|---------|---------|
+| `source` | Source file path | (required) | - |
+| `--engine` | Backend engine | `mujoco` | `mujoco`, `drake`, `pinocchio`, `opensim` |
+| `--output` | Output file path | `result.json` | - |
+| `--weights` | Cost weights as JSON string | `{}` | - |
+
+### Python API
+
+```python
+from motion_pipeline.orchestrator import MotionPipeline, PipelineConfig, AdapterOverride
+from pathlib import Path
+
+# Configure pipeline
+config = PipelineConfig(
+    adapter=AdapterOverride(format="c3d"),
+    ik_backend="mujoco",
+    matching_backend="mujoco",
+)
+
+# Create and run pipeline
+pipeline = MotionPipeline(config)
+result = pipeline.run(Path("capture.c3d"))
+
+# Access results
+if result.success:
+    print(f"Matched trajectory: {result.matched_trajectory}")
+    print(f"Solve time: {result.solve_time}")
+else:
+    print(f"Pipeline failed: {result.message}")
+```
+
+### REST API
 
 ```bash
-python3 -m src.shared.python.motion_pipeline.lift_3d \
-    --input pose_2d.json \
-    --output motion_3d.json \
-    --method triangulation  # or 'learned' for ML-based lifting
+# Start the API server
+python -m motion_pipeline.api
+
+# Or with uvicorn
+uvicorn motion_pipeline.api:app --host 0.0.0.0 --port 8000
 ```
 
-### Step 4: Retarget to Humanoid Model
+Then use the `/api/v1/motion-pipeline/run` endpoint to upload files and process them.
 
-```bash
-python3 -m src.shared.python.motion_pipeline.retarget \
-    --input motion_3d.json \
-    --output retargeted_motion.json \
-    --model preset:golfer_standard
-```
+## Supported Source Formats
 
-### Step 5: Run Inverse Kinematics and Export
-
-```bash
-python3 -m src.shared.python.motion_pipeline.inverse_kinematics \
-    --input retargeted_motion.json \
-    --output final_motion.mocap \
-    --engine mujoco  # or drake, pinocchio
-```
-
----
-
-## Worked Example for Each Engine
-
-### MuJoCo Pipeline
-
-```bash
-# Complete MuJoCo workflow
-python3 scripts/motion_pipeline/run_mujoco_pipeline.py \
-    --video swing_video.mp4 \
-    --output mujoco_output/
-```
-
-### Drake Trajectory Optimization
-
-```bash
-# Drake trajopt workflow
-python3 scripts/motion_pipeline/run_drake_pipeline.py \
-    --input motion_3d.json \
-    --output drake_trajopt/
-```
-
-### Pinocchio Inverse Kinematics
-
-```bash
-# Pinocchio IK workflow
-python3 scripts/motion_pipeline/run_pinocchio_pipeline.py \
-    --input motion_3d.json \
-    --output pinocchio_ik/
-```
-
----
-
-## When to Choose Each Engine
-
-| Use Case | Recommended Engine | Why |
-|----------|-------------------|-----|
-| **Contact-rich dynamics** (ground reaction, ball impact) | MuJoCo | Best contact handling, day-to-day development |
-| **Trajectory optimization** (finding optimal swing) | Drake | Built-in trajopt solvers, system analysis |
-| **Fast IK solutions** (real-time retargeting) | Pinocchio | Optimized rigid-body algorithms |
-| **Biomechanics validation** | OpenSim | Gold-standard musculoskeletal models |
-| **Muscle dynamics** | MyoSuite | Detailed muscle activation modeling |
+| Format | Extension | Description |
+|--------|-----------|-------------|
+| C3D | `.c3d` | Coordinate 3D motion capture data |
+| TRC | `.trc` | Trajectory file format |
+| BVH | `.bvh` | Biovision Hierarchy animation |
+| JSON | `.json` | Custom JSON format |
+| MAT | `.mat` | MATLAB data files |
+| FBX | `.fbx` | Autodesk FBX animation |
 
 ---
 
