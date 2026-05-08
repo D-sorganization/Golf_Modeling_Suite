@@ -78,8 +78,11 @@ from .synthesize_target_from_coefficients import (
 )
 from .target import (
     AlignOptions,
+    BallImpactState,
+    ClubBallTarget,
     ClubTarget,
     SourceProvenance,
+    extract_ball_impact_from_clubtarget,
 )
 from .validate_theta import (
     COEFFS_PER_JOINT,
@@ -99,8 +102,10 @@ __all__ = [
     "ALLOWED_SHEETS",
     "AlignOptions",
     "AlignedTrajectory",
+    "BallImpactState",
     "COEFFS_PER_JOINT",
     "CanonicalFitResult",
+    "ClubBallTarget",
     "ClubTarget",
     "CostBreakdown",
     "CostOptions",
@@ -118,6 +123,7 @@ __all__ = [
     "compute_cost",
     "compute_total_work",
     "detect_impact_index",
+    "extract_ball_impact_from_clubtarget",
     "fit_quality_summary",
     "load_club_target",
     "load_club_target_c3d",
