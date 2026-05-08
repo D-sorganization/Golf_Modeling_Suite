@@ -17,7 +17,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, File, HTTPException, UploadFile, status
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile, status
 from pydantic import BaseModel, Field
 
 from .contracts import MotionMatchingResult
@@ -191,9 +191,9 @@ Returns MotionMatchingResult with matched trajectory and error metrics.
     )
     async def run_pipeline(
         file: UploadFile = File(..., description="Motion capture file"),
-        source_format: str = Field(..., description="Source format"),
-        ik_backend: str = Field(default="mujoco", description="IK backend"),
-        matching_backend: str = Field(default="mujoco", description="Matching backend"),
+        source_format: str = Form(..., description="Source format"),
+        ik_backend: str = Form(default="mujoco", description="IK backend"),
+        matching_backend: str = Form(default="mujoco", description="Matching backend"),
     ) -> PipelineResponse:
         """
         Run motion pipeline on uploaded file.
