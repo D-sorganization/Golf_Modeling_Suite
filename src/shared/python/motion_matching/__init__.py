@@ -56,6 +56,20 @@ from .cost import (
     compute_cost,
 )
 from .fit_result import CanonicalFitResult
+from .fit_swing import (
+    CostTerm,
+    FitMetrics,
+    FitOptions,
+    FitSwingProvider,
+    FitTarget,
+)
+from .fit_swing import FitResult as FitSwingResult
+from .provider_registry import (
+    available_engines,
+    get_provider,
+    register_provider,
+    unregister_provider,
+)
 from .body_target import (
     BODY_TARGET_SCHEMA_VERSION,
     MAX_BODY_POSITION_NORM_M,
@@ -115,12 +129,18 @@ __all__ = [
     "COEFFS_PER_JOINT",
     "CanonicalFitResult",
     "ClubTarget",
+    "CostTerm",
     "CostBreakdown",
     "CostOptions",
     "DEFAULT_THETA_BOUND_TABLE",
     "EngineSimulator",
+    "FitMetrics",
+    "FitOptions",
     "FitQualityScalars",
     "FitResult",
+    "FitSwingProvider",
+    "FitSwingResult",
+    "FitTarget",
     "MAX_BODY_POSITION_NORM_M",
     "REGULARIZER_KINDS",
     "SimOut",
@@ -129,10 +149,12 @@ __all__ = [
     "SynthOptions",
     "THETA_BOUNDS",
     "align_to_simulation_grid",
+    "available_engines",
     "compute_cost",
     "compute_total_work",
     "detect_impact_index",
     "fit_quality_summary",
+    "get_provider",
     "load_body_target",
     "load_body_target_c3d",
     "load_club_target",
@@ -146,6 +168,8 @@ __all__ = [
     "plot_error_timecourse",
     "plot_fit_quality_card",
     "plot_trajectory_overlay",
+    "register_provider",
     "synthesize_target_from_coefficients",
+    "unregister_provider",
     "validate_theta",
 ]
