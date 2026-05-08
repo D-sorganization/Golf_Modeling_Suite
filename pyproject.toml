@@ -71,6 +71,9 @@ rl = ["stable-baselines3>=2.0.0", "gymnasium>=0.29.0"]
 # URDF generation tools (from shared Tools repo)
 urdf = ["trimesh>=4.11.5", "PyYAML>=6.0.3", "defusedxml>=0.7.0", "robot_descriptions>=1.12.0"]
 
+# GUI tools (PyQt6-based desktop applications)
+gui-tools = ["PyQt6>=6.4.0", "matplotlib>=3.7.0", "pandas>=2.0.0", "openpyxl>=3.1.0"]
+
 # Development and testing
 dev = [
     "pytest>=9.0.3",
