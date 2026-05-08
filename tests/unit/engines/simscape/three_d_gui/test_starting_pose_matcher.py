@@ -539,6 +539,7 @@ class TestSkeletonModelling:
 def _require_xlsx() -> None:
     if not _WIFFLE_XLSX.exists():
         pytest.skip(f"Wiffle xlsx fixture not available: {_WIFFLE_XLSX}")
+    pytest.importorskip("openpyxl", reason="Wiffle xlsx fixture tests require openpyxl")
 
 
 class TestXlsxLoaders:
@@ -691,8 +692,7 @@ class TestUISmoke:
             win2.close()
 
     def test_playback_step_frame(self, matcher):
-        if not _WIFFLE_XLSX.exists():
-            pytest.skip("xlsx fixture unavailable")
+        _require_xlsx()
         matcher._load_xlsx(str(_WIFFLE_XLSX))
         before = matcher.current_frame
         matcher._step_frame(+5)
@@ -703,8 +703,7 @@ class TestUISmoke:
         assert matcher.current_frame == len(matcher.df) - 1
 
     def test_playback_advance_loop(self, matcher):
-        if not _WIFFLE_XLSX.exists():
-            pytest.skip("xlsx fixture unavailable")
+        _require_xlsx()
         matcher._load_xlsx(str(_WIFFLE_XLSX))
         matcher.spin_frame.setValue(len(matcher.df) - 1)
         matcher.loop_playback = True
@@ -712,8 +711,7 @@ class TestUISmoke:
         assert matcher.current_frame == 0
 
     def test_set_event_to_current_frame(self, matcher):
-        if not _WIFFLE_XLSX.exists():
-            pytest.skip("xlsx fixture unavailable")
+        _require_xlsx()
         matcher._load_xlsx(str(_WIFFLE_XLSX))
         matcher.spin_frame.setValue(123)
         matcher.combo_set_event.setCurrentIndex(0)  # A
@@ -722,8 +720,7 @@ class TestUISmoke:
         assert int(matcher.events.A_sample) == 124
 
     def test_snap_shaft_for_visible_pose(self, matcher):
-        if not _WIFFLE_XLSX.exists():
-            pytest.skip("xlsx fixture unavailable")
+        _require_xlsx()
         matcher._load_xlsx(str(_WIFFLE_XLSX))
         matcher._pose_visible_checks["Impact"].setChecked(True)
         matcher._snap_shaft("Impact")
