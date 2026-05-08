@@ -42,7 +42,7 @@ FIXTURE_FILES = [
 def _registry_or_skip():
     try:
         from src.shared.python.motion_pipeline.sources import registry  # type: ignore
-    except ImportError as exc:  # pragma: no cover — depends on PR #4619
+    except ModuleNotFoundError as exc:  # pragma: no cover — depends on PR #4619
         pytest.skip(f"motion_pipeline.sources.registry not available: {exc}")
     return registry
 

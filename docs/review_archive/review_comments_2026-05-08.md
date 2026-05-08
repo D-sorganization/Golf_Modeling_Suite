@@ -1,38 +1,36 @@
 # Review Comments Archive - 2026-05-08
 
-Generated: 2026-05-08T14:19:59.100897
+Generated: 2026-05-08T14:31:49.295929
 
 ## Reviewer (chatgpt-codex-connector[bot]) (2 comments)
 
-### PR #4638: tests/integration/motion_pipeline/test_loader_golden_roundtrip.py:46
+### PR #4641: tests/integration/test_urdf_cross_engine_fk.py:146
 
 Actionable: Yes
 Has Suggestion: No
 
 ```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Restrict registry skip to truly missing registry module**
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Read Pinocchio body poses from frame placements**
 
-Catching any `ImportError` while importing `sources.registry` will skip the entire suite even when the registry exists but is broken (for example, a typo or bad transitive import inside `registry.py`). In that case CI reports skipped instead of failed, so adapter regressions are silently hidden. The skip should only trigger for the specific “module do...
+`model.getBodyId()` returns a body/frame index, but this code uses that value to index `data.oMi`, which stores joint placements. When Pinocchio is available and a requested body exists, this can return the wrong transform (or raise on larger models), making the MuJoCo/Drake vs Pinocchio RMSE check invalid. Use the frame placement (`data.oMf[bid]` after `upda...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4638#discussion_r3211415040)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4641#discussion_r3211471648)
 
 ---
 
-### PR #4638: tests/integration/motion_pipeline/test_loader_golden_roundtrip.py:80
+### PR #4641: .github/workflows/urdf-cross-engine-equivalence.yml:85
 
-Actionable: No
+Actionable: Yes
 Has Suggestion: No
 
 ```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Do not skip all loader ImportErrors as optional deps**
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Enforce at least two engines before running equivalence gate**
 
-Treating every `ImportError` from `load_any(...)` as an optional dependency miss will also swallow real adapter bugs (e.g., broken internal imports) and mark them as skipped. Once adapters land, this makes the golden round-trip test unable to catch a whole class of regressions and can leave broken loaders undetected in CI.
-
-Useful? React with 👍 / 👎.
+This workflow suppresses install failures for every optional engine (`|| echo ...`), while the tests themselves skip missing backends via `importorskip`; as a result, the job can succeed with all equivalence tests skipped and no cross-engine comparison actually executed. Since this is intended as a parity gate, add a hard precheck that at least t...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4638#discussion_r3211415042)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4641#discussion_r3211471651)
 
 ---
 
