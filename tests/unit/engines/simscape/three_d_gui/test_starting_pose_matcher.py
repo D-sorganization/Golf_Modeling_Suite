@@ -332,6 +332,16 @@ class TestPhaseDisplayLabels:
         assert core.phase_key_from_label("Backswing (A → T)") == "backswing"
         assert core.phase_key_from_label("Full swing (A → F)") == "full_swing"
 
+    def test_legacy_shim_repo_root_depth(self):
+        shim = (
+            _REPO
+            / "src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/src/apps/golf_gui"
+            / "Motion Capture Plotter"
+            / "starting_pose_core.py"
+        )
+
+        assert shim.resolve().parents[9] == _REPO
+
     def test_logical_key_passthrough(self, core):
         # Already a key — still resolves.
         assert core.phase_key_from_label("backswing") == "backswing"

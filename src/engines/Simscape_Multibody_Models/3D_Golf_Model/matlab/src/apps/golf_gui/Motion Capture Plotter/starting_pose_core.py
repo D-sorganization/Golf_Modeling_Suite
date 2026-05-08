@@ -22,7 +22,7 @@ warnings.warn(
 # Re-export the new core's public surface unchanged.
 # Add repo-root fallback for legacy usage where repo root is not on sys.path
 # (e.g., `python -m starting_pose_matcher` from this directory)
-_repo_root = Path(__file__).resolve().parents[6]  # Motion Capture Plotter -> repo root
+_repo_root = Path(__file__).resolve().parents[9]  # Motion Capture Plotter -> repo root
 if str(_repo_root) not in sys.path:
     sys.path.insert(0, str(_repo_root))
 
