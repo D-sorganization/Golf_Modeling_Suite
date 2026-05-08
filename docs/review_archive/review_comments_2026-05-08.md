@@ -1,21 +1,21 @@
 # Review Comments Archive - 2026-05-08
 
-Generated: 2026-05-08T05:31:38.799024
+Generated: 2026-05-08T10:09:19.309955
 
 ## Reviewer (chatgpt-codex-connector[bot]) (1 comments)
 
-### PR #4462: src/tools/starting_pose_matcher/providers/drake.py:121
+### PR #4495: tests/unit/ui/test_preferences_dialog.py:9
 
 Actionable: No
 Has Suggestion: No
 
 ```
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Drop unsupported `Parser.SetPackageMapAutoMerge` calls**
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Handle PyQt DLL-load failures as test skips**
 
-`Parser` in the supported Drake range (`drake>=1.22.0` in `pyproject.toml`) does not expose `SetPackageMapAutoMerge`, so this line raises `AttributeError` as soon as a `DrakeSkeletonProvider` is created. Because the same call is now in both the `model_xml` and `model_path` branches, all Drake provider initialization paths fail at runtime before any mod...
+Replace module-level `pytest.importorskip("PyQt6.QtWidgets")` with an explicit import guard that also catches `OSError`; `importorskip` only skips `ImportError`, so environments where PyQt6 is installed but fails to load native DLLs (a known Windows/user-site case in this repo) will raise at collection time and fail the suite instead of skipping this optional GUI...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4462#discussion_r3208650036)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4495#discussion_r3210175668)
 
 ---
 
