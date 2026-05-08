@@ -25,7 +25,8 @@ without modifying it.
 ```
 3D_FullBody_Model/
   README.md                           ← this file
-  docs/                               ← design notes
+    docs/                               ← design notes
+      VALIDATION_GATE.md                validation gate report schema
   matlab/
     src/
       model/                          ← outputs of build scripts
@@ -40,8 +41,9 @@ without modifying it.
                                        worth of redundant signal logging)
       add_leg_chain.m                (scaffold-only leg/contact design
                                        surface; no block creation yet)
-      validate_3d_fullbody.m         (block-count + signal-count +
-                                       smoke-sim checks)
+      validate_3d_fullbody.m         (production gate: block budget,
+                                       signal allowlist, generated artifact,
+                                       leg/contact phase, smoke sim)
       (note: directory deliberately not named "build/" because the
        repo root .gitignore filters that name everywhere)
     output/                           generated JSON reports
@@ -68,7 +70,8 @@ That single call:
 3. Calls `prune_redundant_logging` on the copy.
 4. Calls `add_leg_chain` on the copy.
 5. Saves.
-6. Calls `validate_3d_fullbody` (block count, signal count, brief sim).
+6. Calls `validate_3d_fullbody` (block budget, signal allowlist,
+   generated artifact metadata, leg/contact phase detection, brief sim).
 7. Writes generated JSON reports under `matlab/output/`.
 
 Generated artifact policy: `GolfSwing3D_FullBody.slx` is generated-only
@@ -85,9 +88,13 @@ The default report paths are:
 - `matlab/output/validation_report.json`
 
 The build and validation reports record source/target paths, phase
-metadata, block counts, signal counts, smoke-sim status, and the
-generated-only artifact policy. The logging audit is machine-readable
-and separates measured before/after counts from heuristic savings.
+metadata, block counts, nonvirtual block estimates, warning and hard budget
+thresholds, signal counts, required-signal allowlist results, generated
+model timestamp/hash metadata, leg/contact presence, smoke-sim status, and
+the generated-only artifact policy. The logging audit is machine-readable
+and separates measured before/after counts from heuristic savings. See
+`docs/VALIDATION_GATE.md` for the production gate contract and phase
+ratchet.
 
 ## Block budget
 
@@ -101,6 +108,11 @@ and separates measured before/after counts from heuristic savings.
 
 See [GitHub issue #4382](https://github.com/D-sorganization/UpstreamDrift/issues/4382)
 for the full audit.
+
+The validation gate fails above the 1000 nonvirtual block hard budget and
+warns above the default 900-block threshold. Scaffold mode permits missing
+legs/contact as warnings. `one_leg` mode requires at least one scripted leg
+chain. `full_contact` mode requires left leg, right leg, and ground contact.
 
 ## What's pruned
 
@@ -158,8 +170,11 @@ free"** — `theta` length grows from `27 * 7 = 189` to `33 * 7 = 231`.
 - [x] Input MATs copied
 - [x] Build scripts authored (this PR)
 - [ ] Build scripts executed in MATLAB (requires user)
-- [ ] Validation (block count + signal count + smoke sim)
-- [ ] Tests (pytest + MATLAB)
+- [x] Validation gate schema (block budget, signal allowlist, generated
+      artifact metadata, leg/contact phase, smoke sim)
+- [x] Static pytest contract for validation report shape
+- [ ] Build scripts executed in MATLAB against generated `.slx`
+- [ ] Full-contact production phase validation
 
 ## Relationship to the issue tracker
 

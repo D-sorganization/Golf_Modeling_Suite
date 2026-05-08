@@ -34,6 +34,12 @@ function info = build_3d_fullbody(opts)
 %                             prune audit JSON path.
 %       .validation_report_path
 %                             validation report JSON path.
+%       .validation_phase     validation gate phase: scaffold, one_leg,
+%                             or full_contact. Default scaffold.
+%       .block_budget         Home-license nonvirtual block budget.
+%                             Default 1000.
+%       .warning_budget       nonvirtual block warning threshold.
+%                             Default 900.
 %       .verbose              default true.
 %
 %   Preconditions:
@@ -129,6 +135,9 @@ function info = build_3d_fullbody(opts)
         info.phases.validate = validate_3d_fullbody(opts.target_model_name, ...
             struct('verbose', opts.verbose, ...
                    'smoke_time', opts.smoke_time, ...
+                   'phase', opts.validation_phase, ...
+                   'budget', opts.block_budget, ...
+                   'warning_budget', opts.warning_budget, ...
                    'report_path', opts.validation_report_path, ...
                    'source_model_path', opts.source_slx, ...
                    'target_model_path', opts.target_slx));
@@ -185,6 +194,11 @@ function opts = local_fill_defaults(opts)
     if ~isfield(opts, 'skip_validate'); opts.skip_validate = false; end
     if ~isfield(opts, 'verbose');       opts.verbose       = true;  end
     if ~isfield(opts, 'smoke_time');    opts.smoke_time    = 0.005; end
+    if ~isfield(opts, 'validation_phase') || strlength(string(opts.validation_phase)) == 0
+        opts.validation_phase = "scaffold";
+    end
+    if ~isfield(opts, 'block_budget');   opts.block_budget   = 1000; end
+    if ~isfield(opts, 'warning_budget'); opts.warning_budget = 900;  end
 
     if ~isfield(opts, 'report_dir') || strlength(string(opts.report_dir)) == 0
         opts.report_dir = fullfile(fullbody_root, 'matlab', 'output');
