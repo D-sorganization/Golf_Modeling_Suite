@@ -51,7 +51,7 @@ class HRNetJSONAdapter(MocapSourceAdapter):
         if isinstance(data, dict) and "frames" in data:
             frames = data["frames"]
             if isinstance(frames, list) and frames and isinstance(frames[0], dict):
-                return "keypoints" in frames[0] and "frame_index" in frames[0]
+                return "keypoints" in frames[0] and ("frame_index" in frames[0] or "frame" in frames[0])
         return False
 
     def _normalise(self, data: object) -> list[dict]:
@@ -62,6 +62,14 @@ class HRNetJSONAdapter(MocapSourceAdapter):
         if isinstance(data, list):
             return [f for f in data if isinstance(f, dict)]
         raise ValueError("HRNet JSON must be a list or {'frames': [...]} object")
+
+    def _get_frame_index(self, item: dict, default: int) -> int:
+        """Get frame index from item, supporting both 'frame' and 'frame_index' keys."""
+        if "frame_index" in item:
+            return int(item["frame_index"])
+        if "frame" in item:
+            return int(item["frame"])
+        return default
 
     def metadata(self, path: Path) -> SourceMetadata:
         p = Path(path)
@@ -88,7 +96,7 @@ class HRNetJSONAdapter(MocapSourceAdapter):
             raise ValueError(f"HRNet JSON {p} has no frames")
 
         frames: list[KeypointFrame] = []
-        for idx, item in enumerate(sorted(raw, key=lambda d: d.get("frame_index", 0))):
+        for idx, item in enumerate(sorted(raw, key=lambda d: self._get_frame_index(d, 0))):
             flat = item.get("keypoints", [])
             kps: list[Keypoint] = []
             for i in range(0, len(flat), 3):
@@ -110,7 +118,7 @@ class HRNetJSONAdapter(MocapSourceAdapter):
                     timestamp=t,
                     keypoints=kps,
                     schema_name=self.schema,  # type: ignore[arg-type]
-                    frame_index=int(item.get("frame_index", idx)),
+                    frame_index=self._get_frame_index(item, idx),
                 )
             )
         if not frames:

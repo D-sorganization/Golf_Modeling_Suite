@@ -91,16 +91,27 @@ class MediaPipeJSONAdapter(MocapSourceAdapter):
             landmarks = raw.get("landmarks", [])
             kps: list[Keypoint] = []
             for lm in landmarks:
-                if not isinstance(lm, dict):
-                    continue
-                kps.append(
-                    Keypoint(
-                        x=float(lm.get("x", 0.0)),
-                        y=float(lm.get("y", 0.0)),
-                        z=float(lm["z"]) if lm.get("z") is not None else None,
-                        confidence=max(0.0, min(1.0, float(lm.get("visibility", 1.0)))),
+                # Support both dict format {"x": ..., "y": ..., "z": ...}
+                # and array format [x, y, z, visibility, confidence]
+                if isinstance(lm, dict):
+                    kps.append(
+                        Keypoint(
+                            x=float(lm.get("x", 0.0)),
+                            y=float(lm.get("y", 0.0)),
+                            z=float(lm["z"]) if lm.get("z") is not None else None,
+                            confidence=max(0.0, min(1.0, float(lm.get("visibility", 1.0)))),
+                        )
                     )
-                )
+                elif isinstance(lm, (list, tuple)) and len(lm) >= 4:
+                    # Array format: [x, y, z, visibility, confidence?]
+                    kps.append(
+                        Keypoint(
+                            x=float(lm[0]),
+                            y=float(lm[1]),
+                            z=float(lm[2]) if lm[2] is not None else None,
+                            confidence=max(0.0, min(1.0, float(lm[3]))),
+                        )
+                    )
             if not kps:
                 continue
             t = float(raw.get("timestamp", idx / fps))
