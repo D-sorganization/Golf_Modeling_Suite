@@ -38,7 +38,6 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -63,6 +62,7 @@ from PyQt6.QtWidgets import (
     QGroupBox,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
     QMainWindow,
     QMessageBox,
     QPushButton,
@@ -704,8 +704,6 @@ class StartingPoseMatcher(QMainWindow):
         gl.addWidget(self.event_preset_combo, 0, 1, 1, 3)
 
         # Editable entries for each event key
-        from PyQt6.QtWidgets import QLineEdit
-
         self._event_label_edits: dict[str, QLineEdit] = {}
         for r, k in enumerate(_EVENT_KEYS, start=1):
             gl.addWidget(QLabel(f"{k}:"), r, 0)
@@ -2343,7 +2341,7 @@ class StartingPoseMatcher(QMainWindow):
             )
         # Phase boundary markers (start / end of selected window)
         if (self.show_midhands_trace or self.show_clubhead_trace) and len(sub) > 0:
-            for idx, marker_label, color in [
+            for idx, _marker_label, color in [
                 (i0, "start", "#22c55e"),
                 (min(i1 - 1, len(self.df) - 1), "end", "#a855f7"),
             ]:
@@ -2573,10 +2571,7 @@ class StartingPoseMatcher(QMainWindow):
         else:
             n = np.array([0.0, 0.0, 1.0])
         nn = float(np.linalg.norm(n))
-        if nn < 1e-6:
-            n = np.array([0.0, 0.0, 1.0])
-        else:
-            n = n / nn
+        n = np.array([0.0, 0.0, 1.0]) if nn < 1e-6 else n / nn
 
         # In-plane axis: project (rs - ls) onto the plane orthogonal to n.
         rs_dir = rs - ls
