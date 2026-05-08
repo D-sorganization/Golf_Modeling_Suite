@@ -65,7 +65,7 @@ from src.shared.python.motion_matching.loaders.excel import (
     read_excel_event_markers,
 )
 from src.shared.python.motion_matching.load_club_target import load_club_target
-from src.shared.python.motion_matching.target import AlignOptions, ClubTarget
+from src.shared.python.motion_matching.club_target import AlignOptions, ClubTarget
 
 logger = logging.getLogger(__name__)
 
@@ -402,15 +402,60 @@ def fallback_skeleton(pose_name: str) -> Skeleton:
 
 
 # ----------------------------------------------------------------------------
-# xlsx loaders — canonical ClubTarget adapter (per #4404)
+# target loaders -- canonical ClubTarget adapter (per #4404)
 # ----------------------------------------------------------------------------
-# The matcher now uses the shared motion-matching infrastructure for xlsx
-# loading. The local functions remain for backwards compatibility but are
-# thin wrappers around the canonical loaders.
+# The matcher uses the shared motion-matching infrastructure for production
+# target loading. The xlsx-named functions remain for backwards compatibility
+# but delegate to this adapter instead of parsing Wiffle workbooks locally.
 # ----------------------------------------------------------------------------
 
 
-def _clubtarget_to_dataframe(target: ClubTarget) -> pd.DataFrame:
+class ClubTargetAdapterError(ValueError):
+    """Raised when a ClubTarget-like object cannot feed the matcher UI."""
+
+
+_EXCEL_SUFFIXES = frozenset({".xlsx", ".xlsm", ".xls"})
+_C3D_SUFFIXES = frozenset({".c3d"})
+
+
+def _as_target_array(
+    target: ClubTarget, field_name: str, *, ndim: int, columns: int | None = None
+) -> np.ndarray:
+    if not hasattr(target, field_name):
+        raise ClubTargetAdapterError(
+            f"ClubTarget missing required field {field_name!r}"
+        )
+    arr = np.asarray(getattr(target, field_name), dtype=np.float64)
+    if arr.ndim != ndim:
+        raise ClubTargetAdapterError(
+            f"ClubTarget field {field_name!r} must be {ndim}-D, got shape {arr.shape}"
+        )
+    if columns is not None and (arr.shape[-1] if arr.ndim else None) != columns:
+        raise ClubTargetAdapterError(
+            f"ClubTarget field {field_name!r} must have {columns} columns, "
+            f"got shape {arr.shape}"
+        )
+    if not np.all(np.isfinite(arr)):
+        raise ClubTargetAdapterError(
+            f"ClubTarget field {field_name!r} contains NaN or Inf"
+        )
+    return arr
+
+
+def _validate_target_lengths(
+    time: np.ndarray, butt: np.ndarray, clubhead: np.ndarray, quat: np.ndarray
+) -> int:
+    n = int(time.shape[0])
+    for name, arr in (("butt", butt), ("clubhead", clubhead), ("club_quat", quat)):
+        if arr.shape[0] != n:
+            raise ClubTargetAdapterError(
+                f"ClubTarget field {name!r} length {arr.shape[0]} does not "
+                f"match time length {n}"
+            )
+    return n
+
+
+def clubtarget_to_mocap_dataframe(target: ClubTarget) -> pd.DataFrame:
     """Convert a ClubTarget to a DataFrame compatible with the matcher GUI.
 
     This adapter converts the canonical ClubTarget format (butt/clubhead/quaternion)
@@ -423,12 +468,17 @@ def _clubtarget_to_dataframe(target: ClubTarget) -> pd.DataFrame:
         DataFrame with columns: time, mid_X, mid_Y, mid_Z, club_X, club_Y, club_Z
         plus the 9 direction cosine columns for rotation matrix
     """
-    n = len(target.time)
+    time = _as_target_array(target, "time", ndim=1)
+    butt = _as_target_array(target, "butt", ndim=2, columns=3)
+    clubhead = _as_target_array(target, "clubhead", ndim=2, columns=3)
+    club_quat = _as_target_array(target, "club_quat", ndim=2, columns=4)
+    n = _validate_target_lengths(time, butt, clubhead, club_quat)
+
     # Build rotation matrix from quaternion for direction cosines
     # Quaternion format: [w, x, y, z] -> rotation matrix
     rotmats = np.empty((n, 3, 3), dtype=np.float64)
     for i in range(n):
-        q = target.club_quat[i]
+        q = club_quat[i]
         w, x, y, z = q[0], q[1], q[2], q[3]
         # Rotation matrix from quaternion (row-major for direction cosines)
         rotmats[i] = np.array(
@@ -454,13 +504,13 @@ def _clubtarget_to_dataframe(target: ClubTarget) -> pd.DataFrame:
     rows = []
     for i in range(n):
         rec = {
-            "time": float(target.time[i]),
-            "mid_X": float(target.butt[i, 0]),
-            "mid_Y": float(target.butt[i, 1]),
-            "mid_Z": float(target.butt[i, 2]),
-            "club_X": float(target.clubhead[i, 0]),
-            "club_Y": float(target.clubhead[i, 1]),
-            "club_Z": float(target.clubhead[i, 2]),
+            "time": float(time[i]),
+            "mid_X": float(butt[i, 0]),
+            "mid_Y": float(butt[i, 1]),
+            "mid_Z": float(butt[i, 2]),
+            "club_X": float(clubhead[i, 0]),
+            "club_Y": float(clubhead[i, 1]),
+            "club_Z": float(clubhead[i, 2]),
             # Direction cosine columns (club_Xx, club_Xy, club_Xz, etc.)
             "club_Xx": float(rotmats[i, 0, 0]),
             "club_Xy": float(rotmats[i, 0, 1]),
@@ -473,20 +523,33 @@ def _clubtarget_to_dataframe(target: ClubTarget) -> pd.DataFrame:
             "club_Zz": float(rotmats[i, 2, 2]),
         }
         rows.append(rec)
-    df = pd.DataFrame(rows)
-    pos_cols = ["mid_X", "mid_Y", "mid_Z", "club_X", "club_Y", "club_Z"]
-    shaft = np.linalg.norm(
-        df[["club_X", "club_Y", "club_Z"]].to_numpy(dtype=float)
-        - df[["mid_X", "mid_Y", "mid_Z"]].to_numpy(dtype=float),
-        axis=1,
+    return pd.DataFrame(rows)
+
+
+def _sheet_for_target(path: Path, sheet_name: str | None) -> str | None:
+    suffix = path.suffix.lower()
+    if suffix in _EXCEL_SUFFIXES:
+        if not sheet_name:
+            raise ClubTargetAdapterError("sheet_name is required for Excel targets")
+        return sheet_name
+    if suffix in _C3D_SUFFIXES:
+        return None
+    raise ClubTargetAdapterError(
+        f"Unsupported target format {suffix!r}; expected xlsx/xlsm/xls or c3d"
     )
-    finite = np.isfinite(shaft) & (shaft > 1e-6)
-    if finite.any() and float(np.median(shaft[finite])) > 1.4:
-        # Wiffle workbook positions are centimetres. The legacy parser used by
-        # the canonical loader historically applied an inches factor; keep the
-        # matcher contract in metres without changing the shared loader here.
-        df.loc[:, pos_cols] *= CM_TO_M / 0.0254
-    return df
+
+
+def load_mocap_target(
+    target_path: str | Path, sheet_name: str | None = None
+) -> pd.DataFrame:
+    """Load an xlsx or C3D target through the canonical ClubTarget path."""
+    path = Path(target_path)
+    target = load_club_target(
+        path,
+        sheet=_sheet_for_target(path, sheet_name),
+        opts=AlignOptions(),
+    )
+    return clubtarget_to_mocap_dataframe(target)
 
 
 def load_mocap_xlsx(xlsx_path: str | Path, sheet_name: str) -> pd.DataFrame:
@@ -497,8 +560,7 @@ def load_mocap_xlsx(xlsx_path: str | Path, sheet_name: str) -> pd.DataFrame:
 
     Schema (subset): time (s), mid_X/Y/Z (m), club_X/Y/Z (m).
     """
-    target = load_club_target(Path(xlsx_path), sheet=sheet_name, opts=AlignOptions())
-    return _clubtarget_to_dataframe(target)
+    return load_mocap_target(xlsx_path, sheet_name)
 
 
 def _safe(row: pd.Series, idx: int, default: float = 0.0) -> float:
@@ -520,9 +582,11 @@ def read_event_header(xlsx_path: str | Path, sheet_name: str) -> MocapEvents:
     This function now uses the canonical ExcelEventMarkers from the shared
     motion-matching infrastructure.
     """
-    ev_markers: ExcelEventMarkers = read_excel_event_markers(
-        Path(xlsx_path), sheet_name
-    )
+    path = Path(xlsx_path)
+    if path.suffix.lower() in _C3D_SUFFIXES:
+        target = load_club_target(path, opts=AlignOptions())
+        return MocapEvents(I_sample=float(target.impact_idx))
+    ev_markers: ExcelEventMarkers = read_excel_event_markers(path, sheet_name)
     return MocapEvents(
         A_sample=ev_markers.A_sample,
         T_sample=ev_markers.T_sample,

@@ -28,6 +28,8 @@ ALLOWED_SHEETS: frozenset[str] = frozenset(
     {"TW_wiffle", "TW_ProV1", "GW_wiffle", "GW_ProV11"}
 )
 INCHES_TO_METERS = 0.0254
+CENTIMETRES_TO_METERS = 0.01
+LEGACY_WIFFLE_POSITION_SCALE = CENTIMETRES_TO_METERS / INCHES_TO_METERS
 _MOCAP_LOADER_RELATIVE = Path(
     "src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/src/apps/"
     "golf_gui/Motion Capture Plotter/mocap_data_loader.py"
@@ -224,8 +226,14 @@ def load_club_target_excel(
 
     raw_time_native = raw["time"].to_numpy(dtype=np.float64)
     raw_time = raw_time_native - float(raw_time_native[0])
-    raw_butt = raw[["mid_X", "mid_Y", "mid_Z"]].to_numpy(dtype=np.float64)
-    raw_clubhead = raw[["club_X", "club_Y", "club_Z"]].to_numpy(dtype=np.float64)
+    raw_butt = (
+        raw[["mid_X", "mid_Y", "mid_Z"]].to_numpy(dtype=np.float64)
+        * LEGACY_WIFFLE_POSITION_SCALE
+    )
+    raw_clubhead = (
+        raw[["club_X", "club_Y", "club_Z"]].to_numpy(dtype=np.float64)
+        * LEGACY_WIFFLE_POSITION_SCALE
+    )
     rotmats = np.empty((raw.shape[0], 3, 3), dtype=np.float64)
     for i in range(raw.shape[0]):
         rotmats[i] = _frame_to_quat(raw.iloc[i])

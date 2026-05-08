@@ -9,11 +9,10 @@ seed (rigid transform + scale) that fit_swing_full_pipeline uses as
 input_overrides for the model workspace.
 
 Workflow:
-    1. Loads the Wiffle ProV1 motion-capture xlsx.
-       NOTE: Wiffle xlsx positions are in CENTIMETRES — see
-       MATLAB_GOLF_MODEL_GUIDE.md.  We bypass the legacy
-       mocap_data_loader.py (which uses the wrong inches→m factor).
-    2. Reads the row-1 event header (A=address, T=top, I=impact, F=finish).
+    1. Loads Wiffle ProV1 xlsx or C3D target data through the canonical
+       ClubTarget loader shared with motion matching.
+    2. Reads the row-1 event header for xlsx (A=address, T=top, I=impact,
+       F=finish) or uses the C3D impact index when event labels are absent.
     3. Loads up to two pose skeletons (TopofBackswing + Impact) from
        simscape_skeleton_<pose>.json (produced by export_default_skeleton.m).
        Falls back to a hardcoded approximate pose if absent.
@@ -96,7 +95,8 @@ from src.tools.starting_pose_matcher.core import (
     SESSION_SCHEMA_VERSION as _SESSION_SCHEMA_VERSION,
     Skeleton,
     SkeletonTrajectory,
-    load_mocap_xlsx,
+    load_mocap_target,
+    load_skeleton,
     load_simscape_trajectory_csv,
     phase_display_label as _phase_display_label,
     phase_key_from_label as _phase_key_from_label,
@@ -285,11 +285,11 @@ def _hsep() -> QFrame:
 # explanation shown in a QMessageBox when the user clicks the "?" button.
 _HELP_TEXT: dict[str, str] = {
     "Mocap Source": (
-        "Loads a Wiffle-style xlsx motion-capture file.\n\n"
-        "• xlsx positions are in CENTIMETRES (we convert to metres on load).\n"
-        "• Sheet selects which trial in the workbook to read.\n"
-        "• Row 1 of the sheet defines event sample numbers (A/T/I/F + CHS).\n"
-        "  These appear here and feed the per-pose event combos."
+        "Loads xlsx or C3D club-target data through the shared ClubTarget loader.\n\n"
+        "• Wiffle xlsx positions are normalised to metres in the shared loader.\n"
+        "• Sheet selects which trial in an xlsx workbook to read.\n"
+        "• Row 1 of xlsx sheets defines event sample numbers (A/T/I/F + CHS).\n"
+        "  C3D loads use the canonical impact frame when those labels are absent."
     ),
     "Event Labels": (
         "Pick the naming convention for the four swing events:\n\n"
@@ -562,7 +562,7 @@ class StartingPoseMatcher(QMainWindow):
 
         default_xlsx = Path(__file__).with_name("Wiffle_ProV1_club_3D_data.xlsx")
         if default_xlsx.exists():
-            self._load_xlsx(str(default_xlsx))
+            self._load_target(str(default_xlsx))
 
     # ===================================================================== #
     # UI                                                                    #
@@ -673,7 +673,7 @@ class StartingPoseMatcher(QMainWindow):
         box = QGroupBox("Mocap Source")
         gl = QGridLayout(box)
         gl.setVerticalSpacing(6)
-        self.btn_load = QPushButton("Load xlsx…")
+        self.btn_load = QPushButton("Load target…")
         self.btn_load.clicked.connect(self._on_load_clicked)
         gl.addWidget(self.btn_load, 0, 0, 1, 2)
         gl.addWidget(QLabel("Sheet:"), 1, 0)
@@ -1302,16 +1302,20 @@ class StartingPoseMatcher(QMainWindow):
     def _on_load_clicked(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
             self,
-            "Open Wiffle xlsx",
+            "Open club target",
             str(Path(__file__).parent),
-            "Excel files (*.xlsx *.xls)",
+            "Club target files (*.xlsx *.xlsm *.xls *.c3d)",
         )
         if path:
-            self._load_xlsx(path)
+            self._load_target(path)
 
     def _on_sheet_changed(self, _: str) -> None:
-        if self._xlsx_path:
-            self._load_xlsx(self._xlsx_path)
+        if self._xlsx_path and Path(self._xlsx_path).suffix.lower() in {
+            ".xlsx",
+            ".xlsm",
+            ".xls",
+        }:
+            self._load_target(self._xlsx_path)
 
     def _on_pose_toggled(self, _state: int) -> None:
         for key, cb in self._pose_visible_checks.items():
@@ -1418,8 +1422,8 @@ class StartingPoseMatcher(QMainWindow):
             QMessageBox.information(
                 self,
                 "No mocap loaded",
-                "Playback target is 'Mocap' or 'Both' but no xlsx file has\n"
-                "been loaded yet.  Use Mocap Source → Load xlsx… first.",
+                "Playback target is 'Mocap' or 'Both' but no target file has\n"
+                "been loaded yet.  Use Mocap Source -> Load target… first.",
             )
             return
         fps = max(1, int(self.spin_speed.value()))
@@ -1618,7 +1622,7 @@ class StartingPoseMatcher(QMainWindow):
     def _clear_event_overrides(self) -> None:
         if not self.event_overrides:
             return
-        # Re-read events from the xlsx to undo overrides
+        # Re-read events from the target file to undo overrides
         if self._xlsx_path:
             self.events = read_event_header(
                 self._xlsx_path, self.sheet_combo.currentText()
@@ -1773,10 +1777,11 @@ class StartingPoseMatcher(QMainWindow):
 
     # ---------- file load ------------------------------------------------- #
 
-    def _load_xlsx(self, path: str) -> None:
+    def _load_target(self, path: str) -> None:
         sheet = self.sheet_combo.currentText()
+        is_excel = Path(path).suffix.lower() in {".xlsx", ".xlsm", ".xls"}
         try:
-            df = load_mocap_xlsx(path, sheet)
+            df = load_mocap_target(path, sheet if is_excel else None)
         except Exception as exc:  # noqa: BLE001
             logger.error("Load failed: %s", exc)
             self.lbl_file.setText(f"Load failed: {exc}")
@@ -1787,11 +1792,13 @@ class StartingPoseMatcher(QMainWindow):
         self.df = df
         self._xlsx_path = path
         self.events = read_event_header(path, sheet)
+        self.sheet_combo.setEnabled(is_excel)
         # Re-apply any event-override that survived from the previous load
         for ev, sample in list(self.event_overrides.items()):
             setattr(self.events, f"{ev}_sample", float(sample))
         n = len(df)
-        self.lbl_file.setText(f"{Path(path).name}\nsheet={sheet}  frames={n}")
+        source_line = f"sheet={sheet}" if is_excel else "format=C3D"
+        self.lbl_file.setText(f"{Path(path).name}\n{source_line}  frames={n}")
         self.lbl_event_info.setText(self._events_summary())
         # Configure playback widgets to the new range
         with QSignalBlocker(self.spin_frame):
@@ -1817,6 +1824,10 @@ class StartingPoseMatcher(QMainWindow):
             self.current_frame = t_frame
         self._update_time_label()
         self._redraw()
+
+    def _load_xlsx(self, path: str) -> None:
+        """Backward-compatible alias for existing tests and session workflows."""
+        self._load_target(path)
 
     def _events_summary(self) -> str:
         e = self.events
@@ -1994,16 +2005,16 @@ class StartingPoseMatcher(QMainWindow):
                 _SESSION_SCHEMA_VERSION,
             )
 
-        # 1. Re-load xlsx + sheet (this resets a lot of widgets, so do it first).
+        # 1. Re-load target + sheet (this resets a lot of widgets, so do it first).
         xlsx = d.get("xlsx_path")
         sheet = d.get("sheet")
         if sheet:
             with QSignalBlocker(self.sheet_combo):
                 self.sheet_combo.setCurrentText(sheet)
         if xlsx and Path(xlsx).exists():
-            self._load_xlsx(xlsx)
+            self._load_target(xlsx)
         elif xlsx:
-            logger.warning("Saved xlsx not found: %s", xlsx)
+            logger.warning("Saved target not found: %s", xlsx)
 
         # 2. Event overrides (applied on top of the freshly-loaded events).
         evo = d.get("event_overrides") or {}

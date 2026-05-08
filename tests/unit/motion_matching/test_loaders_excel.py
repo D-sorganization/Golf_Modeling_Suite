@@ -13,7 +13,9 @@ from src.shared.python.motion_matching import (
 )
 from src.shared.python.motion_matching.loaders.excel import (
     ALLOWED_SHEETS,
+    CENTIMETRES_TO_METERS,
     INCHES_TO_METERS,
+    LEGACY_WIFFLE_POSITION_SCALE,
 )
 
 from ._fixtures import repo_root
@@ -31,6 +33,11 @@ def _excel_path():
 
 def test_inches_to_metres_constant_matches_legacy_loader() -> None:
     assert pytest.approx(0.0254) == INCHES_TO_METERS
+
+
+def test_wiffle_centimetre_scale_corrects_legacy_loader_units() -> None:
+    assert pytest.approx(0.01) == CENTIMETRES_TO_METERS
+    assert pytest.approx(0.01 / 0.0254) == LEGACY_WIFFLE_POSITION_SCALE
 
 
 def test_allowed_sheets_set() -> None:

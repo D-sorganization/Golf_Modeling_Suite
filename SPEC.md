@@ -30,16 +30,16 @@
 
 ## 1. Identity
 
-| Field                   | Value                                              |
-| ----------------------- | -------------------------------------------------- |
-| **Repository Name**     | `UpstreamDrift`                                    |
-| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift` |
-| **Owner**               | D-sorganization                                    |
-| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
-| **License**             | MIT                                                |
-| **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.143                                            |
-| **Last Spec Update**    | 2026-05-07 (fix/lint-errors-for-ci-standard - ruff fixes in golf model tabs, export_torque_polynomials.py, starting_pose_matcher.py) |
+| Field                   | Value                                                                                    |
+| ----------------------- | ---------------------------------------------------------------------------------------- |
+| **Repository Name**     | `UpstreamDrift`                                                                          |
+| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift`                                       |
+| **Owner**               | D-sorganization                                                                          |
+| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                                                           |
+| **License**             | MIT                                                                                      |
+| **Current Version**     | 2.1.0                                                                                    |
+| **Spec Version**        | 1.0.144                                                                                  |
+| **Last Spec Update**    | 2026-05-08 (starting-pose matcher uses canonical ClubTarget target adapter for xlsx/C3D) |
 
 ## 2. Purpose & Mission
 
@@ -106,6 +106,7 @@ UpstreamDrift/
 │   │   └── exceptions.py           # Exception definitions
 
 │   └── tools/                      # Development and analysis tools
+│       ├── starting_pose_matcher/  # ClubTarget-backed pose alignment GUI
 │       ├── analysis_tools.py       # Biomechanical analysis utilities
 │       └── validation_tools.py     # Cross-engine validation
 ├── rust_core/
@@ -195,7 +196,7 @@ Engine tier metadata is declared in each in-scope engine package with
 | F10 | MATLAB/Simulink integration        | ✅     | Export models to MATLAB format and integrate with Simulink via MEX interface                        |
 | F11 | Trajectory optimization            | ✅     | SciPy-based trajectory optimization with constraint support and custom cost functions               |
 | F12 | Muscle dynamics analysis           | ✅     | IK, ID, and muscle dynamics computation with Hill-type and Millard muscle models                    |
-| F13 | Motion capture integration         | 🔄     | Import and track motion capture data (C3D, BVH, TRC formats) and compare with simulation            |
+| F13 | Motion capture integration         | 🔄     | Import and track motion capture data (C3D, BVH, TRC formats), canonical ClubTarget xlsx/C3D inputs, and compare with simulation |
 | F14 | Reinforcement learning integration | 🔄     | Gym-compatible interface for RL-based controller learning and policy optimization                   |
 
 ### API / Interface Contract
@@ -666,4 +667,5 @@ Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linal
 | 2026-05-07 | 1.0.138 | Added an opt-in OpenSim compliant club attachment builder path with typed `CompliantClubAttachmentConfig`, deterministic `BushingForce` XML emission, default rigid-weld regression coverage, and validation for unsupported units or missing model bodies. |
 | 2026-05-07 | 1.0.141 | Added deterministic OpenSim multistart fit orchestration with seed-list reproducibility, per-start fresh simulator factories, best-success result selection, and typed all-starts-failed diagnostics. |
 | 2026-05-07 | 1.0.143 | Fixed Wave 2 manifest validator to parse `###` section headers matching the generated format, preventing self-inconsistent validation after `--update`. Fixed wheel event filter cache to use `weakref.WeakValueDictionary` preventing unbounded memory growth in long-running UI applications with transient controls. |
+| 2026-05-08 | 1.0.144 | Added the starting-pose matcher ClubTarget adapter relationship: xlsx/C3D target files load through `src/shared/python/motion_matching/load_club_target.py`, Wiffle unit normalization stays in the shared Excel loader, and the GUI adapts canonical `ClubTarget` samples into its display/session model. |
 ````
