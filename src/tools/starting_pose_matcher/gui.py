@@ -97,7 +97,6 @@ from src.tools.starting_pose_matcher.core import (
     Skeleton,
     SkeletonTrajectory,
     load_mocap_xlsx,
-    load_skeleton,
     load_simscape_trajectory_csv,
     phase_display_label as _phase_display_label,
     phase_key_from_label as _phase_key_from_label,
@@ -2037,14 +2036,13 @@ class StartingPoseMatcher(QMainWindow):
                 p = Path(traj_path)
                 if p.exists():
                     try:
-                        trajectory = load_simscape_trajectory_csv(p)
-                        self.poses[key].trajectory = trajectory
+                        self.poses[key].trajectory = load_simscape_trajectory_csv(p)
                         self.poses[key].trajectory_frame_index = int(
                             slot_d.get("trajectory_frame_index", 0)
                         )
                         btn = self._pose_trajectory_buttons.get(key)
                         if btn is not None:
-                            btn.setText(f"✓ {len(trajectory)}f")
+                            btn.setText(f"✓ {len(self.poses[key].trajectory)}f")
                     except Exception as exc:  # noqa: BLE001
                         logger.warning("Could not reload trajectory %s: %s", p, exc)
 
