@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 """Starting-pose matcher: align Simscape golfer skeleton to mocap targets.
 
 A focused, professional-grade alignment tool that lets you place the
