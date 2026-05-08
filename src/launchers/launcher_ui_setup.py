@@ -344,13 +344,23 @@ class LauncherUISetupMixin:
         self.lbl_status.setStyleSheet(Styles.STATUS_INACTIVE_BOLD)
         top_bar.addWidget(self.lbl_status)
 
-        # Execution Mode Label
-        self.lbl_execution_mode = QLabel("Mode: Local (Windows)")
+        # Engine-runtime indicator. Shows where physics engines run:
+        # Native Windows (host Python), Docker container, or WSL2.
+        # The accompanying ``?`` button opens a single help dialog
+        # shared with the Settings → Engine Runtime group, so the
+        # explanation lives in exactly one place.
+        from src.launchers.runtime_mode_help import make_runtime_mode_help_button
+
+        self.lbl_execution_mode = QLabel("Runtime: Native Windows")
         self.lbl_execution_mode.setStyleSheet(Styles.EXEC_MODE_WARNING)
         self.lbl_execution_mode.setToolTip(
-            "Current execution environment (Local, Docker, or WSL)"
+            "Where physics engines execute — Native Windows, Docker "
+            "container, or WSL2 Ubuntu. Click the ? for full details."
         )
         top_bar.addWidget(self.lbl_execution_mode)
+
+        self.btn_runtime_help = make_runtime_mode_help_button(self)
+        top_bar.addWidget(self.btn_runtime_help)
 
         top_bar.addStretch()
 
@@ -443,14 +453,18 @@ class LauncherUISetupMixin:
         )
         TooltipManager.register_tooltip(
             self.chk_docker,
-            "Docker Mode",
-            "Run physics engines in Docker containers.",
+            "Docker container runtime",
+            "Run physics engines inside the upstream-drift:engine Linux "
+            "container. Full Drake/Pinocchio support; requires Docker "
+            "installed and the image built (Settings → Docker Image).",
             "engine_selection",
         )
         TooltipManager.register_tooltip(
             self.chk_wsl,
-            "WSL Mode",
-            "Run in WSL2 Ubuntu environment for full Linux engine support.",
+            "WSL2 Ubuntu runtime",
+            "Run physics engines in your WSL2 Ubuntu user environment. "
+            "Same Linux wheels as Docker mode but no container layer — "
+            "faster file I/O and easier interactive debugging.",
             "engine_selection",
         )
 
