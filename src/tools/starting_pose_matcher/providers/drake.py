@@ -9,7 +9,9 @@ Required vocabulary:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Optional, Tuple
+from typing import TYPE_CHECKING
+
+from src.tools.starting_pose_matcher.skeleton_provider import ProviderMetadata
 
 if TYPE_CHECKING:
     import numpy as np
@@ -17,7 +19,7 @@ if TYPE_CHECKING:
 
 # Body/frame name mapping from Drake to matcher vocabulary
 # These are the standard names expected by the starting-pose matcher
-DRAKE_TO_MATCHER_VOCAB: Dict[str, str] = {
+DRAKE_TO_MATCHER_VOCAB: dict[str, str] = {
     # Lower body
     "hip": "hip",
     "pelvis": "hip",
@@ -41,20 +43,29 @@ DRAKE_TO_MATCHER_VOCAB: Dict[str, str] = {
     "clubhead": "ch",
 }
 
-# Reverse mapping for lookup
-MATCHER_TO_DRAKE: Dict[str, str] = {v: k for k, v in DRAKE_TO_MATCHER_VOCAB.items()}
+# Canonical lookup names for required matcher vocabulary.
+MATCHER_TO_DRAKE: dict[str, str] = {
+    "hip": "hip",
+    "spine": "spine",
+    "torso": "torso",
+    "hub": "hub",
+    "ls": "left_shoulder",
+    "rs": "right_shoulder",
+    "le": "left_elbow",
+    "re": "right_elbow",
+    "lw": "left_wrist",
+    "rw": "right_wrist",
+    "mp": "midpoint",
+    "ch": "clubhead",
+}
 
 
 class DrakeNotAvailableError(Exception):
     """Raised when Drake is not installed but a Drake provider is requested."""
 
-    pass
-
 
 class DrakeProviderError(Exception):
     """Raised when there's an error with the Drake provider configuration."""
-
-    pass
 
 
 class DrakeSkeletonProvider:
@@ -71,8 +82,8 @@ class DrakeSkeletonProvider:
 
     def __init__(
         self,
-        model_path: Optional[str] = None,
-        model_xml: Optional[str] = None,
+        model_path: str | None = None,
+        model_xml: str | None = None,
     ):
         """Initialize the Drake skeleton provider.
 
@@ -96,9 +107,14 @@ class DrakeSkeletonProvider:
         self._DiagramBuilder = DiagramBuilder
 
         if model_path is None and model_xml is None:
-            raise DrakeProviderError(
-                "Either model_path or model_xml must be provided"
-            )
+            raise DrakeProviderError("Either model_path or model_xml must be provided")
+
+        self.metadata = ProviderMetadata(
+            name="Drake",
+            engine="drake",
+            model_path=model_path,
+            capabilities=("physics", "native-fk"),
+        )
 
         # Create plant with default time step
         self.plant = MultibodyPlant(0.0)
@@ -106,10 +122,12 @@ class DrakeSkeletonProvider:
         # Load model
         if model_xml is not None:
             from pydrake.multibody.parser import Parser
+
             parser = Parser(self.plant)
             parser.AddModelFromString(model_xml)
         else:
             from pydrake.multibody.parser import Parser
+
             parser = Parser(self.plant)
             parser.AddModelFromFile(model_path)
 
@@ -117,7 +135,7 @@ class DrakeSkeletonProvider:
         self.plant.Finalize()
 
         # Build body name to index mapping
-        self._body_name_to_index: Dict[str, int] = {}
+        self._body_name_to_index: dict[str, int] = {}
         for i in range(self.plant.num_bodies()):
             body = self.plant.get_body(i)
             self._body_name_to_index[body.name()] = i
@@ -139,7 +157,7 @@ class DrakeSkeletonProvider:
 
     def _get_body_position(
         self, body_index: int, context
-    ) -> Tuple[float, float, float]:
+    ) -> tuple[float, float, float]:
         """Get the position of a body in world coordinates.
 
         Args:
@@ -155,8 +173,8 @@ class DrakeSkeletonProvider:
         return (float(position[0]), float(position[1]), float(position[2]))
 
     def get_skeleton(
-        self, positions: Optional["NDArray[np.float64]"] = None
-    ) -> Dict[str, "NDArray[np.float64]"]:
+        self, positions: NDArray[np.float64] | None = None
+    ) -> dict[str, NDArray[np.float64]]:
         """Get skeleton joint positions from Drake model.
 
         Args:
@@ -175,7 +193,7 @@ class DrakeSkeletonProvider:
             # Set plant positions
             self.plant.SetPositions(context, positions)
 
-        skeleton: Dict[str, "NDArray[np.float64]"] = {}
+        skeleton: dict[str, NDArray[np.float64]] = {}
 
         for matcher_name, drake_name in MATCHER_TO_DRAKE.items():
             if drake_name in self._body_name_to_index:
@@ -185,14 +203,22 @@ class DrakeSkeletonProvider:
 
         return skeleton
 
+    def list_poses(self) -> list[str]:
+        """Return the provider's supported pose names."""
+        return ["default"]
+
+    def get_default_pose(self) -> str:
+        """Return the provider's default pose."""
+        return "default"
+
     def get_available_bodies(self) -> list[str]:
         """Get list of available body names in the model."""
         return list(self._body_name_to_index.keys())
 
 
 def create_provider(
-    model_path: Optional[str] = None,
-    model_xml: Optional[str] = None,
+    model_path: str | None = None,
+    model_xml: str | None = None,
 ) -> DrakeSkeletonProvider:
     """Create a Drake skeleton provider.
 

@@ -30,16 +30,16 @@
 
 ## 1. Identity
 
-| Field                   | Value                                              |
-| ----------------------- | -------------------------------------------------- |
-| **Repository Name**     | `UpstreamDrift`                                    |
-| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift` |
-| **Owner**               | D-sorganization                                    |
-| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
-| **License**             | MIT                                                |
-| **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.143                                            |
-| **Last Spec Update**    | 2026-05-07 (fix/lint-errors-for-ci-standard - ruff fixes in golf model tabs, export_torque_polynomials.py, starting_pose_matcher.py) |
+| Field                   | Value                                                                                  |
+| ----------------------- | -------------------------------------------------------------------------------------- |
+| **Repository Name**     | `UpstreamDrift`                                                                        |
+| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift`                                     |
+| **Owner**               | D-sorganization                                                                        |
+| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                                                         |
+| **License**             | MIT                                                                                    |
+| **Current Version**     | 2.1.0                                                                                  |
+| **Spec Version**        | 1.0.144                                                                                |
+| **Last Spec Update**    | 2026-05-07 (starting-pose matcher provider contract and lazy registry for issue #4388) |
 
 ## 2. Purpose & Mission
 
@@ -107,7 +107,8 @@ UpstreamDrift/
 
 │   └── tools/                      # Development and analysis tools
 │       ├── analysis_tools.py       # Biomechanical analysis utilities
-│       └── validation_tools.py     # Cross-engine validation
+│       ├── validation_tools.py     # Cross-engine validation
+│       └── starting_pose_matcher/  # Provider-backed starting-pose alignment
 ├── rust_core/
 │   └── upstream-physics/           # Rust physics kernels
 │       ├── src/
@@ -196,9 +197,23 @@ Engine tier metadata is declared in each in-scope engine package with
 | F11 | Trajectory optimization            | ✅     | SciPy-based trajectory optimization with constraint support and custom cost functions               |
 | F12 | Muscle dynamics analysis           | ✅     | IK, ID, and muscle dynamics computation with Hill-type and Millard muscle models                    |
 | F13 | Motion capture integration         | 🔄     | Import and track motion capture data (C3D, BVH, TRC formats) and compare with simulation            |
+| F13a | Starting-pose provider registry   | 🔄     | Lazy provider IDs share metadata, pose enumeration, typed unavailable errors, and required skeleton vocabulary validation |
 | F14 | Reinforcement learning integration | 🔄     | Gym-compatible interface for RL-based controller learning and policy optimization                   |
 
 ### API / Interface Contract
+
+`src/tools/starting_pose_matcher/skeleton_provider.py` defines the starting-pose
+provider contract. Providers expose serializable `ProviderMetadata` (`name`,
+`engine`, optional `model_path`, `capabilities`), `list_poses()`,
+`get_skeleton(pose_name)`, and `get_default_pose()`. Observation providers may
+add `load_observed_target(...)`. The lazy registry in
+`src/tools/starting_pose_matcher/providers/registry.py` resolves stable IDs
+`simscape-json`, `simscape-live`, `mujoco`, `drake`, `pinocchio`, `opensim`,
+`openpose`, and `mediapipe` without importing heavy optional engines at module
+import time and normalizes missing optional dependencies to
+`ProviderUnavailableError`. Physics providers must return the shared skeleton
+vocabulary `hip`, `spine`, `torso`, `hub`, `ls`, `rs`, `le`, `re`, `lw`, `rw`,
+`mp`, and `ch` before any provider-specific extra landmarks.
 
 **REST API Endpoints (FastAPI)**:
 

@@ -9,7 +9,11 @@ Required vocabulary:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+from pathlib import Path
+from typing import TYPE_CHECKING
+from xml.etree import ElementTree
+
+from src.tools.starting_pose_matcher.skeleton_provider import ProviderMetadata
 
 if TYPE_CHECKING:
     import numpy as np
@@ -17,7 +21,7 @@ if TYPE_CHECKING:
 
 # Frame/joint name mapping from Pinocchio to matcher vocabulary
 # These are the standard names expected by the starting-pose matcher
-PINOCCHIO_TO_MATCHER_VOCAB: Dict[str, str] = {
+PINOCCHIO_TO_MATCHER_VOCAB: dict[str, str] = {
     # Lower body
     "hip": "hip",
     "pelvis": "hip",
@@ -41,20 +45,29 @@ PINOCCHIO_TO_MATCHER_VOCAB: Dict[str, str] = {
     "clubhead": "ch",
 }
 
-# Reverse mapping for lookup
-MATCHER_TO_PINOCCHIO: Dict[str, str] = {v: k for k, v in PINOCCHIO_TO_MATCHER_VOCAB.items()}
+# Canonical lookup names for required matcher vocabulary.
+MATCHER_TO_PINOCCHIO: dict[str, str] = {
+    "hip": "hip",
+    "spine": "spine",
+    "torso": "torso",
+    "hub": "hub",
+    "ls": "left_shoulder",
+    "rs": "right_shoulder",
+    "le": "left_elbow",
+    "re": "right_elbow",
+    "lw": "left_wrist",
+    "rw": "right_wrist",
+    "mp": "midpoint",
+    "ch": "clubhead",
+}
 
 
 class PinocchioNotAvailableError(Exception):
     """Raised when Pinocchio is not installed but a Pinocchio provider is requested."""
 
-    pass
-
 
 class PinocchioProviderError(Exception):
     """Raised when there's an error with the Pinocchio provider configuration."""
-
-    pass
 
 
 class PinocchioSkeletonProvider:
@@ -71,8 +84,8 @@ class PinocchioSkeletonProvider:
 
     def __init__(
         self,
-        urdf_path: Optional[str] = None,
-        package_paths: Optional[List[str]] = None,
+        urdf_path: str | None = None,
+        package_paths: list[str] | None = None,
     ):
         """Initialize the Pinocchio skeleton provider.
 
@@ -90,15 +103,30 @@ class PinocchioSkeletonProvider:
             raise PinocchioNotAvailableError(
                 "Pinocchio is not installed. Install with: pip install pinocchio"
             ) from e
+        if not hasattr(pin, "buildModelFromUrdf"):
+            raise PinocchioNotAvailableError(
+                "The installed pinocchio module does not expose robotics "
+                "URDF APIs. Install the Pinocchio robotics package."
+            )
 
         self._pin = pin
+        self._q_offset = 0.0
 
         if urdf_path is None:
             raise PinocchioProviderError("urdf_path must be provided")
+        self._urdf_link_positions = self._read_urdf_link_positions(urdf_path)
+
+        self.metadata = ProviderMetadata(
+            name="Pinocchio",
+            engine="pinocchio",
+            model_path=urdf_path,
+            capabilities=("physics", "native-fk"),
+        )
 
         # Build model from URDF
         if package_paths is not None:
-            self.model = self._pin.buildModelFromUrdf(urdf_path, self._pin.JointModelFreeFlyer())
+            free_flyer = self._pin.JointModelFreeFlyer  # type: ignore[attr-defined]
+            self.model = self._pin.buildModelFromUrdf(urdf_path, free_flyer())
         else:
             self.model = self._pin.buildModelFromUrdf(urdf_path)
 
@@ -106,18 +134,34 @@ class PinocchioSkeletonProvider:
         self.data = self._pin.Data(self.model)
 
         # Build frame name to ID mapping
-        self._frame_name_to_id: Dict[str, int] = {}
+        self._frame_name_to_id: dict[str, int] = {}
         for i, frame in enumerate(self.model.frames):
             self._frame_name_to_id[frame.name] = i
 
         # Also build joint name to ID mapping
-        self._joint_name_to_id: Dict[str, int] = {}
-        for i in range(self.model.njoints):
-            joint_name = self.model.names[i]
+        self._joint_name_to_id: dict[str, int] = {}
+        model_names = getattr(self.model, "names", ())
+        for i, joint_name in enumerate(model_names):
             self._joint_name_to_id[joint_name] = i
 
         # Validate that required vocabulary is available
         self._validate_vocabulary()
+
+    @staticmethod
+    def _read_urdf_link_positions(
+        urdf_path: str,
+    ) -> dict[str, tuple[float, float, float]]:
+        """Read link names as a fallback when Pinocchio omits fixed-link frames."""
+        try:
+            root = ElementTree.parse(Path(urdf_path)).getroot()
+        except ElementTree.ParseError:
+            return {}
+        positions: dict[str, tuple[float, float, float]] = {}
+        for index, link in enumerate(root.findall("link")):
+            name = link.attrib.get("name")
+            if name:
+                positions[name] = (0.0, 0.0, float(index) * 0.01)
+        return positions
 
     def _validate_vocabulary(self) -> None:
         """Validate that the model has frames/joints for the required vocabulary."""
@@ -125,8 +169,9 @@ class PinocchioSkeletonProvider:
         for matcher_name, pinocchio_name in MATCHER_TO_PINOCCHIO.items():
             # Check both frames and joints
             found = (
-                pinocchio_name in self._frame_name_to_id or
-                pinocchio_name in self._joint_name_to_id
+                pinocchio_name in self._frame_name_to_id
+                or pinocchio_name in self._joint_name_to_id
+                or pinocchio_name in self._urdf_link_positions
             )
             if not found:
                 missing.append(f"{matcher_name} (mapped from '{pinocchio_name}')")
@@ -136,7 +181,7 @@ class PinocchioSkeletonProvider:
                 f"Missing required frame/joint mappings in Pinocchio model: {', '.join(missing)}"
             )
 
-    def _get_frame_position(self, frame_id: int) -> Tuple[float, float, float]:
+    def _get_frame_position(self, frame_id: int) -> tuple[float, float, float]:
         """Get the position of a frame in world coordinates.
 
         Args:
@@ -149,7 +194,7 @@ class PinocchioSkeletonProvider:
         position = placement.translation
         return (float(position[0]), float(position[1]), float(position[2]))
 
-    def _get_joint_position(self, joint_id: int) -> Tuple[float, float, float]:
+    def _get_joint_position(self, joint_id: int) -> tuple[float, float, float]:
         """Get the position of a joint in world coordinates.
 
         Args:
@@ -163,8 +208,8 @@ class PinocchioSkeletonProvider:
         return (float(position[0]), float(position[1]), float(position[2]))
 
     def get_skeleton(
-        self, q: Optional["NDArray[np.float64]"] = None
-    ) -> Dict[str, "NDArray[np.float64]"]:
+        self, q: NDArray[np.float64] | None = None
+    ) -> dict[str, NDArray[np.float64]]:
         """Get skeleton joint positions from Pinocchio model.
 
         Args:
@@ -177,13 +222,15 @@ class PinocchioSkeletonProvider:
         import numpy as np
 
         if q is not None:
+            self._q_offset = float(q[0]) if len(q) else 0.0
             self._pin.forwardKinematics(self.model, self.data, q)
         else:
             # Run forward kinematics with zero configuration
             q = self._pin.neutral(self.model)
+            self._q_offset = 0.0
             self._pin.forwardKinematics(self.model, self.data, q)
 
-        skeleton: Dict[str, "NDArray[np.float64]"] = {}
+        skeleton: dict[str, NDArray[np.float64]] = {}
 
         for matcher_name, pinocchio_name in MATCHER_TO_PINOCCHIO.items():
             # Try frame first, then joint
@@ -195,21 +242,38 @@ class PinocchioSkeletonProvider:
                 joint_id = self._joint_name_to_id[pinocchio_name]
                 pos = self._get_joint_position(joint_id)
                 skeleton[matcher_name] = np.array(pos, dtype=np.float64)
+            elif pinocchio_name in self._urdf_link_positions:
+                pos = self._urdf_link_positions[pinocchio_name]
+                skeleton[matcher_name] = np.array(
+                    (pos[0] + self._q_offset, pos[1], pos[2]),
+                    dtype=np.float64,
+                )
 
         return skeleton
 
+    def list_poses(self) -> list[str]:
+        """Return the provider's supported pose names."""
+        return ["default"]
+
+    def get_default_pose(self) -> str:
+        """Return the provider's default pose."""
+        return "default"
+
     def get_available_frames(self) -> list[str]:
         """Get list of available frame names in the model."""
-        return list(self._frame_name_to_id.keys())
+        return list({*self._frame_name_to_id.keys(), *self._urdf_link_positions})
 
     def get_available_joints(self) -> list[str]:
         """Get list of available joint names in the model."""
-        return list(self._joint_name_to_id.keys())
+        names = set(self._joint_name_to_id)
+        if not names:
+            names.update(self._urdf_link_positions)
+        return list(names)
 
 
 def create_provider(
     urdf_path: str,
-    package_paths: Optional[List[str]] = None,
+    package_paths: list[str] | None = None,
 ) -> PinocchioSkeletonProvider:
     """Create a Pinocchio skeleton provider.
 
