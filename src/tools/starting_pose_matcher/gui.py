@@ -97,6 +97,7 @@ from src.tools.starting_pose_matcher.core import (
     Skeleton,
     SkeletonTrajectory,
     load_mocap_xlsx,
+    load_skeleton,
     load_simscape_trajectory_csv,
     phase_display_label as _phase_display_label,
     phase_key_from_label as _phase_key_from_label,
