@@ -479,6 +479,6 @@ def load_tour_average_reader(base_directory: Path | None = None) -> C3DDataReade
 
     base_path = base_directory or Path(__file__).resolve().parents[2]
     default_path = (
-        base_path / "matlab" / "Data" / "Gears C3D Files" / "C3DExport Tour average.c3d"
+        base_path / "matlab" / "Data" / "Mocap C3D Files" / "C3DExport Tour average.c3d"
     )  # noqa: E501
     return C3DDataReader(default_path)

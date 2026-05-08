@@ -1,9 +1,9 @@
-function map = gears_marker_map()
-%GEARS_MARKER_MAP  Validated Gears C3D marker convention.
+function map = cluster_marker_map()
+%CLUSTER_MARKER_MAP  Validated cluster-marker C3D convention.
 %
-%   MAP = GEARS_MARKER_MAP() returns a struct describing the marker schema
-%   for the two Gears mocap files in
-%       src/.../matlab/Data/Gears C3D Files/
+%   MAP = CLUSTER_MARKER_MAP() returns a struct describing the marker schema
+%   for the cluster-marker mocap files in
+%       src/.../matlab/Data/Mocap C3D Files/
 %   that were validated externally via ezc3d 1.7.0 (see PR #3982 follow-up).
 %
 %   Fields:
