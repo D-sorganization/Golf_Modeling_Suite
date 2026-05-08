@@ -16,42 +16,93 @@ ADD_LEG_CHAIN = (
     / "scripts"
     / "add_leg_chain.m"
 )
+VALIDATE_3D_FULLBODY = (
+    REPO_ROOT
+    / "src"
+    / "engines"
+    / "Simscape_Multibody_Models"
+    / "3D_FullBody_Model"
+    / "matlab"
+    / "scripts"
+    / "validate_3d_fullbody.m"
+)
 
 
-def test_left_leg_chain_declares_required_anchor_blocks() -> None:
-    """The first implementation slice must name all left-leg anchors."""
+def test_leg_chain_declares_mirrored_anchor_blocks() -> None:
+    """The mirrored implementation must name both leg anchor sets."""
     text = ADD_LEG_CHAIN.read_text(encoding="utf-8")
 
     required_names = {
-        "Left Leg Kinetically Driven",
+        "%s Leg Kinetically Driven",
         "Pelvis_Frame",
-        "JointTorqueLHipX",
-        "JointTorqueLHipY",
-        "JointTorqueLHipZ",
-        "JointTorqueLKnee",
-        "JointTorqueLAnkleX",
-        "JointTorqueLAnkleY",
-        "LHip_Gimbal",
-        "LUpperLeg_CylindricalSolid",
-        "LKnee_Revolute",
-        "LLowerLeg_CylindricalSolid",
-        "LAnkle_Universal",
-        "LFoot_BrickSolid",
-        "LBallOfFoot_Sphere",
-        "LFoot_Frame",
+        "JointTorque%sHipX",
+        "JointTorque%sHipY",
+        "JointTorque%sHipZ",
+        "JointTorque%sKnee",
+        "JointTorque%sAnkleX",
+        "JointTorque%sAnkleY",
+        "%sHip_Gimbal",
+        "%sUpperLeg_CylindricalSolid",
+        "%sKnee_Revolute",
+        "%sLowerLeg_CylindricalSolid",
+        "%sAnkle_Universal",
+        "%sFoot_BrickSolid",
+        "%sBallOfFoot_Sphere",
+        "%sFoot_Frame",
     }
 
     missing = sorted(name for name in required_names if name not in text)
     assert not missing
 
 
-def test_left_leg_chain_is_idempotent_and_reports_partial_builds() -> None:
+def test_mirrored_leg_chain_is_idempotent_and_reports_partial_builds() -> None:
     """Reruns must delete/rebuild and preserve a validation report."""
     text = ADD_LEG_CHAIN.read_text(encoding="utf-8")
 
     assert "delete_block(subsystem_path)" in text
+    assert "local_build_leg(char(opts.leg_root_path), opts, 'L', 'Left'" in text
+    assert "local_build_leg(char(opts.leg_root_path), opts, 'R', 'Right'" in text
     assert "local_try_add_block" in text
     assert "local_try_add_line" in text
     assert "operation_log" in text
     assert "partial_with_reported_failures" in text
-    assert "Right-side mirror is intentionally left for the next issue slice" in text
+
+
+def test_ground_contact_contract_declares_required_blocks_and_parameters() -> None:
+    """The second-leg slice must expose a configurable contact contract."""
+    text = ADD_LEG_CHAIN.read_text(encoding="utf-8")
+
+    required_names = {
+        "Ground Contact Forces",
+        "Ground_Plane_Z0",
+        "LFoot_Ground_Contact_Force",
+        "RFoot_Ground_Contact_Force",
+        "LGroundReactionForce",
+        "RGroundReactionForce",
+        "GroundContactStiffness",
+        "GroundContactDamping",
+        "GroundFrictionStatic",
+        "GroundFrictionKinetic",
+    }
+
+    missing = sorted(name for name in required_names if name not in text)
+    assert not missing
+
+
+def test_validation_report_includes_contact_contract() -> None:
+    """Validation must report both-leg/contact block presence explicitly."""
+    text = VALIDATE_3D_FULLBODY.read_text(encoding="utf-8")
+
+    required_names = {
+        "contact_contract",
+        "local_contact_contract_report",
+        "Left Leg Kinetically Driven",
+        "Right Leg Kinetically Driven",
+        "Ground Contact Forces",
+        "LFoot_Ground_Contact_Force",
+        "RFoot_Ground_Contact_Force",
+        "static_pose_check",
+    }
+
+    missing = sorted(name for name in required_names if name not in text)
+    assert not missing

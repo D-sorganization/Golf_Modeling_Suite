@@ -38,8 +38,9 @@ without modifying it.
       build_3d_fullbody.m            ← MASTER BUILD SCRIPT
       prune_redundant_logging.m      (removes ~35-43 nonvirtual blocks
                                        worth of redundant signal logging)
-      add_leg_chain.m                (scripted left-leg chain slice
-                                       with idempotent rebuild reporting)
+      add_leg_chain.m                (scripted mirrored-leg + contact
+                                       slice with idempotent rebuild
+                                       reporting)
       validate_3d_fullbody.m         (block-count + signal-count +
                                        smoke-sim checks)
       (note: directory deliberately not named "build/" because the
@@ -125,13 +126,14 @@ outputs.
 
 ## What's added
 
-`add_leg_chain.m` currently implements the first left-leg slice. It
-deletes and rebuilds the generated `Left Leg Kinetically Driven`
-subsystem on every run, creates the stable hip/knee/ankle/foot anchor
-blocks, and reports any MATLAB/Simscape-release-specific block, mask, or
-line operation that cannot be completed in the returned
-`operation_log`. The right-leg mirror and full foot-vs-ground contact
-wiring remain follow-up work.
+`add_leg_chain.m` currently implements the mirrored-leg/contact slice. It
+deletes and rebuilds the generated `Left Leg Kinetically Driven`,
+`Right Leg Kinetically Driven`, and `Ground Contact Forces` subsystems on
+every run, creates the stable hip/knee/ankle/foot/contact anchor blocks,
+and reports any MATLAB/Simscape-release-specific block, mask, or line
+operation that cannot be completed in the returned `operation_log`.
+Exact conserving-frame wiring for the Spatial Contact Force blocks still
+needs a MATLAB GUI capture pass because port names vary by release.
 Per leg, the planned implementation is:
 
 - **Hip joint** — Gimbal Joint (3 DOF). Fields:
@@ -146,8 +148,11 @@ Per leg, the planned implementation is:
   segment lengths from new model-workspace variables
   (`UpperLegLength`, `LowerLegLength`, `FootLength`,
   `UpperLegMass`, …).
-- **Foot ↔ ground contact** — a Sphere / Plane Spatial Contact Force
-  per foot against an Infinite Plane at z=0.
+- **Foot <-> ground contact** — a Sphere / Plane Spatial Contact Force
+  per foot against an Infinite Plane at z=0. Contact behavior is driven
+  by model-workspace variables `GroundContactStiffness`,
+  `GroundContactDamping`, `GroundFrictionStatic`, and
+  `GroundFrictionKinetic`.
 
 `getPolynomialParameterInfo()` will pick up the new joint families
 automatically because it discovers them by name pattern (`<Joint><A..G>`).
@@ -160,6 +165,7 @@ free"** — `theta` length grows from `27 * 7 = 189` to `33 * 7 = 231`.
 - [x] Input MATs copied
 - [x] Build scripts authored
 - [x] One scripted left-leg chain slice
+- [x] Right-leg mirror and generated foot-ground contact contract
 - [ ] Build scripts executed in MATLAB (requires user)
 - [ ] Validation (block count + signal count + smoke sim)
 - [ ] Tests (pytest + MATLAB)

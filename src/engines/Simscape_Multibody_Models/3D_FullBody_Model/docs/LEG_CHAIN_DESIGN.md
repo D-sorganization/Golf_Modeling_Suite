@@ -5,13 +5,15 @@ the agent / human filling in the actual `add_block` calls has a
 single-page reference for what each block is, what it connects to,
 and what mask parameters to set.
 
-Current status: first left-leg implementation slice. `add_leg_chain.m`
-now deletes and rebuilds a generated `Left Leg Kinetically Driven`
-subsystem with the hip, knee, ankle, foot, and ball-of-foot anchor
-blocks listed below. The right-side mirror and full sphere-plane contact
-wiring are deliberately deferred. Simscape-library operations that vary
-by MATLAB release/license are recorded in the returned operation log
-instead of being treated as silent success.
+Current status: mirrored-leg/contact implementation slice.
+`add_leg_chain.m` now deletes and rebuilds generated `Left Leg
+Kinetically Driven`, `Right Leg Kinetically Driven`, and `Ground Contact
+Forces` subsystems with the hip, knee, ankle, foot, ball-of-foot, ground
+plane, and per-foot contact-force anchor blocks listed below.
+Simscape-library operations that vary by MATLAB release/license are
+recorded in the returned operation log instead of being treated as silent
+success. Exact conserving-frame port wiring for the Spatial Contact Force
+blocks remains a MATLAB GUI capture task.
 
 ## Body chain
 
@@ -86,6 +88,13 @@ follow-up work.
 | Ground plane      | `sm_lib/Body Elements/Infinite Plane`             | parented to World Frame at z=0, normal=+Z                                                                                                                                                                                                                          |
 | Foot contact (×2) | `sm_lib/Forces and Torques/Spatial Contact Force` | `Geometry: Sphere/Plane`, sphere radius = 0.03, plane = ground. `NormalForce: Stiffness and Damping`, `K=GroundContactStiffness`, `D=GroundContactDamping`, friction model = Smooth Stick-Slip with `static=GroundFrictionStatic`, `kinetic=GroundFrictionKinetic` |
 
+The generated contact assembly is named `Ground Contact Forces` and
+contains `Ground_Plane_Z0`, `LFoot_Ground_Contact_Force`,
+`RFoot_Ground_Contact_Force`, `LGroundReactionForce`, and
+`RGroundReactionForce`. `validate_3d_fullbody.m` reports these names in
+`contact_contract` so CI and agents can distinguish missing generated
+blocks from release-specific port wiring misses.
+
 ### Sensors (logged signals — minimised to stay within budget)
 
 | Sensor                                  | What it produces                           | Justification                                                                       |
@@ -108,7 +117,12 @@ the convention `<JointName><Axis><A..G>`. We use:
 | LAnkle X | `LAnkleXA` … `LAnkleXG`                                        |
 | LAnkle Y | `LAnkleYA` … `LAnkleYG`                                        |
 
-| (RHip, RKnee, RAnkle equivalents)
+| R Hip X | `RHipXA` `RHipXB` `RHipXC` `RHipXD` `RHipXE` `RHipXF` `RHipXG` |
+| R Hip Y | `RHipYA` … `RHipYG` |
+| R Hip Z | `RHipZA` … `RHipZG` |
+| R Knee | `RKneeA` … `RKneeG` |
+| R Ankle X | `RAnkleXA` … `RAnkleXG` |
+| R Ankle Y | `RAnkleYA` … `RAnkleYG` |
 
 Total new joints: **6 axes per side × 2 sides = 12 new joint families**
 × 7 coefficients = **84 new polynomial coefficients** added to the
@@ -194,6 +208,13 @@ work needs them.
   stable. If not, we may need an explicit "weld pelvis to world for
   the first 5 ms" hack to settle. Verify with a 0.5 s simulation
   early.
+
+- **Contact force signal access.** The current generated assembly names
+  the left/right contact blocks and reaction-force outputs, but the
+  reaction-force signals are not yet proven through a real Simscape
+  smoke run. Once the exact Spatial Contact Force mask/port names are
+  captured, extend `validate_3d_fullbody.m` from block-presence checks
+  to a static address-pose vertical ground-reaction sanity check.
 
 - **Optimization theta growth.** Going from 189 → 231 dimensions
   makes fmincon-with-FD even slower (~85 sims per gradient step
