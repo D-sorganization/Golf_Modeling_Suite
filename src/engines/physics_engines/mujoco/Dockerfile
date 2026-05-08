@@ -8,6 +8,26 @@ FROM ubuntu:22.04 AS base
 # Prevent interactive prompts during installation
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Never write to the pip HTTP cache during image builds.
+#
+# Two reasons:
+#   1. The cache adds ~500-700 MB to the final image for files only
+#      useful during the build itself (HTTP responses pip would re-use
+#      across invocations on a long-lived workstation, not at runtime).
+#   2. On WSL2 + containerd's overlayfs snapshotter, the millions of
+#      tiny files pip writes under /root/.cache/pip cause `lchown ...
+#      no such file or directory` failures during `exporting to image`:
+#      the snapshot finalizer GCs files between layer commit and unpack,
+#      and overlayfs then can't chown them. Disabling the cache sidesteps
+#      that bug entirely. Builds also get slightly faster overall because
+#      writing the cache is pure overhead in CI/single-shot contexts.
+#
+# PIP_DISABLE_PIP_VERSION_CHECK=1 suppresses the per-invocation network
+# ping pip otherwise makes to PyPI to check for newer pip versions; it's
+# noise in build logs and pointless in pinned-image contexts.
+ENV PIP_NO_CACHE_DIR=1
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
