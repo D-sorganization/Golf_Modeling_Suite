@@ -17,7 +17,9 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import runpy
 import sys
+import types
 from pathlib import Path
 
 import numpy as np
@@ -40,6 +42,7 @@ _WIFFLE_XLSX = (
     / "Motion Capture Plotter"
     / "Wiffle_ProV1_club_3D_data.xlsx"
 )
+_LEGACY_MATCHER_PY = _WIFFLE_XLSX.with_name("starting_pose_matcher.py")
 
 
 def _load_module_by_path(name: str, path: Path):
@@ -88,6 +91,37 @@ def _load_matcher():
 @pytest.fixture(scope="module")
 def core():
     return _load_core()
+
+
+def test_legacy_script_shim_imports_relocated_tools_package(monkeypatch):
+    """Legacy ``python starting_pose_matcher.py`` must target tools.*, not top-level."""
+    calls: list[tuple[str, ...]] = []
+
+    def fake_main() -> int:
+        calls.append(tuple(sys.path))
+        return 23
+
+    tools_pkg = types.ModuleType("tools")
+    tools_pkg.__path__ = []
+    matcher_pkg = types.ModuleType("tools.starting_pose_matcher")
+    matcher_pkg.__path__ = []
+    gui_mod = types.ModuleType("tools.starting_pose_matcher.gui")
+    gui_mod.main = fake_main
+
+    monkeypatch.setitem(sys.modules, "tools", tools_pkg)
+    monkeypatch.setitem(sys.modules, "tools.starting_pose_matcher", matcher_pkg)
+    monkeypatch.setitem(sys.modules, "tools.starting_pose_matcher.gui", gui_mod)
+    monkeypatch.setitem(
+        sys.modules, "starting_pose_matcher", types.ModuleType("starting_pose_matcher")
+    )
+
+    with pytest.warns(DeprecationWarning), pytest.raises(SystemExit) as excinfo:
+        runpy.run_path(str(_LEGACY_MATCHER_PY), run_name="__main__")
+
+    assert excinfo.value.code == 23
+    assert len(calls) == 1
+    assert str(_REPO) in calls[0]
+    assert str(_REPO / "src") in calls[0]
 
 
 # --------------------------------------------------------------------------- #
