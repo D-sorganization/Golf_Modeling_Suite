@@ -107,7 +107,7 @@ class DrakeSkeletonProvider:
         if model_xml is not None:
             from pydrake.multibody.parser import Parser
             parser = Parser(self.plant)
-            parser.AddModelFromString(model_xml)
+            parser.AddModelFromString(model_xml, "xml")
         else:
             from pydrake.multibody.parser import Parser
             parser = Parser(self.plant)
