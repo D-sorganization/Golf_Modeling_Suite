@@ -23,8 +23,8 @@ warnings.warn(
 # Add repo-root fallback for legacy usage where repo root is not on sys.path
 # (e.g., `python -m starting_pose_matcher` from this directory)
 # Path depth: Motion Capture Plotter -> golf_gui -> apps -> src -> matlab ->
-#             3D_Golf_Model -> Simscape_Multibody_Models -> engines -> src -> repo root (10 levels)
-_repo_root = Path(__file__).resolve().parents[10]
+#             3D_Golf_Model -> Simscape_Multibody_Models -> engines -> src -> repo root (9 levels)
+_repo_root = Path(__file__).resolve().parents[9]
 if str(_repo_root) not in sys.path:
     sys.path.insert(0, str(_repo_root))
 
