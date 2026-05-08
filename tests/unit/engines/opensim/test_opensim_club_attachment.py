@@ -9,7 +9,11 @@ from xml.etree import ElementTree as ET
 
 import pytest
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = next(
+    parent
+    for parent in Path(__file__).resolve().parents
+    if (parent / "scripts" / "build_humanoid_osim.py").is_file()
+)
 BUILDER_PATH = REPO_ROOT / "scripts" / "build_humanoid_osim.py"
 
 

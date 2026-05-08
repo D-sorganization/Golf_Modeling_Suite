@@ -30,16 +30,16 @@
 
 ## 1. Identity
 
-| Field                   | Value                                              |
-| ----------------------- | -------------------------------------------------- |
-| **Repository Name**     | `UpstreamDrift`                                    |
-| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift` |
-| **Owner**               | D-sorganization                                    |
-| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
-| **License**             | MIT                                                |
-| **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.142                                            |
-| **Last Spec Update**    | 2026-05-07 (MuJoCo pose-conditioned synth targets) |
+| Field                   | Value                                                         |
+| ----------------------- | ------------------------------------------------------------- |
+| **Repository Name**     | `UpstreamDrift`                                               |
+| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift`            |
+| **Owner**               | D-sorganization                                               |
+| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                                |
+| **License**             | MIT                                                           |
+| **Current Version**     | 2.1.0                                                         |
+| **Spec Version**        | 1.0.143                                                       |
+| **Last Spec Update**    | 2026-05-08 (mocap/full-body roadmap + docs governance layout) |
 
 ## 2. Purpose & Mission
 
@@ -336,6 +336,10 @@ topic directories under `tests/`, documented the fixture scopes in
 guard against new flat test files, new in-tree `src/**/tests` directories, and
 overlapping fixture names in nested conftests.
 
+Issue #4405 moved the OpenSim club-attachment XML test from the root `tests/`
+directory into `tests/unit/engines/opensim/` so it follows the engine-scoped
+unit-test layout enforced by `scripts/check_test_layout.py`.
+
 ### Coverage Requirements
 
 | Scope                   | Minimum | Current          | Enforced By                                 |
@@ -553,6 +557,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-05-08 | 1.0.143 | Added the mocap, starting-pose matcher, backend parity, and 3D full-body Simscape roadmap under `docs/plans/` with issue-body source files under `docs/issues/`; moved tracked root `assessments/` artifacts into canonical `docs/assessments/`; and relocated the OpenSim club-attachment XML test under `tests/unit/engines/opensim/` to satisfy the documented test layout guard. |
 | 2026-05-07 | 1.0.140 | Added a pure-unit OpenSim prescribed-controller boundary for polynomial torque trajectories, including validation of time grids, coefficient shapes, finite values, actuator names, parity with the canonical polynomial torque evaluator, and typed unavailable behavior before native OpenSim integration. |
 | 2026-05-07 | 1.0.134 | Moved production-readiness and testing-contract documentation out of the repository root into `reports/` and `docs/testing/`, and added a focused CI regression test for the root-clutter policy so future non-allowlisted top-level files fail under pytest before they block the shared `quality-gate`. |
 | 2026-05-06 | 1.0.125 | Added scope header comments to the generated Pinocchio `golfer.urdf` and `golfer_ik.urdf` files so forward-simulation and body-only IK workflows clearly document when the welded-club model versus the external-club-tracking model should be used. |
