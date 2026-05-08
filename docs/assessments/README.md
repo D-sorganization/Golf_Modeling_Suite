@@ -5,6 +5,7 @@
 - Canonical status file: `docs/assessments/CANONICAL_QUALITY_STATUS.md`
 - Archive index: `docs/assessments/archive/INDEX.md`
 - Legacy root-level assessment artifacts: `docs/assessments/archive/root-2026-04-26/`
+- Current 2026-05-07 assessment artifacts: `docs/assessments/2026-05-07-comprehensive-assessment.md`
 
 When assessments are superseded, move old artifacts into `docs/assessments/archive/` and update the archive index.
 
@@ -128,6 +129,7 @@ In addition to the standard framework, specialized audits monitor specific quali
 
 | Date       | Topic                                    | Report File                                                                   |
 | ---------- | ---------------------------------------- | ----------------------------------------------------------------------------- |
+| 2026-05-07 | Comprehensive A-O repository assessment  | `docs/assessments/2026-05-07-comprehensive-assessment.md`                     |
 | 2025-02-24 | Physics Audit                            | `docs/assessments/physics/Physics_Audit_2025-02-24.md`                        |
 | 2025-05-24 | Implementation Gaps Review 2025          | `docs/assessments/implementation_gaps_review_2025.md`                         |
 | 2026-02-17 | Implementation Gaps                      | `docs/assessments/implementation_gaps_report.md`                              |
