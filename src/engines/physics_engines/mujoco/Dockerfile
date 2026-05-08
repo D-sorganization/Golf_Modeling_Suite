@@ -29,7 +29,15 @@ ENV PIP_NO_CACHE_DIR=1
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+#
+# Uses --no-install-recommends to skip apt's "Recommends" graph: the
+# packages listed below are the explicit, authoritative dependency set
+# for the engine images (matches the convention used by the repo root
+# Dockerfile and resolves Trivy DS-0029). Anything that turns out to be
+# implicitly required should be added to the explicit list rather than
+# being pulled in via Recommends — that keeps the image self-documenting
+# and the build deterministic across base-image revisions.
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
     pkg-config \
