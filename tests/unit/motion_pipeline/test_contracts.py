@@ -1,757 +1,816 @@
-"""
-Unit tests for motion pipeline contracts (CIR).
+"""Unit tests for the motion pipeline canonical intermediate representation.
 
-Tests cover:
-- Pydantic v2 validation
-- Invariants via @invariant decorator
-- Round-trip serialization (JSON)
-- Edge cases and error handling
+Targets >=95% coverage of ``src/shared/python/motion_pipeline/contracts.py``.
 """
 
-import json
-import tempfile
-from datetime import datetime
-from pathlib import Path
+from __future__ import annotations
 
-import numpy as np
+import math
+
 import pytest
+from pydantic import ValidationError
 
-from src.shared.python.motion_pipeline.contracts import (
+from src.shared.python.motion_pipeline import (
     Calibration,
-    CameraExtrinsics,
-    CameraIntrinsics,
-    JointDef,
+    CostWeights,
+    EngineType,
+    JointAxis,
     JointLimit,
     JointStateFrame,
     JointTrajectory,
-    Keypoint,
     KeypointFrame,
+    KeypointSchema,
     KeypointSequence,
-    Marker,
     MarkerFrame,
+    MarkerSample,
     MarkerTrajectory,
     MotionMatchingRequest,
     MotionMatchingResult,
     MotionTrajectory,
+    MuscleActivationTrajectory,
+    Provenance,
+    ResidualReport,
     SkeletonRig,
-    UpAxis,
-    deserialize_model,
-    load_model,
-    save_model,
-    serialize_model,
+    TorqueTrajectory,
+    UnitSystem,
+    WorldUp,
+)
+from tests.unit.motion_pipeline._fixtures import (
+    make_calibration,
+    make_joint_trajectory,
+    make_keypoint_sequence,
+    make_marker_trajectory,
+    make_motion_trajectory,
+    make_provenance,
+    make_skeleton_rig,
 )
 
 
-# =============================================================================
-# Fixtures
-# =============================================================================
+# ---------------------------------------------------------------------------
+# Enums + simple sanity
+# ---------------------------------------------------------------------------
 
 
-@pytest.fixture
-def sample_intrinsics() -> CameraIntrinsics:
-    """Create a sample camera intrinsics."""
-    return CameraIntrinsics(fx=800.0, fy=800.0, cx=640.0, cy=480.0)
+def test_engine_type_lowercase_string_values() -> None:
+    assert EngineType.MUJOCO.value == "mujoco"
+    assert EngineType.OPENSIM.value == "opensim"
+    assert EngineType.DRAKE.value == "drake"
+    assert EngineType.PINOCCHIO.value == "pinocchio"
+    assert EngineType.MYOSUITE.value == "myosuite"
 
 
-@pytest.fixture
-def sample_extrinsics() -> CameraExtrinsics:
-    """Create a sample camera extrinsics."""
-    return CameraExtrinsics(
-        rotation=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-        translation=[0.0, 0.0, 0.0],
-    )
+def test_unit_system_world_up_keypoint_schema_values() -> None:
+    assert UnitSystem.MILLIMETERS.value == "mm"
+    assert UnitSystem.METERS.value == "m"
+    assert WorldUp.Y_UP.value == "Y_UP"
+    assert WorldUp.Z_UP.value == "Z_UP"
+    assert KeypointSchema.MEDIAPIPE_33.value == "MEDIAPIPE_33"
 
 
-@pytest.fixture
-def sample_calibration() -> Calibration:
-    """Create a sample calibration."""
-    return Calibration(
-        id="calib_001",
-        cameras={
-            "cam_0": {
-                "intrinsics": {"fx": 800.0, "fy": 800.0, "cx": 640.0, "cy": 480.0},
-                "extrinsics": {"rotation": [[1, 0, 0], [0, 1, 0], [0, 0, 1]], "translation": [0, 0, 0]},
-            }
-        },
-        unit_system="meters",
+# ---------------------------------------------------------------------------
+# Calibration
+# ---------------------------------------------------------------------------
+
+
+def test_calibration_valid() -> None:
+    c = make_calibration()
+    assert c.source_fps == 60.0
+    assert c.unit_system == UnitSystem.METERS
+
+
+def test_calibration_minimal_no_optional_matrices() -> None:
+    c = Calibration(
+        camera_id="cam0",
         source_fps=30.0,
-        world_up_axis="+Y",
+        unit_system=UnitSystem.MILLIMETERS,
+        world_up=WorldUp.Z_UP,
     )
+    assert c.intrinsics is None
+    assert c.extrinsics is None
 
 
-@pytest.fixture
-def sample_keypoint_frame() -> KeypointFrame:
-    """Create a sample keypoint frame."""
-    return KeypointFrame(
+@pytest.mark.parametrize("bad", [[[1.0, 0.0]], [[1.0, 0.0, 0.0], [0.0]]])
+def test_calibration_rejects_bad_intrinsics_shape(
+    bad: list[list[float]],
+) -> None:
+    with pytest.raises(ValidationError):
+        Calibration(
+            camera_id="cam0",
+            intrinsics=bad,
+            source_fps=30.0,
+            unit_system=UnitSystem.METERS,
+            world_up=WorldUp.Y_UP,
+        )
+
+
+def test_calibration_rejects_non_finite_intrinsics() -> None:
+    with pytest.raises(ValidationError):
+        Calibration(
+            camera_id="cam0",
+            intrinsics=[
+                [math.nan, 0.0, 0.0],
+                [0.0, 1.0, 0.0],
+                [0.0, 0.0, 1.0],
+            ],
+            source_fps=30.0,
+            unit_system=UnitSystem.METERS,
+            world_up=WorldUp.Y_UP,
+        )
+
+
+def test_calibration_rejects_bad_extrinsics_shape() -> None:
+    with pytest.raises(ValidationError):
+        Calibration(
+            camera_id="cam0",
+            extrinsics=[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+            source_fps=30.0,
+            unit_system=UnitSystem.METERS,
+            world_up=WorldUp.Y_UP,
+        )
+
+
+def test_calibration_rejects_zero_or_negative_fps() -> None:
+    with pytest.raises(ValidationError):
+        Calibration(
+            camera_id="cam0",
+            source_fps=0.0,
+            unit_system=UnitSystem.METERS,
+            world_up=WorldUp.Y_UP,
+        )
+
+
+# ---------------------------------------------------------------------------
+# KeypointFrame / KeypointSequence
+# ---------------------------------------------------------------------------
+
+
+def test_keypoint_frame_valid_2d_and_3d() -> None:
+    f2 = KeypointFrame(
+        points=[(0.0, 0.0), (1.0, 1.0)],
+        confidences=[0.5, 0.9],
+        schema=KeypointSchema.CUSTOM,
         timestamp=0.0,
-        keypoints=[
-            Keypoint(x=100.0, y=200.0, z=0.5, confidence=0.95, name="nose"),
-            Keypoint(x=110.0, y=210.0, z=0.6, confidence=0.90, name="left_eye"),
-        ],
-        schema_name="BODY_25",
-        frame_index=0,
     )
-
-
-@pytest.fixture
-def sample_skeleton() -> SkeletonRig:
-    """Create a sample skeleton rig."""
-    return SkeletonRig(
-        id="skeleton_001",
-        joints={
-            "pelvis": JointDef(name="pelvis", parent=None, children=["spine"], tpose_offset=[0, 0, 0]),
-            "spine": JointDef(name="spine", parent="pelvis", children=["neck"], tpose_offset=[0, 0.1, 0]),
-            "neck": JointDef(name="neck", parent="spine", children=[], tpose_offset=[0, 0.15, 0]),
-        },
-        root_joint="pelvis",
-        up_axis="+Y",
+    assert len(f2.points) == 2
+    f3 = KeypointFrame(
+        points=[(0.0, 0.0, 0.0)],
+        confidences=[0.7],
+        schema=KeypointSchema.CUSTOM,
+        timestamp=0.0,
     )
+    assert len(f3.points[0]) == 3
 
 
-@pytest.fixture
-def sample_joint_trajectory(sample_skeleton: SkeletonRig) -> JointTrajectory:
-    """Create a sample joint trajectory."""
-    frames = [
-        JointStateFrame(timestamp=0.0, q=[0.0] * sample_skeleton.num_dofs, frame_index=0),
-        JointStateFrame(timestamp=0.033, q=[0.1] * sample_skeleton.num_dofs, frame_index=1),
-        JointStateFrame(timestamp=0.066, q=[0.2] * sample_skeleton.num_dofs, frame_index=2),
-    ]
-    return JointTrajectory(id="traj_001", skeleton=sample_skeleton, frames=frames)
+def test_keypoint_frame_rejects_confidence_length_mismatch() -> None:
+    with pytest.raises(ValidationError):
+        KeypointFrame(
+            points=[(0.0, 0.0), (1.0, 1.0)],
+            confidences=[0.5],
+            schema=KeypointSchema.CUSTOM,
+            timestamp=0.0,
+        )
 
 
-@pytest.fixture
-def sample_motion_trajectory(sample_skeleton: SkeletonRig, sample_joint_trajectory: JointTrajectory) -> MotionTrajectory:
-    """Create a sample motion trajectory."""
-    return MotionTrajectory(
-        id="motion_001",
-        skeleton=sample_skeleton,
-        trajectory=sample_joint_trajectory,
-        subject={"height_m": 1.75, "mass_kg": 70.0, "age": 25},
-        sport="golf",
-        club="driver",
+@pytest.mark.parametrize("bad", [-0.01, 1.5, math.inf, math.nan])
+def test_keypoint_frame_rejects_invalid_confidence(bad: float) -> None:
+    with pytest.raises(ValidationError):
+        KeypointFrame(
+            points=[(0.0, 0.0)],
+            confidences=[bad],
+            schema=KeypointSchema.CUSTOM,
+            timestamp=0.0,
+        )
+
+
+def test_keypoint_frame_rejects_non_finite_points() -> None:
+    with pytest.raises(ValidationError):
+        KeypointFrame(
+            points=[(math.inf, 0.0)],
+            confidences=[1.0],
+            schema=KeypointSchema.CUSTOM,
+            timestamp=0.0,
+        )
+
+
+def test_keypoint_frame_rejects_mixed_dimensionality() -> None:
+    with pytest.raises(ValidationError):
+        KeypointFrame(
+            points=[(0.0, 0.0), (1.0, 1.0, 1.0)],  # type: ignore[list-item]
+            confidences=[1.0, 1.0],
+            schema=KeypointSchema.CUSTOM,
+            timestamp=0.0,
+        )
+
+
+def test_keypoint_sequence_valid() -> None:
+    seq = make_keypoint_sequence(n_frames=4, n_points=5, schema=KeypointSchema.CUSTOM)
+    assert len(seq.frames) == 4
+
+
+def test_keypoint_sequence_rejects_non_monotonic_timestamps() -> None:
+    cal = make_calibration()
+    f0 = KeypointFrame(
+        points=[(0.0, 0.0)],
+        confidences=[1.0],
+        schema=KeypointSchema.CUSTOM,
+        timestamp=1.0,
     )
+    f1 = KeypointFrame(
+        points=[(0.0, 0.0)],
+        confidences=[1.0],
+        schema=KeypointSchema.CUSTOM,
+        timestamp=0.0,
+    )
+    with pytest.raises(ValidationError):
+        KeypointSequence(frames=[f0, f1], calibration=cal)
 
 
-# =============================================================================
-# Calibration Tests
-# =============================================================================
+def test_keypoint_sequence_rejects_schema_mismatch() -> None:
+    cal = make_calibration()
+    f0 = KeypointFrame(
+        points=[(0.0, 0.0)],
+        confidences=[1.0],
+        schema=KeypointSchema.CUSTOM,
+        timestamp=0.0,
+    )
+    f1 = KeypointFrame(
+        points=[(0.0, 0.0)],
+        confidences=[1.0],
+        schema=KeypointSchema.COCO_17,
+        timestamp=1.0,
+    )
+    with pytest.raises(ValidationError):
+        KeypointSequence(frames=[f0, f1], calibration=cal)
 
 
-class TestCameraIntrinsics:
-    """Tests for CameraIntrinsics model."""
-
-    def test_valid_intrinsics(self, sample_intrinsics: CameraIntrinsics):
-        """Test valid intrinsics creation."""
-        assert sample_intrinsics.fx == 800.0
-        assert sample_intrinsics.fy == 800.0
-        assert sample_intrinsics.cx == 640.0
-        assert sample_intrinsics.cy == 480.0
-
-    def test_invalid_focal_length_zero(self):
-        """Test that zero focal length raises error."""
-        with pytest.raises(ValueError, match="greater than 0"):
-            CameraIntrinsics(fx=0.0, fy=800.0, cx=640.0, cy=480.0)
-
-    def test_invalid_focal_length_negative(self):
-        """Test that negative focal length raises error."""
-        with pytest.raises(ValueError, match="greater than 0"):
-            CameraIntrinsics(fx=-800.0, fy=800.0, cx=640.0, cy=480.0)
-
-    def test_nan_focal_length(self):
-        """Test that NaN focal length raises error."""
-        with pytest.raises(ValueError, match="finite"):
-            CameraIntrinsics(fx=float("nan"), fy=800.0, cx=640.0, cy=480.0)
-
-    def test_inf_focal_length(self):
-        """Test that infinite focal length raises error."""
-        with pytest.raises(ValueError, match="finite"):
-            CameraIntrinsics(fx=float("inf"), fy=800.0, cx=640.0, cy=480.0)
-
-    def test_default_distortion(self):
-        """Test default distortion coefficients."""
-        intrinsics = CameraIntrinsics(fx=800.0, fy=800.0, cx=640.0, cy=480.0)
-        assert intrinsics.k1 == 0.0
-        assert intrinsics.k2 == 0.0
-        assert intrinsics.p1 == 0.0
-        assert intrinsics.p2 == 0.0
+def test_keypoint_sequence_rejects_inconsistent_point_count() -> None:
+    cal = make_calibration()
+    f0 = KeypointFrame(
+        points=[(0.0, 0.0)],
+        confidences=[1.0],
+        schema=KeypointSchema.CUSTOM,
+        timestamp=0.0,
+    )
+    f1 = KeypointFrame(
+        points=[(0.0, 0.0), (1.0, 1.0)],
+        confidences=[1.0, 1.0],
+        schema=KeypointSchema.CUSTOM,
+        timestamp=1.0,
+    )
+    with pytest.raises(ValidationError):
+        KeypointSequence(frames=[f0, f1], calibration=cal)
 
 
-class TestCameraExtrinsics:
-    """Tests for CameraExtrinsics model."""
-
-    def test_valid_extrinsics(self, sample_extrinsics: CameraExtrinsics):
-        """Test valid extrinsics creation."""
-        assert len(sample_extrinsics.rotation) == 3
-        assert len(sample_extrinsics.translation) == 3
-
-    def test_default_rotation_identity(self):
-        """Test default rotation is identity."""
-        extrinsics = CameraExtrinsics()
-        assert extrinsics.rotation == [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-
-    def test_default_translation_zero(self):
-        """Test default translation is zero."""
-        extrinsics = CameraExtrinsics()
-        assert extrinsics.translation == [0.0, 0.0, 0.0]
-
-    def test_invalid_rotation_shape(self):
-        """Test that invalid rotation shape raises error."""
-        with pytest.raises(ValueError, match="3x3"):
-            CameraExtrinsics(rotation=[[1, 0], [0, 1]], translation=[0, 0, 0])
-
-    def test_invalid_translation_shape(self):
-        """Test that invalid translation shape raises error."""
-        with pytest.raises(ValueError, match="length 3"):
-            CameraExtrinsics(rotation=[[1, 0, 0], [0, 1, 0], [0, 0, 1]], translation=[0, 0])
+# ---------------------------------------------------------------------------
+# MarkerSample / MarkerFrame / MarkerTrajectory
+# ---------------------------------------------------------------------------
 
 
-class TestCalibration:
-    """Tests for Calibration model."""
-
-    def test_valid_calibration(self, sample_calibration: Calibration):
-        """Test valid calibration creation."""
-        assert sample_calibration.id == "calib_001"
-        assert sample_calibration.unit_system == "meters"
-        assert sample_calibration.source_fps == 30.0
-        assert sample_calibration.world_up_axis == "+Y"
-
-    def test_invalid_fps_zero(self):
-        """Test that zero FPS raises error."""
-        with pytest.raises(ValueError, match="greater than 0"):
-            Calibration(
-                id="calib_001",
-                cameras={"cam_0": {"intrinsics": {"fx": 800.0, "fy": 800.0, "cx": 640.0, "cy": 480.0}}},
-                source_fps=0.0,
-            )
-
-    def test_missing_intrinsics(self):
-        """Test that missing intrinsics raises error."""
-        with pytest.raises(ValueError, match="missing intrinsics"):
-            Calibration(
-                id="calib_001",
-                cameras={"cam_0": {"extrinsics": {"rotation": [[1, 0, 0], [0, 1, 0], [0, 0, 1]], "translation": [0, 0, 0]}}},
-                source_fps=30.0,
-            )
-
-    def test_invalid_unit_system(self):
-        """Test that invalid unit system raises error."""
-        with pytest.raises(ValueError):
-            Calibration(
-                id="calib_001",
-                cameras={"cam_0": {"intrinsics": {"fx": 800.0, "fy": 800.0, "cx": 640.0, "cy": 480.0}}},
-                unit_system="invalid",  # type: ignore
-                source_fps=30.0,
-            )
-
-    def test_invalid_up_axis(self):
-        """Test that invalid up axis raises error."""
-        with pytest.raises(ValueError):
-            Calibration(
-                id="calib_001",
-                cameras={"cam_0": {"intrinsics": {"fx": 800.0, "fy": 800.0, "cx": 640.0, "cy": 480.0}}},
-                source_fps=30.0,
-                world_up_axis="invalid",  # type: ignore
-            )
+def test_marker_sample_valid() -> None:
+    s = MarkerSample(xyz=(0.0, 1.0, 2.0))
+    assert s.occluded is False
 
 
-# =============================================================================
-# Keypoint Tests
-# =============================================================================
+def test_marker_sample_occluded_allows_nan() -> None:
+    s = MarkerSample(xyz=(math.nan, math.nan, math.nan), occluded=True)
+    assert s.occluded
 
 
-class TestKeypoint:
-    """Tests for Keypoint model."""
-
-    def test_valid_3d_keypoint(self):
-        """Test valid 3D keypoint creation."""
-        kp = Keypoint(x=100.0, y=200.0, z=0.5, confidence=0.95, name="nose")
-        assert kp.x == 100.0
-        assert kp.y == 200.0
-        assert kp.z == 0.5
-        assert kp.confidence == 0.95
-
-    def test_valid_2d_keypoint(self):
-        """Test valid 2D keypoint creation."""
-        kp = Keypoint(x=100.0, y=200.0, confidence=0.95)
-        assert kp.x == 100.0
-        assert kp.y == 200.0
-        assert kp.z is None
-
-    def test_confidence_bounds_zero(self):
-        """Test confidence at lower bound."""
-        kp = Keypoint(x=100.0, y=200.0, confidence=0.0)
-        assert kp.confidence == 0.0
-
-    def test_confidence_bounds_one(self):
-        """Test confidence at upper bound."""
-        kp = Keypoint(x=100.0, y=200.0, confidence=1.0)
-        assert kp.confidence == 1.0
-
-    def test_confidence_negative(self):
-        """Test that negative confidence raises error."""
-        with pytest.raises(ValueError, match="greater than or equal to 0"):
-            Keypoint(x=100.0, y=200.0, confidence=-0.1)
-
-    def test_confidence_over_one(self):
-        """Test that confidence over 1 raises error."""
-        with pytest.raises(ValueError, match="less than or equal to 1"):
-            Keypoint(x=100.0, y=200.0, confidence=1.1)
-
-    def test_nan_coordinate(self):
-        """Test that NaN coordinate raises error."""
-        with pytest.raises(ValueError, match="finite"):
-            Keypoint(x=float("nan"), y=200.0)
+def test_marker_sample_rejects_non_finite_when_visible() -> None:
+    with pytest.raises(ValidationError):
+        MarkerSample(xyz=(math.nan, 0.0, 0.0), occluded=False)
 
 
-class TestKeypointFrame:
-    """Tests for KeypointFrame model."""
+def test_marker_frame_rejects_empty_samples() -> None:
+    with pytest.raises(ValidationError):
+        MarkerFrame(samples={}, timestamp=0.0)
 
-    def test_valid_frame(self, sample_keypoint_frame: KeypointFrame):
-        """Test valid keypoint frame creation."""
-        assert sample_keypoint_frame.timestamp == 0.0
-        assert len(sample_keypoint_frame.keypoints) == 2
-        assert sample_keypoint_frame.schema_name == "BODY_25"
 
-    def test_empty_keypoints(self):
-        """Test that empty keypoints raises error."""
-        with pytest.raises(ValueError, match="at least 1"):
-            KeypointFrame(timestamp=0.0, keypoints=[], schema_name="BODY_25")
+def test_marker_trajectory_valid() -> None:
+    t = make_marker_trajectory()
+    assert len(t.frames) == 10
 
-    def test_negative_timestamp(self):
-        """Test that negative timestamp raises error."""
-        with pytest.raises(ValueError, match="greater than or equal to 0"):
-            KeypointFrame(
-                timestamp=-1.0,
-                keypoints=[Keypoint(x=100.0, y=200.0)],
-                schema_name="BODY_25",
-            )
 
-    def test_depth_consistency_3d(self):
-        """Test 3D keypoints pass depth consistency check."""
-        frame = KeypointFrame(
-            timestamp=0.0,
-            keypoints=[
-                Keypoint(x=100.0, y=200.0, z=0.5),
-                Keypoint(x=110.0, y=210.0, z=0.6),
-            ],
-            schema_name="BODY_25",
+def test_marker_trajectory_rejects_inconsistent_label_set() -> None:
+    f0 = MarkerFrame(samples={"A": MarkerSample(xyz=(0, 0, 0))}, timestamp=0.0)
+    f1 = MarkerFrame(samples={"B": MarkerSample(xyz=(0, 0, 0))}, timestamp=1.0)
+    with pytest.raises(ValidationError):
+        MarkerTrajectory(frames=[f0, f1], unit_system=UnitSystem.METERS)
+
+
+def test_marker_trajectory_rejects_non_monotonic_timestamps() -> None:
+    f0 = MarkerFrame(samples={"A": MarkerSample(xyz=(0, 0, 0))}, timestamp=1.0)
+    f1 = MarkerFrame(samples={"A": MarkerSample(xyz=(0, 0, 0))}, timestamp=0.0)
+    with pytest.raises(ValidationError):
+        MarkerTrajectory(frames=[f0, f1], unit_system=UnitSystem.METERS)
+
+
+# ---------------------------------------------------------------------------
+# JointAxis / JointLimit
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("axis", ["X", "Y", "Z"])
+def test_joint_axis_from_cardinal(axis: str) -> None:
+    a = JointAxis.from_cardinal(axis)  # type: ignore[arg-type]
+    assert math.isclose(sum(c * c for c in a.vector), 1.0)
+
+
+def test_joint_axis_from_cardinal_rejects_unknown() -> None:
+    with pytest.raises(ValueError):
+        JointAxis.from_cardinal("W")  # type: ignore[arg-type]
+
+
+def test_joint_axis_rejects_non_unit_vector() -> None:
+    with pytest.raises(ValidationError):
+        JointAxis(vector=(2.0, 0.0, 0.0))
+
+
+def test_joint_axis_rejects_zero_vector() -> None:
+    with pytest.raises(ValidationError):
+        JointAxis(vector=(0.0, 0.0, 0.0))
+
+
+def test_joint_axis_rejects_non_finite() -> None:
+    with pytest.raises(ValidationError):
+        JointAxis(vector=(math.nan, 0.0, 0.0))
+
+
+def test_joint_limit_valid() -> None:
+    lim = JointLimit(lo=-1.0, hi=1.0)
+    assert lim.lo < lim.hi
+
+
+def test_joint_limit_lo_equal_hi_allowed() -> None:
+    lim = JointLimit(lo=0.0, hi=0.0)
+    assert lim.lo == lim.hi
+
+
+def test_joint_limit_rejects_lo_gt_hi() -> None:
+    with pytest.raises(ValidationError):
+        JointLimit(lo=2.0, hi=1.0)
+
+
+def test_joint_limit_rejects_non_finite() -> None:
+    with pytest.raises(ValidationError):
+        JointLimit(lo=math.nan, hi=1.0)
+
+
+# ---------------------------------------------------------------------------
+# SkeletonRig
+# ---------------------------------------------------------------------------
+
+
+def test_skeleton_rig_valid() -> None:
+    rig = make_skeleton_rig(n_joints=4)
+    assert rig.n_joints == 4
+
+
+def test_skeleton_rig_rejects_duplicate_joint_names() -> None:
+    with pytest.raises(ValidationError):
+        SkeletonRig(
+            joint_names=["a", "a"],
+            parents=[-1, 0],
+            tpose_offsets=[(0, 0, 0), (0, 0, 0)],
+            axes=[JointAxis.from_cardinal("Z"), JointAxis.from_cardinal("Z")],
+            limits=[JointLimit(lo=-1, hi=1), JointLimit(lo=-1, hi=1)],
         )
-        assert frame.check_keypoint_depth_consistency()
 
-    def test_depth_consistency_2d(self):
-        """Test 2D keypoints pass depth consistency check."""
-        frame = KeypointFrame(
-            timestamp=0.0,
-            keypoints=[
-                Keypoint(x=100.0, y=200.0),
-                Keypoint(x=110.0, y=210.0),
-            ],
-            schema_name="BODY_25",
+
+def test_skeleton_rig_rejects_empty_joint_name() -> None:
+    with pytest.raises(ValidationError):
+        SkeletonRig(
+            joint_names=[""],
+            parents=[-1],
+            tpose_offsets=[(0, 0, 0)],
+            axes=[JointAxis.from_cardinal("Z")],
+            limits=[JointLimit(lo=-1, hi=1)],
         )
-        assert frame.check_keypoint_depth_consistency()
 
-    def test_depth_inconsistency_mixed(self):
-        """Test mixed 2D/3D keypoints fail depth consistency check."""
-        frame = KeypointFrame(
-            timestamp=0.0,
-            keypoints=[
-                Keypoint(x=100.0, y=200.0, z=0.5),
-                Keypoint(x=110.0, y=210.0),
-            ],
-            schema_name="BODY_25",
+
+def test_skeleton_rig_rejects_length_mismatch() -> None:
+    with pytest.raises(ValidationError):
+        SkeletonRig(
+            joint_names=["a", "b"],
+            parents=[-1],
+            tpose_offsets=[(0, 0, 0), (0, 0, 0)],
+            axes=[JointAxis.from_cardinal("Z"), JointAxis.from_cardinal("Z")],
+            limits=[JointLimit(lo=-1, hi=1), JointLimit(lo=-1, hi=1)],
         )
-        assert not frame.check_keypoint_depth_consistency()
 
 
-class TestKeypointSequence:
-    """Tests for KeypointSequence model."""
-
-    def test_valid_sequence(self, sample_keypoint_frame: KeypointFrame):
-        """Test valid keypoint sequence creation."""
-        seq = KeypointSequence(id="seq_001", frames=[sample_keypoint_frame])
-        assert seq.id == "seq_001"
-        assert seq.num_frames == 1
-        assert seq.num_keypoints == 2
-
-    def test_monotonic_timestamps(self, sample_keypoint_frame: KeypointFrame):
-        """Test monotonically increasing timestamps."""
-        frame2 = KeypointFrame(
-            timestamp=0.033,
-            keypoints=[Keypoint(x=105.0, y=205.0)],
-            schema_name="BODY_25",
+def test_skeleton_rig_rejects_self_parent() -> None:
+    with pytest.raises(ValidationError):
+        SkeletonRig(
+            joint_names=["a"],
+            parents=[0],
+            tpose_offsets=[(0, 0, 0)],
+            axes=[JointAxis.from_cardinal("Z")],
+            limits=[JointLimit(lo=-1, hi=1)],
         )
-        seq = KeypointSequence(id="seq_001", frames=[sample_keypoint_frame, frame2])
-        assert seq.duration == 0.033
 
-    def test_non_monotonic_timestamps(self, sample_keypoint_frame: KeypointFrame):
-        """Test that non-monotonic timestamps raise error."""
-        frame2 = KeypointFrame(
-            timestamp=-0.01,
-            keypoints=[Keypoint(x=105.0, y=205.0)],
-            schema_name="BODY_25",
+
+def test_skeleton_rig_rejects_out_of_range_parent() -> None:
+    with pytest.raises(ValidationError):
+        SkeletonRig(
+            joint_names=["a", "b"],
+            parents=[-1, 5],
+            tpose_offsets=[(0, 0, 0), (0, 0, 0)],
+            axes=[JointAxis.from_cardinal("Z"), JointAxis.from_cardinal("Z")],
+            limits=[JointLimit(lo=-1, hi=1), JointLimit(lo=-1, hi=1)],
         )
-        with pytest.raises(ValueError, match="monotonically increasing"):
-            KeypointSequence(id="seq_001", frames=[sample_keypoint_frame, frame2])
 
-    def test_consistent_schema(self, sample_keypoint_frame: KeypointFrame):
-        """Test consistent schema across frames."""
-        frame2 = KeypointFrame(
-            timestamp=0.033,
-            keypoints=[Keypoint(x=105.0, y=205.0)],
-            schema_name="BODY_25",
+
+def test_skeleton_rig_rejects_cycle() -> None:
+    with pytest.raises(ValidationError):
+        SkeletonRig(
+            joint_names=["a", "b", "c"],
+            parents=[1, 2, 0],  # cycle a->b->c->a
+            tpose_offsets=[(0, 0, 0)] * 3,
+            axes=[JointAxis.from_cardinal("Z")] * 3,
+            limits=[JointLimit(lo=-1, hi=1)] * 3,
         )
-        seq = KeypointSequence(id="seq_001", frames=[sample_keypoint_frame, frame2])
-        assert seq.check_consistent_schema()
 
-    def test_inconsistent_schema(self, sample_keypoint_frame: KeypointFrame):
-        """Test that inconsistent schema raises error."""
-        frame2 = KeypointFrame(
-            timestamp=0.033,
-            keypoints=[Keypoint(x=105.0, y=205.0)],
-            schema_name="COCO_17",
+
+def test_skeleton_rig_rejects_non_finite_offset() -> None:
+    with pytest.raises(ValidationError):
+        SkeletonRig(
+            joint_names=["a"],
+            parents=[-1],
+            tpose_offsets=[(math.nan, 0, 0)],
+            axes=[JointAxis.from_cardinal("Z")],
+            limits=[JointLimit(lo=-1, hi=1)],
         )
-        with pytest.raises(ValueError, match="Inconsistent schemas"):
-            KeypointSequence(id="seq_001", frames=[sample_keypoint_frame, frame2])
 
 
-# =============================================================================
-# Skeleton Tests
-# =============================================================================
-
-
-class TestSkeletonRig:
-    """Tests for SkeletonRig model."""
-
-    def test_valid_skeleton(self, sample_skeleton: SkeletonRig):
-        """Test valid skeleton creation."""
-        assert sample_skeleton.id == "skeleton_001"
-        assert sample_skeleton.root_joint == "pelvis"
-        assert sample_skeleton.num_joints == 3
-
-    def test_root_not_exists(self):
-        """Test that non-existent root raises error."""
-        with pytest.raises(ValueError, match="not found"):
-            SkeletonRig(
-                id="skeleton_001",
-                joints={"pelvis": JointDef(name="pelvis")},
-                root_joint="nonexistent",
-            )
-
-    def test_invalid_child(self):
-        """Test that invalid child reference raises error."""
-        with pytest.raises(ValueError, match="invalid child"):
-            SkeletonRig(
-                id="skeleton_001",
-                joints={
-                    "pelvis": JointDef(name="pelvis", children=["nonexistent"]),
-                },
-                root_joint="pelvis",
-            )
-
-    def test_invalid_parent(self):
-        """Test that invalid parent reference raises error."""
-        with pytest.raises(ValueError, match="invalid parent"):
-            SkeletonRig(
-                id="skeleton_001",
-                joints={
-                    "pelvis": JointDef(name="pelvis", parent="nonexistent"),
-                },
-                root_joint="pelvis",
-            )
-
-    def test_joint_chain(self, sample_skeleton: SkeletonRig):
-        """Test joint chain retrieval."""
-        chain = sample_skeleton.get_joint_chain("neck")
-        assert chain == ["pelvis", "spine", "neck"]
-
-    def test_num_dofs(self):
-        """Test DOF calculation."""
-        skeleton = SkeletonRig(
-            id="skeleton_001",
-            joints={
-                "pelvis": JointDef(name="pelvis", axes=["X", "Y", "Z"]),
-                "spine": JointDef(name="spine", axes=["X", "Y", "Z"]),
-            },
-            root_joint="pelvis",
+def test_skeleton_rig_rejects_unknown_semantic_label() -> None:
+    with pytest.raises(ValidationError):
+        SkeletonRig(
+            joint_names=["a"],
+            parents=[-1],
+            tpose_offsets=[(0, 0, 0)],
+            axes=[JointAxis.from_cardinal("Z")],
+            limits=[JointLimit(lo=-1, hi=1)],
+            semantic_labels={"root": "missing"},
         )
-        assert skeleton.num_dofs == 6
 
 
-class TestJointLimit:
-    """Tests for JointLimit model."""
-
-    def test_valid_limit(self):
-        """Test valid joint limit creation."""
-        limit = JointLimit(lower=-0.5, upper=0.5)
-        assert limit.lower == -0.5
-        assert limit.upper == 0.5
-
-    def test_limit_order_valid(self):
-        """Test valid limit order."""
-        limit = JointLimit(lower=-0.5, upper=0.5)
-        assert limit.check_limit_order()
-
-    def test_limit_order_invalid(self):
-        """Test that invalid limit order raises error."""
-        with pytest.raises(ValueError, match="Lower limit must be"):
-            JointLimit(lower=0.5, upper=-0.5)
-
-    def test_optional_limits(self):
-        """Test optional limits."""
-        limit = JointLimit()
-        assert limit.lower is None
-        assert limit.upper is None
-
-
-# =============================================================================
-# Joint Trajectory Tests
-# =============================================================================
-
-
-class TestJointStateFrame:
-    """Tests for JointStateFrame model."""
-
-    def test_valid_frame(self):
-        """Test valid joint state frame creation."""
-        frame = JointStateFrame(timestamp=0.0, q=[0.0, 0.1, 0.2])
-        assert frame.num_dofs == 3
-
-    def test_frame_with_velocities(self):
-        """Test frame with velocities."""
-        frame = JointStateFrame(
-            timestamp=0.0,
-            q=[0.0, 0.1, 0.2],
-            qdot=[0.01, 0.02, 0.03],
+def test_skeleton_rig_rejects_unknown_end_effector() -> None:
+    with pytest.raises(ValidationError):
+        SkeletonRig(
+            joint_names=["a"],
+            parents=[-1],
+            tpose_offsets=[(0, 0, 0)],
+            axes=[JointAxis.from_cardinal("Z")],
+            limits=[JointLimit(lo=-1, hi=1)],
+            end_effectors=["missing"],
         )
-        assert frame.qdot == [0.01, 0.02, 0.03]
 
-    def test_frame_with_accelerations(self):
-        """Test frame with accelerations."""
-        frame = JointStateFrame(
-            timestamp=0.0,
-            q=[0.0, 0.1, 0.2],
-            qdot=[0.01, 0.02, 0.03],
-            qddot=[0.001, 0.002, 0.003],
+
+# ---------------------------------------------------------------------------
+# JointStateFrame / JointTrajectory
+# ---------------------------------------------------------------------------
+
+
+def test_joint_state_frame_optional_derivs() -> None:
+    f = JointStateFrame(q=[0.0, 0.0], timestamp=0.0)
+    assert f.qdot is None and f.qddot is None
+
+
+def test_joint_state_frame_rejects_qdot_length_mismatch() -> None:
+    with pytest.raises(ValidationError):
+        JointStateFrame(q=[0.0, 0.0], qdot=[0.0], timestamp=0.0)
+
+
+def test_joint_state_frame_rejects_qddot_length_mismatch() -> None:
+    with pytest.raises(ValidationError):
+        JointStateFrame(q=[0.0, 0.0], qddot=[0.0], timestamp=0.0)
+
+
+def test_joint_state_frame_rejects_non_finite() -> None:
+    with pytest.raises(ValidationError):
+        JointStateFrame(q=[math.nan], timestamp=0.0)
+    with pytest.raises(ValidationError):
+        JointStateFrame(q=[0.0], qdot=[math.inf], timestamp=0.0)
+    with pytest.raises(ValidationError):
+        JointStateFrame(q=[0.0], qddot=[math.inf], timestamp=0.0)
+
+
+def test_joint_state_frame_rejects_empty_q() -> None:
+    with pytest.raises(ValidationError):
+        JointStateFrame(q=[], timestamp=0.0)
+
+
+def test_joint_trajectory_valid() -> None:
+    rig = make_skeleton_rig(n_joints=3)
+    jt = make_joint_trajectory(rig, n_frames=5)
+    assert len(jt.frames) == 5
+
+
+def test_joint_trajectory_rejects_dof_mismatch() -> None:
+    rig = make_skeleton_rig(n_joints=3)
+    bad_frame = JointStateFrame(q=[0.0, 0.0], timestamp=0.0)
+    with pytest.raises(ValidationError):
+        JointTrajectory(frames=[bad_frame], rig=rig)
+
+
+def test_joint_trajectory_rejects_non_monotonic() -> None:
+    rig = make_skeleton_rig(n_joints=2)
+    f0 = JointStateFrame(q=[0.0, 0.0], timestamp=1.0)
+    f1 = JointStateFrame(q=[0.0, 0.0], timestamp=0.0)
+    with pytest.raises(ValidationError):
+        JointTrajectory(frames=[f0, f1], rig=rig)
+
+
+# ---------------------------------------------------------------------------
+# MotionTrajectory
+# ---------------------------------------------------------------------------
+
+
+def test_motion_trajectory_valid() -> None:
+    mt = make_motion_trajectory()
+    assert mt.markers is not None
+    assert mt.rig.n_joints == 6
+
+
+def test_motion_trajectory_rejects_rig_mismatch() -> None:
+    rig_a = make_skeleton_rig(n_joints=3)
+    rig_b = make_skeleton_rig(n_joints=4)
+    jt = make_joint_trajectory(rig_b, n_frames=2)
+    prov = make_provenance()
+    with pytest.raises(ValidationError):
+        MotionTrajectory(rig=rig_a, joint_trajectory=jt, provenance=prov)
+
+
+# ---------------------------------------------------------------------------
+# CostWeights
+# ---------------------------------------------------------------------------
+
+
+def test_cost_weights_default_empty() -> None:
+    cw = CostWeights()
+    assert cw.weights == {}
+
+
+def test_cost_weights_valid() -> None:
+    cw = CostWeights(weights={"track": 1.5, "smooth": 0.0})
+    assert cw.weights["track"] == 1.5
+
+
+def test_cost_weights_rejects_negative() -> None:
+    with pytest.raises(ValidationError):
+        CostWeights(weights={"x": -0.1})
+
+
+def test_cost_weights_rejects_non_finite() -> None:
+    with pytest.raises(ValidationError):
+        CostWeights(weights={"x": math.inf})
+
+
+# ---------------------------------------------------------------------------
+# MotionMatchingRequest
+# ---------------------------------------------------------------------------
+
+
+def test_motion_matching_request_valid() -> None:
+    req = MotionMatchingRequest(
+        reference=make_motion_trajectory(),
+        cost_weights=CostWeights(weights={"track": 1.0}),
+        time_horizon=1.5,
+        engine=EngineType.MUJOCO,
+    )
+    assert req.engine == EngineType.MUJOCO
+
+
+def test_motion_matching_request_optional_horizon() -> None:
+    req = MotionMatchingRequest(
+        reference=make_motion_trajectory(),
+        cost_weights=CostWeights(),
+        engine=EngineType.DRAKE,
+    )
+    assert req.time_horizon is None
+
+
+@pytest.mark.parametrize("bad", [0.0, -1.0, math.inf, math.nan])
+def test_motion_matching_request_rejects_bad_horizon(bad: float) -> None:
+    with pytest.raises(ValidationError):
+        MotionMatchingRequest(
+            reference=make_motion_trajectory(),
+            cost_weights=CostWeights(),
+            time_horizon=bad,
+            engine=EngineType.PINOCCHIO,
         )
-        assert frame.qddot == [0.001, 0.002, 0.003]
-
-    def test_dimension_mismatch(self):
-        """Test that dimension mismatch raises error."""
-        with pytest.raises(ValueError, match="matching_dimensions"):
-            JointStateFrame(
-                timestamp=0.0,
-                q=[0.0, 0.1, 0.2],
-                qdot=[0.01, 0.02],  # Different length
-            )
-
-    def test_nan_values(self):
-        """Test that NaN values raise error."""
-        with pytest.raises(ValueError, match="finite"):
-            JointStateFrame(timestamp=0.0, q=[float("nan"), 0.1, 0.2])
 
 
-class TestJointTrajectory:
-    """Tests for JointTrajectory model."""
-
-    def test_valid_trajectory(self, sample_joint_trajectory: JointTrajectory):
-        """Test valid joint trajectory creation."""
-        assert sample_joint_trajectory.id == "traj_001"
-        assert sample_joint_trajectory.num_frames == 3
-        assert sample_joint_trajectory.duration > 0
-
-    def test_dof_consistency(self, sample_skeleton: SkeletonRig):
-        """Test DOF consistency validation."""
-        frames = [
-            JointStateFrame(timestamp=0.0, q=[0.0] * sample_skeleton.num_dofs),
-            JointStateFrame(timestamp=0.033, q=[0.0] * (sample_skeleton.num_dofs + 1)),  # Wrong DOF
-        ]
-        with pytest.raises(ValueError, match="DOFs"):
-            JointTrajectory(id="traj_001", skeleton=sample_skeleton, frames=frames)
+# ---------------------------------------------------------------------------
+# TorqueTrajectory / MuscleActivationTrajectory
+# ---------------------------------------------------------------------------
 
 
-# =============================================================================
-# Motion Trajectory Tests
-# =============================================================================
+def test_torque_trajectory_valid() -> None:
+    tt = TorqueTrajectory(
+        frames=[(0.0, [0.0, 0.0]), (0.1, [1.0, -1.0])],
+        rig_joint_names=["a", "b"],
+    )
+    assert len(tt.frames) == 2
 
 
-class TestMotionTrajectory:
-    """Tests for MotionTrajectory model."""
-
-    def test_valid_motion(self, sample_motion_trajectory: MotionTrajectory):
-        """Test valid motion trajectory creation."""
-        assert sample_motion_trajectory.id == "motion_001"
-        assert sample_motion_trajectory.sport == "golf"
-        assert sample_motion_trajectory.club == "driver"
-
-    def test_skeleton_mismatch(self, sample_skeleton: SkeletonRig, sample_joint_trajectory: JointTrajectory):
-        """Test that skeleton mismatch raises error."""
-        other_skeleton = SkeletonRig(
-            id="other_skeleton",
-            joints={"pelvis": JointDef(name="pelvis")},
-            root_joint="pelvis",
+def test_torque_trajectory_rejects_dim_mismatch() -> None:
+    with pytest.raises(ValidationError):
+        TorqueTrajectory(
+            frames=[(0.0, [0.0])],
+            rig_joint_names=["a", "b"],
         )
-        with pytest.raises(ValueError, match="does not match"):
-            MotionTrajectory(
-                id="motion_001",
-                skeleton=other_skeleton,
-                trajectory=sample_joint_trajectory,
-            )
 
 
-# =============================================================================
-# Motion Matching Tests
-# =============================================================================
-
-
-class TestMotionMatchingRequest:
-    """Tests for MotionMatchingRequest model."""
-
-    def test_request_with_trajectory(self, sample_motion_trajectory: MotionTrajectory):
-        """Test request with trajectory target."""
-        request = MotionMatchingRequest(
-            id="request_001",
-            target_trajectory=sample_motion_trajectory,
-            skeleton=sample_motion_trajectory.skeleton,
+def test_torque_trajectory_rejects_non_monotonic() -> None:
+    with pytest.raises(ValidationError):
+        TorqueTrajectory(
+            frames=[(1.0, [0.0]), (0.0, [0.0])],
+            rig_joint_names=["a"],
         )
-        assert request.id == "request_001"
-
-    def test_request_without_target(self, sample_skeleton: SkeletonRig):
-        """Test that missing target raises error."""
-        with pytest.raises(ValueError, match="at least one target"):
-            MotionMatchingRequest(id="request_001", skeleton=sample_skeleton)
 
 
-class TestMotionMatchingResult:
-    """Tests for MotionMatchingResult model."""
-
-    def test_successful_result(self):
-        """Test successful result creation."""
-        result = MotionMatchingResult(
-            request_id="request_001",
-            success=True,
-            error_metrics={"rmse": 0.05, "max_error": 0.1},
-            iterations=10,
-            solve_time=0.5,
+def test_torque_trajectory_rejects_non_finite() -> None:
+    with pytest.raises(ValidationError):
+        TorqueTrajectory(
+            frames=[(0.0, [math.inf])],
+            rig_joint_names=["a"],
         )
-        assert result.success
-        assert result.iterations == 10
 
-    def test_failed_result(self):
-        """Test failed result creation."""
-        result = MotionMatchingResult(
-            request_id="request_001",
-            success=False,
-            message="Solver did not converge",
+
+def test_muscle_activation_valid() -> None:
+    m = MuscleActivationTrajectory(
+        frames=[(0.0, [0.0, 1.0]), (0.1, [0.5, 0.5])],
+        muscle_names=["m1", "m2"],
+    )
+    assert m.muscle_names[0] == "m1"
+
+
+def test_muscle_activation_rejects_out_of_range() -> None:
+    with pytest.raises(ValidationError):
+        MuscleActivationTrajectory(
+            frames=[(0.0, [1.5])],
+            muscle_names=["m1"],
         )
-        assert not result.success
-        assert "not converge" in result.message
-
-    def test_negative_solve_time(self):
-        """Test that negative solve time raises error."""
-        with pytest.raises(ValueError, match="greater than or equal to 0"):
-            MotionMatchingResult(request_id="request_001", success=True, solve_time=-1.0)
 
 
-# =============================================================================
-# Serialization Tests
-# =============================================================================
-
-
-class TestSerialization:
-    """Tests for serialization/deserialization."""
-
-    def test_serialize_calibration(self, sample_calibration: Calibration):
-        """Test calibration serialization."""
-        json_str = serialize_model(sample_calibration)
-        assert isinstance(json_str, str)
-        data = json.loads(json_str)
-        assert data["id"] == "calib_001"
-
-    def test_roundtrip_calibration(self, sample_calibration: Calibration):
-        """Test calibration round-trip."""
-        json_str = serialize_model(sample_calibration)
-        restored = deserialize_model(json_str, Calibration)
-        assert restored.id == sample_calibration.id
-        assert restored.source_fps == sample_calibration.source_fps
-
-    def test_serialize_motion(self, sample_motion_trajectory: MotionTrajectory):
-        """Test motion trajectory serialization."""
-        json_str = serialize_model(sample_motion_trajectory)
-        data = json.loads(json_str)
-        assert data["id"] == "motion_001"
-        assert data["sport"] == "golf"
-
-    def test_save_load_file(self, sample_calibration: Calibration):
-        """Test save/load to file."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            path = Path(tmpdir) / "calibration.json"
-            save_model(sample_calibration, path)
-            assert path.exists()
-            restored = load_model(path, Calibration)
-            assert restored.id == sample_calibration.id
-
-
-# =============================================================================
-# Marker Tests
-# =============================================================================
-
-
-class TestMarker:
-    """Tests for Marker model."""
-
-    def test_valid_marker(self):
-        """Test valid marker creation."""
-        marker = Marker(name="LASI", x=0.1, y=0.2, z=0.3)
-        assert marker.name == "LASI"
-        assert marker.x == 0.1
-
-    def test_marker_with_residual(self):
-        """Test marker with residual."""
-        marker = Marker(name="LASI", x=0.1, y=0.2, z=0.3, residual=0.5)
-        assert marker.residual == 0.5
-
-    def test_negative_residual(self):
-        """Test that negative residual raises error."""
-        with pytest.raises(ValueError, match="greater than or equal to 0"):
-            Marker(name="LASI", x=0.1, y=0.2, z=0.3, residual=-0.1)
-
-
-class TestMarkerFrame:
-    """Tests for MarkerFrame model."""
-
-    def test_valid_frame(self):
-        """Test valid marker frame creation."""
-        frame = MarkerFrame(
-            timestamp=0.0,
-            markers={
-                "LASI": Marker(name="LASI", x=0.1, y=0.2, z=0.3),
-                "RASI": Marker(name="RASI", x=0.2, y=0.2, z=0.3),
-            },
+def test_muscle_activation_rejects_duplicate_names() -> None:
+    with pytest.raises(ValidationError):
+        MuscleActivationTrajectory(
+            frames=[(0.0, [0.0, 0.0])],
+            muscle_names=["m1", "m1"],
         )
-        assert frame.num_markers == 2
 
-    def test_marker_names(self):
-        """Test marker names property."""
-        frame = MarkerFrame(
-            timestamp=0.0,
-            markers={"LASI": Marker(name="LASI", x=0.1, y=0.2, z=0.3)},
+
+def test_muscle_activation_rejects_dim_mismatch() -> None:
+    with pytest.raises(ValidationError):
+        MuscleActivationTrajectory(
+            frames=[(0.0, [0.0])],
+            muscle_names=["m1", "m2"],
         )
-        assert "LASI" in frame.marker_names
 
 
-class TestMarkerTrajectory:
-    """Tests for MarkerTrajectory model."""
-
-    def test_valid_trajectory(self):
-        """Test valid marker trajectory creation."""
-        frames = [
-            MarkerFrame(timestamp=0.0, markers={"LASI": Marker(name="LASI", x=0.1, y=0.2, z=0.3)}),
-            MarkerFrame(timestamp=0.033, markers={"LASI": Marker(name="LASI", x=0.11, y=0.21, z=0.31)}),
-        ]
-        traj = MarkerTrajectory(id="traj_001", frames=frames)
-        assert traj.num_frames == 2
-        assert traj.duration > 0
+def test_muscle_activation_rejects_non_monotonic() -> None:
+    with pytest.raises(ValidationError):
+        MuscleActivationTrajectory(
+            frames=[(1.0, [0.0]), (0.0, [0.0])],
+            muscle_names=["m1"],
+        )
 
 
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+# ---------------------------------------------------------------------------
+# ResidualReport / MotionMatchingResult
+# ---------------------------------------------------------------------------
+
+
+def test_residual_report_valid() -> None:
+    r = ResidualReport(
+        per_joint_rmse={"a": 0.1, "b": 0.2},
+        aggregate_rmse=0.15,
+        notes="ok",
+    )
+    assert r.aggregate_rmse == 0.15
+
+
+def test_residual_report_rejects_negative_per_joint() -> None:
+    with pytest.raises(ValidationError):
+        ResidualReport(per_joint_rmse={"a": -1.0}, aggregate_rmse=0.0)
+
+
+def test_residual_report_rejects_non_finite_aggregate() -> None:
+    with pytest.raises(ValidationError):
+        ResidualReport(per_joint_rmse={}, aggregate_rmse=math.nan)
+
+
+def test_residual_report_rejects_negative_aggregate() -> None:
+    with pytest.raises(ValidationError):
+        ResidualReport(per_joint_rmse={}, aggregate_rmse=-1.0)
+
+
+def test_motion_matching_result_requires_at_least_one_control() -> None:
+    rig = make_skeleton_rig(n_joints=2)
+    jt = make_joint_trajectory(rig, n_frames=2)
+    with pytest.raises(ValidationError):
+        MotionMatchingResult(
+            tracked=jt,
+            torques=None,
+            activations=None,
+            residuals=ResidualReport(per_joint_rmse={}, aggregate_rmse=0.0),
+            provenance=make_provenance(),
+        )
+
+
+def test_motion_matching_result_with_torques() -> None:
+    rig = make_skeleton_rig(n_joints=2)
+    jt = make_joint_trajectory(rig, n_frames=2)
+    tt = TorqueTrajectory(
+        frames=[(0.0, [0.0, 0.0])],
+        rig_joint_names=rig.joint_names,
+    )
+    res = MotionMatchingResult(
+        tracked=jt,
+        torques=tt,
+        residuals=ResidualReport(per_joint_rmse={}, aggregate_rmse=0.0),
+        provenance=make_provenance(),
+    )
+    assert res.torques is not None and res.activations is None
+
+
+def test_motion_matching_result_with_activations() -> None:
+    rig = make_skeleton_rig(n_joints=2)
+    jt = make_joint_trajectory(rig, n_frames=2)
+    act = MuscleActivationTrajectory(
+        frames=[(0.0, [0.5])],
+        muscle_names=["biceps"],
+    )
+    res = MotionMatchingResult(
+        tracked=jt,
+        activations=act,
+        residuals=ResidualReport(per_joint_rmse={}, aggregate_rmse=0.0),
+        provenance=make_provenance(),
+    )
+    assert res.activations is not None
+
+
+# ---------------------------------------------------------------------------
+# Provenance
+# ---------------------------------------------------------------------------
+
+
+def test_provenance_default_factory_created_at() -> None:
+    p = Provenance(software_version="0.1.0")
+    assert p.created_at is not None
+    assert p.sport == "golf"
+
+
+# ---------------------------------------------------------------------------
+# JSON round-trips
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "obj",
+    [
+        make_calibration(),
+        make_keypoint_sequence(n_frames=3, n_points=4, schema=KeypointSchema.CUSTOM),
+        make_marker_trajectory(n_frames=3),
+        make_skeleton_rig(n_joints=4),
+        make_motion_trajectory(),
+        CostWeights(weights={"a": 1.0, "b": 0.0}),
+        ResidualReport(per_joint_rmse={"a": 0.1}, aggregate_rmse=0.1),
+        Provenance(software_version="1.2.3"),
+        TorqueTrajectory(frames=[(0.0, [0.0])], rig_joint_names=["x"]),
+        MuscleActivationTrajectory(frames=[(0.0, [0.0])], muscle_names=["m1"]),
+    ],
+)
+def test_json_round_trip(obj: object) -> None:
+    cls = type(obj)
+    raw = obj.model_dump_json()  # type: ignore[attr-defined]
+    restored = cls.model_validate_json(raw)  # type: ignore[attr-defined]
+    assert restored == obj
+
+
+def test_motion_matching_request_round_trip() -> None:
+    req = MotionMatchingRequest(
+        reference=make_motion_trajectory(),
+        cost_weights=CostWeights(weights={"track": 1.0}),
+        time_horizon=1.0,
+        engine=EngineType.MUJOCO,
+    )
+    raw = req.model_dump_json()
+    assert MotionMatchingRequest.model_validate_json(raw) == req
+
+
+def test_motion_matching_result_round_trip() -> None:
+    rig = make_skeleton_rig(n_joints=2)
+    jt = make_joint_trajectory(rig, n_frames=2)
+    tt = TorqueTrajectory(frames=[(0.0, [0.0, 0.0])], rig_joint_names=rig.joint_names)
+    res = MotionMatchingResult(
+        tracked=jt,
+        torques=tt,
+        residuals=ResidualReport(per_joint_rmse={}, aggregate_rmse=0.0),
+        provenance=make_provenance(),
+    )
+    raw = res.model_dump_json()
+    assert MotionMatchingResult.model_validate_json(raw) == res

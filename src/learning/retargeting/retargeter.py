@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
@@ -13,6 +14,8 @@ import numpy as np
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
+
+    from src.shared.python.motion_pipeline import SkeletonRig
 
 
 def _squared_euclidean_error(
@@ -52,6 +55,12 @@ class SkeletonConfig:
 
     def __post_init__(self) -> None:
         """Validate skeleton configuration."""
+        warnings.warn(
+            "SkeletonConfig is deprecated; use "
+            "src.shared.python.motion_pipeline.SkeletonRig instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         n_joints = len(self.joint_names)
 
         if len(self.parent_indices) != n_joints:
@@ -128,6 +137,68 @@ class SkeletonConfig:
             idx = self.parent_indices[idx]
 
         return chain
+
+    def to_skeleton_rig(self) -> SkeletonRig:
+        """Build the canonical motion-pipeline ``SkeletonRig`` from this config.
+
+        Adapter for incremental migration to
+        ``src.shared.python.motion_pipeline.SkeletonRig``. Defaults are
+        applied for axes / limits if absent (z-axis, +/- pi).
+        """
+        # Lazy import avoids a circular dependency at module load.
+        import math
+
+        from src.shared.python.motion_pipeline import (
+            JointAxis,
+            JointLimit,
+            SkeletonRig as _SkeletonRig,
+        )
+
+        n = len(self.joint_names)
+        offsets = [
+            (
+                float(self.joint_offsets[i, 0]),
+                float(self.joint_offsets[i, 1]),
+                float(self.joint_offsets[i, 2]),
+            )
+            for i in range(n)
+        ]
+        if self.joint_axes is None:
+            axes = [JointAxis.from_cardinal("Z") for _ in range(n)]
+        else:
+            axes = []
+            for i in range(n):
+                vec = (
+                    float(self.joint_axes[i, 0]),
+                    float(self.joint_axes[i, 1]),
+                    float(self.joint_axes[i, 2]),
+                )
+                norm = math.sqrt(sum(c * c for c in vec))
+                if norm == 0.0:
+                    axes.append(JointAxis.from_cardinal("Z"))
+                else:
+                    axes.append(
+                        JointAxis(vector=(vec[0] / norm, vec[1] / norm, vec[2] / norm))
+                    )
+        if self.joint_limits is None:
+            limits = [JointLimit(lo=-math.pi, hi=math.pi) for _ in range(n)]
+        else:
+            limits = [
+                JointLimit(
+                    lo=float(self.joint_limits[i, 0]),
+                    hi=float(self.joint_limits[i, 1]),
+                )
+                for i in range(n)
+            ]
+        return _SkeletonRig(
+            joint_names=list(self.joint_names),
+            parents=list(self.parent_indices),
+            tpose_offsets=offsets,
+            axes=axes,
+            limits=limits,
+            semantic_labels=dict(self.semantic_labels),
+            end_effectors=list(self.end_effectors),
+        )
 
     @classmethod
     def create_humanoid(cls) -> SkeletonConfig:
