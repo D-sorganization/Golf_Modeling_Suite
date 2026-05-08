@@ -9,8 +9,8 @@ function target = load_club_target_c3d(c3d_path, opts)
 %   CLUB_IK_SPEC.md §"Implementation notes".  This avoids duplicating the
 %   C3D parser in MATLAB.
 %
-%   Marker mapping: the Gears C3D file in
-%   src/engines/.../matlab/Data/Gears C3D Files/ has not previously been
+%   Marker mapping: the cluster-marker C3D files in
+%   src/engines/.../matlab/Data/Mocap C3D Files/ have not previously been
 %   parsed.  This loader uses a heuristic to identify butt and clubhead:
 %     - Preferred: explicit names (case-insensitive substring match) for
 %       "butt", "grip" (-> butt) and "head", "club" (-> clubhead).
@@ -50,17 +50,17 @@ function target = load_club_target_c3d(c3d_path, opts)
     log_info(opts, "C3D markers present: %s", strjoin(present_markers, ", "));
 
     [~, fname_only, fext_only] = fileparts(c3d_path);
-    is_gears = is_gears_schema(strcat(fname_only, fext_only), present_markers);
+    has_clusters = has_marker_clusters(strcat(fname_only, fext_only), present_markers);
 
-    if is_gears
-        log_info(opts, "Detected Gears C3D schema; using cluster pose pipeline");
-        [butt_m, clubhead_m, club_quat] = extract_gears_pose(marker_xyz, ...
-                                                             present_markers, opts);
+    if has_clusters
+        log_info(opts, "Detected cluster-marker C3D schema; using cluster pose pipeline");
+        [butt_m, clubhead_m, club_quat] = extract_cluster_club_pose(marker_xyz, ...
+                                                                    present_markers, opts);
         keep = all(isfinite(butt_m), 2) & all(isfinite(clubhead_m), 2) & ...
                all(isfinite(club_quat), 2);
         if nnz(keep) < 5
             error("load_club_target_c3d:tooFewValidFrames", ...
-                  "Only %d valid Gears frames after cluster pose", nnz(keep));
+                  "Only %d valid cluster-pose frames after extraction", nnz(keep));
         end
         butt_m     = butt_m(keep, :);
         clubhead_m = clubhead_m(keep, :);
@@ -301,25 +301,25 @@ function quats = shaft_vector_to_quaternion(butt, head)
 end
 
 
-function tf = is_gears_schema(filename, marker_labels)
-%IS_GEARS_SCHEMA  True if the C3D file follows the Gears convention.
-%   See gears_marker_map.m for the validated schema.
+function tf = has_marker_clusters(filename, marker_labels)
+%HAS_MARKER_CLUSTERS  True if the C3D file follows the cluster-marker convention.
+%   See cluster_marker_map.m for the validated schema.
     fname_lower = lower(string(filename));
     if startsWith(fname_lower, "c3dexport")
         tf = true;
         return;
     end
-    map = gears_marker_map();
+    map = cluster_marker_map();
     tf = any(marker_labels == map.clubhead_cluster(1));
 end
 
 
-function [butt_m, clubhead_m, club_quat] = extract_gears_pose(marker_xyz, ...
-                                                              present_markers, opts)
-%EXTRACT_GEARS_POSE  Compute butt/clubhead centroids + club_quat from Gears
-%   marker clusters using a Procrustes/SVD rigid-body pose against the
+function [butt_m, clubhead_m, club_quat] = extract_cluster_club_pose(marker_xyz, ...
+                                                                     present_markers, opts)
+%EXTRACT_CLUSTER_CLUB_POSE  Compute butt/clubhead centroids + club_quat from
+%   rigid marker clusters using a Procrustes/SVD rigid-body pose against the
 %   address-frame reference, with Y-up -> Z-up conversion.
-    map = gears_marker_map();
+    map = cluster_marker_map();
 
     head_idx = find_cluster(present_markers, map.clubhead_cluster);
     grip_idx = find_cluster(present_markers, map.grip_cluster);
@@ -343,7 +343,7 @@ function [butt_m, clubhead_m, club_quat] = extract_gears_pose(marker_xyz, ...
     end
     if address == 0
         error("load_club_target_c3d:noCleanAddressFrame", ...
-              "No frame where all Gears cluster markers are simultaneously finite");
+              "No frame where all required cluster markers are simultaneously finite");
     end
 
     % Reshape to (3 markers x 3 xyz x N frames) for pose_from_cluster.
@@ -390,7 +390,7 @@ function idx = find_cluster(present_markers, cluster_names)
         m = find(present_markers == cluster_names(i), 1, "first");
         if isempty(m)
             error("load_club_target_c3d:missingClusterMarker", ...
-                  "Required Gears cluster marker '%s' not found", cluster_names(i));
+                  "Required cluster marker '%s' not found", cluster_names(i));
         end
         idx(i) = m;
     end

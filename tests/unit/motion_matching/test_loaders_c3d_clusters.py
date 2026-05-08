@@ -1,7 +1,7 @@
-"""Validated Gears C3D marker-map regression tests (issue #013 follow-up).
+"""Validated cluster-marker C3D regression tests (issue #013 follow-up).
 
 The schema and impact-speed targets here come from external validation of
-the two Gears mocap files via ``ezc3d`` 1.7.0:
+the two cluster-marker mocap files via ``ezc3d`` 1.7.0:
 
 * ``C3DExport Tour average.c3d``   -- driver, 114.2 mph at frame 475 / t=1.319 s.
 * ``C3DExport tour average iron.c3d`` -- iron, 88.6 mph at frame 478 / t=1.331 s.
@@ -18,10 +18,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 from src.shared.python.motion_matching.club_target import AlignOptions, ClubTarget
-from src.shared.python.motion_matching.loaders._gears import (
+from src.shared.python.motion_matching.loaders._marker_clusters import (
     EXCLUDED_MARKERS,
     fill_short_gaps,
-    is_gears_schema,
+    has_marker_clusters,
     pose_from_cluster,
     y_up_to_z_up,
     y_up_to_z_up_rotation,
@@ -36,7 +36,7 @@ from src.shared.python.motion_matching.loaders import c3d as c3d_loader  # noqa:
 from ._fixtures import repo_root  # noqa: E402
 
 C3D_DIR = (
-    "src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/Data/Gears C3D Files"
+    "src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/Data/Mocap C3D Files"
 )
 DRIVER_FILE = "C3DExport Tour average.c3d"
 IRON_FILE = "C3DExport tour average iron.c3d"
@@ -72,14 +72,14 @@ def _max_clubhead_speed_mph(target: ClubTarget) -> float:
 # ---------------------------------------------------------------------------
 
 
-def test_is_gears_schema_detects_filename_prefix() -> None:
-    assert is_gears_schema("C3DExport Tour average.c3d", ["foo"])
-    assert is_gears_schema("c3dexport_iron.c3d", [])
+def test_has_marker_clusters_detects_filename_prefix() -> None:
+    assert has_marker_clusters("C3DExport Tour average.c3d", ["foo"])
+    assert has_marker_clusters("c3dexport_iron.c3d", [])
 
 
-def test_is_gears_schema_detects_marker_label() -> None:
-    assert is_gears_schema("anything.c3d", ["Marker_2:2:1", "BUTT"])
-    assert not is_gears_schema("anything.c3d", ["BUTT", "CH"])
+def test_has_marker_clusters_detects_marker_label() -> None:
+    assert has_marker_clusters("anything.c3d", ["Marker_2:2:1", "BUTT"])
+    assert not has_marker_clusters("anything.c3d", ["BUTT", "CH"])
 
 
 def test_excluded_markers_listed() -> None:
@@ -158,7 +158,7 @@ def test_units_metres_no_inch_conversion() -> None:
 
 
 @pytest.mark.integration
-def test_loads_gears_driver_returns_canonical_target() -> None:
+def test_loads_cluster_driver_returns_canonical_target() -> None:
     p = _c3d(DRIVER_FILE)
     if p is None:
         pytest.skip(f"Missing {DRIVER_FILE}")
@@ -171,7 +171,7 @@ def test_loads_gears_driver_returns_canonical_target() -> None:
 
 
 @pytest.mark.integration
-def test_loads_gears_iron_returns_canonical_target() -> None:
+def test_loads_cluster_iron_returns_canonical_target() -> None:
     p = _c3d(IRON_FILE)
     if p is None:
         pytest.skip(f"Missing {IRON_FILE}")

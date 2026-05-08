@@ -5,7 +5,7 @@ from __future__ import annotations
 import typing
 from pathlib import Path
 
-from dtack.utils.gears_parser import GearsParser
+from dtack.utils.mat_dataset_parser import MatDatasetParser
 
 from src.shared.python.logging_pkg.logging_config import get_logger
 
@@ -117,7 +117,7 @@ class MATLABImporter:
 
     @staticmethod
     def load_gpcap(file_path: Path | str) -> dict[str, npt.NDArray[np.float64]]:
-        """Load Gears capture file (.gpcap).
+        """Load proprietary mocap-capture file (.gpcap).
 
         Args:
             file_path: Path to .gpcap file
@@ -129,5 +129,5 @@ class MATLABImporter:
             RuntimeError: Parser not yet implemented. File format requires reverse
                 engineering.
         """
-        result = GearsParser.load(file_path)
+        result = MatDatasetParser.load(file_path)
         return dict(result)  # type: ignore[arg-type]
