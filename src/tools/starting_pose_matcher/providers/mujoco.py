@@ -159,7 +159,9 @@ class MuJoCoSkeletonProvider:
 
         if qpos is not None:
             self.data.qpos[:] = qpos
-            self._mujoco.mj_forward(self.model, self.data)
+        # Always call mj_forward to ensure kinematics are computed
+        # This is required even when qpos is None to get valid positions
+        self._mujoco.mj_forward(self.model, self.data)
 
         skeleton: Dict[str, "NDArray[np.float64]"] = {}
 
