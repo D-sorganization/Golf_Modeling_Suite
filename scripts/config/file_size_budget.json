@@ -18,6 +18,12 @@
       "owner": "@physics-core",
       "reason": "Terrain representation at 1253 lines combines mesh, elevation, and surface-material models. Split into domain submodules planned, tracked in issue #2456.",
       "expires_on": "2026-07-31"
+    },
+    {
+      "path": "src/tools/starting_pose_matcher/gui.py",
+      "owner": "@motion-tools",
+      "reason": "Relocated starting-pose matcher GUI at 2673 lines, pending #4403/#4387 decomposition.",
+      "expires_on": "2026-07-31"
     }
   ]
 }
