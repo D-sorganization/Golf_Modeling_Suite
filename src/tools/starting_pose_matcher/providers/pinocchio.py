@@ -11,7 +11,8 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import TYPE_CHECKING
-from xml.etree import ElementTree
+
+import defusedxml.ElementTree as ElementTree
 
 from src.tools.starting_pose_matcher.skeleton_provider import ProviderMetadata
 
