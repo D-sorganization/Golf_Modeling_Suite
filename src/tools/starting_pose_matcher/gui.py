@@ -2037,13 +2037,14 @@ class StartingPoseMatcher(QMainWindow):
                 p = Path(traj_path)
                 if p.exists():
                     try:
-                        self.poses[key].trajectory = load_simscape_trajectory_csv(p)
+                        trajectory = load_simscape_trajectory_csv(p)
+                        self.poses[key].trajectory = trajectory
                         self.poses[key].trajectory_frame_index = int(
                             slot_d.get("trajectory_frame_index", 0)
                         )
                         btn = self._pose_trajectory_buttons.get(key)
                         if btn is not None:
-                            btn.setText(f"✓ {len(self.poses[key].trajectory)}f")
+                            btn.setText(f"✓ {len(trajectory)}f")
                     except Exception as exc:  # noqa: BLE001
                         logger.warning("Could not reload trajectory %s: %s", p, exc)
 
