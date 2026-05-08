@@ -35,6 +35,7 @@ import json
 import logging
 import shutil
 from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 from typing import Any, cast
 
@@ -112,6 +113,17 @@ class ExportOptions:
     config_format: str = "yaml"  # yaml or json
 
 
+class BuildErrorCategory(Enum):
+    """Category of build error for proper error handling."""
+
+    NONE = "none"
+    VALIDATION = "validation"  # Bad parameters
+    IO = "io"  # Filesystem/permission errors
+    MISSING_BACKEND = "missing_backend"  # Optional dependency missing
+    MESH_GENERATION = "mesh_generation"  # Mesh generation failure
+    RUNTIME = "runtime"  # Other runtime errors
+
+
 @dataclass
 class CharacterBuildResult:
     """
@@ -137,6 +149,9 @@ class CharacterBuildResult:
 
     # Error message if failed
     error_message: str | None = None
+
+    # Error category for classification
+    error_category: BuildErrorCategory = BuildErrorCategory.NONE
 
     # Output directory (if exported)
     output_dir: Path | None = None
@@ -419,12 +434,41 @@ class CharacterBuilder:
                 mesh_result=mesh_result,
             )
 
-        except (PermissionError, OSError) as e:
-            logger.error(f"Character build failed: {e}")
+        except ValueError as e:
+            # Bad parameters - validation error
+            logger.error(f"Character build validation error: {e}")
             return CharacterBuildResult(
                 success=False,
                 params=params,
                 error_message=str(e),
+                error_category=BuildErrorCategory.VALIDATION,
+            )
+        except (PermissionError, OSError) as e:
+            # Filesystem/IO errors
+            logger.error(f"Character build IO error: {e}")
+            return CharacterBuildResult(
+                success=False,
+                params=params,
+                error_message=str(e),
+                error_category=BuildErrorCategory.IO,
+            )
+        except ImportError as e:
+            # Missing optional backend
+            logger.warning(f"Character build missing backend: {e}")
+            return CharacterBuildResult(
+                success=False,
+                params=params,
+                error_message=str(e),
+                error_category=BuildErrorCategory.MISSING_BACKEND,
+            )
+        except (KeyError, RuntimeError) as e:
+            # Mesh generation or other runtime errors
+            logger.error(f"Character build runtime error: {e}")
+            return CharacterBuildResult(
+                success=False,
+                params=params,
+                error_message=str(e),
+                error_category=BuildErrorCategory.RUNTIME,
             )
 
     def generate_urdf(
