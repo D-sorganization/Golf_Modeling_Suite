@@ -37,7 +37,8 @@ _MATCHER_PY = _PACKAGE_DIR / "gui.py"
 _WIFFLE_XLSX = (
     _REPO
     / "src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/src/apps/golf_gui"
-    / "Motion Capture Plotter" / "Wiffle_ProV1_club_3D_data.xlsx"
+    / "Motion Capture Plotter"
+    / "Wiffle_ProV1_club_3D_data.xlsx"
 )
 
 
@@ -60,6 +61,7 @@ def _load_core():
         sys.path.insert(0, repo_root_str)
     # Load via the package import so the FK shared-infra import resolves.
     import importlib
+
     return importlib.import_module("src.tools.starting_pose_matcher.core")
 
 
@@ -67,7 +69,7 @@ def _load_matcher():
     """Load the Qt UI module; skip if Qt cannot import in this env."""
     try:
         import PyQt6.QtCore  # noqa: F401
-        import matplotlib    # noqa: F401
+        import matplotlib  # noqa: F401
     except (ImportError, OSError) as exc:
         pytest.skip(f"PyQt6/matplotlib not loadable in this env: {exc}")
     if not _MATCHER_PY.exists():
@@ -77,6 +79,7 @@ def _load_matcher():
         sys.path.insert(0, repo_root_str)
     try:
         import importlib
+
         return importlib.import_module("src.tools.starting_pose_matcher.gui")
     except (ImportError, OSError) as exc:
         pytest.skip(f"matcher module failed to load: {exc}")
@@ -171,10 +174,10 @@ class TestShaftSnap:
             tx=mp_target[0] - rotated_mp[0],
             ty=mp_target[1] - rotated_mp[1],
             tz=mp_target[2] - rotated_mp[2],
-            rz=rz, pivot=tuple(mp_skel),
+            rz=rz,
+            pivot=tuple(mp_skel),
         )
-        np.testing.assert_allclose(T.apply(mp_skel[None, :])[0], mp_target,
-                                   atol=1e-9)
+        np.testing.assert_allclose(T.apply(mp_skel[None, :])[0], mp_target, atol=1e-9)
         out_dir = (T.apply(ch_skel[None, :])[0] - mp_target)[:2]
         out_dir /= np.linalg.norm(out_dir)
         tgt_dir = (ch_target - mp_target)[:2]
@@ -209,16 +212,119 @@ class TestSkeleton:
 
     def test_load_skeleton_from_json(self, core, tmp_path):
         path = tmp_path / "skel.json"
-        path.write_text(json.dumps({
-            "pose": "Test",
-            "joints": {"mp": [0.0, 0.0, 1.0], "ch": [1.0, 0.0, 0.0]},
-            "segments": [["mp", "ch"]],
-        }))
+        path.write_text(
+            json.dumps(
+                {
+                    "pose": "Test",
+                    "joints": {"mp": [0.0, 0.0, 1.0], "ch": [1.0, 0.0, 0.0]},
+                    "segments": [["mp", "ch"]],
+                }
+            )
+        )
         s = core.load_skeleton(path, "Test")
         assert s.name == "Test"
         np.testing.assert_allclose(s.joints["mp"], [0, 0, 1])
         np.testing.assert_allclose(s.joints["ch"], [1, 0, 0])
         assert s.segments == [("mp", "ch")]
+
+
+class TestSkeletonProviders:
+    def _provider_modules(self):
+        import importlib
+
+        provider = importlib.import_module(
+            "src.tools.starting_pose_matcher.skeleton_provider"
+        )
+        registry = importlib.import_module(
+            "src.tools.starting_pose_matcher.providers.registry"
+        )
+        return provider, registry
+
+    def _complete_skeleton(self, core):
+        provider, _registry = self._provider_modules()
+        joints = {
+            name: np.array([float(i), 0.0, 1.0])
+            for i, name in enumerate(provider.REQUIRED_JOINTS)
+        }
+        return core.Skeleton(
+            name="Impact",
+            joints=joints,
+            segments=[("mp", "ch")],
+        )
+
+    def test_fake_provider_conforms_to_contract(self, core):
+        provider, _registry = self._provider_modules()
+        skeleton = self._complete_skeleton(core)
+
+        class FakeProvider(provider.SkeletonProvider):
+            @property
+            def metadata(self):
+                return provider.ProviderMetadata(
+                    name="fake", engine="test", model_path="memory"
+                )
+
+            def list_poses(self):
+                return ["Impact"]
+
+            def get_skeleton(self, pose_name):
+                assert pose_name == "Impact"
+                return skeleton
+
+        fake = FakeProvider()
+        assert fake.metadata.to_session_dict() == {
+            "name": "fake",
+            "engine": "test",
+            "model_path": "memory",
+            "capabilities": [],
+        }
+        assert fake.get_default_pose() == "Impact"
+        provider.validate_required_joints(
+            fake.get_skeleton("Impact"), provider_id=fake.metadata.name
+        )
+
+    def test_registry_unavailable_backends_raise_typed_errors(self):
+        provider, registry = self._provider_modules()
+        assert "mujoco" in registry.PROVIDER_IDS
+        with pytest.raises(provider.ProviderUnavailableError) as exc_info:
+            registry.create_provider("mujoco")
+        assert exc_info.value.provider_id == "mujoco"
+        assert "backend-specific slice" in str(exc_info.value)
+
+    def test_registry_unknown_provider_is_configuration_error(self):
+        provider, registry = self._provider_modules()
+        with pytest.raises(provider.ProviderConfigurationError) as exc_info:
+            registry.create_provider("bogus")
+        assert "Unknown provider 'bogus'" in str(exc_info.value)
+
+    def test_required_vocabulary_validation_reports_missing_joint(self, core):
+        provider, _registry = self._provider_modules()
+        skeleton = self._complete_skeleton(core)
+        del skeleton.joints["torso"]
+
+        with pytest.raises(provider.ProviderValidationError) as exc_info:
+            provider.validate_required_joints(skeleton, provider_id="fake")
+        assert "torso" in str(exc_info.value)
+        assert "fake" in str(exc_info.value)
+
+    def test_simscape_json_provider_alias_and_session_metadata(self, tmp_path):
+        provider, registry = self._provider_modules()
+
+        via_registry = registry.create_provider(
+            "simscape-json",
+            json_dir=tmp_path,
+            poses=("Impact",),
+        )
+        via_alias = provider.JsonSkeletonProvider(tmp_path, poses=("Impact",))
+
+        assert isinstance(via_registry, provider.SkeletonProvider)
+        assert isinstance(via_alias, provider.SimscapeJsonSkeletonProvider)
+        assert via_registry.list_poses() == ["Impact"]
+        assert via_registry.metadata.to_session_dict() == {
+            "name": "simscape-json",
+            "engine": "simscape",
+            "model_path": str(tmp_path),
+            "capabilities": ["skeleton", "json", "fallback"],
+        }
 
 
 class TestMocapEvents:
@@ -251,7 +357,8 @@ class TestEventLabelPresets:
     def test_all_presets_cover_all_keys(self, core):
         for name, mapping in core.EVENT_LABEL_PRESETS.items():
             assert set(mapping.keys()) == set(core.EVENT_KEYS), (
-                f"Preset {name!r} missing keys; got {sorted(mapping)}")
+                f"Preset {name!r} missing keys; got {sorted(mapping)}"
+            )
 
     def test_default_preset_exists(self, core):
         assert core.DEFAULT_EVENT_PRESET in core.EVENT_LABEL_PRESETS
@@ -259,12 +366,18 @@ class TestEventLabelPresets:
 
 class TestPhaseWindows:
     def test_required_phase_keys_exist(self, core):
-        for key in ("none", "backswing", "downswing",
-                    "follow_through", "full_swing", "manual"):
-            assert key in core.PHASE_KEYS, (
-                f"Phase key {key!r} missing from PHASE_KEYS")
+        for key in (
+            "none",
+            "backswing",
+            "downswing",
+            "follow_through",
+            "full_swing",
+            "manual",
+        ):
+            assert key in core.PHASE_KEYS, f"Phase key {key!r} missing from PHASE_KEYS"
             assert key in core.PHASE_BOUNDS, (
-                f"Phase key {key!r} missing from PHASE_BOUNDS")
+                f"Phase key {key!r} missing from PHASE_BOUNDS"
+            )
 
     def test_default_phase_key_exists(self, core):
         assert core.DEFAULT_PHASE in core.PHASE_KEYS
@@ -276,7 +389,8 @@ class TestPhaseWindows:
                 if end is None or end == "manual":
                     continue
                 assert end in core.EVENT_KEYS, (
-                    f"Phase {key!r} references unknown event {end!r}")
+                    f"Phase {key!r} references unknown event {end!r}"
+                )
 
 
 class TestPhaseDisplayLabels:
@@ -331,12 +445,15 @@ class TestSkeletonTrajectory:
         assert len(t) == 0
 
     def test_frame_at_time_clamps_to_range(self, core):
-        sk = lambda v: core.Skeleton(joints={"mp": np.array([v, 0., 1.])})
+        def sk(v):
+            return core.Skeleton(joints={"mp": np.array([v, 0.0, 1.0])})
+
         t = core.SkeletonTrajectory(
             times=np.array([0.0, 0.1, 0.2, 0.3]),
-            frames=[sk(0.0), sk(0.1), sk(0.2), sk(0.3)])
+            frames=[sk(0.0), sk(0.1), sk(0.2), sk(0.3)],
+        )
         assert t.frame_at_time(-1.0) == 0
-        assert t.frame_at_time(0.0)  == 0
+        assert t.frame_at_time(0.0) == 0
         assert t.frame_at_time(0.11) == 1
         assert t.frame_at_time(0.30) == 3
         assert t.frame_at_time(99.0) == 3
@@ -344,18 +461,21 @@ class TestSkeletonTrajectory:
     def test_load_trajectory_csv_short_columns(self, core, tmp_path):
         # Build a minimal CSV with the short-form columns
         import pandas as pd
-        df = pd.DataFrame({
-            "time": np.linspace(0.0, 0.1, 11),
-            "club_head_X": np.linspace(0.0, 1.0, 11),
-            "club_head_Y": np.zeros(11),
-            "club_head_Z": np.linspace(0.5, 0.0, 11),
-            "left_hand_X": np.zeros(11),
-            "left_hand_Y": np.linspace(0.0, 0.2, 11),
-            "left_hand_Z": np.full(11, 0.8),
-            "right_hand_X": np.full(11, 0.05),
-            "right_hand_Y": np.linspace(0.0, 0.2, 11),
-            "right_hand_Z": np.full(11, 0.8),
-        })
+
+        df = pd.DataFrame(
+            {
+                "time": np.linspace(0.0, 0.1, 11),
+                "club_head_X": np.linspace(0.0, 1.0, 11),
+                "club_head_Y": np.zeros(11),
+                "club_head_Z": np.linspace(0.5, 0.0, 11),
+                "left_hand_X": np.zeros(11),
+                "left_hand_Y": np.linspace(0.0, 0.2, 11),
+                "left_hand_Z": np.full(11, 0.8),
+                "right_hand_X": np.full(11, 0.05),
+                "right_hand_Y": np.linspace(0.0, 0.2, 11),
+                "right_hand_Z": np.full(11, 0.8),
+            }
+        )
         path = tmp_path / "traj.csv"
         df.to_csv(path, index=False)
         traj = core.load_simscape_trajectory_csv(path)
@@ -368,29 +488,33 @@ class TestSkeletonTrajectory:
         # mp is synthesized as the midpoint of lw and rw
         assert "mp" in f0.joints
         np.testing.assert_allclose(
-            f0.joints["mp"],
-            (f0.joints["lw"] + f0.joints["rw"]) / 2.0, atol=1e-9)
+            f0.joints["mp"], (f0.joints["lw"] + f0.joints["rw"]) / 2.0, atol=1e-9
+        )
         # times preserved
         np.testing.assert_allclose(traj.times, df["time"].to_numpy())
 
     def test_load_trajectory_csv_long_columns(self, core, tmp_path):
         # The raw Simscape bus convention.
         import pandas as pd
-        df = pd.DataFrame({
-            "time": np.linspace(0.0, 0.05, 6),
-            "ClubLogs_CHGlobalPosition_1": np.zeros(6),
-            "ClubLogs_CHGlobalPosition_2": np.linspace(0, 1, 6),
-            "ClubLogs_CHGlobalPosition_3": np.zeros(6),
-        })
+
+        df = pd.DataFrame(
+            {
+                "time": np.linspace(0.0, 0.05, 6),
+                "ClubLogs_CHGlobalPosition_1": np.zeros(6),
+                "ClubLogs_CHGlobalPosition_2": np.linspace(0, 1, 6),
+                "ClubLogs_CHGlobalPosition_3": np.zeros(6),
+            }
+        )
         path = tmp_path / "long.csv"
         df.to_csv(path, index=False)
         traj = core.load_simscape_trajectory_csv(path)
         assert len(traj) == 6
-        np.testing.assert_allclose(traj.frames[0].joints["ch"], [0., 0., 0.])
-        np.testing.assert_allclose(traj.frames[-1].joints["ch"], [0., 1., 0.])
+        np.testing.assert_allclose(traj.frames[0].joints["ch"], [0.0, 0.0, 0.0])
+        np.testing.assert_allclose(traj.frames[-1].joints["ch"], [0.0, 1.0, 0.0])
 
     def test_load_trajectory_csv_missing_time_raises(self, core, tmp_path):
         import pandas as pd
+
         path = tmp_path / "bad.csv"
         pd.DataFrame({"x": [1, 2, 3]}).to_csv(path, index=False)
         with pytest.raises(ValueError, match="time"):
@@ -398,9 +522,11 @@ class TestSkeletonTrajectory:
 
     def test_load_trajectory_csv_no_recognised_joints_raises(self, core, tmp_path):
         import pandas as pd
+
         path = tmp_path / "junk.csv"
-        pd.DataFrame({"time": [0, 0.01], "foo_X": [1, 2],
-                      "foo_Y": [0, 0], "foo_Z": [0, 0]}).to_csv(path, index=False)
+        pd.DataFrame(
+            {"time": [0, 0.01], "foo_X": [1, 2], "foo_Y": [0, 0], "foo_Z": [0, 0]}
+        ).to_csv(path, index=False)
         with pytest.raises(ValueError, match="recognised joint"):
             core.load_simscape_trajectory_csv(path)
 
@@ -409,23 +535,31 @@ class TestSkeletonTrajectory:
         synthesises torso at 20% of the way from spine to hub (matching
         the UpperTorsoBase = 0.2 * UpperTorsoLength split in the .mdl)."""
         import pandas as pd
-        df = pd.DataFrame({
-            "time": [0.0, 0.01],
-            "spine_X": [0.0, 0.0], "spine_Y": [-0.30, -0.30], "spine_Z": [1.20, 1.20],
-            "hub_X":   [0.0, 0.0], "hub_Y":   [-0.30, -0.30], "hub_Z":   [1.45, 1.45],
-            "left_hand_X": [-0.05, -0.05], "left_hand_Y": [-0.10, -0.10],
-            "left_hand_Z": [0.85, 0.85],
-            "right_hand_X": [0.05, 0.05], "right_hand_Y": [-0.10, -0.10],
-            "right_hand_Z": [0.85, 0.85],
-        })
+
+        df = pd.DataFrame(
+            {
+                "time": [0.0, 0.01],
+                "spine_X": [0.0, 0.0],
+                "spine_Y": [-0.30, -0.30],
+                "spine_Z": [1.20, 1.20],
+                "hub_X": [0.0, 0.0],
+                "hub_Y": [-0.30, -0.30],
+                "hub_Z": [1.45, 1.45],
+                "left_hand_X": [-0.05, -0.05],
+                "left_hand_Y": [-0.10, -0.10],
+                "left_hand_Z": [0.85, 0.85],
+                "right_hand_X": [0.05, 0.05],
+                "right_hand_Y": [-0.10, -0.10],
+                "right_hand_Z": [0.85, 0.85],
+            }
+        )
         path = tmp_path / "no_torso.csv"
         df.to_csv(path, index=False)
         traj = core.load_simscape_trajectory_csv(path)
         f0 = traj.frames[0]
         assert "torso" in f0.joints, "loader should synthesise torso"
         # 20% from spine -> hub: (1.20 + 0.2 * (1.45 - 1.20)) = 1.25
-        np.testing.assert_allclose(f0.joints["torso"], [0.0, -0.30, 1.25],
-                                   atol=1e-9)
+        np.testing.assert_allclose(f0.joints["torso"], [0.0, -0.30, 1.25], atol=1e-9)
 
 
 class TestSkeletonModelling:
@@ -433,20 +567,23 @@ class TestSkeletonModelling:
 
     def test_torso_present_in_both_fallbacks(self, core, tmp_path):
         impact = core.load_skeleton(tmp_path / "x.json", "Impact")
-        top    = core.load_skeleton(tmp_path / "x.json", "TopofBackswing")
+        top = core.load_skeleton(tmp_path / "x.json", "TopofBackswing")
         assert "torso" in impact.joints, "Impact pose missing torso joint"
-        assert "torso" in top.joints,    "TopofBackswing pose missing torso joint"
+        assert "torso" in top.joints, "TopofBackswing pose missing torso joint"
 
     def test_torso_between_spine_and_hub(self, core, tmp_path):
         """Torso must lie on the line between spine and hub (along the
         body's central column)."""
         for pose in ("Impact", "TopofBackswing"):
             s = core.load_skeleton(tmp_path / "x.json", pose)
-            spine = s.joints["spine"]; torso = s.joints["torso"]; hub = s.joints["hub"]
+            spine = s.joints["spine"]
+            torso = s.joints["torso"]
+            hub = s.joints["hub"]
             # Z-coordinate strictly between spine and hub
             assert spine[2] < torso[2] < hub[2], (
                 f"{pose}: torso Z {torso[2]} not between spine {spine[2]} "
-                f"and hub {hub[2]}")
+                f"and hub {hub[2]}"
+            )
 
     def test_segments_include_full_torso_chain(self, core, tmp_path):
         s = core.load_skeleton(tmp_path / "x.json", "Impact")
@@ -466,10 +603,10 @@ class TestSkeletonModelling:
         line lies more along Y (ball direction) than X.
         """
         impact = core.load_skeleton(tmp_path / "x.json", "Impact")
-        top    = core.load_skeleton(tmp_path / "x.json", "TopofBackswing")
+        top = core.load_skeleton(tmp_path / "x.json", "TopofBackswing")
 
         sl_imp = impact.joints["rs"] - impact.joints["ls"]
-        sl_top = top.joints["rs"]    - top.joints["ls"]
+        sl_top = top.joints["rs"] - top.joints["ls"]
         # Project to XY (the twist plane).  Compute angle of each.
         ang_imp = float(np.arctan2(sl_imp[1], sl_imp[0]))
         ang_top = float(np.arctan2(sl_top[1], sl_top[0]))
@@ -479,7 +616,8 @@ class TestSkeletonModelling:
         diff_deg = min(diff_deg, 360.0 - diff_deg)
         assert diff_deg > 60.0, (
             f"shoulder line should rotate visibly between poses; "
-            f"got only {diff_deg:.1f}° change")
+            f"got only {diff_deg:.1f}° change"
+        )
 
 
 # --------------------------------------------------------------------------- #
@@ -497,8 +635,15 @@ class TestXlsxLoaders:
         _require_xlsx()
         df = core.load_mocap_xlsx(str(_WIFFLE_XLSX), "TW_ProV1")
         assert len(df) > 100
-        assert {"time", "mid_X", "mid_Y", "mid_Z",
-                "club_X", "club_Y", "club_Z"}.issubset(df.columns)
+        assert {
+            "time",
+            "mid_X",
+            "mid_Y",
+            "mid_Z",
+            "club_X",
+            "club_Y",
+            "club_Z",
+        }.issubset(df.columns)
 
     def test_load_mocap_xlsx_units_are_metres(self, core):
         """Sanity-check: median shaft length is plausible (0.7-1.4 m).
@@ -507,12 +652,15 @@ class TestXlsxLoaders:
         df = core.load_mocap_xlsx(str(_WIFFLE_XLSX), "TW_ProV1")
         shaft = np.linalg.norm(
             df[["club_X", "club_Y", "club_Z"]].values
-            - df[["mid_X", "mid_Y", "mid_Z"]].values, axis=1)
+            - df[["mid_X", "mid_Y", "mid_Z"]].values,
+            axis=1,
+        )
         finite = np.isfinite(shaft) & (shaft > 1e-3)
         median_shaft = float(np.median(shaft[finite]))
         assert 0.7 < median_shaft < 1.4, (
             f"Median shaft length {median_shaft:.3f} m suggests wrong units "
-            "(expected cm->m factor 0.01).")
+            "(expected cm->m factor 0.01)."
+        )
 
     def test_event_header_for_prov1(self, core):
         _require_xlsx()
@@ -539,6 +687,7 @@ def qapp(spm):
     """QApplication using offscreen platform for headless tests."""
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     from PyQt6.QtWidgets import QApplication
+
     app = QApplication.instance() or QApplication([])
     yield app
 
