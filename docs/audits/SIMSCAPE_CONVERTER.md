@@ -93,9 +93,7 @@ assert isinstance(result.urdf_string, str | type(None))
    Currently only the URDF *generation* is tested; whether the resulting
    URDF actually loads in MuJoCo / Drake / Pinocchio is not. **Filed as
    a follow-up under #4545.**
-2. **No `.slx` (XML format) support.** Only the legacy `.mdl` text format
-   is parsed. Modern Simscape models default to `.slx` (XML inside ZIP).
-3. **No fixtures for non-trivial models.** All current tests use
+2. **No fixtures for non-trivial models.** All current tests use
    inline MDL strings. Real Simscape exports are larger and exercise
    block-ordering and graph-traversal edge cases.
 4. **MATLAB expression evaluation** is silently elided. A model that uses
@@ -111,7 +109,6 @@ assert isinstance(result.urdf_string, str | type(None))
 | Lint clean | ✅ |
 | Unit test coverage breadth | ✅ (15 tests) |
 | MuJoCo / Drake / Pinocchio load test | ❌ Missing |
-| `.slx` format support | ❌ Missing |
 | Non-trivial fixture models | ⚠️ Limited |
 | MATLAB expression handling | ⚠️ Silent passthrough |
 
