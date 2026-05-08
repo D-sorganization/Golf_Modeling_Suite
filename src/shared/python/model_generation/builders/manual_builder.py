@@ -398,6 +398,7 @@ class ManualBuilder(BaseURDFBuilder):
         if not validation.is_valid:
             return BuildResult(
                 success=False,
+                solver_status="failure",
                 validation=validation,
                 error_message="; ".join(validation.get_error_messages()),
                 links=self._links.copy(),

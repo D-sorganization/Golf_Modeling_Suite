@@ -85,6 +85,7 @@ class MakeHumanMeshGenerator(MeshGeneratorInterface):
         if not self.is_available:
             return GeneratedMeshResult(
                 success=False,
+                solver_status="failure",
                 error_message="MakeHuman not found. Please install MakeHuman or provide path.",
             )
 
@@ -111,6 +112,7 @@ class MakeHumanMeshGenerator(MeshGeneratorInterface):
             logger.warning("MakeHuman API generation failed: %s", e)
             return GeneratedMeshResult(
                 success=False,
+                solver_status="failure",
                 error_message=f"MakeHuman generation failed: {e}",
             )
 
@@ -201,7 +203,18 @@ class MakeHumanMeshGenerator(MeshGeneratorInterface):
                     submesh.export(str(vpath))
                     mesh_paths[segment_name] = vpath
                     cpath = collision_dir / f"{segment_name}.stl"
-                    submesh.convex_hull.export(str(cpath))
+                    # Convex hull can fail (e.g. qhull QH6214) when the segment
+                    # has too few or coplanar points. Fall back to the segment
+                    # mesh itself as collision geometry — better than skipping.
+                    try:
+                        submesh.convex_hull.export(str(cpath))
+                    except (RuntimeError, ValueError, OSError) as hull_exc:
+                        logger.warning(
+                            "Convex hull failed for %s (%s); using segment mesh as collision",
+                            segment_name,
+                            hull_exc,
+                        )
+                        submesh.export(str(cpath))
                     collision_paths[segment_name] = cpath
                 except (
                     AttributeError,

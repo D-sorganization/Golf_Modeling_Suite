@@ -7,12 +7,23 @@ from typing import Any
 
 from ._mesh_makehuman import MakeHumanMeshGenerator
 from ._mesh_primitives import PrimitiveMeshGenerator
-from ._mesh_smplx import SMPLXMeshGenerator
+from ._mesh_smplx import (
+    SMPLX_AVAILABLE,
+    SMPLXMeshGenerator,
+    TRIMESH_AVAILABLE,
+    _smplx_module,
+    _trimesh_module,
+)
 from ._mesh_types import (
     GeneratedMeshResult,
     MeshGeneratorBackend,
     MeshGeneratorInterface,
 )
+
+# Availability flags and optional dependency module handles are re-exported
+# here so callers (and tests) can introspect/patch them on the public facade
+# rather than reaching into private modules. Runtime checks in _mesh_smplx
+# look these up on this module so test patches take effect. See issue #4528.
 
 __all__ = [
     "GeneratedMeshResult",
@@ -22,6 +33,10 @@ __all__ = [
     "MeshGeneratorInterface",
     "PrimitiveMeshGenerator",
     "SMPLXMeshGenerator",
+    "SMPLX_AVAILABLE",
+    "TRIMESH_AVAILABLE",
+    "_smplx_module",
+    "_trimesh_module",
 ]
 
 logger = logging.getLogger(__name__)

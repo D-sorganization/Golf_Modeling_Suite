@@ -126,6 +126,12 @@ class CharacterBuildResult:
     # Body parameters used
     params: BodyParameters
 
+    # Canonical status string ("success", "failure", "partial").
+    # Mirrors motion_matching.fit_result.CanonicalFitResult.solver_status
+    # so the URDF subsystem speaks the same vocabulary as the rest of
+    # the platform. See issue #4522.
+    solver_status: str = "success"
+
     # Generated URDF string
     urdf_xml: str | None = None
 
@@ -140,6 +146,11 @@ class CharacterBuildResult:
 
     # Output directory (if exported)
     output_dir: Path | None = None
+
+    def __post_init__(self) -> None:
+        # Derive solver_status from success if caller did not set it.
+        if not self.success and self.solver_status == "success":
+            self.solver_status = "failure"
 
     def export_urdf(  # noqa: C901
         self,
@@ -423,6 +434,7 @@ class CharacterBuilder:
             logger.error(f"Character build failed: {e}")
             return CharacterBuildResult(
                 success=False,
+                solver_status="failure",
                 params=params,
                 error_message=str(e),
             )

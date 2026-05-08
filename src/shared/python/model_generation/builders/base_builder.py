@@ -25,6 +25,12 @@ class BuildResult:
     # Whether build was successful
     success: bool
 
+    # Canonical status string ("success", "failure", "partial").
+    # Mirrors motion_matching.fit_result.CanonicalFitResult.solver_status
+    # so the URDF subsystem speaks the same vocabulary as the rest of
+    # the platform. See issue #4522.
+    solver_status: str = "success"
+
     # Generated URDF XML string
     urdf_xml: str | None = None
 
@@ -45,6 +51,11 @@ class BuildResult:
 
     # Additional metadata
     metadata: dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        # Derive solver_status from success if caller did not set it.
+        if not self.success and self.solver_status == "success":
+            self.solver_status = "failure"
 
     def get_link(self, name: str) -> Link | None:
         """Get a link by name."""
@@ -92,6 +103,7 @@ class BuildResult:
         """Convert to dictionary representation."""
         return {
             "success": self.success,
+            "solver_status": self.solver_status,
             "link_count": len(self.links),
             "joint_count": len(self.joints),
             "total_mass": self.get_total_mass(),
