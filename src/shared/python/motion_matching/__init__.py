@@ -43,6 +43,12 @@ See ``src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/motion_matching
 shared/CLUB_IK_SPEC.md`` for the canonical schema.
 """
 
+from .body_target import (
+    BODY_TARGET_SCHEMA_VERSION,
+    MAX_BODY_POSITION_NORM_M,
+    BodyEvent,
+    BodyTarget,
+)
 from .align_to_simulation_grid import (
     AlignedTrajectory,
     align_to_simulation_grid,
@@ -99,6 +105,9 @@ __all__ = [
     "ALLOWED_SHEETS",
     "AlignOptions",
     "AlignedTrajectory",
+    "BODY_TARGET_SCHEMA_VERSION",
+    "BodyEvent",
+    "BodyTarget",
     "COEFFS_PER_JOINT",
     "CanonicalFitResult",
     "ClubTarget",
@@ -108,6 +117,7 @@ __all__ = [
     "EngineSimulator",
     "FitQualityScalars",
     "FitResult",
+    "MAX_BODY_POSITION_NORM_M",
     "REGULARIZER_KINDS",
     "SimOut",
     "SimOutput",
