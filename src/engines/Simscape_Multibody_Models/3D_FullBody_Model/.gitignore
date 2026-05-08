@@ -1,0 +1,8 @@
+# Generated artifacts of the build script.  The derivative `.slx` is
+# generated-only and intentionally ignored; commit source scripts and
+# report schemas instead of committing local MATLAB build outputs.
+matlab/src/model/GolfSwing3D_FullBody.slx
+matlab/src/model/GolfSwing3D_FullBody.slxc
+matlab/src/model/slprj/
+matlab/output/
+*.autosave

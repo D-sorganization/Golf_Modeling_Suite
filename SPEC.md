@@ -38,8 +38,8 @@
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.142                                            |
-| **Last Spec Update**    | 2026-05-07 (MuJoCo pose-conditioned synth targets) |
+| **Spec Version**        | 1.0.143                                            |
+| **Last Spec Update**    | 2026-05-07 (3D full-body Simscape scaffold)        |
 
 ## 2. Purpose & Mission
 
@@ -86,6 +86,9 @@ UpstreamDrift/
 │   │   │   ├── myosuite/           # MyoSuite backend (experimental)
 │   │   │   ├── pendulum/           # Simplified educational models
 │   │   │   └── putting_green/      # Putting green simulation
+│   │   ├── Simscape_Multibody_Models/
+│   │   │   ├── 3D_Golf_Model/      # Canonical 3D Simscape golf swing model
+│   │   │   └── 3D_FullBody_Model/  # Build-from-source full-body derivative scaffold
 │   │   └── pendulum_models/        # Simplified educational models
 │   │       ├── twodof_pendulum.py
 │   │       └── biomechanical_pendulum.py
@@ -157,6 +160,7 @@ UpstreamDrift/
 | OpenSim Engine Adapter   | `src/engines/physics_engines/opensim/`   | Experimental OpenSim integration for clinical biomechanics workflows                        |
 | MyoSuite Engine Adapter  | `src/engines/physics_engines/myosuite/`  | Experimental MyoSuite integration for detailed muscle physiology simulation                 |
 | Pendulum Models          | `src/engines/physics_engines/pendulum/`  | Educational simplified models for learning and quick prototyping                            |
+| 3D Full-Body Simscape Scaffold | `src/engines/Simscape_Multibody_Models/3D_FullBody_Model/` | Build-from-source derivative of the 3D golf Simscape model with leg-chain design docs, MATLAB build scripts, generated `.slx` exclusion, and load/simulation smoke-test harness |
 | FastAPI Backend          | `src/api/`                               | REST API exposing simulation, IK/ID, trajectory optimization, and control endpoints         |
 | PyQt6 GUI                | `src/launchers/golf_launcher.py`         | Professional interactive GUI with real-time 3D visualization                                |
 | Tauri Desktop App        | `ui/`                                    | Cross-platform desktop application wrapper (Windows, macOS, Linux)                          |
@@ -192,7 +196,7 @@ Engine tier metadata is declared in each in-scope engine package with
 | F7  | FastAPI REST API                   | ✅     | Programmatic access to simulation, IK/ID, trajectory optimization, and control endpoints            |
 | F8  | PyQt6 professional GUI             | ✅     | Interactive desktop GUI with real-time 3D rendering, parameter adjustment, and result export        |
 | F9  | Tauri desktop application          | 🔄     | Cross-platform desktop app bundling the GUI and API with native OS integration                      |
-| F10 | MATLAB/Simulink integration        | ✅     | Export models to MATLAB format and integrate with Simulink via MEX interface                        |
+| F10 | MATLAB/Simulink integration        | ✅     | Export models to MATLAB format, integrate with Simulink via MEX interface, and maintain build-scripted Simscape derivative models including the 3D full-body scaffold |
 | F11 | Trajectory optimization            | ✅     | SciPy-based trajectory optimization with constraint support and custom cost functions               |
 | F12 | Muscle dynamics analysis           | ✅     | IK, ID, and muscle dynamics computation with Hill-type and Millard muscle models                    |
 | F13 | Motion capture integration         | 🔄     | Import and track motion capture data (C3D, BVH, TRC formats) and compare with simulation            |
@@ -553,6 +557,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-05-07 | 1.0.143 | Added the `3D_FullBody_Model` Simscape scaffold under `src/engines/Simscape_Multibody_Models/`, including generated `.slx` exclusion, MATLAB build/prune/validate scripts, leg-chain design documentation, copied input MAT fixtures, and a MATLAB smoke-test harness for the derivative full-body model. |
 | 2026-05-07 | 1.0.140 | Added a pure-unit OpenSim prescribed-controller boundary for polynomial torque trajectories, including validation of time grids, coefficient shapes, finite values, actuator names, parity with the canonical polynomial torque evaluator, and typed unavailable behavior before native OpenSim integration. |
 | 2026-05-07 | 1.0.134 | Moved production-readiness and testing-contract documentation out of the repository root into `reports/` and `docs/testing/`, and added a focused CI regression test for the root-clutter policy so future non-allowlisted top-level files fail under pytest before they block the shared `quality-gate`. |
 | 2026-05-06 | 1.0.125 | Added scope header comments to the generated Pinocchio `golfer.urdf` and `golfer_ik.urdf` files so forward-simulation and body-only IK workflows clearly document when the welded-club model versus the external-club-tracking model should be used. |
