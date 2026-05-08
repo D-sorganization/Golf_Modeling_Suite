@@ -28,14 +28,17 @@ import pytest
 # --------------------------------------------------------------------------- #
 
 _REPO = Path(__file__).resolve().parents[5]
-_MATCHER_DIR = (
+# New canonical location (per #4376).
+_PACKAGE_DIR = _REPO / "src" / "tools" / "starting_pose_matcher"
+_CORE_PY = _PACKAGE_DIR / "core.py"
+_MATCHER_PY = _PACKAGE_DIR / "gui.py"
+# Wiffle xlsx is still in the legacy MATLAB tree (it's a subject-specific
+# motion-capture asset, not part of the matcher's own package).
+_WIFFLE_XLSX = (
     _REPO
     / "src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/src/apps/golf_gui"
-    / "Motion Capture Plotter"
+    / "Motion Capture Plotter" / "Wiffle_ProV1_club_3D_data.xlsx"
 )
-_CORE_PY = _MATCHER_DIR / "starting_pose_core.py"
-_MATCHER_PY = _MATCHER_DIR / "starting_pose_matcher.py"
-_WIFFLE_XLSX = _MATCHER_DIR / "Wiffle_ProV1_club_3D_data.xlsx"
 
 
 def _load_module_by_path(name: str, path: Path):
@@ -51,9 +54,13 @@ def _load_module_by_path(name: str, path: Path):
 def _load_core():
     if not _CORE_PY.exists():
         pytest.skip(f"core module not found: {_CORE_PY}")
-    if str(_MATCHER_DIR) not in sys.path:
-        sys.path.insert(0, str(_MATCHER_DIR))
-    return _load_module_by_path("starting_pose_core", _CORE_PY)
+    # Repo root must be on sys.path so ``from src.shared...`` imports resolve.
+    repo_root_str = str(_REPO)
+    if repo_root_str not in sys.path:
+        sys.path.insert(0, repo_root_str)
+    # Load via the package import so the FK shared-infra import resolves.
+    import importlib
+    return importlib.import_module("src.tools.starting_pose_matcher.core")
 
 
 def _load_matcher():
@@ -65,10 +72,12 @@ def _load_matcher():
         pytest.skip(f"PyQt6/matplotlib not loadable in this env: {exc}")
     if not _MATCHER_PY.exists():
         pytest.skip(f"matcher not found: {_MATCHER_PY}")
-    if str(_MATCHER_DIR) not in sys.path:
-        sys.path.insert(0, str(_MATCHER_DIR))
+    repo_root_str = str(_REPO)
+    if repo_root_str not in sys.path:
+        sys.path.insert(0, repo_root_str)
     try:
-        return _load_module_by_path("starting_pose_matcher", _MATCHER_PY)
+        import importlib
+        return importlib.import_module("src.tools.starting_pose_matcher.gui")
     except (ImportError, OSError) as exc:
         pytest.skip(f"matcher module failed to load: {exc}")
 
