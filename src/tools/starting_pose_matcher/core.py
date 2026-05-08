@@ -76,26 +76,34 @@ logger = logging.getLogger(__name__)
 CM_TO_M = 0.01
 
 # Schema version for session JSON
-SESSION_SCHEMA_VERSION = 3   # bump: fallbacks now FK-derived (#4376)
+SESSION_SCHEMA_VERSION = 3  # bump: fallbacks now FK-derived (#4376)
 
 # Event-label conventions.
 EVENT_KEYS: tuple[str, ...] = ("A", "T", "I", "F")
 EVENT_LABEL_PRESETS: dict[str, dict[str, str]] = {
     "Wiffle (A/T/I/F)": {
-        "A": "Address", "T": "Top of Backswing",
-        "I": "Impact",  "F": "Finish",
+        "A": "Address",
+        "T": "Top of Backswing",
+        "I": "Impact",
+        "F": "Finish",
     },
     "Trackman P-system": {
-        "A": "P1 Address", "T": "P4 Top",
-        "I": "P7 Impact",  "F": "P10 Finish",
+        "A": "P1 Address",
+        "T": "P4 Top",
+        "I": "P7 Impact",
+        "F": "P10 Finish",
     },
     "Plain English": {
-        "A": "Setup", "T": "Backswing top",
-        "I": "Strike", "F": "Follow-through end",
+        "A": "Setup",
+        "T": "Backswing top",
+        "I": "Strike",
+        "F": "Follow-through end",
     },
     "Sequence numbers": {
-        "A": "Phase 1", "T": "Phase 2",
-        "I": "Phase 3", "F": "Phase 4",
+        "A": "Phase 1",
+        "T": "Phase 2",
+        "I": "Phase 3",
+        "F": "Phase 4",
     },
 }
 DEFAULT_EVENT_PRESET = "Wiffle (A/T/I/F)"
@@ -103,15 +111,20 @@ DEFAULT_EVENT_PRESET = "Wiffle (A/T/I/F)"
 # Phase windows.  Stable LOGICAL identifiers; user-facing labels are built
 # from the current event labels via ``phase_display_label()``.
 PHASE_KEYS: tuple[str, ...] = (
-    "none", "backswing", "downswing", "follow_through", "full_swing", "manual",
+    "none",
+    "backswing",
+    "downswing",
+    "follow_through",
+    "full_swing",
+    "manual",
 )
 PHASE_BOUNDS: dict[str, tuple[str | None, str | None]] = {
-    "none":           (None, None),
-    "backswing":      ("A", "T"),
-    "downswing":      ("T", "I"),
+    "none": (None, None),
+    "backswing": ("A", "T"),
+    "downswing": ("T", "I"),
     "follow_through": ("I", "F"),
-    "full_swing":     ("A", "F"),
-    "manual":         ("manual", "manual"),
+    "full_swing": ("A", "F"),
+    "manual": ("manual", "manual"),
 }
 DEFAULT_PHASE = "full_swing"
 
@@ -138,12 +151,12 @@ def phase_display_label(key: str, event_labels: dict[str, str]) -> str:
     i = event_labels.get("I", "Impact")
     f = event_labels.get("F", "Finish")
     table = {
-        "none":           "None - draw entire data range",
-        "backswing":      f"Backswing ({a} to {t})",
-        "downswing":      f"Downswing ({t} to {i})",
+        "none": "None - draw entire data range",
+        "backswing": f"Backswing ({a} to {t})",
+        "downswing": f"Downswing ({t} to {i})",
         "follow_through": f"Follow-through ({i} to {f})",
-        "full_swing":     f"Full swing ({a} to {f})",
-        "manual":         "Manual frame range",
+        "full_swing": f"Full swing ({a} to {f})",
+        "manual": "Manual frame range",
     }
     return table.get(key, key)
 
@@ -225,6 +238,7 @@ class RigidTransform:
 @dataclass
 class SkeletonTrajectory:
     """Time series of skeleton joint positions (one Skeleton per frame)."""
+
     times: np.ndarray = field(default_factory=lambda: np.zeros(0))
     frames: list[Skeleton] = field(default_factory=list)
     source_path: str = ""
@@ -259,18 +273,18 @@ class PoseSlot:
 
 # Body chain segments — connect the matcher's short joint names.
 FALLBACK_SEGMENTS: list[tuple[str, str]] = [
-    ("hip",   "spine"),
+    ("hip", "spine"),
     ("spine", "torso"),
     ("torso", "hub"),
-    ("hub",   "ls"),
-    ("hub",   "rs"),
-    ("ls",    "le"),
-    ("rs",    "re"),
-    ("le",    "lw"),
-    ("re",    "rw"),
-    ("lw",    "mp"),
-    ("rw",    "mp"),
-    ("mp",    "ch"),
+    ("hub", "ls"),
+    ("hub", "rs"),
+    ("ls", "le"),
+    ("rs", "re"),
+    ("le", "lw"),
+    ("re", "rw"),
+    ("lw", "mp"),
+    ("rw", "mp"),
+    ("mp", "ch"),
 ]
 
 # Map shared FK landmark names -> matcher's compact short names.  The
@@ -280,18 +294,18 @@ FALLBACK_SEGMENTS: list[tuple[str, str]] = [
 # ls / rs / le / re / lw / rw / mp / ch``.  ``hub`` is synthesised as the
 # top of the torso for visualisation; ``mp`` is mid-hands.
 _FK_TO_SHORT: dict[str, str] = {
-    "pelvis":     "hip",
-    "spine_top":  "spine",
-    "torso_top":  "hub",       # top of torso = hub in the matcher's vocabulary
+    "pelvis": "hip",
+    "spine_top": "spine",
+    "torso_top": "hub",  # top of torso = hub in the matcher's vocabulary
     "l_shoulder": "ls",
     "r_shoulder": "rs",
-    "l_elbow":    "le",
-    "r_elbow":    "re",
-    "l_wrist":    "lw",
-    "r_wrist":    "rw",
+    "l_elbow": "le",
+    "r_elbow": "re",
+    "l_wrist": "lw",
+    "r_wrist": "rw",
     # l_hand and r_hand exist but the matcher uses mp = mid-of-hands
-    "butt":       "mp",
-    "clubhead":   "ch",
+    "butt": "mp",
+    "clubhead": "ch",
 }
 
 
@@ -339,22 +353,22 @@ def _build_address_fallback() -> Skeleton:
 # above pelvis with the shared FK's default segment lengths) so the body
 # proportions match across both poses.
 _HANDCRAFTED_TOB_JOINTS: dict[str, list[float]] = {
-    "hip":   [0.00, 0.00, 0.00],
+    "hip": [0.00, 0.00, 0.00],
     "spine": [0.00, -0.10, 0.17],
-    "torso": [0.00, -0.13, 0.21],   # ~20% from spine to hub (revolute joint)
-    "hub":   [0.00, -0.20, 0.34],
+    "torso": [0.00, -0.13, 0.21],  # ~20% from spine to hub (revolute joint)
+    "hub": [0.00, -0.20, 0.34],
     # The FK-derived Address has shoulders along world ±Y because the
     # spine is tilted forward.  Top-of-backswing twists the torso 90°,
     # so the shoulder line should rotate to lie along world ±X.
-    "ls":    [+0.22, -0.18, 0.36],   # left shoulder swung to +X
-    "rs":    [-0.22, -0.22, 0.32],   # right shoulder swung to -X (and slightly back)
+    "ls": [+0.22, -0.18, 0.36],  # left shoulder swung to +X
+    "rs": [-0.22, -0.22, 0.32],  # right shoulder swung to -X (and slightly back)
     # Hands raised high — both wrists above shoulder level.
-    "le":    [+0.15, -0.05, 0.60],
-    "re":    [-0.15, -0.35, 0.55],
-    "lw":    [+0.20, +0.05, 0.85],
-    "rw":    [+0.18, +0.10, 0.82],
-    "mp":    [+0.19, +0.08, 0.83],
-    "ch":    [-0.30, +0.40, 0.85],
+    "le": [+0.15, -0.05, 0.60],
+    "re": [-0.15, -0.35, 0.55],
+    "lw": [+0.20, +0.05, 0.85],
+    "rw": [+0.18, +0.10, 0.82],
+    "mp": [+0.19, +0.08, 0.83],
+    "ch": [-0.30, +0.40, 0.85],
 }
 
 
@@ -366,11 +380,13 @@ def _build_top_of_backswing_fallback() -> Skeleton:
     loader.
     """
     import numpy as _np  # local alias keeps this self-contained
+
     joints = {k: _np.array(v, dtype=float) for k, v in _HANDCRAFTED_TOB_JOINTS.items()}
     if "mp" in joints:
         joints["butt"] = joints["mp"].copy()
-    return Skeleton(name="TopofBackswing", joints=joints,
-                    segments=list(FALLBACK_SEGMENTS))
+    return Skeleton(
+        name="TopofBackswing", joints=joints, segments=list(FALLBACK_SEGMENTS)
+    )
 
 
 def fallback_skeleton(pose_name: str) -> Skeleton:
@@ -396,13 +412,13 @@ def fallback_skeleton(pose_name: str) -> Skeleton:
 
 def _clubtarget_to_dataframe(target: ClubTarget) -> pd.DataFrame:
     """Convert a ClubTarget to a DataFrame compatible with the matcher GUI.
-    
+
     This adapter converts the canonical ClubTarget format (butt/clubhead/quaternion)
     into the DataFrame schema expected by the matcher GUI (mid_X/Y/Z, club_X/Y/Z).
-    
+
     Args:
         target: ClubTarget from shared loader
-        
+
     Returns:
         DataFrame with columns: time, mid_X, mid_Y, mid_Z, club_X, club_Y, club_Z
         plus the 9 direction cosine columns for rotation matrix
@@ -415,19 +431,33 @@ def _clubtarget_to_dataframe(target: ClubTarget) -> pd.DataFrame:
         q = target.club_quat[i]
         w, x, y, z = q[0], q[1], q[2], q[3]
         # Rotation matrix from quaternion (row-major for direction cosines)
-        rotmats[i] = np.array([
-            [1 - 2*y*y - 2*z*z, 2*x*y - 2*z*w,     2*x*z + 2*y*w],
-            [2*x*y + 2*z*w,     1 - 2*x*x - 2*z*z, 2*y*z - 2*x*w],
-            [2*x*z - 2*y*w,     2*y*z + 2*x*w,     1 - 2*x*x - 2*y*y],
-        ])
-    
+        rotmats[i] = np.array(
+            [
+                [
+                    1 - 2 * y * y - 2 * z * z,
+                    2 * x * y - 2 * z * w,
+                    2 * x * z + 2 * y * w,
+                ],
+                [
+                    2 * x * y + 2 * z * w,
+                    1 - 2 * x * x - 2 * z * z,
+                    2 * y * z - 2 * x * w,
+                ],
+                [
+                    2 * x * z - 2 * y * w,
+                    2 * y * z + 2 * x * w,
+                    1 - 2 * x * x - 2 * y * y,
+                ],
+            ]
+        )
+
     rows = []
     for i in range(n):
         rec = {
-            "time":   float(target.time[i]),
-            "mid_X":  float(target.butt[i, 0]),
-            "mid_Y":  float(target.butt[i, 1]),
-            "mid_Z":  float(target.butt[i, 2]),
+            "time": float(target.time[i]),
+            "mid_X": float(target.butt[i, 0]),
+            "mid_Y": float(target.butt[i, 1]),
+            "mid_Z": float(target.butt[i, 2]),
             "club_X": float(target.clubhead[i, 0]),
             "club_Y": float(target.clubhead[i, 1]),
             "club_Z": float(target.clubhead[i, 2]),
@@ -461,10 +491,10 @@ def _clubtarget_to_dataframe(target: ClubTarget) -> pd.DataFrame:
 
 def load_mocap_xlsx(xlsx_path: str | Path, sheet_name: str) -> pd.DataFrame:
     """Load a Wiffle xlsx sheet into a DataFrame in metres.
-    
+
     This function now uses the canonical ClubTarget loader and converts
     the result to the DataFrame format expected by the matcher GUI.
-    
+
     Schema (subset): time (s), mid_X/Y/Z (m), club_X/Y/Z (m).
     """
     target = load_club_target(Path(xlsx_path), sheet=sheet_name, opts=AlignOptions())
@@ -486,11 +516,13 @@ def _safe(row: pd.Series, idx: int, default: float = 0.0) -> float:
 
 def read_event_header(xlsx_path: str | Path, sheet_name: str) -> MocapEvents:
     """Parse the row-1 event-marker band: A=<n> T=<n> I=<n> F=<n> CHS=<mph>.
-    
+
     This function now uses the canonical ExcelEventMarkers from the shared
     motion-matching infrastructure.
     """
-    ev_markers: ExcelEventMarkers = read_excel_event_markers(Path(xlsx_path), sheet_name)
+    ev_markers: ExcelEventMarkers = read_excel_event_markers(
+        Path(xlsx_path), sheet_name
+    )
     return MocapEvents(
         A_sample=ev_markers.A_sample,
         T_sample=ev_markers.T_sample,
@@ -524,13 +556,17 @@ def load_skeleton(json_path: str | Path, fallback_pose: str = "Impact") -> Skele
         for s in raw_segments:
             if isinstance(s, list) and len(s) == 2:
                 segments.append((str(s[0]), str(s[1])))
-        return Skeleton(name=data.get("pose", fallback_pose),
-                        joints=joints,
-                        segments=segments or list(FALLBACK_SEGMENTS))
+        return Skeleton(
+            name=data.get("pose", fallback_pose),
+            joints=joints,
+            segments=segments or list(FALLBACK_SEGMENTS),
+        )
     logger.warning(
         "%s not found - using FK-derived fallback %s pose. Run "
         "export_default_skeleton('%s') in MATLAB for actual model joints.",
-        json_path, fallback_pose, fallback_pose,
+        json_path,
+        fallback_pose,
+        fallback_pose,
     )
     return fallback_skeleton(fallback_pose)
 
@@ -543,31 +579,31 @@ def load_skeleton(json_path: str | Path, fallback_pose: str = "Impact") -> Skele
 # Map "<our short name>" -> list of CSV column-name candidates for X.  Each
 # candidate's _Y/_Z (or _2/_3, _y/_z) is auto-derived.
 _TRAJECTORY_COLUMN_MAP: dict[str, list[str]] = {
-    "ch":    ["club_head_X",      "club_head_x"],
-    "lw":    ["left_hand_X",      "left_hand_x"],
-    "rw":    ["right_hand_X",     "right_hand_x"],
-    "ls":    ["left_shoulder_X",  "left_shoulder_x"],
-    "rs":    ["right_shoulder_X", "right_shoulder_x"],
-    "le":    ["left_elbow_X",     "left_elbow_x"],
-    "re":    ["right_elbow_X",    "right_elbow_x"],
-    "hub":   ["hub_X",            "hub_x"],
-    "torso": ["torso_X",          "torso_x"],   # may be missing — synthesized
-    "spine": ["spine_X",          "spine_x"],
-    "hip":   ["hip_X",            "hip_x"],
+    "ch": ["club_head_X", "club_head_x"],
+    "lw": ["left_hand_X", "left_hand_x"],
+    "rw": ["right_hand_X", "right_hand_x"],
+    "ls": ["left_shoulder_X", "left_shoulder_x"],
+    "rs": ["right_shoulder_X", "right_shoulder_x"],
+    "le": ["left_elbow_X", "left_elbow_x"],
+    "re": ["right_elbow_X", "right_elbow_x"],
+    "hub": ["hub_X", "hub_x"],
+    "torso": ["torso_X", "torso_x"],  # may be missing — synthesized
+    "spine": ["spine_X", "spine_x"],
+    "hip": ["hip_X", "hip_x"],
 }
 
 _TRAJECTORY_LONG_FORM: dict[str, str] = {
-    "ch":    "ClubLogs_CHGlobalPosition_1",
-    "lw":    "LWLogs_LHGlobalPosition_1",
-    "rw":    "RWLogs_RHGlobalPosition_1",
-    "ls":    "LSLogs_GlobalPosition_1",
-    "rs":    "RSLogs_GlobalPosition_1",
-    "le":    "LELogs_LArmonLForearmFGlobal_1",
-    "re":    "RELogs_RArmonLForearmFGlobal_1",
-    "hub":   "HipLogs_HUBGlobalPosition_1",
+    "ch": "ClubLogs_CHGlobalPosition_1",
+    "lw": "LWLogs_LHGlobalPosition_1",
+    "rw": "RWLogs_RHGlobalPosition_1",
+    "ls": "LSLogs_GlobalPosition_1",
+    "rs": "RSLogs_GlobalPosition_1",
+    "le": "LELogs_LArmonLForearmFGlobal_1",
+    "re": "RELogs_RArmonLForearmFGlobal_1",
+    "hub": "HipLogs_HUBGlobalPosition_1",
     "torso": "TorsoLogs_GlobalPosition_1",
     "spine": "SpineLogs_GlobalPosition_1",
-    "hip":   "HipLogs_HipGlobalPosition_dim1",
+    "hip": "HipLogs_HipGlobalPosition_dim1",
 }
 
 
@@ -619,7 +655,8 @@ def load_simscape_trajectory_csv(path: str | Path) -> SkeletonTrajectory:
     if not resolved:
         raise ValueError(
             f"CSV {path} has no recognised joint columns. Expected either "
-            "'<joint>_X/Y/Z' (short) or '<Joint>Logs_...Global..._1/2/3' (long).")
+            "'<joint>_X/Y/Z' (short) or '<Joint>Logs_...Global..._1/2/3' (long)."
+        )
 
     times = df["time"].astype(float).to_numpy()
     frames: list[Skeleton] = []
@@ -635,10 +672,12 @@ def load_simscape_trajectory_csv(path: str | Path) -> SkeletonTrajectory:
             joints["mp"] = (joints["lw"] + joints["rw"]) / 2.0
             joints["butt"] = joints["mp"].copy()
         if "torso" not in joints and "spine" in joints and "hub" in joints:
-            joints["torso"] = joints["spine"] + 0.2 * (joints["hub"]
-                                                       - joints["spine"])
-        frames.append(Skeleton(name=f"trajectory[{i}]", joints=joints,
-                               segments=list(FALLBACK_SEGMENTS)))
+            joints["torso"] = joints["spine"] + 0.2 * (joints["hub"] - joints["spine"])
+        frames.append(
+            Skeleton(
+                name=f"trajectory[{i}]", joints=joints, segments=list(FALLBACK_SEGMENTS)
+            )
+        )
 
     return SkeletonTrajectory(times=times, frames=frames, source_path=str(path))
 
@@ -648,8 +687,12 @@ def load_simscape_trajectory_csv(path: str | Path) -> SkeletonTrajectory:
 # ----------------------------------------------------------------------------
 
 
-def solve_shaft_rz_deg(mp_target: np.ndarray, ch_target: np.ndarray,
-                       mp_skel: np.ndarray, ch_skel: np.ndarray) -> float:
+def solve_shaft_rz_deg(
+    mp_target: np.ndarray,
+    ch_target: np.ndarray,
+    mp_skel: np.ndarray,
+    ch_skel: np.ndarray,
+) -> float:
     """Return the Rz angle (degrees, wrapped to [-180,180]) that maps the
     skeleton shaft direction (mp_skel→ch_skel) to the target shaft
     direction (mp_target→ch_target) projected onto the XY plane.

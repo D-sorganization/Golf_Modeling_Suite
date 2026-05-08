@@ -52,6 +52,7 @@ phase_key_from_label = _core.phase_key_from_label
 read_event_header = _core.read_event_header
 solve_shaft_rz_deg = _core.solve_shaft_rz_deg
 
+
 # Legacy-compat dict aliases — older code occasionally referenced these
 # constants directly.  Keep them around as derived dicts.
 def _legacy_fallback_dict(pose_name: str) -> dict[str, list[float]]:

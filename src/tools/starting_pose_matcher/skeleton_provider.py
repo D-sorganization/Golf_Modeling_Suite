@@ -60,8 +60,11 @@ class JsonSkeletonProvider(SkeletonProvider):
     :func:`reference_golfer_setup` + :func:`forward_kinematics`).
     """
 
-    def __init__(self, json_dir: str | Path,
-                 poses: tuple[str, ...] = ("TopofBackswing", "Impact")) -> None:
+    def __init__(
+        self,
+        json_dir: str | Path,
+        poses: tuple[str, ...] = ("TopofBackswing", "Impact"),
+    ) -> None:
         self._dir = Path(json_dir)
         self._poses = tuple(poses)
 

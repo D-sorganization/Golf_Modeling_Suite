@@ -37,7 +37,7 @@ _MOCAP_LOADER_RELATIVE = Path(
 @dataclass
 class ExcelEventMarkers:
     """Event markers extracted from row-1 of Wiffle Excel sheets.
-    
+
     Attributes:
         A_sample: Sample number (1-based) for Address event
         T_sample: Sample number (1-based) for Top of Backswing event
@@ -45,12 +45,13 @@ class ExcelEventMarkers:
         F_sample: Sample number (1-based) for Finish event
         CHS_mph: Clubhead speed in mph (NaN if missing)
     """
+
     A_sample: float = float("nan")
     T_sample: float = float("nan")
     I_sample: float = float("nan")
     F_sample: float = float("nan")
     CHS_mph: float = float("nan")
-    
+
     def frame_for(self, label: str) -> int | None:
         """Convert 1-based sample number to 0-based frame index."""
         v = getattr(self, f"{label}_sample", float("nan"))
@@ -110,13 +111,13 @@ def _frame_to_quat(df_row: pd.Series) -> np.ndarray:
 
 def _extract_event_markers(df: pd.DataFrame) -> ExcelEventMarkers:
     """Extract event markers from row-1 of the Excel sheet.
-    
+
     The Wiffle/ProV1 format uses row-1 to store event markers in the pattern:
     A=<n> T=<n> I=<n> F=<n> CHS=<mph>
-    
+
     Args:
         df: DataFrame from process_excel_sheet (includes row-0 as header)
-        
+
     Returns:
         ExcelEventMarkers with parsed sample numbers and CHS
     """
@@ -125,9 +126,11 @@ def _extract_event_markers(df: pd.DataFrame) -> ExcelEventMarkers:
     # The DataFrame from process_excel_sheet has the event row as index -1
     # or we need to read it separately
     label_to_field = {
-        "A": "A_sample", "T": "T_sample", 
-        "I": "I_sample", "F": "F_sample",
-        "CHS": "CHS_mph"
+        "A": "A_sample",
+        "T": "T_sample",
+        "I": "I_sample",
+        "F": "F_sample",
+        "CHS": "CHS_mph",
     }
     # Check if we have event data in the first row
     for c in range(len(df.columns) - 1):
@@ -149,14 +152,14 @@ def _extract_event_markers(df: pd.DataFrame) -> ExcelEventMarkers:
 
 def read_excel_event_markers(path: Path | str, sheet: str) -> ExcelEventMarkers:
     """Read only the event markers from row-1 of a Wiffle Excel sheet.
-    
+
     This is a lightweight function for tools that need event markers
     without loading the full trajectory data.
-    
+
     Args:
         path: Path to Excel file
         sheet: Sheet name
-        
+
     Returns:
         ExcelEventMarkers with parsed event data
     """
@@ -167,12 +170,14 @@ def read_excel_event_markers(path: Path | str, sheet: str) -> ExcelEventMarkers:
     except Exception as exc:
         logger.warning("Could not read event header: %s", exc)
         return ExcelEventMarkers()
-    
+
     ev = ExcelEventMarkers()
     label_to_field = {
-        "A": "A_sample", "T": "T_sample",
-        "I": "I_sample", "F": "F_sample",
-        "CHS": "CHS_mph"
+        "A": "A_sample",
+        "T": "T_sample",
+        "I": "I_sample",
+        "F": "F_sample",
+        "CHS": "CHS_mph",
     }
     for c in range(row1.shape[1] - 1):
         cell = row1.iat[0, c]
