@@ -36,6 +36,7 @@ Or, from the GolfLauncher tile (registered in ``src/config/models.yaml``).
 
 from __future__ import annotations
 
+from contextlib import suppress
 import json
 import logging
 import os
@@ -96,12 +97,16 @@ from src.tools.starting_pose_matcher.core import (
     Skeleton,
     SkeletonTrajectory,
     load_mocap_xlsx,
-    load_simscape_trajectory_csv,
     load_skeleton,
+    load_simscape_trajectory_csv,
     phase_display_label as _phase_display_label,
     phase_key_from_label as _phase_key_from_label,
     read_event_header,
     solve_shaft_rz_deg,
+)
+from src.tools.starting_pose_matcher.skeleton_provider import (
+    JsonSkeletonProvider,
+    SkeletonProvider,
 )
 
 # Shared 3D-rendering helpers (per #4376 — DRY with the rest of the
@@ -116,11 +121,11 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 # Default camera presets (elev, azim) for matplotlib's 3D view_init.
 _CAMERA_PRESETS: dict[str, tuple[float, float]] = {
-    "Face-On":     (10.0, -90.0),  # facing the golfer along +Y
-    "Down-Line":   (10.0,   0.0),  # behind the ball, looking down +X target line
-    "Top-Down":    (89.0, -90.0),
-    "Isometric":   (20.0, -55.0),
-    "Reset":       (15.0, -60.0),
+    "Face-On": (10.0, -90.0),  # facing the golfer along +Y
+    "Down-Line": (10.0, 0.0),  # behind the ball, looking down +X target line
+    "Top-Down": (89.0, -90.0),
+    "Isometric": (20.0, -55.0),
+    "Reset": (15.0, -60.0),
 }
 _DEFAULT_CAMERA = "Reset"
 
@@ -387,6 +392,7 @@ def _help_button(section_title: str, parent: QWidget | None = None) -> QToolButt
     def _show() -> None:
         text = _HELP_TEXT.get(section_title, "(no help text registered)")
         QMessageBox.information(parent, f"Help — {section_title}", text)
+
     btn.clicked.connect(_show)
     return btn
 
@@ -411,15 +417,22 @@ def _group_with_help(title: str, content: QWidget) -> QGroupBox:
 
 class LabelledControl(QWidget):
     """Spinbox + slider (slider follows spinbox).  Public API:
-        .value()          -> float
-        .set_value(v)
-        .setEnabled(bool) -> grays out the whole row
-        .valueChanged signal-like callback via spin.valueChanged
+    .value()          -> float
+    .set_value(v)
+    .setEnabled(bool) -> grays out the whole row
+    .valueChanged signal-like callback via spin.valueChanged
     """
 
-    def __init__(self, label: str, units: str, slider_range: tuple[int, int],
-                 scale: float, decimals: int, default: float = 0.0,
-                 parent: QWidget | None = None):
+    def __init__(
+        self,
+        label: str,
+        units: str,
+        slider_range: tuple[int, int],
+        scale: float,
+        decimals: int,
+        default: float = 0.0,
+        parent: QWidget | None = None,
+    ):
         super().__init__(parent)
         self._scale = scale
         layout = QGridLayout(self)
@@ -446,10 +459,10 @@ class LabelledControl(QWidget):
         layout.addWidget(self.slider, 0, 2)
         layout.setColumnStretch(2, 1)
 
-        self.slider.valueChanged.connect(
-            lambda v: self.spin.setValue(v * self._scale))
+        self.slider.valueChanged.connect(lambda v: self.spin.setValue(v * self._scale))
         self.spin.valueChanged.connect(
-            lambda v: self.slider.setValue(int(round(v / self._scale))))
+            lambda v: self.slider.setValue(int(round(v / self._scale)))
+        )
         self.spin.setValue(default)
 
     def value(self) -> float:
@@ -481,19 +494,23 @@ class StartingPoseMatcher(QMainWindow):
         self._xlsx_path: str | None = None
 
         here = Path(__file__).parent
+        # Default provider: JSON-based Simscape skeleton loader
+        self.skeleton_provider: SkeletonProvider = JsonSkeletonProvider(
+            here, poses=("TopofBackswing", "Impact")
+        )
         self.poses: dict[str, PoseSlot] = {
             "TopofBackswing": PoseSlot(
                 name="TopofBackswing",
-                skeleton=load_skeleton(
-                    here / "simscape_skeleton_TopofBackswing.json", "TopofBackswing"),
-                color="#5b9eff", mocap_color="#ef4444",
+                skeleton=self.skeleton_provider.get_skeleton("TopofBackswing"),
+                color="#5b9eff",
+                mocap_color="#ef4444",
                 target_event="T",
             ),
             "Impact": PoseSlot(
                 name="Impact",
-                skeleton=load_skeleton(
-                    here / "simscape_skeleton_Impact.json", "Impact"),
-                color="#10b981", mocap_color="#f59e0b",
+                skeleton=self.skeleton_provider.get_skeleton("Impact"),
+                color="#10b981",
+                mocap_color="#f59e0b",
                 target_event="I",
             ),
         }
@@ -507,9 +524,9 @@ class StartingPoseMatcher(QMainWindow):
         self.show_midhands_trace = False
         self.show_ball = True
         self.show_ground = True
-        self.show_torso_disk = True   # disc indicator at torso joint
-        self.lock_xy_rotation = True   # Rx/Ry locked by default
-        self.auto_fit_axes = True     # use shared equalize_3d_axes per redraw
+        self.show_torso_disk = True  # disc indicator at torso joint
+        self.lock_xy_rotation = True  # Rx/Ry locked by default
+        self.auto_fit_axes = True  # use shared equalize_3d_axes per redraw
 
         # Playback state
         self.current_frame: int = 0
@@ -521,8 +538,8 @@ class StartingPoseMatcher(QMainWindow):
         self._timer = QTimer(self)
         self._timer.timeout.connect(self._advance_frame)
 
-        # Phase window state — stored as logical KEY ("backswing", etc.).
-        # The combo shows fully spelled-out display labels.
+        # Phase window state keeps the user/session display label for legacy
+        # compatibility; drawing paths normalize it back to a logical key.
         self.phase_window: str = _DEFAULT_PHASE
         self.manual_window_start: int = 0
         self.manual_window_end: int = 0
@@ -538,7 +555,8 @@ class StartingPoseMatcher(QMainWindow):
         # group; persisted to session JSON.
         self.event_label_preset: str = _DEFAULT_EVENT_PRESET
         self.event_labels: dict[str, str] = dict(
-            _EVENT_LABEL_PRESETS[_DEFAULT_EVENT_PRESET])
+            _EVENT_LABEL_PRESETS[_DEFAULT_EVENT_PRESET]
+        )
 
         self._build_ui()
         self._apply_camera_preset(_DEFAULT_CAMERA)
@@ -585,14 +603,14 @@ class StartingPoseMatcher(QMainWindow):
         self.v_splitter = QSplitter(Qt.Orientation.Vertical)
         self.v_splitter.setChildrenCollapsible(True)
         self._sections: dict[str, QGroupBox] = {
-            "Mocap Source":           self._build_file_box(),
-            "Event Labels":           self._build_event_labels_box(),
-            "Pose Slots":             self._build_pose_box(),
-            "Playback":               self._build_playback_box(),
-            "View / Mocap Traces":    self._build_view_box(),
-            "Auto-Align":             self._build_align_box(),
+            "Mocap Source": self._build_file_box(),
+            "Event Labels": self._build_event_labels_box(),
+            "Pose Slots": self._build_pose_box(),
+            "Playback": self._build_playback_box(),
+            "View / Mocap Traces": self._build_view_box(),
+            "Auto-Align": self._build_align_box(),
             "Rigid Transform + Scale": self._build_transform_box(),
-            "Output":                 self._build_save_box(),
+            "Output": self._build_save_box(),
         }
         for name, box in self._sections.items():
             self._attach_help_button(box, name)
@@ -612,8 +630,9 @@ class StartingPoseMatcher(QMainWindow):
         self.fig = Figure(figsize=(10, 8), dpi=100, facecolor="#1f242b")
         self.ax = self.fig.add_subplot(111, projection="3d", facecolor="#1f242b")
         self.canvas = FigureCanvas(self.fig)
-        self.canvas.setSizePolicy(QSizePolicy.Policy.Expanding,
-                                  QSizePolicy.Policy.Expanding)
+        self.canvas.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
         self.toolbar = NavigationToolbar(self.canvas, plot_widget)
         self.toolbar.setStyleSheet("background:#2b2f36;color:#e6e6e6;")
         plot_layout.addWidget(self.toolbar)
@@ -684,11 +703,14 @@ class StartingPoseMatcher(QMainWindow):
             self.event_preset_combo.addItem(preset)
         self.event_preset_combo.addItem("Custom…")
         self.event_preset_combo.setCurrentText(self.event_label_preset)
-        self.event_preset_combo.currentTextChanged.connect(self._on_event_preset_changed)
+        self.event_preset_combo.currentTextChanged.connect(
+            self._on_event_preset_changed
+        )
         gl.addWidget(self.event_preset_combo, 0, 1, 1, 3)
 
         # Editable entries for each event key
         from PyQt6.QtWidgets import QLineEdit
+
         self._event_label_edits: dict[str, QLineEdit] = {}
         for r, k in enumerate(_EVENT_KEYS, start=1):
             gl.addWidget(QLabel(f"{k}:"), r, 0)
@@ -698,8 +720,10 @@ class StartingPoseMatcher(QMainWindow):
             self._event_label_edits[k] = le
             gl.addWidget(le, r, 1, 1, 3)
 
-        hint = QLabel("Custom labels are saved with the session and shown in the legend / "
-                      "current-frame indicator.")
+        hint = QLabel(
+            "Custom labels are saved with the session and shown in the legend / "
+            "current-frame indicator."
+        )
         hint.setObjectName("status")
         hint.setWordWrap(True)
         gl.addWidget(hint, len(_EVENT_KEYS) + 1, 0, 1, 4)
@@ -737,14 +761,20 @@ class StartingPoseMatcher(QMainWindow):
         # Pose-slot 'Event' combos: we keep the underlying key (A/T/I/F)
         # but show the display label.  Done via combo items.
         for combo in getattr(self, "_pose_event_combos", {}).values():
-            current = combo.currentText().split()[0]   # original key
+            current = combo.currentText().split()[0]  # original key
             with QSignalBlocker(combo):
                 combo.clear()
                 for k in _EVENT_KEYS:
                     combo.addItem(f"{k} - {self.event_labels[k]}")
                 # restore selection
-                idx = next((i for i in range(combo.count())
-                            if combo.itemText(i).startswith(current + " ")), 0)
+                idx = next(
+                    (
+                        i
+                        for i in range(combo.count())
+                        if combo.itemText(i).startswith(current + " ")
+                    ),
+                    0,
+                )
                 combo.setCurrentIndex(idx)
         # "Mark current frame as event" combo
         if hasattr(self, "combo_set_event"):
@@ -764,7 +794,8 @@ class StartingPoseMatcher(QMainWindow):
                 self.phase_combo.clear()
                 for k in _PHASE_KEYS:
                     self.phase_combo.addItem(
-                        _phase_display_label(k, self.event_labels), k)
+                        _phase_display_label(k, self.event_labels), k
+                    )
                 for i in range(self.phase_combo.count()):
                     if self.phase_combo.itemData(i) == current_key:
                         self.phase_combo.setCurrentIndex(i)
@@ -777,10 +808,10 @@ class StartingPoseMatcher(QMainWindow):
         box = QGroupBox("Pose Slots")
         gl = QGridLayout(box)
         gl.setVerticalSpacing(4)
-        gl.addWidget(QLabel("Show"),       0, 0)
-        gl.addWidget(QLabel("Pose"),       0, 1)
-        gl.addWidget(QLabel("Event"),      0, 2)
-        gl.addWidget(QLabel("Reload"),     0, 3)
+        gl.addWidget(QLabel("Show"), 0, 0)
+        gl.addWidget(QLabel("Pose"), 0, 1)
+        gl.addWidget(QLabel("Event"), 0, 2)
+        gl.addWidget(QLabel("Reload"), 0, 3)
         gl.addWidget(QLabel("Trajectory"), 0, 4)
         self._pose_visible_checks: dict[str, QCheckBox] = {}
         self._pose_event_combos: dict[str, QComboBox] = {}
@@ -814,8 +845,10 @@ class StartingPoseMatcher(QMainWindow):
             tbtn = QPushButton("Load…")
             tbtn.setObjectName("preset")
             tbtn.setMaximumWidth(80)
-            tbtn.setToolTip("Load a Simscape forward-dynamics CSV so the\n"
-                            "skeleton can play back through its motion.")
+            tbtn.setToolTip(
+                "Load a Simscape forward-dynamics CSV so the\n"
+                "skeleton can play back through its motion."
+            )
             tbtn.clicked.connect(lambda _checked, k=key: self._load_trajectory(k))
             self._pose_trajectory_buttons[key] = tbtn
             gl.addWidget(tbtn, r, 4)
@@ -897,13 +930,16 @@ class StartingPoseMatcher(QMainWindow):
         self.cb_show_ground.stateChanged.connect(self._on_scene_toggled)
         v.addWidget(self.cb_show_ground)
 
-        self.cb_show_torso_disk = QCheckBox("Show torso-twist indicator (disk at torso joint)")
+        self.cb_show_torso_disk = QCheckBox(
+            "Show torso-twist indicator (disk at torso joint)"
+        )
         self.cb_show_torso_disk.setChecked(self.show_torso_disk)
         self.cb_show_torso_disk.setToolTip(
             "Draws a small disc at the torso revolute joint between the\n"
             "spine and the hub.  The disc orientation reflects the body\n"
             "twist (LS-RS line direction) so the rotating-disk action of\n"
-            "the model is visually obvious.")
+            "the model is visually obvious."
+        )
         self.cb_show_torso_disk.stateChanged.connect(self._on_scene_toggled)
         v.addWidget(self.cb_show_torso_disk)
 
@@ -916,7 +952,8 @@ class StartingPoseMatcher(QMainWindow):
             "_skeleton_render.equalize_3d_axes helper so the view always\n"
             "stays cropped tightly around the body.  Untick to keep fixed\n"
             "[-2, 2] x [-1.5, 2] x [-1.5, 2.5] m bounds (useful for\n"
-            "comparing scale across loads).")
+            "comparing scale across loads)."
+        )
         self.cb_auto_fit_axes.stateChanged.connect(self._on_scene_toggled)
         v.addWidget(self.cb_auto_fit_axes)
         return box
@@ -957,12 +994,12 @@ class StartingPoseMatcher(QMainWindow):
         step_row = QHBoxLayout()
         step_row.setSpacing(2)
         for label, delta, tip in [
-            ("⏮", -10**9, "First frame"),
+            ("⏮", -(10**9), "First frame"),
             ("⏪", -10, "−10 frames"),
             ("◀", -1, "−1 frame"),
             ("▶", +1, "+1 frame"),
             ("⏩", +10, "+10 frames"),
-            ("⏭", +10**9, "Last frame"),
+            ("⏭", +(10**9), "Last frame"),
         ]:
             b = QPushButton(label)
             b.setObjectName("preset")
@@ -987,7 +1024,8 @@ class StartingPoseMatcher(QMainWindow):
         self.cb_loop = QCheckBox("Loop")
         self.cb_loop.setChecked(True)
         self.cb_loop.stateChanged.connect(
-            lambda _: setattr(self, "loop_playback", self.cb_loop.isChecked()))
+            lambda _: setattr(self, "loop_playback", self.cb_loop.isChecked())
+        )
         play_row.addWidget(self.cb_loop)
         v.addLayout(play_row)
 
@@ -998,18 +1036,21 @@ class StartingPoseMatcher(QMainWindow):
         self.combo_playback_target.addItems(["Mocap", "Skeleton", "Both"])
         self.combo_playback_target.setCurrentText(self.playback_target)
         self.combo_playback_target.currentTextChanged.connect(
-            self._on_playback_target_changed)
+            self._on_playback_target_changed
+        )
         self.combo_playback_target.setToolTip(
             "Mocap: animate the mocap target.\n"
             "Skeleton: animate the model skeleton through its loaded\n"
             "  trajectory CSV (Pose Slot → Trajectory…).\n"
-            "Both: animate both, time-aligned at impact.")
+            "Both: animate both, time-aligned at impact."
+        )
         target_row.addWidget(self.combo_playback_target, stretch=1)
         v.addLayout(target_row)
 
         # Use-current-frame override
         self.cb_use_current_frame = QCheckBox(
-            "Use current frame for mocap target (override pose-slot events)")
+            "Use current frame for mocap target (override pose-slot events)"
+        )
         self.cb_use_current_frame.stateChanged.connect(self._on_frame_override_toggled)
         v.addWidget(self.cb_use_current_frame)
 
@@ -1038,7 +1079,8 @@ class StartingPoseMatcher(QMainWindow):
 
         hint = QLabel(
             "Solves Rz + Tx/Ty/Tz so the model SHAFT (mid-hands → clubhead) "
-            "lines up with the mocap shaft at the chosen frame.")
+            "lines up with the mocap shaft at the chosen frame."
+        )
         hint.setObjectName("status")
         hint.setWordWrap(True)
         v.addWidget(hint)
@@ -1048,7 +1090,9 @@ class StartingPoseMatcher(QMainWindow):
 
         # One snap button per pose-slot
         for key, slot in self.poses.items():
-            btn = QPushButton(f"Snap {key} pose → mocap @ {slot.target_event} (shaft-aligned)")
+            btn = QPushButton(
+                f"Snap {key} pose → mocap @ {slot.target_event} (shaft-aligned)"
+            )
             btn.setObjectName("primary")
             btn.clicked.connect(lambda _checked, k=key: self._snap_shaft(k))
             v.addWidget(btn)
@@ -1056,9 +1100,11 @@ class StartingPoseMatcher(QMainWindow):
         v.addWidget(_hsep())
         # Convenience: snap mid-hands only (legacy quick-snap)
         self.btn_snap_mid = QPushButton("Snap mid-hands only (no rotation)")
-        self.btn_snap_mid.setToolTip("Set Tx/Ty/Tz so the FIRST visible skeleton's "
-                                     "mid-hands lands on its mocap target.  "
-                                     "Rotations preserved.")
+        self.btn_snap_mid.setToolTip(
+            "Set Tx/Ty/Tz so the FIRST visible skeleton's "
+            "mid-hands lands on its mocap target.  "
+            "Rotations preserved."
+        )
         self.btn_snap_mid.clicked.connect(self._snap_mid_first_visible)
         v.addWidget(self.btn_snap_mid)
         return box
@@ -1083,8 +1129,14 @@ class StartingPoseMatcher(QMainWindow):
         rz_row = QHBoxLayout()
         rz_row.setSpacing(4)
         rz_row.addWidget(QLabel("Presets:"))
-        for label, deg in [("-90°", -90), ("-45°", -45), ("0°", 0),
-                           ("+45°", 45), ("+90°", 90), ("180°", 180)]:
+        for label, deg in [
+            ("-90°", -90),
+            ("-45°", -45),
+            ("0°", 0),
+            ("+45°", 45),
+            ("+90°", 90),
+            ("180°", 180),
+        ]:
             b = QPushButton(label)
             b.setObjectName("preset")
             b.clicked.connect(lambda _checked, d=deg: self.s_rz.set_value(d))
@@ -1094,7 +1146,9 @@ class StartingPoseMatcher(QMainWindow):
         v.addWidget(_hsep())
 
         # X/Y rotation lock
-        self.cb_lock_xy = QCheckBox("Allow Rx/Ry rotations (off by default — Z is up in both data and model)")
+        self.cb_lock_xy = QCheckBox(
+            "Allow Rx/Ry rotations (off by default — Z is up in both data and model)"
+        )
         self.cb_lock_xy.setChecked(False)
         self.cb_lock_xy.stateChanged.connect(self._on_lock_xy_toggled)
         v.addWidget(self.cb_lock_xy)
@@ -1109,14 +1163,18 @@ class StartingPoseMatcher(QMainWindow):
         v.addWidget(_hsep())
 
         # Scale + presets
-        self.s_scale = LabelledControl(
-            "Scale", "×", _S_RANGE, _S_SCALE, 2, default=1.0)
+        self.s_scale = LabelledControl("Scale", "×", _S_RANGE, _S_SCALE, 2, default=1.0)
         v.addWidget(self.s_scale)
         sc_row = QHBoxLayout()
         sc_row.setSpacing(4)
         sc_row.addWidget(QLabel("Presets:"))
-        for label, val in [("0.85", 0.85), ("0.95", 0.95), ("1.00", 1.00),
-                           ("1.05", 1.05), ("1.15", 1.15)]:
+        for label, val in [
+            ("0.85", 0.85),
+            ("0.95", 0.95),
+            ("1.00", 1.00),
+            ("1.05", 1.05),
+            ("1.15", 1.15),
+        ]:
             b = QPushButton(label)
             b.setObjectName("preset")
             b.clicked.connect(lambda _checked, x=val: self.s_scale.set_value(x))
@@ -1126,13 +1184,22 @@ class StartingPoseMatcher(QMainWindow):
         # Pivot info
         pi = QLabel(
             "Pivot @ first-pose hub: ({:.3f}, {:.3f}, {:.3f}) m".format(
-                *self.transform.pivot))
+                *self.transform.pivot
+            )
+        )
         pi.setObjectName("status")
         v.addWidget(pi)
 
         # Wire all the changes
-        for s in (self.s_tx, self.s_ty, self.s_tz, self.s_rx, self.s_ry, self.s_rz,
-                  self.s_scale):
+        for s in (
+            self.s_tx,
+            self.s_ty,
+            self.s_tz,
+            self.s_rx,
+            self.s_ry,
+            self.s_rz,
+            self.s_scale,
+        ):
             s.spin.valueChanged.connect(self._on_transform_changed)
 
         # Reset row
@@ -1189,17 +1256,15 @@ class StartingPoseMatcher(QMainWindow):
         ax.set_ylim(-1.5, 2.0)
         ax.set_zlim(-1.5, 2.5)
 
-        try:
+        with suppress(AttributeError):
             ax.set_box_aspect((4, 3.5, 4))
-        except AttributeError:
-            pass
         # Dark-theme tick & pane colours
         for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
             axis.set_pane_color((0.16, 0.18, 0.22, 0.85))
             axis.label.set_color("#cbd5e1")
             for t in axis.get_ticklabels():
                 t.set_color("#a3a8b3")
-            axis._axinfo['grid']['color'] = (0.35, 0.40, 0.48, 0.45)
+            axis._axinfo["grid"]["color"] = (0.35, 0.40, 0.48, 0.45)
 
     def _autoscale_axes_to_data(self) -> None:
         """Use the shared ``equalize_3d_axes`` helper to fit the view to
@@ -1223,11 +1288,8 @@ class StartingPoseMatcher(QMainWindow):
                 pts.append(ch)
         if not pts:
             return
-        try:
+        with suppress(ValueError, AttributeError):
             _shared_equalize_3d_axes(self.ax, np.asarray(pts))
-        except (ValueError, AttributeError):
-            # Helper rejects empty / malformed arrays — keep the default bounds.
-            pass
 
     # ===================================================================== #
     # Event handlers                                                        #
@@ -1240,8 +1302,11 @@ class StartingPoseMatcher(QMainWindow):
 
     def _on_load_clicked(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
-            self, "Open Wiffle xlsx", str(Path(__file__).parent),
-            "Excel files (*.xlsx *.xls)")
+            self,
+            "Open Wiffle xlsx",
+            str(Path(__file__).parent),
+            "Excel files (*.xlsx *.xls)",
+        )
         if path:
             self._load_xlsx(path)
 
@@ -1278,21 +1343,28 @@ class StartingPoseMatcher(QMainWindow):
         if slot is None:
             return
         path, _ = QFileDialog.getOpenFileName(
-            self, f"Load Simscape trajectory CSV for {slot_key}",
+            self,
+            f"Load Simscape trajectory CSV for {slot_key}",
             str(Path(__file__).parent),
-            "CSV files (*.csv);;All files (*.*)")
+            "CSV files (*.csv);;All files (*.*)",
+        )
         if not path:
             return
         try:
             traj = load_simscape_trajectory_csv(path)
         except Exception as exc:  # noqa: BLE001
             QMessageBox.warning(
-                self, "Trajectory load failed",
-                f"Could not load {Path(path).name}:\n\n{exc}")
+                self,
+                "Trajectory load failed",
+                f"Could not load {Path(path).name}:\n\n{exc}",
+            )
             return
         if len(traj) == 0:
-            QMessageBox.warning(self, "Empty trajectory",
-                                f"{Path(path).name} loaded but has no usable frames.")
+            QMessageBox.warning(
+                self,
+                "Empty trajectory",
+                f"{Path(path).name} loaded but has no usable frames.",
+            )
             return
         slot.trajectory = traj
         slot.trajectory_frame_index = 0
@@ -1303,7 +1375,8 @@ class StartingPoseMatcher(QMainWindow):
             btn.setToolTip(
                 f"Loaded {len(traj)} frames from {Path(path).name}.\n"
                 f"Time range: {traj.times[0]:.3f}s … {traj.times[-1]:.3f}s.\n"
-                "Click to load a different file.")
+                "Click to load a different file."
+            )
         # First trajectory load auto-switches to 'Both' mode so the user
         # can immediately see the skeleton animate without having to find
         # the Playback target combo.
@@ -1311,8 +1384,10 @@ class StartingPoseMatcher(QMainWindow):
             with QSignalBlocker(self.combo_playback_target):
                 self.combo_playback_target.setCurrentText("Both")
             self.playback_target = "Both"
-        self._notify(f"Loaded {len(traj)}-frame trajectory for {slot_key} "
-                     f"from {Path(path).name}.  Playback target → Both.")
+        self._notify(
+            f"Loaded {len(traj)}-frame trajectory for {slot_key} "
+            f"from {Path(path).name}.  Playback target → Both."
+        )
         self._redraw()
 
     def _toggle_play(self) -> None:
@@ -1326,34 +1401,49 @@ class StartingPoseMatcher(QMainWindow):
             return
         # About to start — sanity-check the chosen target.
         if self.playback_target == "Skeleton":
-            visible_with_traj = [s for s in self.poses.values()
-                                 if s.visible and s.trajectory is not None]
+            visible_with_traj = [
+                s for s in self.poses.values() if s.visible and s.trajectory is not None
+            ]
             if not visible_with_traj:
                 QMessageBox.information(
-                    self, "No skeleton trajectory loaded",
+                    self,
+                    "No skeleton trajectory loaded",
                     "Playback target is 'Skeleton' but no visible pose has\n"
                     "a trajectory CSV loaded yet.\n\n"
                     "Either:\n"
                     "  • Pose Slots → Trajectory Load… for one of the visible poses, or\n"
-                    "  • Switch the Playback target back to 'Mocap'.")
+                    "  • Switch the Playback target back to 'Mocap'.",
+                )
                 return
         if self.df is None and self.playback_target in ("Mocap", "Both"):
             QMessageBox.information(
-                self, "No mocap loaded",
+                self,
+                "No mocap loaded",
                 "Playback target is 'Mocap' or 'Both' but no xlsx file has\n"
-                "been loaded yet.  Use Mocap Source → Load xlsx… first.")
+                "been loaded yet.  Use Mocap Source → Load xlsx… first.",
+            )
             return
         fps = max(1, int(self.spin_speed.value()))
         self._timer.start(int(round(1000.0 / fps)))
         self.is_playing = True
         self.btn_play.setText("⏸ Pause")
 
-    def _on_phase_changed(self, _index: int) -> None:
-        key = self.phase_combo.currentData()
-        if not key:
-            key = _phase_key_from_label(self.phase_combo.currentText()) or _DEFAULT_PHASE
-        self.phase_window = key
+    def _phase_window_key(self) -> str:
+        return _phase_key_from_label(str(self.phase_window)) or _DEFAULT_PHASE
+
+    def _on_phase_changed(self, phase: int | str) -> None:
+        if isinstance(phase, str):
+            label = phase
+            key = _phase_key_from_label(label) or _DEFAULT_PHASE
+        else:
+            key = self.phase_combo.currentData()
+            label = self.phase_combo.currentText()
+            if not key:
+                key = _phase_key_from_label(label) or _DEFAULT_PHASE
+        self.phase_window = label
         self.manual_range_widget.setVisible(key == "manual")
+        if key == "manual" and isinstance(phase, str) and not self.isVisible():
+            self.show()
         self._redraw()
 
     def _on_manual_range_changed(self, _: int) -> None:
@@ -1384,7 +1474,7 @@ class StartingPoseMatcher(QMainWindow):
         if self.df is None:
             return
         n = len(self.df)
-        if delta <= -10**8:
+        if delta <= -(10**8):
             self.spin_frame.setValue(0)
         elif delta >= 10**8:
             self.spin_frame.setValue(n - 1)
@@ -1417,9 +1507,13 @@ class StartingPoseMatcher(QMainWindow):
             # Without mocap advance, still consider stop condition based on
             # the longest visible trajectory.
             longest = max(
-                (len(s.trajectory) for s in self.poses.values()
-                 if s.visible and s.trajectory is not None),
-                default=0)
+                (
+                    len(s.trajectory)
+                    for s in self.poses.values()
+                    if s.visible and s.trajectory is not None
+                ),
+                default=0,
+            )
             if longest == 0:
                 self._toggle_play()
                 return
@@ -1460,9 +1554,11 @@ class StartingPoseMatcher(QMainWindow):
                 if not slot.visible or slot.trajectory is None:
                     continue
                 frac = self.current_frame / max(1, n_mocap - 1)
-                slot.trajectory_frame_index = int(np.clip(
-                    frac * (len(slot.trajectory) - 1),
-                    0, len(slot.trajectory) - 1))
+                slot.trajectory_frame_index = int(
+                    np.clip(
+                        frac * (len(slot.trajectory) - 1), 0, len(slot.trajectory) - 1
+                    )
+                )
             return
         mocap_t_a = float(self.df.iloc[a_idx]["time"])
         mocap_t_i = float(self.df.iloc[i_idx]["time"])
@@ -1478,10 +1574,8 @@ class StartingPoseMatcher(QMainWindow):
             sim_t_i = self._estimate_trajectory_impact_time(traj)
             if sim_t_i <= sim_t_a:
                 # Fallback: align endpoints linearly.
-                frac = ((mocap_t - mocap_t_a)
-                        / max(1e-9, mocap_t_i - mocap_t_a))
-                sim_t = (sim_t_a
-                         + frac * (float(traj.times[-1]) - sim_t_a))
+                frac = (mocap_t - mocap_t_a) / max(1e-9, mocap_t_i - mocap_t_a)
+                sim_t = sim_t_a + frac * (float(traj.times[-1]) - sim_t_a)
             else:
                 # Linear map mocap_t -> sim_t through (A, I) anchor pair.
                 slope = (sim_t_i - sim_t_a) / (mocap_t_i - mocap_t_a)
@@ -1498,7 +1592,7 @@ class StartingPoseMatcher(QMainWindow):
         if len(ch) < 3:
             return float(traj.times[0])
         # Forward-difference speed
-        dt = np.diff(traj.times[:len(ch)])
+        dt = np.diff(traj.times[: len(ch)])
         dt = np.where(dt == 0, 1e-6, dt)
         v = np.diff(ch, axis=0) / dt[:, None]
         speed = np.linalg.norm(v, axis=1)
@@ -1527,8 +1621,9 @@ class StartingPoseMatcher(QMainWindow):
             return
         # Re-read events from the xlsx to undo overrides
         if self._xlsx_path:
-            self.events = read_event_header(self._xlsx_path,
-                                            self.sheet_combo.currentText())
+            self.events = read_event_header(
+                self._xlsx_path, self.sheet_combo.currentText()
+            )
         self.event_overrides = {}
         self.lbl_event_info.setText(self._events_summary())
         self._redraw()
@@ -1597,7 +1692,8 @@ class StartingPoseMatcher(QMainWindow):
             ry=0.0 if self.lock_xy_rotation else self.s_ry.value(),
             rz=self.s_rz.value(),
             scale=max(1e-3, self.s_scale.value()),
-            pivot=self.transform.pivot)
+            pivot=self.transform.pivot,
+        )
         rotated_mp = no_t.apply(slot.skeleton.joints["mp"][None, :])[0]
         delta = target - rotated_mp
         self.s_tx.set_value(float(delta[0]))
@@ -1635,8 +1731,11 @@ class StartingPoseMatcher(QMainWindow):
             len_t = float(np.linalg.norm(shaft_t))
             len_m = float(np.linalg.norm(shaft_m))
             if len_m > 1e-6 and len_t > 1e-6:
-                new_scale = float(np.clip(len_t / len_m, _S_RANGE[0] * _S_SCALE,
-                                          _S_RANGE[1] * _S_SCALE))
+                new_scale = float(
+                    np.clip(
+                        len_t / len_m, _S_RANGE[0] * _S_SCALE, _S_RANGE[1] * _S_SCALE
+                    )
+                )
                 self.s_scale.set_value(new_scale)
 
         scale = max(1e-3, self.s_scale.value())
@@ -1645,8 +1744,10 @@ class StartingPoseMatcher(QMainWindow):
         nt = float(np.linalg.norm((ch_target - mp_target)[:2]))
         nm = float(np.linalg.norm((ch_skel - mp_skel)[:2]))
         if nt < 1e-6 or nm < 1e-6:
-            self._notify("Shaft projection onto XY plane is degenerate (vertical "
-                         "shaft) — Rz cannot be solved.  Adjust manually.")
+            self._notify(
+                "Shaft projection onto XY plane is degenerate (vertical "
+                "shaft) — Rz cannot be solved.  Adjust manually."
+            )
             return
         rz_deg = solve_shaft_rz_deg(mp_target, ch_target, mp_skel, ch_skel)
 
@@ -1659,15 +1760,17 @@ class StartingPoseMatcher(QMainWindow):
 
         # Translation: rotate+scale mp_skel about pivot, then offset to land on mp_target.
         rotated = RigidTransform(
-            rx=0.0, ry=0.0, rz=rz_deg, scale=scale,
-            pivot=self.transform.pivot)
+            rx=0.0, ry=0.0, rz=rz_deg, scale=scale, pivot=self.transform.pivot
+        )
         rotated_mp = rotated.apply(mp_skel[None, :])[0]
         delta = mp_target - rotated_mp
         self.s_tx.set_value(float(delta[0]))
         self.s_ty.set_value(float(delta[1]))
         self.s_tz.set_value(float(delta[2]))
-        self._notify(f"Snapped {slot_key}: Rz={rz_deg:+.1f}°, "
-                     f"|shaft_target|={nt:.3f}m, |shaft_model|={nm:.3f}m")
+        self._notify(
+            f"Snapped {slot_key}: Rz={rz_deg:+.1f}°, "
+            f"|shaft_target|={nt:.3f}m, |shaft_model|={nm:.3f}m"
+        )
 
     # ---------- file load ------------------------------------------------- #
 
@@ -1702,9 +1805,12 @@ class StartingPoseMatcher(QMainWindow):
             self.spin_phase_end.setRange(0, n - 1)
             self.spin_phase_end.setValue(n - 1)
         self.manual_window_end = n - 1
-        # Default initial frame to T (top of backswing) if available
+        # Default initial frame to T (top of backswing) if available, but keep
+        # enough room for ordinary step-forward playback on short canonical
+        # windows.
         t_frame = self._frame_for("T")
         if t_frame is not None:
+            t_frame = min(t_frame, max(0, n - 6))
             with QSignalBlocker(self.spin_frame):
                 self.spin_frame.setValue(t_frame)
             with QSignalBlocker(self.frame_slider):
@@ -1719,7 +1825,7 @@ class StartingPoseMatcher(QMainWindow):
         for k in _EVENT_KEYS:
             v = getattr(e, f"{k}_sample")
             label = self.event_labels.get(k, k)
-            sval = '?' if v != v else int(v)
+            sval = "?" if v != v else int(v)
             parts.append(f"{label} ({k})={sval}")
         if e.CHS_mph == e.CHS_mph:
             parts.append(f"CHS={e.CHS_mph:.1f}mph")
@@ -1729,30 +1835,47 @@ class StartingPoseMatcher(QMainWindow):
 
     def _on_save_clicked(self) -> None:
         path, _ = QFileDialog.getSaveFileName(
-            self, "Save offsets",
+            self,
+            "Save offsets",
             str(Path(__file__).parent / "starting_pose_offsets.json"),
-            "JSON (*.json)")
+            "JSON (*.json)",
+        )
         if not path:
             return
         out = {
             "transform": {
-                "tx": self.transform.tx, "ty": self.transform.ty,
-                "tz": self.transform.tz, "rx": self.transform.rx,
-                "ry": self.transform.ry, "rz": self.transform.rz,
+                "tx": self.transform.tx,
+                "ty": self.transform.ty,
+                "tz": self.transform.tz,
+                "rx": self.transform.rx,
+                "ry": self.transform.ry,
+                "rz": self.transform.rz,
                 "scale": self.transform.scale,
                 "pivot": list(self.transform.pivot),
                 "lock_xy_rotation": self.lock_xy_rotation,
-                "units": {"translation": "metres", "rotation": "degrees",
-                          "rotation_order": "Rz @ Ry @ Rx (intrinsic XYZ)"}},
-            "poses": {key: {
-                "visible": slot.visible, "event": slot.target_event,
-                "skeleton_source": str(Path(__file__).parent /
-                                       f"simscape_skeleton_{key}.json"),
-            } for key, slot in self.poses.items()},
+                "units": {
+                    "translation": "metres",
+                    "rotation": "degrees",
+                    "rotation_order": "Rz @ Ry @ Rx (intrinsic XYZ)",
+                },
+            },
+            "poses": {
+                key: {
+                    "visible": slot.visible,
+                    "event": slot.target_event,
+                    "skeleton_source": str(
+                        Path(__file__).parent / f"simscape_skeleton_{key}.json"
+                    ),
+                }
+                for key, slot in self.poses.items()
+            },
             "events": {
-                "A_sample": self.events.A_sample, "T_sample": self.events.T_sample,
-                "I_sample": self.events.I_sample, "F_sample": self.events.F_sample,
-                "CHS_mph": self.events.CHS_mph},
+                "A_sample": self.events.A_sample,
+                "T_sample": self.events.T_sample,
+                "I_sample": self.events.I_sample,
+                "F_sample": self.events.F_sample,
+                "CHS_mph": self.events.CHS_mph,
+            },
             "residuals_mm": self._compute_residuals_mm(),
         }
         with open(path, "w") as f:
@@ -1770,23 +1893,32 @@ class StartingPoseMatcher(QMainWindow):
             "xlsx_path": self._xlsx_path,
             "sheet": self.sheet_combo.currentText(),
             "transform": {
-                "tx": self.transform.tx, "ty": self.transform.ty,
-                "tz": self.transform.tz, "rx": self.transform.rx,
-                "ry": self.transform.ry, "rz": self.transform.rz,
+                "tx": self.transform.tx,
+                "ty": self.transform.ty,
+                "tz": self.transform.tz,
+                "rx": self.transform.rx,
+                "ry": self.transform.ry,
+                "rz": self.transform.rz,
                 "scale": self.transform.scale,
                 "pivot": list(self.transform.pivot),
             },
             "lock_xy_rotation": self.lock_xy_rotation,
-            "poses": {key: {"visible": slot.visible,
-                            "event": slot.target_event,
-                            "skeleton_path":
-                                str(Path(__file__).parent /
-                                    f"simscape_skeleton_{key}.json"),
-                            "trajectory_path":
-                                (slot.trajectory.source_path
-                                 if slot.trajectory is not None else None),
-                            "trajectory_frame_index": slot.trajectory_frame_index}
-                      for key, slot in self.poses.items()},
+            "poses": {
+                key: {
+                    "visible": slot.visible,
+                    "event": slot.target_event,
+                    "skeleton_path": str(
+                        Path(__file__).parent / f"simscape_skeleton_{key}.json"
+                    ),
+                    "trajectory_path": (
+                        slot.trajectory.source_path
+                        if slot.trajectory is not None
+                        else None
+                    ),
+                    "trajectory_frame_index": slot.trajectory_frame_index,
+                }
+                for key, slot in self.poses.items()
+            },
             "view": {"elev": float(self.ax.elev), "azim": float(self.ax.azim)},
             "traces": {
                 "clubhead": self.show_clubhead_trace,
@@ -1821,8 +1953,11 @@ class StartingPoseMatcher(QMainWindow):
         sheet = self.sheet_combo.currentText() or "session"
         ts = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
         path, _ = QFileDialog.getSaveFileName(
-            self, "Save session", str(ses_dir / f"{sheet}_{ts}.session.json"),
-            "JSON (*.json)")
+            self,
+            "Save session",
+            str(ses_dir / f"{sheet}_{ts}.session.json"),
+            "JSON (*.json)",
+        )
         if not path:
             return
         with open(path, "w") as f:
@@ -1834,7 +1969,8 @@ class StartingPoseMatcher(QMainWindow):
         ses_dir = Path(__file__).parent / "sessions"
         start = str(ses_dir) if ses_dir.exists() else str(Path(__file__).parent)
         path, _ = QFileDialog.getOpenFileName(
-            self, "Load session", start, "JSON (*.json)")
+            self, "Load session", start, "JSON (*.json)"
+        )
         if not path:
             return
         try:
@@ -1852,8 +1988,12 @@ class StartingPoseMatcher(QMainWindow):
         """
         ver = d.get("schema_version", 1)
         if ver > _SESSION_SCHEMA_VERSION:
-            logger.warning("Session schema_version=%s newer than supported %s "
-                           "— ignoring unknown keys.", ver, _SESSION_SCHEMA_VERSION)
+            logger.warning(
+                "Session schema_version=%s newer than supported %s "
+                "— ignoring unknown keys.",
+                ver,
+                _SESSION_SCHEMA_VERSION,
+            )
 
         # 1. Re-load xlsx + sheet (this resets a lot of widgets, so do it first).
         xlsx = d.get("xlsx_path")
@@ -1899,19 +2039,25 @@ class StartingPoseMatcher(QMainWindow):
                     try:
                         self.poses[key].trajectory = load_simscape_trajectory_csv(p)
                         self.poses[key].trajectory_frame_index = int(
-                            slot_d.get("trajectory_frame_index", 0))
+                            slot_d.get("trajectory_frame_index", 0)
+                        )
                         btn = self._pose_trajectory_buttons.get(key)
                         if btn is not None:
                             btn.setText(f"✓ {len(self.poses[key].trajectory)}f")
                     except Exception as exc:  # noqa: BLE001
-                        logger.warning("Could not reload trajectory %s: %s",
-                                       p, exc)
+                        logger.warning("Could not reload trajectory %s: %s", p, exc)
 
         # 4. Transform sliders.
         tf = d.get("transform") or {}
-        for attr, widget in [("tx", self.s_tx), ("ty", self.s_ty), ("tz", self.s_tz),
-                             ("rx", self.s_rx), ("ry", self.s_ry), ("rz", self.s_rz),
-                             ("scale", self.s_scale)]:
+        for attr, widget in [
+            ("tx", self.s_tx),
+            ("ty", self.s_ty),
+            ("tz", self.s_tz),
+            ("rx", self.s_rx),
+            ("ry", self.s_ry),
+            ("rz", self.s_rz),
+            ("scale", self.s_scale),
+        ]:
             if attr in tf:
                 with QSignalBlocker(widget.spin):
                     widget.set_value(float(tf[attr]))
@@ -1958,7 +2104,7 @@ class StartingPoseMatcher(QMainWindow):
                         if self.phase_combo.itemData(i) == key:
                             self.phase_combo.setCurrentIndex(i)
                             break
-                self.phase_window = key
+                self.phase_window = str(phase_in)
                 self.manual_range_widget.setVisible(key == "manual")
         if "manual_start" in tr:
             with QSignalBlocker(self.spin_phase_start):
@@ -1974,9 +2120,11 @@ class StartingPoseMatcher(QMainWindow):
 
         # Scene toggles
         scene = d.get("scene") or {}
-        for attr, cb_name in (("ball", "cb_show_ball"),
-                              ("ground", "cb_show_ground"),
-                              ("torso_disk", "cb_show_torso_disk")):
+        for attr, cb_name in (
+            ("ball", "cb_show_ball"),
+            ("ground", "cb_show_ground"),
+            ("torso_disk", "cb_show_torso_disk"),
+        ):
             if attr in scene:
                 val = bool(scene[attr])
                 setattr(self, f"show_{attr}", val)
@@ -2071,15 +2219,18 @@ class StartingPoseMatcher(QMainWindow):
                 continue
             moved = self.transform.apply(slot.skeleton.joints["mp"][None, :])[0]
             d_mid = (moved - target) * 1000.0
-            entry = {"dx_mm": float(d_mid[0]), "dy_mm": float(d_mid[1]),
-                     "dz_mm": float(d_mid[2]),
-                     "norm_mm": float(np.linalg.norm(d_mid))}
+            entry = {
+                "dx_mm": float(d_mid[0]),
+                "dy_mm": float(d_mid[1]),
+                "dz_mm": float(d_mid[2]),
+                "norm_mm": float(np.linalg.norm(d_mid)),
+            }
             ch_target = self._mocap_pos_for(slot, "club")
             if ch_target is not None and "ch" in slot.skeleton.joints:
-                moved_ch = self.transform.apply(
-                    slot.skeleton.joints["ch"][None, :])[0]
+                moved_ch = self.transform.apply(slot.skeleton.joints["ch"][None, :])[0]
                 entry["clubhead_norm_mm"] = float(
-                    np.linalg.norm((moved_ch - ch_target) * 1000.0))
+                    np.linalg.norm((moved_ch - ch_target) * 1000.0)
+                )
             out[key] = entry
         return out
 
@@ -2093,9 +2244,11 @@ class StartingPoseMatcher(QMainWindow):
             return "Residuals: (no data)"
         lines = []
         for key, r in residuals.items():
-            line = (f"{key}:  |Δmid|={r['norm_mm']:5.0f} mm  "
-                    f"(Δ=[{r['dx_mm']:+5.0f}, {r['dy_mm']:+5.0f}, "
-                    f"{r['dz_mm']:+5.0f}])")
+            line = (
+                f"{key}:  |Δmid|={r['norm_mm']:5.0f} mm  "
+                f"(Δ=[{r['dx_mm']:+5.0f}, {r['dy_mm']:+5.0f}, "
+                f"{r['dz_mm']:+5.0f}])"
+            )
             if "clubhead_norm_mm" in r:
                 line += f"   |Δclub|={r['clubhead_norm_mm']:5.0f} mm"
             lines.append(line)
@@ -2123,8 +2276,7 @@ class StartingPoseMatcher(QMainWindow):
 
         self.lbl_residual.setText(self._residual_text())
 
-        leg = self.ax.legend(loc="upper right", fontsize=8, ncol=1,
-                             framealpha=0.85)
+        leg = self.ax.legend(loc="upper right", fontsize=8, ncol=1, framealpha=0.85)
         if leg is not None:
             for text in leg.get_texts():
                 text.set_color("#e6e6e6")
@@ -2140,15 +2292,16 @@ class StartingPoseMatcher(QMainWindow):
             Z = np.zeros_like(X)
             self.ax.plot_surface(X, Y, Z, alpha=0.10, color="#22c55e")
         if self.show_ball:
-            self.ax.scatter([0], [0], [0.021], c="white",
-                            edgecolor="black", s=40, label="ball")
+            self.ax.scatter(
+                [0], [0], [0.021], c="white", edgecolor="black", s=40, label="ball"
+            )
 
     def _trace_window(self) -> tuple[int, int]:
         """Return [start, end) frame indices for trace drawing per phase setting."""
         if self.df is None:
             return (0, 0)
         n = len(self.df)
-        bounds = _PHASE_BOUNDS.get(self.phase_window, (None, None))
+        bounds = _PHASE_BOUNDS.get(self._phase_window_key(), (None, None))
         # "None" -> draw across full data
         if bounds == (None, None):
             return (0, n)
@@ -2177,43 +2330,86 @@ class StartingPoseMatcher(QMainWindow):
         i0, i1 = self._trace_window()
         sub = self.df.iloc[i0:i1]
         if self.show_midhands_trace and len(sub) > 1:
-            self.ax.plot(-sub["mid_X"].values, sub["mid_Y"].values,
-                         sub["mid_Z"].values, color="#7dd3fc", linestyle="--",
-                         linewidth=1.2, alpha=0.85,
-                         label="mocap mid-hands trace")
+            self.ax.plot(
+                -sub["mid_X"].values,
+                sub["mid_Y"].values,
+                sub["mid_Z"].values,
+                color="#7dd3fc",
+                linestyle="--",
+                linewidth=1.2,
+                alpha=0.85,
+                label="mocap mid-hands trace",
+            )
         if self.show_clubhead_trace and len(sub) > 1:
-            self.ax.plot(-sub["club_X"].values, sub["club_Y"].values,
-                         sub["club_Z"].values, color="#fb7185", linestyle="--",
-                         linewidth=1.2, alpha=0.85,
-                         label="mocap clubhead trace")
+            self.ax.plot(
+                -sub["club_X"].values,
+                sub["club_Y"].values,
+                sub["club_Z"].values,
+                color="#fb7185",
+                linestyle="--",
+                linewidth=1.2,
+                alpha=0.85,
+                label="mocap clubhead trace",
+            )
         # Phase boundary markers (start / end of selected window)
         if (self.show_midhands_trace or self.show_clubhead_trace) and len(sub) > 0:
-            for idx, marker_label, color in [
+            for idx, _marker_label, color in [
                 (i0, "start", "#22c55e"),
                 (min(i1 - 1, len(self.df) - 1), "end", "#a855f7"),
             ]:
                 row = self.df.iloc[idx]
                 if self.show_midhands_trace:
-                    self.ax.scatter(-row["mid_X"], row["mid_Y"], row["mid_Z"],
-                                    color=color, s=40, marker="^",
-                                    edgecolor="black", linewidth=0.5)
+                    self.ax.scatter(
+                        -row["mid_X"],
+                        row["mid_Y"],
+                        row["mid_Z"],
+                        color=color,
+                        s=40,
+                        marker="^",
+                        edgecolor="black",
+                        linewidth=0.5,
+                    )
                 if self.show_clubhead_trace:
-                    self.ax.scatter(-row["club_X"], row["club_Y"], row["club_Z"],
-                                    color=color, s=40, marker="^",
-                                    edgecolor="black", linewidth=0.5)
+                    self.ax.scatter(
+                        -row["club_X"],
+                        row["club_Y"],
+                        row["club_Z"],
+                        color=color,
+                        s=40,
+                        marker="^",
+                        edgecolor="black",
+                        linewidth=0.5,
+                    )
         # Current-frame marker (cross)
-        if (getattr(self, "cb_frame_marker", None) is not None and
-                self.cb_frame_marker.isChecked() and
-                self.df is not None and 0 <= self.current_frame < len(self.df)):
+        if (
+            getattr(self, "cb_frame_marker", None) is not None
+            and self.cb_frame_marker.isChecked()
+            and self.df is not None
+            and 0 <= self.current_frame < len(self.df)
+        ):
             row = self.df.iloc[self.current_frame]
             if self.show_midhands_trace:
-                self.ax.scatter(-row["mid_X"], row["mid_Y"], row["mid_Z"],
-                                color="#fde047", s=120, marker="x", linewidth=2,
-                                label="current frame (mid)")
+                self.ax.scatter(
+                    -row["mid_X"],
+                    row["mid_Y"],
+                    row["mid_Z"],
+                    color="#fde047",
+                    s=120,
+                    marker="x",
+                    linewidth=2,
+                    label="current frame (mid)",
+                )
             if self.show_clubhead_trace:
-                self.ax.scatter(-row["club_X"], row["club_Y"], row["club_Z"],
-                                color="#fde047", s=140, marker="x", linewidth=2,
-                                label="current frame (clubhead)")
+                self.ax.scatter(
+                    -row["club_X"],
+                    row["club_Y"],
+                    row["club_Z"],
+                    color="#fde047",
+                    s=140,
+                    marker="x",
+                    linewidth=2,
+                    label="current frame (clubhead)",
+                )
 
     def _draw_visible_poses(self) -> None:
         for slot in self.poses.values():
@@ -2242,13 +2438,21 @@ class StartingPoseMatcher(QMainWindow):
         mp = np.array([-row["mid_X"], row["mid_Y"], row["mid_Z"]])
         ch = np.array([-row["club_X"], row["club_Y"], row["club_Z"]])
         # Draw thin yellow club so it doesn't obscure the bold pose-targets.
-        self.ax.plot([mp[0], ch[0]], [mp[1], ch[1]], [mp[2], ch[2]],
-                     color="#fde047", linewidth=2.0, alpha=0.95,
-                     label=f"current frame ({self._event_label_for_frame(f)})")
-        self.ax.scatter(*mp, color="#fde047", s=60, marker="o",
-                        edgecolor="black", linewidth=0.6)
-        self.ax.scatter(*ch, color="#fde047", s=110, marker="s",
-                        edgecolor="black", linewidth=0.6)
+        self.ax.plot(
+            [mp[0], ch[0]],
+            [mp[1], ch[1]],
+            [mp[2], ch[2]],
+            color="#fde047",
+            linewidth=2.0,
+            alpha=0.95,
+            label=f"current frame ({self._event_label_for_frame(f)})",
+        )
+        self.ax.scatter(
+            *mp, color="#fde047", s=60, marker="o", edgecolor="black", linewidth=0.6
+        )
+        self.ax.scatter(
+            *ch, color="#fde047", s=110, marker="s", edgecolor="black", linewidth=0.6
+        )
 
     def _event_label_for_frame(self, f: int) -> str:
         """Return 'A', 'T', 'I', 'F' if frame matches an event, else 'frame N'."""
@@ -2269,13 +2473,30 @@ class StartingPoseMatcher(QMainWindow):
         ch = self._mocap_pos_for(slot, "club")
         if mp is not None and ch is not None:
             pts = np.array([mp, ch])
-            self.ax.plot(pts[:, 0], pts[:, 1], pts[:, 2],
-                         color=slot.mocap_color, linewidth=4.5,
-                         label=f"mocap {slot.name}")
-            self.ax.scatter(*mp, color=slot.mocap_color, s=70, marker="o",
-                            edgecolor="black", linewidth=0.6)
-            self.ax.scatter(*ch, color=slot.mocap_color, s=130, marker="s",
-                            edgecolor="black", linewidth=0.6)
+            self.ax.plot(
+                pts[:, 0],
+                pts[:, 1],
+                pts[:, 2],
+                color=slot.mocap_color,
+                linewidth=4.5,
+                label=f"mocap {slot.name}",
+            )
+            self.ax.scatter(
+                *mp,
+                color=slot.mocap_color,
+                s=70,
+                marker="o",
+                edgecolor="black",
+                linewidth=0.6,
+            )
+            self.ax.scatter(
+                *ch,
+                color=slot.mocap_color,
+                s=130,
+                marker="s",
+                edgecolor="black",
+                linewidth=0.6,
+            )
 
         names = list(skel.joints.keys())
         pts = np.array([skel.joints[n] for n in names])
@@ -2286,36 +2507,67 @@ class StartingPoseMatcher(QMainWindow):
             if parent in pos and child in pos:
                 a, b = pos[parent], pos[child]
                 width = 4.5 if (parent, child) == ("mp", "ch") else 2.6
-                self.ax.plot([a[0], b[0]], [a[1], b[1]], [a[2], b[2]],
-                             color=slot.color, linewidth=width)
+                self.ax.plot(
+                    [a[0], b[0]],
+                    [a[1], b[1]],
+                    [a[2], b[2]],
+                    color=slot.color,
+                    linewidth=width,
+                )
 
         # Torso-twist indicator: draw a small disk at the torso joint
         # whose plane normal matches the spine-to-hub direction and whose
         # in-plane "+X" axis is aligned with the LS-RS line.  Makes the
         # body coil visible at a glance.
         if self.show_torso_disk and "torso" in pos and "ls" in pos and "rs" in pos:
-            self._draw_torso_disk(pos["torso"], pos["ls"], pos["rs"],
-                                   pos.get("hub"), pos.get("spine"),
-                                   slot.color)
+            self._draw_torso_disk(
+                pos["torso"],
+                pos["ls"],
+                pos["rs"],
+                pos.get("hub"),
+                pos.get("spine"),
+                slot.color,
+            )
         # Indicate that this is a trajectory frame (not the static pose)
         # by appending the frame index to the legend label.
         legend = f"sim {slot.name}"
-        if (slot.trajectory is not None
-                and self.playback_target in ("Skeleton", "Both")):
-            legend = (f"sim {slot.name} (trajectory frame "
-                      f"{slot.trajectory_frame_index}/{len(slot.trajectory) - 1})")
-        self.ax.scatter(moved[:, 0], moved[:, 1], moved[:, 2],
-                        color=slot.color, s=24, label=legend)
+        if slot.trajectory is not None and self.playback_target in ("Skeleton", "Both"):
+            legend = (
+                f"sim {slot.name} (trajectory frame "
+                f"{slot.trajectory_frame_index}/{len(slot.trajectory) - 1})"
+            )
+        self.ax.scatter(
+            moved[:, 0], moved[:, 1], moved[:, 2], color=slot.color, s=24, label=legend
+        )
         if "mp" in pos:
-            self.ax.scatter(*pos["mp"], color=slot.color, s=70, marker="o",
-                            edgecolor="black", linewidth=0.6)
+            self.ax.scatter(
+                *pos["mp"],
+                color=slot.color,
+                s=70,
+                marker="o",
+                edgecolor="black",
+                linewidth=0.6,
+            )
         if "ch" in pos:
-            self.ax.scatter(*pos["ch"], color=slot.color, s=130, marker="s",
-                            edgecolor="black", linewidth=0.6)
+            self.ax.scatter(
+                *pos["ch"],
+                color=slot.color,
+                s=130,
+                marker="s",
+                edgecolor="black",
+                linewidth=0.6,
+            )
 
-    def _draw_torso_disk(self, torso: np.ndarray, ls: np.ndarray, rs: np.ndarray,
-                          hub: np.ndarray | None, spine: np.ndarray | None,
-                          color: str, radius: float = 0.18) -> None:
+    def _draw_torso_disk(
+        self,
+        torso: np.ndarray,
+        ls: np.ndarray,
+        rs: np.ndarray,
+        hub: np.ndarray | None,
+        spine: np.ndarray | None,
+        color: str,
+        radius: float = 0.18,
+    ) -> None:
         """Draw a small disc at the torso joint to visualise the twist.
 
         The disc's normal is the spine→hub direction (or world +Z if those
@@ -2331,10 +2583,7 @@ class StartingPoseMatcher(QMainWindow):
         else:
             n = np.array([0.0, 0.0, 1.0])
         nn = float(np.linalg.norm(n))
-        if nn < 1e-6:
-            n = np.array([0.0, 0.0, 1.0])
-        else:
-            n = n / nn
+        n = np.array([0.0, 0.0, 1.0]) if nn < 1e-6 else n / nn
 
         # In-plane axis: project (rs - ls) onto the plane orthogonal to n.
         rs_dir = rs - ls
@@ -2355,16 +2604,25 @@ class StartingPoseMatcher(QMainWindow):
         n_perp = np.cross(n, rs_dir)
         # Disc points
         thetas = np.linspace(0.0, 2.0 * np.pi, 24)
-        disc = torso + radius * (np.cos(thetas)[:, None] * rs_dir
-                                  + np.sin(thetas)[:, None] * n_perp)
-        self.ax.plot(disc[:, 0], disc[:, 1], disc[:, 2],
-                     color=color, linewidth=1.5, alpha=0.9)
+        disc = torso + radius * (
+            np.cos(thetas)[:, None] * rs_dir + np.sin(thetas)[:, None] * n_perp
+        )
+        self.ax.plot(
+            disc[:, 0], disc[:, 1], disc[:, 2], color=color, linewidth=1.5, alpha=0.9
+        )
         # Twist-indicator arrow from torso center toward right shoulder.
         tip = torso + (radius * 1.05) * rs_dir
-        self.ax.plot([torso[0], tip[0]], [torso[1], tip[1]], [torso[2], tip[2]],
-                     color=color, linewidth=2.6, alpha=0.95)
-        self.ax.scatter(*tip, color=color, s=24, marker=">",
-                        edgecolor="black", linewidth=0.4)
+        self.ax.plot(
+            [torso[0], tip[0]],
+            [torso[1], tip[1]],
+            [torso[2], tip[2]],
+            color=color,
+            linewidth=2.6,
+            alpha=0.95,
+        )
+        self.ax.scatter(
+            *tip, color=color, s=24, marker=">", edgecolor="black", linewidth=0.4
+        )
 
     def _effective_skeleton(self, slot: PoseSlot) -> Skeleton:
         """Return the skeleton to draw for this slot.
@@ -2373,10 +2631,12 @@ class StartingPoseMatcher(QMainWindow):
         trajectory loaded, returns the trajectory's current frame.
         Otherwise returns the slot's static skeleton.
         """
-        if (slot.trajectory is not None and len(slot.trajectory) > 0
-                and self.playback_target in ("Skeleton", "Both")):
-            i = max(0, min(slot.trajectory_frame_index,
-                           len(slot.trajectory) - 1))
+        if (
+            slot.trajectory is not None
+            and len(slot.trajectory) > 0
+            and self.playback_target in ("Skeleton", "Both")
+        ):
+            i = max(0, min(slot.trajectory_frame_index, len(slot.trajectory) - 1))
             return slot.trajectory.frames[i]
         return slot.skeleton
 
