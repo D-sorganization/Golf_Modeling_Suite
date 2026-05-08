@@ -228,6 +228,105 @@ class TestSkeleton:
         assert s.segments == [("mp", "ch")]
 
 
+class TestSkeletonProviders:
+    def _provider_modules(self):
+        import importlib
+
+        provider = importlib.import_module(
+            "src.tools.starting_pose_matcher.skeleton_provider"
+        )
+        registry = importlib.import_module(
+            "src.tools.starting_pose_matcher.providers.registry"
+        )
+        return provider, registry
+
+    def _complete_skeleton(self, core):
+        provider, _registry = self._provider_modules()
+        joints = {
+            name: np.array([float(i), 0.0, 1.0])
+            for i, name in enumerate(provider.REQUIRED_JOINTS)
+        }
+        return core.Skeleton(
+            name="Impact",
+            joints=joints,
+            segments=[("mp", "ch")],
+        )
+
+    def test_fake_provider_conforms_to_contract(self, core):
+        provider, _registry = self._provider_modules()
+        skeleton = self._complete_skeleton(core)
+
+        class FakeProvider(provider.SkeletonProvider):
+            @property
+            def metadata(self):
+                return provider.ProviderMetadata(
+                    name="fake", engine="test", model_path="memory"
+                )
+
+            def list_poses(self):
+                return ["Impact"]
+
+            def get_skeleton(self, pose_name):
+                assert pose_name == "Impact"
+                return skeleton
+
+        fake = FakeProvider()
+        assert fake.metadata.to_session_dict() == {
+            "name": "fake",
+            "engine": "test",
+            "model_path": "memory",
+            "capabilities": [],
+        }
+        assert fake.get_default_pose() == "Impact"
+        provider.validate_required_joints(
+            fake.get_skeleton("Impact"), provider_id=fake.metadata.name
+        )
+
+    def test_registry_unavailable_backends_raise_typed_errors(self):
+        provider, registry = self._provider_modules()
+        assert "mujoco" in registry.PROVIDER_IDS
+        with pytest.raises(provider.ProviderUnavailableError) as exc_info:
+            registry.create_provider("mujoco")
+        assert exc_info.value.provider_id == "mujoco"
+        assert "backend-specific slice" in str(exc_info.value)
+
+    def test_registry_unknown_provider_is_configuration_error(self):
+        provider, registry = self._provider_modules()
+        with pytest.raises(provider.ProviderConfigurationError) as exc_info:
+            registry.create_provider("bogus")
+        assert "Unknown provider 'bogus'" in str(exc_info.value)
+
+    def test_required_vocabulary_validation_reports_missing_joint(self, core):
+        provider, _registry = self._provider_modules()
+        skeleton = self._complete_skeleton(core)
+        del skeleton.joints["torso"]
+
+        with pytest.raises(provider.ProviderValidationError) as exc_info:
+            provider.validate_required_joints(skeleton, provider_id="fake")
+        assert "torso" in str(exc_info.value)
+        assert "fake" in str(exc_info.value)
+
+    def test_simscape_json_provider_alias_and_session_metadata(self, tmp_path):
+        provider, registry = self._provider_modules()
+
+        via_registry = registry.create_provider(
+            "simscape-json",
+            json_dir=tmp_path,
+            poses=("Impact",),
+        )
+        via_alias = provider.JsonSkeletonProvider(tmp_path, poses=("Impact",))
+
+        assert isinstance(via_registry, provider.SkeletonProvider)
+        assert isinstance(via_alias, provider.SimscapeJsonSkeletonProvider)
+        assert via_registry.list_poses() == ["Impact"]
+        assert via_registry.metadata.to_session_dict() == {
+            "name": "simscape-json",
+            "engine": "simscape",
+            "model_path": str(tmp_path),
+            "capabilities": ["skeleton", "json", "fallback"],
+        }
+
+
 class TestMocapEvents:
     def test_default_events_all_nan(self, core):
         e = core.MocapEvents()

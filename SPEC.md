@@ -30,16 +30,16 @@
 
 ## 1. Identity
 
-| Field                   | Value                                              |
-| ----------------------- | -------------------------------------------------- |
-| **Repository Name**     | `UpstreamDrift`                                    |
-| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift` |
-| **Owner**               | D-sorganization                                    |
-| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
-| **License**             | MIT                                                |
-| **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.143                                            |
-| **Last Spec Update**    | 2026-05-07 (fix/lint-errors-for-ci-standard - ruff fixes in golf model tabs, export_torque_polynomials.py, starting_pose_matcher.py) |
+| Field                   | Value                                                                                                                         |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| **Repository Name**     | `UpstreamDrift`                                                                                                               |
+| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift`                                                                            |
+| **Owner**               | D-sorganization                                                                                                               |
+| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                                                                                                |
+| **License**             | MIT                                                                                                                           |
+| **Current Version**     | 2.1.0                                                                                                                         |
+| **Spec Version**        | 1.0.144                                                                                                                       |
+| **Last Spec Update**    | 2026-05-08 (feat/starting-pose-provider-contract-slice - provider metadata, lazy registry, Simscape JSON provider relocation) |
 
 ## 2. Purpose & Mission
 
@@ -107,6 +107,7 @@ UpstreamDrift/
 
 │   └── tools/                      # Development and analysis tools
 │       ├── analysis_tools.py       # Biomechanical analysis utilities
+│       ├── starting_pose_matcher/  # Starting-pose matcher GUI, core math, and skeleton providers
 │       └── validation_tools.py     # Cross-engine validation
 ├── rust_core/
 │   └── upstream-physics/           # Rust physics kernels
@@ -158,6 +159,7 @@ UpstreamDrift/
 | MyoSuite Engine Adapter  | `src/engines/physics_engines/myosuite/`  | Experimental MyoSuite integration for detailed muscle physiology simulation                 |
 | Pendulum Models          | `src/engines/physics_engines/pendulum/`  | Educational simplified models for learning and quick prototyping                            |
 | FastAPI Backend          | `src/api/`                               | REST API exposing simulation, IK/ID, trajectory optimization, and control endpoints         |
+| Starting-Pose Matcher    | `src/tools/starting_pose_matcher/`       | PyQt6 alignment tool with provider metadata, typed provider errors, lazy skeleton registry, and default Simscape JSON provider |
 | PyQt6 GUI                | `src/launchers/golf_launcher.py`         | Professional interactive GUI with real-time 3D visualization                                |
 | Tauri Desktop App        | `ui/`                                    | Cross-platform desktop application wrapper (Windows, macOS, Linux)                          |
 | Rust Physics Kernels     | `rust_core/upstream-physics/`            | High-performance compiled physics routines for critical paths                               |
@@ -335,6 +337,13 @@ topic directories under `tests/`, documented the fixture scopes in
 `tests/README.md`, and added `scripts/check_test_layout.py` as the blocking CI
 guard against new flat test files, new in-tree `src/**/tests` directories, and
 overlapping fixture names in nested conftests.
+
+Starting-pose matcher provider contract coverage lives with the existing matcher
+tests in `tests/unit/engines/simscape/three_d_gui/` until a dedicated
+dedicated unit-tools layout is introduced. The focused
+provider tests validate fake-provider conformance, typed unavailable/config
+errors, shared joint-vocabulary validation, Simscape JSON aliasing, and provider
+metadata serialization for session persistence.
 
 ### Coverage Requirements
 
@@ -666,4 +675,5 @@ Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linal
 | 2026-05-07 | 1.0.138 | Added an opt-in OpenSim compliant club attachment builder path with typed `CompliantClubAttachmentConfig`, deterministic `BushingForce` XML emission, default rigid-weld regression coverage, and validation for unsupported units or missing model bodies. |
 | 2026-05-07 | 1.0.141 | Added deterministic OpenSim multistart fit orchestration with seed-list reproducibility, per-start fresh simulator factories, best-success result selection, and typed all-starts-failed diagnostics. |
 | 2026-05-07 | 1.0.143 | Fixed Wave 2 manifest validator to parse `###` section headers matching the generated format, preventing self-inconsistent validation after `--update`. Fixed wheel event filter cache to use `weakref.WeakValueDictionary` preventing unbounded memory growth in long-running UI applications with transient controls. |
+| 2026-05-08 | 1.0.144 | Added starting-pose matcher provider foundation: serializable provider metadata, required skeleton joint vocabulary, typed unavailable/configuration/validation errors, a lazy provider registry, a relocated default Simscape JSON provider with compatibility alias, and focused fake-provider tests. |
 ````

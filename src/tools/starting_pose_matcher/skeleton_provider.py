@@ -1,45 +1,107 @@
-"""Pluggable source of model skeleton joint positions.
+"""Provider contract for starting-pose skeleton sources.
 
-This is the seam that issue #4367 will exploit to make the matcher work
-with all four physics engines (MuJoCo / Drake / Pinocchio / OpenSim) and
-not just Simscape.  The matcher's GUI talks to a ``SkeletonProvider`` —
-each provider knows how to enumerate the model's poses and return their
-joint positions in the matcher's vocabulary (``hip``, ``spine``,
-``torso``, ``hub``, ``ls``, ``rs``, ``le``, ``re``, ``lw``, ``rw``,
-``mp``, ``ch``).
-
-Today only the JSON provider is wired in (it consumes the
-``simscape_skeleton_<pose>.json`` files produced by
-``export_default_skeleton.m`` next to the legacy MATLAB tree).  Future
-providers will dispatch to engine-native FK:
-
-    Engine      | Source              | Implementation hint
-    -----------:|:--------------------|:---------------------
-    Simscape    | JSON file          | this module (``JsonSkeletonProvider``)
-    MuJoCo      | MJCF + qpos        | ``mujoco.MjData``; read ``xpos``
-    Drake       | URDF/SDF + plant   | ``MultibodyPlant.SetPositions`` then ``EvalBodyPoseInWorld``
-    Pinocchio   | URDF + q           | ``pin.forwardKinematics``; ``data.oMi[id].translation``
-    OpenSim     | OSIM + state       | ``Model.realizePosition`` then ``Body.getPositionInGround``
-
-See #4367 for the full plan; this module currently exposes the abstract
-base class + the JSON provider so the matcher's GUI is already engine-
-agnostic at the call sites.
+The GUI should eventually talk only to this provider surface: providers
+enumerate model poses and return joint positions in the shared matcher
+vocabulary.  The Simscape JSON implementation now lives under
+``providers/``; ``JsonSkeletonProvider`` remains as a compatibility alias
+for existing imports while the GUI migration proceeds.
 """
 
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
+from typing import Any
 
-from src.tools.starting_pose_matcher.core import (
-    Skeleton,
-    fallback_skeleton,
-    load_skeleton,
+from src.tools.starting_pose_matcher.core import Skeleton, fallback_skeleton
+
+REQUIRED_JOINTS: tuple[str, ...] = (
+    "hip",
+    "spine",
+    "torso",
+    "hub",
+    "ls",
+    "rs",
+    "le",
+    "re",
+    "lw",
+    "rw",
+    "mp",
+    "ch",
 )
+
+
+@dataclass(frozen=True)
+class ProviderMetadata:
+    """Serializable provider identity and capability metadata."""
+
+    name: str
+    engine: str
+    model_path: str | None = None
+    capabilities: tuple[str, ...] = field(default_factory=tuple)
+
+    def to_session_dict(self) -> dict[str, Any]:
+        """Return a JSON-safe representation for session files."""
+        data = asdict(self)
+        data["capabilities"] = list(self.capabilities)
+        return data
+
+
+class ProviderError(RuntimeError):
+    """Base class for user-actionable provider failures."""
+
+
+class ProviderUnavailableError(ProviderError):
+    """Raised when an optional provider cannot run in this environment."""
+
+    def __init__(
+        self,
+        provider_id: str,
+        reason: str,
+        *,
+        install_hint: str | None = None,
+    ) -> None:
+        message = f"Provider '{provider_id}' is unavailable: {reason}"
+        if install_hint:
+            message = f"{message}. {install_hint}"
+        super().__init__(message)
+        self.provider_id = provider_id
+        self.reason = reason
+        self.install_hint = install_hint
+
+
+class ProviderConfigurationError(ProviderError):
+    """Raised when provider configuration is invalid or incomplete."""
+
+
+class ProviderValidationError(ProviderError):
+    """Raised when a provider returns an invalid skeleton contract."""
+
+
+def validate_required_joints(
+    skeleton: Skeleton,
+    *,
+    provider_id: str,
+    required: tuple[str, ...] = REQUIRED_JOINTS,
+) -> None:
+    """Validate that a provider skeleton includes the shared vocabulary."""
+    missing = [joint for joint in required if joint not in skeleton.joints]
+    if missing:
+        missing_text = ", ".join(missing)
+        raise ProviderValidationError(
+            f"Provider '{provider_id}' returned pose '{skeleton.name}' "
+            f"without required joints: {missing_text}"
+        )
 
 
 class SkeletonProvider(ABC):
     """Abstract interface for sources of model skeleton poses."""
+
+    @property
+    @abstractmethod
+    def metadata(self) -> ProviderMetadata:
+        """Return serializable provider metadata."""
 
     @abstractmethod
     def list_poses(self) -> list[str]:
@@ -49,31 +111,38 @@ class SkeletonProvider(ABC):
     def get_skeleton(self, pose_name: str) -> Skeleton:
         """Return the :class:`Skeleton` for the named pose."""
 
+    def get_default_pose(self) -> str | None:
+        """Return the preferred initial pose, if the provider exposes one."""
+        poses = self.list_poses()
+        return poses[0] if poses else None
 
-class JsonSkeletonProvider(SkeletonProvider):
-    """Reads ``simscape_skeleton_<pose>.json`` files from a directory.
+    def load_observed_target(self, _source: str | Path, **_kwargs: Any) -> Any:
+        """Load an observed target for observation providers.
 
-    These files are produced by ``export_default_skeleton.m`` (MATLAB-side
-    helper next to the legacy Motion Capture Plotter tree).  When a file
-    is missing, falls back to :func:`core.fallback_skeleton` (which
-    derives the skeleton from the shared
-    :func:`reference_golfer_setup` + :func:`forward_kinematics`).
-    """
-
-    def __init__(
-        self,
-        json_dir: str | Path,
-        poses: tuple[str, ...] = ("TopofBackswing", "Impact"),
-    ) -> None:
-        self._dir = Path(json_dir)
-        self._poses = tuple(poses)
-
-    def list_poses(self) -> list[str]:
-        return list(self._poses)
-
-    def get_skeleton(self, pose_name: str) -> Skeleton:
-        path = self._dir / f"simscape_skeleton_{pose_name}.json"
-        return load_skeleton(path, fallback_pose=pose_name)
+        Physics-engine skeleton providers do not implement this optional
+        hook.  Observation providers should override it.
+        """
+        raise ProviderConfigurationError(
+            f"Provider '{self.metadata.name}' does not load observed targets"
+        )
 
 
-__all__ = ["SkeletonProvider", "JsonSkeletonProvider", "fallback_skeleton"]
+from src.tools.starting_pose_matcher.providers.simscape_json import (  # noqa: E402
+    SimscapeJsonSkeletonProvider,
+)
+
+JsonSkeletonProvider = SimscapeJsonSkeletonProvider
+
+__all__ = [
+    "JsonSkeletonProvider",
+    "ProviderConfigurationError",
+    "ProviderError",
+    "ProviderMetadata",
+    "ProviderUnavailableError",
+    "ProviderValidationError",
+    "REQUIRED_JOINTS",
+    "SimscapeJsonSkeletonProvider",
+    "SkeletonProvider",
+    "fallback_skeleton",
+    "validate_required_joints",
+]
