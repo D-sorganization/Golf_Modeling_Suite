@@ -59,6 +59,14 @@ from src.shared.python.motion_matching.diagnostics import (
     reference_golfer_setup,
 )
 
+# Canonical ClubTarget adapter (per #4404 - replace local Wiffle loader)
+from src.shared.python.motion_matching.loaders.excel import (
+    ExcelEventMarkers,
+    read_excel_event_markers,
+)
+from src.shared.python.motion_matching.load_club_target import load_club_target
+from src.shared.python.motion_matching.target import AlignOptions
+
 logger = logging.getLogger(__name__)
 
 
@@ -378,38 +386,76 @@ def fallback_skeleton(pose_name: str) -> Skeleton:
 
 
 # ----------------------------------------------------------------------------
-# xlsx loaders (CORRECT units — bypasses buggy legacy mocap_data_loader)
+# xlsx loaders — canonical ClubTarget adapter (per #4404)
 # ----------------------------------------------------------------------------
+# The matcher now uses the shared motion-matching infrastructure for xlsx
+# loading. The local functions remain for backwards compatibility but are
+# thin wrappers around the canonical loaders.
+# ----------------------------------------------------------------------------
+
+
+def _clubtarget_to_dataframe(target: ClubTarget) -> pd.DataFrame:
+    """Convert a ClubTarget to a DataFrame compatible with the matcher GUI.
+    
+    This adapter converts the canonical ClubTarget format (butt/clubhead/quaternion)
+    into the DataFrame schema expected by the matcher GUI (mid_X/Y/Z, club_X/Y/Z).
+    
+    Args:
+        target: ClubTarget from shared loader
+        
+    Returns:
+        DataFrame with columns: time, mid_X, mid_Y, mid_Z, club_X, club_Y, club_Z
+        plus the 9 direction cosine columns for rotation matrix
+    """
+    n = len(target.time)
+    # Build rotation matrix from quaternion for direction cosines
+    # Quaternion format: [w, x, y, z] -> rotation matrix
+    rotmats = np.empty((n, 3, 3), dtype=np.float64)
+    for i in range(n):
+        q = target.club_quat[i]
+        w, x, y, z = q[0], q[1], q[2], q[3]
+        # Rotation matrix from quaternion (row-major for direction cosines)
+        rotmats[i] = np.array([
+            [1 - 2*y*y - 2*z*z, 2*x*y - 2*z*w,     2*x*z + 2*y*w],
+            [2*x*y + 2*z*w,     1 - 2*x*x - 2*z*z, 2*y*z - 2*x*w],
+            [2*x*z - 2*y*w,     2*y*z + 2*x*w,     1 - 2*x*x - 2*y*y],
+        ])
+    
+    rows = []
+    for i in range(n):
+        rec = {
+            "time":   float(target.time[i]),
+            "mid_X":  float(target.butt[i, 0]),
+            "mid_Y":  float(target.butt[i, 1]),
+            "mid_Z":  float(target.butt[i, 2]),
+            "club_X": float(target.clubhead[i, 0]),
+            "club_Y": float(target.clubhead[i, 1]),
+            "club_Z": float(target.clubhead[i, 2]),
+            # Direction cosine columns (club_Xx, club_Xy, club_Xz, etc.)
+            "club_Xx": float(rotmats[i, 0, 0]),
+            "club_Xy": float(rotmats[i, 0, 1]),
+            "club_Xz": float(rotmats[i, 0, 2]),
+            "club_Yx": float(rotmats[i, 1, 0]),
+            "club_Yy": float(rotmats[i, 1, 1]),
+            "club_Yz": float(rotmats[i, 1, 2]),
+            "club_Zx": float(rotmats[i, 2, 0]),
+            "club_Zy": float(rotmats[i, 2, 1]),
+            "club_Zz": float(rotmats[i, 2, 2]),
+        }
+        rows.append(rec)
+    return pd.DataFrame(rows)
 
 
 def load_mocap_xlsx(xlsx_path: str | Path, sheet_name: str) -> pd.DataFrame:
     """Load a Wiffle xlsx sheet into a DataFrame in metres.
-
+    
+    This function now uses the canonical ClubTarget loader and converts
+    the result to the DataFrame format expected by the matcher GUI.
+    
     Schema (subset): time (s), mid_X/Y/Z (m), club_X/Y/Z (m).
     """
-    df = pd.read_excel(xlsx_path, sheet_name=sheet_name, header=None)
-    if len(df) <= 3:
-        raise ValueError(f"Sheet '{sheet_name}' has no data rows")
-    rows: list[dict[str, float]] = []
-    for i in range(3, len(df)):
-        row = df.iloc[i]
-        if len(row) < 17:
-            continue
-        try:
-            time = float(row[1]) if not pd.isna(row[1]) else float(i - 3)
-            rec = {
-                "time":   time,
-                "mid_X":  _safe(row, 2)  * CM_TO_M,
-                "mid_Y":  _safe(row, 3)  * CM_TO_M,
-                "mid_Z":  _safe(row, 4)  * CM_TO_M,
-                "club_X": _safe(row, 14) * CM_TO_M,
-                "club_Y": _safe(row, 15) * CM_TO_M,
-                "club_Z": _safe(row, 16) * CM_TO_M,
-            }
-        except (ValueError, TypeError):
-            continue
-        rows.append(rec)
-    return pd.DataFrame(rows)
+    target = load_club_target(Path(xlsx_path), sheet=sheet_name, opts=AlignOptions())
+    return _clubtarget_to_dataframe(target)
 
 
 def _safe(row: pd.Series, idx: int, default: float = 0.0) -> float:
@@ -426,30 +472,19 @@ def _safe(row: pd.Series, idx: int, default: float = 0.0) -> float:
 
 
 def read_event_header(xlsx_path: str | Path, sheet_name: str) -> MocapEvents:
-    """Parse the row-1 event-marker band: A=<n> T=<n> I=<n> F=<n> CHS=<mph>."""
-    ev = MocapEvents()
-    try:
-        row1 = pd.read_excel(xlsx_path, sheet_name=sheet_name, header=None, nrows=1)
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("Could not read event header: %s", exc)
-        return ev
-    label_to_field = {"A": "A_sample", "T": "T_sample", "I": "I_sample",
-                      "F": "F_sample", "CHS": "CHS_mph"}
-    for c in range(row1.shape[1] - 1):
-        cell = row1.iat[0, c]
-        if pd.isna(cell):
-            continue
-        label = str(cell).strip()
-        if label not in label_to_field:
-            continue
-        val = row1.iat[0, c + 1]
-        if pd.isna(val):
-            continue
-        try:
-            setattr(ev, label_to_field[label], float(val))
-        except (ValueError, TypeError):
-            continue
-    return ev
+    """Parse the row-1 event-marker band: A=<n> T=<n> I=<n> F=<n> CHS=<mph>.
+    
+    This function now uses the canonical ExcelEventMarkers from the shared
+    motion-matching infrastructure.
+    """
+    ev_markers: ExcelEventMarkers = read_excel_event_markers(Path(xlsx_path), sheet_name)
+    return MocapEvents(
+        A_sample=ev_markers.A_sample,
+        T_sample=ev_markers.T_sample,
+        I_sample=ev_markers.I_sample,
+        F_sample=ev_markers.F_sample,
+        CHS_mph=ev_markers.CHS_mph,
+    )
 
 
 # ----------------------------------------------------------------------------
