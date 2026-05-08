@@ -108,8 +108,11 @@ class DrakeSkeletonProvider:
             from pydrake.multibody.parser import Parser
             parser = Parser(self.plant)
             # Drake requires file format hint for string parsing
-            # Determine format from content or default to URDF
-            if model_xml.strip().startswith("<sdf"):
+            # Determine format from content - search for <sdf> tag anywhere in content
+            # to handle XML declarations, comments, or whitespace before the root element
+            import re
+            # Check for SDF root element (may be preceded by XML declaration or comments)
+            if re.search(r'<sdf\s', model_xml):
                 parser.AddModelFromString(model_xml, "sdf")
             else:
                 parser.AddModelFromString(model_xml, "urdf")
