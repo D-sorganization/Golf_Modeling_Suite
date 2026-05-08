@@ -41,8 +41,13 @@ PINOCCHIO_TO_MATCHER_VOCAB: Dict[str, str] = {
     "clubhead": "ch",
 }
 
-# Reverse mapping for lookup
-MATCHER_TO_PINOCCHIO: Dict[str, str] = {v: k for k, v in PINOCCHIO_TO_MATCHER_VOCAB.items()}
+# Reverse mapping for lookup - preserves ALL aliases (e.g., hip can be "hip" or "pelvis")
+# Using a list of candidates to avoid collapsing duplicate values
+MATCHER_TO_PINOCCHIO: Dict[str, List[str]] = {}
+for pin_name, matcher_name in PINOCCHIO_TO_MATCHER_VOCAB.items():
+    if matcher_name not in MATCHER_TO_PINOCCHIO:
+        MATCHER_TO_PINOCCHIO[matcher_name] = []
+    MATCHER_TO_PINOCCHIO[matcher_name].append(pin_name)
 
 
 class PinocchioNotAvailableError(Exception):
@@ -120,16 +125,21 @@ class PinocchioSkeletonProvider:
         self._validate_vocabulary()
 
     def _validate_vocabulary(self) -> None:
-        """Validate that the model has frames/joints for the required vocabulary."""
+        """Validate that the model has frames/joints for the required vocabulary.
+        
+        For each matcher vocabulary name, checks if ANY of the aliased Pinocchio names
+        (e.g., 'hip' or 'pelvis' for the 'hip' matcher name) is available as either
+        a frame or joint.
+        """
         missing = []
-        for matcher_name, pinocchio_name in MATCHER_TO_PINOCCHIO.items():
-            # Check both frames and joints
-            found = (
-                pinocchio_name in self._frame_name_to_id or
-                pinocchio_name in self._joint_name_to_id
+        for matcher_name, pinocchio_names in MATCHER_TO_PINOCCHIO.items():
+            # Check if ANY of the aliases is available as frame or joint
+            found = any(
+                name in self._frame_name_to_id or name in self._joint_name_to_id
+                for name in pinocchio_names
             )
             if not found:
-                missing.append(f"{matcher_name} (mapped from '{pinocchio_name}')")
+                missing.append(f"{matcher_name} (mapped from {pinocchio_names})")
 
         if missing:
             raise PinocchioProviderError(
@@ -185,16 +195,27 @@ class PinocchioSkeletonProvider:
 
         skeleton: Dict[str, "NDArray[np.float64]"] = {}
 
-        for matcher_name, pinocchio_name in MATCHER_TO_PINOCCHIO.items():
-            # Try frame first, then joint
-            if pinocchio_name in self._frame_name_to_id:
-                frame_id = self._frame_name_to_id[pinocchio_name]
-                pos = self._get_frame_position(frame_id)
-                skeleton[matcher_name] = np.array(pos, dtype=np.float64)
-            elif pinocchio_name in self._joint_name_to_id:
-                joint_id = self._joint_name_to_id[pinocchio_name]
-                pos = self._get_joint_position(joint_id)
-                skeleton[matcher_name] = np.array(pos, dtype=np.float64)
+        for matcher_name, pinocchio_names in MATCHER_TO_PINOCCHIO.items():
+            # Try each alias until we find a match (frame first, then joint)
+            found = False
+            for pin_name in pinocchio_names:
+                if pin_name in self._frame_name_to_id:
+                    frame_id = self._frame_name_to_id[pin_name]
+                    pos = self._get_frame_position(frame_id)
+                    skeleton[matcher_name] = np.array(pos, dtype=np.float64)
+                    found = True
+                    break
+                elif pin_name in self._joint_name_to_id:
+                    joint_id = self._joint_name_to_id[pin_name]
+                    pos = self._get_joint_position(joint_id)
+                    skeleton[matcher_name] = np.array(pos, dtype=np.float64)
+                    found = True
+                    break
+            if not found:
+                # Should not happen if validation passed, but be defensive
+                raise PinocchioProviderError(
+                    f"Could not find frame/joint for '{matcher_name}' (aliases: {pinocchio_names})"
+                )
 
         return skeleton
 
