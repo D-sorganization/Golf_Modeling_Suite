@@ -17,6 +17,9 @@ function out = validate_3d_fullbody(model_name, opts)
 %         .verbose       default true.
 %         .smoke_time    default 0.005 s.
 %         .budget        default 1000 (Home license).
+%         .report_path   optional JSON validation report path.
+%         .source_model_path optional source model path for reporting.
+%         .target_model_path optional target model path for reporting.
 %
 %   Returns:
 %       OUT (struct)
@@ -36,9 +39,12 @@ function out = validate_3d_fullbody(model_name, opts)
         opts (1,1) struct = struct()
     end
 
-    if ~isfield(opts, 'verbose');    opts.verbose    = true;  end
-    if ~isfield(opts, 'smoke_time'); opts.smoke_time = 0.005; end
-    if ~isfield(opts, 'budget');     opts.budget     = 1000;  end
+    if ~isfield(opts, 'verbose');           opts.verbose           = true;  end
+    if ~isfield(opts, 'smoke_time');        opts.smoke_time        = 0.005; end
+    if ~isfield(opts, 'budget');            opts.budget            = 1000;  end
+    if ~isfield(opts, 'report_path');       opts.report_path       = "";    end
+    if ~isfield(opts, 'source_model_path'); opts.source_model_path = "";    end
+    if ~isfield(opts, 'target_model_path'); opts.target_model_path = "";    end
 
     if ~bdIsLoaded(char(model_name))
         error('validate_3d_fullbody:notLoaded', ...
@@ -46,13 +52,24 @@ function out = validate_3d_fullbody(model_name, opts)
     end
 
     out = struct( ...
+        'schema_version',       "3d_fullbody_validation_report.v1", ...
+        'generated_at',         string(datetime('now')), ...
+        'source_model_path',    string(opts.source_model_path), ...
+        'target_model_path',    string(opts.target_model_path), ...
         'passed',              false, ...
         'total_blocks',        0, ...
         'nonvirtual_estimate', 0, ...
         'within_budget',       false, ...
         'logged_signals',      0, ...
         'smoke_sim_status',    "skipped", ...
-        'smoke_sim_message',   "");
+        'smoke_sim_message',   "", ...
+        'required_report_fields', [ ...
+            "total_blocks"; ...
+            "nonvirtual_estimate"; ...
+            "logged_signals"; ...
+            "smoke_sim_status"; ...
+            "within_budget"], ...
+        'artifact_policy',      "generated_only_ignored_by_git");
 
     % --- Check 1: block count ---------------------------------------
     blocks = find_system(char(model_name), ...
@@ -152,9 +169,33 @@ function out = validate_3d_fullbody(model_name, opts)
     if opts.verbose
         fprintf('  passed               = %s\n', ternary(out.passed, 'true', 'false'));
     end
+
+    if strlength(string(opts.report_path)) > 0
+        local_write_json(opts.report_path, out);
+        if opts.verbose
+            fprintf('  validation_report_path = %s\n', opts.report_path);
+        end
+    end
 end
 
 
 function out = ternary(cond, a, b)
     if cond; out = a; else; out = b; end
+end
+
+
+function local_write_json(path, payload)
+    path = char(path);
+    folder = fileparts(path);
+    if strlength(string(folder)) > 0 && ~isfolder(folder)
+        mkdir(folder);
+    end
+    fid = fopen(path, 'w');
+    if fid < 0
+        error('validate_3d_fullbody:reportOpenFailed', ...
+              'Could not open validation report for writing: %s', path);
+    end
+    cleaner = onCleanup(@() fclose(fid));
+    fprintf(fid, '%s\n', jsonencode(payload, 'PrettyPrint', true));
+    clear cleaner
 end

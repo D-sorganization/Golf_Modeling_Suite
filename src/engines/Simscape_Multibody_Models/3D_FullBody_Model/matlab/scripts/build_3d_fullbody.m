@@ -28,6 +28,12 @@ function info = build_3d_fullbody(opts)
 %       .skip_prune           true to skip prune_redundant_logging.
 %       .skip_legs            true to skip add_leg_chain.
 %       .skip_validate        true to skip validate_3d_fullbody.
+%       .report_dir           generated JSON report directory.
+%       .build_report_path    build report JSON path.
+%       .logging_audit_report_path
+%                             prune audit JSON path.
+%       .validation_report_path
+%                             validation report JSON path.
 %       .verbose              default true.
 %
 %   Preconditions:
@@ -47,9 +53,15 @@ function info = build_3d_fullbody(opts)
 
     opts = local_fill_defaults(opts);
     info = struct( ...
+        'schema_version',  "3d_fullbody_build_report.v1", ...
         'started_at',     datetime('now'), ...
         'source_slx',     string(opts.source_slx), ...
         'target_slx',     string(opts.target_slx), ...
+        'artifact_policy', "generated_only_ignored_by_git", ...
+        'report_paths',   struct( ...
+            'build_report',      string(opts.build_report_path), ...
+            'logging_audit',     string(opts.logging_audit_report_path), ...
+            'validation_report', string(opts.validation_report_path)), ...
         'phases',         struct(), ...
         'errors',         strings(0,1));
 
@@ -76,10 +88,13 @@ function info = build_3d_fullbody(opts)
         if opts.verbose; fprintf('Phase 1: prune_redundant_logging...\n'); end
         t0 = tic;
         info.phases.prune = prune_redundant_logging(opts.target_model_name, ...
-            struct('verbose', opts.verbose));
+            struct('verbose', opts.verbose, ...
+                   'audit_report_path', opts.logging_audit_report_path, ...
+                   'source_model_path', opts.source_slx, ...
+                   'target_model_path', opts.target_slx));
         info.phases.prune.elapsed_s = toc(t0);
         if opts.verbose
-            fprintf('  pruned %d signal(s); freed %d nonvirtual block(s) in %.1fs\n', ...
+            fprintf('  pruned %d signal(s); heuristic savings %d nonvirtual block(s) in %.1fs\n', ...
                 info.phases.prune.signals_disabled, ...
                 info.phases.prune.blocks_removed, ...
                 info.phases.prune.elapsed_s);
@@ -113,7 +128,10 @@ function info = build_3d_fullbody(opts)
         t0 = tic;
         info.phases.validate = validate_3d_fullbody(opts.target_model_name, ...
             struct('verbose', opts.verbose, ...
-                   'smoke_time', opts.smoke_time));
+                   'smoke_time', opts.smoke_time, ...
+                   'report_path', opts.validation_report_path, ...
+                   'source_model_path', opts.source_slx, ...
+                   'target_model_path', opts.target_slx));
         info.phases.validate.elapsed_s = toc(t0);
         if opts.verbose
             fprintf('  validation: %s (%.1fs)\n', ...
@@ -124,8 +142,10 @@ function info = build_3d_fullbody(opts)
 
     info.finished_at = datetime('now');
     info.elapsed_s   = seconds(info.finished_at - info.started_at);
+    local_write_build_report(opts.build_report_path, info);
     if opts.verbose
         fprintf('=== build_3d_fullbody complete in %.1fs ===\n', info.elapsed_s);
+        fprintf('  build_report_path = %s\n', opts.build_report_path);
     end
 end
 
@@ -165,6 +185,30 @@ function opts = local_fill_defaults(opts)
     if ~isfield(opts, 'skip_validate'); opts.skip_validate = false; end
     if ~isfield(opts, 'verbose');       opts.verbose       = true;  end
     if ~isfield(opts, 'smoke_time');    opts.smoke_time    = 0.005; end
+
+    if ~isfield(opts, 'report_dir') || strlength(string(opts.report_dir)) == 0
+        opts.report_dir = fullfile(fullbody_root, 'matlab', 'output');
+    end
+    opts.report_dir = char(opts.report_dir);
+    if ~isfolder(opts.report_dir); mkdir(opts.report_dir); end
+
+    if ~isfield(opts, 'build_report_path') || ...
+            strlength(string(opts.build_report_path)) == 0
+        opts.build_report_path = fullfile(opts.report_dir, 'build_report.json');
+    end
+    opts.build_report_path = char(opts.build_report_path);
+
+    if ~isfield(opts, 'logging_audit_report_path') || ...
+            strlength(string(opts.logging_audit_report_path)) == 0
+        opts.logging_audit_report_path = fullfile(opts.report_dir, 'logging_audit.json');
+    end
+    opts.logging_audit_report_path = char(opts.logging_audit_report_path);
+
+    if ~isfield(opts, 'validation_report_path') || ...
+            strlength(string(opts.validation_report_path)) == 0
+        opts.validation_report_path = fullfile(opts.report_dir, 'validation_report.json');
+    end
+    opts.validation_report_path = char(opts.validation_report_path);
 end
 
 
@@ -206,4 +250,39 @@ end
 
 function out = ternary(cond, a, b)
     if cond; out = a; else; out = b; end
+end
+
+
+function local_write_build_report(path, info)
+%LOCAL_WRITE_BUILD_REPORT  Emit a JSON-safe build report.
+    report = struct( ...
+        'schema_version', info.schema_version, ...
+        'generated_at', string(datetime('now')), ...
+        'started_at', string(info.started_at), ...
+        'finished_at', string(info.finished_at), ...
+        'elapsed_s', double(info.elapsed_s), ...
+        'source_slx', info.source_slx, ...
+        'target_slx', info.target_slx, ...
+        'artifact_policy', info.artifact_policy, ...
+        'report_paths', info.report_paths, ...
+        'phases', info.phases, ...
+        'errors', info.errors);
+    local_write_json(path, report);
+end
+
+
+function local_write_json(path, payload)
+    path = char(path);
+    folder = fileparts(path);
+    if strlength(string(folder)) > 0 && ~isfolder(folder)
+        mkdir(folder);
+    end
+    fid = fopen(path, 'w');
+    if fid < 0
+        error('build_3d_fullbody:reportOpenFailed', ...
+              'Could not open report for writing: %s', path);
+    end
+    cleaner = onCleanup(@() fclose(fid));
+    fprintf(fid, '%s\n', jsonencode(payload, 'PrettyPrint', true));
+    clear cleaner
 end

@@ -1,7 +1,6 @@
-# Generated artifacts of the build script.  After the first successful
-# `build_3d_fullbody` run, you SHOULD commit GolfSwing3D_FullBody.slx
-# (so teammates without MATLAB Pro have a working binary).  Until then
-# keep it untracked to avoid stale checked-in copies.
+# Generated artifacts of the build script.  The derivative `.slx` is
+# generated-only and intentionally ignored; commit source scripts and
+# report schemas instead of committing local MATLAB build outputs.
 matlab/src/model/GolfSwing3D_FullBody.slx
 matlab/src/model/GolfSwing3D_FullBody.slxc
 matlab/src/model/slprj/
