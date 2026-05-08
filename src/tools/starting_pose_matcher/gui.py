@@ -1964,6 +1964,8 @@ class StartingPoseMatcher(QMainWindow):
     def _render_simscape_mat_fields(self) -> None:
         while self.simscape_mat_fields_layout.count():
             item = self.simscape_mat_fields_layout.takeAt(0)
+            if item is None:
+                continue
             widget = item.widget()
             if widget is not None:
                 widget.deleteLater()
