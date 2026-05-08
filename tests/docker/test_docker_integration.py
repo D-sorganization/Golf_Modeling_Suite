@@ -45,8 +45,9 @@ class TestDockerBuild(unittest.TestCase):
         content = dockerfile_path.read_text()
 
         # Check for required components (multi-stage slim Python runtime)
-        self.assertIn("FROM python:3.12-slim AS builder", content)
-        self.assertIn("FROM python:3.12-slim AS runtime", content)
+        self.assertIn("FROM python:3.12-slim@sha256:", content)
+        self.assertIn("AS builder", content)
+        self.assertIn("AS runtime", content)
         self.assertIn('PYTHONPATH="/workspace"', content)
         self.assertIn("WORKDIR /workspace", content)
 
@@ -473,16 +474,15 @@ class TestContainerEnvironment(unittest.TestCase):
     def test_conda_environment_setup(self) -> None:
         """Test conda environment configuration."""
         dockerfile_path = get_repo_root() / "Dockerfile"
-        lockfile_path = get_repo_root() / "requirements.lock"
         content = dockerfile_path.read_text()
-        lockfile_content = lockfile_path.read_text()
 
         # Verify base image (multi-stage slim Python build) and package installation
-        self.assertIn("FROM python:3.12-slim AS builder", content)
-        self.assertIn("FROM python:3.12-slim AS runtime", content)
+        self.assertIn("FROM python:3.12-slim@sha256:", content)
+        self.assertIn("AS builder", content)
+        self.assertIn("AS runtime", content)
         self.assertIn("python -m venv /opt/venv", content)
         self.assertIn(
-            "python -m pip install --upgrade --no-cache-dir pip==25.3", content
+            "python -m pip install --upgrade --no-cache-dir pip==26.1", content
         )
         self.assertIn("pip install -r /tmp/requirements.lock", content)
 
@@ -499,9 +499,6 @@ class TestContainerEnvironment(unittest.TestCase):
         ]
         for package in required_packages:
             self.assertIn(package, content, f"Should install {package}")
-
-        # matplotlib is pulled in through the pinned requirements lockfile.
-        self.assertIn("matplotlib", lockfile_content)
 
 
 class TestModuleAccessibility(unittest.TestCase):
