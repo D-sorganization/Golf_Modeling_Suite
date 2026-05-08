@@ -30,6 +30,7 @@ UpstreamDrift (formerly Golf Modeling Suite) consolidates multiple golf swing mo
 For detailed documentation, please visit the **[Documentation Hub](https://upstream-drift.readthedocs.io)**.
 For a focused reviewer walkthrough, start with the
 **[golf modeling portfolio demo](docs/portfolio/golf_modeling_demo.md)**.
+**Developers and AI agents:** Read **[AGENTS.md](AGENTS.md)** for the shared infrastructure directory and discovery workflow to avoid code duplication.
 
 ## Key Features
 

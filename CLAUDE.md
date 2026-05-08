@@ -5,6 +5,7 @@
 > **GAAI Fleet Member.** GAAI framework installed in `.gaai/`. Read `.gaai/core/GAAI.md` for full governance spec.
 > Rules: `@.gaai/core/contexts/rules/base.rules.md` and `@.gaai/project/contexts/rules/project.rules.md`
 > PRs target `main`. Use focused topic branches such as `fix/...`, `feat/...`, `chore/...`, or `claude/...`.
+> **New agents:** Read [`AGENTS.md`](AGENTS.md) for the shared infrastructure directory and discovery workflow.
 
 ## What This Is
 
