@@ -59,10 +59,23 @@ from src.engines.physics_engines.opensim.python.motion_matching.simulate import 
     evaluate_polynomial_torque,
     simulate_with_coefficients,
 )
+from src.engines.physics_engines.opensim.python.motion_matching.provider import (
+    OpenSimFitSwingProvider,
+)
 from src.engines.physics_engines.opensim.python.motion_matching.synthesize import (
     SynthOptions,
     synthesize_target_from_coefficients,
 )
+from src.shared.python.motion_matching.provider_registry import register_provider
+
+# Auto-register the OpenSim provider so the cross-engine matcher can dispatch
+# by ``engine_name == "opensim"``. Wrapped in try/except ImportError so the
+# package remains importable when scipy / opensim wheels are absent (tests
+# without optional deps installed).
+import contextlib as _contextlib
+
+with _contextlib.suppress(ImportError):  # pragma: no cover - exercised live
+    register_provider(OpenSimFitSwingProvider())
 
 __all__ = [
     "COEFFS_PER_JOINT",
@@ -70,6 +83,7 @@ __all__ = [
     "FitOptions",
     "FitResult",
     "MultistartOptions",
+    "OpenSimFitSwingProvider",
     "OPENSIM_COORD_ORDER",
     "OPENSIM_NEUTRAL_POSE",
     "OPENSIM_SIGN_CONVENTION",
