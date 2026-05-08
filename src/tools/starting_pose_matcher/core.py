@@ -76,7 +76,7 @@ logger = logging.getLogger(__name__)
 CM_TO_M = 0.01
 
 # Schema version for session JSON
-SESSION_SCHEMA_VERSION = 3  # bump: fallbacks now FK-derived (#4376)
+SESSION_SCHEMA_VERSION = 4  # durable provider/session schema (#4395)
 
 # Event-label conventions.
 EVENT_KEYS: tuple[str, ...] = ("A", "T", "I", "F")

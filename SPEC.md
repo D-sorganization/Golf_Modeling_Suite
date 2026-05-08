@@ -30,16 +30,16 @@
 
 ## 1. Identity
 
-| Field                   | Value                                              |
-| ----------------------- | -------------------------------------------------- |
-| **Repository Name**     | `UpstreamDrift`                                    |
-| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift` |
-| **Owner**               | D-sorganization                                    |
-| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
-| **License**             | MIT                                                |
-| **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.143                                            |
-| **Last Spec Update**    | 2026-05-07 (fix/lint-errors-for-ci-standard - ruff fixes in golf model tabs, export_torque_polynomials.py, starting_pose_matcher.py) |
+| Field                   | Value                                                                                      |
+| ----------------------- | ------------------------------------------------------------------------------------------ |
+| **Repository Name**     | `UpstreamDrift`                                                                            |
+| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift`                                         |
+| **Owner**               | D-sorganization                                                                            |
+| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                                                             |
+| **License**             | MIT                                                                                        |
+| **Current Version**     | 2.1.0                                                                                      |
+| **Spec Version**        | 1.0.144                                                                                    |
+| **Last Spec Update**    | 2026-05-08 (starting-pose matcher durable session schema and cross-provider parity matrix) |
 
 ## 2. Purpose & Mission
 
@@ -666,4 +666,5 @@ Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linal
 | 2026-05-07 | 1.0.138 | Added an opt-in OpenSim compliant club attachment builder path with typed `CompliantClubAttachmentConfig`, deterministic `BushingForce` XML emission, default rigid-weld regression coverage, and validation for unsupported units or missing model bodies. |
 | 2026-05-07 | 1.0.141 | Added deterministic OpenSim multistart fit orchestration with seed-list reproducibility, per-start fresh simulator factories, best-success result selection, and typed all-starts-failed diagnostics. |
 | 2026-05-07 | 1.0.143 | Fixed Wave 2 manifest validator to parse `###` section headers matching the generated format, preventing self-inconsistent validation after `--update`. Fixed wheel event filter cache to use `weakref.WeakValueDictionary` preventing unbounded memory growth in long-running UI applications with transient controls. |
+| 2026-05-08 | 1.0.144 | Added the starting-pose matcher durable session schema contract, including current-version validation, provider metadata, selected frame, skeleton vocabulary version, 7-DOF transform fields, quality metrics, optional Simscape MAT output path, and cross-provider parity matrix checks for skeleton vocabulary, units, coordinate frames, and typed optional-dependency behavior. |
 ````
