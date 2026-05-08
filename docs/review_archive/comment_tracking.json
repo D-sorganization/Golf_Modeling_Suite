@@ -35,7 +35,10 @@
     "3205307358",
     "3205438207",
     "3205997871",
-    "3205997874"
+    "3205997874",
+    "3206528602",
+    "3206528605",
+    "3206528606"
   ],
   "created_issues": {
     "3197917606": "https://github.com/D-sorganization/UpstreamDrift/issues/4140",
@@ -47,6 +50,8 @@
     "3204251306": "https://github.com/D-sorganization/UpstreamDrift/issues/4360",
     "3205307354": "https://github.com/D-sorganization/UpstreamDrift/issues/4371",
     "3205307358": "https://github.com/D-sorganization/UpstreamDrift/issues/4372",
-    "3205997871": "https://github.com/D-sorganization/UpstreamDrift/issues/4384"
+    "3205997871": "https://github.com/D-sorganization/UpstreamDrift/issues/4384",
+    "3206528605": "https://github.com/D-sorganization/UpstreamDrift/issues/4418",
+    "3206528606": "https://github.com/D-sorganization/UpstreamDrift/issues/4419"
   }
 }
