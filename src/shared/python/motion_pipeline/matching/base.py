@@ -208,8 +208,10 @@ class BaseMotionMatchingSolver(ABC):
             RMSE in radians
         """
         errors = []
-        for ref_frame, track_frame in zip(reference.frames, tracked.frames):
-            for ref_q, track_q in zip(ref_frame.q, track_frame.q):
+        for ref_frame, track_frame in zip(
+            reference.frames, tracked.frames, strict=False
+        ):
+            for ref_q, track_q in zip(ref_frame.q, track_frame.q, strict=False):
                 errors.append((ref_q - track_q) ** 2)
 
         return float(np.sqrt(np.mean(errors)))
@@ -231,8 +233,10 @@ class BaseMotionMatchingSolver(ABC):
         """
         # Compute residual as difference in joint angles
         residuals = []
-        for ref_frame, track_frame in zip(reference.frames, tracked.frames):
-            for ref_q, track_q in zip(ref_frame.q, track_frame.q):
+        for ref_frame, track_frame in zip(
+            reference.frames, tracked.frames, strict=False
+        ):
+            for ref_q, track_q in zip(ref_frame.q, track_frame.q, strict=False):
                 residuals.append(abs(ref_q - track_q))
 
         return {

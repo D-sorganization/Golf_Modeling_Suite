@@ -20,18 +20,17 @@ from __future__ import annotations
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Annotated, Any, Literal, Optional, Union
 
 import numpy as np
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from pydantic.functional_validators import AfterValidator
-from typing import Annotated
 
 # =============================================================================
 # Type Aliases
 # =============================================================================
 
-ArrayLike = Union[list[float], np.ndarray]
+ArrayLike = list[float] | np.ndarray
 SchemaName = Literal["BODY_25", "MediaPipe_33", "COCO_17", "OpenPose_25", "custom"]
 Axis = Literal["X", "Y", "Z", "+X", "-X", "+Y", "-Y", "+Z", "-Z"]
 UpAxis = Literal["+Y", "+Z", "+X", "-Y", "-Z", "-X"]
@@ -314,7 +313,7 @@ class MarkerTrajectory(BaseModel):
         if len(self.frames) < 2:
             return self
         reference_markers = set(self.frames[0].marker_names)
-        for i, frame in enumerate(self.frames[1:], 1):
+        for _i, frame in enumerate(self.frames[1:], 1):
             frame_markers = set(frame.marker_names)
             if frame_markers != reference_markers:
                 # Allow for occlusions, but names should be consistent
@@ -360,9 +359,12 @@ class JointLimit(BaseModel):
 
     @model_validator(mode="after")
     def check_limit_order(self) -> JointLimit:
-        if self.lower is not None and self.upper is not None:
-            if self.lower > self.upper:
-                raise ValueError("Lower limit must be <= upper limit")
+        if (
+            self.lower is not None
+            and self.upper is not None
+            and self.lower > self.upper
+        ):
+            raise ValueError("Lower limit must be <= upper limit")
         return self
 
 
@@ -490,9 +492,8 @@ class JointStateFrame(BaseModel):
     @field_validator("q", "qdot", "qddot")
     @classmethod
     def check_finite_values(cls, v: list[float] | None) -> list[float] | None:
-        if v is not None:
-            if not all(np.isfinite(x) for x in v):
-                raise ValueError("All values must be finite")
+        if v is not None and not all(np.isfinite(x) for x in v):
+            raise ValueError("All values must be finite")
         return v
 
     @model_validator(mode="after")
@@ -703,7 +704,7 @@ class TorqueTrajectory(BaseModel):
                     f"frame {i} tau length {len(f.tau)} != rig_joint_names length {n}"
                 )
         ts = [f.timestamp for f in self.frames]
-        if any(b <= a for a, b in zip(ts, ts[1:])):
+        if any(b <= a for a, b in zip(ts, ts[1:], strict=False)):
             raise ValueError("timestamps must be strictly monotonic")
         return self
 
@@ -772,7 +773,7 @@ class MuscleActivationTrajectory(BaseModel):
                     f"muscle_names length {n}"
                 )
         ts = [f.timestamp for f in self.frames]
-        if any(b <= a for a, b in zip(ts, ts[1:])):
+        if any(b <= a for a, b in zip(ts, ts[1:], strict=False)):
             raise ValueError("timestamps must be strictly monotonic")
         return self
 
