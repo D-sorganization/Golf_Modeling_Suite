@@ -31,6 +31,10 @@ def _excel_path():
     return p if p.is_file() else None
 
 
+def _require_openpyxl() -> None:
+    pytest.importorskip("openpyxl", reason="real Excel workbook tests require openpyxl")
+
+
 def test_inches_to_metres_constant_matches_legacy_loader() -> None:
     assert pytest.approx(0.0254) == INCHES_TO_METERS
 
@@ -69,6 +73,7 @@ def test_load_excel_TW_ProV1_succeeds() -> None:
     p = _excel_path()
     if p is None:
         pytest.skip("Wiffle_ProV1_club_3D_data.xlsx not present")
+    _require_openpyxl()
     target = load_club_target_excel(p, "TW_ProV1", AlignOptions())
     assert isinstance(target, ClubTarget)
     assert target.time.shape[0] == target.butt.shape[0]
@@ -84,6 +89,7 @@ def test_load_excel_inches_to_metres() -> None:
     p = _excel_path()
     if p is None:
         pytest.skip("Wiffle_ProV1_club_3D_data.xlsx not present")
+    _require_openpyxl()
     target = load_club_target_excel(p, "TW_ProV1", AlignOptions())
     radii = np.linalg.norm(target.clubhead, axis=1)
     # Plausibility: clubhead radius from world origin must be < 5 m once
@@ -97,6 +103,7 @@ def test_load_excel_quaternion_sign_canonicalised() -> None:
     p = _excel_path()
     if p is None:
         pytest.skip("Wiffle_ProV1_club_3D_data.xlsx not present")
+    _require_openpyxl()
     target = load_club_target_excel(p, "TW_ProV1", AlignOptions())
     # SLERP over a canonicalised raw series may produce a few negative-w samples
     # near antipodal interpolation segments, but the bulk should be positive.
@@ -108,6 +115,7 @@ def test_load_excel_sha256_matches_file() -> None:
     p = _excel_path()
     if p is None:
         pytest.skip("Wiffle_ProV1_club_3D_data.xlsx not present")
+    _require_openpyxl()
     target = load_club_target_excel(p, "TW_ProV1", AlignOptions())
     h = hashlib.sha256()
     with p.open("rb") as fp:
