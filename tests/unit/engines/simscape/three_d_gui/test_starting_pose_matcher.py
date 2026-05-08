@@ -331,7 +331,9 @@ class TestSkeletonTrajectory:
         assert len(t) == 0
 
     def test_frame_at_time_clamps_to_range(self, core):
-        sk = lambda v: core.Skeleton(joints={"mp": np.array([v, 0., 1.])})
+        def sk(v):
+            return core.Skeleton(joints={"mp": np.array([v, 0., 1.])})
+
         t = core.SkeletonTrajectory(
             times=np.array([0.0, 0.1, 0.2, 0.3]),
             frames=[sk(0.0), sk(0.1), sk(0.2), sk(0.3)])
@@ -442,7 +444,9 @@ class TestSkeletonModelling:
         body's central column)."""
         for pose in ("Impact", "TopofBackswing"):
             s = core.load_skeleton(tmp_path / "x.json", pose)
-            spine = s.joints["spine"]; torso = s.joints["torso"]; hub = s.joints["hub"]
+            spine = s.joints["spine"]
+            torso = s.joints["torso"]
+            hub = s.joints["hub"]
             # Z-coordinate strictly between spine and hub
             assert spine[2] < torso[2] < hub[2], (
                 f"{pose}: torso Z {torso[2]} not between spine {spine[2]} "

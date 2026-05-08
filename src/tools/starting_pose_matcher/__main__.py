@@ -18,11 +18,10 @@ def main() -> int:
     try:
         from src.tools.starting_pose_matcher.gui import main as _gui_main
     except ImportError as exc:
-        print(
+        sys.stderr.write(
             "Could not import the matcher's GUI dependencies "
             f"(PyQt6 / matplotlib): {exc}\n\n"
-            "Install with:\n  pip install upstream-drift[gui-tools]",
-            file=sys.stderr,
+            "Install with:\n  pip install upstream-drift[gui-tools]\n"
         )
         return 1
     return _gui_main()

@@ -65,7 +65,7 @@ from src.shared.python.motion_matching.loaders.excel import (
     read_excel_event_markers,
 )
 from src.shared.python.motion_matching.load_club_target import load_club_target
-from src.shared.python.motion_matching.target import AlignOptions
+from src.shared.python.motion_matching.target import AlignOptions, ClubTarget
 
 logger = logging.getLogger(__name__)
 
@@ -567,9 +567,7 @@ def _xyz_columns_for(df_columns: list[str], stem: str) -> list[str] | None:
         a, b, c = stem, stem[:-1] + "Y", stem[:-1] + "Z"
     elif stem.endswith("_x"):
         a, b, c = stem, stem[:-1] + "y", stem[:-1] + "z"
-    elif stem.endswith("_1"):
-        a, b, c = stem, stem[:-1] + "2", stem[:-1] + "3"
-    elif stem.endswith("_dim1"):
+    elif stem.endswith(("_1", "_dim1")):
         a, b, c = stem, stem[:-1] + "2", stem[:-1] + "3"
     else:
         return None

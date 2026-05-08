@@ -36,6 +36,7 @@ Or, from the GolfLauncher tile (registered in ``src/config/models.yaml``).
 
 from __future__ import annotations
 
+from contextlib import suppress
 import json
 import logging
 import os
@@ -1189,10 +1190,8 @@ class StartingPoseMatcher(QMainWindow):
         ax.set_ylim(-1.5, 2.0)
         ax.set_zlim(-1.5, 2.5)
 
-        try:
+        with suppress(AttributeError):
             ax.set_box_aspect((4, 3.5, 4))
-        except AttributeError:
-            pass
         # Dark-theme tick & pane colours
         for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
             axis.set_pane_color((0.16, 0.18, 0.22, 0.85))
@@ -1223,11 +1222,8 @@ class StartingPoseMatcher(QMainWindow):
                 pts.append(ch)
         if not pts:
             return
-        try:
+        with suppress(ValueError, AttributeError):
             _shared_equalize_3d_axes(self.ax, np.asarray(pts))
-        except (ValueError, AttributeError):
-            # Helper rejects empty / malformed arrays — keep the default bounds.
-            pass
 
     # ===================================================================== #
     # Event handlers                                                        #
@@ -2188,7 +2184,7 @@ class StartingPoseMatcher(QMainWindow):
                          label="mocap clubhead trace")
         # Phase boundary markers (start / end of selected window)
         if (self.show_midhands_trace or self.show_clubhead_trace) and len(sub) > 0:
-            for idx, marker_label, color in [
+            for idx, _marker_label, color in [
                 (i0, "start", "#22c55e"),
                 (min(i1 - 1, len(self.df) - 1), "end", "#a855f7"),
             ]:
@@ -2331,10 +2327,7 @@ class StartingPoseMatcher(QMainWindow):
         else:
             n = np.array([0.0, 0.0, 1.0])
         nn = float(np.linalg.norm(n))
-        if nn < 1e-6:
-            n = np.array([0.0, 0.0, 1.0])
-        else:
-            n = n / nn
+        n = np.array([0.0, 0.0, 1.0]) if nn < 1e-6 else n / nn
 
         # In-plane axis: project (rs - ls) onto the plane orthogonal to n.
         rs_dir = rs - ls
