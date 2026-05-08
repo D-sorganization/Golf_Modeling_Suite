@@ -45,6 +45,8 @@ import numpy as np
 import pandas as pd
 from matplotlib.backends.backend_qtagg import (
     FigureCanvasQTAgg as FigureCanvas,
+)
+from matplotlib.backends.backend_qtagg import (
     NavigationToolbar2QT as NavigationToolbar,
 )
 from matplotlib.figure import Figure
@@ -69,7 +71,6 @@ from PyQt6.QtWidgets import (
     QSlider,
     QSpinBox,
     QSplitter,
-    QStyle,
     QStyleFactory,
     QToolButton,
     QVBoxLayout,
@@ -80,52 +81,86 @@ from PyQt6.QtWidgets import (
 # in environments where the Qt stack isn't fully working.
 try:
     from .starting_pose_core import (
-        CM_TO_M,
         DEFAULT_EVENT_PRESET as _DEFAULT_EVENT_PRESET,
+    )
+    from .starting_pose_core import (
         DEFAULT_PHASE as _DEFAULT_PHASE,
+    )
+    from .starting_pose_core import (
         EVENT_KEYS as _EVENT_KEYS,
+    )
+    from .starting_pose_core import (
         EVENT_LABEL_PRESETS as _EVENT_LABEL_PRESETS,
-        MocapEvents,
+    )
+    from .starting_pose_core import (
         PHASE_BOUNDS as _PHASE_BOUNDS,
+    )
+    from .starting_pose_core import (
         PHASE_KEYS as _PHASE_KEYS,
+    )
+    from .starting_pose_core import (
+        SESSION_SCHEMA_VERSION as _SESSION_SCHEMA_VERSION,
+    )
+    from .starting_pose_core import (
+        MocapEvents,
         PoseSlot,
         RigidTransform,
-        SESSION_SCHEMA_VERSION as _SESSION_SCHEMA_VERSION,
         Skeleton,
         SkeletonTrajectory,
         load_mocap_xlsx,
         load_simscape_trajectory_csv,
         load_skeleton,
-        phase_display_label as _phase_display_label,
-        phase_key_from_label as _phase_key_from_label,
         read_event_header,
         solve_shaft_rz_deg,
+    )
+    from .starting_pose_core import (
+        phase_display_label as _phase_display_label,
+    )
+    from .starting_pose_core import (
+        phase_key_from_label as _phase_key_from_label,
     )
 except ImportError:
     # Running as a script (python -m starting_pose_matcher) — relative
     # imports don't work, fall back to absolute.
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from starting_pose_core import (  # type: ignore[no-redef]
-        CM_TO_M,
+    from starting_pose_core import (
         DEFAULT_EVENT_PRESET as _DEFAULT_EVENT_PRESET,
+    )
+    from starting_pose_core import (
         DEFAULT_PHASE as _DEFAULT_PHASE,
+    )
+    from starting_pose_core import (
         EVENT_KEYS as _EVENT_KEYS,
+    )
+    from starting_pose_core import (
         EVENT_LABEL_PRESETS as _EVENT_LABEL_PRESETS,
-        MocapEvents,
+    )
+    from starting_pose_core import (
         PHASE_BOUNDS as _PHASE_BOUNDS,
+    )
+    from starting_pose_core import (
         PHASE_KEYS as _PHASE_KEYS,
+    )
+    from starting_pose_core import (
+        SESSION_SCHEMA_VERSION as _SESSION_SCHEMA_VERSION,
+    )
+    from starting_pose_core import (  # type: ignore[no-redef]
+        MocapEvents,
         PoseSlot,
         RigidTransform,
-        SESSION_SCHEMA_VERSION as _SESSION_SCHEMA_VERSION,
         Skeleton,
         SkeletonTrajectory,
         load_mocap_xlsx,
         load_simscape_trajectory_csv,
         load_skeleton,
-        phase_display_label as _phase_display_label,
-        phase_key_from_label as _phase_key_from_label,
         read_event_header,
         solve_shaft_rz_deg,
+    )
+    from starting_pose_core import (
+        phase_display_label as _phase_display_label,
+    )
+    from starting_pose_core import (
+        phase_key_from_label as _phase_key_from_label,
     )
 
 logger = logging.getLogger(__name__)
@@ -714,8 +749,10 @@ class StartingPoseMatcher(QMainWindow):
             self._event_label_edits[k] = le
             gl.addWidget(le, r, 1, 1, 3)
 
-        hint = QLabel("Custom labels are saved with the session and shown in the legend / "
-                      "current-frame indicator.")
+        hint = QLabel(
+            "Custom labels are saved with the session and shown in the legend / "
+            "current-frame indicator."
+        )
         hint.setObjectName("status")
         hint.setWordWrap(True)
         gl.addWidget(hint, len(_EVENT_KEYS) + 1, 0, 1, 4)
@@ -913,7 +950,9 @@ class StartingPoseMatcher(QMainWindow):
         self.cb_show_ground.stateChanged.connect(self._on_scene_toggled)
         v.addWidget(self.cb_show_ground)
 
-        self.cb_show_torso_disk = QCheckBox("Show torso-twist indicator (disk at torso joint)")
+        self.cb_show_torso_disk = QCheckBox(
+            "Show torso-twist indicator (disk at torso joint)"
+        )
         self.cb_show_torso_disk.setChecked(self.show_torso_disk)
         self.cb_show_torso_disk.setToolTip(
             "Draws a small disc at the torso revolute joint between the\n"
@@ -1050,7 +1089,9 @@ class StartingPoseMatcher(QMainWindow):
 
         # One snap button per pose-slot
         for key, slot in self.poses.items():
-            btn = QPushButton(f"Snap {key} pose → mocap @ {slot.target_event} (shaft-aligned)")
+            btn = QPushButton(
+                f"Snap {key} pose → mocap @ {slot.target_event} (shaft-aligned)"
+            )
             btn.setObjectName("primary")
             btn.clicked.connect(lambda _checked, k=key: self._snap_shaft(k))
             v.addWidget(btn)
@@ -1096,7 +1137,9 @@ class StartingPoseMatcher(QMainWindow):
         v.addWidget(_hsep())
 
         # X/Y rotation lock
-        self.cb_lock_xy = QCheckBox("Allow Rx/Ry rotations (off by default — Z is up in both data and model)")
+        self.cb_lock_xy = QCheckBox(
+            "Allow Rx/Ry rotations (off by default — Z is up in both data and model)"
+        )
         self.cb_lock_xy.setChecked(False)
         self.cb_lock_xy.stateChanged.connect(self._on_lock_xy_toggled)
         v.addWidget(self.cb_lock_xy)
@@ -1303,8 +1346,10 @@ class StartingPoseMatcher(QMainWindow):
                     "Playback target is 'Skeleton' but no visible pose has\n"
                     "a trajectory CSV loaded yet.\n\n"
                     "Either:\n"
-                    "  • Pose Slots → Trajectory Load… for one of the visible poses, or\n"
-                    "  • Switch the Playback target back to 'Mocap'.")
+                    "  • Pose Slots → Trajectory Load… for one of the visible\n"
+                    "    poses, or\n"
+                    "  • Switch the Playback target back to 'Mocap'."
+                )
                 return
         if self.df is None and self.playback_target in ("Mocap", "Both"):
             QMessageBox.information(
@@ -1320,7 +1365,10 @@ class StartingPoseMatcher(QMainWindow):
     def _on_phase_changed(self, _index: int) -> None:
         key = self.phase_combo.currentData()
         if not key:
-            key = _phase_key_from_label(self.phase_combo.currentText()) or _DEFAULT_PHASE
+            key = (
+                _phase_key_from_label(self.phase_combo.currentText())
+                or _DEFAULT_PHASE
+            )
         self.phase_window = key
         self.manual_range_widget.setVisible(key == "manual")
         self._redraw()
@@ -1625,7 +1673,8 @@ class StartingPoseMatcher(QMainWindow):
         self.s_ry.set_value(0.0)
         self.s_rz.set_value(rz_deg)
 
-        # Translation: rotate+scale mp_skel about pivot, then offset to land on mp_target.
+        # Translation: rotate+scale mp_skel about pivot, then offset to land on
+        # mp_target.
         rotated = RigidTransform(
             rx=0.0, ry=0.0, rz=rz_deg, scale=scale,
             pivot=self.transform.pivot)
@@ -2150,7 +2199,7 @@ class StartingPoseMatcher(QMainWindow):
                          label="mocap clubhead trace")
         # Phase boundary markers (start / end of selected window)
         if (self.show_midhands_trace or self.show_clubhead_trace) and len(sub) > 0:
-            for idx, marker_label, color in [
+            for idx, _marker_label, color in [
                 (i0, "start", "#22c55e"),
                 (min(i1 - 1, len(self.df) - 1), "end", "#a855f7"),
             ]:
