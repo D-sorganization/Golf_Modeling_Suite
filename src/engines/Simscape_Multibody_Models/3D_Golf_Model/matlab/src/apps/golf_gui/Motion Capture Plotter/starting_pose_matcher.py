@@ -122,7 +122,14 @@ try:
 except ImportError:
     # Running as a script (python -m starting_pose_matcher) — relative
     # imports don't work, fall back to absolute.
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    # Also add repo root to sys.path so `src.tools.starting_pose_matcher` imports work
+    # when running from the legacy directory path.
+    here_dir = Path(__file__).parent
+    sys.path.insert(0, str(here_dir))
+    # Add repo root (6 levels up from Motion Capture Plotter) for src.* imports
+    repo_root = here_dir.parents[6]
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
     from starting_pose_core import (
         DEFAULT_EVENT_PRESET as _DEFAULT_EVENT_PRESET,
     )
