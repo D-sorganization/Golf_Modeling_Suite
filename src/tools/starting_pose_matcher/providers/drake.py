@@ -9,7 +9,7 @@ Required vocabulary:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     import numpy as np
@@ -93,6 +93,7 @@ class DrakeSkeletonProvider:
         """
         try:
             from pydrake.multibody.plant import MultibodyPlant
+            from pydrake.multibody.tree import BodyIndex
             from pydrake.systems.framework import DiagramBuilder
         except ImportError as e:
             raise DrakeNotAvailableError(
@@ -101,6 +102,7 @@ class DrakeSkeletonProvider:
 
         self._MultibodyPlant = MultibodyPlant
         self._DiagramBuilder = DiagramBuilder
+        self._BodyIndex = BodyIndex
 
         if model_path is None and model_xml is None:
             raise DrakeProviderError("Either model_path or model_xml must be provided")
@@ -124,10 +126,11 @@ class DrakeSkeletonProvider:
         self.plant.Finalize()
 
         # Build body name to index mapping
-        self._body_name_to_index: dict[str, int] = {}
+        self._body_name_to_index: dict[str, Any] = {}
         for i in range(self.plant.num_bodies()):
-            body = self.plant.get_body(i)
-            self._body_name_to_index[body.name()] = i
+            body_index = self._BodyIndex(i)
+            body = self.plant.get_body(body_index)
+            self._body_name_to_index[body.name()] = body_index
 
         # Validate that required vocabulary is available
         self._validate_vocabulary()
@@ -145,7 +148,7 @@ class DrakeSkeletonProvider:
             )
 
     def _get_body_position(
-        self, body_index: int, context
+        self, body_index: Any, context: Any
     ) -> tuple[float, float, float]:
         """Get the position of a body in world coordinates.
 
@@ -157,7 +160,7 @@ class DrakeSkeletonProvider:
             Tuple of (x, y, z) coordinates in meters.
         """
         body = self.plant.get_body(body_index)
-        pose = body.EvalBodyPoseInWorld(context)
+        pose = body.EvalPoseInWorld(context)
         position = pose.translation()
         return (float(position[0]), float(position[1]), float(position[2]))
 

@@ -9,7 +9,8 @@ Required vocabulary:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     import numpy as np
@@ -105,9 +106,8 @@ class PinocchioSkeletonProvider:
 
         # Build model from URDF
         if package_paths is not None:
-            self.model = self._pin.buildModelFromUrdf(
-                urdf_path, self._pin.JointModelFreeFlyer()
-            )
+            free_flyer = self._pin.JointModelFreeFlyer()  # type: ignore[attr-defined]
+            self.model = self._pin.buildModelFromUrdf(urdf_path, free_flyer)
         else:
             self.model = self._pin.buildModelFromUrdf(urdf_path)
 
@@ -121,8 +121,8 @@ class PinocchioSkeletonProvider:
 
         # Also build joint name to ID mapping
         self._joint_name_to_id: dict[str, int] = {}
-        for i in range(self.model.njoints):
-            joint_name = self.model.names[i]
+        joint_names = cast("Sequence[str]", getattr(self.model, "names", ()))
+        for i, joint_name in enumerate(joint_names[: self.model.njoints]):
             self._joint_name_to_id[joint_name] = i
 
         # Validate that required vocabulary is available
