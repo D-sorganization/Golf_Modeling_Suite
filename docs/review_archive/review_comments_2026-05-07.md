@@ -1,36 +1,51 @@
 # Review Comments Archive - 2026-05-07
 
-Generated: 2026-05-07T19:55:33.538088
+Generated: 2026-05-07T22:39:42.396027
 
-## Reviewer (chatgpt-codex-connector[bot]) (2 comments)
+## Reviewer (chatgpt-codex-connector[bot]) (3 comments)
 
-### PR #4383: src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/src/apps/golf_gui/Motion Capture Plotter/starting_pose_core.py:20
+### PR #4412: src/tools/starting_pose_matcher/providers/pinocchio.py:45
 
 Actionable: Yes
 Has Suggestion: No
 
 ```
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Add repo-root fallback in legacy starting_pose_core shim**
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Preserve hip alias options in reverse vocabulary map**
 
-This shim now unconditionally imports `src.tools.starting_pose_matcher.core`, but legacy usage runs from `.../Motion Capture Plotter` (e.g. `python -m starting_pose_matcher`) where the repo root is not on `sys.path`, so import fails with `ModuleNotFoundError: No module named 'src'`. That breaks the promised one-release compatibility for existing call...
+Avoid generating `MATCHER_TO_PINOCCHIO` with a plain dict comprehension here, because duplicate values in `PINOCCHIO_TO_MATCHER_VOCAB` are collapsed and only the last alias survives. With both `"hip" -> "hip"` and `"pelvis" -> "hip"`, the reverse map forces `hip` to resolve to `pelvis`, so `_validate_vocabulary()` rejects models that expose `hip` but not...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4383#discussion_r3205997871)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4412#discussion_r3206518350)
 
 ---
 
-### PR #4383: src/tools/starting_pose_matcher/gui.py:488
+### PR #4412: src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/src/apps/golf_gui/Motion Capture Plotter/starting_pose_core.py:25
+
+Actionable: Yes
+Has Suggestion: No
+
+```
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Point legacy shim fallback to the actual repo root**
+
+Update this fallback path depth: `parents[6]` resolves to `.../src/engines/Simscape_Multibody_Models`, not the repository root. In the documented legacy workflow (`python -m starting_pose_matcher` from `Motion Capture Plotter`), the shim then fails to import `src.tools.starting_pose_matcher.core` with `ModuleNotFoundError: No module named 'src'`, so the co...
+```
+
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4412#discussion_r3206518351)
+
+---
+
+### PR #4412: src/tools/starting_pose_matcher/__init__.py:16
 
 Actionable: No
 Has Suggestion: No
 
 ```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Resolve default skeleton paths after matcher relocation**
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Decouple provider imports from optional GUI/data extras**
 
-The relocated GUI still loads pose JSONs from `Path(__file__).parent`, which is now `src/tools/starting_pose_matcher/`; however `export_default_skeleton.m` writes `simscape_skeleton_*.json` to the legacy Motion Capture Plotter folder, so the new tile misses those generated files and silently falls back to approximate skeletons. In practice this can sk...
+Importing this package eagerly imports `.core`, which requires optional deps like `pandas`; as a result, importing provider modules (for example `src.tools.starting_pose_matcher.providers.pinocchio`) fails before provider-specific dependency checks run unless the `gui-tools` extra is installed. This breaks headless/provider-only usage and contradicts ...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4383#discussion_r3205997874)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4412#discussion_r3206518353)
 
 ---
 
