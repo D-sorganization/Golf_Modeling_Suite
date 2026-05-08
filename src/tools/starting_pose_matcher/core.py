@@ -465,9 +465,7 @@ def _xyz_columns_for(df_columns: list[str], stem: str) -> list[str] | None:
         a, b, c = stem, stem[:-1] + "Y", stem[:-1] + "Z"
     elif stem.endswith("_x"):
         a, b, c = stem, stem[:-1] + "y", stem[:-1] + "z"
-    elif stem.endswith("_1"):
-        a, b, c = stem, stem[:-1] + "2", stem[:-1] + "3"
-    elif stem.endswith("_dim1"):
+    elif stem.endswith("_1") or stem.endswith("_dim1"):
         a, b, c = stem, stem[:-1] + "2", stem[:-1] + "3"
     else:
         return None

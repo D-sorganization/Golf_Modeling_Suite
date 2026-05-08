@@ -44,17 +44,14 @@ class SkeletonProvider(ABC):
         Skeleton
             The loaded skeleton with joints and segments.
         """
-        pass
 
     @abstractmethod
     def get_joint_names(self) -> list[str]:
         """Return list of joint names in the skeleton."""
-        pass
 
     @abstractmethod
     def get_default_pose(self) -> dict[str, float]:
         """Return default joint angles for this skeleton."""
-        pass
 
 
 class SimscapeSkeletonProvider(SkeletonProvider):

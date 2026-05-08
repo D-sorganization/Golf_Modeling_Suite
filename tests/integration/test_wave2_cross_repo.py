@@ -22,7 +22,7 @@ class TestToolsSymlinkIntegration:
         """Symlink vendor/ud-tools/ should exist."""
         vendor_path = Path(__file__).parent.parent.parent / "vendor" / "ud-tools"
         assert vendor_path.exists(), f"vendor/ud-tools not found at {vendor_path}"
-        assert vendor_path.is_dir(), f"vendor/ud-tools is not a directory"
+        assert vendor_path.is_dir(), "vendor/ud-tools is not a directory"
 
     def test_tools_contracts_import(self):
         """Should be able to import Tools contracts module."""
