@@ -168,7 +168,7 @@ def fit_swing_jax(  # pragma: no cover - explicitly unimplemented
 ) -> FitResult:
     """JAX-driven fit over the Option-2 surrogate.
 
-    Follow-up #4075: implement once the Option-2 surrogate ships.
+    TODO(#4075): Implement once the Option-2 surrogate (issue #4075) ships.
     The MATLAB Engine's forward simulator is not differentiable, so a JAX
     optimizer needs to drive the surrogate, not Simscape. The expected wiring
     is::
