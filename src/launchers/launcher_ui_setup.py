@@ -635,8 +635,15 @@ class LauncherUISetupMixin:
         try:
             import urllib.request
 
+            # The URL is a hardcoded literal pointing at the launcher's
+            # locally-spawned FastAPI server on 127.0.0.1; there is no
+            # path through which user-controlled data can influence it.
+            # The companion `# nosec B310` keeps Bandit happy; the
+            # `# nosemgrep` line below silences the matching Semgrep
+            # `dynamic-urllib-use-detected` rule with the same rationale.
             url = "http://127.0.0.1:8000/api/chat/sessions"
             req = urllib.request.Request(url, method="GET")
+            # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
             with urllib.request.urlopen(req, timeout=2) as resp:  # nosec B310 - hardcoded localhost URL, no external input
                 sessions = json.loads(resp.read().decode("utf-8"))
 
