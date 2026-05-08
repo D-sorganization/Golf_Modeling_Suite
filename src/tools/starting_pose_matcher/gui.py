@@ -780,11 +780,25 @@ class StartingPoseMatcher(QMainWindow):
         gl.addWidget(QLabel("Show"),       0, 0)
         gl.addWidget(QLabel("Pose"),       0, 1)
         gl.addWidget(QLabel("Event"),      0, 2)
-        gl.addWidget(QLabel("Reload"),     0, 3)
-        gl.addWidget(QLabel("Trajectory"), 0, 4)
+        gl.addWidget(QLabel("Engine"),     0, 3)
+        gl.addWidget(QLabel("Reload"),     0, 4)
+        gl.addWidget(QLabel("Trajectory"), 0, 5)
         self._pose_visible_checks: dict[str, QCheckBox] = {}
         self._pose_event_combos: dict[str, QComboBox] = {}
+        self._pose_engine_combos: dict[str, QComboBox] = {}
         self._pose_trajectory_buttons: dict[str, QPushButton] = {}
+
+        # Available engines per the SkeletonProvider registry (per #4367).
+        # The registry imports cleanly even when individual engine
+        # libraries are missing — we just label unavailable ones.
+        try:
+            from src.tools.starting_pose_matcher.providers import PROVIDER_REGISTRY
+            self._engine_options: list[tuple[str, bool]] = [
+                (cls.engine_name, cls.is_available()) for cls in PROVIDER_REGISTRY
+            ]
+        except ImportError:
+            self._engine_options = [("Simscape", True)]
+
         for r, (key, slot) in enumerate(self.poses.items(), start=1):
             cb = QCheckBox()
             cb.setChecked(slot.visible)
@@ -805,12 +819,32 @@ class StartingPoseMatcher(QMainWindow):
             ec.currentTextChanged.connect(self._on_pose_event_changed)
             self._pose_event_combos[key] = ec
             gl.addWidget(ec, r, 2)
+
+            # Engine selection — defaults to Simscape (always available).
+            ng = QComboBox()
+            for engine_name, avail in self._engine_options:
+                label = engine_name if avail else f"{engine_name} (not installed)"
+                ng.addItem(label, engine_name)
+                if not avail:
+                    ng.model().item(ng.count() - 1).setEnabled(False)
+            ng.setCurrentIndex(0)  # Simscape default
+            ng.currentIndexChanged.connect(
+                lambda _idx, k=key: self._on_pose_engine_changed(k))
+            ng.setToolTip(
+                "Source for this pose's skeleton.  Simscape reads the\n"
+                "JSON file produced by export_default_skeleton.m.\n"
+                "Other engines compute the skeleton via native FK once\n"
+                "their library is installed and a model file is provided\n"
+                "(see SkeletonProvider, issue #4367).")
+            self._pose_engine_combos[key] = ng
+            gl.addWidget(ng, r, 3)
+
             rbtn = QPushButton("⟳")
             rbtn.setObjectName("preset")
             rbtn.setMaximumWidth(40)
-            rbtn.setToolTip(f"Reload simscape_skeleton_{key}.json")
+            rbtn.setToolTip(f"Reload skeleton for {key}")
             rbtn.clicked.connect(lambda _checked, k=key: self._reload_pose(k))
-            gl.addWidget(rbtn, r, 3)
+            gl.addWidget(rbtn, r, 4)
             tbtn = QPushButton("Load…")
             tbtn.setObjectName("preset")
             tbtn.setMaximumWidth(80)
@@ -818,8 +852,43 @@ class StartingPoseMatcher(QMainWindow):
                             "skeleton can play back through its motion.")
             tbtn.clicked.connect(lambda _checked, k=key: self._load_trajectory(k))
             self._pose_trajectory_buttons[key] = tbtn
-            gl.addWidget(tbtn, r, 4)
+            gl.addWidget(tbtn, r, 5)
         return box
+
+    def _on_pose_engine_changed(self, slot_key: str) -> None:
+        """Engine combo changed — re-load the skeleton for this slot
+        from the newly-selected provider.
+
+        Today, only the Simscape provider is wired in for actual
+        skeleton loading via export_default_skeleton.m JSON files.  The
+        other providers (MuJoCo, Drake, Pinocchio, OpenSim) accept a
+        model_path keyword in their constructors; the matcher's
+        skeleton-load path falls back to the FK-derived default until
+        the user supplies that path (a follow-up: per-engine model
+        picker dialog, tracked alongside #4367).
+        """
+        try:
+            from src.tools.starting_pose_matcher.providers import (
+                ProviderUnavailable, get_provider,
+            )
+        except ImportError:
+            return
+        combo = self._pose_engine_combos.get(slot_key)
+        if combo is None:
+            return
+        engine_name = combo.currentData() or combo.currentText().split(" ", 1)[0]
+        slot = self.poses.get(slot_key)
+        if slot is None:
+            return
+        try:
+            provider = get_provider(engine_name)
+        except (ProviderUnavailable, KeyError):
+            return  # Combo will visually indicate "not installed"
+        try:
+            slot.skeleton = provider.get_skeleton(slot_key)
+        except Exception:  # noqa: BLE001
+            return
+        self._redraw()
 
     def _build_view_box(self) -> QGroupBox:
         box = QGroupBox("View / Mocap Traces")
