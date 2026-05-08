@@ -1,0 +1,28 @@
+{
+  "_provenance": "Measured with MATLAB R2026a whos('-file', PolynomialInputValues.mat) plus getPolynomialParameterInfo-style A..G family discovery.",
+  "coefficient_letters": ["A", "B", "C", "D", "E", "F", "G"],
+  "model_families": {
+    "3d_golf": {
+      "discovered_joint_family_count": 27,
+      "theta_size": 189
+    },
+    "3d_fullbody": {
+      "discovered_joint_family_count": 39,
+      "theta_size": 273,
+      "leg_families": [
+        "LAnkleX",
+        "LAnkleY",
+        "LHipX",
+        "LHipY",
+        "LHipZ",
+        "LKnee",
+        "RAnkleX",
+        "RAnkleY",
+        "RHipX",
+        "RHipY",
+        "RHipZ",
+        "RKnee"
+      ]
+    }
+  }
+}
