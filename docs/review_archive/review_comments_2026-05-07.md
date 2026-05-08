@@ -1,36 +1,36 @@
 # Review Comments Archive - 2026-05-07
 
-Generated: 2026-05-07T19:55:33.538088
+Generated: 2026-05-07T22:37:19.295543
 
 ## Reviewer (chatgpt-codex-connector[bot]) (2 comments)
 
-### PR #4383: src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/src/apps/golf_gui/Motion Capture Plotter/starting_pose_core.py:20
-
-Actionable: Yes
-Has Suggestion: No
-
-```
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Add repo-root fallback in legacy starting_pose_core shim**
-
-This shim now unconditionally imports `src.tools.starting_pose_matcher.core`, but legacy usage runs from `.../Motion Capture Plotter` (e.g. `python -m starting_pose_matcher`) where the repo root is not on `sys.path`, so import fails with `ModuleNotFoundError: No module named 'src'`. That breaks the promised one-release compatibility for existing call...
-```
-
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4383#discussion_r3205997871)
-
----
-
-### PR #4383: src/tools/starting_pose_matcher/gui.py:488
+### PR #4410: src/tools/starting_pose_matcher/providers/mujoco.py:45
 
 Actionable: No
 Has Suggestion: No
 
 ```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Resolve default skeleton paths after matcher relocation**
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Preserve hip alias when building reverse mapping**
 
-The relocated GUI still loads pose JSONs from `Path(__file__).parent`, which is now `src/tools/starting_pose_matcher/`; however `export_default_skeleton.m` writes `simscape_skeleton_*.json` to the legacy Motion Capture Plotter folder, so the new tile misses those generated files and silently falls back to approximate skeletons. In practice this can sk...
+`MATCHER_TO_MUJOCO` is derived by inverting `MUJOCO_TO_MATCHER_VOCAB`, but that source map is not one-to-one (`"hip"` and `"pelvis"` both map to matcher `"hip"`). The inversion silently keeps only the last key, so `_validate_vocabulary()` now requires a `pelvis` body and rejects models that provide `hip` (which the forward map explicitly declares as valid). ...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4383#discussion_r3205997874)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4410#discussion_r3206503266)
+
+---
+
+### PR #4410: src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/src/apps/golf_gui/Motion Capture Plotter/starting_pose_core.py:25
+
+Actionable: No
+Has Suggestion: No
+
+```
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Point shim repo-root fallback at actual repository root**
+
+The deprecation shim computes `_repo_root` with `parents[6]`, but for this path that resolves to `.../src/engines/Simscape_Multibody_Models`, not the repo root. In legacy invocation contexts (for example running from the old Motion Capture Plotter directory), `importlib.import_module("src.tools.starting_pose_matcher.core")` then fails with `ModuleNotF...
+```
+
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4410#discussion_r3206503273)
 
 ---
 
