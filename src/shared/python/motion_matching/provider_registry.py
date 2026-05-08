@@ -1,93 +1,129 @@
-"""Engine-agnostic provider registry for motion-matching.
+"""Provider registry for motion matching engines.
 
-Issue #4516 ships the per-engine wrapper for Drake; the registry it
-plugs into is the foundation defined in #4514. This module provides a
-minimal, forward-compatible registry surface that the Drake provider
-(and subsequent per-engine providers) can register against today,
-without blocking on the full canonical schema landing on ``main``.
-
-Public API:
-    register_provider(provider)  -- idempotent registration.
-    get_provider(engine_name)    -- typed lookup.
-    available_engines()          -- sorted list of registered engines.
-    clear_registry()             -- test-helper to wipe all entries.
+Auto-discovery of FitSwingProvider implementations across physics engines.
+Each engine module's __init__.py calls register_provider() at import time.
 """
 
 from __future__ import annotations
 
-import threading
-from typing import Any
+from typing import TYPE_CHECKING
 
-__all__ = [
-    "available_engines",
-    "clear_registry",
-    "get_provider",
-    "register_provider",
-]
+if TYPE_CHECKING:
+    from .fit_swing import FitSwingProvider
+
+# Internal registry: engine_name -> provider instance
+_providers: dict[str, FitSwingProvider] = {}
 
 
-_REGISTRY: dict[str, Any] = {}
-_LOCK = threading.Lock()
-
-
-def register_provider(provider: Any) -> None:
-    """Register an engine-side ``fit_swing`` provider.
+def register_provider(provider: FitSwingProvider) -> None:
+    """Register a FitSwingProvider implementation.
 
     Args:
-        provider: An object exposing ``engine_name`` (str) and a
-            ``fit_swing(target, opts) -> FitResult`` callable. The
-            registry stays Protocol-agnostic so it remains compatible
-            with the canonical Protocol introduced in issue #4514 once
-            that lands.
-
-    Behaviour:
-        Registration is idempotent: re-registering the *same* provider
-        instance under the same ``engine_name`` is a no-op. Registering
-        a *different* provider under a name already in the registry
-        replaces the existing entry (last-writer-wins) so test fixtures
-        and reload cycles do the obvious thing.
+        provider: A FitSwingProvider instance to register.
 
     Raises:
-        TypeError: If ``provider`` lacks an ``engine_name`` string or a
-            callable ``fit_swing`` attribute.
+        ValueError: If a provider with the same engine_name is already registered.
     """
-    name = getattr(provider, "engine_name", None)
-    if not isinstance(name, str) or not name:
+    from .fit_swing import FitSwingProvider
+
+    if not isinstance(provider, FitSwingProvider):
         raise TypeError(
-            "provider must expose a non-empty 'engine_name' string attribute"
+            f"Provider must implement FitSwingProvider, got {type(provider)}"
         )
-    if not callable(getattr(provider, "fit_swing", None)):
-        raise TypeError(
-            f"provider for engine '{name}' must expose a callable 'fit_swing'"
+
+    engine_name = provider.engine_name
+    if engine_name in _providers:
+        raise ValueError(
+            f"Provider for engine {engine_name!r} already registered. "
+            "Use unregister_provider() first if replacing."
         )
-    with _LOCK:
-        _REGISTRY[name] = provider
+    _providers[engine_name] = provider
 
 
-def get_provider(engine_name: str) -> Any:
-    """Look up a registered provider by engine name.
+def unregister_provider(engine_name: str) -> None:
+    """Unregister a provider by engine name.
+
+    Args:
+        engine_name: The engine name to unregister.
 
     Raises:
-        KeyError: If no provider is registered under ``engine_name``.
+        KeyError: If no provider is registered for the given engine name.
     """
-    with _LOCK:
-        try:
-            return _REGISTRY[engine_name]
-        except KeyError as exc:
-            available = sorted(_REGISTRY)
-            raise KeyError(
-                f"no fit_swing provider registered for engine '{engine_name}'; "
-                f"available={available}"
-            ) from exc
+    if engine_name not in _providers:
+        raise KeyError(f"No provider registered for engine {engine_name!r}")
+    del _providers[engine_name]
+
+
+def get_provider(engine_name: str) -> FitSwingProvider:
+    """Get a registered provider by engine name.
+
+    Args:
+        engine_name: The engine name to look up.
+
+    Returns:
+        The registered FitSwingProvider for the engine.
+
+    Raises:
+        KeyError: If no provider is registered for the given engine name.
+    """
+    if engine_name not in _providers:
+        available = list(_providers.keys())
+        raise KeyError(
+            f"No provider registered for engine {engine_name!r}. "
+            f"Available engines: {available}"
+        )
+    return _providers[engine_name]
 
 
 def available_engines() -> list[str]:
-    """Return the sorted list of registered engine names."""
-    with _LOCK:
-        return sorted(_REGISTRY)
+    """List all registered engine names.
+
+    Returns:
+        Sorted list of engine names with registered providers.
+    """
+    return sorted(_providers.keys())
 
 
-def clear_registry() -> None:
-    """Remove every entry from the registry. Test helper only."""
-    with _LOCK:
-        _REGISTRY.clear()
+def clear_providers() -> None:
+    """Clear all registered providers.
+
+    Primarily useful for testing. In production, providers are registered
+    once at module import time.
+    """
+    _providers.clear()
+
+
+def discover_providers() -> list[str]:
+    """Discover and register providers from engine modules.
+
+    Walks src.engines.physics_engines.*.python.motion_matching packages
+    and imports them to trigger provider registration.
+
+    Returns:
+        List of engine names that were successfully discovered.
+    """
+    import importlib
+    import pkgutil
+
+    discovered: list[str] = []
+
+    try:
+        import src.engines.physics_engines as physics_pkg
+    except ImportError:
+        return discovered
+
+    physics_path = physics_pkg.__path__
+    for _, engine_name, is_pkg in pkgutil.iter_modules(physics_path):
+        if not is_pkg:
+            continue
+
+        motion_matching_path = f"src.engines.physics_engines.{engine_name}.python.motion_matching"
+        try:
+            importlib.import_module(motion_matching_path)
+            if engine_name in available_engines():
+                discovered.append(engine_name)
+        except ImportError:
+            # Engine doesn't have motion_matching module - that's OK
+            pass
+
+    return discovered
