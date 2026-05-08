@@ -35,6 +35,7 @@ import json
 import logging
 import shutil
 from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 from typing import Any, cast
 
@@ -112,6 +113,17 @@ class ExportOptions:
     config_format: str = "yaml"  # yaml or json
 
 
+class BuildErrorCategory(Enum):
+    """Category of build error for proper error handling."""
+
+    NONE = "none"
+    VALIDATION = "validation"  # Bad parameters
+    IO = "io"  # Filesystem/permission errors
+    MISSING_BACKEND = "missing_backend"  # Optional dependency missing
+    MESH_GENERATION = "mesh_generation"  # Mesh generation failure
+    RUNTIME = "runtime"  # Other runtime errors
+
+
 @dataclass
 class CharacterBuildResult:
     """
@@ -126,12 +138,6 @@ class CharacterBuildResult:
     # Body parameters used
     params: BodyParameters
 
-    # Canonical status string ("success", "failure", "partial").
-    # Mirrors motion_matching.fit_result.CanonicalFitResult.solver_status
-    # so the URDF subsystem speaks the same vocabulary as the rest of
-    # the platform. See issue #4522.
-    solver_status: str = "success"
-
     # Generated URDF string
     urdf_xml: str | None = None
 
@@ -144,13 +150,11 @@ class CharacterBuildResult:
     # Error message if failed
     error_message: str | None = None
 
+    # Error category for classification
+    error_category: BuildErrorCategory = BuildErrorCategory.NONE
+
     # Output directory (if exported)
     output_dir: Path | None = None
-
-    def __post_init__(self) -> None:
-        # Derive solver_status from success if caller did not set it.
-        if not self.success and self.solver_status == "success":
-            self.solver_status = "failure"
 
     def export_urdf(  # noqa: C901
         self,
@@ -167,7 +171,7 @@ class CharacterBuildResult:
         Returns:
             Path to the generated URDF file
         """
-        if not (output_dir is not None):
+        if output_dir is None:
             raise ValueError("output_dir must be provided")
         options = options or ExportOptions()
         output_dir = Path(output_dir)
@@ -249,7 +253,7 @@ class CharacterBuildResult:
         Returns:
             True if stable, False otherwise.
         """
-        if not (duration is not None):
+        if duration is None:
             raise ValueError("duration must be provided")
         if not self.urdf_xml:
             logger.error("No URDF generated to simulate.")
@@ -284,7 +288,7 @@ class CharacterBuildResult:
         Args:
             animate: If True, applies control signals to joints.
         """
-        if not (animate is not None):
+        if animate is None:
             raise ValueError("animate must be provided")
         if not self.urdf_xml:
             logger.error("No URDF generated to preview.")
@@ -360,7 +364,7 @@ class CharacterBuilder:
             urdf_config: Configuration for URDF generation
             mesh_backend: Backend to use for mesh generation
         """
-        if not (mesh_backend is not None):
+        if mesh_backend is None:
             raise ValueError("mesh_backend must be provided")
         self.urdf_config = urdf_config or URDFGeneratorConfig()
         self.mesh_backend = mesh_backend
@@ -423,37 +427,41 @@ class CharacterBuilder:
             )
 
         except ValueError as e:
-            # Bad body parameters (validation, geometry, mass).
-            logger.error("Character build rejected (validation): %s", e)
+            # Bad parameters - validation error
+            logger.error(f"Character build validation error: {e}")
             return CharacterBuildResult(
                 success=False,
-                solver_status="failure",
                 params=params,
-                error_message=f"validation: {e}",
+                error_message=str(e),
+                error_category=BuildErrorCategory.VALIDATION,
             )
         except (PermissionError, OSError) as e:
-            # Filesystem failure (mesh dir, output path).
-            logger.error("Character build IO failure: %s", e)
+            # Filesystem/IO errors
+            logger.error(f"Character build IO error: {e}")
             return CharacterBuildResult(
                 success=False,
-                solver_status="failure",
                 params=params,
-                error_message=f"io: {e}",
+                error_message=str(e),
+                error_category=BuildErrorCategory.IO,
             )
         except ImportError as e:
-            # Optional backend missing (e.g. SMPLX, MakeHuman, trimesh).
-            # We produced no output, but it's a configuration issue, not a
-            # bug — surface as PARTIAL so callers can choose to retry with
-            # a different backend.
-            logger.error("Character build backend missing: %s", e)
+            # Missing optional backend
+            logger.warning(f"Character build missing backend: {e}")
             return CharacterBuildResult(
                 success=False,
-                solver_status="partial",
                 params=params,
-                error_message=f"missing_backend: {e}",
+                error_message=str(e),
+                error_category=BuildErrorCategory.MISSING_BACKEND,
             )
-        # Anything else propagates — those are real bugs we want to surface,
-        # not silently swallow into a failed result. See issue #4534.
+        except (KeyError, RuntimeError) as e:
+            # Mesh generation or other runtime errors
+            logger.error(f"Character build runtime error: {e}")
+            return CharacterBuildResult(
+                success=False,
+                params=params,
+                error_message=str(e),
+                error_category=BuildErrorCategory.RUNTIME,
+            )
 
     def generate_urdf(
         self,
@@ -498,7 +506,7 @@ class CharacterBuilder:
             InertiaResult with computed inertia
         """
         # Get default dimensions if not provided
-        if not (segment_name is not None):
+        if segment_name is None:
             raise ValueError("segment_name must be provided")
         if dimensions is None:
             all_dims = estimate_segment_dimensions(1.75, 0.5)  # Default height, neutral
@@ -552,7 +560,7 @@ class CharacterBuilder:
         Returns:
             Dict mapping segment name to InertiaResult
         """
-        if not (params is not None):
+        if params is None:
             raise ValueError("params must be provided")
         gender_factor = params.get_effective_gender_factor()
         masses = estimate_segment_masses(params.mass_kg, gender_factor)
@@ -582,7 +590,7 @@ class CharacterBuilder:
         mesh_result: GeneratedMeshResult | None,
     ) -> dict[str, SegmentMeshInfo]:
         """Build segment information dictionary."""
-        if not (params is not None):
+        if params is None:
             raise ValueError("params must be provided")
         gender_factor = params.get_effective_gender_factor()
         masses = estimate_segment_masses(params.mass_kg, gender_factor)
@@ -639,7 +647,7 @@ class CharacterBuilder:
         Returns:
             BodyParameters configured for the preset
         """
-        if not (preset_name is not None):
+        if preset_name is None:
             raise ValueError("preset_name must be provided")
         from humanoid_character_builder.presets.loader import load_body_preset
 
@@ -693,7 +701,7 @@ def quick_build(
     Returns:
         CharacterBuildResult
     """
-    if not (height_m is not None):
+    if height_m is None:
         raise ValueError("height_m must be provided")
     builder = CharacterBuilder()
 
@@ -726,7 +734,7 @@ def quick_urdf(
     Returns:
         URDF XML string
     """
-    if not (height_m is not None):
+    if height_m is None:
         raise ValueError("height_m must be provided")
     builder = CharacterBuilder()
 
