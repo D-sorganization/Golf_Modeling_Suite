@@ -11,6 +11,7 @@ Validates:
 from __future__ import annotations
 
 import time
+
 import pytest
 from src.shared.python.motion_matching.engine_init_profiler import (
     CacheEntry,
@@ -312,9 +313,7 @@ class TestProfileInitialization:
         profile_optimized = profile_initialization(
             "drake", lazy_load=True, use_cache=True, parallel_tasks=2
         )
-        speedup_factor = (
-            profile_baseline.duration_s / profile_optimized.duration_s
-        )
+        speedup_factor = profile_baseline.duration_s / profile_optimized.duration_s
         # Target is 1.4x speedup (40% improvement)
         assert speedup_factor >= 1.0  # At least no regression
 

@@ -12,7 +12,7 @@ Public API:
     Loaders / oracle:
         load_club_target           -- format-dispatched loader.
         load_club_target_excel     -- xlsx loader (cm units, event-marker header).
-        load_club_target_c3d       -- Gears C3D loader.
+        load_club_target_c3d       -- cluster-marker C3D loader.
         synthesize_target_from_coefficients -- engine-agnostic TDD oracle.
         EngineSimulator, SynthOptions
 
@@ -48,6 +48,11 @@ from .align_to_simulation_grid import (
     align_to_simulation_grid,
     detect_impact_index,
 )
+from .body_skeleton import (
+    BodySegment,
+    BodySegmentGroup,
+    default_body_segments,
+)
 from .compute_total_work import compute_total_work
 from .cost import (
     CostBreakdown,
@@ -56,12 +61,24 @@ from .cost import (
     compute_cost,
 )
 from .fit_result import CanonicalFitResult
+from .body_target import (
+    BODY_TARGET_SCHEMA_VERSION,
+    MAX_BODY_POSITION_NORM_M,
+    BodyEvent,
+    BodyTarget,
+)
+from .load_body_target import (
+    load_body_target,
+    load_body_target_c3d,
+)
 from .load_club_target import (
     ALLOWED_SHEETS,
     load_club_target,
     load_club_target_c3d,
     load_club_target_excel,
+    load_club_target_mat,
 )
+from .multi_source_target import MultiSourceTarget
 from .plot_error_timecourse import plot_error_timecourse
 from .plot_fit_quality_card import (
     FitQualityScalars,
@@ -78,8 +95,11 @@ from .synthesize_target_from_coefficients import (
 )
 from .target import (
     AlignOptions,
+    BallImpactState,
+    ClubBallTarget,
     ClubTarget,
     SourceProvenance,
+    extract_ball_impact_from_clubtarget,
 )
 from .validate_theta import (
     COEFFS_PER_JOINT,
@@ -99,8 +119,15 @@ __all__ = [
     "ALLOWED_SHEETS",
     "AlignOptions",
     "AlignedTrajectory",
+    "BODY_TARGET_SCHEMA_VERSION",
+    "BallImpactState",
+    "BodyEvent",
+    "BodySegment",
+    "BodySegmentGroup",
+    "BodyTarget",
     "COEFFS_PER_JOINT",
     "CanonicalFitResult",
+    "ClubBallTarget",
     "ClubTarget",
     "CostBreakdown",
     "CostOptions",
@@ -108,6 +135,8 @@ __all__ = [
     "EngineSimulator",
     "FitQualityScalars",
     "FitResult",
+    "MAX_BODY_POSITION_NORM_M",
+    "MultiSourceTarget",
     "REGULARIZER_KINDS",
     "SimOut",
     "SimOutput",
@@ -117,11 +146,16 @@ __all__ = [
     "align_to_simulation_grid",
     "compute_cost",
     "compute_total_work",
+    "default_body_segments",
     "detect_impact_index",
+    "extract_ball_impact_from_clubtarget",
     "fit_quality_summary",
+    "load_body_target",
+    "load_body_target_c3d",
     "load_club_target",
     "load_club_target_c3d",
     "load_club_target_excel",
+    "load_club_target_mat",
     "must_be_finite_vector",
     "must_be_monotonic_time",
     "must_be_regularizer_kind",

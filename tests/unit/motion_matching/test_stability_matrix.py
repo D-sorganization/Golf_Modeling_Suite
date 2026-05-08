@@ -9,10 +9,9 @@ Validates:
 
 from __future__ import annotations
 
-import pytest
 import numpy as np
+import pytest
 from src.shared.python.motion_matching.stability_matrix import (
-    TOLERANCE_MAP,
     CanonicalTestCase,
     InitialPose,
     StabilityBoundary,
@@ -211,6 +210,7 @@ class TestStabilityMatrix:
         """Test retrieving invalid test raises."""
         matrix = StabilityMatrix()
         from src.shared.python._contracts_exceptions import PreconditionError
+
         with pytest.raises(PreconditionError):
             matrix.get_canonical_test("nonexistent_test")
 

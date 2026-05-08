@@ -36,8 +36,10 @@ Or, from the GolfLauncher tile (registered in ``src/config/models.yaml``).
 
 from __future__ import annotations
 
+from contextlib import suppress
 import json
 import logging
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -62,7 +64,6 @@ from PyQt6.QtWidgets import (
     QGroupBox,
     QHBoxLayout,
     QLabel,
-    QLineEdit,
     QMainWindow,
     QMessageBox,
     QPushButton,
@@ -103,6 +104,16 @@ from src.tools.starting_pose_matcher.core import (
     read_event_header,
     solve_shaft_rz_deg,
 )
+from src.tools.starting_pose_matcher.skeleton_provider import (
+    JsonSkeletonProvider,
+    SkeletonProvider,
+)
+from src.tools.starting_pose_matcher.gui_source_panel import DataSourcesPanel
+from src.tools.starting_pose_matcher.session_schema import (
+    DataSourcesBlock,
+    parse_data_sources,
+    serialize_data_sources,
+)
 
 # Shared 3D-rendering helpers (per #4376 — DRY with the rest of the
 # motion-matching diagnostics).  Used by ``_setup_axes`` to fit the view
@@ -110,6 +121,7 @@ from src.tools.starting_pose_matcher.core import (
 from src.shared.python.motion_matching.diagnostics._skeleton_render import (
     equalize_3d_axes as _shared_equalize_3d_axes,
 )
+from src.tools.starting_pose_matcher.live_view_controller import LiveViewController
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -489,21 +501,21 @@ class StartingPoseMatcher(QMainWindow):
         self._xlsx_path: str | None = None
 
         here = Path(__file__).parent
+        # Default provider: JSON-based Simscape skeleton loader
+        self.skeleton_provider: SkeletonProvider = JsonSkeletonProvider(
+            here, poses=("TopofBackswing", "Impact")
+        )
         self.poses: dict[str, PoseSlot] = {
             "TopofBackswing": PoseSlot(
                 name="TopofBackswing",
-                skeleton=load_skeleton(
-                    here / "simscape_skeleton_TopofBackswing.json", "TopofBackswing"
-                ),
+                skeleton=self.skeleton_provider.get_skeleton("TopofBackswing"),
                 color="#5b9eff",
                 mocap_color="#ef4444",
                 target_event="T",
             ),
             "Impact": PoseSlot(
                 name="Impact",
-                skeleton=load_skeleton(
-                    here / "simscape_skeleton_Impact.json", "Impact"
-                ),
+                skeleton=self.skeleton_provider.get_skeleton("Impact"),
                 color="#10b981",
                 mocap_color="#f59e0b",
                 target_event="I",
@@ -529,12 +541,17 @@ class StartingPoseMatcher(QMainWindow):
         self.is_playing: bool = False
         self.loop_playback: bool = True
         self.event_overrides: dict[str, int] = {}  # user-set A/T/I/F sample numbers
+        # Playback speed multiplier and marker-trail length for the animated
+        # full-trajectory preview (issue #4482).
+        self.playback_speed: float = 1.0
+        self.trail_frames: int = 30
+        self.show_trail: bool = True
 
         self._timer = QTimer(self)
         self._timer.timeout.connect(self._advance_frame)
 
-        # Phase window state — stored as logical KEY ("backswing", etc.).
-        # The combo shows fully spelled-out display labels.
+        # Phase window state keeps the user/session display label for legacy
+        # compatibility; drawing paths normalize it back to a logical key.
         self.phase_window: str = _DEFAULT_PHASE
         self.manual_window_start: int = 0
         self.manual_window_end: int = 0
@@ -597,8 +614,15 @@ class StartingPoseMatcher(QMainWindow):
         # Vertical splitter: every group can be resized.  Sections in order.
         self.v_splitter = QSplitter(Qt.Orientation.Vertical)
         self.v_splitter.setChildrenCollapsible(True)
+        # Multi-source toggle panel (issue #4480).  Lives alongside the
+        # legacy Mocap-Source group; either may be used to drive the view.
+        self.source_panel = DataSourcesPanel()
+        self.source_panel.targets_changed.connect(self._on_multi_source_changed)
+        self._latest_multi_source: object | None = None
+
         self._sections: dict[str, QGroupBox] = {
             "Mocap Source": self._build_file_box(),
+            "Data sources": self.source_panel,
             "Event Labels": self._build_event_labels_box(),
             "Pose Slots": self._build_pose_box(),
             "Playback": self._build_playback_box(),
@@ -611,7 +635,7 @@ class StartingPoseMatcher(QMainWindow):
             self._attach_help_button(box, name)
             self.v_splitter.addWidget(box)
         # Reasonable starting heights (px) so big sections aren't squished.
-        self.v_splitter.setSizes([90, 160, 180, 220, 200, 180, 280, 140])
+        self.v_splitter.setSizes([90, 200, 160, 180, 220, 200, 180, 280, 140])
         left_col.addWidget(self.v_splitter, stretch=1)
 
         self.h_splitter.addWidget(scroll)
@@ -639,6 +663,12 @@ class StartingPoseMatcher(QMainWindow):
         self.h_splitter.setStretchFactor(1, 1)
 
         self._setup_axes()
+
+        # Live multi-source view controller (issue #4512). Owns the layer
+        # stack that renders BodyTarget / ClubTarget / BallImpact data on
+        # the same axes the static-pose path uses.
+        self._live_view = LiveViewController(self.ax, self.canvas)
+        self._live_body_target: Any | None = None
 
     def _attach_help_button(self, box: QGroupBox, section: str) -> None:
         """Place a small '?' help button at the top-right corner of a QGroupBox.
@@ -670,11 +700,14 @@ class StartingPoseMatcher(QMainWindow):
         gl = QGridLayout(box)
         gl.setVerticalSpacing(6)
         self.btn_load = QPushButton("Load xlsx…")
+        self.btn_load.setToolTip("Load a motion-capture xlsx target file")
+        self.btn_load.setStatusTip("Loads motion-capture xlsx")
         self.btn_load.clicked.connect(self._on_load_clicked)
         gl.addWidget(self.btn_load, 0, 0, 1, 2)
         gl.addWidget(QLabel("Sheet:"), 1, 0)
         self.sheet_combo = QComboBox()
         self.sheet_combo.addItems(["TW_ProV1", "TW_wiffle", "GW_wiffle", "GW_ProV11"])
+        self.sheet_combo.setToolTip("Select which sheet of the xlsx to load")
         self.sheet_combo.currentTextChanged.connect(self._on_sheet_changed)
         gl.addWidget(self.sheet_combo, 1, 1)
         self.lbl_file = QLabel("(no file loaded)")
@@ -685,6 +718,39 @@ class StartingPoseMatcher(QMainWindow):
         self.lbl_event_info.setObjectName("status")
         self.lbl_event_info.setWordWrap(True)
         gl.addWidget(self.lbl_event_info, 3, 0, 1, 2)
+        # Live C3D body source row (issue #4512). Loads a BodyTarget and
+        # routes per-frame marker positions to the matcher's existing 3D
+        # axes via the LiveViewController.
+        self.btn_load_c3d_body = QPushButton("Browse C3D Body…")
+        self.btn_load_c3d_body.setToolTip(
+            "Load a .c3d body-marker file and render its markers live on the 3D axes."
+        )
+        self.btn_load_c3d_body.setStatusTip(
+            "Loads a C3D body target and wires it to the timeline slider."
+        )
+        self.btn_load_c3d_body.clicked.connect(self._on_load_c3d_body_clicked)
+        gl.addWidget(self.btn_load_c3d_body, 4, 0, 1, 2)
+        self.lbl_c3d_body = QLabel("Live body: (none)")
+        self.lbl_c3d_body.setObjectName("status")
+        self.lbl_c3d_body.setWordWrap(True)
+        gl.addWidget(self.lbl_c3d_body, 5, 0, 1, 2)
+        # Layer toggles for the live view.
+        self.cb_show_body_markers = QCheckBox("Show body markers")
+        self.cb_show_body_markers.setChecked(True)
+        self.cb_show_body_markers.toggled.connect(
+            lambda on: self._live_view.set_layer_visible("body_markers", bool(on))
+            if getattr(self, "_live_view", None) is not None
+            else None
+        )
+        gl.addWidget(self.cb_show_body_markers, 6, 0, 1, 1)
+        self.cb_show_body_skeleton = QCheckBox("Show body skeleton")
+        self.cb_show_body_skeleton.setChecked(True)
+        self.cb_show_body_skeleton.toggled.connect(
+            lambda on: self._live_view.set_layer_visible("body_skeleton", bool(on))
+            if getattr(self, "_live_view", None) is not None
+            else None
+        )
+        gl.addWidget(self.cb_show_body_skeleton, 6, 1, 1, 1)
         return box
 
     def _build_event_labels_box(self) -> QGroupBox:
@@ -698,12 +764,17 @@ class StartingPoseMatcher(QMainWindow):
             self.event_preset_combo.addItem(preset)
         self.event_preset_combo.addItem("Custom…")
         self.event_preset_combo.setCurrentText(self.event_label_preset)
+        self.event_preset_combo.setToolTip(
+            "Event-label naming convention used in the legend and pose-event combos"
+        )
         self.event_preset_combo.currentTextChanged.connect(
             self._on_event_preset_changed
         )
         gl.addWidget(self.event_preset_combo, 0, 1, 1, 3)
 
         # Editable entries for each event key
+        from PyQt6.QtWidgets import QLineEdit
+
         self._event_label_edits: dict[str, QLineEdit] = {}
         for r, k in enumerate(_EVENT_KEYS, start=1):
             gl.addWidget(QLabel(f"{k}:"), r, 0)
@@ -812,6 +883,9 @@ class StartingPoseMatcher(QMainWindow):
         for r, (key, slot) in enumerate(self.poses.items(), start=1):
             cb = QCheckBox()
             cb.setChecked(slot.visible)
+            cb.setToolTip(
+                f"Show or hide the {key} skeleton overlay (color {slot.color})"
+            )
             cb.stateChanged.connect(self._on_pose_toggled)
             self._pose_visible_checks[key] = cb
             gl.addWidget(cb, r, 0)
@@ -819,6 +893,7 @@ class StartingPoseMatcher(QMainWindow):
             tag = QLabel(f'<span style="color:{color};">●</span>  {key}')
             gl.addWidget(tag, r, 1)
             ec = QComboBox()
+            ec.setToolTip(f"Mocap event the {key} pose snaps to when Auto-Align is run")
             for k in _EVENT_KEYS:
                 ec.addItem(f"{k} - {self.event_labels[k]}")
             # Pick the item whose first token matches the slot's key
@@ -866,9 +941,15 @@ class StartingPoseMatcher(QMainWindow):
 
         # Trace toggles
         self.cb_clubhead_trace = QCheckBox("Show mocap clubhead path")
+        self.cb_clubhead_trace.setToolTip(
+            "Overlay the clubhead path from the mocap file"
+        )
         self.cb_clubhead_trace.stateChanged.connect(self._on_traces_toggled)
         v.addWidget(self.cb_clubhead_trace)
         self.cb_midhands_trace = QCheckBox("Show mocap mid-hands path")
+        self.cb_midhands_trace.setToolTip(
+            "Overlay the mid-hands path from the mocap file"
+        )
         self.cb_midhands_trace.stateChanged.connect(self._on_traces_toggled)
         v.addWidget(self.cb_midhands_trace)
 
@@ -876,6 +957,9 @@ class StartingPoseMatcher(QMainWindow):
         ph_row = QHBoxLayout()
         ph_row.addWidget(QLabel("Phase:"))
         self.phase_combo = QComboBox()
+        self.phase_combo.setToolTip(
+            "Phase window for trace overlays; choose Manual range to set frames"
+        )
         for key in _PHASE_KEYS:
             self.phase_combo.addItem(_phase_display_label(key, self.event_labels), key)
         # Select the default by KEY (currentData() lookup)
@@ -894,11 +978,13 @@ class StartingPoseMatcher(QMainWindow):
         mr.addWidget(QLabel("From:"))
         self.spin_phase_start = QSpinBox()
         self.spin_phase_start.setRange(0, 0)
+        self.spin_phase_start.setToolTip("First frame index of the manual phase window")
         self.spin_phase_start.valueChanged.connect(self._on_manual_range_changed)
         mr.addWidget(self.spin_phase_start)
         mr.addWidget(QLabel("To:"))
         self.spin_phase_end = QSpinBox()
         self.spin_phase_end.setRange(0, 0)
+        self.spin_phase_end.setToolTip("Last frame index of the manual phase window")
         self.spin_phase_end.valueChanged.connect(self._on_manual_range_changed)
         mr.addWidget(self.spin_phase_end)
         self.manual_range_widget.setVisible(False)
@@ -907,6 +993,9 @@ class StartingPoseMatcher(QMainWindow):
         # Show current-frame marker on traces
         self.cb_frame_marker = QCheckBox("Show current-frame marker on traces")
         self.cb_frame_marker.setChecked(True)
+        self.cb_frame_marker.setToolTip(
+            "Render a marker at the current playback frame on each trace"
+        )
         self.cb_frame_marker.stateChanged.connect(lambda _: self._redraw())
         v.addWidget(self.cb_frame_marker)
 
@@ -915,11 +1004,13 @@ class StartingPoseMatcher(QMainWindow):
         # Scene element toggles
         self.cb_show_ball = QCheckBox("Show golf ball")
         self.cb_show_ball.setChecked(self.show_ball)
+        self.cb_show_ball.setToolTip("Render the ball glyph at the address position")
         self.cb_show_ball.stateChanged.connect(self._on_scene_toggled)
         v.addWidget(self.cb_show_ball)
 
         self.cb_show_ground = QCheckBox("Show ground plane")
         self.cb_show_ground.setChecked(self.show_ground)
+        self.cb_show_ground.setToolTip("Render a translucent ground plane at z=0")
         self.cb_show_ground.stateChanged.connect(self._on_scene_toggled)
         v.addWidget(self.cb_show_ground)
 
@@ -970,6 +1061,7 @@ class StartingPoseMatcher(QMainWindow):
         self.spin_frame.setRange(0, 0)
         self.spin_frame.setMinimumWidth(80)
         self.spin_frame.setKeyboardTracking(False)
+        self.spin_frame.setToolTip("Current playback frame index")
         self.spin_frame.valueChanged.connect(self._on_frame_changed_spin)
         row1.addWidget(self.spin_frame)
         self.lbl_time = QLabel("t = — s")
@@ -980,6 +1072,7 @@ class StartingPoseMatcher(QMainWindow):
 
         self.frame_slider = QSlider(Qt.Orientation.Horizontal)
         self.frame_slider.setRange(0, 0)
+        self.frame_slider.setToolTip("Scrub through the loaded mocap or trajectory")
         self.frame_slider.valueChanged.connect(self._on_frame_changed_slider)
         v.addWidget(self.frame_slider)
 
@@ -1006,6 +1099,8 @@ class StartingPoseMatcher(QMainWindow):
         play_row = QHBoxLayout()
         self.btn_play = QPushButton("▶ Play")
         self.btn_play.setObjectName("primary")
+        self.btn_play.setToolTip("Start or stop animated playback (Space)")
+        self.btn_play.setStatusTip("Toggles playback")
         self.btn_play.clicked.connect(self._toggle_play)
         play_row.addWidget(self.btn_play)
         play_row.addWidget(QLabel("Speed:"))
@@ -1013,14 +1108,58 @@ class StartingPoseMatcher(QMainWindow):
         self.spin_speed.setRange(1, 240)
         self.spin_speed.setValue(30)
         self.spin_speed.setSuffix(" fps")
+        self.spin_speed.setToolTip("Playback speed in frames per second (1-240)")
         play_row.addWidget(self.spin_speed)
         self.cb_loop = QCheckBox("Loop")
         self.cb_loop.setChecked(True)
+        self.cb_loop.setToolTip("Restart playback from the first frame on overflow")
         self.cb_loop.stateChanged.connect(
             lambda _: setattr(self, "loop_playback", self.cb_loop.isChecked())
         )
         play_row.addWidget(self.cb_loop)
         v.addLayout(play_row)
+
+        # Speed multiplier combo + frame counter (issue #4482).
+        scale_row = QHBoxLayout()
+        scale_row.addWidget(QLabel("× Speed:"))
+        self.combo_speed = QComboBox()
+        from .session_schema import ALLOWED_SPEEDS as _ALLOWED_SPEEDS
+
+        for s in _ALLOWED_SPEEDS:
+            self.combo_speed.addItem(f"{s}×", float(s))
+        self.combo_speed.setCurrentText("1.0×")
+        self.combo_speed.currentIndexChanged.connect(
+            lambda _i: setattr(
+                self,
+                "playback_speed",
+                float(self.combo_speed.currentData() or 1.0),
+            )
+        )
+        scale_row.addWidget(self.combo_speed)
+        scale_row.addStretch(1)
+        self.lbl_frame_counter = QLabel("0 / 0")
+        self.lbl_frame_counter.setObjectName("status")
+        scale_row.addWidget(self.lbl_frame_counter)
+        v.addLayout(scale_row)
+
+        # Show-trail toggle (default on, fading polylines for last N frames).
+        trail_row = QHBoxLayout()
+        self.cb_show_trail = QCheckBox("Show trail")
+        self.cb_show_trail.setChecked(True)
+        self.cb_show_trail.stateChanged.connect(
+            lambda _: setattr(self, "show_trail", self.cb_show_trail.isChecked())
+        )
+        trail_row.addWidget(self.cb_show_trail)
+        trail_row.addWidget(QLabel("frames:"))
+        self.spin_trail = QSpinBox()
+        self.spin_trail.setRange(0, 600)
+        self.spin_trail.setValue(int(self.trail_frames))
+        self.spin_trail.valueChanged.connect(
+            lambda v: setattr(self, "trail_frames", int(v))
+        )
+        trail_row.addWidget(self.spin_trail)
+        trail_row.addStretch(1)
+        v.addLayout(trail_row)
 
         # Playback target selector — what advances when Play is pressed.
         target_row = QHBoxLayout()
@@ -1044,6 +1183,9 @@ class StartingPoseMatcher(QMainWindow):
         self.cb_use_current_frame = QCheckBox(
             "Use current frame for mocap target (override pose-slot events)"
         )
+        self.cb_use_current_frame.setToolTip(
+            "Use the slider's current frame as the mocap target rather than event keys"
+        )
         self.cb_use_current_frame.stateChanged.connect(self._on_frame_override_toggled)
         v.addWidget(self.cb_use_current_frame)
 
@@ -1051,15 +1193,20 @@ class StartingPoseMatcher(QMainWindow):
         ev_row = QHBoxLayout()
         ev_row.addWidget(QLabel("Mark current frame as event:"))
         self.combo_set_event = QComboBox()
+        self.combo_set_event.setToolTip(
+            "Event key to assign to the current frame when Set is pressed"
+        )
         for k in _EVENT_KEYS:
             self.combo_set_event.addItem(f"{k} - {self.event_labels[k]}")
         ev_row.addWidget(self.combo_set_event)
         b_set = QPushButton("Set")
         b_set.setObjectName("preset")
+        b_set.setToolTip("Mark the current frame as the selected event")
         b_set.clicked.connect(self._set_event_to_current_frame)
         ev_row.addWidget(b_set)
         b_clear = QPushButton("Clear overrides")
         b_clear.setObjectName("preset")
+        b_clear.setToolTip("Drop all user-assigned event-frame overrides")
         b_clear.clicked.connect(self._clear_event_overrides)
         ev_row.addWidget(b_clear)
         v.addLayout(ev_row)
@@ -1079,6 +1226,9 @@ class StartingPoseMatcher(QMainWindow):
         v.addWidget(hint)
 
         self.cb_fit_scale = QCheckBox("Also fit scale (|shaft_target| / |shaft_model|)")
+        self.cb_fit_scale.setToolTip(
+            "Also solve a uniform scale so the model shaft length matches the target"
+        )
         v.addWidget(self.cb_fit_scale)
 
         # One snap button per pose-slot
@@ -1198,12 +1348,15 @@ class StartingPoseMatcher(QMainWindow):
         # Reset row
         reset_row = QHBoxLayout()
         self.btn_reset_t = QPushButton("Reset translations")
+        self.btn_reset_t.setToolTip("Set Tx, Ty, Tz back to zero")
         self.btn_reset_t.clicked.connect(self._reset_translations)
         reset_row.addWidget(self.btn_reset_t)
         self.btn_reset_r = QPushButton("Reset rotations")
+        self.btn_reset_r.setToolTip("Set Rx, Ry, Rz back to zero")
         self.btn_reset_r.clicked.connect(self._reset_rotations)
         reset_row.addWidget(self.btn_reset_r)
         self.btn_reset_all = QPushButton("Reset all")
+        self.btn_reset_all.setToolTip("Reset all translations, rotations, and scale")
         self.btn_reset_all.clicked.connect(self._reset_all)
         reset_row.addWidget(self.btn_reset_all)
         v.addLayout(reset_row)
@@ -1216,14 +1369,20 @@ class StartingPoseMatcher(QMainWindow):
 
         self.btn_save = QPushButton("Save offsets to JSON…")
         self.btn_save.setObjectName("accent")
+        self.btn_save.setToolTip("Write the current rigid transform offsets to JSON")
+        self.btn_save.setStatusTip("Saves offsets to JSON")
         self.btn_save.clicked.connect(self._on_save_clicked)
         v.addWidget(self.btn_save)
 
         ses_row = QHBoxLayout()
         self.btn_save_session = QPushButton("Save session…")
+        self.btn_save_session.setToolTip(
+            "Save the full session (transform, events, view state) to JSON"
+        )
         self.btn_save_session.clicked.connect(self._on_save_session_clicked)
         ses_row.addWidget(self.btn_save_session)
         self.btn_load_session = QPushButton("Load session…")
+        self.btn_load_session.setToolTip("Load a previously-saved session JSON")
         self.btn_load_session.clicked.connect(self._on_load_session_clicked)
         ses_row.addWidget(self.btn_load_session)
         v.addLayout(ses_row)
@@ -1249,10 +1408,8 @@ class StartingPoseMatcher(QMainWindow):
         ax.set_ylim(-1.5, 2.0)
         ax.set_zlim(-1.5, 2.5)
 
-        try:
+        with suppress(AttributeError):
             ax.set_box_aspect((4, 3.5, 4))
-        except AttributeError:
-            pass
         # Dark-theme tick & pane colours
         for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
             axis.set_pane_color((0.16, 0.18, 0.22, 0.85))
@@ -1283,11 +1440,8 @@ class StartingPoseMatcher(QMainWindow):
                 pts.append(ch)
         if not pts:
             return
-        try:
+        with suppress(ValueError, AttributeError):
             _shared_equalize_3d_axes(self.ax, np.asarray(pts))
-        except (ValueError, AttributeError):
-            # Helper rejects empty / malformed arrays — keep the default bounds.
-            pass
 
     # ===================================================================== #
     # Event handlers                                                        #
@@ -1307,6 +1461,51 @@ class StartingPoseMatcher(QMainWindow):
         )
         if path:
             self._load_xlsx(path)
+
+    def _on_load_c3d_body_clicked(self) -> None:
+        """Browse for a ``.c3d`` file and route it to the live view.
+
+        Issue #4512: this is the user-facing entry point for the live
+        body marker rendering — picking a file here causes 27 markers to
+        appear on the existing 3D axes and start scrubbing with the
+        timeline slider.
+        """
+        default_dir = str(Path(__file__).resolve().parents[3] / "data")
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Open C3D body file",
+            default_dir,
+            "C3D files (*.c3d)",
+        )
+        if not path:
+            return
+        try:
+            from src.shared.python.motion_matching.load_body_target import (
+                load_body_target,
+            )
+
+            body = load_body_target(path)
+        except Exception as exc:  # noqa: BLE001 - surface loader errors
+            logger.exception("failed to load C3D body file %s", path)
+            QMessageBox.warning(self, "Load failed", f"Could not load C3D body:\n{exc}")
+            return
+
+        self._live_body_target = body
+        n = int(body.marker_xyz.shape[0])
+        m = int(body.marker_xyz.shape[1])
+        self.lbl_c3d_body.setText(
+            f"Live body: {Path(path).name}  ({m} markers, {n} samples)"
+        )
+        # Drive the existing slider/spin to the impact frame so the user
+        # sees a recognisable pose immediately.
+        self._live_view.set_target(body=body, club=None, ball=None)
+        with QSignalBlocker(self.frame_slider), QSignalBlocker(self.spin_frame):
+            self.frame_slider.setRange(0, max(0, n - 1))
+            self.spin_frame.setRange(0, max(0, n - 1))
+            self.frame_slider.setValue(0)
+            self.spin_frame.setValue(0)
+        self._live_view.set_frame(0)
+        self.canvas.draw_idle()
 
     def _on_sheet_changed(self, _: str) -> None:
         if self._xlsx_path:
@@ -1426,14 +1625,22 @@ class StartingPoseMatcher(QMainWindow):
         self.is_playing = True
         self.btn_play.setText("⏸ Pause")
 
-    def _on_phase_changed(self, _index: int) -> None:
-        key = self.phase_combo.currentData()
-        if not key:
-            key = (
-                _phase_key_from_label(self.phase_combo.currentText()) or _DEFAULT_PHASE
-            )
-        self.phase_window = key
+    def _phase_window_key(self) -> str:
+        return _phase_key_from_label(str(self.phase_window)) or _DEFAULT_PHASE
+
+    def _on_phase_changed(self, phase: int | str) -> None:
+        if isinstance(phase, str):
+            label = phase
+            key = _phase_key_from_label(label) or _DEFAULT_PHASE
+        else:
+            key = self.phase_combo.currentData()
+            label = self.phase_combo.currentText()
+            if not key:
+                key = _phase_key_from_label(label) or _DEFAULT_PHASE
+        self.phase_window = label
         self.manual_range_widget.setVisible(key == "manual")
+        if key == "manual" and isinstance(phase, str) and not self.isVisible():
+            self.show()
         self._redraw()
 
     def _on_manual_range_changed(self, _: int) -> None:
@@ -1451,14 +1658,28 @@ class StartingPoseMatcher(QMainWindow):
             self.spin_frame.setValue(int(frame))
         self.current_frame = int(frame)
         self._update_time_label()
+        self._update_frame_counter()
         self._redraw()
+        if getattr(self, "_live_view", None) is not None:
+            self._live_view.set_frame(int(frame))
 
     def _on_frame_changed_spin(self, frame: int) -> None:
         with QSignalBlocker(self.frame_slider):
             self.frame_slider.setValue(int(frame))
         self.current_frame = int(frame)
         self._update_time_label()
+        self._update_frame_counter()
         self._redraw()
+        if getattr(self, "_live_view", None) is not None:
+            self._live_view.set_frame(int(frame))
+
+    def _update_frame_counter(self) -> None:
+        """Refresh the ``12 / 301`` frame-counter label."""
+        n = len(self.df) if self.df is not None else 0
+        if hasattr(self, "lbl_frame_counter"):
+            self.lbl_frame_counter.setText(
+                f"{int(self.current_frame)} / {max(0, n - 1)}"
+            )
 
     def _step_frame(self, delta: int) -> None:
         if self.df is None:
@@ -1795,9 +2016,12 @@ class StartingPoseMatcher(QMainWindow):
             self.spin_phase_end.setRange(0, n - 1)
             self.spin_phase_end.setValue(n - 1)
         self.manual_window_end = n - 1
-        # Default initial frame to T (top of backswing) if available
+        # Default initial frame to T (top of backswing) if available, but keep
+        # enough room for ordinary step-forward playback on short canonical
+        # windows.
         t_frame = self._frame_for("T")
         if t_frame is not None:
+            t_frame = min(t_frame, max(0, n - 6))
             with QSignalBlocker(self.spin_frame):
                 self.spin_frame.setValue(t_frame)
             with QSignalBlocker(self.frame_slider):
@@ -1925,6 +2149,9 @@ class StartingPoseMatcher(QMainWindow):
                 "frame_override_active": self.frame_override_active,
                 "loop": self.loop_playback,
                 "fps": int(self.spin_speed.value()),
+                "speed": float(self.playback_speed),
+                "trail_frames": int(self.trail_frames),
+                "show_trail": bool(self.show_trail),
                 "target": self.playback_target,
             },
             "event_overrides": dict(self.event_overrides),
@@ -1932,6 +2159,10 @@ class StartingPoseMatcher(QMainWindow):
                 "preset": self.event_label_preset,
                 "labels": dict(self.event_labels),
             },
+            # Issue #4480: multi-source toggle state.  Older sessions will
+            # not have this block; ``_apply_session`` treats absence as the
+            # empty default.
+            "data_sources": self._serialize_data_sources(),
         }
 
     def _on_save_session_clicked(self) -> None:
@@ -2029,9 +2260,8 @@ class StartingPoseMatcher(QMainWindow):
                             slot_d.get("trajectory_frame_index", 0)
                         )
                         btn = self._pose_trajectory_buttons.get(key)
-                        traj = self.poses[key].trajectory
-                        if btn is not None and traj is not None:
-                            btn.setText(f"✓ {len(traj)}f")
+                        if btn is not None:
+                            btn.setText(f"✓ {len(self.poses[key].trajectory)}f")
                     except Exception as exc:  # noqa: BLE001
                         logger.warning("Could not reload trajectory %s: %s", p, exc)
 
@@ -2092,7 +2322,7 @@ class StartingPoseMatcher(QMainWindow):
                         if self.phase_combo.itemData(i) == key:
                             self.phase_combo.setCurrentIndex(i)
                             break
-                self.phase_window = key
+                self.phase_window = str(phase_in)
                 self.manual_range_widget.setVisible(key == "manual")
         if "manual_start" in tr:
             with QSignalBlocker(self.spin_phase_start):
@@ -2141,6 +2371,30 @@ class StartingPoseMatcher(QMainWindow):
         if "fps" in pb:
             with QSignalBlocker(self.spin_speed):
                 self.spin_speed.setValue(int(pb["fps"]))
+        if "speed" in pb:
+            with suppress(TypeError, ValueError):
+                self.playback_speed = float(pb["speed"])
+            if hasattr(self, "combo_speed"):
+                # Snap to closest allowed speed.
+                from .session_schema import ALLOWED_SPEEDS as _ALLOWED_SPEEDS
+
+                snap = min(_ALLOWED_SPEEDS, key=lambda s: abs(s - self.playback_speed))
+                idx = self.combo_speed.findText(f"{snap}×")
+                if idx >= 0:
+                    with QSignalBlocker(self.combo_speed):
+                        self.combo_speed.setCurrentIndex(idx)
+                self.playback_speed = float(snap)
+        if "trail_frames" in pb:
+            with suppress(TypeError, ValueError):
+                self.trail_frames = int(pb["trail_frames"])
+            if hasattr(self, "spin_trail"):
+                with QSignalBlocker(self.spin_trail):
+                    self.spin_trail.setValue(int(self.trail_frames))
+        if "show_trail" in pb:
+            self.show_trail = bool(pb["show_trail"])
+            if hasattr(self, "cb_show_trail"):
+                with QSignalBlocker(self.cb_show_trail):
+                    self.cb_show_trail.setChecked(self.show_trail)
         if "target" in pb and pb["target"] in ("Mocap", "Skeleton", "Both"):
             with QSignalBlocker(self.combo_playback_target):
                 self.combo_playback_target.setCurrentText(pb["target"])
@@ -2165,6 +2419,9 @@ class StartingPoseMatcher(QMainWindow):
                     with QSignalBlocker(self.event_preset_combo):
                         self.event_preset_combo.setCurrentIndex(idx)
         self._refresh_event_label_dependents()
+
+        # Issue #4480: data-sources panel.  Missing block → empty default.
+        self._apply_data_sources(d.get("data_sources"))
 
         self._redraw()
 
@@ -2262,6 +2519,16 @@ class StartingPoseMatcher(QMainWindow):
         if getattr(self, "auto_fit_axes", True):
             self._autoscale_axes_to_data()
 
+        # Re-attach the live-view layer artists after the axes were
+        # cleared by ``ax.clear()`` in this method. The controller keeps
+        # its target data, so re-binding is just rebuilding artists.
+        if (
+            getattr(self, "_live_view", None) is not None
+            and getattr(self, "_live_body_target", None) is not None
+        ):
+            self._live_view.set_target(body=self._live_body_target)
+            self._live_view.set_frame(int(self.current_frame))
+
         self.lbl_residual.setText(self._residual_text())
 
         leg = self.ax.legend(loc="upper right", fontsize=8, ncol=1, framealpha=0.85)
@@ -2289,7 +2556,7 @@ class StartingPoseMatcher(QMainWindow):
         if self.df is None:
             return (0, 0)
         n = len(self.df)
-        bounds = _PHASE_BOUNDS.get(self.phase_window, (None, None))
+        bounds = _PHASE_BOUNDS.get(self._phase_window_key(), (None, None))
         # "None" -> draw across full data
         if bounds == (None, None):
             return (0, n)
@@ -2627,6 +2894,36 @@ class StartingPoseMatcher(QMainWindow):
             i = max(0, min(slot.trajectory_frame_index, len(slot.trajectory) - 1))
             return slot.trajectory.frames[i]
         return slot.skeleton
+
+    # --------------------------------------------------------------------- #
+    # Multi-source target panel hook (issue #4480)                          #
+    # --------------------------------------------------------------------- #
+
+    def _on_multi_source_changed(self, target: object) -> None:
+        """Cache the latest ``MultiSourceTarget`` from the data-sources panel.
+
+        Downstream consumers (cost/animation, landed in later issues) can
+        read ``self._latest_multi_source`` to dispatch on whichever subset
+        of targets the user toggled on.
+        """
+        self._latest_multi_source = target
+        if target is None:
+            logger.info("Data-sources panel cleared.")
+        else:
+            logger.info(
+                "Data-sources panel: club=%s body=%s",
+                getattr(target, "has_club", lambda: False)(),
+                getattr(target, "has_body", lambda: False)(),
+            )
+
+    def _serialize_data_sources(self) -> dict[str, Any]:
+        """Snapshot the data-sources panel for the session JSON."""
+        return serialize_data_sources(self.source_panel.snapshot())
+
+    def _apply_data_sources(self, block: dict[str, Any] | None) -> None:
+        """Restore the data-sources panel from a (possibly missing) block."""
+        parsed: DataSourcesBlock = parse_data_sources(block)
+        self.source_panel.restore(parsed)
 
 
 # --------------------------------------------------------------------------- #

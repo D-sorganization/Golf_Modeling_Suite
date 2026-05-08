@@ -11,7 +11,7 @@ classdef test_load_club_target_c3d < matlab.unittest.TestCase
     end
 
     methods (Test)
-        function test_loads_existing_gears_c3d_file_without_error(testCase)
+        function test_loads_existing_cluster_c3d_file_without_error(testCase)
             c3d = locate_c3d(testCase);
             opts = default_align_options();
             opts.verbosity = "Verbose";
@@ -48,7 +48,7 @@ end
 
 function c3d = locate_c3d(testCase)
     here = fileparts(mfilename("fullpath"));
-    base = fullfile(here, "..", "..", "Data", "Gears C3D Files");
+    base = fullfile(here, "..", "..", "Data", "Mocap C3D Files");
     candidates = [
         fullfile(base, "C3DExport Tour average.c3d"), ...
         fullfile(base, "C3DExport tour average iron.c3d")];
@@ -58,5 +58,5 @@ function c3d = locate_c3d(testCase)
             return;
         end
     end
-    testCase.assumeFail("skipped — no Gears C3D file present at " + base);
+    testCase.assumeFail("skipped — no cluster-marker C3D file present at " + base);
 end
