@@ -1,11 +1,17 @@
-"""Test URDF schema validation for humanoid character builder."""
+"""Test URDF schema validation for humanoid character builder.
+
+lxml is optional; when it is not installed the whole module is skipped.
+Core URDF schema regressions are also covered in test_urdf_quality.py
+which uses stdlib xml.etree. See issue #4536.
+"""
 
 import pytest
-from lxml import etree
 
-from humanoid_character_builder import CharacterBuilder
-from humanoid_character_builder.core.body_parameters import BodyParameters
-from humanoid_character_builder.presets.loader import list_available_presets
+etree = pytest.importorskip("lxml.etree")
+
+from humanoid_character_builder import CharacterBuilder  # noqa: E402
+from humanoid_character_builder.core.body_parameters import BodyParameters  # noqa: E402
+from humanoid_character_builder.presets.loader import list_available_presets  # noqa: E402
 
 
 # URDF XML namespace and root element validation

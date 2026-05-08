@@ -52,6 +52,12 @@ class InertiaMode(Enum):
     # Use anthropometric data (for humanoid segments)
     ANTHROPOMETRIC = "anthropometric"
 
+    # Backward-compat alias for PRIMITIVE -- the humanoid_character_builder
+    # subsystem historically used `PRIMITIVE_APPROXIMATION`. Same value
+    # ("primitive") so it resolves to the same enum member. Kept until the
+    # legacy callers are migrated. See #4600.
+    PRIMITIVE_APPROXIMATION = "primitive"  # noqa: PIE796 (intentional alias)
+
 
 @dataclass
 class InertiaResult:

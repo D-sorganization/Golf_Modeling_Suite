@@ -153,8 +153,19 @@ class CharacterBuildResult:
     # Error category for classification
     error_category: BuildErrorCategory = BuildErrorCategory.NONE
 
+    # Canonical status string ("success" / "failure"). Mirrors
+    # motion_matching.fit_result.CanonicalFitResult.solver_status so the
+    # URDF subsystem speaks the same vocabulary as the rest of the
+    # platform. Derived from `success` if not explicitly set. See #4522.
+    solver_status: str = "success"
+
     # Output directory (if exported)
     output_dir: Path | None = None
+
+    def __post_init__(self) -> None:
+        # Derive solver_status from success if caller did not override.
+        if not self.success and self.solver_status == "success":
+            self.solver_status = "failure"
 
     def export_urdf(  # noqa: C901
         self,

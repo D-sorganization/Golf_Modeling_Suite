@@ -94,6 +94,13 @@ class PrimitiveInertiaCalculator:
     ) -> InertiaResult:
         if not (mass is not None):
             raise ValueError("mass must be provided")
+        # Degenerate geometry (zero radius/length) collapses to a point and
+        # would yield a zero inertia tensor, which is non-physical and
+        # crashes physics engines. Fall back to a small-but-positive default
+        # tensor — matches the legacy humanoid_character_builder behavior
+        # before the #4600 canonical-inertia migration.
+        if radius <= 0.0 or length <= 0.0:
+            return InertiaResult.create_default(mass)
         i_dict = capsule_inertia(mass, radius, length, axis)
         v_cyl = math.pi * radius**2 * length
         v_sphere = (4.0 / 3.0) * math.pi * radius**3
