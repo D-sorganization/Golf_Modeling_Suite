@@ -1,0 +1,92 @@
+{
+  "schema_version": "3d_fullbody_logging_prune_audit.v1",
+  "generated_at": "2026-05-08T00:00:00Z",
+  "model_name": "FullBodyGolfSwing3D",
+  "dry_run": true,
+  "aggressive": false,
+  "source_model": {
+    "path": "source.slx",
+    "exists": false,
+    "timestamp": "",
+    "sha256": ""
+  },
+  "target_model": {
+    "path": "target.slx",
+    "exists": false,
+    "timestamp": "",
+    "sha256": ""
+  },
+  "measured_counts": {
+    "before": {
+      "total_blocks": {"value": 1200, "measured": true},
+      "nonvirtual_blocks": {"value": 980, "measured": true},
+      "logged_signal_count": {"value": 240, "measured": true}
+    },
+    "after": {
+      "total_blocks": {"value": 1200, "measured": true},
+      "nonvirtual_blocks": {"value": 980, "measured": true},
+      "logged_signal_count": {"value": 237, "measured": true}
+    }
+  },
+  "heuristic_estimates": {
+    "disabled_signal_count": 3,
+    "estimated_nonvirtual_block_savings": 2,
+    "formula": "round(0.7 * disabled_signal_count)",
+    "is_measured": false
+  },
+  "signals_disabled": 3,
+  "disabled_block_paths": [
+    "FullBodyGolfSwing3D/CosmeticMarker"
+  ],
+  "disabled_outport_paths": [
+    "FullBodyGolfSwing3D/ClubLocalForce",
+    "FullBodyGolfSwing3D/HipPositionInputX"
+  ],
+  "candidates": [
+    {
+      "category": "cosmetic_non_critical_body_logs",
+      "kind": "block",
+      "path": "FullBodyGolfSwing3D/CosmeticMarker",
+      "property": "LogSimulationData",
+      "action": "set logging off",
+      "mutated": false
+    },
+    {
+      "category": "local_global_club_duplicates",
+      "kind": "outport",
+      "path": "FullBodyGolfSwing3D/ClubLocalForce",
+      "property": "SrcPortHandle.DataLogging",
+      "action": "set logging off",
+      "mutated": false
+    },
+    {
+      "category": "per_axis_duplicate_logs",
+      "kind": "outport",
+      "path": "FullBodyGolfSwing3D/HipPositionInputX",
+      "property": "SrcPortHandle.DataLogging",
+      "action": "set logging off",
+      "mutated": false
+    }
+  ],
+  "category_breakdown": {
+    "cosmetic_non_critical_body_logs": 1,
+    "per_axis_duplicate_logs": 1,
+    "local_global_club_duplicates": 1,
+    "optional_velocity_acceleration_mirrors": 0
+  },
+  "downstream_signal_requirements": {
+    "preserved": true,
+    "allowlist": [
+      "CombinedSignalBus",
+      "ClubGlobalForce",
+      "ClubGlobalTorque",
+      "HipPosition"
+    ],
+    "policy": "Disable only derivable duplicates and cosmetic/non-critical logs; preserve documented downstream analysis channels."
+  },
+  "artifacts": {
+    "json_report_path": "",
+    "markdown_report_path": ""
+  },
+  "notes": "Measured counts are model observations. Heuristic estimates are reported separately."
+}

@@ -38,6 +38,7 @@ LEGACY_SRC_TEST_DIRS = frozenset(
         "src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/motion_matching/option4_python_bridge/tests",
         "src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/motion_matching/shared/tests",
         "src/engines/Simscape_Multibody_Models/3D_Golf_Model/python/tests",
+        "src/engines/Simscape_Multibody_Models/3D_FullBody_Model/matlab/tests",
         "src/shared/python/chat/tests",
         "src/shared/python/dashboard/tests",
         "src/shared/python/data_processing/tests",
