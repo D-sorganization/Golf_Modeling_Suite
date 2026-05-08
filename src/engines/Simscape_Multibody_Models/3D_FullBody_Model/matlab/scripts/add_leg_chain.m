@@ -1,10 +1,11 @@
 function out = add_leg_chain(model_name, opts)
 %ADD_LEG_CHAIN  Add hip+knee+ankle+foot+contact subsystems to MODEL_NAME.
 %
-%   OUT = ADD_LEG_CHAIN(MODEL_NAME, OPTS) builds two leg subsystems
-%   (Left Leg Kinetically Driven, Right Leg Kinetically Driven) that
-%   mirror the existing arm subsystem conventions, plus a ground plane
-%   and Sphere-Plane Spatial Contact Force per foot.
+%   OUT = ADD_LEG_CHAIN(MODEL_NAME, OPTS) builds the first scripted leg
+%   subsystem (Left Leg Kinetically Driven) before the right-side mirror
+%   is added in a follow-up.  The function also declares the shared
+%   ground/contact design surface so reruns report exactly which
+%   Simscape-specific operations could not be completed headlessly.
 %
 %   Per leg:
 %     * Hip Gimbal Joint (3 DOF) — input parameters
@@ -45,28 +46,14 @@ function out = add_leg_chain(model_name, opts)
 %                               attach defaults via setVariable when
 %                               creating the SimulationInput.
 %
-%   STATUS (2026-05-07):
-%   This function is currently a SCAFFOLD.  It declares the design
-%   surface (block names, parameter names, port wiring) so the
-%   getPolynomialParameterInfo + matcher pipelines pick up the new
-%   joints automatically once the actual ``add_block`` calls are
-%   uncommented.  Building the leg chain requires careful Simscape
-%   Multibody library knowledge (which library pages each block lives
-%   on, which mask parameters to set, which Frame ports to connect).
-%
-%   The intended usage flow:
-%     1. Run ``build_3d_fullbody`` with ``opts.skip_legs=true`` first
-%        to produce a clean copy with logging pruned.
-%     2. Open the resulting ``GolfSwing3D_FullBody.slx`` in MATLAB.
-%     3. Edit this function to fill in the actual ``add_block`` /
-%        ``set_param`` / ``add_line`` calls below, OR build the leg
-%        subsystems interactively in Simulink and update this script
-%        to reproduce them.
-%     4. Re-run ``build_3d_fullbody`` to validate.
-%
-%   Until then, calling this function with the default options reports
-%   the design surface (returned struct) without modifying the model,
-%   so the build script can complete and validate the pruned model.
+%   STATUS (2026-05-08):
+%   This is the first implementation slice.  It creates one generated
+%   left-leg subsystem using add_block / set_param / add_line calls, and
+%   it deletes/rebuilds that generated subsystem on every run so
+%   build_3d_fullbody is idempotent.  Simscape Multibody library and mask
+%   names can vary by MATLAB release/license; those operations are
+%   captured in OUT.operation_log and OUT.validation_status instead of
+%   being silently ignored.
 %
 %   See also: BUILD_3D_FULLBODY, PRUNE_REDUNDANT_LOGGING,
 %             VALIDATE_3D_FULLBODY.
@@ -79,7 +66,7 @@ function out = add_leg_chain(model_name, opts)
     if ~isfield(opts, 'verbose');       opts.verbose       = true;  end
     if ~isfield(opts, 'dry_run');       opts.dry_run       = false; end
     if ~isfield(opts, 'skip_contact');  opts.skip_contact  = false; end
-    if ~isfield(opts, 'leg_root_path');
+    if ~isfield(opts, 'leg_root_path')
         opts.leg_root_path = char(model_name);
     end
 
@@ -96,11 +83,14 @@ function out = add_leg_chain(model_name, opts)
             'right_leg_subsystem',0, ...
             'ground_plane',       0, ...
             'contact_forces',     0), ...
-        'new_workspace_vars', strings(0,1));
+        'new_workspace_vars', strings(0,1), ...
+        'generated_blocks',  strings(0,1), ...
+        'operation_log',     struct('operation', {}, 'target', {}, ...
+                                    'status', {}, 'message', {}), ...
+        'validation_status', "not_started");
 
     if opts.verbose
-        fprintf('add_leg_chain: SCAFFOLD MODE\n');
-        fprintf('  declaring design surface; no add_block calls until you fill in body.\n');
+        fprintf('add_leg_chain: building one scripted left leg chain\n');
     end
 
     % ---- Phase 1: declare new model-workspace variables -------------
@@ -129,54 +119,246 @@ function out = add_leg_chain(model_name, opts)
     end
     out.blocks_per_phase.workspace_vars = numel(out.new_workspace_vars);
 
-    % ---- Phase 2-5 (TO BE FILLED IN) --------------------------------
-    %
-    % Below is the DESIGN SURFACE the build script will create when the
-    % add_block / add_line calls are filled in.  Use this as a checklist
-    % when implementing the actual block placement either by hand-tuned
-    % add_block calls or by interactive Simulink build + diff.
-    %
-    %   Phase 2 — Left Leg Kinetically Driven (subsystem)
-    %     Inports (from pelvis):  Pelvis_Frame
-    %     Inports (from controller): JointTorqueLHip{X,Y,Z}, JointTorqueLKnee, JointTorqueLAnkle{X,Y}
-    %     Outports: LFoot_Frame  (to contact force)
-    %     Internal:
-    %       Hip Gimbal Joint     (sm_lib/Joints/Gimbal Joint)
-    %         Mask params: revolute primitives X / Y / Z, internal
-    %         mechanics defined per "Kinetically_Driven_Gimbal_Joint.slx"
-    %       Cylindrical Solid 'UpperLeg' (length=UpperLegLength)
-    %       Knee Revolute Joint  (sm_lib/Joints/Revolute Joint)
-    %       Cylindrical Solid 'LowerLeg' (length=LowerLegLength)
-    %       Ankle Universal Joint (sm_lib/Joints/Universal Joint)
-    %       Brick Solid 'Foot' (length=FootLength, width=FootWidth, height=FootHeight)
-    %       Spherical Solid 'BallOfFoot_Sphere' (radius=0.03)
-    %         — used by contact-force sphere; placed at toe end of foot
-    %       Transform Sensors on each joint (logged)
-    %       Inertia Sensors (cosmetic ones omitted to stay within budget)
-    %
-    %   Phase 3 — Right Leg Kinetically Driven (mirror of Phase 2 with
-    %             segment lengths and start-positions mirrored about Y
-    %             axis as appropriate)
-    %
-    %   Phase 4 — Ground plane (sm_lib/Body Elements/Infinite Plane,
-    %             attached to World Frame at z=0)
-    %
-    %   Phase 5 — Contact forces (Spatial Contact Force per foot,
-    %             sphere=foot.BallOfFoot_Sphere, plane=Ground.InfPlane,
-    %             normal stiffness K=1e5 N/m, damping D=1000 N*s/m,
-    %             static/kinetic friction 0.7/0.5).
-    %
-    % When you fill these phases in, increment
-    % `out.blocks_per_phase.<phase>` so the validation script can
-    % compute the post-build block count.
+    % ---- Phase 2: create the first scripted leg chain ----------------
+    left = local_build_left_leg(char(opts.leg_root_path), opts);
+    out.blocks_per_phase.left_leg_subsystem = left.blocks_added;
+    out.generated_blocks = left.generated_blocks;
+    out.operation_log = [out.operation_log, left.operation_log];
 
-    out.blocks_added = sum(structfun(@double, out.blocks_per_phase));
+    % ---- Phase 3-5: report deferred mirror/contact phases ------------
+    out.blocks_per_phase.right_leg_subsystem = 0;
+    out.blocks_per_phase.ground_plane = 0;
+    out.blocks_per_phase.contact_forces = 0;
+    out.operation_log(end+1) = local_log_entry( ...
+        'defer', 'Right Leg Kinetically Driven', 'deferred', ...
+        'Right-side mirror is intentionally left for the next issue slice.');
+    out.operation_log(end+1) = local_log_entry( ...
+        'defer', 'Ground Plane + LFoot Contact Force', 'deferred', ...
+        'Sphere-plane contact waits for a Simscape-validated frame-port pass.');
+
+    out.blocks_added = out.blocks_per_phase.left_leg_subsystem + ...
+        out.blocks_per_phase.right_leg_subsystem + ...
+        out.blocks_per_phase.ground_plane + ...
+        out.blocks_per_phase.contact_forces;
+    failed = string({out.operation_log.status}) == "failed";
+    if any(failed)
+        out.validation_status = "partial_with_reported_failures";
+    else
+        out.validation_status = "left_leg_scripted";
+    end
 
     if opts.verbose
-        fprintf('  declared design surface for legs + ground (no blocks added in scaffold mode)\n');
+        fprintf('  left leg generated blocks: %d\n', ...
+            out.blocks_per_phase.left_leg_subsystem);
+        fprintf('  validation_status: %s\n', out.validation_status);
         fprintf('  new model-workspace variables (default values queued): %d\n', ...
             out.blocks_per_phase.workspace_vars);
     end
+end
+
+
+% =====================================================================
+function report = local_build_left_leg(root_path, opts)
+%LOCAL_BUILD_LEFT_LEG  Delete/rebuild the generated left leg subsystem.
+    subsystem_name = 'Left Leg Kinetically Driven';
+    subsystem_path = sprintf('%s/%s', root_path, subsystem_name);
+
+    report = struct( ...
+        'blocks_added',     0, ...
+        'generated_blocks', strings(0,1), ...
+        'operation_log',    struct('operation', {}, 'target', {}, ...
+                                   'status', {}, 'message', {}));
+
+    if opts.dry_run
+        specs = local_left_leg_block_specs(subsystem_path);
+        report.blocks_added = numel(specs);
+        report.generated_blocks = string({specs.dst})';
+        report.operation_log(end+1) = local_log_entry( ...
+            'dry_run', subsystem_path, 'ok', ...
+            'Declared left-leg block graph without mutating model.');
+        return
+    end
+
+    if local_block_exists(subsystem_path)
+        delete_block(subsystem_path);
+        report.operation_log(end+1) = local_log_entry( ...
+            'delete_block', subsystem_path, 'ok', ...
+            'Removed prior generated left-leg subsystem for idempotent rebuild.');
+    end
+
+    [ok, message] = local_try_add_block( ...
+        'simulink/Ports & Subsystems/Subsystem', subsystem_path, ...
+        {'Position', [260 360 570 620]});
+    report.operation_log(end+1) = local_log_entry( ...
+        'add_block', subsystem_path, local_status(ok), message);
+    if ~ok
+        return
+    end
+    report.generated_blocks(end+1, 1) = string(subsystem_path);
+
+    specs = local_left_leg_block_specs(subsystem_path);
+    for k = 1:numel(specs)
+        spec = specs(k);
+        [ok, message] = local_try_add_block(spec.src, spec.dst, spec.params);
+        report.operation_log(end+1) = local_log_entry( ...
+            'add_block', spec.dst, local_status(ok), message);
+        if ok
+            report.blocks_added = report.blocks_added + 1;
+            report.generated_blocks(end+1, 1) = string(spec.dst);
+        end
+    end
+
+    lines = local_left_leg_line_specs();
+    for k = 1:size(lines, 1)
+        [ok, message] = local_try_add_line(subsystem_path, lines{k,1}, lines{k,2});
+        report.operation_log(end+1) = local_log_entry( ...
+            'add_line', sprintf('%s: %s -> %s', subsystem_path, lines{k,1}, lines{k,2}), ...
+            local_status(ok), message);
+    end
+end
+
+
+function specs = local_left_leg_block_specs(subsystem_path)
+%LOCAL_LEFT_LEG_BLOCK_SPECS  Contract names for the first leg chain slice.
+    specs = [ ...
+        local_block_spec('simulink/Sources/In1', ...
+            sprintf('%s/Pelvis_Frame', subsystem_path), ...
+            {'Position', [30 65 60 85]}), ...
+        local_block_spec('simulink/Sources/In1', ...
+            sprintf('%s/JointTorqueLHipX', subsystem_path), ...
+            {'Position', [30 125 60 145]}), ...
+        local_block_spec('simulink/Sources/In1', ...
+            sprintf('%s/JointTorqueLHipY', subsystem_path), ...
+            {'Position', [30 165 60 185]}), ...
+        local_block_spec('simulink/Sources/In1', ...
+            sprintf('%s/JointTorqueLHipZ', subsystem_path), ...
+            {'Position', [30 205 60 225]}), ...
+        local_block_spec('simulink/Sources/In1', ...
+            sprintf('%s/JointTorqueLKnee', subsystem_path), ...
+            {'Position', [30 285 60 305]}), ...
+        local_block_spec('simulink/Sources/In1', ...
+            sprintf('%s/JointTorqueLAnkleX', subsystem_path), ...
+            {'Position', [30 365 60 385]}), ...
+        local_block_spec('simulink/Sources/In1', ...
+            sprintf('%s/JointTorqueLAnkleY', subsystem_path), ...
+            {'Position', [30 405 60 425]}), ...
+        local_block_spec('sm_lib/Joints/Gimbal Joint', ...
+            sprintf('%s/LHip_Gimbal', subsystem_path), ...
+            {'Position', [130 85 230 155]}), ...
+        local_block_spec('sm_lib/Body Elements/Cylindrical Solid', ...
+            sprintf('%s/LUpperLeg_CylindricalSolid', subsystem_path), ...
+            {'Position', [285 85 385 155], ...
+             'CylinderRadius', 'UpperLegRadius', ...
+             'CylinderLength', 'UpperLegLength', ...
+             'Mass', 'UpperLegMass'}), ...
+        local_block_spec('sm_lib/Joints/Revolute Joint', ...
+            sprintf('%s/LKnee_Revolute', subsystem_path), ...
+            {'Position', [440 85 540 155]}), ...
+        local_block_spec('sm_lib/Body Elements/Cylindrical Solid', ...
+            sprintf('%s/LLowerLeg_CylindricalSolid', subsystem_path), ...
+            {'Position', [595 85 695 155], ...
+             'CylinderRadius', 'LowerLegRadius', ...
+             'CylinderLength', 'LowerLegLength', ...
+             'Mass', 'LowerLegMass'}), ...
+        local_block_spec('sm_lib/Joints/Universal Joint', ...
+            sprintf('%s/LAnkle_Universal', subsystem_path), ...
+            {'Position', [750 85 850 155]}), ...
+        local_block_spec('sm_lib/Body Elements/Brick Solid', ...
+            sprintf('%s/LFoot_BrickSolid', subsystem_path), ...
+            {'Position', [905 85 1005 155], ...
+             'BrickDimensions', '[FootLength, FootWidth, FootHeight]', ...
+             'Mass', 'FootMass'}), ...
+        local_block_spec('sm_lib/Body Elements/Spherical Solid', ...
+            sprintf('%s/LBallOfFoot_Sphere', subsystem_path), ...
+            {'Position', [1060 85 1160 155], ...
+             'SphereRadius', '0.03', ...
+             'Mass', '0.01'}), ...
+        local_block_spec('simulink/Sinks/Out1', ...
+            sprintf('%s/LFoot_Frame', subsystem_path), ...
+            {'Position', [1235 105 1265 125]}) ...
+    ];
+end
+
+
+function lines = local_left_leg_line_specs()
+%LOCAL_LEFT_LEG_LINE_SPECS  Signal-level lines used for headless checks.
+%
+% Simscape conserving-frame lines have release-specific port names on the
+% Multibody blocks.  This first slice wires the stable Simulink signal ports
+% and records any release-specific misses in operation_log.
+    lines = {
+        'JointTorqueLHipX/1',   'LHip_Gimbal/1';
+        'JointTorqueLKnee/1',   'LKnee_Revolute/1';
+        'JointTorqueLAnkleX/1', 'LAnkle_Universal/1';
+        'LFoot_BrickSolid/1',   'LFoot_Frame/1';
+    };
+end
+
+
+function spec = local_block_spec(src, dst, params)
+    spec = struct('src', src, 'dst', dst, 'params', {params});
+end
+
+
+function tf = local_block_exists(path)
+    try
+        get_param(path, 'Handle');
+        tf = true;
+    catch
+        tf = false;
+    end
+end
+
+
+function [ok, message] = local_try_add_block(src, dst, params)
+    try
+        add_block(src, dst, 'MakeNameUnique', 'off');
+        for idx = 1:2:numel(params)
+            try
+                set_param(dst, params{idx}, params{idx+1});
+            catch ME
+                message = sprintf('block added; set_param(%s) failed: %s', ...
+                    params{idx}, ME.message);
+                ok = false;
+                return
+            end
+        end
+        ok = true;
+        message = 'ok';
+    catch ME
+        ok = false;
+        message = ME.message;
+    end
+end
+
+
+function [ok, message] = local_try_add_line(system_path, src, dst)
+    try
+        add_line(system_path, src, dst, 'autorouting', 'on');
+        ok = true;
+        message = 'ok';
+    catch ME
+        ok = false;
+        message = ME.message;
+    end
+end
+
+
+function status = local_status(ok)
+    if ok
+        status = 'ok';
+    else
+        status = 'failed';
+    end
+end
+
+
+function entry = local_log_entry(operation, target, status, message)
+    entry = struct( ...
+        'operation', string(operation), ...
+        'target',    string(target), ...
+        'status',    string(status), ...
+        'message',   string(message));
 end
 
 

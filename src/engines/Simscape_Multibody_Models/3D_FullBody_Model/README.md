@@ -38,8 +38,8 @@ without modifying it.
       build_3d_fullbody.m            ← MASTER BUILD SCRIPT
       prune_redundant_logging.m      (removes ~35-43 nonvirtual blocks
                                        worth of redundant signal logging)
-      add_leg_chain.m                (scaffold-only leg/contact design
-                                       surface; no block creation yet)
+      add_leg_chain.m                (scripted left-leg chain slice
+                                       with idempotent rebuild reporting)
       validate_3d_fullbody.m         (block-count + signal-count +
                                        smoke-sim checks)
       (note: directory deliberately not named "build/" because the
@@ -125,11 +125,13 @@ outputs.
 
 ## What's added
 
-`add_leg_chain.m` is scaffold-only in this PR. It documents the
-intended subsystem names, workspace variables, and polynomial naming
-surface, but it does not yet create Simscape leg/contact blocks. The
-function may declare model-workspace variables for the future leg
-surface; that is not leg/contact implementation.
+`add_leg_chain.m` currently implements the first left-leg slice. It
+deletes and rebuilds the generated `Left Leg Kinetically Driven`
+subsystem on every run, creates the stable hip/knee/ankle/foot anchor
+blocks, and reports any MATLAB/Simscape-release-specific block, mask, or
+line operation that cannot be completed in the returned
+`operation_log`. The right-leg mirror and full foot-vs-ground contact
+wiring remain follow-up work.
 Per leg, the planned implementation is:
 
 - **Hip joint** — Gimbal Joint (3 DOF). Fields:
@@ -156,7 +158,8 @@ free"** — `theta` length grows from `27 * 7 = 189` to `33 * 7 = 231`.
 
 - [x] Directory scaffolded
 - [x] Input MATs copied
-- [x] Build scripts authored (this PR)
+- [x] Build scripts authored
+- [x] One scripted left-leg chain slice
 - [ ] Build scripts executed in MATLAB (requires user)
 - [ ] Validation (block count + signal count + smoke sim)
 - [ ] Tests (pytest + MATLAB)

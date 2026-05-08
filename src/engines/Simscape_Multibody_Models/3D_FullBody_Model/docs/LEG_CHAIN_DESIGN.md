@@ -5,10 +5,13 @@ the agent / human filling in the actual `add_block` calls has a
 single-page reference for what each block is, what it connects to,
 and what mask parameters to set.
 
-Current status: scaffold-only. The PR that introduced this directory
-does not yet implement the leg/contact block creation phases. Treat the
-tables below as the reproducible build contract for a follow-up PR, not
-as evidence that the generated model already contains those blocks.
+Current status: first left-leg implementation slice. `add_leg_chain.m`
+now deletes and rebuilds a generated `Left Leg Kinetically Driven`
+subsystem with the hip, knee, ankle, foot, and ball-of-foot anchor
+blocks listed below. The right-side mirror and full sphere-plane contact
+wiring are deliberately deferred. Simscape-library operations that vary
+by MATLAB release/license are recorded in the returned operation log
+instead of being treated as silent success.
 
 ## Body chain
 
@@ -63,7 +66,10 @@ existing models in
 are libraries — **reuse them** rather than reinventing the controller
 internals. Pattern: drag the corresponding library reference into the
 new leg subsystem; connect its conserving frame ports to the
-upper/lower segments.
+upper/lower segments. The current slice creates the stable subsystem,
+port, joint, body, and reporting surface first; replacing any fallback
+release-specific wiring with direct library-reference mechanics remains
+follow-up work.
 
 ### Rigid bodies
 

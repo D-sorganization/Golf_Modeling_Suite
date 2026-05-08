@@ -38,8 +38,8 @@
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.143                                            |
-| **Last Spec Update**    | 2026-05-07 (3D full-body Simscape scaffold)        |
+| **Spec Version**        | 1.0.144                                            |
+| **Last Spec Update**    | 2026-05-08 (3D full-body left leg chain)           |
 
 ## 2. Purpose & Mission
 
@@ -160,7 +160,7 @@ UpstreamDrift/
 | OpenSim Engine Adapter   | `src/engines/physics_engines/opensim/`   | Experimental OpenSim integration for clinical biomechanics workflows                        |
 | MyoSuite Engine Adapter  | `src/engines/physics_engines/myosuite/`  | Experimental MyoSuite integration for detailed muscle physiology simulation                 |
 | Pendulum Models          | `src/engines/physics_engines/pendulum/`  | Educational simplified models for learning and quick prototyping                            |
-| 3D Full-Body Simscape Scaffold | `src/engines/Simscape_Multibody_Models/3D_FullBody_Model/` | Build-from-source derivative of the 3D golf Simscape model with leg-chain design docs, MATLAB build scripts, generated `.slx` exclusion, and load/simulation smoke-test harness |
+| 3D Full-Body Simscape Scaffold | `src/engines/Simscape_Multibody_Models/3D_FullBody_Model/` | Build-from-source derivative of the 3D golf Simscape model with a scripted left-leg chain slice, leg-chain design docs, MATLAB build scripts, generated `.slx` exclusion, and load/simulation smoke-test harness |
 | FastAPI Backend          | `src/api/`                               | REST API exposing simulation, IK/ID, trajectory optimization, and control endpoints         |
 | PyQt6 GUI                | `src/launchers/golf_launcher.py`         | Professional interactive GUI with real-time 3D visualization                                |
 | Tauri Desktop App        | `ui/`                                    | Cross-platform desktop application wrapper (Windows, macOS, Linux)                          |
@@ -557,6 +557,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-05-08 | 1.0.144 | Implemented the first scripted `3D_FullBody_Model` leg-chain slice by making `add_leg_chain.m` delete and rebuild a generated `Left Leg Kinetically Driven` subsystem with hip, knee, ankle, foot, and contact-anchor block names plus an operation-log contract for MATLAB/Simscape-specific build calls that cannot be validated headlessly. |
 | 2026-05-07 | 1.0.143 | Added the `3D_FullBody_Model` Simscape scaffold under `src/engines/Simscape_Multibody_Models/`, including generated `.slx` exclusion, MATLAB build/prune/validate scripts, leg-chain design documentation, copied input MAT fixtures, and a MATLAB smoke-test harness for the derivative full-body model. |
 | 2026-05-07 | 1.0.140 | Added a pure-unit OpenSim prescribed-controller boundary for polynomial torque trajectories, including validation of time grids, coefficient shapes, finite values, actuator names, parity with the canonical polynomial torque evaluator, and typed unavailable behavior before native OpenSim integration. |
 | 2026-05-07 | 1.0.134 | Moved production-readiness and testing-contract documentation out of the repository root into `reports/` and `docs/testing/`, and added a focused CI regression test for the root-clutter policy so future non-allowlisted top-level files fail under pytest before they block the shared `quality-gate`. |
