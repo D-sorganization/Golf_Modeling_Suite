@@ -280,6 +280,14 @@ xlsx parser, neither of which Rust can help with.
   See
   `src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/src/model/mdl_reference/GolfSwing3D_Kinetic.mdl`
   block "Torso Kinetically Driven" (SID 8331).
+- **Editing Simscape `.mdl` files via the `Edit` tool is forbidden.**
+  The XML has unique SIDs and position-coded connection lines; one typo
+  and Simulink refuses to load the model.  Use a MATLAB build script
+  (`add_block` / `set_param` / `add_line`) so Simulink validates as it
+  builds.  See `src/engines/Simscape_Multibody_Models/3D_FullBody_Model/`
+  for the canonical pattern: `build_3d_fullbody.m` orchestrates a
+  `prune_redundant_logging.m` + `add_leg_chain.m` + `validate_3d_fullbody.m`
+  flow that produces a derived model from the original.
 - **Don't subclass `BaseLauncher` for single-purpose tools.**
   `BaseLauncher` is for grid-of-tiles launcher windows.  Standalone
   tools should be plain `QMainWindow` subclasses registered as tiles.
