@@ -42,6 +42,12 @@
       "owner": "@simscape-gui",
       "reason": "Legacy starting pose matcher shim (2364 lines, pending #4376 decomposition)",
       "expires_on": "2026-07-31"
+    },
+    {
+      "path": "src/tools/starting_pose_matcher/gui.py",
+      "owner": "@simscape-gui",
+      "reason": "Relocated starting pose matcher GUI (2661 lines, pending #4387 and #4403 decomposition)",
+      "expires_on": "2026-07-31"
     }
   ]
 }
