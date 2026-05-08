@@ -30,16 +30,16 @@
 
 ## 1. Identity
 
-| Field                   | Value                                              |
-| ----------------------- | -------------------------------------------------- |
-| **Repository Name**     | `UpstreamDrift`                                    |
-| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift` |
-| **Owner**               | D-sorganization                                    |
-| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
-| **License**             | MIT                                                |
-| **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.143                                            |
-| **Last Spec Update**    | 2026-05-07 (fix/lint-errors-for-ci-standard - ruff fixes in golf model tabs, export_torque_polynomials.py, starting_pose_matcher.py) |
+| Field                   | Value                                                                                                        |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Repository Name**     | `UpstreamDrift`                                                                                              |
+| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift`                                                           |
+| **Owner**               | D-sorganization                                                                                              |
+| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                                                                               |
+| **License**             | MIT                                                                                                          |
+| **Current Version**     | 2.1.0                                                                                                        |
+| **Spec Version**        | 1.0.144                                                                                                      |
+| **Last Spec Update**    | 2026-05-08 (issue #4389 - first-class Simscape JSON starting-pose provider with typed malformed-JSON errors) |
 
 ## 2. Purpose & Mission
 
@@ -260,6 +260,7 @@ Engine tier metadata is declared in each in-scope engine package with
 | ------------------------ | ------------- | ------------------------------- | -------------------------------------------------------- |
 | Biomechanical Models     | URDF          | `shared/models/`                | URDF 1.0 standard with custom muscle actuator extensions |
 | Motion Capture Data      | C3D, BVH, TRC | External mocap systems or files | Standard formats with marker sets and frame data         |
+| Starting-Pose Skeletons  | JSON          | Simscape MATLAB export          | `simscape_skeleton_<pose>.json` with metre-scale Z-up `joints` for `hip`, `spine`, `torso`, `hub`, `ls`, `rs`, `le`, `re`, `lw`, `rw`, `mp`, and `ch`; missing files use shared FK fallback, malformed files raise `SimscapeJsonProviderError` |
 | Optimization Constraints | JSON          | User input or configuration     | Custom constraint schema in `src/config/`                |
 | Control Parameters       | YAML/JSON     | Configuration files or API      | Engine-specific parameter maps validated against schemas |
 
@@ -553,6 +554,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-05-08 | 1.0.144 | Promoted the starting-pose matcher's Simscape JSON/FK skeleton loading into `src/tools/starting_pose_matcher/providers/simscape.py`, added provider metadata for `3D_Golf_Model` and `3D_FullBody_Model` JSON export mode, preserved the legacy `JsonSkeletonProvider` import alias, and made malformed Simscape skeleton JSON raise `SimscapeJsonProviderError` while missing JSON still falls back to the shared FK reference golfer. |
 | 2026-05-07 | 1.0.140 | Added a pure-unit OpenSim prescribed-controller boundary for polynomial torque trajectories, including validation of time grids, coefficient shapes, finite values, actuator names, parity with the canonical polynomial torque evaluator, and typed unavailable behavior before native OpenSim integration. |
 | 2026-05-07 | 1.0.134 | Moved production-readiness and testing-contract documentation out of the repository root into `reports/` and `docs/testing/`, and added a focused CI regression test for the root-clutter policy so future non-allowlisted top-level files fail under pytest before they block the shared `quality-gate`. |
 | 2026-05-06 | 1.0.125 | Added scope header comments to the generated Pinocchio `golfer.urdf` and `golfer_ik.urdf` files so forward-simulation and body-only IK workflows clearly document when the welded-club model versus the external-club-tracking model should be used. |

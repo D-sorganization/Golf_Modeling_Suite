@@ -74,11 +74,33 @@ For a focused reviewer walkthrough, start with the
 - **Python** 3.11 or 3.12 for the supported pip and lockfile workflow
 - **Git** with Git LFS
 - **MATLAB** R2023a+ with Simulink and Simscape Multibody (optional, for MATLAB models)
-See the canonical
-**[production artifact and compatibility matrix](docs/operations/production-readiness.md)**
-for supported Python, OS, engine tier, and hardware combinations. Git LFS is
-required for model assets; MATLAB/Simscape models are research references and
-are not production artifacts.
+  See the canonical
+  **[production artifact and compatibility matrix](docs/operations/production-readiness.md)**
+  for supported Python, OS, engine tier, and hardware combinations. Git LFS is
+  required for model assets; MATLAB/Simscape models are research references and
+  are not production artifacts.
+
+### Starting-Pose Matcher Simscape Skeletons
+
+The starting-pose matcher uses
+`src/tools/starting_pose_matcher/providers/simscape.py` as its first-class
+Simscape provider. The current export mode is JSON from the MATLAB
+`export_default_skeleton.m` helper. Place files named
+`simscape_skeleton_<pose>.json` beside the matcher package, for example
+`simscape_skeleton_Impact.json` and
+`simscape_skeleton_TopofBackswing.json`.
+
+The JSON must contain a `pose` string and a `joints` object using metre-scale
+Simscape world-frame, Z-up coordinates for the matcher joint vocabulary:
+`hip`, `spine`, `torso`, `hub`, `ls`, `rs`, `le`, `re`, `lw`, `rw`, `mp`,
+and `ch`. Optional `segments` entries are two-item joint-name lists. Missing
+JSON files fall back to the shared forward-kinematics reference golfer so the
+tool can launch before the MATLAB export is available. Malformed JSON raises a
+typed `SimscapeJsonProviderError`.
+
+Provider metadata distinguishes the current `3D_Golf_Model` JSON export mode
+from the planned `3D_FullBody_Model` JSON and future live MATLAB/Simulink
+export modes.
 
 ### Installation
 
