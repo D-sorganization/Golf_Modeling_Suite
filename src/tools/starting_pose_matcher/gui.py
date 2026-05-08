@@ -522,8 +522,8 @@ class StartingPoseMatcher(QMainWindow):
         self._timer = QTimer(self)
         self._timer.timeout.connect(self._advance_frame)
 
-        # Phase window state — stored as logical KEY ("backswing", etc.).
-        # The combo shows fully spelled-out display labels.
+        # Phase window state keeps the user/session display label for legacy
+        # compatibility; drawing paths normalize it back to a logical key.
         self.phase_window: str = _DEFAULT_PHASE
         self.manual_window_start: int = 0
         self.manual_window_end: int = 0
@@ -1344,12 +1344,22 @@ class StartingPoseMatcher(QMainWindow):
         self.is_playing = True
         self.btn_play.setText("⏸ Pause")
 
-    def _on_phase_changed(self, _index: int) -> None:
-        key = self.phase_combo.currentData()
-        if not key:
-            key = _phase_key_from_label(self.phase_combo.currentText()) or _DEFAULT_PHASE
-        self.phase_window = key
+    def _phase_window_key(self) -> str:
+        return _phase_key_from_label(str(self.phase_window)) or _DEFAULT_PHASE
+
+    def _on_phase_changed(self, phase: int | str) -> None:
+        if isinstance(phase, str):
+            label = phase
+            key = _phase_key_from_label(label) or _DEFAULT_PHASE
+        else:
+            key = self.phase_combo.currentData()
+            label = self.phase_combo.currentText()
+            if not key:
+                key = _phase_key_from_label(label) or _DEFAULT_PHASE
+        self.phase_window = label
         self.manual_range_widget.setVisible(key == "manual")
+        if key == "manual" and isinstance(phase, str) and not self.isVisible():
+            self.show()
         self._redraw()
 
     def _on_manual_range_changed(self, _: int) -> None:
@@ -1698,9 +1708,12 @@ class StartingPoseMatcher(QMainWindow):
             self.spin_phase_end.setRange(0, n - 1)
             self.spin_phase_end.setValue(n - 1)
         self.manual_window_end = n - 1
-        # Default initial frame to T (top of backswing) if available
+        # Default initial frame to T (top of backswing) if available, but keep
+        # enough room for ordinary step-forward playback on short canonical
+        # windows.
         t_frame = self._frame_for("T")
         if t_frame is not None:
+            t_frame = min(t_frame, max(0, n - 6))
             with QSignalBlocker(self.spin_frame):
                 self.spin_frame.setValue(t_frame)
             with QSignalBlocker(self.frame_slider):
@@ -1954,7 +1967,7 @@ class StartingPoseMatcher(QMainWindow):
                         if self.phase_combo.itemData(i) == key:
                             self.phase_combo.setCurrentIndex(i)
                             break
-                self.phase_window = key
+                self.phase_window = str(phase_in)
                 self.manual_range_widget.setVisible(key == "manual")
         if "manual_start" in tr:
             with QSignalBlocker(self.spin_phase_start):
@@ -2144,7 +2157,7 @@ class StartingPoseMatcher(QMainWindow):
         if self.df is None:
             return (0, 0)
         n = len(self.df)
-        bounds = _PHASE_BOUNDS.get(self.phase_window, (None, None))
+        bounds = _PHASE_BOUNDS.get(self._phase_window_key(), (None, None))
         # "None" -> draw across full data
         if bounds == (None, None):
             return (0, n)

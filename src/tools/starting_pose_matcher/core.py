@@ -443,7 +443,20 @@ def _clubtarget_to_dataframe(target: ClubTarget) -> pd.DataFrame:
             "club_Zz": float(rotmats[i, 2, 2]),
         }
         rows.append(rec)
-    return pd.DataFrame(rows)
+    df = pd.DataFrame(rows)
+    pos_cols = ["mid_X", "mid_Y", "mid_Z", "club_X", "club_Y", "club_Z"]
+    shaft = np.linalg.norm(
+        df[["club_X", "club_Y", "club_Z"]].to_numpy(dtype=float)
+        - df[["mid_X", "mid_Y", "mid_Z"]].to_numpy(dtype=float),
+        axis=1,
+    )
+    finite = np.isfinite(shaft) & (shaft > 1e-6)
+    if finite.any() and float(np.median(shaft[finite])) > 1.4:
+        # Wiffle workbook positions are centimetres. The legacy parser used by
+        # the canonical loader historically applied an inches factor; keep the
+        # matcher contract in metres without changing the shared loader here.
+        df.loc[:, pos_cols] *= CM_TO_M / 0.0254
+    return df
 
 
 def load_mocap_xlsx(xlsx_path: str | Path, sheet_name: str) -> pd.DataFrame:
