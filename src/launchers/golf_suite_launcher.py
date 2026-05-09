@@ -1,4 +1,4 @@
-"""Unified Golf Suite Launcher (Local Python Version) - Golf Modeling Suite.
+"""Unified Launcher (Local Python Version) - UpstreamDrift.
 
 .. deprecated::
     This launcher is deprecated. Use `golf_launcher.py` instead, which supports
@@ -45,7 +45,7 @@ class GolfLauncher(QtWidgets.QMainWindow if PYQT6_AVAILABLE else object):  # typ
         if not PYQT6_AVAILABLE:
             raise ImportError("PyQt6 is required to run this launcher.")
         super().__init__()
-        self.setWindowTitle("Golf Modeling Suite - Local Launcher")
+        self.setWindowTitle("UpstreamDrift - Local Launcher (Deprecated)")
         self.resize(400, 300)
 
         # Paths - UPDATED FOR GOLF_MODELING_SUITE
@@ -264,7 +264,7 @@ class GolfLauncher(QtWidgets.QMainWindow if PYQT6_AVAILABLE else object):  # typ
         self.setCentralWidget(central)
         layout = QtWidgets.QVBoxLayout(central)
 
-        title = QtWidgets.QLabel("Golf Modeling Suite (Local)")
+        title = QtWidgets.QLabel("UpstreamDrift (Local)")
         title.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         font = title.font()
         font.setPointSize(16)
@@ -453,7 +453,7 @@ class GolfLauncher(QtWidgets.QMainWindow if PYQT6_AVAILABLE else object):  # typ
 
 
 def main() -> None:
-    """Launch the Golf Suite GUI application."""
+    """Launch the UpstreamDrift GUI application (legacy)."""
     if not PYQT6_AVAILABLE:
         # If logger is configured (basic config above), this goes to stderr/stdout
         logger.error(

@@ -53,7 +53,7 @@ from src.launchers.ui_components import (
     AsyncStartupWorker,
     DockerCheckThread,
     DraggableModelCard,
-    GolfSplashScreen,
+    SplashScreen,
     StartupResults,
 )
 from src.shared.python.security.subprocess_utils import kill_process_tree
@@ -770,7 +770,7 @@ def main() -> None:
             import ctypes
 
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
-                "UpstreamDrift.GolfModelingSuite.Launcher.1"
+                "UpstreamDrift.Launcher.1"
             )
         except ImportError:
             logger.debug(
@@ -783,11 +783,11 @@ def main() -> None:
     try:
         from shared.python.plot_theme import apply_plot_theme
 
-        apply_plot_theme(settings_app="GolfModelingSuite")
+        apply_plot_theme(settings_app="UpstreamDrift")
     except ImportError:
         logger.debug("Plot theme module not available")
 
-    splash = GolfSplashScreen()
+    splash = SplashScreen()
     splash.show()
 
     worker = AsyncStartupWorker(REPOS_ROOT)
