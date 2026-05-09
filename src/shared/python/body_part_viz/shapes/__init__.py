@@ -11,4 +11,9 @@ This module is currently a placeholder so callers can write
 
 from __future__ import annotations
 
-__all__: list[str] = []
+from src.shared.python.body_part_viz.shapes.mesh import (
+    SUPPORTED_EXTENSIONS,
+    MeshShape,
+)
+
+__all__: list[str] = ["SUPPORTED_EXTENSIONS", "MeshShape"]
