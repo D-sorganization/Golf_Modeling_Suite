@@ -397,7 +397,7 @@ def _hash_parameters(params: dict[str, Any]) -> str:
         Hex hash string.
     """
     param_str = str(sorted(params.items()))
-    return hashlib.md5(param_str.encode()).hexdigest()
+    return hashlib.md5(param_str.encode(), usedforsecurity=False).hexdigest()
 
 
 def profile_initialization(
