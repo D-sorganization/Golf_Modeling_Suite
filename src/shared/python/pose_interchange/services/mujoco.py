@@ -67,7 +67,7 @@ class MuJoCoKinematicsService:
             raise TypeError(
                 f"model_path must be a pathlib.Path, got {type(model_path).__name__}"
             )
-        # TODO(#4898-followup): mujoco.MjModel.from_xml_path(str(path))
+        # TODO(#4963): mujoco.MjModel.from_xml_path(str(path))
         # then mujoco.MjData(model).
         raise NotImplementedError(
             "MuJoCoKinematicsService.load is not yet wired; tracked by "
@@ -78,14 +78,14 @@ class MuJoCoKinematicsService:
         if not isinstance(pose, CanonicalPose):
             raise TypeError(f"pose must be a CanonicalPose, got {type(pose).__name__}")
         self._pose = pose
-        # TODO(#4898-followup): adapter -> data.qpos[:] = q; mj_forward.
+        # TODO(#4963): adapter -> data.qpos[:] = q; mj_forward.
         raise NotImplementedError(
             "MuJoCoKinematicsService.set_pose is not yet wired; tracked by "
             "the EPIC #4895 Pose Studio engine-bridge follow-up."
         )
 
     def get_link_transforms(self) -> dict[str, npt.NDArray[np.float64]]:
-        # TODO(#4898-followup): iterate model.nbody and read
+        # TODO(#4963): iterate model.nbody and read
         # data.xpos[i] / data.xmat[i].reshape(3, 3) into 4x4 SE(3).
         raise NotImplementedError(
             "MuJoCoKinematicsService.get_link_transforms is not yet wired; "
@@ -95,7 +95,7 @@ class MuJoCoKinematicsService:
     def step(self, dt: float) -> None:
         if dt <= 0:
             raise ValueError(f"dt must be positive, got {dt!r}")
-        # TODO(#4898-followup): set model.opt.timestep and call mj_step.
+        # TODO(#4963): set model.opt.timestep and call mj_step.
         raise NotImplementedError(
             "MuJoCoKinematicsService.step is not yet wired; tracked by "
             "the EPIC #4895 Pose Studio engine-bridge follow-up."
@@ -103,7 +103,7 @@ class MuJoCoKinematicsService:
 
     def reset(self) -> None:
         self._pose = None
-        # TODO(#4898-followup): mj_resetData(model, data).
+        # TODO(#4963): mj_resetData(model, data).
 
     def capabilities(self) -> ServiceCapabilities:
         return _MUJOCO_CAPABILITIES

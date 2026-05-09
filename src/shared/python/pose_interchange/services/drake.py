@@ -7,7 +7,7 @@ back to a :class:`MockKinematicsService` configured with
 ``engine_name="drake"``.
 
 Method bodies that require non-trivial Drake plumbing currently raise
-:class:`NotImplementedError` with a TODO tied to a follow-up issue;
+:class:`NotImplementedError` with a TODO tied to follow-up #4963;
 this PR only commits the wiring scaffold so downstream code can target
 ``LiveKinematicsService`` without waiting on the full Drake bridge.
 """
@@ -74,7 +74,7 @@ class DrakeKinematicsService:
             raise TypeError(
                 f"model_path must be a pathlib.Path, got {type(model_path).__name__}"
             )
-        # TODO(#4898-followup): build MultibodyPlant + Parser, parse
+        # TODO(#4963): build MultibodyPlant + Parser, parse
         # the URDF, finalize, and stash the plant + a default context.
         raise NotImplementedError(
             "DrakeKinematicsService.load is not yet wired; tracked by "
@@ -85,7 +85,7 @@ class DrakeKinematicsService:
         if not isinstance(pose, CanonicalPose):
             raise TypeError(f"pose must be a CanonicalPose, got {type(pose).__name__}")
         self._pose = pose
-        # TODO(#4898-followup): use the Drake adapter (Subtask 2) to
+        # TODO(#4963): use the Drake adapter (Subtask 2) to
         # encode the canonical pose into the plant's q vector and write
         # it into the cached context.
         raise NotImplementedError(
@@ -94,7 +94,7 @@ class DrakeKinematicsService:
         )
 
     def get_link_transforms(self) -> dict[str, npt.NDArray[np.float64]]:
-        # TODO(#4898-followup): iterate plant.GetBodyIndices() and call
+        # TODO(#4963): iterate plant.GetBodyIndices() and call
         # plant.EvalBodyPoseInWorld(context, body) for each to build the
         # SE(3) dict.
         raise NotImplementedError(
@@ -105,7 +105,7 @@ class DrakeKinematicsService:
     def step(self, dt: float) -> None:
         if dt <= 0:
             raise ValueError(f"dt must be positive, got {dt!r}")
-        # TODO(#4898-followup): advance a Simulator bound to the plant.
+        # TODO(#4963): advance a Simulator bound to the plant.
         raise NotImplementedError(
             "DrakeKinematicsService.step is not yet wired; tracked by "
             "the EPIC #4895 Pose Studio engine-bridge follow-up."
@@ -113,7 +113,7 @@ class DrakeKinematicsService:
 
     def reset(self) -> None:
         self._pose = None
-        # TODO(#4898-followup): restore the cached default context.
+        # TODO(#4963): restore the cached default context.
 
     def capabilities(self) -> ServiceCapabilities:
         return _DRAKE_CAPABILITIES

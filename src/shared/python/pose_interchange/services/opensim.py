@@ -7,7 +7,7 @@ Lazily imports :mod:`opensim` and loads a ``.osim`` file via
 ``engine_name="opensim"``.
 
 Method bodies that require non-trivial OpenSim wiring currently raise
-:class:`NotImplementedError` with a TODO tied to a follow-up issue
+:class:`NotImplementedError` with a TODO tied to follow-up #4963
 against the EPIC #4895 Pose Studio engine bridge.
 """
 
@@ -68,7 +68,7 @@ class OpenSimKinematicsService:
             raise TypeError(
                 f"model_path must be a pathlib.Path, got {type(model_path).__name__}"
             )
-        # TODO(#4898-followup): opensim.Model(str(path)); initSystem().
+        # TODO(#4963): opensim.Model(str(path)); initSystem().
         raise NotImplementedError(
             "OpenSimKinematicsService.load is not yet wired; tracked by "
             "the EPIC #4895 Pose Studio engine-bridge follow-up."
@@ -78,7 +78,7 @@ class OpenSimKinematicsService:
         if not isinstance(pose, CanonicalPose):
             raise TypeError(f"pose must be a CanonicalPose, got {type(pose).__name__}")
         self._pose = pose
-        # TODO(#4898-followup): adapter -> coordinate values via
+        # TODO(#4963): adapter -> coordinate values via
         # model.updCoordinateSet().get(name).setValue(state, value).
         raise NotImplementedError(
             "OpenSimKinematicsService.set_pose is not yet wired; tracked by "
@@ -86,7 +86,7 @@ class OpenSimKinematicsService:
         )
 
     def get_link_transforms(self) -> dict[str, npt.NDArray[np.float64]]:
-        # TODO(#4898-followup): iterate model.getBodySet() and pull
+        # TODO(#4963): iterate model.getBodySet() and pull
         # body.getTransformInGround(state) into 4x4 SE(3).
         raise NotImplementedError(
             "OpenSimKinematicsService.get_link_transforms is not yet wired; "
@@ -96,7 +96,7 @@ class OpenSimKinematicsService:
     def step(self, dt: float) -> None:
         if dt <= 0:
             raise ValueError(f"dt must be positive, got {dt!r}")
-        # TODO(#4898-followup): drive an opensim.Manager forward by dt.
+        # TODO(#4963): drive an opensim.Manager forward by dt.
         raise NotImplementedError(
             "OpenSimKinematicsService.step is not yet wired; tracked by "
             "the EPIC #4895 Pose Studio engine-bridge follow-up."
@@ -104,7 +104,7 @@ class OpenSimKinematicsService:
 
     def reset(self) -> None:
         self._pose = None
-        # TODO(#4898-followup): re-initSystem() to recover defaults.
+        # TODO(#4963): re-initSystem() to recover defaults.
 
     def capabilities(self) -> ServiceCapabilities:
         return _OPENSIM_CAPABILITIES

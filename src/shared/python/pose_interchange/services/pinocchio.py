@@ -7,7 +7,7 @@ Lazily imports :mod:`pinocchio` and loads a URDF via
 ``engine_name="pinocchio"``.
 
 Method bodies that require non-trivial Pinocchio wiring currently
-raise :class:`NotImplementedError` with a TODO tied to a follow-up
+raise :class:`NotImplementedError` with a TODO tied to follow-up #4963
 issue against the EPIC #4895 Pose Studio engine bridge.
 """
 
@@ -68,7 +68,7 @@ class PinocchioKinematicsService:
             raise TypeError(
                 f"model_path must be a pathlib.Path, got {type(model_path).__name__}"
             )
-        # TODO(#4898-followup): pinocchio.buildModelFromUrdf(str(path))
+        # TODO(#4963): pinocchio.buildModelFromUrdf(str(path))
         # then pinocchio.Data(model).
         raise NotImplementedError(
             "PinocchioKinematicsService.load is not yet wired; tracked by "
@@ -79,7 +79,7 @@ class PinocchioKinematicsService:
         if not isinstance(pose, CanonicalPose):
             raise TypeError(f"pose must be a CanonicalPose, got {type(pose).__name__}")
         self._pose = pose
-        # TODO(#4898-followup): adapter -> q vector;
+        # TODO(#4963): adapter -> q vector;
         # pinocchio.forwardKinematics(model, data, q).
         raise NotImplementedError(
             "PinocchioKinematicsService.set_pose is not yet wired; tracked by "
@@ -87,7 +87,7 @@ class PinocchioKinematicsService:
         )
 
     def get_link_transforms(self) -> dict[str, npt.NDArray[np.float64]]:
-        # TODO(#4898-followup): iterate model.frames and pull
+        # TODO(#4963): iterate model.frames and pull
         # data.oMf[i] / data.oMi[joint_id] into 4x4 SE(3).
         raise NotImplementedError(
             "PinocchioKinematicsService.get_link_transforms is not yet wired; "
@@ -97,7 +97,7 @@ class PinocchioKinematicsService:
     def step(self, dt: float) -> None:
         if dt <= 0:
             raise ValueError(f"dt must be positive, got {dt!r}")
-        # TODO(#4898-followup): aba/forwardDynamics + symplectic Euler.
+        # TODO(#4963): aba/forwardDynamics + symplectic Euler.
         raise NotImplementedError(
             "PinocchioKinematicsService.step is not yet wired; tracked by "
             "the EPIC #4895 Pose Studio engine-bridge follow-up."
@@ -105,7 +105,7 @@ class PinocchioKinematicsService:
 
     def reset(self) -> None:
         self._pose = None
-        # TODO(#4898-followup): zero q, v back to neutral.
+        # TODO(#4963): zero q, v back to neutral.
 
     def capabilities(self) -> ServiceCapabilities:
         return _PINOCCHIO_CAPABILITIES
