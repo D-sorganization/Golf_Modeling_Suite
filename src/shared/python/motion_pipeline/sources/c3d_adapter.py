@@ -16,6 +16,7 @@ from src.shared.python.motion_pipeline.contracts import (
     MarkerTrajectory,
 )
 from src.shared.python.motion_pipeline.sources.base import (
+    AdapterContractError,
     MocapSourceAdapter,
     SourceMetadata,
 )
@@ -46,7 +47,10 @@ class C3DAdapter(MocapSourceAdapter):
     def metadata(self, path: Path) -> SourceMetadata:  # pragma: no cover
         if not _HAS_EZC3D:
             raise RuntimeError("ezc3d is not installed; cannot read C3D metadata")
-        c = _ezc3d.c3d(str(path))
+        try:
+            c = _ezc3d.c3d(str(path))
+        except (OSError, RuntimeError) as e:
+            raise AdapterContractError(f"failed to read c3d file {path!s}: {e}") from e
         params = c["parameters"]
         point = c["data"]["points"]
         fps = float(params["POINT"]["RATE"]["value"][0])
@@ -75,7 +79,14 @@ class C3DAdapter(MocapSourceAdapter):
         p = Path(path)
         if not p.exists():
             raise FileNotFoundError(f"C3D file not found: {p}")
-        c = _ezc3d.c3d(str(p))
+        if p.stat().st_size == 0:
+            raise AdapterContractError(
+                f"failed to read c3d file {p!s}: file is empty (0 bytes)"
+            )
+        try:
+            c = _ezc3d.c3d(str(p))
+        except (OSError, RuntimeError, ValueError) as e:
+            raise AdapterContractError(f"failed to read c3d file {p!s}: {e}") from e
         params = c["parameters"]
         points = c["data"]["points"]  # shape (4, N_markers, N_frames)
         labels_raw = params["POINT"]["LABELS"]["value"]
@@ -105,7 +116,9 @@ class C3DAdapter(MocapSourceAdapter):
                 MarkerFrame(timestamp=fi / fps, markers=markers, frame_index=fi)
             )
         if not frames:
-            raise ValueError(f"C3D {p} produced no frames")
+            raise AdapterContractError(
+                f"failed to read c3d file {p!s}: no frames decoded"
+            )
         return MarkerTrajectory(
             id=f"c3d-{p.stem}",
             frames=frames,
