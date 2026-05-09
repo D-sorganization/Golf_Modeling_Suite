@@ -82,9 +82,8 @@ class EnvironmentDialog(QDialog):
 
         self.console = QTextEdit()
         self.console.setReadOnly(True)
-        self.console.setStyleSheet(
-            "background-color: #1e1e1e; color: #00ff00; font-family: Consolas;"
-        )
+        self.console.setProperty("class", "console-dark")
+        self.console.style().polish(self.console)
         build_layout.addWidget(self.console)
         tabs.addTab(tab_build, "Build Docker")
 
@@ -120,9 +119,7 @@ class EnvironmentDialog(QDialog):
         self.build_thread.start()
 
     def _on_build_log(self, line: str) -> None:
-        if not (line is not None):
-            raise ValueError("line must be provided")
-        if not (line is not None):
+        if line is None:
             raise ValueError("line must be provided")
         self.console.append(line)
         # Auto-scroll to bottom
@@ -131,9 +128,7 @@ class EnvironmentDialog(QDialog):
             sb.setValue(sb.maximum())
 
     def _on_build_finished(self, success: bool, message: str) -> None:
-        if not (success is not None):
-            raise ValueError("success must be provided")
-        if not (success is not None):
+        if success is None:
             raise ValueError("success must be provided")
         self.btn_build.setEnabled(True)
         self.btn_cancel.setEnabled(False)

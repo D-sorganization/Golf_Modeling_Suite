@@ -18,6 +18,7 @@ from PyQt6.QtGui import (
     QShortcut,
 )
 from PyQt6.QtWidgets import (
+    QButtonGroup,
     QCheckBox,
     QComboBox,
     QDockWidget,
@@ -63,7 +64,7 @@ class LauncherUISetupMixin:
     def _build_sidebar_button(
         self,
         label: str,
-        icon_name: QStyle.StandardPixmap,
+        icon_name: str,
         *,
         checkable: bool = False,
     ) -> QToolButton:
@@ -74,7 +75,14 @@ class LauncherUISetupMixin:
         button.setAccessibleName(label)
         button.setCursor(Qt.CursorShape.PointingHandCursor)
         button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
-        button.setIcon(self.style().standardIcon(icon_name))
+
+        try:
+            from src.shared.python.theme.icon_utils import IconColorizer
+
+            button.setIcon(IconColorizer.get_icon(icon_name, "#d4d4d4"))
+        except (ImportError, ValueError):
+            button.setText(label[:1])
+
         button.setIconSize(QSize(22, 22))
         button.setCheckable(checkable)
         button.setAutoRaise(True)
@@ -89,10 +97,30 @@ class LauncherUISetupMixin:
         central = QWidget()
         self.setCentralWidget(central)
 
+        # Outer layout to hold the title bar and then the horizontal main layout
+        outer_vbox = QVBoxLayout(central)
+        outer_vbox.setSpacing(0)
+        outer_vbox.setContentsMargins(0, 0, 0, 0)
+
+        try:
+            from src.launchers.custom_title_bar import CustomTitleBar
+
+            self.title_bar = CustomTitleBar(self)
+            self.title_bar.minimize_requested.connect(self.showMinimized)
+            self.title_bar.maximize_requested.connect(
+                lambda: self.showNormal() if self.isMaximized() else self.showMaximized()
+            )
+            self.title_bar.close_requested.connect(self.close)
+            self.title_bar.move_requested.connect(self.move)
+            outer_vbox.addWidget(self.title_bar)
+        except ImportError:
+            pass
+
         # Main layout is now horizontal to accommodate the sidebar
-        main_layout = QHBoxLayout(central)
+        main_layout = QHBoxLayout()
         main_layout.setSpacing(0)
         main_layout.setContentsMargins(0, 0, 0, 0)
+        outer_vbox.addLayout(main_layout)
 
         # --- Global Sidebar ---
         sidebar = self._setup_global_sidebar()
@@ -111,7 +139,8 @@ class LauncherUISetupMixin:
         # --- Content area with horizontal splitter (tiles | AI chat) ---
         self.content_splitter = QSplitter(Qt.Orientation.Horizontal)
         self.content_splitter.setHandleWidth(3)
-        self.content_splitter.setStyleSheet(Styles.SPLITTER_HANDLE)
+        self.content_splitter.setProperty("class", "dark")
+        self.content_splitter.style().polish(self.content_splitter)
 
         # Left panel: launcher grid + bottom bar
         left_panel = QWidget()
@@ -186,14 +215,14 @@ class LauncherUISetupMixin:
 
         btn_home = self._build_sidebar_button(
             "Home",
-            QStyle.StandardPixmap.SP_DirHomeIcon,
+            "home",
             checkable=True,
         )
         btn_home.setChecked(True)
 
         btn_engines = self._build_sidebar_button(
             "Engines",
-            QStyle.StandardPixmap.SP_ComputerIcon,
+            "computer",
             checkable=True,
         )
 
@@ -201,17 +230,23 @@ class LauncherUISetupMixin:
         # Otherwise, we gracefully handle it to avoid crashes in tests.
         btn_settings = self._build_sidebar_button(
             "Settings",
-            QStyle.StandardPixmap.SP_FileDialogDetailedView,
+            "settings",
         )
         if hasattr(self, "_open_settings"):
             btn_settings.clicked.connect(self._open_settings)
 
         btn_docs = self._build_sidebar_button(
             "Documentation",
-            QStyle.StandardPixmap.SP_DialogHelpButton,
+            "help",
         )
         if hasattr(self, "_show_help_dialog"):
             btn_docs.clicked.connect(lambda: self._show_help_dialog())
+
+        # Setup mutually exclusive active-state routing for navigation
+        self.sidebar_group = QButtonGroup(self)
+        self.sidebar_group.addButton(btn_home, 0)
+        self.sidebar_group.addButton(btn_engines, 1)
+        self.sidebar_group.idClicked.connect(self._on_sidebar_routed)
 
         layout.addWidget(btn_home)
         layout.addWidget(btn_engines)
@@ -220,6 +255,19 @@ class LauncherUISetupMixin:
         layout.addWidget(btn_docs)
 
         return sidebar
+
+    def _on_sidebar_routed(self, button_id: int) -> None:
+        """Route sidebar navigation to filter the grid layout."""
+        if not hasattr(self, "layout_manager"):
+            return
+
+        if button_id == 0:
+            self.layout_manager.current_category_filter = "All"
+        elif button_id == 1:
+            self.layout_manager.current_category_filter = "Core Physics Engines"
+
+        if hasattr(self, "_rebuild_grid"):
+            self._rebuild_grid()
 
     def _setup_menu_bar(self) -> None:
         """Set up the application menu bar."""
@@ -231,9 +279,7 @@ class LauncherUISetupMixin:
         self._setup_help_menu(menubar)
 
     def _setup_file_menu(self, menubar: Any) -> None:
-        if not (menubar is not None):
-            raise ValueError("menubar must be provided")
-        if not (menubar is not None):
+        if menubar is None:
             raise ValueError("menubar must be provided")
         file_menu = menubar.addMenu("&File")
 
@@ -254,9 +300,7 @@ class LauncherUISetupMixin:
         file_menu.addAction(action_exit)
 
     def _setup_view_menu(self, menubar: Any) -> None:
-        if not (menubar is not None):
-            raise ValueError("menubar must be provided")
-        if not (menubar is not None):
+        if menubar is None:
             raise ValueError("menubar must be provided")
         view_menu = menubar.addMenu("&View")
 
@@ -295,9 +339,7 @@ class LauncherUISetupMixin:
         self._setup_theme_menu(theme_menu)
 
     def _setup_tools_menu(self, menubar: Any) -> None:
-        if not (menubar is not None):
-            raise ValueError("menubar must be provided")
-        if not (menubar is not None):
+        if menubar is None:
             raise ValueError("menubar must be provided")
         tools_menu = menubar.addMenu("&Tools")
 
@@ -314,9 +356,7 @@ class LauncherUISetupMixin:
         tools_menu.addAction(action_diag)
 
     def _setup_help_menu(self, menubar: Any) -> None:
-        if not (menubar is not None):
-            raise ValueError("menubar must be provided")
-        if not (menubar is not None):
+        if menubar is None:
             raise ValueError("menubar must be provided")
         help_menu = menubar.addMenu("&Help")
 
@@ -442,12 +482,11 @@ class LauncherUISetupMixin:
     def _setup_top_bar_status_and_search(self, top_bar: QHBoxLayout) -> None:
         """Add status indicator, execution mode label, and search bar to top bar."""
         # Status Indicator
-        if not (top_bar is not None):
-            raise ValueError("top_bar must be provided")
-        if not (top_bar is not None):
+        if top_bar is None:
             raise ValueError("top_bar must be provided")
         self.lbl_status = QLabel("Checking Docker...")
-        self.lbl_status.setStyleSheet(Styles.STATUS_INACTIVE_BOLD)
+        self.lbl_status.setProperty("status", "inactive-bold")
+        self.lbl_status.style().polish(self.lbl_status)
         top_bar.addWidget(self.lbl_status)
 
         # Engine-runtime indicator. Shows where physics engines run:
@@ -458,7 +497,8 @@ class LauncherUISetupMixin:
         from src.launchers.runtime_mode_help import make_runtime_mode_help_button
 
         self.lbl_execution_mode = QLabel("Runtime: Native Windows")
-        self.lbl_execution_mode.setStyleSheet(Styles.EXEC_MODE_WARNING)
+        self.lbl_execution_mode.setProperty("exec_mode", "warning")
+        self.lbl_execution_mode.style().polish(self.lbl_execution_mode)
         self.lbl_execution_mode.setToolTip(
             "Where physics engines execute — Native Windows, Docker "
             "container, or WSL2 Ubuntu. Click the ? for full details."
@@ -480,8 +520,8 @@ class LauncherUISetupMixin:
         self.search_input.textChanged.connect(self.update_search_filter)
         top_bar.addWidget(self.search_input)
 
-    def _setup_top_bar_config_checkboxes(self) -> None:
-        """Create hidden configuration checkboxes and layout controls."""
+    def _setup_top_bar_config_checkboxes(self, top_bar: QHBoxLayout) -> None:
+        """Create config checkboxes and layout controls, adding them to top bar."""
         self.chk_live = QCheckBox("Live Viz")
         self.chk_live.setChecked(True)
 
@@ -507,23 +547,31 @@ class LauncherUISetupMixin:
         self.btn_customize_tiles.setEnabled(False)
         self.btn_customize_tiles.clicked.connect(self.open_layout_manager)
 
+        # Surface toggles in the top bar
+        top_bar.addWidget(self.chk_live)
+        top_bar.addWidget(self.chk_gpu)
+        top_bar.addWidget(self.chk_docker)
+        top_bar.addWidget(self.chk_wsl)
+        top_bar.addWidget(self.btn_modify_layout)
+        top_bar.addWidget(self.btn_customize_tiles)
+
     def _setup_top_bar_action_buttons(self, top_bar: QHBoxLayout) -> None:
         """Add Help, Settings, and AI Assistant buttons to top bar."""
-        if not (top_bar is not None):
-            raise ValueError("top_bar must be provided")
-        if not (top_bar is not None):
+        if top_bar is None:
             raise ValueError("top_bar must be provided")
         from src.launchers.launcher_constants import AI_AVAILABLE
 
         btn_help = QPushButton("Help")
         btn_help.setToolTip("View documentation and user guide (F1)")
         btn_help.clicked.connect(lambda: self._show_help_dialog())
-        btn_help.setStyleSheet(Styles.BTN_PRIMARY)
+        btn_help.setProperty("class", "primary")
+        btn_help.style().polish(btn_help)
         top_bar.addWidget(btn_help)
 
         btn_settings = QPushButton("\u2699 Settings")
         btn_settings.setToolTip("Diagnostics, environment, and build settings")
-        btn_settings.setStyleSheet(Styles.BTN_SECONDARY)
+        btn_settings.setProperty("class", "secondary")
+        btn_settings.style().polish(btn_settings)
         btn_settings.clicked.connect(self._open_settings)
         top_bar.addWidget(btn_settings)
 
@@ -533,7 +581,8 @@ class LauncherUISetupMixin:
             self.btn_ai.setToolTip("Open AI Assistant for help with analysis")
             self.btn_ai.setCheckable(True)
             self.btn_ai.clicked.connect(self.toggle_ai_assistant)
-            self.btn_ai.setStyleSheet(Styles.BTN_AI_CHAT)
+            self.btn_ai.setProperty("class", "ai-chat")
+            self.btn_ai.style().polish(self.btn_ai)
             top_bar.addWidget(self.btn_ai)
 
     def _register_top_bar_tooltips(self) -> None:
@@ -684,7 +733,7 @@ class LauncherUISetupMixin:
 
         self._setup_top_bar_status_and_search(top_bar)
         self._setup_view_mode_and_zoom(top_bar)
-        self._setup_top_bar_config_checkboxes()
+        self._setup_top_bar_config_checkboxes(top_bar)
         self._setup_top_bar_action_buttons(top_bar)
 
         # Context Help Dock
@@ -697,17 +746,17 @@ class LauncherUISetupMixin:
 
     def _setup_grid_area(self, layout: QVBoxLayout) -> None:
         """Set up the scrollable grid area."""
-        if not (layout is not None):
-            raise ValueError("layout must be provided")
-        if not (layout is not None):
+        if layout is None:
             raise ValueError("layout must be provided")
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setFrameShape(QFrame.Shape.NoFrame)
-        self.scroll_area.setStyleSheet(Styles.SCROLL_AREA_TRANSPARENT)
+        self.scroll_area.setProperty("class", "transparent")
+        self.scroll_area.style().polish(self.scroll_area)
 
         self.grid_container = QWidget()
-        self.grid_container.setStyleSheet(Styles.TRANSPARENT_BG)
+        self.grid_container.setProperty("class", "transparent")
+        self.grid_container.style().polish(self.grid_container)
         self.grid_layout = QGridLayout(self.grid_container)
         self.grid_layout.setSpacing(20)
         self.grid_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -724,7 +773,8 @@ class LauncherUISetupMixin:
         self.btn_launch.setEnabled(False)
         self.btn_launch.setFixedHeight(50)
         self.btn_launch.setFont(get_display_font(size=12, weight=Weights.BOLD))
-        self.btn_launch.setStyleSheet(Styles.BTN_LAUNCH_READY)
+        self.btn_launch.setProperty("class", "launch-ready")
+        self.btn_launch.style().polish(self.btn_launch)
         self.btn_launch.clicked.connect(self.launch_simulation)
         self.btn_launch.setCursor(Qt.CursorShape.PointingHandCursor)
         bottom_bar.addWidget(self.btn_launch)
@@ -757,7 +807,8 @@ class LauncherUISetupMixin:
         self._console_text = QPlainTextEdit()
         self._console_text.setReadOnly(True)
         self._console_text.setMaximumBlockCount(5000)
-        self._console_text.setStyleSheet(Styles.CONSOLE_DARK)
+        self._console_text.setProperty("class", "console-dark")
+        self._console_text.style().polish(self._console_text)
 
         console_container = QWidget()
         console_layout = QVBoxLayout(console_container)
@@ -795,9 +846,7 @@ class LauncherUISetupMixin:
 
     def _append_console_line(self, engine_name: str, line: str) -> None:
         """Append a formatted line to the console widget (GUI thread only)."""
-        if not (engine_name is not None):
-            raise ValueError("engine_name must be provided")
-        if not (engine_name is not None):
+        if engine_name is None:
             raise ValueError("engine_name must be provided")
         if not self._console_dock.isVisible():
             self._console_dock.show()
@@ -855,7 +904,9 @@ class LauncherUISetupMixin:
             url = "http://127.0.0.1:8000/api/chat/sessions"
             req = urllib.request.Request(url, method="GET")
             # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
-            with urllib.request.urlopen(req, timeout=2) as resp:  # nosec B310 - hardcoded localhost URL, no external input
+            with urllib.request.urlopen(
+                req, timeout=2
+            ) as resp:  # nosec B310 - hardcoded localhost URL, no external input
                 sessions = json.loads(resp.read().decode("utf-8"))
 
             session_id = sessions[0]["session_id"] if sessions else None
