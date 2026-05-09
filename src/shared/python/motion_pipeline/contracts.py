@@ -381,6 +381,8 @@ class JointDef(BaseModel):
     axes: list[Axis] = Field(
         default_factory=lambda: ["X", "Y", "Z"],
         description="Joint rotation axes",
+        min_length=1,
+        max_length=3,
     )
     limits: list[JointLimit] = Field(
         default_factory=list,
@@ -395,6 +397,13 @@ class JointDef(BaseModel):
     def check_offset_shape(cls, v: list[float]) -> list[float]:
         if len(v) != 3:
             raise ValueError("T-pose offset must be length 3")
+        return v
+
+    @field_validator("axes")
+    @classmethod
+    def check_axes_shape(cls, v: list[Axis]) -> list[Axis]:
+        if len(v) != 3:
+            raise ValueError("Joint axes must be length 3")
         return v
 
     @model_validator(mode="after")
