@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Any
+
+import numpy as np
 
 SCHEMA_VERSION = "1.0"
 
@@ -22,6 +25,36 @@ class C3DEvent:
 
 
 @dataclass(frozen=True)
+class ForcePlateCalibration:
+    """Calibration data for a force plate from C3D FORCE_PLATFORM parameters.
+
+    Attributes:
+        plate_number: Plate number (1-indexed).
+        type: Force plate type (1=force-only, 2=force+moment, 3=6-axis, 4=multi-6-axis).
+        corners: 4x3 array of corner positions in lab frame [m].
+        origin: 3D origin position [m].
+        cal_matrix: Calibration matrix (shape varies by plate type).
+        channel_indices: List of (start, end) channel index ranges for this plate.
+    """
+
+    plate_number: int
+    type: int
+    corners: np.ndarray | None = None
+    origin: np.ndarray | None = None
+    cal_matrix: np.ndarray | None = None
+    channel_indices: list[tuple[int, int]] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        """Validate force plate calibration data."""
+        if not 1 <= self.type <= 4:
+            raise ValueError(f"Force plate type must be 1-4, got {self.type}")
+        if self.corners is not None and self.corners.shape != (4, 3):
+            raise ValueError(f"Corners must be 4x3, got {self.corners.shape}")
+        if self.origin is not None and self.origin.shape != (3,):
+            raise ValueError(f"Origin must be length 3, got {self.origin.shape}")
+
+
+@dataclass(frozen=True)
 class C3DMetadata:
     """Describes key properties of a C3D motion-capture recording."""
 
@@ -33,6 +66,7 @@ class C3DMetadata:
     analog_units: list[str]
     analog_rate: float | None
     events: list[C3DEvent]
+    force_plates: list[ForcePlateCalibration] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         """Validate metadata fields."""
@@ -60,6 +94,11 @@ class C3DMetadata:
         """Number of analog channels in the recording."""
 
         return len(self.analog_labels)
+
+    @property
+    def force_plate_count(self) -> int:
+        """Number of force plates with calibration data."""
+        return len(self.force_plates)
 
     @property
     def duration(self) -> float:
