@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Any
 
 import numpy as np
@@ -9,6 +10,110 @@ SCHEMA_VERSION = "1.0"
 
 BIOMECHANICAL_MARKER_MIN_M = 0.001
 BIOMECHANICAL_MARKER_MAX_M = 10.0
+
+
+class MarkerSet(Enum):
+    """Known marker set configurations for C3D files.
+
+    Members:
+        CGM2_4: CGM2.4 marker set (typically ~39 markers)
+        PLUG_IN_GAIT_41: Vicon Plug-in-Gait 41-marker set
+        IOR: Institute of Orthopaedic Research marker set
+        GOLF_CLUSTER: Golf-specific marker cluster set
+        UNKNOWN: Unrecognized marker set
+    """
+
+    CGM2_4 = "CGM2.4"
+    PLUG_IN_GAIT_41 = "PLUG_IN_GAIT_41"
+    IOR = "IOR"
+    GOLF_CLUSTER = "GOLF_CLUSTER"
+    UNKNOWN = "UNKNOWN"
+
+
+# Marker name signatures for each known set
+_MARKER_SET_SIGNATURES: dict[MarkerSet, set[str]] = {
+    MarkerSet.CGM2_4: {
+        "RASI", "LASI", "RPSI", "LPSI", "RSHO", "LSHO", "RELB", "LELB",
+        "RWRB", "LWRB", "RFIN", "LFIN", "RTHI", "LTHI", "RKNE", "LKNE",
+        "RTIB", "LTIB", "RANK", "LANK", "RHEE", "LHEE", "RTOE", "LTOE",
+        "C7", "T10", "CLAV", "STRN", "RBHD", "LBHD", "RFHD", "LFHD",
+    },
+    MarkerSet.PLUG_IN_GAIT_41: {
+        "RFHD", "LFHD", "LBHD", "RBHD", "C7", "T10", "CLAV", "STRN",
+        "RSHO", "LSHO", "RUPA", "LUPA", "RELB", "LELB", "RFRM", "LFRM",
+        "RWRB", "LWRB", "RWRM", "LWRM", "RFIN", "LFIN", "RTHI", "LTHI",
+        "RKNE", "LKNE", "RTIB", "LTIB", "RANK", "LANK", "RHEE", "LHEE",
+        "RTOE", "LTOE", "RPSI", "LPSI", "RASI", "LASI", "RKNM", "LKNM",
+        "RANKM", "LANKM",
+    },
+    MarkerSet.IOR: {
+        "SACR", "RASI", "LASI", "RTHI", "LTHI", "RKNE", "LKNE", "RTIB",
+        "LTIB", "RANK", "LANK", "RHEE", "LHEE", "RTOE", "LTOE", "L5",
+        "T12", "T8", "T1", "C7", "CLAV", "STRN", "JUG", "RBHD", "LBHD",
+    },
+    MarkerSet.GOLF_CLUSTER: {
+        "hub", "spine", "torso", "ls", "rs", "le", "re", "lw", "rw",
+        "mp", "ch", "hip",
+    },
+}
+
+
+class MarkerSetMismatchError(Exception):
+    """Raised when a C3D file's marker set does not match expected configurations."""
+
+    pass
+
+
+def detect_marker_set(
+    marker_labels: list[str],
+    override: MarkerSet | None = None,
+) -> MarkerSet:
+    """Detect the marker set from a list of marker labels.
+
+    Uses a deterministic priority order based on signature matching:
+    1. PLUG_IN_GAIT_41 (most specific, 41 markers)
+    2. CGM2_4 (common clinical standard)
+    3. IOR (research standard)
+    4. GOLF_CLUSTER (domain-specific)
+    5. UNKNOWN (fallback)
+
+    Args:
+        marker_labels: List of marker names from the C3D file.
+        override: If provided, skip detection and return this value.
+
+    Returns:
+        The detected MarkerSet enum value.
+
+    Raises:
+        MarkerSetMismatchError: If detection yields UNKNOWN and no override
+            was provided.
+    """
+    if override is not None:
+        return override
+
+    marker_set = set(marker_labels)
+
+    # Priority-ordered detection
+    for candidate, signature in [
+        (MarkerSet.PLUG_IN_GAIT_41, _MARKER_SET_SIGNATURES[MarkerSet.PLUG_IN_GAIT_41]),
+        (MarkerSet.CGM2_4, _MARKER_SET_SIGNATURES[MarkerSet.CGM2_4]),
+        (MarkerSet.IOR, _MARKER_SET_SIGNATURES[MarkerSet.IOR]),
+        (MarkerSet.GOLF_CLUSTER, _MARKER_SET_SIGNATURES[MarkerSet.GOLF_CLUSTER]),
+    ]:
+        # Require at least 80% of signature markers to match
+        required_match = int(len(signature) * 0.8)
+        matched = len(marker_set & signature)
+        if matched >= required_match:
+            return candidate
+
+    result = MarkerSet.UNKNOWN
+    if result is MarkerSet.UNKNOWN and override is None:
+        raise MarkerSetMismatchError(
+            f"Unrecognized marker set. Markers found: {sorted(marker_labels)}\n"
+            f"Known sets: {[ms.value for ms in MarkerSet if ms != MarkerSet.UNKNOWN]}\n"
+            "Pass override=MarkerSet.GOLF_CLUSTER or another known set to proceed."
+        )
+    return result
 
 
 @dataclass(frozen=True)
