@@ -29,6 +29,12 @@ import numpy as np
 import pandas as pd
 
 from src.shared.python.core.contracts import postcondition, precondition
+from src.shared.python.upstream_drift_tools.lab.bio import (
+    MarkerSet,
+    MarkerSetMismatchError,
+    detect_marker_set,
+    missing_required,
+)
 
 from ..body_target import BodyEvent, BodyTarget
 from ..club_target import AlignOptions, ClubTarget, SourceProvenance
@@ -310,6 +316,7 @@ def load_body_target_c3d(
     opts: AlignOptions,
     *,
     marker_set: Sequence[str] | None = None,
+    marker_set_override: MarkerSet | None = None,
     impact_source: ClubTarget | None = None,
 ) -> BodyTarget:
     """Load a C3D file's anatomical body markers into a validated ``BodyTarget``.
@@ -362,6 +369,43 @@ def load_body_target_c3d(
     available_labels = list(metadata.marker_labels)
     df = reader.points_dataframe(include_time=True, target_units="m")
 
+    # Marker-set detection (issue #4710): when the caller does not pass an
+    # explicit ``marker_set`` we sanity-check that the file matches one of
+    # the known anatomical conventions. The default 28-marker subset only
+    # makes sense against a Plug-in-Gait-style file; mismatched files would
+    # otherwise raise the less informative "requested markers not present"
+    # error from ``_resolve_marker_set``.
+    if marker_set is None:
+        detected = (
+            marker_set_override
+            if marker_set_override is not None
+            else detect_marker_set(available_labels)
+        )
+        if detected is MarkerSet.UNKNOWN:
+            raise MarkerSetMismatchError(
+                "Could not identify a known anatomical marker set in C3D file "
+                f"{p.name!r}; pass marker_set or marker_set_override to "
+                f"disambiguate. Available labels: {available_labels}"
+            )
+        if detected is MarkerSet.GOLF_CLUSTER:
+            raise MarkerSetMismatchError(
+                f"C3D file {p.name!r} contains only golf-cluster markers; "
+                "no anatomical body set is present. Pass an explicit "
+                "marker_set if you really want to extract cluster markers "
+                "as body data."
+            )
+        missing_anat = missing_required(detected, available_labels)
+        if missing_anat:
+            raise MarkerSetMismatchError(
+                f"C3D file {p.name!r} was detected as {detected.name} but "
+                f"is missing required markers: {missing_anat}."
+            )
+        logger.info(
+            "load_body_target_c3d: marker set %s confirmed for %s",
+            detected.name,
+            p.name,
+        )
+
     chosen = _resolve_marker_set(marker_set, available_labels)
 
     # --- Pivot + gap-fill in source (Y-up) coordinates --------------------
@@ -393,9 +437,7 @@ def load_body_target_c3d(
             if 0 <= impact_idx_out < sim_time.size
             else float(opts.impact_target_t_s)
         )
-        _wrist_markers_present = any(
-            m in chosen for m in ("RWristTop", "LWristTop")
-        )
+        _wrist_markers_present = any(m in chosen for m in ("RWristTop", "LWristTop"))
         if _wrist_markers_present:
             impact_raw = _detect_impact_via_wrist(raw_time, z_up)
             time_offset = float(raw_time[impact_raw]) - impact_target_t_s

@@ -8,6 +8,18 @@ BIOMECHANICAL_MARKER_MIN_M = 0.001
 BIOMECHANICAL_MARKER_MAX_M = 10.0
 
 
+class MarkerSetMismatchError(ValueError):
+    """Raised when a C3D file's marker set cannot be matched to a known
+    convention or when a known set is missing required cluster / anatomical
+    markers.
+
+    This is a subclass of :class:`ValueError` for backwards compatibility
+    with callers that catch the broader exception, but the dedicated type
+    lets new callers distinguish marker-discovery failures from generic
+    validation errors and react with format-specific remediation messages.
+    """
+
+
 @dataclass(frozen=True)
 class C3DEvent:
     """A labeled event occurring at a specific time within a capture."""

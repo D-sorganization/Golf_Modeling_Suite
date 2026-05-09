@@ -16,6 +16,12 @@ import numpy as np
 import pandas as pd
 
 from src.shared.python.core.contracts import postcondition, precondition
+from src.shared.python.upstream_drift_tools.lab.bio import (
+    MarkerSet,
+    MarkerSetMismatchError,
+    detect_marker_set,
+    missing_required,
+)
 from src.shared.python.upstream_drift_tools.lab.bio.c3d_reader import C3DDataReader
 
 from ..club_target import AlignOptions, ClubTarget, SourceProvenance
@@ -74,31 +80,87 @@ def _marker_xyz(df: pd.DataFrame, marker: str) -> tuple[np.ndarray, np.ndarray]:
 
 
 @precondition(
-    lambda path, opts: Path(path).exists(),
+    lambda path, opts, **_: Path(path).exists(),
     "C3D file must exist",
 )
 @precondition(
-    lambda path, opts: opts.sample_rate_hz > 0,
+    lambda path, opts, **_: opts.sample_rate_hz > 0,
     "sample_rate_hz must be > 0",
 )
 @postcondition(
     lambda result: isinstance(result, ClubTarget),
     "load_club_target_c3d must return a ClubTarget",
 )
-def load_club_target_c3d(path: Path | str, opts: AlignOptions) -> ClubTarget:
+def load_club_target_c3d(
+    path: Path | str,
+    opts: AlignOptions,
+    *,
+    marker_set_override: MarkerSet | None = None,
+) -> ClubTarget:
     """Load a cluster-marker C3D file into a canonical ``ClubTarget``.
 
     Orientation is reconstructed from the (butt, clubhead) shaft direction
     alone — the C3D file does not carry the 3x3 rotation matrices that the
     Excel sheets do, so the quaternion encodes the swing of an axis-aligned
-    shaft (no roll information). Issue #013 will refine this once the
-    cluster-marker convention is fully documented.
+    shaft (no roll information).
+
+    Marker-set detection (issue #4710) replaces the historical 6-name
+    substring match that silently produced NaN club poses on CGM2.4 /
+    Plug-in-Gait / IOR files. When ``marker_set_override`` is ``None`` and
+    detection returns :attr:`MarkerSet.UNKNOWN`, this function raises
+    :class:`MarkerSetMismatchError` with the available labels so the caller
+    can pick an explicit override.
+
+    Args:
+        path: Filesystem path to a ``.c3d`` file.
+        opts: Resampling and impact-alignment options.
+        marker_set_override: If provided, skip auto-detection and treat the
+            file as the named marker set. The required labels for the chosen
+            set must still be present, otherwise :class:`MarkerSetMismatchError`
+            is raised.
+
+    Raises:
+        MarkerSetMismatchError: When the file's marker set cannot be
+            identified (no override) or when a required cluster / anatomical
+            marker is missing for the (detected or overridden) set.
     """
     path = Path(path)
     reader = C3DDataReader(path)
     metadata = reader.get_metadata()
     df = reader.points_dataframe(include_time=True, target_units="m")
     labels = list(metadata.marker_labels)
+
+    detected = (
+        marker_set_override
+        if marker_set_override is not None
+        else detect_marker_set(labels)
+    )
+    if detected is MarkerSet.UNKNOWN:
+        raise MarkerSetMismatchError(
+            "Could not identify a known marker set in C3D file "
+            f"{path.name!r}; pass marker_set_override to disambiguate. "
+            f"Available labels: {labels}"
+        )
+    if detected is not MarkerSet.GOLF_CLUSTER:
+        raise MarkerSetMismatchError(
+            f"C3D file {path.name!r} was detected as {detected.name} but "
+            "load_club_target_c3d requires the GOLF_CLUSTER set with "
+            "Marker_2:2:1, Marker_2:2:2, Marker_2:2:3 (clubhead) and "
+            "Marker_3:3:1, Marker_3:3:2, Marker_3:3:3 (grip). "
+            f"Available labels: {labels}"
+        )
+    missing_cluster = missing_required(MarkerSet.GOLF_CLUSTER, labels)
+    if missing_cluster:
+        raise MarkerSetMismatchError(
+            f"C3D file {path.name!r} is missing required golf-cluster "
+            f"markers: {missing_cluster}. Expected canonical labels include "
+            "Marker_2:2:1 (clubhead) and Marker_3:3:1 (grip)."
+        )
+    logger.info(
+        "load_club_target_c3d: marker set %s confirmed for %s",
+        detected.name,
+        path.name,
+    )
 
     if has_marker_clusters(path.name, labels):
         logger.info(

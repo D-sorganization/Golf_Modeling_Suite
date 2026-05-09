@@ -35,6 +35,7 @@ from ._c3d_models import (
     SCHEMA_VERSION,
     C3DEvent,
     C3DMetadata,
+    MarkerSetMismatchError,
 )
 
 logger = get_logger(__name__)
@@ -46,6 +47,7 @@ __all__ = [
     "C3DMetadata",
     "BIOMECHANICAL_MARKER_MAX_M",
     "BIOMECHANICAL_MARKER_MIN_M",
+    "MarkerSetMismatchError",
     "SCHEMA_VERSION",
 ]
 
