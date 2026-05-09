@@ -16,6 +16,7 @@ this widget's public surface.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import Any, cast
 
 import numpy as np
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
@@ -74,7 +75,11 @@ class View3D(QtWidgets.QWidget):
         self._figure = Figure(figsize=(5, 5), tight_layout=True)
         self._canvas = FigureCanvasQTAgg(self._figure)
         self._canvas.setToolTip(self.toolTip())
-        self._ax = self._figure.add_subplot(111, projection="3d")
+        # matplotlib 3D Axes carry methods (set_zlabel, set_zlim, set_box_aspect
+        # with 3-tuples) that the public Axes stub does not expose.  Use Any
+        # locally rather than importing mpl_toolkits.mplot3d.Axes3D, which is
+        # itself not present in older type stubs.
+        self._ax: Any = self._figure.add_subplot(111, projection="3d")
         self._ax.set_xlabel("X (m)")
         self._ax.set_ylabel("Y (m)")
         self._ax.set_zlabel("Z (m)")
@@ -83,12 +88,15 @@ class View3D(QtWidgets.QWidget):
         layout.addWidget(self._canvas)
 
         # Pre-create artists so update_pose mutates rather than rebuilds.
-        self._scatter = self._ax.scatter(
+        # ``s=40`` is the marker size keyword for Axes3D.scatter; the 2D
+        # Axes stub treats the same kwarg as positional which mypy flags.
+        self._scatter: Any = self._ax.scatter(
             [0.0], [0.0], [0.0], s=40, c="#5fa8ff", picker=True, pickradius=6
         )
         (self._bone_lines,) = self._ax.plot(
             [0.0], [0.0], [0.0], lw=2.0, color="#cccccc"
         )
+        self._bone_lines = cast(Any, self._bone_lines)
         self._highlighted_landmark: str | None = None
         self._landmarks_order: list[str] = []
 

@@ -129,10 +129,23 @@ class PoseStudioWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(central)
 
     def _build_menu(self) -> None:
+        # QMainWindow.menuBar() and QMenuBar.addMenu() return Optional in
+        # the Qt stubs, but always return real objects on a constructed
+        # main window. Pin them with asserts once here so mypy can follow
+        # without scattering casts through every addAction call.
         menubar = self.menuBar()
+        assert menubar is not None  # noqa: S101 — Qt invariant
+
+        file_menu = menubar.addMenu("&File")
+        edit_menu = menubar.addMenu("&Edit")
+        pose_menu = menubar.addMenu("&Pose Library")
+        view_menu = menubar.addMenu("&View")
+        assert file_menu is not None  # noqa: S101 — Qt invariant
+        assert edit_menu is not None  # noqa: S101 — Qt invariant
+        assert pose_menu is not None  # noqa: S101 — Qt invariant
+        assert view_menu is not None  # noqa: S101 — Qt invariant
 
         # File menu.
-        file_menu = menubar.addMenu("&File")
         act_save = QtGui.QAction("&Save Pose...", self)
         act_save.setToolTip(_SAVE_TOOLTIP)
         act_save.triggered.connect(self._on_save_clicked)
@@ -148,7 +161,6 @@ class PoseStudioWindow(QtWidgets.QMainWindow):
         file_menu.addAction(act_quit)
 
         # Edit menu.
-        edit_menu = menubar.addMenu("&Edit")
         self.act_undo = QtGui.QAction("&Undo", self)
         self.act_undo.setShortcut(QtGui.QKeySequence("Ctrl+Z"))
         self.act_undo.triggered.connect(self._on_undo)
@@ -159,7 +171,6 @@ class PoseStudioWindow(QtWidgets.QMainWindow):
         edit_menu.addAction(self.act_redo)
 
         # Pose Library menu.
-        pose_menu = menubar.addMenu("&Pose Library")
         act_zero = QtGui.QAction("Load &Zero Pose", self)
         act_zero.setToolTip("Reset to canonical_zero_pose() (T-pose at origin).")
         act_zero.triggered.connect(self._on_load_zero)
@@ -173,7 +184,6 @@ class PoseStudioWindow(QtWidgets.QMainWindow):
         pose_menu.addAction(act_ref)
 
         # View menu.
-        view_menu = menubar.addMenu("&View")
         self.act_show_radians = QtGui.QAction("Show angles in &radians", self)
         self.act_show_radians.setCheckable(True)
         self.act_show_radians.toggled.connect(self.joint_panel.set_show_radians)
