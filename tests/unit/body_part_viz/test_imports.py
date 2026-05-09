@@ -42,13 +42,24 @@ def test_all_lists_every_public_export() -> None:
 
 @pytest.mark.unit
 def test_subpackage_placeholders_load() -> None:
-    """The placeholder sub-packages import without raising."""
+    """The sub-packages import without raising.
+
+    ``shapes`` exposes the primitive shapes added in #4759; ``fitters``
+    and ``renderers`` remain placeholders pending later issues of
+    EPIC #4755.
+    """
     from src.shared.python.body_part_viz import (  # noqa: F401
         fitters,
         renderers,
         shapes,
     )
 
-    assert shapes.__all__ == []
+    assert set(shapes.__all__) == {
+        "CapsuleShape",
+        "CompositeShape",
+        "CylinderShape",
+        "EllipsoidShape",
+        "LineShape",
+    }
     assert fitters.__all__ == []
     assert renderers.__all__ == []
