@@ -34,7 +34,7 @@ class TestGripModellingFileSizes:
     """Each file must be within LOC budget after split."""
 
     @pytest.mark.unit
-    def test_coordinator_loc(self) -> None:
+    def test_grip_modelling_split_2456_coordinator_loc(self) -> None:
         loc = _count_lines(GRIP_DIR / "grip_modelling_tab.py")
         assert loc <= LOC_BUDGET_COORDINATOR, (
             f"grip_modelling_tab.py has {loc} LOC; budget {LOC_BUDGET_COORDINATOR}"

@@ -251,7 +251,7 @@ class TestVideoPosePipelineAudit:
 
         assert VideoProcessingResult is not None
 
-    def test_config_defaults(self) -> None:
+    def test_third_party_integration_batch2_config_defaults(self) -> None:
         """VideoProcessingConfig must have sane defaults."""
         from src.shared.python.gui_pkg.video_pose_pipeline import (
             VideoProcessingConfig,

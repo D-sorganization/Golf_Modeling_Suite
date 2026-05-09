@@ -230,34 +230,6 @@ class TestConvertOsimToMujoco:
                 temp_osim_file, temp_geometry_folder, temp_output_folder
             )
 
-    @skip_if_unavailable("myoconverter")
-    @pytest.mark.xfail(
-        strict=False, reason="Requires myoconverter - pending implementation"
-    )
-    @patch(
-        "src.shared.python.biomechanics.myoconverter_integration.MyoConverter._check_availability",
-        return_value=True,
-    )
-    def test_successful_conversion(
-        self, mock_check, temp_osim_file, temp_geometry_folder, temp_output_folder
-    ) -> None:
-        """Test successful model conversion (requires myoconverter)."""
-        raise NotImplementedError("Requires myoconverter - pending implementation")
-
-    @skip_if_unavailable("myoconverter")
-    @pytest.mark.xfail(
-        strict=False, reason="Requires myoconverter - pending implementation"
-    )
-    @patch(
-        "src.shared.python.biomechanics.myoconverter_integration.MyoConverter._check_availability",
-        return_value=True,
-    )
-    def test_custom_config_passed(
-        self, mock_check, temp_osim_file, temp_geometry_folder, temp_output_folder
-    ) -> None:
-        """Test that custom configuration is passed to pipeline (requires myoconverter)."""
-        raise NotImplementedError("Requires myoconverter - pending implementation")
-
 
 class TestHandleConversionError:
     """Test _handle_conversion_error method."""
@@ -367,7 +339,7 @@ class TestGetExampleModels:
         "src.shared.python.biomechanics.myoconverter_integration.MyoConverter._check_availability",
         return_value=False,
     )
-    def test_returns_dict(self, mock_check) -> None:
+    def test_myoconverter_integration_returns_dict(self, mock_check) -> None:
         """Test that method returns a dictionary."""
         converter = MyoConverter()
         models = converter.get_example_models()
@@ -454,7 +426,7 @@ class TestValidateConversion:
 class TestInstallMyoconverterInstructions:
     """Test install_myoconverter_instructions function."""
 
-    def test_returns_string(self) -> None:
+    def test_myoconverter_integration_returns_string(self) -> None:
         """Test that function returns a string."""
         instructions = install_myoconverter_instructions()
         assert isinstance(instructions, str)
@@ -484,20 +456,6 @@ class TestInstallMyoconverterInstructions:
 
 class TestEdgeCases:
     """Test edge cases and error conditions."""
-
-    @skip_if_unavailable("myoconverter")
-    @pytest.mark.xfail(
-        strict=False, reason="Requires myoconverter - pending implementation"
-    )
-    @patch(
-        "src.shared.python.biomechanics.myoconverter_integration.MyoConverter._check_availability",
-        return_value=True,
-    )
-    def test_no_output_file_generated(
-        self, mock_check, temp_osim_file, temp_geometry_folder, temp_output_folder
-    ) -> None:
-        """Test error when conversion completes but no output file found."""
-        raise NotImplementedError("Requires myoconverter - pending implementation")
 
     @patch(
         "src.shared.python.biomechanics.myoconverter_integration.MyoConverter._check_availability",

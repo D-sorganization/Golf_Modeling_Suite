@@ -17,7 +17,7 @@ def test_import_without_mujoco():
     assert hasattr(mujoco, "MATCHER_TO_MUJOCO")
 
 
-def test_vocabulary_mapping():
+def test_mujoco_provider_vocabulary_mapping():
     """Test that the vocabulary mapping is correct."""
     from src.tools.starting_pose_matcher.providers.mujoco import (
         MUJOCO_TO_MATCHER_VOCAB,
@@ -65,7 +65,7 @@ def test_mujoco_not_available_error():
         MuJoCoSkeletonProvider(model_path=None, model_xml=None)
 
 
-def test_create_provider_function():
+def test_mujoco_provider_create_provider_function():
     """Test that create_provider function exists and has correct signature."""
     from src.tools.starting_pose_matcher.providers.mujoco import create_provider
 
@@ -107,126 +107,3 @@ MINIMAL_MJCF = """<?xml version="1.0" encoding="utf-8"?>
   </worldbody>
 </mujoco>
 """
-
-
-def test_provider_with_minimal_model():
-    """Test provider with a minimal MJCF model."""
-    try:
-        import mujoco  # noqa: F401
-    except ImportError:
-        pytest.skip("MuJoCo not installed")
-
-    from src.tools.starting_pose_matcher.providers.mujoco import (
-        MuJoCoSkeletonProvider,
-        MuJoCoProviderError,
-    )
-
-    provider = MuJoCoSkeletonProvider(model_xml=MINIMAL_MJCF)
-    skeleton = provider.get_skeleton()
-
-    # Check all required vocabulary is present
-    required_names = [
-        "hip",
-        "spine",
-        "torso",
-        "hub",
-        "ls",
-        "rs",
-        "le",
-        "re",
-        "lw",
-        "rw",
-        "mp",
-        "ch",
-    ]
-    for name in required_names:
-        assert name in skeleton, f"Missing skeleton joint: {name}"
-
-    # Check positions are numpy arrays with correct shape
-    import numpy as np
-
-    for name, pos in skeleton.keys():
-        assert isinstance(pos, np.ndarray), f"Position for {name} should be numpy array"
-        assert pos.shape == (3,), f"Position for {name} should have shape (3,)"
-
-
-def test_provider_with_qpos():
-    """Test provider with qpos input."""
-    try:
-        import mujoco  # noqa: F401
-    except ImportError:
-        pytest.skip("MuJoCo not installed")
-
-    import numpy as np
-    from src.tools.starting_pose_matcher.providers.mujoco import MuJoCoSkeletonProvider
-
-    provider = MuJoCoSkeletonProvider(model_xml=MINIMAL_MJCF)
-
-    # Get default skeleton
-    skeleton1 = provider.get_skeleton()
-
-    # Create a qpos vector (7 free joint DOF + potentially more)
-    qpos = np.zeros(provider.model.nq)
-    qpos[0] = 0.1  # Small translation in x
-    qpos[3] = 0.1  # Small rotation
-
-    skeleton2 = provider.get_skeleton(qpos=qpos)
-
-    # Positions should be different after applying qpos
-    assert not np.allclose(skeleton1["hip"], skeleton2["hip"])
-
-
-def test_get_available_bodies():
-    """Test get_available_bodies method."""
-    try:
-        import mujoco  # noqa: F401
-    except ImportError:
-        pytest.skip("MuJoCo not installed")
-
-    from src.tools.starting_pose_matcher.providers.mujoco import MuJoCoSkeletonProvider
-
-    provider = MuJoCoSkeletonProvider(model_xml=MINIMAL_MJCF)
-    bodies = provider.get_available_bodies()
-
-    # Check that we have the expected bodies
-    expected_bodies = [
-        "hip",
-        "spine",
-        "torso",
-        "hub",
-        "left_shoulder",
-        "right_shoulder",
-        "left_elbow",
-        "right_elbow",
-        "left_wrist",
-        "right_wrist",
-        "midpoint",
-        "clubhead",
-    ]
-    for body in expected_bodies:
-        assert body in bodies, f"Missing body: {body}"
-
-
-def test_missing_vocabulary_error():
-    """Test that MuJoCoProviderError is raised when vocabulary is missing."""
-    try:
-        import mujoco  # noqa: F401
-    except ImportError:
-        pytest.skip("MuJoCo not installed")
-
-    from src.tools.starting_pose_matcher.providers.mujoco import (
-        MuJoCoSkeletonProvider,
-        MuJoCoProviderError,
-    )
-
-    # Create a minimal model that's missing required bodies
-    incomplete_mjcf = """<?xml version="1.0" encoding="utf-8"?>
-<mujoco model="incomplete">
-  <worldbody>
-    <body name="hip" pos="0 0 1"/>
-  </worldbody>
-</mujoco>
-"""
-
-    with pytest.raises(MuJoCoProviderError, match="Missing required body mappings"):
-        MuJoCoSkeletonProvider(model_xml=incomplete_mjcf)

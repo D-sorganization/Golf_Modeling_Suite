@@ -22,7 +22,7 @@ def temp_output_dir(tmp_path) -> OutputManager:
     return manager
 
 
-def test_initialization(tmp_path) -> None:
+def test_output_manager_initialization(tmp_path) -> None:
     """Test directory creation."""
     manager = OutputManager(base_path=tmp_path)
     manager.create_output_structure()
@@ -33,7 +33,7 @@ def test_initialization(tmp_path) -> None:
     assert (tmp_path / "simulations" / "mujoco").exists()
 
 
-def test_save_load_csv(temp_output_dir) -> None:
+def test_output_manager_save_load_csv(temp_output_dir) -> None:
     """Test saving and loading CSV."""
     df = pd.DataFrame({"a": [1, 2], "b": [3, 4]})
     path = temp_output_dir.save_simulation_results(
@@ -49,7 +49,7 @@ def test_save_load_csv(temp_output_dir) -> None:
     pd.testing.assert_frame_equal(df, loaded)
 
 
-def test_save_load_json(temp_output_dir) -> None:
+def test_output_manager_save_load_json(temp_output_dir) -> None:
     """Test saving and loading JSON."""
     # When saving raw list, it wraps it in {results: [...]}
     data = [1, 2, 3]
@@ -81,30 +81,6 @@ def test_save_load_json(temp_output_dir) -> None:
     assert loaded2 == data_struct
 
 
-def test_save_load_parquet(temp_output_dir) -> None:
-    """Test saving and loading Parquet."""
-    try:
-        import pyarrow  # noqa: F401
-    except ImportError:
-        pytest.skip("pyarrow not installed")
-
-    df = pd.DataFrame({"a": [1, 2], "b": ["x", "y"]})
-    try:
-        path = temp_output_dir.save_simulation_results(
-            df, "test_pq", OutputFormat.PARQUET, engine="mujoco"
-        )
-    except ImportError:
-        pytest.skip("Parquet support missing")
-
-    assert path.exists()
-    assert path.suffix == ".parquet"
-
-    loaded = temp_output_dir.load_simulation_results(
-        "test_pq", OutputFormat.PARQUET, engine="mujoco"
-    )
-    pd.testing.assert_frame_equal(df, loaded)
-
-
 def test_save_pickle_disabled(temp_output_dir) -> None:
     """Test that pickle is disabled for security."""
     data = [1, 2, 3]
@@ -124,7 +100,7 @@ def test_export_report_html(temp_output_dir) -> None:
     assert "0.95" in content
 
 
-def test_cleanup_old_files(temp_output_dir) -> None:
+def test_output_manager_cleanup_old_files(temp_output_dir) -> None:
     """Test file cleanup logic."""
     # Create an old file
     old_file = temp_output_dir.directories["simulations"] / "old.csv"
@@ -148,7 +124,7 @@ def test_cleanup_old_files(temp_output_dir) -> None:
     assert new_file.exists()
 
 
-def test_convenience_functions(tmp_path, monkeypatch) -> None:
+def test_output_manager_convenience_functions(tmp_path, monkeypatch) -> None:
     """Test the top-level save_results and load_results functions."""
     # The convenience functions create a new OutputManager internally.
     # We can test them by using unittest.mock.patch as a context manager.

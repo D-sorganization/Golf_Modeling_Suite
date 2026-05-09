@@ -83,7 +83,7 @@ def sample_dict_data() -> dict[str, Any]:
 class TestOutputManager:
     """Test suite for OutputManager class."""
 
-    def test_initialization(self, temp_output_dir) -> None:
+    def test_output_manager_initialization(self, temp_output_dir) -> None:
         """Test initialization and directory creation."""
         manager = OutputManager(base_path=temp_output_dir)
         manager.create_output_structure()
@@ -156,7 +156,7 @@ class TestOutputManager:
             manager = OutputManager()
             assert manager.base_path is not None
 
-    def test_save_load_csv(self, output_manager, sample_data) -> None:
+    def test_output_manager_save_load_csv(self, output_manager, sample_data) -> None:
         """Test saving and loading CSV files."""
         filename = "test_sim"
 
@@ -173,7 +173,9 @@ class TestOutputManager:
         )
         pd.testing.assert_frame_equal(sample_data, loaded_df)
 
-    def test_save_load_json(self, output_manager, sample_dict_data) -> None:
+    def test_output_manager_save_load_json(
+        self, output_manager, sample_dict_data
+    ) -> None:
         """Test saving and loading JSON files."""
         filename = "test_sim"
 
@@ -299,7 +301,9 @@ class TestOutputManager:
             assert "metric" in content
             assert "0.95" in content
 
-    def test_cleanup_old_files(self, output_manager, sample_data) -> None:
+    def test_output_manager_cleanup_old_files(
+        self, output_manager, sample_data
+    ) -> None:
         """Test cleaning up old files."""
         # Create a file
         filename = "old_sim"
@@ -331,7 +335,9 @@ class TestOutputManager:
         )
         assert archive_path.exists()
 
-    def test_convenience_functions(self, temp_output_dir, sample_data) -> None:
+    def test_output_manager_convenience_functions(
+        self, temp_output_dir, sample_data
+    ) -> None:
         """Test global convenience functions."""
         # We need to patch OutputManager to use our temp dir
         with patch(

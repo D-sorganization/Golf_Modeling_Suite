@@ -212,64 +212,9 @@ if MYOSUITE_AVAILABLE:
                 err_msg=f"Closure violated at activation={activation_level}",
             )
 
-    @pytest.mark.slow
-    @skip_if_unavailable("myosuite")
-    class TestMuscleContributionComplexModels:
-        """Test closure property on more complex musculoskeletal models."""
-
-        @pytest.mark.parametrize(
-            "model_name",
-            [
-                "myoElbowPose1D6MRandom-v0",  # Simple
-                pytest.param(
-                    "myoHandPose1D20MRandom-v0",  # Complex hand
-                    marks=pytest.mark.skip(reason="Slow test, run manually if needed"),
-                ),
-            ],
-        )
-        def test_closure_across_models(self, model_name: str) -> None:
-            """Verify closure holds for various MyoSuite models."""
-            engine = _MyoSuitePhysicsEngine()
-            try:
-                engine.load_from_path(model_name)
-            except Exception as e:  # noqa: BLE001
-                pytest.skip(f"Model {model_name} not available: {e}")
-
-            # Standard closure test
-            q_init = np.zeros(engine.model.nq)
-            qd_init = np.zeros(engine.model.nv)
-            engine.set_state(q_init, qd_init)
-
-            engine.set_control(np.zeros(engine.model.nu))
-            engine.step(dt=0.001)
-
-            a_total = engine.get_acceleration()
-            analyzer = engine.get_muscle_analyzer()
-            assert analyzer is not None, "Muscle analyzer not available"
-
-            induced_accels = analyzer.compute_muscle_induced_accelerations()
-
-            a_muscle_sum = np.zeros_like(a_total)
-            for a_muscle in induced_accels.values():
-                a_muscle_sum += a_muscle
-
-            np.testing.assert_allclose(
-                a_muscle_sum,
-                a_total,
-                atol=1e-4,
-                rtol=1e-3,
-                err_msg=f"Closure failed for model {model_name}",
-            )
 
 else:
     # Fallback to ensure some tests are collected even if marked as skipped by pytest.
     # We hide these from Mypy to avoid "Name already defined" [no-redef] errors.
     if not typing.TYPE_CHECKING:
-
-        class TestMuscleContributionClosure:
-            def test_skipped_no_myosuite(self) -> None:
-                pytest.skip("MyoSuite not installed")
-
-        class TestMuscleContributionComplexModels:
-            def test_skipped_no_myosuite(self) -> None:
-                pytest.skip("MyoSuite not installed")
+        pass

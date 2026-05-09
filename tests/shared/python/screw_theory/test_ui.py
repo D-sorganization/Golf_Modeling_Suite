@@ -32,7 +32,7 @@ class TestScrewVisualizationTab:
 
         return ScrewVisualizationTab()
 
-    def test_instantiation(self, tab) -> None:
+    def test_ui_instantiation(self, tab) -> None:
         """Tab can be created without errors."""
         assert tab is not None
 

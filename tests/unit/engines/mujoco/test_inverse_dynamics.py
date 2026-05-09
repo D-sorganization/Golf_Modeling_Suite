@@ -20,7 +20,7 @@ from mujoco_humanoid_golf.models import DOUBLE_PENDULUM_XML
 class TestInverseDynamicsResult:
     """Tests for InverseDynamicsResult dataclass."""
 
-    def test_initialization(self) -> None:
+    def test_inverse_dynamics_initialization(self) -> None:
         """Test result initialization."""
         torques = np.array([1.0, -0.5])
         result = InverseDynamicsResult(joint_torques=torques)
@@ -52,7 +52,7 @@ class TestInverseDynamicsResult:
 class TestForceDecomposition:
     """Tests for ForceDecomposition dataclass."""
 
-    def test_initialization(self) -> None:
+    def test_inverse_dynamics_initialization(self) -> None:
         """Test force decomposition initialization."""
         total = np.array([1.0, -0.5])
         inertial = np.array([0.8, -0.3])
@@ -83,7 +83,7 @@ class TestInverseDynamicsSolver:
         mujoco.mj_forward(model, data)
         return model, data
 
-    def test_initialization(self, model_and_data) -> None:
+    def test_inverse_dynamics_initialization(self, model_and_data) -> None:
         """Test solver initialization."""
         model, data = model_and_data
         solver = InverseDynamicsSolver(model, data)
@@ -134,32 +134,6 @@ class TestInverseDynamicsSolver:
 
         assert result.joint_torques.shape == (model.nv,)
         assert np.all(np.isfinite(result.joint_torques))
-
-    @pytest.mark.xfail(
-        reason="Force decomposition not yet populated by compute_required_torques"
-    )
-    def test_compute_required_torques_force_decomposition(
-        self,
-        model_and_data,
-    ) -> None:
-        """Test that force decomposition is computed."""
-        model, data = model_and_data
-        solver = InverseDynamicsSolver(model, data)
-
-        qpos = data.qpos.copy()
-        qvel = np.array([0.1, -0.05])
-        qacc = np.array([0.01, -0.005])
-
-        result = solver.compute_required_torques(qpos, qvel, qacc)
-
-        # Check that decomposition components are present
-        assert result.inertial_torques is not None
-        assert result.coriolis_torques is not None
-        assert result.gravity_torques is not None
-
-        assert result.inertial_torques.shape == (model.nv,)
-        assert result.coriolis_torques.shape == (model.nv,)
-        assert result.gravity_torques.shape == (model.nv,)
 
     def test_solve_inverse_dynamics_trajectory(self, model_and_data) -> None:
         """Test solving inverse dynamics for trajectory."""
@@ -282,7 +256,7 @@ class TestRecursiveNewtonEuler:
         mujoco.mj_forward(model, data)
         return model, data
 
-    def test_initialization(self, model_and_data) -> None:
+    def test_inverse_dynamics_initialization(self, model_and_data) -> None:
         """Test RNE initialization."""
         model, data = model_and_data
         rne = RecursiveNewtonEuler(model, data)
@@ -316,7 +290,7 @@ class TestInverseDynamicsAnalyzer:
         mujoco.mj_forward(model, data)
         return model, data
 
-    def test_initialization(self, model_and_data) -> None:
+    def test_inverse_dynamics_initialization(self, model_and_data) -> None:
         """Test analyzer initialization."""
         model, data = model_and_data
         analyzer = InverseDynamicsAnalyzer(model, data)

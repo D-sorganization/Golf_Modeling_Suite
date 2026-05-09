@@ -21,7 +21,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 class TestCoreDependencies:
     """Test that core dependencies are installed and importable."""
 
-    def test_numpy_available(self) -> None:
+    def test_ci_infrastructure_numpy_available(self) -> None:
         """Test that numpy is available (always required)."""
         import numpy as np
 
