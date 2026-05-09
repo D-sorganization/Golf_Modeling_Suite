@@ -57,6 +57,7 @@ from PyQt6.QtWidgets import (
     QApplication,
     QCheckBox,
     QComboBox,
+    QDialog,
     QDoubleSpinBox,
     QFileDialog,
     QFrame,
@@ -82,6 +83,7 @@ from PyQt6.QtWidgets import (
 # Pure-data + math core.  Split out of this file so it can be unit-tested
 # in environments where the Qt stack isn't fully working.
 # Pure-data + math layer (split out so it can be unit-tested without Qt).
+from src.shared.python.motion_matching import provider_registry
 from src.tools.starting_pose_matcher.core import (
     CM_TO_M,
     DEFAULT_EVENT_PRESET as _DEFAULT_EVENT_PRESET,
@@ -110,10 +112,26 @@ from src.tools.starting_pose_matcher.skeleton_extractor import (
 )
 from src.tools.starting_pose_matcher.gui_source_panel import DataSourcesPanel
 from src.tools.starting_pose_matcher.session_schema import (
+    BODY_SKELETON_STYLES as _BODY_SKELETON_STYLES,
+    BodySkeletonBlock,
+    BodySkeletonStyleLiteral,
+    DEFAULT_BODY_SKELETON_STYLE as _DEFAULT_BODY_SKELETON_STYLE,
     DataSourcesBlock,
+    parse_body_skeleton,
     parse_data_sources,
+    serialize_body_skeleton,
     serialize_data_sources,
 )
+
+# Display labels shown in the body-skeleton style combo. Mapping is
+# bidirectional: combo currentText() -> schema literal -> combo text.
+_BODY_SKELETON_STYLE_LABELS: dict[str, BodySkeletonStyleLiteral] = {
+    "Lines (default)": "lines",
+    "Library shapes": "library_shapes",
+}
+_BODY_SKELETON_STYLE_LABEL_BY_KEY: dict[BodySkeletonStyleLiteral, str] = {
+    v: k for k, v in _BODY_SKELETON_STYLE_LABELS.items()
+}
 
 # Shared 3D-rendering helpers (per #4376 — DRY with the rest of the
 # motion-matching diagnostics).  Used by ``_setup_axes`` to fit the view
@@ -562,6 +580,11 @@ class StartingPoseMatcher(QMainWindow):
         #   "Both"      animate both, time-aligned at the impact frame
         self.playback_target: str = "Mocap"
 
+        # Body-skeleton renderer style — "lines" | "library_shapes" (issue #4767).
+        self.body_skeleton_style: BodySkeletonStyleLiteral = (
+            _DEFAULT_BODY_SKELETON_STYLE
+        )
+
         # Event labels (Address / Top of Backswing / Impact / Finish, or
         # author-specific conventions).  Mutated via the Event-Labels
         # group; persisted to session JSON.
@@ -667,7 +690,11 @@ class StartingPoseMatcher(QMainWindow):
         # Live multi-source view controller (issue #4512). Owns the layer
         # stack that renders BodyTarget / ClubTarget / BallImpact data on
         # the same axes the static-pose path uses.
-        self._live_view = LiveViewController(self.ax, self.canvas)
+        self._live_view = LiveViewController(
+            self.ax,
+            self.canvas,
+            body_skeleton_style=self.body_skeleton_style,
+        )
         self._live_body_target: Any | None = None
 
     def _attach_help_button(self, box: QGroupBox, section: str) -> None:
@@ -751,6 +778,29 @@ class StartingPoseMatcher(QMainWindow):
             else None
         )
         gl.addWidget(self.cb_show_body_skeleton, 6, 1, 1, 1)
+        # Body skeleton style combo — switches between line segments
+        # (legacy / fast) and body_part_viz library shapes (richer
+        # figure). Issue #4767. Default tracks ``body_skeleton_style``
+        # so a session-restored choice survives this build.
+        gl.addWidget(QLabel("Body skeleton style:"), 7, 0)
+        self.combo_body_skeleton_style = QComboBox()
+        for label in _BODY_SKELETON_STYLE_LABELS:
+            self.combo_body_skeleton_style.addItem(label)
+        current_label = _BODY_SKELETON_STYLE_LABEL_BY_KEY.get(
+            self.body_skeleton_style,
+            _BODY_SKELETON_STYLE_LABEL_BY_KEY[_DEFAULT_BODY_SKELETON_STYLE],
+        )
+        self.combo_body_skeleton_style.setCurrentText(current_label)
+        self.combo_body_skeleton_style.setToolTip(
+            "Choose how the body skeleton is rendered. "
+            "Lines (default) draws plain segments between marker pairs; "
+            "Library shapes uses body_part_viz meshes (head, torso, "
+            "upper_arm, ...) bound to canonical Plug-in-Gait markers."
+        )
+        self.combo_body_skeleton_style.currentTextChanged.connect(
+            self._on_body_skeleton_style_changed
+        )
+        gl.addWidget(self.combo_body_skeleton_style, 7, 1, 1, 1)
         return box
 
     def _build_event_labels_box(self) -> QGroupBox:
@@ -1231,6 +1281,36 @@ class StartingPoseMatcher(QMainWindow):
         )
         v.addWidget(self.cb_fit_scale)
 
+        # Engine selector — populated live from the canonical fit_swing
+        # provider registry (#4707 slice 1/3). The Run-fit QThread is
+        # wired below (slice 2/3). Save-fit JSON serialization is the
+        # remaining follow-up (slice 3/3).
+        # TODO(#4707 slice 3/3): persist `RunFitButton.last_result` into
+        # the save-fit JSON payload.
+        engine_row = QHBoxLayout()
+        engine_row.addWidget(QLabel("Fit engine:"))
+        self.combo_fit_engine = QComboBox()
+        self.combo_fit_engine.setToolTip(
+            "Physics engine used by the Run-fit action. "
+            "Populated live from motion_matching.provider_registry."
+        )
+        self._populate_engine_combo()
+        self.combo_fit_engine.currentTextChanged.connect(self._on_fit_engine_changed)
+        engine_row.addWidget(self.combo_fit_engine, stretch=1)
+        v.addLayout(engine_row)
+
+        # Run-fit QThread widget — slice 2/3 of #4707.
+        from src.tools.starting_pose_matcher.widgets.run_fit_button import (
+            RunFitButton,
+        )
+
+        self.run_fit_button = RunFitButton(self)
+        self.run_fit_button.set_inputs(
+            target=self._live_body_target,
+            engine_name=self.combo_fit_engine.currentText(),
+        )
+        v.addWidget(self.run_fit_button)
+
         # One snap button per pose-slot
         for key, slot in self.poses.items():
             btn = QPushButton(
@@ -1251,6 +1331,49 @@ class StartingPoseMatcher(QMainWindow):
         self.btn_snap_mid.clicked.connect(self._snap_mid_first_visible)
         v.addWidget(self.btn_snap_mid)
         return box
+
+    def _populate_engine_combo(self) -> None:
+        """Refresh the engine combo from the canonical provider registry.
+
+        Reads :func:`provider_registry.available_engines` live every call so
+        late-registering providers (or test fixtures that mutate the
+        registry) are reflected. Default selection is ``"mujoco"`` when
+        present, otherwise the first registered engine; an empty registry
+        leaves the combo empty.
+        """
+        engines = provider_registry.available_engines()
+        combo = self.combo_fit_engine
+        combo.blockSignals(True)
+        try:
+            combo.clear()
+            combo.addItems(engines)
+            if engines:
+                default = "mujoco" if "mujoco" in engines else engines[0]
+                combo.setCurrentText(default)
+        finally:
+            combo.blockSignals(False)
+
+    def _on_fit_engine_changed(self, engine_name: str) -> None:
+        """Forward combo selection to the run-fit widget (#4707 slice 2)."""
+        if hasattr(self, "run_fit_button"):
+            self.run_fit_button.set_inputs(
+                target=self._live_body_target,
+                engine_name=engine_name,
+            )
+
+    @property
+    def selected_engine(self) -> str:
+        """Return the engine name currently chosen in the combo.
+
+        Raises:
+            RuntimeError: If the combo is empty (no providers registered).
+        """
+        text = self.combo_fit_engine.currentText()
+        if not text:
+            raise RuntimeError(
+                "no fit_swing engine selected; provider registry is empty"
+            )
+        return text
 
     def _build_transform_box(self) -> QGroupBox:
         box = QGroupBox("Rigid Transform + Scale")
@@ -1387,6 +1510,22 @@ class StartingPoseMatcher(QMainWindow):
         ses_row.addWidget(self.btn_load_session)
         v.addLayout(ses_row)
 
+        # Subject-anthropometrics calibration (issue #4820).
+        self.btn_calibrate_subject = QPushButton("Calibrate subject…")
+        self.btn_calibrate_subject.setToolTip(
+            "Build a SubjectAnthropometrics record from height/mass/age/sex "
+            "and persist it to ~/.golf_modeling_suite/subjects/<id>.json."
+        )
+        self.btn_calibrate_subject.setStatusTip(
+            "Open the subject-anthropometrics calibration dialog."
+        )
+        self.btn_calibrate_subject.clicked.connect(self._on_calibrate_subject_clicked)
+        v.addWidget(self.btn_calibrate_subject)
+        self.lbl_subject = QLabel("Subject: (not calibrated)")
+        self.lbl_subject.setObjectName("status")
+        self.lbl_subject.setWordWrap(True)
+        v.addWidget(self.lbl_subject)
+
         self.lbl_residual = QLabel("Residuals: (no data)")
         self.lbl_residual.setObjectName("residual")
         self.lbl_residual.setWordWrap(True)
@@ -1491,6 +1630,11 @@ class StartingPoseMatcher(QMainWindow):
             return
 
         self._live_body_target = body
+        if hasattr(self, "run_fit_button"):
+            self.run_fit_button.set_inputs(
+                target=body,
+                engine_name=self.combo_fit_engine.currentText(),
+            )
         n = int(body.marker_xyz.shape[0])
         m = int(body.marker_xyz.shape[1])
         self.lbl_c3d_body.setText(
@@ -1533,6 +1677,23 @@ class StartingPoseMatcher(QMainWindow):
             target = "Mocap"
         self.playback_target = target
         self._redraw()
+
+    def _on_body_skeleton_style_changed(self, label: str) -> None:
+        """Swap the body-skeleton renderer when the user picks a style.
+
+        The swap is non-destructive: the loaded body target stays and
+        the controller rebuilds the skeleton layer in place, preserving
+        the current frame.
+        """
+        style = _BODY_SKELETON_STYLE_LABELS.get(label, _DEFAULT_BODY_SKELETON_STYLE)
+        if style == self.body_skeleton_style:
+            return
+        self.body_skeleton_style = style
+        live_view = getattr(self, "_live_view", None)
+        if live_view is None:
+            return
+        live_view.set_body_skeleton_style(style)
+        self.canvas.draw_idle()
 
     def _load_trajectory(self, slot_key: str) -> None:
         """Load a Simscape CSV trajectory for the given pose slot."""
@@ -2044,6 +2205,18 @@ class StartingPoseMatcher(QMainWindow):
 
     # ---------- save ------------------------------------------------------ #
 
+    def _on_calibrate_subject_clicked(self) -> None:
+        """Open the subject-anthropometrics calibration dialog (issue #4820)."""
+        from .widgets.calibration_dialog import CalibrationDialog
+
+        dlg = CalibrationDialog(self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            res = dlg.result_record
+            if res is not None:
+                self.lbl_subject.setText(
+                    f"Subject: {res.record.subject_id} → {res.saved_path}"
+                )
+
     def _on_save_clicked(self) -> None:
         path, _ = QFileDialog.getSaveFileName(
             self,
@@ -2163,6 +2336,11 @@ class StartingPoseMatcher(QMainWindow):
             # not have this block; ``_apply_session`` treats absence as the
             # empty default.
             "data_sources": self._serialize_data_sources(),
+            # Issue #4767: body_part_viz renderer style.  Pre-v5 sessions
+            # do not carry this block; loaders fall back to "lines".
+            "body_skeleton": serialize_body_skeleton(
+                BodySkeletonBlock(style=self.body_skeleton_style)
+            ),
         }
 
     def _on_save_session_clicked(self) -> None:
@@ -2422,6 +2600,10 @@ class StartingPoseMatcher(QMainWindow):
 
         # Issue #4480: data-sources panel.  Missing block → empty default.
         self._apply_data_sources(d.get("data_sources"))
+
+        # Issue #4767: body-skeleton renderer style.  Missing block on
+        # pre-v5 sessions falls back to the default ("lines").
+        self._apply_body_skeleton_block(d.get("body_skeleton"))
 
         self._redraw()
 
@@ -2924,6 +3106,26 @@ class StartingPoseMatcher(QMainWindow):
         """Restore the data-sources panel from a (possibly missing) block."""
         parsed: DataSourcesBlock = parse_data_sources(block)
         self.source_panel.restore(parsed)
+
+    def _apply_body_skeleton_block(self, block: dict[str, Any] | None) -> None:
+        """Restore the body-skeleton renderer style from session JSON.
+
+        Missing or unrecognised blocks fall back to the default style.
+        Updates the combo widget without firing the change signal so a
+        load does not double-trigger a rebuild.
+        """
+        parsed: BodySkeletonBlock = parse_body_skeleton(block)
+        if parsed.style not in _BODY_SKELETON_STYLES:
+            return
+        self.body_skeleton_style = parsed.style
+        if hasattr(self, "combo_body_skeleton_style"):
+            label = _BODY_SKELETON_STYLE_LABEL_BY_KEY.get(parsed.style)
+            if label is not None:
+                with QSignalBlocker(self.combo_body_skeleton_style):
+                    self.combo_body_skeleton_style.setCurrentText(label)
+        live_view = getattr(self, "_live_view", None)
+        if live_view is not None:
+            live_view.set_body_skeleton_style(parsed.style)
 
 
 # --------------------------------------------------------------------------- #

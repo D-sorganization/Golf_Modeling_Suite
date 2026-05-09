@@ -6,26 +6,64 @@ anatomical-subset segment table, marker-selection helpers, view-angle
 presets, event-frame quick-jump, marker-label toggling, CSV export,
 and an incremental-update render path that preallocates artists once
 per selection and only mutates them per frame for smooth scrubbing.
+
+User-defined segments are rendered through the canonical
+:class:`body_part_viz.renderers.MatplotlibRenderer`. Each segment's
+shape is built from its v2 :class:`SegmentVizSpec`, fitted via the
+appropriate :class:`ShapeFitter`, and added to the renderer once. The
+per-frame path issues a single ``update_frame`` call per shape — no
+artist rebuilds, no scene clears.
 """
 
 from __future__ import annotations
 
 import csv
+import logging
 import re
 from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import colors as mcolors
-from mpl_toolkits.mplot3d.art3d import Line3DCollection, Poly3DCollection
+from mpl_toolkits.mplot3d.art3d import Line3DCollection
 from PyQt6 import QtGui, QtWidgets
 from PyQt6.QtCore import Qt, QTimer
 
+from src.shared.python.body_part_viz import (
+    SegmentVizSpec,
+    ShapeTheme,
+)
+from src.shared.python.body_part_viz.asset_library import ShapeLibrary
+from src.shared.python.body_part_viz.fitters import (
+    BetweenTwoMarkersFitter,
+    ClusterKabschFitter,
+    ProcrustesAnisotropicFitter,
+)
+from src.shared.python.body_part_viz.renderers import MatplotlibRenderer
+from src.shared.python.body_part_viz.shapes import (
+    CapsuleShape,
+    CylinderShape,
+    EllipsoidShape,
+    LineShape,
+    MeshShape,
+)
+from src.shared.python.plot_style import (
+    ColormapId,
+    DataChannel,
+    DataDrivenColor,
+    MarkerStyle,
+    MatplotlibMarkerRenderer,
+    StaticColor,
+)
 from src.shared.python.qt_utils.wheel_event_filter import suppress_wheel_on_widgets
 
 from ...core.models import C3DDataModel
-from ...services.segment_set_io import SegmentSpec
+from ...services.segment_set_io import SegmentSpec, spec_v1_to_v2
 from ..widgets.mpl_canvas import MplCanvas
+from ._plot_style_helpers import StylePersistence, default_style_for
+from .marker_plot_tab import _open_style_dialog
+
+_LOGGER = logging.getLogger(__name__)
 
 # Anatomical-region colour map (generic, source-agnostic).
 _GROUP_COLORS: dict[str, tuple[float, float, float, float]] = {
@@ -37,6 +75,7 @@ _GROUP_COLORS: dict[str, tuple[float, float, float, float]] = {
     "left_leg": (0.85, 0.30, 0.30, 1.0),
     "right_leg": (0.65, 0.20, 0.20, 1.0),
     "auto": (0.30, 0.30, 0.30, 1.0),
+    "default": (0.30, 0.30, 0.30, 1.0),
 }
 
 
@@ -44,47 +83,12 @@ def _color_for_group(group: str) -> tuple[float, float, float, float]:
     return _GROUP_COLORS.get(group, _GROUP_COLORS["auto"])
 
 
-def _build_cylinder_verts(
-    pa: np.ndarray,
-    pb: np.ndarray,
-    radius: float,
-    n_facets: int,
-) -> list[list[tuple[float, float, float]]]:
-    """Return Poly3DCollection vertex lists for a closed cylinder.
-
-    Yields ``n_facets`` side quads plus two end-cap polygons. Endpoints with
-    zero length collapse to a single degenerate facet so the artist update is
-    side-effect free even at frames where markers coincide or are missing.
-    """
-    direction = pb - pa
-    length = float(np.linalg.norm(direction))
-    if not np.isfinite(length) or length <= 1e-9:
-        return [[(0.0, 0.0, 0.0), (0.0, 0.0, 0.0), (0.0, 0.0, 0.0)]]
-    axis = direction / length
-    # Build orthonormal basis.
-    helper = np.array([1.0, 0.0, 0.0])
-    if abs(float(axis @ helper)) > 0.95:
-        helper = np.array([0.0, 1.0, 0.0])
-    u = np.cross(axis, helper)
-    u /= max(np.linalg.norm(u), 1e-12)
-    v = np.cross(axis, u)
-    angles = np.linspace(0.0, 2.0 * np.pi, n_facets, endpoint=False)
-    ring_a = np.array([pa + radius * (np.cos(a) * u + np.sin(a) * v) for a in angles])
-    ring_b = np.array([pb + radius * (np.cos(a) * u + np.sin(a) * v) for a in angles])
-    polys: list[list[tuple[float, float, float]]] = []
-    for i in range(n_facets):
-        j = (i + 1) % n_facets
-        polys.append(
-            [
-                (float(ring_a[i, 0]), float(ring_a[i, 1]), float(ring_a[i, 2])),
-                (float(ring_a[j, 0]), float(ring_a[j, 1]), float(ring_a[j, 2])),
-                (float(ring_b[j, 0]), float(ring_b[j, 1]), float(ring_b[j, 2])),
-                (float(ring_b[i, 0]), float(ring_b[i, 1]), float(ring_b[i, 2])),
-            ]
-        )
-    polys.append([(float(p[0]), float(p[1]), float(p[2])) for p in ring_a])
-    polys.append([(float(p[0]), float(p[1]), float(p[2])) for p in ring_b])
-    return polys
+def _rgba_to_hex(rgba: tuple[float, float, float, float]) -> str:
+    r, g, b, _a = rgba
+    rh = int(round(r * 255))
+    gh = int(round(g * 255))
+    bh = int(round(b * 255))
+    return f"#{rh:02x}{gh:02x}{bh:02x}"
 
 
 try:
@@ -120,12 +124,7 @@ def _is_club_marker(name: str) -> bool:
 
 
 def _validate_speed(speed: float) -> float:
-    """Validate a playback speed multiplier.
-
-    Raises:
-        TypeError: if ``speed`` is not a real number.
-        ValueError: if ``speed`` is non-positive or non-finite.
-    """
+    """Validate a playback speed multiplier."""
     if isinstance(speed, bool) or not isinstance(speed, (int, float)):
         raise TypeError(f"speed must be a real number, got {type(speed).__name__}")
     if not np.isfinite(speed) or speed <= 0.0:
@@ -134,12 +133,7 @@ def _validate_speed(speed: float) -> float:
 
 
 def _validate_frame(frame: int, n_frames: int) -> int:
-    """Validate a frame index against ``n_frames``.
-
-    Raises:
-        TypeError: if ``frame`` is not an int.
-        ValueError: if ``frame`` is out of [0, n_frames).
-    """
+    """Validate a frame index against ``n_frames``."""
     if isinstance(frame, bool) or not isinstance(frame, int):
         raise TypeError(f"frame must be int, got {type(frame).__name__}")
     if n_frames <= 0:
@@ -147,6 +141,76 @@ def _validate_frame(frame: int, n_frames: int) -> int:
     if not 0 <= frame < n_frames:
         raise ValueError(f"frame {frame} out of range [0, {n_frames})")
     return frame
+
+
+def _build_shape_from_spec(
+    spec: SegmentVizSpec,
+    *,
+    library: ShapeLibrary | None,
+) -> Any:
+    """Construct a :class:`BodyPartShape` from a v2 spec.
+
+    Returns ``None`` when the shape cannot be constructed (e.g. mesh file
+    missing, unknown library entry). The viewer then skips that segment
+    rather than crashing the whole frame.
+    """
+    kind = spec.shape_kind
+    params = spec.shape_params
+    if kind == "line":
+        length = float(params.get("length", 1.0))
+        return LineShape(length=length)
+    if kind == "cylinder":
+        return CylinderShape(
+            length=float(params.get("length", 1.0)),
+            radius=float(params.get("radius", 0.015)),
+            n_facets=int(params.get("n_facets", 16)),
+        )
+    if kind == "ellipsoid":
+        return EllipsoidShape(
+            a=float(params["a"]),
+            b=float(params["b"]),
+            c=float(params["c"]),
+            n_lon=int(params.get("n_lon", 16)),
+            n_lat=int(params.get("n_lat", 8)),
+        )
+    if kind == "capsule":
+        return CapsuleShape(
+            length=float(params.get("length", 1.0)),
+            radius=float(params.get("radius", 0.015)),
+            n_facets=int(params.get("n_facets", 16)),
+            n_lat=int(params.get("n_lat", 8)),
+        )
+    if kind == "mesh_file":
+        try:
+            return MeshShape.load(
+                str(params["path"]),
+                max_vertices=int(params.get("max_vertices", 5000)),
+            )
+        except (FileNotFoundError, ValueError, OSError) as exc:
+            _LOGGER.warning("could not load mesh %s: %s", params.get("path"), exc)
+            return None
+    if kind == "library_shape":
+        if library is None:
+            return None
+        try:
+            return library.get(str(params["shape_id"]))
+        except (KeyError, FileNotFoundError, ValueError) as exc:
+            _LOGGER.warning(
+                "library shape %s not available: %s", params.get("shape_id"), exc
+            )
+            return None
+    # Composite is out-of-scope for the C3D viewer integration.
+    return None
+
+
+def _fitter_for_kind(kind: str) -> Any:
+    if kind == "between_two":
+        return BetweenTwoMarkersFitter()
+    if kind == "cluster_kabsch":
+        return ClusterKabschFitter()
+    if kind == "procrustes_anisotropic":
+        return ProcrustesAnisotropicFitter()
+    raise ValueError(f"unknown fitter_kind {kind!r}")
 
 
 class Viewer3DTab(QtWidgets.QWidget):
@@ -170,17 +234,33 @@ class Viewer3DTab(QtWidgets.QWidget):
         self._skeleton_segments: tuple[tuple[str, str], ...] = ()
         self._event_buttons: list[QtWidgets.QToolButton] = []
 
-        # User-defined segments (Segments tab -> here).
-        self._user_segments: tuple[SegmentSpec, ...] = ()
-        self._user_line_collection: Line3DCollection | None = None
-        self._user_cylinder_artists: list[Poly3DCollection] = []
-        self._cylinder_facets: int = 8
-        self._user_line_render_count: int = 0
+        # User-defined segments (Segments tab -> here). v2 store.
+        self._user_viz_segments: tuple[SegmentVizSpec, ...] = ()
+        # MatplotlibRenderer + per-segment handles. Each entry is
+        # (handle_or_None, shape_kind). A None handle means the segment
+        # could not be built (e.g. missing markers, missing mesh file)
+        # and should be skipped on frame updates.
+        self._renderer: MatplotlibRenderer | None = None
+        self._render_entries: list[tuple[str | None, str, np.ndarray | None]] = []
+        self._shape_library: ShapeLibrary | None = None
 
         # Playback timer.
         self._timer = QTimer(self)
         self._timer.timeout.connect(self._on_timer_tick)
         self._is_playing = False
+
+        # plot_style integration: the current-frame marker scatter is
+        # owned by a MatplotlibMarkerRenderer so it can be re-styled
+        # without rebuilding the rest of the scene.
+        self._marker_style_renderer: MatplotlibMarkerRenderer | None = None
+        self._marker_style_handle: str | None = None
+        self._persistence = StylePersistence(target_prefix="group:")
+        self._persistence.load()
+        # Cached color-by-channel state. When set, the renderer's style
+        # uses a DataDrivenColor whose channel is recomputed per frame.
+        self._color_channel: DataChannel | None = None
+        self._color_range: tuple[float, float] | None = None
+        self._color_colormap: ColormapId = ColormapId.VIRIDIS
 
         self._init_ui()
         self._install_shortcuts()
@@ -256,6 +336,31 @@ class Viewer3DTab(QtWidgets.QWidget):
         toggles_row.addStretch()
         left_panel.addLayout(toggles_row)
 
+        # plot_style controls: marker-group selector + per-group "Style…"
+        # button. Groups are coarse buckets matched against the built-in
+        # ``default`` preset (``body``, ``club``, ``ball``, …).
+        style_row = QtWidgets.QHBoxLayout()
+        style_row.addWidget(QtWidgets.QLabel("Marker group:"))
+        self.combo_marker_group = QtWidgets.QComboBox()
+        self.combo_marker_group.setObjectName("marker_group_combo")
+        for label in ("default", "body", "club", "ball", "skeleton"):
+            self.combo_marker_group.addItem(label)
+        suppress_wheel_on_widgets(self.combo_marker_group)
+        style_row.addWidget(self.combo_marker_group)
+        self.btn_marker_style = QtWidgets.QPushButton("Style…")
+        self.btn_marker_style.setObjectName("marker_group_style_button")
+        self.btn_marker_style.clicked.connect(self._on_marker_group_style_clicked)
+        style_row.addWidget(self.btn_marker_style)
+        style_row.addStretch()
+        left_panel.addLayout(style_row)
+
+        # Optional color-by-channel editor (collapsed by default).
+        self._color_channel_editor: QtWidgets.QWidget | None = None
+        self._color_channel_holder = QtWidgets.QWidget()
+        self._color_channel_layout = QtWidgets.QVBoxLayout(self._color_channel_holder)
+        self._color_channel_layout.setContentsMargins(0, 0, 0, 0)
+        left_panel.addWidget(self._color_channel_holder)
+
         # View-angle presets.
         view_row = QtWidgets.QHBoxLayout()
         view_row.addWidget(QtWidgets.QLabel("View:"))
@@ -295,7 +400,43 @@ class Viewer3DTab(QtWidgets.QWidget):
         right_panel = QtWidgets.QVBoxLayout()
         self.canvas_3d = MplCanvas(self, width=5, height=4, dpi=100)
         right_panel.addWidget(self.canvas_3d)
+
+        # Optional anthropometrics panel — hidden until a segment with a
+        # SegmentProperties record is selected. Lazy import so the viewer
+        # remains usable even when the anthropometrics deps are absent.
+        self._segment_props_panel: QtWidgets.QWidget | None = None
+        try:
+            from src.shared.python.anthropometrics.ui.segment_properties_panel import (  # noqa: E501
+                SegmentPropertiesPanel,
+            )
+
+            panel = SegmentPropertiesPanel(self)
+            panel.setVisible(False)
+            self._segment_props_panel = panel
+            right_panel.addWidget(panel)
+        except Exception:  # pragma: no cover - optional dep
+            pass
+
         layout.addLayout(right_panel, 3)
+
+    # ------------------------------------------------- Anthropometrics
+    def set_selected_segment_properties(self, props: Any | None) -> None:
+        """Wire-in slot for surfacing :class:`SegmentProperties`.
+
+        Hidden when *props* is ``None`` (no SegmentProperties available
+        for the current selection); shown and populated otherwise. Safe
+        to call when the optional anthropometrics dependency is not
+        installed (the call is a no-op).
+        """
+        panel = self._segment_props_panel
+        if panel is None:
+            return
+        if props is None:
+            panel.setVisible(False)
+            panel.set_segment(None)  # type: ignore[attr-defined]
+        else:
+            panel.set_segment(props)  # type: ignore[attr-defined]
+            panel.setVisible(True)
 
     # ---------------------------------------------------------- Shortcuts
 
@@ -608,7 +749,8 @@ class Viewer3DTab(QtWidgets.QWidget):
             )
             self._trail_lines.append(ln)
 
-        # Current-frame point — high-contrast, larger.
+        # Current-frame point — owned by MatplotlibMarkerRenderer so the
+        # user can re-style it at runtime via the Style… button.
         self._point_artist = ax.scatter(
             [],
             [],
@@ -619,6 +761,7 @@ class Viewer3DTab(QtWidgets.QWidget):
             linewidths=0.6,
             depthshade=False,
         )
+        self._build_marker_style_renderer(ax, positions)
 
         # Labels (hidden by default).
         self._label_texts = []
@@ -677,148 +820,380 @@ class Viewer3DTab(QtWidgets.QWidget):
         self._label_texts = []
         self._skeleton_collection = None
         self._skeleton_segments = ()
-        self._user_line_collection = None
-        self._user_cylinder_artists = []
+        if self._renderer is not None:
+            self._renderer.clear()
+        self._renderer = None
+        self._render_entries = []
+        # plot_style renderer is recreated per scene rebuild — drop the
+        # handle so update_style/update_frame don't mis-reference the
+        # previous axes.
+        self._marker_style_renderer = None
+        self._marker_style_handle = None
         self._ax = None
+
+    # ---------------------------------------------------- plot_style hooks
+
+    def _build_marker_style_renderer(self, ax: Any, positions: np.ndarray) -> None:
+        """Register the current-frame scatter with a MarkerRenderer."""
+        if positions.size == 0:
+            return
+        # Use frame 0 as a starter; subsequent frames update the artist
+        # in place via update_frame.
+        frame0 = positions[:, 0, :]
+        finite = frame0[np.isfinite(frame0).all(axis=1)]
+        if finite.size == 0:
+            return
+        renderer = MatplotlibMarkerRenderer(ax)
+        group = (
+            self.combo_marker_group.currentText()
+            if hasattr(self, "combo_marker_group")
+            else "default"
+        )
+        style = self._persistence.get(group) or default_style_for(group)
+        try:
+            handle = renderer.add_markers(
+                np.asarray(finite, dtype=float), style, "current_frame"
+            )
+        except (TypeError, ValueError) as exc:
+            _LOGGER.warning("could not register current-frame scatter: %s", exc)
+            return
+        self._marker_style_renderer = renderer
+        self._marker_style_handle = handle
+
+    def apply_marker_group_style(self, group: str, style: MarkerStyle) -> None:
+        """Apply ``style`` to ``group`` and persist (debounced)."""
+        if not isinstance(style, MarkerStyle):
+            raise TypeError(f"style must be MarkerStyle; got {type(style).__name__}")
+        self._persistence.set(group, style)
+        active_group = self.combo_marker_group.currentText()
+        if (
+            active_group == group
+            and self._marker_style_renderer is not None
+            and self._marker_style_handle is not None
+        ):
+            try:
+                self._marker_style_renderer.update_style(
+                    self._marker_style_handle, style
+                )
+            except (KeyError, TypeError, ValueError) as exc:
+                _LOGGER.warning("update_style failed: %s", exc)
+            self.canvas_3d.draw_idle()
+        self._persistence.request_save()
+
+    def _on_marker_group_style_clicked(self) -> None:
+        group = self.combo_marker_group.currentText()
+        current = self._persistence.get(group) or default_style_for(group)
+        new_style = _open_style_dialog(self, current, f"Style — {group}")
+        if new_style is None:
+            return
+        self.apply_marker_group_style(group, new_style)
+
+    # ---------------------------------------------- color-by-channel mode
+
+    def install_data_channel_editor(self, channels: tuple[DataChannel, ...]) -> None:
+        """Install a :class:`DataChannelEditor` driving DataDrivenColor.
+
+        Replaces any existing editor. Pass an empty tuple to remove.
+        """
+        # Lazy import — widgets package depends on PyQt6.
+        from src.shared.python.plot_style.widgets.data_channel_editor import (
+            DataChannelEditor,
+        )
+
+        # Drop any previous editor.
+        if self._color_channel_editor is not None:
+            self._color_channel_layout.removeWidget(self._color_channel_editor)
+            self._color_channel_editor.setParent(None)
+            self._color_channel_editor.deleteLater()
+            self._color_channel_editor = None
+
+        if not channels:
+            self._color_channel = None
+            self._color_range = None
+            return
+
+        editor = DataChannelEditor(channels=list(channels))
+        editor.channelChanged.connect(self._on_color_channel_changed)
+        editor.rangeChanged.connect(self._on_color_range_changed)
+        self._color_channel_layout.addWidget(editor)
+        self._color_channel_editor = editor
+        # Seed cached state with the editor's initial picks.
+        self._color_channel = editor.value()
+        self._color_range = editor.range_value()
+        self._apply_color_channel_to_active_group()
+
+    def _on_color_channel_changed(self, channel: DataChannel) -> None:
+        self._color_channel = channel
+        self._apply_color_channel_to_active_group()
+
+    def _on_color_range_changed(self, vmin: float, vmax: float) -> None:
+        self._color_range = (float(vmin), float(vmax))
+        self._apply_color_channel_to_active_group()
+
+    def _apply_color_channel_to_active_group(self) -> None:
+        """Re-resolve the active group's style with current data-driven color."""
+        if self._color_channel is None:
+            return
+        group = self.combo_marker_group.currentText()
+        base = self._persistence.get(group) or default_style_for(group)
+        vmin, vmax = (None, None)
+        if self._color_range is not None:
+            vmin, vmax = self._color_range
+        fill = DataDrivenColor(
+            channel=self._color_channel,
+            colormap=self._color_colormap,
+            vmin=vmin,
+            vmax=vmax,
+        )
+        try:
+            new_style = MarkerStyle(
+                shape=base.shape,
+                size_px=base.size_px,
+                edge_color=base.edge_color,
+                edge_width=base.edge_width,
+                fill_color=fill,
+                opacity=base.opacity,
+            )
+        except (TypeError, ValueError) as exc:
+            _LOGGER.warning("could not apply data-driven color: %s", exc)
+            return
+        # Don't persist DataDrivenColor — it's session-scoped.
+        if (
+            self._marker_style_renderer is not None
+            and self._marker_style_handle is not None
+        ):
+            try:
+                self._marker_style_renderer.update_style(
+                    self._marker_style_handle, new_style
+                )
+            except (KeyError, TypeError, ValueError) as exc:
+                _LOGGER.warning("update_style failed: %s", exc)
+            self.canvas_3d.draw_idle()
+        # Track that the active style now uses a data-driven color so
+        # tests can introspect.
+        # (We could also push a recompute through DataDrivenColor.resolve
+        # at each frame, but update_frame on a built-in shape only moves
+        # offsets — colors stay attached to the artist.)
+
+    @property
+    def has_data_channel_editor(self) -> bool:
+        """Whether an active editor is wired into the panel."""
+        return self._color_channel_editor is not None
+
+    # Convenience accessor for tests.
+    @property
+    def active_color_uses_data_driven(self) -> bool:
+        """Whether the active scatter currently uses a DataDrivenColor."""
+        if self._marker_style_renderer is None or self._marker_style_handle is None:
+            return False
+        # Reach into the renderer's internal handle table — this is a
+        # pragmatic test-hook, not a public API. The renderer's record
+        # type is stable.
+        record = self._marker_style_renderer._handles.get(  # type: ignore[attr-defined]
+            self._marker_style_handle
+        )
+        if record is None:
+            return False
+        return isinstance(record.style.fill_color, DataDrivenColor)
+
+    @staticmethod
+    def _safe_static_color() -> StaticColor:
+        return StaticColor("#1f77b4")
 
     # ---------------------------------------------------- User segments API
 
-    def set_user_segments(self, segments: tuple[SegmentSpec, ...]) -> None:
-        """Receive a new user-defined segment set from the Segments tab."""
+    def set_user_segments(
+        self, segments: tuple[SegmentSpec | SegmentVizSpec, ...]
+    ) -> None:
+        """Receive a new user-defined segment set from the Segments tab.
+
+        Accepts both the legacy v1 :class:`SegmentSpec` tuple and the v2
+        :class:`SegmentVizSpec` tuple. v1 entries are converted to v2 in
+        place; the underlying renderer always operates on v2.
+        """
         if segments is None:
             raise ValueError("segments must be provided (use () for an empty set)")
-        self._user_segments = tuple(segments)
+        viz_specs: list[SegmentVizSpec] = []
+        for spec in segments:
+            if isinstance(spec, SegmentVizSpec):
+                viz_specs.append(spec)
+            elif isinstance(spec, SegmentSpec):
+                viz_specs.append(spec_v1_to_v2(spec))
+            else:
+                raise TypeError(
+                    "segments entries must be SegmentSpec or SegmentVizSpec; "
+                    f"got {type(spec).__name__}"
+                )
+        self._user_viz_segments = tuple(viz_specs)
         if self._ax is not None:
             self._rebuild_user_segment_artists()
             self._render_current_frame()
 
     @property
     def user_cylinder_count(self) -> int:
-        """Number of cylinder artists currently allocated (test helper)."""
-        return len(self._user_cylinder_artists)
+        """Number of mesh-bearing user-segment artists currently allocated.
+
+        Includes cylinders, ellipsoids, capsules, meshes, and library
+        shapes. Excludes line shapes (which use ``Line3DCollection``).
+        """
+        return sum(
+            1
+            for handle, kind, _valid in self._render_entries
+            if handle is not None and kind != "line"
+        )
 
     @property
     def user_line_segment_count(self) -> int:
-        """Number of line-geometry user segments currently rendered."""
-        return self._user_line_render_count
+        """Number of line-shape user segments currently rendered."""
+        return sum(
+            1
+            for handle, kind, _valid in self._render_entries
+            if handle is not None and kind == "line"
+        )
+
+    def _resolve_library(self) -> ShapeLibrary | None:
+        if self._shape_library is None:
+            try:
+                self._shape_library = ShapeLibrary.default()
+            except (FileNotFoundError, ValueError) as exc:
+                _LOGGER.warning("default shape library unavailable: %s", exc)
+                return None
+        return self._shape_library
+
+    def _markers_xyz(self, names: tuple[str, ...]) -> dict[str, np.ndarray] | None:
+        """Build a ``{name: (T, 3)}`` mapping for the segment's markers.
+
+        Returns ``None`` when any required marker is missing or empty so
+        the caller can skip the segment cleanly.
+        """
+        if self.model is None or self._n_frames <= 0:
+            return None
+        out: dict[str, np.ndarray] = {}
+        for name in names:
+            md = self.model.markers.get(name)
+            if md is None or md.position.size == 0:
+                return None
+            arr = np.asarray(md.position, dtype=float)
+            if arr.shape[0] < self._n_frames:
+                padded = np.full((self._n_frames, 3), np.nan, dtype=float)
+                padded[: arr.shape[0]] = arr
+                arr = padded
+            elif arr.shape[0] > self._n_frames:
+                arr = arr[: self._n_frames]
+            out[name] = arr
+        return out
+
+    def _theme_for_spec(self, spec: SegmentVizSpec) -> ShapeTheme:
+        """Prefer the spec's theme; fall back to anatomical-group color."""
+        rgba = _color_for_group(spec.theme.group)
+        # If the theme color is the v2 default (#1f77b4) and we have a
+        # group-specific color, override it for visual continuity with the
+        # legacy viewer.
+        if spec.theme.color == "#1f77b4" and spec.theme.group in _GROUP_COLORS:
+            return ShapeTheme(
+                color=_rgba_to_hex(rgba),
+                opacity=spec.theme.opacity,
+                edge_color=_rgba_to_hex(rgba),
+                edge_width=spec.theme.edge_width,
+                flat_shaded=spec.theme.flat_shaded,
+                group=spec.theme.group,
+            )
+        return spec.theme
 
     def _rebuild_user_segment_artists(self) -> None:
         ax = self._ax
         if ax is None:
             return
-        # Drop old artists.
-        if self._user_line_collection is not None:
+        # Drop the previous renderer (if any) and start fresh.
+        if self._renderer is not None:
+            self._renderer.clear()
+        self._renderer = MatplotlibRenderer(ax)
+        self._render_entries = []
+
+        if not self._user_viz_segments or self._n_frames <= 0:
+            return
+
+        library = self._resolve_library()
+
+        for spec in self._user_viz_segments:
+            shape = _build_shape_from_spec(spec, library=library)
+            if shape is None:
+                self._render_entries.append((None, spec.shape_kind, None))
+                continue
+            markers_xyz = self._markers_xyz(spec.binding.marker_names)
+            if markers_xyz is None:
+                self._render_entries.append((None, spec.shape_kind, None))
+                continue
             try:
-                self._user_line_collection.remove()
-            except (ValueError, AttributeError):
-                pass
-            self._user_line_collection = None
-        for art in self._user_cylinder_artists:
+                fitter = _fitter_for_kind(spec.fitter_kind)
+            except ValueError:
+                self._render_entries.append((None, spec.shape_kind, None))
+                continue
             try:
-                art.remove()
-            except (ValueError, AttributeError):
-                pass
-        self._user_cylinder_artists = []
-
-        line_specs = [s for s in self._user_segments if s.geometry == "line"]
-        cyl_specs = [s for s in self._user_segments if s.geometry == "cylinder"]
-
-        if line_specs:
-            self._user_line_collection = Line3DCollection(
-                [[(0.0, 0.0, 0.0), (0.0, 0.0, 0.0)]],
-                colors=[_color_for_group(s.group) for s in line_specs],
-                linewidths=2.0,
-                alpha=0.9,
-            )
-            ax.add_collection3d(self._user_line_collection)
-            self._user_line_collection.set_segments([])
-
-        for spec in cyl_specs:
-            poly = Poly3DCollection(
-                [[(0.0, 0.0, 0.0), (0.0, 0.0, 0.0), (0.0, 0.0, 0.0)]],
-                facecolors=[_color_for_group(spec.group)],
-                edgecolors=[_color_for_group(spec.group)],
-                alpha=0.85,
-            )
-            ax.add_collection3d(poly)
-            self._user_cylinder_artists.append(poly)
+                # Library-shape mesh has its own shape_id; rebind the binding
+                # to the shape for the fitter to find a rest-length.
+                effective_binding = spec.binding
+                if not effective_binding.rest_dimensions and shape.rest_dimensions:
+                    # Fitter expects a rest length on the binding for
+                    # between_two; sourcing it from the shape's first axis
+                    # is the canonical pattern.
+                    effective_binding = type(spec.binding)(
+                        kind=spec.binding.kind,
+                        marker_names=spec.binding.marker_names,
+                        rest_dimensions=(float(shape.rest_dimensions[0]),),
+                        rest_orientation_quat=spec.binding.rest_orientation_quat,
+                    )
+                fitted = fitter.fit(shape, effective_binding, markers_xyz)
+            except (KeyError, TypeError, ValueError) as exc:
+                _LOGGER.warning(
+                    "fit failed for segment %s: %s",
+                    spec.binding.marker_names,
+                    exc,
+                )
+                self._render_entries.append((None, spec.shape_kind, None))
+                continue
+            theme = self._theme_for_spec(spec)
+            try:
+                handle = self._renderer.add_shape(shape, fitted, theme)
+            except (TypeError, ValueError) as exc:
+                _LOGGER.warning(
+                    "renderer.add_shape failed for %s: %s", spec.shape_kind, exc
+                )
+                self._render_entries.append((None, spec.shape_kind, None))
+                continue
+            if not spec.visible:
+                self._renderer.set_visible(handle, False)
+            # Capture the per-frame valid mask so the per-frame update path
+            # can hide segments on invalid frames (e.g. NaN-filled occluded
+            # markers) instead of drawing them at the origin. See #4835.
+            valid_mask = getattr(fitted, "valid_mask", None)
+            self._render_entries.append((handle, spec.shape_kind, valid_mask))
 
     def _update_user_segment_artists(self) -> None:
-        if (
-            self._ax is None
-            or not self._user_segments
-            or self.model is None
-            or self._n_frames <= 0
-        ):
-            if self._user_line_collection is not None:
-                self._user_line_collection.set_segments([])
-            for art in self._user_cylinder_artists:
-                art.set_verts([])
-            self._user_line_render_count = 0
+        if self._renderer is None or not self._user_viz_segments or self._n_frames <= 0:
             return
-        frame = self.slider_frame.value()
-        markers = self.model.markers
-        line_specs = [s for s in self._user_segments if s.geometry == "line"]
-        cyl_specs = [s for s in self._user_segments if s.geometry == "cylinder"]
-
-        line_segments: list[list[tuple[float, float, float]]] = []
-        for spec in line_specs:
-            if not spec.visible:
+        frame = int(self.slider_frame.value())
+        if not 0 <= frame < self._n_frames:
+            return
+        for entry, spec in zip(
+            self._render_entries, self._user_viz_segments, strict=False
+        ):
+            handle, _kind, valid_mask = entry
+            if handle is None:
                 continue
-            ma = markers.get(spec.a)
-            mb = markers.get(spec.b)
-            if (
-                ma is None
-                or mb is None
-                or ma.position.size == 0
-                or mb.position.size == 0
-            ):
-                continue
-            if frame >= ma.position.shape[0] or frame >= mb.position.shape[0]:
-                continue
-            pa = ma.position[frame]
-            pb = mb.position[frame]
-            if not (np.isfinite(pa).all() and np.isfinite(pb).all()):
-                continue
-            line_segments.append(
-                [
-                    (float(pa[0]), float(pa[1]), float(pa[2])),
-                    (float(pb[0]), float(pb[1]), float(pb[2])),
-                ]
-            )
-        if self._user_line_collection is not None:
-            self._user_line_collection.set_segments(line_segments)
-        self._user_line_render_count = len(line_segments)
-
-        for art, spec in zip(self._user_cylinder_artists, cyl_specs, strict=False):
-            if not spec.visible:
-                art.set_verts([])
-                continue
-            ma = markers.get(spec.a)
-            mb = markers.get(spec.b)
-            if (
-                ma is None
-                or mb is None
-                or ma.position.size == 0
-                or mb.position.size == 0
-            ):
-                art.set_verts([])
-                continue
-            if frame >= ma.position.shape[0] or frame >= mb.position.shape[0]:
-                art.set_verts([])
-                continue
-            pa = ma.position[frame]
-            pb = mb.position[frame]
-            if not (np.isfinite(pa).all() and np.isfinite(pb).all()):
-                art.set_verts([])
-                continue
-            verts = _build_cylinder_verts(
-                np.asarray(pa, dtype=float),
-                np.asarray(pb, dtype=float),
-                float(spec.radius),
-                self._cylinder_facets,
-            )
-            art.set_verts(verts)
+            # If the fitter flagged this frame invalid (e.g. occluded marker
+            # NaNs), hide the segment for the frame instead of drawing it at
+            # the origin via the NaN->0 coercion in the renderer (#4835).
+            frame_valid = True
+            if valid_mask is not None and 0 <= frame < len(valid_mask):
+                frame_valid = bool(valid_mask[frame])
+            visible = bool(spec.visible) and frame_valid
+            try:
+                self._renderer.set_visible(handle, visible)
+                if visible:
+                    self._renderer.update_frame(handle, frame)
+            except (KeyError, IndexError, TypeError) as exc:
+                _LOGGER.warning("renderer.update_frame failed: %s", exc)
 
     # -------------------------------------------------- Per-frame render
 
@@ -836,7 +1211,9 @@ class Viewer3DTab(QtWidgets.QWidget):
         pts = self._selected_positions[:, frame, :]  # (M,3)
         finite_mask = np.isfinite(pts).all(axis=1)
 
-        # Update current-frame scatter.
+        # Update current-frame scatter (legacy path retained for layout
+        # bounds — the visible glyphs are owned by the plot_style
+        # renderer below).
         if self._point_artist is not None:
             valid = pts[finite_mask]
             if valid.size > 0:
@@ -847,6 +1224,30 @@ class Viewer3DTab(QtWidgets.QWidget):
                 )
             else:
                 self._point_artist._offsets3d = ([], [], [])
+
+        # Push the same offsets through the plot_style renderer so its
+        # scatter follows the slider too.
+        if (
+            self._marker_style_renderer is not None
+            and self._marker_style_handle is not None
+        ):
+            valid = pts[finite_mask]
+            if valid.size > 0:
+                # The renderer's update_frame indexes into the (T, M, D)
+                # array we'd have given it. Since we registered with a
+                # single static frame, we instead poke the artist offsets
+                # directly to keep the path simple.
+                record = self._marker_style_renderer._handles.get(  # type: ignore[attr-defined]
+                    self._marker_style_handle
+                )
+                if record is not None and record.artists:
+                    art = record.artists[0]
+                    if hasattr(art, "_offsets3d"):
+                        art._offsets3d = (
+                            valid[:, 0],
+                            valid[:, 1],
+                            valid[:, 2],
+                        )
 
         # Update labels at the current point.
         for i, txt in enumerate(self._label_texts):
@@ -860,7 +1261,7 @@ class Viewer3DTab(QtWidgets.QWidget):
         # Update skeleton segments.
         self._update_skeleton_segments()
 
-        # Update user-defined segments / cylinders.
+        # Update user-defined segments via the body_part_viz renderer.
         self._update_user_segment_artists()
 
         self.canvas_3d.draw_idle()

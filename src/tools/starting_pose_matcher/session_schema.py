@@ -1,6 +1,6 @@
 """Session JSON schema for the starting-pose matcher.
 
-This module owns two blocks of the session JSON document written by
+This module owns four blocks of the session JSON document written by
 :mod:`src.tools.starting_pose_matcher.gui`:
 
 * The ``playback`` block (issue #4482) — animated full-trajectory marker
@@ -8,10 +8,17 @@ This module owns two blocks of the session JSON document written by
 * The ``data_sources`` block (issue #4480) — captures which target sources
   (club, club+ball, body) the user toggled on, the file each was loaded
   from, and the shared ``AlignOptions`` used to resample.
+* The ``body_skeleton`` block (issue #4767) — captures which renderer the
+  body skeleton uses ("lines" or "library_shapes") so the choice survives
+  a save/load round-trip.
+* The ``plot_styles`` block (issue #4808) — captures the user-customised
+  :class:`MarkerStyle` for body markers and (optionally) club markers
+  used by the live-view controller.
 
-The schema is at version 4. Older sessions (v3 or earlier) still load:
-loaders treat a missing ``playback`` or ``data_sources`` block as an empty
-default, and partial blocks fall back to the per-key defaults defined here.
+The schema is at version 6. Older sessions still load: loaders treat a
+missing ``playback``, ``data_sources``, ``body_skeleton``, or
+``plot_styles`` block as an empty default, and partial blocks fall back
+to the per-key defaults defined here.
 
 Public API:
     SESSION_SCHEMA_VERSION
@@ -21,6 +28,17 @@ Public API:
     default_data_sources    -- empty default for legacy sessions
     serialize_data_sources  -- dataclass -> dict
     parse_data_sources      -- dict -> dataclass (forward-compatible)
+    BodySkeletonBlock       -- frozen dataclass for the body-skeleton block
+    BodySkeletonStyleLiteral
+    BODY_SKELETON_STYLES
+    DEFAULT_BODY_SKELETON_STYLE
+    default_body_skeleton   -- empty default for pre-v5 sessions
+    serialize_body_skeleton -- dataclass -> dict
+    parse_body_skeleton     -- dict -> dataclass (forward-compatible)
+    PlotStylesBlock         -- frozen dataclass for the plot-styles block
+    default_plot_styles     -- empty default for pre-v6 sessions
+    serialize_plot_styles   -- dataclass -> dict
+    parse_plot_styles       -- dict -> dataclass (forward-compatible)
 """
 
 from __future__ import annotations
@@ -29,8 +47,9 @@ from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field
 from typing import Any, Literal
 
-# v4 adds the ``data_sources`` block. v3 sessions are still loadable.
-SESSION_SCHEMA_VERSION: int = 4
+# v6 adds the ``plot_styles`` block. Pre-v6 sessions remain loadable
+# because the loader treats a missing block as the matcher defaults.
+SESSION_SCHEMA_VERSION: int = 6
 
 # Allowed playback-speed multipliers exposed by the speed combo box.
 ALLOWED_SPEEDS: tuple[float, ...] = (0.1, 0.25, 0.5, 1.0, 2.0, 4.0)
@@ -50,6 +69,17 @@ DEFAULT_BODY_MARKER_SET: str = "Anatomical 28"
 # Time-alignment radio.  Mirrors ``AlignOptions.time_alignment`` literals.
 TimeAlignmentLiteral = Literal["impact", "address"]
 DEFAULT_TIME_ALIGNMENT: TimeAlignmentLiteral = "impact"
+
+# Body skeleton renderer style (issue #4767).
+#   "lines"          — the legacy ``BodySkeletonLayer`` line-segments view.
+#   "library_shapes" — body_part_viz ``ShapeLibrary`` meshes (head, torso,
+#                      upper_arm, ...) bound by Plug-in-Gait marker pairs.
+BodySkeletonStyleLiteral = Literal["lines", "library_shapes"]
+BODY_SKELETON_STYLES: tuple[BodySkeletonStyleLiteral, ...] = (
+    "lines",
+    "library_shapes",
+)
+DEFAULT_BODY_SKELETON_STYLE: BodySkeletonStyleLiteral = "lines"
 
 
 @dataclass
@@ -195,19 +225,124 @@ def parse_data_sources(d: dict[str, Any] | None) -> DataSourcesBlock:
     return DataSourcesBlock(club=club, body=body, align=align)
 
 
+@dataclass(frozen=True)
+class BodySkeletonBlock:
+    """The ``body_skeleton`` section of session JSON (v5+).
+
+    Captures which renderer style the body skeleton uses. New in v5;
+    older sessions parse with the default style ("lines").
+    """
+
+    style: BodySkeletonStyleLiteral = DEFAULT_BODY_SKELETON_STYLE
+
+
+def default_body_skeleton() -> BodySkeletonBlock:
+    """Return the empty default used when loading a pre-v5 session."""
+    return BodySkeletonBlock()
+
+
+def serialize_body_skeleton(block: BodySkeletonBlock) -> dict[str, Any]:
+    """Convert a :class:`BodySkeletonBlock` to a JSON-serialisable dict."""
+    return asdict(block)
+
+
+def _coerce_body_skeleton_style(value: Any) -> BodySkeletonStyleLiteral:
+    s = str(value) if value is not None else DEFAULT_BODY_SKELETON_STYLE
+    if s in BODY_SKELETON_STYLES:
+        return s  # type: ignore[return-value]
+    return DEFAULT_BODY_SKELETON_STYLE
+
+
+def parse_body_skeleton(d: dict[str, Any] | None) -> BodySkeletonBlock:
+    """Forward-compatible decode of the ``body_skeleton`` block.
+
+    Missing keys take their default value; unknown keys are ignored. A
+    ``None`` or empty-dict input returns :func:`default_body_skeleton`.
+    """
+    if not d:
+        return default_body_skeleton()
+    return BodySkeletonBlock(style=_coerce_body_skeleton_style(d.get("style")))
+
+
+# ---------------------------------------------------------------------------
+# Plot styles block (v6) — issue #4808
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class PlotStylesBlock:
+    """The ``plot_styles`` section of session JSON (v6+).
+
+    Holds two raw JSON-ready :class:`MarkerStyle` payloads — one for the
+    live view's body markers and one for the club markers. The session
+    schema deliberately stores raw dicts (not :class:`MarkerStyle`
+    instances) so the schema module remains free of any matplotlib /
+    plot_style imports. Conversion happens in the live-view controller
+    via :func:`materialise_plot_styles`.
+
+    ``None`` for either field means "use the controller default" (the
+    controller falls back to a built-in preset entry); this keeps a
+    pre-v6 round-trip intact.
+    """
+
+    body: dict[str, Any] | None = None
+    club: dict[str, Any] | None = None
+
+
+def default_plot_styles() -> PlotStylesBlock:
+    """Return the empty default used when loading a pre-v6 session."""
+    return PlotStylesBlock()
+
+
+def serialize_plot_styles(block: PlotStylesBlock) -> dict[str, Any]:
+    """Convert a :class:`PlotStylesBlock` to a JSON-serialisable dict.
+
+    ``None`` entries are written as JSON ``null`` so that the load path
+    can faithfully detect "use controller default".
+    """
+    return {"body": block.body, "club": block.club}
+
+
+def parse_plot_styles(d: dict[str, Any] | None) -> PlotStylesBlock:
+    """Forward-compatible decode of the ``plot_styles`` block.
+
+    Missing keys take ``None`` (i.e. controller default). Unknown keys
+    are ignored. A ``None`` or empty-dict input returns
+    :func:`default_plot_styles`.
+    """
+    if not d:
+        return default_plot_styles()
+    body_raw = d.get("body")
+    club_raw = d.get("club")
+    body = dict(body_raw) if isinstance(body_raw, Mapping) else None
+    club = dict(club_raw) if isinstance(club_raw, Mapping) else None
+    return PlotStylesBlock(body=body, club=club)
+
+
 __all__ = [
     "ALLOWED_SPEEDS",
+    "BODY_SKELETON_STYLES",
     "DEFAULT_BODY_MARKER_SET",
     "DEFAULT_BODY_MARKER_SETS",
+    "DEFAULT_BODY_SKELETON_STYLE",
     "DEFAULT_TIME_ALIGNMENT",
     "DEFAULT_TRAIL_FRAMES",
     "SESSION_SCHEMA_VERSION",
     "AlignOptionsBlock",
+    "BodySkeletonBlock",
+    "BodySkeletonStyleLiteral",
     "BodySourceBlock",
     "ClubSourceBlock",
     "DataSourcesBlock",
     "PlaybackState",
+    "PlotStylesBlock",
+    "default_body_skeleton",
     "default_data_sources",
+    "default_plot_styles",
+    "parse_body_skeleton",
     "parse_data_sources",
+    "parse_plot_styles",
+    "serialize_body_skeleton",
     "serialize_data_sources",
+    "serialize_plot_styles",
 ]

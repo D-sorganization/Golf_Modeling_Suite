@@ -1,14 +1,22 @@
-"""Body-part shapes (primitives, mesh, composite).
+"""Shape implementations sub-package.
 
-Concrete implementations land in:
-
-- #4759 — primitives (Line, Cylinder, Ellipsoid, Capsule, Composite)
-- #4758 — :class:`MeshShape` with STL/OBJ/PLY/GLB loaders via trimesh
-
-This module is currently a placeholder so callers can write
-``from body_part_viz.shapes import ...`` once implementations land.
+Concrete :class:`~body_part_viz.contracts.BodyPartShape` implementations.
 """
 
 from __future__ import annotations
 
-__all__: list[str] = []
+from .capsule_shape import CapsuleShape
+from .composite_shape import CompositeShape
+from .cylinder_shape import CylinderShape
+from .ellipsoid_shape import EllipsoidShape
+from .line_shape import LineShape
+from .mesh_shape import MeshShape
+
+__all__ = [
+    "CapsuleShape",
+    "CompositeShape",
+    "CylinderShape",
+    "EllipsoidShape",
+    "LineShape",
+    "MeshShape",
+]

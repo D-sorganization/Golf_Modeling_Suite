@@ -99,6 +99,98 @@ the modules most often missed.
     plot_cartesian_delta_summary, summarize_for_pr_comment}` —
     input-MAT requested-vs-resolved diagnostics.
 
+### Body-part visualisation toolkit
+`src/shared/python/body_part_viz/`
+- `body_part_viz` package with shapes / fitters / renderers / asset
+  library — the **canonical shape stack** for any tool that draws body
+  segments.  See [ADR 0008](docs/adr/0008-body-part-viz-toolkit.md).
+- `BodyPartShape`, `ShapeFitter`, `ShapeRenderer` — runtime-checkable
+  Protocols.  Implementations live under `shapes/`, `fitters/`,
+  `renderers/`.
+- `MatplotlibRenderer` — **canonical 3D renderer for any new tool that
+  needs marker / mesh rendering.**  A `PyQtGLRenderer` ships alongside
+  for tools that need GPU-rate redraws; both implement the same
+  `ShapeRenderer` Protocol.
+- `default_body_segments` (in `motion_matching/`) — canonical full-body
+  segment label set; pair with this toolkit to drive segment lists in
+  the C3D Viewer, the matcher, and the URDF generator.
+- `SegmentVizSet` / `SegmentVizSpec` — JSON v2 persistence with
+  auto-migration from the legacy v1 `SegmentSet`.
+- `ShapeLibrary` — bundled mesh resolver under
+  `assets/body_part_shapes/default/`; named shapes (head, torso,
+  upper_arm, …) are available from a fresh install.
+- `urdf_bridge.shape_to_urdf_visual` — re-use the same shape vocabulary
+  as URDF visual elements; a custom mesh imported in the C3D Viewer is
+  re-usable as a URDF visual link without re-modelling.
+- See `docs/user_guide/body_part_viz/` for end-user workflow guides
+  and `docs/api/body_part_viz.md` for the full API surface.
+
+### Anthropometrics
+`src/shared/python/anthropometrics/`
+- `SegmentProperties`, `SubjectAnthropometrics` — frozen, DbC-validated
+  canonical records (mass, length, CoM, 3 × 3 inertia in SI units).
+- `Estimator`, `Reader`, `Writer`, `EngineAdapter` —
+  `@runtime_checkable` Protocols in `contracts.py`.
+- `estimators.from_de_leva.DeLevaEstimator` (default),
+  `from_dempster.DempsterEstimator`, `from_zatsiorsky.ZatsiorskyEstimator`
+  — three regression estimators implementing the `Estimator` Protocol.
+- `pipeline.run_pipeline()` — single public entry point: C3D →
+  `SubjectAnthropometrics` → URDF / MJCF / `.osim` exports +
+  `subject.json` + deterministic `report.html`.
+- `engine_adapters.ADAPTER_REGISTRY` — map of `engine_name` to the
+  paired export/import adapter (`drake`, `pinocchio`, `myosuite`,
+  `opensim`, `simscape`).
+- `ui.calibration_dialog.SubjectCalibrationDialog` and
+  `ui.segment_properties_panel.SegmentPropertiesPanel` — Qt UI
+  surface; thin wrappers over `run_pipeline()`.
+- See [ADR 0009](docs/adr/0009-anthropometrics-pipeline.md) (canonical
+  record + Protocols) and
+  [ADR 0010](docs/adr/0010-anthropometrics-pipeline.md) (pipeline
+  orchestrator + cross-engine bridge).
+- User guides:
+  [`docs/user_guide/anthropometrics/quickstart.md`](docs/user_guide/anthropometrics/quickstart.md),
+  [`docs/user_guide/anthropometrics/cross_engine.md`](docs/user_guide/anthropometrics/cross_engine.md),
+  and the consolidated
+  [`docs/user_guide/anthropometrics.md`](docs/user_guide/anthropometrics.md).
+
+### Plot Style Toolkit
+`src/shared/python/plot_style/`
+- Canonical marker-styling stack for every tool that draws markers
+  (C3D Viewer, starting-pose matcher, cross-engine dashboard).  See
+  [ADR 0011](docs/adr/0011-plot-style-toolkit.md).
+- `MarkerStyle`, `MarkerShape`, `CustomMeshSpec` — frozen dataclasses
+  describing every visual property of a marker except its position.
+- `StaticColor`, `PaletteColor`, `DataDrivenColor` — three
+  `ColorScale` variants. `MarkerStyle.fill_color` accepts any of them;
+  data-driven colouring (by clubhead speed, force magnitude, per-frame
+  error, ...) is a first-class feature.
+- `MarkerRenderer`, `MarkerShapeRenderer`, `ColorResolver` — three
+  runtime-checkable Protocols.  Implementations live under
+  `renderers/`, `shapes/`, `resolvers/`.
+- `MatplotlibMarkerRenderer` — **canonical 2D / 3D marker renderer for
+  any new tool that needs marker rendering.**  A `PyQtGLMarkerRenderer`
+  ships alongside for tools that need GPU-rate redraws; both implement
+  the same `MarkerRenderer` Protocol.
+- `COLORMAP_REGISTRY` (via `get_colormap` / `register_custom_colormap`),
+  `SHAPE_REGISTRY`, `RESOLVER_REGISTRY` — dispatch tables that go from
+  enum / dataclass to renderer-ready object without isinstance ladders.
+- `PresetLibrary.default()` — four curated themes (`default`,
+  `scientific_violet`, `monochrome`, `high_contrast`) in
+  `BUILTIN_PRESET_NAMES`.  JSON v1 round-trip via `PlotStyleSet.save` /
+  `PlotStyleSet.load`.
+- `MarkerStylePicker`, `ColorPicker`, `ColormapPicker`,
+  `DataChannelEditor` — PyQt6 widget surface (lazy import — headless
+  consumers can still `import plot_style`).
+- See `docs/user_guide/plot_style/` for end-user workflow guides:
+  - [`quickstart.md`](docs/user_guide/plot_style/quickstart.md) —
+    pick a marker shape + color, load a preset, apply to a renderer.
+  - [`data_driven_coloring.md`](docs/user_guide/plot_style/data_driven_coloring.md) —
+    color markers by clubhead speed / force / error; bulk path for
+    animation playback.
+  - [`colormap_author_guide.md`](docs/user_guide/plot_style/colormap_author_guide.md) —
+    register custom colormaps and palettes, naming conventions,
+    perceptually-uniform recommendations.
+
 ### Pose editor (interactive joint-angle UI)
 `src/shared/python/pose_editor/`
 - `core.{JointType, JointInfo, PoseEditorState}` — joint metadata

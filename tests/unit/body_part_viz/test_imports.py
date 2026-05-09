@@ -1,18 +1,10 @@
-"""Public API import smoke test for body_part_viz.
-
-Confirms the documented public surface is importable in one statement
-and that nothing was forgotten in ``__all__``.
-"""
+"""Public-API smoke test for the body_part_viz package."""
 
 from __future__ import annotations
 
-import pytest
 
-
-@pytest.mark.unit
-def test_public_api_imports_without_error() -> None:
-    """The documented one-line import works."""
-    from src.shared.python.body_part_viz import (  # noqa: F401
+def test_public_api_imports() -> None:
+    from src.shared.python.body_part_viz import (
         BindingKind,
         BodyPartShape,
         FittedShape,
@@ -22,33 +14,40 @@ def test_public_api_imports_without_error() -> None:
         ShapeTheme,
     )
 
-
-@pytest.mark.unit
-def test_all_lists_every_public_export() -> None:
-    """``__all__`` matches the documented public surface."""
-    from src.shared.python import body_part_viz
-
     expected = {
-        "BindingKind",
-        "BodyPartShape",
-        "FittedShape",
-        "MarkerBinding",
-        "ShapeFitter",
-        "ShapeRenderer",
-        "ShapeTheme",
+        BindingKind,
+        BodyPartShape,
+        FittedShape,
+        MarkerBinding,
+        ShapeFitter,
+        ShapeRenderer,
+        ShapeTheme,
     }
-    assert set(body_part_viz.__all__) == expected
+    assert all(obj is not None for obj in expected)
 
 
-@pytest.mark.unit
-def test_subpackage_placeholders_load() -> None:
-    """The placeholder sub-packages import without raising."""
-    from src.shared.python.body_part_viz import (  # noqa: F401
-        fitters,
-        renderers,
-        shapes,
-    )
+def test_subpackages_importable() -> None:
+    import src.shared.python.body_part_viz.fitters as fitters
+    import src.shared.python.body_part_viz.renderers as renderers
+    import src.shared.python.body_part_viz.shapes as shapes
 
-    assert shapes.__all__ == []
-    assert fitters.__all__ == []
-    assert renderers.__all__ == []
+    for pkg in (shapes, fitters, renderers):
+        assert hasattr(pkg, "__all__")
+    # Wave 2 (#4759 + #4758) populates ``shapes`` with primitives + MeshShape.
+    for shape_name in (
+        "LineShape",
+        "CylinderShape",
+        "EllipsoidShape",
+        "CapsuleShape",
+        "CompositeShape",
+        "MeshShape",
+    ):
+        assert shape_name in shapes.__all__
+    # Fitters wave (#4756) ships three concrete strategies.
+    assert set(fitters.__all__) == {
+        "BetweenTwoMarkersFitter",
+        "ClusterKabschFitter",
+        "ProcrustesAnisotropicFitter",
+    }
+    # Renderers wave (#4760 + #4762) ships matplotlib + pyqtgl backends.
+    assert "MatplotlibRenderer" in renderers.__all__

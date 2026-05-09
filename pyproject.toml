@@ -144,6 +144,15 @@ gui-tools = [
     "openpyxl>=3.1.0",   # required by pandas.read_excel for .xlsx
 ]
 
+# Body-part visualisation: optional GPU-accelerated renderer (pyqtgraph.opengl).
+# Install when the matplotlib backend's per-frame budget is exceeded
+# (typically: > 30 segments × > 1000 vertices each).
+body-part-viz-gl = [
+    "pyqtgraph>=0.13",
+    "PyOpenGL>=3.1",
+    "matplotlib>=3.10.8",  # required by _hex_or_name_to_rgba in PyQtGLRenderer
+]
+
 # Everything
 all = ["upstream-drift[rust,all-engines,analysis,pose,biomechanics,rl,urdf,dev]"]
 
@@ -351,6 +360,7 @@ markers = [
     "slow_numba: Tests that require numba JIT or are heavy",
     "asyncio: marks tests as async tests",
     "benchmark: marks tests as performance benchmarks",
+    "perf: marks fast microbenchmarks (e.g. >= 60 fps targets); excluded from default CI run",
     "serial: marks tests that must not run in parallel (sys.modules manipulation)",
     "requires_network: marks tests that require network access (skip with '-m not requires_network')",
     "requires_gpu: marks tests that require a GPU (skip with '-m not requires_gpu')",

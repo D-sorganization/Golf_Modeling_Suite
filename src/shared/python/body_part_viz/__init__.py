@@ -1,48 +1,40 @@
-"""Body-part visualisation toolkit.
+"""Body-part visualisation contracts and dataclasses.
 
-A cross-tool, cross-renderer package for displaying body segments as
-geometric shapes (lines, cylinders, ellipsoids, capsules, meshes) bound
-to mocap markers. Used by the C3D viewer, motion-match preview, and
-URDF generator.
+This package defines the abstract surface (Protocols + frozen dataclasses)
+that every shape, fitter, and renderer implementation talks across.
 
-This top-level module exposes only **contracts and dataclasses**.
-Concrete shapes, fitters, and renderers live in sibling sub-packages
-and are added in subsequent issues:
-
-- :mod:`body_part_viz.shapes` — primitives (#4759) + meshes (#4758)
-- :mod:`body_part_viz.fitters` — fitter implementations (#4756)
-- :mod:`body_part_viz.renderers` — matplotlib (#4760) + pyqtgraph (#4762)
-
-Public API
-----------
-
-- :class:`BodyPartShape`, :class:`ShapeFitter`, :class:`ShapeRenderer`
-  — protocols
-- :class:`MarkerBinding`, :class:`BindingKind` — how shapes attach to
-  markers
-- :class:`ShapeTheme` — visual styling (color, opacity, edges)
-- :class:`FittedShape` — per-frame placement trajectory
-
-See the EPIC tracking issue #4755 for the campaign overview.
+Implementations of shapes, fitters, and rendering backends live in the
+``shapes``, ``fitters``, and ``renderers`` sub-packages and are added in
+follow-up issues of EPIC #4755.
 """
 
 from __future__ import annotations
 
-from src.shared.python.body_part_viz._types import FittedShape
-from src.shared.python.body_part_viz.bindings import BindingKind, MarkerBinding
-from src.shared.python.body_part_viz.contracts import (
-    BodyPartShape,
-    ShapeFitter,
-    ShapeRenderer,
+from ._types import FittedShape
+from .bindings import BindingKind, MarkerBinding
+from .contracts import BodyPartShape, ShapeFitter, ShapeRenderer
+from .persistence import (
+    SCHEMA_VERSION,
+    SegmentVizSet,
+    SegmentVizSpec,
+    VALID_FITTER_KINDS,
+    VALID_SHAPE_KINDS,
+    migrate_v1_to_v2,
 )
-from src.shared.python.body_part_viz.theme import ShapeTheme
+from .theme import ShapeTheme
 
 __all__ = [
+    "SCHEMA_VERSION",
+    "VALID_FITTER_KINDS",
+    "VALID_SHAPE_KINDS",
     "BindingKind",
     "BodyPartShape",
     "FittedShape",
     "MarkerBinding",
+    "SegmentVizSet",
+    "SegmentVizSpec",
     "ShapeFitter",
     "ShapeRenderer",
     "ShapeTheme",
+    "migrate_v1_to_v2",
 ]

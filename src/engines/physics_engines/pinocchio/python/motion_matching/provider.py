@@ -31,6 +31,7 @@ what ``club_target_adapter.load_robneal_target`` produces.
 from __future__ import annotations
 
 import logging
+from types import ModuleType
 from typing import TYPE_CHECKING, Final
 
 from .fit_swing import FitOptions, FitResult, fit_swing_pinocchio
@@ -90,7 +91,17 @@ class PinocchioFitSwingProvider:
             ValueError: If ``target`` shapes are inconsistent.
             ImportError: If the ``pinocchio`` bindings are unavailable.
         """
-        return fit_swing_pinocchio(target, opts)
+        result = fit_swing_pinocchio(target, opts)
+        # Issue #4713: opt-in CI publication of the cross-engine leaderboard.
+        from src.shared.python.motion_matching.leaderboard import maybe_append_row
+
+        maybe_append_row(
+            ENGINE_NAME,
+            result,
+            self.engine_version(),
+            target_id=getattr(result, "trial_id", None),
+        )
+        return result
 
     def supports_body_target(self) -> bool:
         """Return ``False`` -- Pinocchio MM is club-target only."""
@@ -111,6 +122,8 @@ class PinocchioFitSwingProvider:
         try:
             import pinocchio  # type: ignore[import-not-found]
         except ImportError:
+            return "unknown"
+        if not isinstance(pinocchio, ModuleType):
             return "unknown"
         version = getattr(pinocchio, "__version__", None)
         if isinstance(version, str) and version:
