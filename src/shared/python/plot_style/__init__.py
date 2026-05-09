@@ -13,7 +13,12 @@ issues of EPIC #4796.
 from __future__ import annotations
 
 from ._types import RGBATuple
-from .channels import DataChannel
+from .channels import (
+    DataChannel,
+    derivative_channel,
+    magnitude_channel,
+    slice_channel,
+)
 from .colormaps import (
     SEMANTIC_COLORMAP_ALIASES,
     ColormapId,
@@ -43,5 +48,8 @@ __all__ = [
     "PlotStyleSpec",
     "RGBATuple",
     "StaticColor",
+    "derivative_channel",
+    "magnitude_channel",
     "resolve_colormap_alias",
+    "slice_channel",
 ]
