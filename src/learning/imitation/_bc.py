@@ -320,4 +320,6 @@ class BehaviorCloning(ImitationLearner):
                 for i in range(num_layers)
             ]
         else:
-            raise ValueError("Legacy format requiring allow_pickle=True is no longer supported for security reasons.")
+            raise ValueError(
+                "Legacy format requiring allow_pickle=True is no longer supported for security reasons."
+            )
