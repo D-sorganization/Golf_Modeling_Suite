@@ -1,21 +1,21 @@
 # Review Comments Archive - 2026-05-08
 
-Generated: 2026-05-08T17:54:16.933590
+Generated: 2026-05-08T19:36:36.782928
 
 ## Reviewer (chatgpt-codex-connector[bot]) (1 comments)
 
-### PR #4751: src/shared/python/motion_matching/loaders/c3d.py:133
+### PR #4792: src/shared/python/body_part_viz/persistence.py:311
 
-Actionable: No
+Actionable: Yes
 Has Suggestion: No
 
 ```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Make marker_set_override actually select cluster handling**
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Preserve and validate `visible` field type during load**
 
-When `marker_set_override` is provided, it only bypasses the new `MarkerSetMismatchError` guard and is never used to choose the cluster-processing branch, so callers following the error guidance (`marker_set_override=MarkerSet.GOLF_CLUSTER`) can still immediately fail with `ValueError` in the non-cluster path if butt/head labels are missing. This me...
+The loader currently coerces `visible` with `bool(...)`, which silently rewrites invalid payloads instead of rejecting them. For example, a JSON value like `"visible": "false"` (common from manual edits or non-Python producers) is truthy and becomes `True`, so segments that should be hidden are rendered visible with no error. This bypasses the dataclas...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4751#discussion_r3212069067)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4792#discussion_r3212275541)
 
 ---
 
