@@ -344,9 +344,18 @@ def make_motion_trajectory(
     with_markers: bool = False,
     motion_id: str = "motion-synthetic",
     sport: str = "golf",
+    rig: SkeletonRig | None = None,
 ) -> MotionTrajectory:
-    """Build a top-level :class:`MotionTrajectory` (rig + traj + provenance)."""
-    rig = make_skeleton_rig(n_joints=n_joints)
+    """Build a top-level :class:`MotionTrajectory` (rig + traj + provenance).
+
+    If ``rig`` is provided, it is used as-is (and ``n_joints`` is ignored);
+    otherwise a fresh default rig is constructed from ``n_joints``. Passing
+    a rig explicitly is required when the resulting trajectory must align
+    with caller-side payloads (e.g. residual reports / torque trajectories
+    keyed to a specific rig).
+    """
+    if rig is None:
+        rig = make_skeleton_rig(n_joints=n_joints)
     traj = make_joint_trajectory(rig, n_frames=n_frames, fps=fps)
     markers = (
         make_marker_trajectory(n_frames=n_frames, fps=fps) if with_markers else None
@@ -447,7 +456,7 @@ def make_motion_matching_result(
     ``kind="torque"`` attaches a :func:`make_torque_trajectory` payload to
     metadata; ``kind="kinematic"`` omits it.
     """
-    motion = make_motion_trajectory(n_frames=n_frames, n_joints=rig.num_joints)
+    motion = make_motion_trajectory(n_frames=n_frames, rig=rig)
     metadata: dict[str, Any] = {
         "residual_report": make_residual_report(rig),
         "kind": kind,
