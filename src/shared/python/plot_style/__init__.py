@@ -29,6 +29,7 @@ from .colors import ColorScale, DataDrivenColor, PaletteColor, StaticColor
 from .contracts import ColorResolver, MarkerRenderer, MarkerShapeRenderer
 from .markers import CustomMeshSpec, MarkerShape, MarkerStyle
 from .persistence import SCHEMA_VERSION, PlotStyleSet, PlotStyleSpec
+from .preset_library import BUILTIN_PRESET_NAMES, PresetLibrary
 from .registry import (
     get_colormap,
     list_colormaps,
@@ -37,6 +38,7 @@ from .registry import (
 )
 
 __all__ = [
+    "BUILTIN_PRESET_NAMES",
     "SCHEMA_VERSION",
     "SEMANTIC_COLORMAP_ALIASES",
     "ColorResolver",
@@ -53,6 +55,7 @@ __all__ = [
     "PaletteColor",
     "PlotStyleSet",
     "PlotStyleSpec",
+    "PresetLibrary",
     "RGBATuple",
     "StaticColor",
     "derivative_channel",
