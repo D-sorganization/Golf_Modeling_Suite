@@ -1,0 +1,14 @@
+{
+  "colormap::coolwarm": "0a8546a00f8e0a34e34d45a01411355ca044ed6335f18ce61a541fd9a64eccd6",
+  "colormap::plasma": "467c1c8a59f6ec8e5d27fc929c2878a462c472f14f0e98a1604347a2cb9f632a",
+  "colormap::turbo": "8a0acb3bbcc62cba5e6a0ee50245230905bd96073cd79286cb39634ddd448502",
+  "colormap::velocity": "467c1c8a59f6ec8e5d27fc929c2878a462c472f14f0e98a1604347a2cb9f632a",
+  "colormap::viridis": "f4ebccbb9a00176c49919136400c7533d4f038c9177458f20f376b139b9abde6",
+  "shape_static::cross": "e9571fcf3674b0f3470664d32a486b747f4823bfc73a2cb70860291bcc007df2",
+  "shape_static::cube": "43dfdd23a8277ec1614044019434f3945d81ef6bd541f1a99f6abe5258af7a42",
+  "shape_static::diamond": "d0daa2559a8fa8199064a8e4277fa39cfc53a8256f0d68c968a265e088bf2473",
+  "shape_static::plus": "eceeb065e87ad6fb213c466a65e2460b912802984a0d01638acc695de1494f2a",
+  "shape_static::point": "8161268225a2ec7c099c84338aaa90b3a95aaaddb87ca9e87dee270887aeefc2",
+  "shape_static::sphere": "bf687a0a84c0bbdc5c4c3414cbd024c68d9034b2c150c0d1802439adc5d9b186",
+  "shape_static::star": "25045f0a422bd128e75b178eb836e62ff1e8b6c5310f12b46bbb8b6c7f6467e6"
+}
