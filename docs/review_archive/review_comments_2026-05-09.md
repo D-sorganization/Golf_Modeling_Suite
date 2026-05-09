@@ -1,35 +1,38 @@
 # Review Comments Archive - 2026-05-09
 
-Generated: 2026-05-09T15:45:04.294158
+Generated: 2026-05-09T16:11:25.667202
 
 ## Reviewer (chatgpt-codex-connector[bot]) (2 comments)
 
-### PR #4934: src/shared/python/pose_interchange/services/_mock.py:110
+### PR #4973: docs/development/test_coverage_epic.md:26
+
+Actionable: Yes
+Has Suggestion: No
+
+```
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Point Sprint 2 at existing physics package**
+
+The Sprint 2 action targets `src/shared/python/physics_core/`, but that directory does not exist in this repository (the shared physics code lives under `src/shared/python/physics/`). Keeping this path in the plan will send remediation work to a non-existent module tree and can cause the coverage effort to miss the actual high-risk physics code that should be ratc...
+```
+
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4973#discussion_r3214013231)
+
+---
+
+### PR #4973: docs/development/test_coverage_epic.md:32
 
 Actionable: No
 Has Suggestion: No
 
 ```
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Apply pelvis SE(3) to mock landmark transforms**
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Use the real API route directory in Sprint 3**
 
-`get_link_transforms()` currently derives landmarks from `forward_kinematics(angles)` and writes those points directly into each SE(3) translation, so any non-zero `pelvis_translation_m` / `pelvis_rotation_xyz_deg` in the last `set_pose()` is ignored. In scenarios where Pose Studio (or parity checks) places the canonical pose away from origin, the mock service...
+The Sprint 3 plan references `src/api/routers/`, but the codebase uses `src/api/routes/` for REST/WebSocket route modules. This mismatch makes the remediation instructions inaccurate and can derail coverage tooling/tasks that rely on path-based targeting, leaving the intended API surface under-tested.
+
+Useful? React with 👍 / 👎.
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4934#discussion_r3213770810)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4973#discussion_r3214013233)
 
 ---
 
-### PR #4934: src/shared/python/pose_interchange/canonical.py:126
-
-Actionable: No
-Has Suggestion: No
-
-```
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Freeze joint-angle mapping to preserve CanonicalPose invariants**
-
-`CanonicalPose` is declared frozen and validated on construction, but `__post_init__` stores `joint_angles_deg` as a plain mutable `dict`. Callers can mutate that mapping after construction and bypass all validation (including canonical field-name and finiteness checks), which undermines immutability guarantees and can produce invalid or non-d...
-```
-
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/4934#discussion_r3213770814)
-
----
