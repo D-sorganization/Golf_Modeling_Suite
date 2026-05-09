@@ -22,6 +22,7 @@ Public API
   markers
 - :class:`ShapeTheme` — visual styling (color, opacity, edges)
 - :class:`FittedShape` — per-frame placement trajectory
+- :class:`SegmentVizSpec`, :class:`SegmentVizSet` — JSON v2 persistence
 
 See the EPIC tracking issue #4755 for the campaign overview.
 """
@@ -35,6 +36,13 @@ from src.shared.python.body_part_viz.contracts import (
     ShapeFitter,
     ShapeRenderer,
 )
+from src.shared.python.body_part_viz.persistence import (
+    SegmentVizSet,
+    SegmentVizSpec,
+    load_specs,
+    migrate_v1_to_v2,
+    save_specs,
+)
 from src.shared.python.body_part_viz.theme import ShapeTheme
 
 __all__ = [
@@ -42,7 +50,12 @@ __all__ = [
     "BodyPartShape",
     "FittedShape",
     "MarkerBinding",
+    "SegmentVizSet",
+    "SegmentVizSpec",
     "ShapeFitter",
     "ShapeRenderer",
     "ShapeTheme",
+    "load_specs",
+    "migrate_v1_to_v2",
+    "save_specs",
 ]
