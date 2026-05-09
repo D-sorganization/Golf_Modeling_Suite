@@ -35,9 +35,17 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const dryRun =
-              context.eventName === 'schedule' ||
+            // Scheduled runs are always dry-run backstops. workflow_dispatch
+            // honors the explicit ``dry_run`` input (default "true"). Issue
+            // events should actively close duplicates: ``core.getInput`` is
+            // empty outside workflow_dispatch, so we cannot rely on a
+            // ``!== 'false'`` comparison here -- treat empty as "not dry-run"
+            // for issue triggers (issues #4614, #4615).
+            const dispatchDryRun =
+              context.eventName === 'workflow_dispatch' &&
               core.getInput('dry_run', { required: false }) !== 'false';
+            const dryRun =
+              context.eventName === 'schedule' || dispatchDryRun;
 
             const normalize = (title) =>
               title.toLowerCase().replace(/\s+/g, ' ').trim();
