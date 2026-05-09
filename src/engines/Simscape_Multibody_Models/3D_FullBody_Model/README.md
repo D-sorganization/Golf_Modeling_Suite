@@ -36,6 +36,9 @@ without modifying it.
       functions/                      (helpers specific to this model)
     scripts/
       build_3d_fullbody.m            ← MASTER BUILD SCRIPT
+      extend_polynomial_theta_contract.m
+                                      (idempotently appends full-body leg
+                                       polynomial coefficient families)
       prune_redundant_logging.m      (removes ~35-43 nonvirtual blocks
                                        worth of redundant signal logging)
       add_leg_chain.m                (scripted left-leg chain slice
@@ -50,6 +53,7 @@ without modifying it.
       validation_report.json          validation summary
     tests/
       test_3d_fullbody_loads.m
+      test_3d_fullbody_polynomial_contract.m
 ```
 
 ## How to build
@@ -88,6 +92,29 @@ The build and validation reports record source/target paths, phase
 metadata, block counts, signal counts, smoke-sim status, and the
 generated-only artifact policy. The logging audit is machine-readable
 and separates measured before/after counts from heuristic savings.
+
+## Polynomial theta contract
+
+The checked-in full-body `PolynomialInputValues.mat` is extended from
+the legacy 3D golf file by
+`matlab/scripts/extend_polynomial_theta_contract.m`. The extension adds
+zero-valued coefficient variables for both legs and preserves existing
+values on rerun unless `overwrite=true` is passed.
+
+Measured with MATLAB `whos('-file', ...)` and the same
+`getPolynomialParameterInfo()` name-pattern discovery used by the
+dataset generator:
+
+| Model family   | Discovered families | Coefficients per family | Theta size |
+| -------------- | ------------------: | ----------------------: | ---------: |
+| Legacy 3D golf |                  27 |                       7 |        189 |
+| 3D full-body   |                  39 |                       7 |        273 |
+
+The full-body result is **39**, not 33, because the discovery contract
+counts actuated axes as coefficient families. Hip gimbals contribute
+`X/Y/Z`, ankles contribute `X/Y`, and knees contribute one family. Across
+left and right legs that is 12 new axis families and 84 new coefficients.
+Optimizers must not assume a 231-element vector for this model family.
 
 ## Block budget
 
@@ -151,8 +178,8 @@ Per leg, the planned implementation is:
 
 `getPolynomialParameterInfo()` will pick up the new joint families
 automatically because it discovers them by name pattern (`<Joint><A..G>`).
-That means **the existing optimiser pipeline gets ~6 new joints "for
-free"** — `theta` length grows from `27 * 7 = 189` to `33 * 7 = 231`.
+That means the full-body optimiser contract grows by 12 axis families:
+`theta` length grows from `27 * 7 = 189` to `39 * 7 = 273`.
 
 ## Status
 
@@ -160,6 +187,7 @@ free"** — `theta` length grows from `27 * 7 = 189` to `33 * 7 = 231`.
 - [x] Input MATs copied
 - [x] Build scripts authored
 - [x] One scripted left-leg chain slice
+- [x] Full-body leg polynomial/theta contract extended and measured
 - [ ] Build scripts executed in MATLAB (requires user)
 - [ ] Validation (block count + signal count + smoke sim)
 - [ ] Tests (pytest + MATLAB)

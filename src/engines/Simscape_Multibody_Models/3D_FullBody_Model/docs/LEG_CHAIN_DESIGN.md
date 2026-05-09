@@ -114,9 +114,13 @@ Total new joints: **6 axes per side × 2 sides = 12 new joint families**
 × 7 coefficients = **84 new polynomial coefficients** added to the
 `PolynomialInputValues.mat` file.
 
-Result: the `theta` vector grows from `27 * 7 = 189` to `33 * 7 = 231`
-elements automatically. The matcher's `theta_to_polynomial_struct`
-helper handles arbitrary joint counts already.
+Result: the `theta` vector grows from `27 * 7 = 189` to `39 * 7 = 273`
+elements automatically. This resolves the earlier 33-vs-39 ambiguity:
+the discovery helper counts each hip and ankle axis as a separate
+coefficient family, not each anatomical joint as one family. The
+matcher's `theta_to_polynomial_struct` helper handles arbitrary joint
+counts already, but optimizer entry points must validate against the
+model-family-specific expected length before running.
 
 ## Start-position parameter naming
 

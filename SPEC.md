@@ -38,8 +38,8 @@
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.144                                            |
-| **Last Spec Update**    | 2026-05-08 (3D full-body left leg chain)           |
+| **Spec Version**        | 1.0.145                                            |
+| **Last Spec Update**    | 2026-05-08 (3D full-body theta contract)           |
 
 ## 2. Purpose & Mission
 
@@ -160,7 +160,7 @@ UpstreamDrift/
 | OpenSim Engine Adapter   | `src/engines/physics_engines/opensim/`   | Experimental OpenSim integration for clinical biomechanics workflows                        |
 | MyoSuite Engine Adapter  | `src/engines/physics_engines/myosuite/`  | Experimental MyoSuite integration for detailed muscle physiology simulation                 |
 | Pendulum Models          | `src/engines/physics_engines/pendulum/`  | Educational simplified models for learning and quick prototyping                            |
-| 3D Full-Body Simscape Scaffold | `src/engines/Simscape_Multibody_Models/3D_FullBody_Model/` | Build-from-source derivative of the 3D golf Simscape model with a scripted left-leg chain slice, leg-chain design docs, MATLAB build scripts, generated `.slx` exclusion, and load/simulation smoke-test harness |
+| 3D Full-Body Simscape Scaffold | `src/engines/Simscape_Multibody_Models/3D_FullBody_Model/` | Build-from-source derivative of the 3D golf Simscape model with a scripted left-leg chain slice, leg-chain design docs, full-body polynomial theta contract, MATLAB build scripts, generated `.slx` exclusion, and load/simulation smoke-test harness |
 | FastAPI Backend          | `src/api/`                               | REST API exposing simulation, IK/ID, trajectory optimization, and control endpoints         |
 | PyQt6 GUI                | `src/launchers/golf_launcher.py`         | Professional interactive GUI with real-time 3D visualization                                |
 | Tauri Desktop App        | `ui/`                                    | Cross-platform desktop application wrapper (Windows, macOS, Linux)                          |
@@ -168,6 +168,26 @@ UpstreamDrift/
 | Configuration Manager    | `src/config/`                            | Centralized configuration loading, validation, and environment management                   |
 | Shared Utilities         | `src/shared/`                            | Cross-engine validators, helpers, and exception definitions                                 |
 | URDF Models              | `shared/models/`                         | Canonical model definitions (URDF format) for golf swings, human body, pendulums            |
+
+### Simscape Polynomial Theta Contracts
+
+Simscape polynomial torque inputs use seven coefficients per discovered
+actuated axis family, named `<Family><A..G>`. MATLAB
+`getPolynomialParameterInfo()` discovers families directly from
+`PolynomialInputValues.mat` by grouping names with complete `A` through `G`
+suffixes. Python mirrors the model-family contract in
+`src/shared/python/motion_matching/polynomial_contracts.py`.
+
+| Model family | Contract source | Discovered families | Theta length | Notes |
+| ------------ | --------------- | ------------------: | -----------: | ----- |
+| `3d_golf` | `3D_Golf_Model/matlab/src/model/PolynomialInputValues.mat` | 27 | 189 | Legacy behavior remains unchanged. |
+| `3d_fullbody` | `3D_FullBody_Model/matlab/src/model/PolynomialInputValues.mat` plus `extend_polynomial_theta_contract.m` | 39 | 273 | Adds `L/RHipX/Y/Z`, `L/RKnee`, and `L/RAnkleX/Y` axis families. |
+
+The full-body size is 273, not 231, because the discovery contract counts
+each hip and ankle axis as a separate polynomial family. Optimizer and
+`simulate_with_coefficients` entry points that accept a model-family selector
+must validate theta against the selected family before running and must emit
+expected-versus-observed length errors on mismatch.
 
 ### Engine Tier Policy
 
@@ -672,4 +692,5 @@ Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linal
 | 2026-05-07 | 1.0.138 | Added an opt-in OpenSim compliant club attachment builder path with typed `CompliantClubAttachmentConfig`, deterministic `BushingForce` XML emission, default rigid-weld regression coverage, and validation for unsupported units or missing model bodies. |
 | 2026-05-07 | 1.0.141 | Added deterministic OpenSim multistart fit orchestration with seed-list reproducibility, per-start fresh simulator factories, best-success result selection, and typed all-starts-failed diagnostics. |
 | 2026-05-07 | 1.0.143 | Fixed Wave 2 manifest validator to parse `###` section headers matching the generated format, preventing self-inconsistent validation after `--update`. Fixed wheel event filter cache to use `weakref.WeakValueDictionary` preventing unbounded memory growth in long-running UI applications with transient controls. |
+| 2026-05-08 | 1.0.145 | Added the 3D full-body polynomial theta contract: legacy Simscape remains 27 families / 189 coefficients, while full-body leg axes resolve to 39 families / 273 coefficients through `extend_polynomial_theta_contract.m` and `polynomial_contracts.py`. |
 ````
