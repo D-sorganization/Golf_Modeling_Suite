@@ -25,13 +25,16 @@ from .persistence import (
     load_subject,
     save_subject,
 )
+from .pipeline import AnthropometricsPipeline, EstimatorName, run_pipeline
 from .readers import C3DSubjectMetadata, read_c3d_subject_metadata
 from .segment_properties import SegmentProperties
 
 __all__ = [
+    "AnthropometricsPipeline",
     "C3DSubjectMetadata",
     "EngineAdapter",
     "Estimator",
+    "EstimatorName",
     "Reader",
     "SCHEMA_VERSION",
     "SegmentProperties",
@@ -41,5 +44,6 @@ __all__ = [
     "default_subjects_dir",
     "load_subject",
     "read_c3d_subject_metadata",
+    "run_pipeline",
     "save_subject",
 ]
