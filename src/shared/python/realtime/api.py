@@ -11,11 +11,12 @@ from __future__ import annotations
 
 import os
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from src.shared.python.logging_pkg.logging_config import get_logger
 
+from .protocol import Subscription, validate_channel
 from .transport_file import FileTransport, default_channel_path
 
 logger = get_logger(__name__)
@@ -86,32 +87,6 @@ register_channel(
 )
 
 
-@dataclass(slots=True)
-class Subscription:
-    """Handle returned by :func:`subscribe`.
-
-    The :meth:`unsubscribe` method tears the underlying transport
-    watcher down. It is idempotent.
-    """
-
-    channel: str
-    _transport: FileTransport | None = None
-    _token: int = -1
-    _closed: bool = field(default=False)
-
-    def unsubscribe(self) -> None:
-        if self._closed:
-            return
-        self._closed = True
-        if self._transport is not None and self._token >= 0:
-            try:
-                self._transport.unsubscribe(self._token)
-            except Exception:  # pragma: no cover - defensive
-                logger.exception(
-                    "Subscription.unsubscribe failed on channel %s", self.channel
-                )
-
-
 # Module-global file transport, lazily initialised. The transport is
 # stateless across processes (the on-disk log is the source of truth)
 # and cheap to construct, so a single instance per process is fine.
@@ -129,7 +104,7 @@ def publish(channel: str, payload: Any, transport: str | None = None) -> None:
     """Publish *payload* on *channel*.
 
     *payload* must be JSON-serialisable. Errors are logged and swallowed
-    — callers should treat realtime as a hint layer, never a critical
+    \u2014 callers should treat realtime as a hint layer, never a critical
     path. The default transport is the file transport; the websocket
     transport can be opted into via ``REALTIME_TRANSPORT=ws`` in the
     future (not implemented here).
@@ -172,9 +147,25 @@ def subscribe(channel: str, callback: Callable[[Any], None]) -> Subscription:
     if not callable(callback):
         raise TypeError("callback must be callable")
     try:
+        validate_channel(channel)
+    except (TypeError, ValueError):
+        raise
+    try:
         transport = _get_transport()
         token = transport.subscribe(channel, callback)
-        return Subscription(channel=channel, _transport=transport, _token=token)
+
+        # Build an unsubscribe closure compatible with the protocol-level
+        # Subscription contract.
+        def _unsub() -> None:
+            transport.unsubscribe(token)
+
+        return Subscription(
+            channel=channel, callback=callback, _unsubscribe=_unsub
+        )
     except Exception:
         logger.exception("realtime.subscribe failed on channel %s", channel)
-        return Subscription(channel=channel, _transport=None, _token=-1, _closed=True)
+        return Subscription(
+            channel=channel,
+            callback=callback,
+            _unsubscribe=lambda: None,
+        )

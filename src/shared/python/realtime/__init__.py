@@ -34,6 +34,7 @@ from .api import (
     register_channel,
     subscribe,
 )
+from .protocol import validate_channel
 
 __all__ = [
     "CHANNEL_REGISTRY",
@@ -41,4 +42,5 @@ __all__ = [
     "publish",
     "register_channel",
     "subscribe",
+    "validate_channel",
 ]
