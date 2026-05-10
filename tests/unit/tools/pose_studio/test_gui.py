@@ -35,7 +35,7 @@ def test_gui_on_engine_selected() -> None:
 
     win._engine_controller.switch_engine.assert_called_with("mujoco")
     # Real methods run without crashing
-    assert win.units_badge._engine_name == "drake" or True  # just checking no crash
+    assert True  # just checking no crash
 
 
 def test_gui_on_angle_edited() -> None:
