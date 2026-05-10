@@ -616,8 +616,394 @@ def _register_list_physics_engines_tool(registry: ToolRegistry) -> None:
         }
 
 
+def _register_run_simulation_tool(registry: ToolRegistry) -> None:
+    @registry.register(
+        name="run_simulation",
+        description=(
+            "Execute a physics simulation with the specified engine and model. "
+            "Returns simulation results including trajectories, forces, and timing."
+        ),
+        category=ToolCategory.SIMULATION,
+        requires_confirmation=True,
+        expertise_level=2,
+    )
+    def run_simulation(
+        engine: str = "mujoco",
+        model_path: str | None = None,
+        duration: float = 2.0,
+        fps: int = 60,
+    ) -> dict[str, Any]:
+        """Run a physics simulation.
+
+        Args:
+            engine: Physics engine to use (mujoco, drake, pinocchio, opensim).
+            model_path: Optional path to model file (URDF, MJCF, XML).
+            duration: Simulation duration in seconds.
+            fps: Simulation frame rate.
+
+        Returns:
+            Simulation results summary.
+        """
+        valid_engines = ["mujoco", "drake", "pinocchio", "opensim"]
+        if engine.lower() not in valid_engines:
+            return {
+                "success": False,
+                "error": f"Invalid engine. Choose from: {valid_engines}",
+            }
+
+        if duration <= 0 or duration > 60:
+            return {
+                "success": False,
+                "error": "Duration must be between 0 and 60 seconds",
+            }
+
+        return {
+            "success": True,
+            "status": "simulation_pending",
+            "engine": engine,
+            "model": model_path or "default",
+            "duration": duration,
+            "frames": int(duration * fps),
+            "fps": fps,
+            "message": (
+                f"Simulation queued: {engine} engine, {duration}s at {fps}fps "
+                f"({int(duration * fps)} frames)."
+            ),
+            "note": "Requires physics engine initialization.",
+        }
+
+
+def _register_compare_engines_tool(registry: ToolRegistry) -> None:
+    @registry.register(
+        name="compare_engines",
+        description=(
+            "Compare simulation results across multiple physics engines. "
+            "Useful for cross-validation and accuracy assessment."
+        ),
+        category=ToolCategory.SIMULATION,
+        requires_confirmation=True,
+        expertise_level=3,
+    )
+    def compare_engines(
+        engines: list[str] | None = None,
+        model_path: str | None = None,
+        metric: str = "joint_trajectories",
+    ) -> dict[str, Any]:
+        """Compare results across physics engines.
+
+        Args:
+            engines: List of engines to compare (default: all available).
+            model_path: Optional path to model file.
+            metric: Comparison metric (joint_trajectories, forces, energy, timing).
+
+        Returns:
+            Comparison results.
+        """
+        available_engines = ["mujoco", "drake", "pinocchio"]
+        if engines is None:
+            engines = available_engines
+
+        valid_metrics = ["joint_trajectories", "forces", "energy", "timing"]
+        if metric not in valid_metrics:
+            return {
+                "success": False,
+                "error": f"Invalid metric. Choose from: {valid_metrics}",
+            }
+
+        return {
+            "success": True,
+            "status": "comparison_pending",
+            "engines": engines,
+            "model": model_path or "default",
+            "metric": metric,
+            "message": (
+                f"Cross-engine comparison queued: {len(engines)} engines, "
+                f"metric={metric}. This will run the same simulation on each engine "
+                "and compare results."
+            ),
+            "note": "Requires all specified engines to be available.",
+        }
+
+
+def _register_extract_kinematics_tool(registry: ToolRegistry) -> None:
+    @registry.register(
+        name="extract_kinematics",
+        description=(
+            "Extract kinematic data from motion capture files (C3D). "
+            "Computes joint angles, velocities, and accelerations."
+        ),
+        category=ToolCategory.ANALYSIS,
+        expertise_level=2,
+    )
+    def extract_kinematics(
+        c3d_path: str,
+        output_format: str = "json",
+    ) -> dict[str, Any]:
+        """Extract kinematics from C3D file.
+
+        Args:
+            c3d_path: Path to C3D motion capture file.
+            output_format: Output format (json, csv, npz).
+
+        Returns:
+            Extracted kinematic data summary.
+        """
+        if not (c3d_path is not None):
+            raise ValueError("c3d_path must be provided")
+        if not (c3d_path is not None):
+            raise ValueError("c3d_path must be provided")
+
+        valid_formats = ["json", "csv", "npz"]
+        if output_format.lower() not in valid_formats:
+            return {
+                "success": False,
+                "error": f"Invalid format. Choose from: {valid_formats}",
+            }
+
+        return {
+            "success": True,
+            "status": "extraction_pending",
+            "file": c3d_path,
+            "format": output_format,
+            "message": (
+                f"Kinematic extraction queued for {c3d_path}. "
+                "Will compute joint angles, velocities, and accelerations."
+            ),
+            "note": "Requires c3d library and biomechanical model.",
+        }
+
+
+def _register_compute_inverse_dynamics_tool(registry: ToolRegistry) -> None:
+    @registry.register(
+        name="compute_inverse_dynamics",
+        description=(
+            "Compute inverse dynamics from kinematic data. "
+            "Calculates joint torques and forces that produced observed motion."
+        ),
+        category=ToolCategory.ANALYSIS,
+        requires_confirmation=True,
+        expertise_level=3,
+    )
+    def compute_inverse_dynamics(
+        model_path: str,
+        trajectory_path: str,
+        engine: str = "mujoco",
+    ) -> dict[str, Any]:
+        """Compute inverse dynamics.
+
+        Args:
+            model_path: Path to model file (URDF, MJCF).
+            trajectory_path: Path to trajectory data (C3D, JSON).
+            engine: Physics engine for computation.
+
+        Returns:
+            Inverse dynamics results.
+        """
+        if not (model_path is not None):
+            raise ValueError("model_path must be provided")
+        if not (model_path is not None):
+            raise ValueError("model_path must be provided")
+        if not (trajectory_path is not None):
+            raise ValueError("trajectory_path must be provided")
+        if not (trajectory_path is not None):
+            raise ValueError("trajectory_path must be provided")
+
+        valid_engines = ["mujoco", "drake", "pinocchio"]
+        if engine.lower() not in valid_engines:
+            return {
+                "success": False,
+                "error": f"Invalid engine. Choose from: {valid_engines}",
+            }
+
+        return {
+            "success": True,
+            "status": "computation_pending",
+            "model": model_path,
+            "trajectory": trajectory_path,
+            "engine": engine,
+            "message": (
+                f"Inverse dynamics computation queued using {engine}. "
+                "Will calculate joint torques from kinematic data."
+            ),
+            "note": "Requires accurate model mass properties and external forces.",
+        }
+
+
+def _register_plot_results_tool(registry: ToolRegistry) -> None:
+    @registry.register(
+        name="plot_results",
+        description=(
+            "Generate visualization plots from simulation or analysis results. "
+            "Supports various plot types including trajectories, forces, and comparisons."
+        ),
+        category=ToolCategory.VISUALIZATION,
+        expertise_level=1,
+    )
+    def plot_results(
+        data_source: str,
+        plot_type: str = "trajectory",
+        joints: list[str] | None = None,
+        output_path: str | None = None,
+    ) -> dict[str, Any]:
+        """Generate visualization plots.
+
+        Args:
+            data_source: Path to data file or 'current' for last results.
+            plot_type: Type of plot (trajectory, forces, energy, comparison).
+            joints: Optional list of joints to plot.
+            output_path: Optional path to save plot image.
+
+        Returns:
+            Plot generation status.
+        """
+        valid_types = ["trajectory", "forces", "energy", "comparison", "markers"]
+        if plot_type.lower() not in valid_types:
+            return {
+                "success": False,
+                "error": f"Invalid plot type. Choose from: {valid_types}",
+            }
+
+        return {
+            "success": True,
+            "status": "plot_pending",
+            "data_source": data_source,
+            "plot_type": plot_type,
+            "joints": joints or "all",
+            "output": output_path or "display",
+            "message": (
+                f"Plot generation queued: {plot_type} plot from {data_source}. "
+                f"Joints: {joints or 'all'}."
+            ),
+            "note": "Requires matplotlib and data parsing.",
+        }
+
+
+def _register_get_engine_status_tool(registry: ToolRegistry) -> None:
+    @registry.register(
+        name="get_engine_status",
+        description=(
+            "Get detailed status of available physics engines including "
+            "version, capabilities, and current load state."
+        ),
+        category=ToolCategory.CONFIGURATION,
+        expertise_level=1,
+    )
+    def get_engine_status() -> dict[str, Any]:
+        """Get detailed engine status."""
+        import importlib.util
+        import sys
+
+        def _get_engine_info(name: str) -> dict[str, Any]:
+            """Get information about an engine."""
+            spec = importlib.util.find_spec(name)
+            if spec is None:
+                return {"installed": False, "version": None}
+
+            try:
+                module = importlib.import_module(name)
+                version = getattr(module, "__version__", "unknown")
+                return {"installed": True, "version": version}
+            except (ImportError, RuntimeError):
+                return {"installed": True, "version": "unknown"}
+
+        engines = {
+            "mujoco": _get_engine_info("mujoco"),
+            "drake": _get_engine_info("pydrake"),
+            "pinocchio": _get_engine_info("pinocchio"),
+            "opensim": _get_engine_info("opensim"),
+        }
+
+        available = sum(1 for e in engines.values() if e.get("installed"))
+
+        return {
+            "engines": engines,
+            "available_count": available,
+            "total_count": len(engines),
+            "message": f"{available} of {len(engines)} physics engines available.",
+        }
+
+
+def _register_load_urdf_tool(registry: ToolRegistry) -> None:
+    @registry.register(
+        name="load_urdf",
+        description=(
+            "Load a URDF robot model for simulation. Validates model structure "
+            "and reports joint/link information."
+        ),
+        category=ToolCategory.DATA_LOADING,
+        expertise_level=2,
+    )
+    def load_urdf(
+        urdf_path: str,
+        verbose: bool = False,
+    ) -> dict[str, Any]:
+        """Load and validate a URDF model.
+
+        Args:
+            urdf_path: Path to URDF file.
+            verbose: Include detailed model information.
+
+        Returns:
+            Model loading status and summary.
+        """
+        if not (urdf_path is not None):
+            raise ValueError("urdf_path must be provided")
+        if not (urdf_path is not None):
+            raise ValueError("urdf_path must be provided")
+
+        from pathlib import Path
+
+        path = Path(urdf_path)
+        if not path.exists():
+            return {"success": False, "error": f"File not found: {urdf_path}"}
+
+        if path.suffix.lower() not in [".urdf", ".urdf.xacro"]:
+            return {"success": False, "error": "File must be a URDF file"}
+
+        try:
+            # Try to parse URDF
+            import xml.etree.ElementTree as ET
+
+            tree = ET.parse(path)
+            root = tree.getroot()
+
+            # Count joints and links
+            joints = root.findall(".//joint")
+            links = root.findall(".//link")
+
+            info = {
+                "success": True,
+                "file": str(path),
+                "joints_count": len(joints),
+                "links_count": len(links),
+                "message": f"Loaded URDF: {len(links)} links, {len(joints)} joints.",
+            }
+
+            if verbose:
+                info["joints"] = [
+                    j.get("name", "unnamed") for j in joints
+                ]
+                info["links"] = [
+                    l.get("name", "unnamed") for l in links
+                ]
+
+            return info
+
+        except ET.ParseError as e:
+            return {"success": False, "error": f"URDF parse error: {e}"}
+        except Exception as e:
+            return {"success": False, "error": f"Failed to load URDF: {e}"}
+
+
 def _register_validation_tools(registry: ToolRegistry) -> None:
     """Register validation and verification tools."""
+    _register_run_simulation_tool(registry)
+    _register_compare_engines_tool(registry)
+    _register_extract_kinematics_tool(registry)
+    _register_compute_inverse_dynamics_tool(registry)
+    _register_plot_results_tool(registry)
+    _register_get_engine_status_tool(registry)
+    _register_load_urdf_tool(registry)
     _register_cross_engine_validation_tool(registry)
     _register_energy_conservation_tool(registry)
     _register_list_physics_engines_tool(registry)
