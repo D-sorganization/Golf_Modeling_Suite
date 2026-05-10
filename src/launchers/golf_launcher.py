@@ -122,6 +122,7 @@ class GolfLauncher(
         """
         super().__init__()
         from PyQt6.QtCore import Qt
+
         self.loading = loading
         self.setWindowTitle("UpstreamDrift")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
@@ -158,6 +159,9 @@ class GolfLauncher(
         self.init_ui()
         self._apply_theme_system()
 
+        # Show first-run onboarding dialog if needed
+        self._show_onboarding_if_needed()
+
         if self.loading:
             pass  # Wait for update_startup_results
         elif startup_results:
@@ -177,6 +181,14 @@ class GolfLauncher(
 
         if self._startup_time_ms > 0:
             logger.info(f"Application startup completed in {self._startup_time_ms}ms")
+
+    def _show_onboarding_if_needed(self) -> None:
+        """Show first-run onboarding dialog if this is a new user."""
+        try:
+            from src.launchers.onboarding_dialog import show_onboarding_if_needed
+            show_onboarding_if_needed(self)
+        except ImportError as e:
+            logger.debug(f"Onboarding dialog not available: {e}")
 
     def _load_window_icon(self) -> None:
         icon_candidates = [
@@ -202,6 +214,11 @@ class GolfLauncher(
         self.available_models: dict[str, Any] = {}
         self.special_app_lookup: dict[str, Any] = {}
         self.current_filter_text = ""
+        # Initialize registry and engine_manager to None to preserve invariant
+        # that these attributes always exist (required by Settings dialog etc.)
+        # They will be populated by _init_registry() or update_startup_results()
+        self.registry: Any = None
+        self.engine_manager: Any = None
 
     def _init_managers(self) -> None:
         self._setup_process_console()

@@ -54,6 +54,16 @@ if TYPE_CHECKING:
 logger = get_logger(__name__)
 
 
+def _build_zoom_accessible_description() -> str:
+    """Describe the zoom slider using the configured tile-scale bounds."""
+    minimum_pct = int(round(TILE_SCALE_MIN * 100))
+    maximum_pct = int(round(TILE_SCALE_MAX * 100))
+    return (
+        f"Adjust tile size from {minimum_pct}% to {maximum_pct}%. "
+        "Use arrow keys or drag to adjust."
+    )
+
+
 class LauncherUISetupMixin:
     """Mixin for GolfLauncher UI initialization.
 
@@ -68,24 +78,31 @@ class LauncherUISetupMixin:
         *,
         checkable: bool = False,
     ) -> QToolButton:
-        """Create an icon-first sidebar control with accessible labeling."""
+        """Create an icon-first sidebar control with accessible labeling.
+
+        Provides both icon and visible text label for accessibility.
+        """
         button = QToolButton()
-        button.setText("")
+        button.setText(label)
         button.setToolTip(label)
         button.setAccessibleName(label)
+        button.setAccessibleDescription(f"Navigate to {label} section")
         button.setCursor(Qt.CursorShape.PointingHandCursor)
-        button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
+        # Show both icon and text for better accessibility
+        button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
 
         try:
             from src.shared.python.theme.icon_utils import IconColorizer
 
             button.setIcon(IconColorizer.get_icon(icon_name, "#d4d4d4"))
         except (ImportError, ValueError):
-            button.setText(label[:1])
+            pass
 
         button.setIconSize(QSize(22, 22))
         button.setCheckable(checkable)
         button.setAutoRaise(True)
+        # Set focus policy for keyboard navigation
+        button.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         return button
 
     def init_ui(self) -> None:
@@ -108,9 +125,9 @@ class LauncherUISetupMixin:
             self.title_bar = CustomTitleBar(self)
             self.title_bar.minimize_requested.connect(self.showMinimized)
             self.title_bar.maximize_requested.connect(
-                lambda: self.showNormal()
-                if self.isMaximized()
-                else self.showMaximized()
+                lambda: (
+                    self.showNormal() if self.isMaximized() else self.showMaximized()
+                )
             )
             self.title_bar.close_requested.connect(self.close)
             self.title_bar.move_requested.connect(self.move)
@@ -255,6 +272,12 @@ class LauncherUISetupMixin:
         layout.addStretch()
         layout.addWidget(btn_settings)
         layout.addWidget(btn_docs)
+
+        # Set explicit focus order for keyboard navigation
+        sidebar.setFocusProxy(btn_home)
+        btn_home.setNextInFocusChain(btn_engines)
+        btn_engines.setNextInFocusChain(btn_settings)
+        btn_settings.setNextInFocusChain(btn_docs)
 
         return sidebar
 
@@ -693,6 +716,9 @@ class LauncherUISetupMixin:
         self.zoom_slider.setFixedWidth(140)
         self.zoom_slider.setToolTip("Adjust the size of the model tiles")
         self.zoom_slider.setAccessibleName("Tile zoom")
+        self.zoom_slider.setAccessibleDescription(_build_zoom_accessible_description())
+        # Set focus policy for keyboard accessibility
+        self.zoom_slider.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         # Initial position from layout_manager if available, else compact 0.5.
         from src.launchers.launcher_constants import TILE_SCALE_DEFAULT
