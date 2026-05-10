@@ -154,8 +154,9 @@ def subscribe(channel: str, callback: Callable[[Any], None]) -> Subscription:
         transport = _get_transport()
         token = transport.subscribe(channel, callback)
 
-        # Build an unsubscribe closure compatible with the protocol-level
-        # Subscription contract.
+        # Build an unsubscribe closure that tears down the token.
+        # The protocol-level Subscription freezes this closure so
+        # unsubscribe() is always idempotent.
         def _unsub() -> None:
             transport.unsubscribe(token)
 
