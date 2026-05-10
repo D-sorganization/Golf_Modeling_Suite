@@ -37,7 +37,10 @@ class TestDrakeMotionOptimizerSetup:
 
     def test_add_objective(self, optimizer: DrakeMotionOptimizer) -> None:
         """Test adding an objective."""
-        dummy_cost = lambda x: 0.0
+
+        def dummy_cost(x: object) -> float:
+            return 0.0
+
         optimizer.add_objective("test_obj", 1.5, dummy_cost, target_value=10.0)
 
         assert len(optimizer.objectives) == 1
@@ -49,12 +52,19 @@ class TestDrakeMotionOptimizerSetup:
 
     def test_add_objective_none_name(self, optimizer: DrakeMotionOptimizer) -> None:
         """Test adding an objective with None name raises ValueError."""
+
+        def _dummy(x: object) -> float:
+            return 0.0
+
         with pytest.raises(ValueError, match="name must be provided"):
-            optimizer.add_objective(None, 1.0, lambda x: 0.0)  # type: ignore
+            optimizer.add_objective(None, 1.0, _dummy)  # type: ignore
 
     def test_add_constraint(self, optimizer: DrakeMotionOptimizer) -> None:
         """Test adding a constraint."""
-        dummy_constraint = lambda x: 0.0
+
+        def dummy_constraint(x: object) -> float:
+            return 0.0
+
         optimizer.add_constraint(
             "test_con",
             "inequality",
@@ -73,8 +83,12 @@ class TestDrakeMotionOptimizerSetup:
 
     def test_add_constraint_none_name(self, optimizer: DrakeMotionOptimizer) -> None:
         """Test adding a constraint with None name raises ValueError."""
+
+        def _dummy_con(x: object) -> float:
+            return 0.0
+
         with pytest.raises(ValueError, match="name must be provided"):
-            optimizer.add_constraint(None, "equality", lambda x: 0.0)  # type: ignore
+            optimizer.add_constraint(None, "equality", _dummy_con)  # type: ignore
 
     def test_setup_standard_golf_objectives(
         self, optimizer: DrakeMotionOptimizer
