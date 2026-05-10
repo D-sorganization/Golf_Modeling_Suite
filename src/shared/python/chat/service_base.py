@@ -123,6 +123,7 @@ class ChatServiceBase(abc.ABC):
 
             if session_id and session_id in self._sessions:
                 self._timestamps[session_id] = time.monotonic()
+                self._sessions.move_to_end(session_id)
                 return self._sessions[session_id]
 
             # Try app-specific session loading (e.g., from disk)
