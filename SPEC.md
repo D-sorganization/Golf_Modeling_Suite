@@ -39,7 +39,7 @@
 | **License**             | MIT                                                                                                                                                              |
 | **Current Version**     | 2.1.0                                                                                                                                                            |
 | **Spec Version**        | 1.0.148                                                                                                                                                          |
-| **Last Spec Update**    | 2026-05-10 (fix/launcher-accessibility-4918 - added accessible sidebar labels, focus metadata, zoom slider description, and keyboard activation for model cards) |
+| **Last Spec Update**    | 2026-05-10 (fix/launcher-accessibility-4918 and fix/zoom-accessibility-range-5079 - matched zoom accessible description and added keyboard activation for tiles) |
 
 ## 2. Purpose & Mission
 
@@ -552,6 +552,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 ## 12. Change Log
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| 2026-05-10 | 1.0.148 | Matched the launcher zoom slider accessible description to the configured tile scale constants so assistive technology reports the actual supported zoom range. |
 | 2026-05-09 | 1.0.147 | ⚡ Bolt: Added realtime WebSocket pubsub, channels, and file-based pubsub for live simulation streaming |
 | 2026-05-09 | 1.0.142 | 🛡️ Sentinel: Fix insecure deserialization in imitation learning models |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
