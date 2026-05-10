@@ -245,7 +245,7 @@ ui/src/
 ## Related Documents
 
 - [React UI Parity Issues](../assessments/issues/REACT_UI_PARITY_ISSUES.md)
-- [Launcher UI/UX Epic #4904](../development/launcher_epic.md)
+- [Launcher UI/UX Epic #4904](../development/launcher_parity_assessment.md)
 - [React UI README](../../ui/README.md)
 
 ---
