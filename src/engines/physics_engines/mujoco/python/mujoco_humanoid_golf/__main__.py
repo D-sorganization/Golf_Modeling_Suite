@@ -397,9 +397,13 @@ def main() -> None:
 
     # Add AI Chat dock widget (connects to FastAPI chat server)
     try:
-        from src.shared.python.ai.gui.chat_dock_widget import ChatDockWidget
+        from src.shared.python.chat import ChatDockWidget
 
-        chat_dock = ChatDockWidget(engine_context="mujoco", parent=win)
+        chat_dock = ChatDockWidget(
+            app_context="mujoco",
+            app_name="mujoco_humanoid_golf",
+            parent=win,
+        )
         win.addDockWidget(QtCore.Qt.DockWidgetArea.RightDockWidgetArea, chat_dock)
     except ImportError:
         pass  # Server not running — engine works fine without chat
