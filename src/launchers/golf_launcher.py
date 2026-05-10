@@ -143,9 +143,10 @@ class GolfLauncher(
         self._load_window_icon()
         self._init_state(startup_results)
         self._init_managers()
-        self._init_registry(startup_results)
-        self._init_engine_manager(startup_results)
+        # Skip heavy initialization in loading mode; async worker will provide results
         if not self.loading:
+            self._init_registry(startup_results)
+            self._init_engine_manager(startup_results)
             self._build_available_models()
 
         self._init_layout_manager()
@@ -427,16 +428,34 @@ class GolfLauncher(
     # -- Window management --
 
     def center_window(self) -> None:
-        """Center the window on the primary screen."""
-        screen = self.screen()
-        if not screen:
-            return
+        """Center the window on the primary screen.
 
-        geometry = self.frameGeometry()
-        available_geometry = screen.availableGeometry()
-        center_point = available_geometry.center()
-        geometry.moveCenter(center_point)
-        self.move(geometry.topLeft())
+        Delegates to _center_window() which is the single source of truth
+        using compute_centered_geometry() from launcher_layout_manager.py.
+        """
+        self._center_window()
+
+    def _center_window(self) -> None:
+        """Center the window on the primary screen using compute_centered_geometry().
+
+        This is the single source of truth for window centering. Uses
+        compute_centered_geometry() from launcher_layout_manager.py for
+        consistent geometry calculations.
+        """
+        screen = QApplication.primaryScreen()
+        if screen:
+            screen_geo = screen.availableGeometry()
+            screen_x = self._safe_int(screen_geo.x(), 0)
+            screen_y = self._safe_int(screen_geo.y(), 0)
+            screen_width = self._safe_int(screen_geo.width(), 1920)
+            screen_height = self._safe_int(screen_geo.height(), 1080)
+            w = max(self._safe_int(self.width(), 1280), 100)
+            h = max(self._safe_int(self.height(), 800), 100)
+
+            x, y, w, h = compute_centered_geometry(
+                screen_width, screen_height, w, h, screen_x, screen_y
+            )
+            self.setGeometry(x, y, w, h)
 
     def _load_layout(self) -> None:
         """Load the saved model layout from configuration file."""
@@ -491,23 +510,6 @@ class GolfLauncher(
 
         self._rebuild_grid()
         logger.info("Layout loaded successfully")
-
-    def _center_window(self) -> None:
-        """Center the window on the primary screen."""
-        screen = QApplication.primaryScreen()
-        if screen:
-            screen_geo = screen.availableGeometry()
-            screen_x = self._safe_int(screen_geo.x(), 0)
-            screen_y = self._safe_int(screen_geo.y(), 0)
-            screen_width = self._safe_int(screen_geo.width(), 1920)
-            screen_height = self._safe_int(screen_geo.height(), 1080)
-            w = max(self._safe_int(self.width(), 1280), 100)
-            h = max(self._safe_int(self.height(), 800), 100)
-
-            x, y, w, h = compute_centered_geometry(
-                screen_width, screen_height, w, h, screen_x, screen_y
-            )
-            self.setGeometry(x, y, w, h)
 
     def _safe_int(self, value: Any, default: int) -> int:
         """Safely convert a value to int, handling Mock objects from tests."""
