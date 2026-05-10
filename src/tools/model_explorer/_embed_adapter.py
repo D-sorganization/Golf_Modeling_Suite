@@ -1,60 +1,81 @@
-"""Embeddable-tool adapter for the Model Explorer (URDF Generator).
+"""Embeddable-tool adapter for the Model Explorer.
 
 Implements the :class:`~src.shared.python.launcher_embed.EmbeddableTool`
-protocol so the launcher can host the Model Explorer as a tab or dock widget
-instead of spawning a standalone process.
+protocol so the launcher can host the Model Explorer as a tab or dock
+widget. Constructed at import time by
+:mod:`src.tools.model_explorer.__init__` and registered with the
+process-wide registry.
 
-The Model Explorer is a complex tool with multiple dock widgets and panels.
-The embed adapter exposes the main content widget while allowing the host
-to manage the surrounding chrome (menu bar, docks, status bar).
+Part of Subtask 5 / #4998 of EPIC #4993.
 """
 
 from __future__ import annotations
 
 from typing import Any
 
-from src.shared.python.launcher_embed import EmbedCapabilities
+from src.shared.python.launcher_embed import (
+    EmbedCapabilities,
+    register_embeddable_tool,
+)
+from src.shared.python.logging_pkg.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 __all__ = ["_ModelExplorerEmbedAdapter"]
 
 
 class _ModelExplorerEmbedAdapter:
-    """Adapter exposing the Model Explorer's main widget through the embed contract."""
+    """Adapter exposing :class:`MainWidget` through the embed contract."""
 
     tool_id: str = "model_explorer"
+
+    def __init__(self) -> None:
+        # Track every widget we hand out so :meth:`cleanup` can dispose
+        # of resources even if the host forgets to delete the widget.
+        self._widgets: list[Any] = []
 
     def embed_capabilities(self) -> EmbedCapabilities:
         return EmbedCapabilities(
             supports_embedded=True,
             prefers_dock=False,
-            min_size=(1024, 768),
+            min_size=(700, 500),
             requires_separate_qapplication=False,
         )
 
     def create_main_widget(self, parent: Any) -> Any:
-        # Lazy import: the model explorer pulls in PyQt6 + mujoco + various
-        # visualization dependencies. Keeping this import inside
-        # ``create_main_widget`` lets the adapter load cleanly in
-        # headless contexts.
-        from .main_window import URDFGeneratorWindow
+        # Lazy import: the GUI module pulls in PyQt6, and we want the
+        # registry / adapter to import cleanly in headless contexts
+        # (CI, docs builds) where PyQt6 may be unavailable until a test
+        # fixture installs ``QT_QPA_PLATFORM=offscreen``.
+        from .gui import MainWidget
 
-        # Create the main window but return its central widget for embedding
-        window = URDFGeneratorWindow(parent)
-        # The window itself is a QMainWindow, but for embedding we need
-        # to return just the content. The host will manage the chrome.
-        # Return the window and let the host extract centralWidget if needed.
-        return window
+        widget = MainWidget(parent)
+        self._widgets.append(widget)
+        return widget
 
     def cleanup(self) -> None:
-        """Clean up any resources held by the Model Explorer.
-
-        The Model Explorer doesn't hold external resources that need
-        explicit cleanup beyond normal Qt teardown. This method is
-        idempotent and safe to call multiple times.
-        """
-        pass
+        # Idempotent: hosts may call cleanup more than once during
+        # shutdown. Forward to every widget we handed out, but never
+        # raise — the host's shutdown path must not depend on us.
+        widgets, self._widgets = self._widgets, []
+        for widget in widgets:
+            try:
+                widget.cleanup()
+            except Exception:  # pragma: no cover - defensive
+                logger.exception("model_explorer widget cleanup raised")
 
     def is_dirty(self) -> bool:
-        # The Model Explorer works with file-based URDF models.
-        # Users save explicitly; no unsaved state tracking needed here.
+        # The Model Explorer tracks a single in-memory URDFBuilder. If
+        # any of the live widgets has unsaved changes, treat the tool
+        # as dirty so the launcher can prompt before tearing down the
+        # tab. Defensive: if probing a widget raises (e.g. it has been
+        # deleted by Qt) treat it as clean.
+        for widget in list(self._widgets):
+            try:
+                if widget.has_unsaved_changes():
+                    return True
+            except Exception:  # pragma: no cover - defensive
+                logger.debug(
+                    "model_explorer is_dirty: widget probe raised", exc_info=True
+                )
         return False

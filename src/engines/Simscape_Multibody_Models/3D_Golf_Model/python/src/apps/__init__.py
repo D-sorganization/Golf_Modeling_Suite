@@ -1,29 +1,28 @@
-"""C3D Viewer application package.
+"""Apps package for the 3D Golf Model engine.
 
-This package provides the C3D motion capture data viewer with embedded
-widget support for the launcher's embedded host.
-
-The :class:`_C3DViewerEmbedAdapter` is registered with the embeddable-tool
-registry on import so the launcher can host the C3D viewer as a tab or dock
-widget.
+The C3D viewer's embed-adapter is registered here at import time so the
+launcher can host the viewer in a tab/dock without spawning a separate
+process. The registration is best-effort: if the
+:mod:`launcher_embed` contract is unavailable (e.g., shared package not
+on ``sys.path`` in some embedded contexts), the import is silently
+skipped so importing :mod:`apps` keeps working in those contexts.
 """
 
-from src.shared.python.launcher_embed import (
-    EmbeddableTool,
-    get_embeddable_tool,
-    register_embeddable_tool,
-)
+from __future__ import annotations
 
-from ._embed_adapter import _C3DViewerEmbedAdapter
+import contextlib
 
-# Module-level singleton: registries key on ``tool_id`` so a single
-# instance is sufficient. Constructing the adapter is cheap (it does not
-# spin up any resources until ``create_main_widget`` is called).
-_ADAPTER: EmbeddableTool = _C3DViewerEmbedAdapter()
+with contextlib.suppress(ImportError):
+    from src.shared.python.launcher_embed import (
+        get_embeddable_tool,
+        register_embeddable_tool,
+    )
 
-# Guard against double-import (e.g. test reloads). The registry rejects
-# duplicate ids by design — we want a quiet no-op here instead.
-if get_embeddable_tool(_ADAPTER.tool_id) is None:
-    register_embeddable_tool(_ADAPTER)
+    from ._embed_adapter import _C3DViewerEmbedAdapter
 
-__all__ = ["MainWidget", "C3DViewerMainWindow"]
+    _ADAPTER = _C3DViewerEmbedAdapter()
+    # Guard against double-import (e.g. test reloads). The registry
+    # rejects duplicate ids by design — we want a quiet no-op here
+    # instead of a hard error.
+    if get_embeddable_tool(_ADAPTER.tool_id) is None:
+        register_embeddable_tool(_ADAPTER)

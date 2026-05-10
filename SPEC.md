@@ -30,16 +30,16 @@
 
 ## 1. Identity
 
-| Field                   | Value                                              |
-| ----------------------- | -------------------------------------------------- |
-| **Repository Name**     | `UpstreamDrift`                                    |
-| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift` |
-| **Owner**               | D-sorganization                                    |
-| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
-| **License**             | MIT                                                |
-| **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.147                                            |
-| **Last Spec Update**    | 2026-05-09 (feat/launcher-embed-4997-realtime - added realtime WebSocket pubsub, channels, and file-based pubsub for live simulation streaming) |
+| Field                   | Value                                                                                                                                                            |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Repository Name**     | `UpstreamDrift`                                                                                                                                                  |
+| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift`                                                                                                               |
+| **Owner**               | D-sorganization                                                                                                                                                  |
+| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                                                                                                                                   |
+| **License**             | MIT                                                                                                                                                              |
+| **Current Version**     | 2.1.0                                                                                                                                                            |
+| **Spec Version**        | 1.0.150                                                                                                                                                          |
+| **Last Spec Update**    | 2026-05-10 (fix/issue-5106-mujoco-qpos-layout - mapped MuJoCo live-kinematics poses through model qpos addresses instead of prefix truncation)                |
 
 ## 2. Purpose & Mission
 
@@ -552,6 +552,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 ## 12. Change Log
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| 2026-05-10 | 1.0.148 | Matched the launcher zoom slider accessible description to the configured tile scale constants so assistive technology reports the actual supported zoom range. |
 | 2026-05-09 | 1.0.147 | ⚡ Bolt: Added realtime WebSocket pubsub, channels, and file-based pubsub for live simulation streaming |
 | 2026-05-09 | 1.0.142 | 🛡️ Sentinel: Fix insecure deserialization in imitation learning models |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -671,4 +672,7 @@ Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linal
 | 2026-05-07 | 1.0.141 | Added deterministic OpenSim multistart fit orchestration with seed-list reproducibility, per-start fresh simulator factories, best-success result selection, and typed all-starts-failed diagnostics. |
 | 2026-05-07 | 1.0.143 | Fixed Wave 2 manifest validator to parse `###` section headers matching the generated format, preventing self-inconsistent validation after `--update`. Fixed wheel event filter cache to use `weakref.WeakValueDictionary` preventing unbounded memory growth in long-running UI applications with transient controls. |
 | 2026-05-08 | 1.0.144 | Fixed Preferences dialog crash (issue #4491) by correcting `get_available_fleet_themes()` to `get_available_themes()` in `src/shared/python/ui/preferences_dialog.py:184`. |
+| 2026-05-10 | 1.0.148 | Added launcher accessibility coverage for sidebar tool buttons with visible labels and accessible descriptions, strong keyboard focus on sidebar and zoom controls, zoom slider range description, and keyboard activation/selection support on draggable model cards. |
+| 2026-05-10 | 1.0.149 | Corrected the launcher zoom slider accessible description helper to derive its percentage range from `TILE_SCALE_MIN` and `TILE_SCALE_MAX`, keeping screen-reader guidance aligned with the actual slider bounds after future constant changes. |
+| 2026-05-10 | 1.0.150 | Fixed MuJoCo live-kinematics pose application to honor model `jnt_qposadr` / free-joint addresses and added regression coverage for fixed-base plus reordered free-joint layouts. |
 ````

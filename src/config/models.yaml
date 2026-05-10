@@ -13,6 +13,7 @@ models:
       category: "physics_engine"
       logo: "assets/mujoco.png"
       status: "ready"
+      default_launch: "tab"
 
   - id: "drake_golf"
     name: "Drake"
@@ -24,6 +25,7 @@ models:
       category: "physics_engine"
       logo: "assets/drake.png"
       status: "ready"
+      default_launch: "tab"
 
   - id: "pinocchio_golf"
     name: "Pinocchio"
@@ -35,6 +37,7 @@ models:
       category: "physics_engine"
       logo: "assets/pinocchio.png"
       status: "ready"
+      default_launch: "tab"
 
   - id: "opensim_golf"
     name: "OpenSim"
@@ -46,6 +49,7 @@ models:
       category: "physics_engine"
       logo: "assets/opensim.png"
       status: "ready"
+      default_launch: "tab"
 
   - id: "myosim_suite"
     name: "MyoSuite"
@@ -57,6 +61,7 @@ models:
       category: "physics_engine"
       logo: "assets/myosim.png"
       status: "ready"
+      default_launch: "tab"
 
   - id: "matlab_suite"
     name: "MATLAB Simscape"
@@ -97,6 +102,7 @@ models:
       category: "motion_matching"
       logo: "motion_target_preview.svg"
       status: "ready"
+      default_launch: "tab"
 
   - id: "pose_studio"
     name: "Pose Studio"
@@ -132,6 +138,7 @@ models:
       category: "motion_capture"
       logo: "assets/c3d_viewer_modern.png"
       status: "ready"
+      default_launch: "tab"
 
   - id: "video_analyzer"
     name: "Video Analyzer"
@@ -176,6 +183,7 @@ models:
       category: "tool"
       logo: "assets/urdf_icon.png"
       status: "ready"
+      default_launch: "tab"
 
   - id: "data_explorer"
     name: "Data Explorer"
@@ -186,6 +194,7 @@ models:
       category: "tool"
       logo: "assets/data_explorer_modern.png"
       status: "ready"
+      default_launch: "tab"
 
   # =============================================================================
   # DOCUMENTATION

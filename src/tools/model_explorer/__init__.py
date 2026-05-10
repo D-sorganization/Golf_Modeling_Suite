@@ -12,34 +12,31 @@ New in v2.0.0:
 - End effector swap system with visual interface
 - Joint auto-loader and manipulation panel
 - Mesh/STL browser with copy functionality
-
-The :class:`_ModelExplorerEmbedAdapter` is registered with the embeddable-tool
-registry on import so the launcher can host the Model Explorer as a tab or dock
-widget.
 """
 
 __version__ = "2.0.0"
 __author__ = "Golf Modeling Suite Team"
 
-from src.shared.python.launcher_embed import (
-    EmbeddableTool,
-    get_embeddable_tool,
-    register_embeddable_tool,
-)
+import contextlib
 
 from .segment_manager import SegmentManager
 from .urdf_builder import Handedness, URDFBuilder
-from ._embed_adapter import _ModelExplorerEmbedAdapter
 
-# Module-level singleton: registries key on ``tool_id`` so a single
-# instance is sufficient. Constructing the adapter is cheap (it does not
-# spin up any resources until ``create_main_widget`` is called).
-_ADAPTER: EmbeddableTool = _ModelExplorerEmbedAdapter()
+# Register the embed adapter with the launcher's embeddable-tool
+# registry on import. Wrapped in ``contextlib.suppress(ImportError)``
+# so ``import src.tools.model_explorer`` continues to work in headless
+# contexts where PyQt6 (transitively pulled in by ``_embed_adapter``)
+# is unavailable. See Subtask 5 / #4998 of EPIC #4993.
+with contextlib.suppress(ImportError):
+    from . import _embed_adapter  # noqa: F401
+    from src.shared.python.launcher_embed import (
+        get_embeddable_tool,
+        register_embeddable_tool,
+    )
 
-# Guard against double-import (e.g. test reloads). The registry rejects
-# duplicate ids by design — we want a quiet no-op here instead.
-if get_embeddable_tool(_ADAPTER.tool_id) is None:
-    register_embeddable_tool(_ADAPTER)
+    _ADAPTER = _embed_adapter._ModelExplorerEmbedAdapter()
+    if get_embeddable_tool(_ADAPTER.tool_id) is None:
+        register_embeddable_tool(_ADAPTER)
 
 __all__ = [
     # Main windows
