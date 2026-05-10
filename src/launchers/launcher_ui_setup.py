@@ -707,7 +707,7 @@ class LauncherUISetupMixin:
         self.zoom_slider.setToolTip("Adjust the size of the model tiles")
         self.zoom_slider.setAccessibleName("Tile zoom")
         self.zoom_slider.setAccessibleDescription(
-            "Slider to adjust tile size from 50% to 150%. Use arrow keys or drag to adjust."
+            f"Slider to adjust tile size from {int(TILE_SCALE_MIN * 100)}% to {int(TILE_SCALE_MAX * 100)}%. Use arrow keys or drag to adjust."
         )
         # Set focus policy for keyboard accessibility
         self.zoom_slider.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
