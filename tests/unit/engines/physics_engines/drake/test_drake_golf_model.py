@@ -5,6 +5,9 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
+
+# Skip entire module if pydrake is not available
+pydrake = pytest.importorskip("pydrake")
 from pydrake.all import RigidTransform, SpatialInertia
 
 from src.engines.physics_engines.drake.python.src.drake_golf_model import (
