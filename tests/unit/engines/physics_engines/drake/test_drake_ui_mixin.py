@@ -41,11 +41,9 @@ class DummyUIGUI(DrakeUIMixin):
 
     def _update_status(self, msg: str) -> None:
         """Mock update status."""
-        pass
 
     def _update_visualization(self) -> None:
         """Mock update visualization."""
-        pass
 
     def _on_model_changed(self, idx):
         pass

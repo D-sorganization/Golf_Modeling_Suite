@@ -34,19 +34,15 @@ class DummySimGUI(SimulationMixin):
 
     def _update_status(self, msg: str) -> None:
         """Mock update status."""
-        pass
 
     def _sync_kinematic_sliders(self) -> None:
         """Mock sync sliders."""
-        pass
 
     def _reset_state(self) -> None:
         """Mock reset state."""
-        pass
 
     def _update_visualization(self) -> None:
         """Mock update viz."""
-        pass
 
     def _is_analysis_enabled(self) -> bool:
         """Mock analysis enabled."""
