@@ -693,6 +693,9 @@ class LauncherUISetupMixin:
         self.zoom_slider.setFixedWidth(140)
         self.zoom_slider.setToolTip("Adjust the size of the model tiles")
         self.zoom_slider.setAccessibleName("Tile zoom")
+        self.zoom_slider.setAccessibleDescription(
+            f"Adjust tile size from {int(TILE_SCALE_MIN * 100)}% to {int(TILE_SCALE_MAX * 100)}% of base size"
+        )
 
         # Initial position from layout_manager if available, else compact 0.5.
         from src.launchers.launcher_constants import TILE_SCALE_DEFAULT
