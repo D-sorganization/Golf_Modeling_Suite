@@ -41,13 +41,23 @@ def bootstrap_embeddable_tools() -> list[str]:
     if _bootstrap_complete:
         return _registered_tools
 
-    # List of tool adapter modules that self-register on import
-    # Each module's __init__.py calls register_embeddable_tool()
+    # List of tool packages whose __init__.py self-registers on import.
+    # Each package's __init__.py calls register_embeddable_tool() behind a
+    # contextlib.suppress(ImportError) guard so optional engine wheels
+    # (mujoco, drake, pinocchio, opensim, myosuite, etc.) failing to load
+    # is a soft skip rather than a launcher startup error.
     adapter_modules = [
-        "src.tools.model_explorer._embed_adapter",
-        "src.tools.data_explorer._embed_adapter",
-        "src.tools.starting_pose_matcher._embed_adapter",
-        "src.tools.pose_subscriber_demo._embed_adapter",
+        "src.tools.pose_studio",
+        "src.tools.data_explorer",
+        "src.tools.model_explorer",
+        "src.tools.starting_pose_matcher",
+        "src.tools.pose_subscriber_demo",
+        "src.engines.physics_engines.mujoco.python.mujoco_humanoid_golf",
+        "src.engines.physics_engines.drake.python.src",
+        "src.engines.physics_engines.pinocchio.python.pinocchio_golf",
+        "src.engines.physics_engines.opensim.python",
+        "src.engines.physics_engines.myosuite.python",
+        "src.engines.Simscape_Multibody_Models.3D_Golf_Model.python.src.apps",
     ]
 
     registered = []
@@ -55,17 +65,18 @@ def bootstrap_embeddable_tools() -> list[str]:
         try:
             # Import the module - it self-registers at module level
             __import__(module_path)
-            # Extract tool_id from module name for tracking
+            # Track by last segment of the dotted path
             tool_id = module_path.split(".")[-1].replace("_embed_adapter", "")
             registered.append(tool_id)
             logger.debug(f"Bootstrapped embeddable tool: {tool_id}")
-        except ImportError as e:
-            # Tools may have optional dependencies (PyQt6, etc.)
-            # Log but don't fail - the tool just won't be embeddable
-            logger.warning(f"Failed to bootstrap {module_path}: {e}")
-        except Exception as e:  # noqa: BLE001
+        except (ImportError, ModuleNotFoundError) as e:
+            # Tools may have optional dependencies (PyQt6, optional engine
+            # wheels, etc.). Log at debug — a missing optional engine is
+            # not a launcher-level failure.
+            logger.debug(f"embed bootstrap skipped {module_path}: {e}")
+        except Exception:  # noqa: BLE001
             # Catch any other unexpected errors during registration
-            logger.warning(f"Error bootstrapping {module_path}: {e}")
+            logger.exception(f"embed bootstrap failed for {module_path}")
 
     _registered_tools = registered
     _bootstrap_complete = True
