@@ -23,9 +23,9 @@ This Epic initiates **Phase 3: Coverage Ratcheting**, with the ultimate goal of 
 
 ### Sprint 2: Core Domain Remediation (Physics & Spatial Algebra)
 
-- **Action:** Target `src/shared/python/spatial_algebra/` and `src/shared/python/physics/` for immediate remediation.
-- **Action:** Implement parameterized tests covering boundary conditions, singular matrix handling, and cross-engine protocol compliance.
-- **Deliverable:** Core math domains elevated to >85% coverage.
+*   **Action:** Target `src/shared/python/spatial_algebra/` and `src/shared/python/physics/` for immediate remediation.
+*   **Action:** Implement parameterized tests covering boundary conditions, singular matrix handling, and cross-engine protocol compliance.
+*   **Deliverable:** Core math domains elevated to >85% coverage.
 
 ### Sprint 3: API and Backend Services Remediation
 
