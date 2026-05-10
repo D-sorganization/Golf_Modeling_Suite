@@ -320,74 +320,19 @@ disallow_untyped_defs = true
 warn_return_any = true
 
 [tool.pytest.ini_options]
-# Consolidated pytest configuration (replaces duplicate pytest.ini files)
-testpaths = ["tests"]
-asyncio_default_fixture_loop_scope = "function"
-pythonpath = [
-    ".",
-    "src",
-    "src/shared/python",
-    "src/tools",
-    "vendor/ud-tools/src/shared/python",
-    "src/engines/physics_engines/mujoco/python",
-    "src/engines/pendulum_models/python",
-    "src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/src",
-    "tests/fixtures",
-]
-python_files = "test_*.py"
-python_classes = "Test*"
-python_functions = "test_*"
-addopts = "-ra -q --strict-markers --strict-config --durations=20 -m \"not live_simulation and not requires_mocap_fixtures\""
 asyncio_mode = "auto"
-# Prevent ImportPathMismatchError from conftest.py files in engine subdirectories
-norecursedirs = [
-    "src",
-    "archive",
-    "legacy",
-    "node_modules",
-    "vendor",
-    ".git",
-    "*.egg-info",
-]
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+addopts = "-ra -q --strict-markers --strict-config --durations=20 -m \"not slow and not live_simulation and not e2e and not requires_network and not heavy\""
 markers = [
-    "live_simulation: tests requiring live physics/math engines",
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "integration: marks tests as integration tests",
-    "unit: marks tests as unit tests",
-    "core_only: tests that must pass in a default install with no optional engine extras",
-    "requires_gl: Tests needing OpenGL/moderngl or a display",
-    "headless_safe: marks tests verified to work in headless mode",
-    "slow_numba: Tests that require numba JIT or are heavy",
-    "asyncio: marks tests as async tests",
-    "benchmark: marks tests as performance benchmarks",
-    "perf: marks fast microbenchmarks (e.g. >= 60 fps targets); excluded from default CI run",
-    "serial: marks tests that must not run in parallel (sys.modules manipulation)",
-    "requires_network: marks tests that require network access (skip with '-m not requires_network')",
-    "requires_gpu: marks tests that require a GPU (skip with '-m not requires_gpu')",
-    "smoke: release-blocking smoke tests for built production artifacts",
-    "requires_matlab: tests that require the MATLAB Engine for Python (alias of live_simulation for the Simscape adapter)",
-    "requires_pinocchio: tests that require the optional pinocchio engine extra (skip with '-m \"not requires_pinocchio\"')",
-    "requires_drake: tests that require pydrake (skipped unless the heavy Drake stack is installed)",
-    "requires_mujoco: tests that require the mujoco Python bindings (skipped when `import mujoco` fails)",
-    "requires_opensim: tests that require the OpenSim Python bindings (skipped when `import opensim` fails)",
-    "requires_matlab_engine: tests that require matlab.engine importable (Option 4 bridge)",
-    "requires_torch: tests that require PyTorch importable (skipped via importorskip when missing)",
-    "requires_real_dataset: tests that require the 9 GB raw Simscape parquet on disk (skipped if absent)",
-    "requires_mocap_fixtures: tests that require body-marker mocap fixtures (Rajagopal2015 muscle CMC, post-MVP per #4296; loud-fail or skip when absent)",
-    "motion_pipeline: tests for the motion capture pipeline (sources, IK, matching, orchestrator)",
-    "makehuman: tests that exercise the MakeHuman mesh backend (skip without MakeHuman installed)",
-    "smplx: tests that exercise the SMPL-X mesh backend (skip without SMPL-X model files)",
+    "unit: Pure logic, highly isolated, execution in < 100ms",
+    "integration: Subsystem boundaries, DBs, I/O, heavy mocking",
+    "e2e: Full system boot, real networks, user workflows",
+    "slow: marks tests as slow",
+    "live_simulation: marks tests as requiring live simulation environment",
+    "requires_network: needs real outbound network",
+    "heavy: resource-intensive tests",
 ]
-filterwarnings = [
-    # Suppress hppfcl→coal rename noise (third-party, not actionable in this repo)
-    "ignore:Please update your 'hppfcl' imports to 'coal':DeprecationWarning:hppfcl",
-]
-
-# ---------------------------------------------------------------------------
-# Coverage configuration (pytest-cov / coverage.py)
-# Run with:  pytest --cov   (flags are NOT baked into addopts so that plain
-#            pytest still works without the coverage plugin installed)
-# ---------------------------------------------------------------------------
 
 [tool.coverage.run]
 source = ["src", "shared"]
