@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -66,8 +67,8 @@ class MuJoCoKinematicsService:
     engine_name: str = ENGINE_NAME
 
     def __init__(self) -> None:
-        self._model: object | None = None
-        self._data: object | None = None
+        self._model: Any = None
+        self._data: Any = None
         self._pose: CanonicalPose | None = None
         self._adapter = MujocoAdapter()
 
