@@ -37,6 +37,7 @@ models:
       category: "physics_engine"
       logo: "assets/pinocchio.png"
       status: "ready"
+      default_launch: "tab"
 
   - id: "opensim_golf"
     name: "OpenSim"
@@ -48,6 +49,7 @@ models:
       category: "physics_engine"
       logo: "assets/opensim.png"
       status: "ready"
+      default_launch: "tab"
 
   - id: "myosim_suite"
     name: "MyoSuite"
@@ -59,6 +61,7 @@ models:
       category: "physics_engine"
       logo: "assets/myosim.png"
       status: "ready"
+      default_launch: "tab"
 
   - id: "matlab_suite"
     name: "MATLAB Simscape"
