@@ -148,7 +148,11 @@ class MainWidget(QWidget):
             # Lazy import: the engine module pulls in MyoSuite/Gym/MuJoCo.
             from .myosuite_physics_engine import MyoSuitePhysicsEngine
 
-            engine = MyoSuitePhysicsEngine()
+            # ``MyoSuitePhysicsEngine`` mixes in protocol attributes that
+            # mypy flags as "abstract because empty body" — at runtime
+            # the wrapper instantiates fine, and the probe is purely a
+            # smoke test. Suppress the abstract-class diagnostic.
+            engine = MyoSuitePhysicsEngine()  # type: ignore[abstract]
         except Exception as exc:  # pragma: no cover - environment-dependent
             logger.warning("MyoSuite engine probe failed: %s", exc)
             self._status_label.setText(f"Engine status: unavailable ({exc!s})")
