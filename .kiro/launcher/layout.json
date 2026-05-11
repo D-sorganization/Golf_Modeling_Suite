@@ -7,6 +7,7 @@
     "myosim_suite",
     "model_explorer",
     "data_explorer",
+    "movement_optimizer",
     "matlab_suite"
   ],
   "selected_model": "matlab_suite",
