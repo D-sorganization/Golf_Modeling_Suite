@@ -626,22 +626,39 @@ pub fn kalman_filter(
 // ── Per-series dispatch ──────────────────────────────────────────────────────
 
 /// Apply `f` independently to each `[:, i, j]` series of the 3D array,
-/// preserving shape. Hot path; written without temporary copies of the input.
-pub fn apply_per_series<F: Fn(&[f64]) -> Vec<f64>>(data: ArrayView3<f64>, f: F) -> Array3<f64> {
-    let shape = data.dim();
-    let (nt, np, nd) = shape;
-    let mut out = Array3::<f64>::zeros((nt, np, nd));
-    // Build series buffer once per (i, j).
-    let mut buf = vec![0.0_f64; nt];
-    for i in 0..np {
-        for j in 0..nd {
+/// preserving shape. Hot path; uses rayon to parallelize across the
+/// `n_points × n_dims` independent series.
+pub fn apply_per_series<F>(data: ArrayView3<f64>, f: F) -> Array3<f64>
+where
+    F: Fn(&[f64]) -> Vec<f64> + Sync + Send,
+{
+    use rayon::prelude::*;
+    let (nt, np, nd) = data.dim();
+    let total = np * nd;
+
+    // Collect (point_idx, dim_idx, filtered_series) in parallel, then stitch
+    // back into a single Array3. Each thread allocates its own input/output
+    // buffers — small and short-lived.
+    let results: Vec<Vec<f64>> = (0..total)
+        .into_par_iter()
+        .map(|s| {
+            let i = s / nd;
+            let j = s % nd;
+            let mut buf = vec![0.0_f64; nt];
             for t in 0..nt {
                 buf[t] = data[[t, i, j]];
             }
-            let filtered = f(&buf);
-            for t in 0..nt {
-                out[[t, i, j]] = filtered[t];
-            }
+            f(&buf)
+        })
+        .collect();
+
+    let mut out = Array3::<f64>::zeros((nt, np, nd));
+    for s in 0..total {
+        let i = s / nd;
+        let j = s % nd;
+        let series = &results[s];
+        for t in 0..nt {
+            out[[t, i, j]] = series[t];
         }
     }
     out
