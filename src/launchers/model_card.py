@@ -457,6 +457,41 @@ class DraggableModelCard(QFrame):
             "before opening the simulator."
         )
 
+    def _build_info_button(self) -> QPushButton:
+        """Create a small 'i' info button."""
+        btn = QPushButton("ℹ", self)
+        btn.setObjectName("CardInfoButton")
+        btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn.setToolTip("Click for details")
+        btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        btn.setFixedSize(18, 18)
+        btn.setStyleSheet(
+            "QPushButton#CardInfoButton {"
+            "  background: rgba(255, 255, 255, 0.1);"
+            "  color: #aaaaaa;"
+            "  border: none;"
+            "  border-radius: 9px;"
+            "  font-size: 10px;"
+            "  font-weight: bold;"
+            "}"
+            "QPushButton#CardInfoButton:hover {"
+            "  background: rgba(255, 255, 255, 0.2);"
+            "  color: #ffffff;"
+            "}"
+        )
+        btn.clicked.connect(self._show_info_dialog)
+        return btn
+
+    def _show_info_dialog(self) -> None:
+        """Show a dialog with full tile information."""
+        from PyQt6.QtWidgets import QMessageBox
+
+        QMessageBox.information(
+            self,
+            f"{self.model.name} Details",
+            f"<b>{self.model.name}</b><br><br>{self.model.description}",
+        )
+
     def _setup_grid_ui(self) -> None:
         """Build the vertical grid-mode layout (Comfortable/Compact/Dense)."""
         layout = QVBoxLayout(self)
@@ -470,7 +505,16 @@ class DraggableModelCard(QFrame):
         self.lbl_name.setFont(get_display_font(size=name_pt, weight=Weights.BOLD))
         self.lbl_name.setWordWrap(True)
         self.lbl_name.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.lbl_name)
+
+        # Center the name, but keep the info button on the right
+        title_layout = QHBoxLayout()
+        title_layout.addStretch()
+        title_layout.addWidget(self.lbl_name)
+        title_layout.addWidget(
+            self._build_info_button(), alignment=Qt.AlignmentFlag.AlignTop
+        )
+        title_layout.addStretch()
+        layout.addLayout(title_layout)
 
         desc_pt = max(scaled_font_pt(self.tile_scale, base_pt=9), 9)
         self.lbl_desc = QLabel(self.model.description)
@@ -496,7 +540,12 @@ class DraggableModelCard(QFrame):
         self.lbl_name = QLabel(self.model.name)
         self.lbl_name.setObjectName("CardName")
         self.lbl_name.setFont(get_display_font(size=name_pt, weight=Weights.BOLD))
-        text_box.addWidget(self.lbl_name)
+
+        name_layout = QHBoxLayout()
+        name_layout.addWidget(self.lbl_name)
+        name_layout.addWidget(self._build_info_button())
+        name_layout.addStretch()
+        text_box.addLayout(name_layout)
 
         self.lbl_desc = QLabel(self.model.description)
         self.lbl_desc.setObjectName("CardDescription")
