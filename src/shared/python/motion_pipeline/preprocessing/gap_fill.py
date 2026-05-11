@@ -240,14 +240,15 @@ def _linear_interp_keypoints(
                     kp_before = before.keypoints[j]
                     kp_after = after.keypoints[j]
 
+                    z_val: float | None
+                    if kp_before.z is not None and kp_after.z is not None:
+                        z_val = kp_before.z + t * (kp_after.z - kp_before.z)
+                    else:
+                        z_val = None
                     new_kp = Keypoint(
                         x=kp_before.x + t * (kp_after.x - kp_before.x),
                         y=kp_before.y + t * (kp_after.y - kp_before.y),
-                        z=(
-                            kp_before.z + t * (kp_after.z - kp_before.z)
-                            if kp_before.z is not None
-                            else None
-                        ),
+                        z=z_val,
                         confidence=0.5,  # Mark as interpolated
                         name=kp.name,
                     )
