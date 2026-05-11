@@ -1,12 +1,13 @@
-use pyo3::prelude::*;
 use pyo3::exceptions::{PyRuntimeError, PyValueError};
-use rusqlite::{Connection, params, Result as SqliteResult};
+use pyo3::prelude::*;
+use rusqlite::{params, Connection};
 use std::sync::{Arc, Mutex};
 
 /// Manages vector persistence and RAG memory.
 /// Follows Law of Demeter by encapsulating the database connection logic.
 #[pyclass]
 pub struct MemoryManager {
+    #[allow(dead_code)]
     db_path: String,
     conn: Arc<Mutex<Connection>>,
 }
@@ -22,11 +23,11 @@ impl MemoryManager {
         if db_path.trim().is_empty() {
             return Err(PyValueError::new_err("db_path cannot be empty"));
         }
-        
+
         let conn = Connection::open(&db_path)
             .map_err(|e| PyRuntimeError::new_err(format!("Failed to open DB: {}", e)))?;
-            
-        Ok(Self { 
+
+        Ok(Self {
             db_path,
             conn: Arc::new(Mutex::new(conn)),
         })
@@ -35,7 +36,7 @@ impl MemoryManager {
     /// Initializes the database schema.
     pub fn initialize(&self) -> PyResult<()> {
         let conn = self.conn.lock().unwrap();
-        
+
         // Attempt to create a standard table for documents, and a virtual table for vss0
         // If vss0 is not available (extension not loaded), it might fail, so we handle it gracefully.
         conn.execute(
@@ -44,7 +45,8 @@ impl MemoryManager {
                 payload TEXT NOT NULL
             )",
             [],
-        ).map_err(|e| PyRuntimeError::new_err(format!("DB init error: {}", e)))?;
+        )
+        .map_err(|e| PyRuntimeError::new_err(format!("DB init error: {}", e)))?;
 
         // Note: In a real deployment, sqlite-vss extension must be loaded here
         // using sqlite3_enable_load_extension.
@@ -71,15 +73,16 @@ impl MemoryManager {
         if embedding.is_empty() {
             return Err(PyValueError::new_err("embedding cannot be empty"));
         }
-        
+
         let conn = self.conn.lock().unwrap();
-        
+
         // Insert into documents
         conn.execute(
             "INSERT INTO documents (payload) VALUES (?1)",
             params![payload],
-        ).map_err(|e| PyRuntimeError::new_err(format!("DB insert error: {}", e)))?;
-        
+        )
+        .map_err(|e| PyRuntimeError::new_err(format!("DB insert error: {}", e)))?;
+
         let last_id = conn.last_insert_rowid();
 
         // Convert embedding to JSON array format for vss0
@@ -91,7 +94,7 @@ impl MemoryManager {
             "INSERT INTO vss_documents(rowid, embedding) VALUES (?1, ?2)",
             params![last_id, emb_json],
         );
-        
+
         Ok(())
     }
 
@@ -105,17 +108,19 @@ impl MemoryManager {
         }
 
         let conn = self.conn.lock().unwrap();
-        
+
         let emb_json = serde_json::to_string(&query_embedding)
             .map_err(|e| PyRuntimeError::new_err(format!("Serialization error: {}", e)))?;
 
-        let mut stmt = conn.prepare(
-            "SELECT d.payload 
+        let mut stmt = conn
+            .prepare(
+                "SELECT d.payload 
              FROM vss_documents v 
              JOIN documents d ON v.rowid = d.id 
              WHERE vss_search(v.embedding, ?1) 
-             LIMIT ?2"
-        ).map_err(|e| PyRuntimeError::new_err(format!("DB prepare error: {}", e)))?;
+             LIMIT ?2",
+            )
+            .map_err(|e| PyRuntimeError::new_err(format!("DB prepare error: {}", e)))?;
 
         let rows = stmt.query_map(params![emb_json, top_k as i64], |row| {
             row.get::<_, String>(0)
@@ -124,32 +129,34 @@ impl MemoryManager {
         match rows {
             Ok(mapped_rows) => {
                 let mut results = Vec::new();
-                for r in mapped_rows {
-                    if let Ok(payload) = r {
-                        results.push(payload);
-                    }
+                for payload in mapped_rows.flatten() {
+                    results.push(payload);
                 }
                 if results.is_empty() {
                     // Fallback to random if no vss setup
-                    let mut fallback_stmt = conn.prepare("SELECT payload FROM documents LIMIT ?1").unwrap();
-                    let fallback_rows = fallback_stmt.query_map(params![top_k as i64], |row| row.get::<_, String>(0)).unwrap();
-                    for r in fallback_rows {
-                        if let Ok(p) = r {
-                            results.push(p);
-                        }
+                    let mut fallback_stmt = conn
+                        .prepare("SELECT payload FROM documents LIMIT ?1")
+                        .unwrap();
+                    let fallback_rows = fallback_stmt
+                        .query_map(params![top_k as i64], |row| row.get::<_, String>(0))
+                        .unwrap();
+                    for p in fallback_rows.flatten() {
+                        results.push(p);
                     }
                 }
                 Ok(results)
-            },
+            }
             Err(_) => {
                 // VSS likely not loaded, fallback to basic retrieval
-                let mut fallback_stmt = conn.prepare("SELECT payload FROM documents LIMIT ?1").unwrap();
-                let fallback_rows = fallback_stmt.query_map(params![top_k as i64], |row| row.get::<_, String>(0)).unwrap();
+                let mut fallback_stmt = conn
+                    .prepare("SELECT payload FROM documents LIMIT ?1")
+                    .unwrap();
+                let fallback_rows = fallback_stmt
+                    .query_map(params![top_k as i64], |row| row.get::<_, String>(0))
+                    .unwrap();
                 let mut results = Vec::new();
-                for r in fallback_rows {
-                    if let Ok(p) = r {
-                        results.push(p);
-                    }
+                for p in fallback_rows.flatten() {
+                    results.push(p);
                 }
                 Ok(results)
             }
@@ -172,7 +179,7 @@ mod tests {
         let manager = MemoryManager::new("./test.db".to_string()).unwrap();
         let result = manager.store_embedding("".to_string(), vec![0.1, 0.2]);
         assert!(result.is_err());
-        
+
         let result = manager.store_embedding("data".to_string(), vec![]);
         assert!(result.is_err());
     }

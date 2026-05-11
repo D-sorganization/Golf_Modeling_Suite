@@ -3,11 +3,11 @@ pub mod llm;
 pub mod memory;
 pub mod rag;
 
-use pyo3::prelude::*;
 use crate::config::AIConfig;
 use crate::llm::AIEngine;
 use crate::memory::MemoryManager;
 use crate::rag::RagPipeline;
+use pyo3::prelude::*;
 
 /// A Python module implemented in Rust for the UpstreamDrift AI Backend.
 #[pymodule]

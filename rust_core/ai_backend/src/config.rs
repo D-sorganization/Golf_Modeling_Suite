@@ -24,12 +24,21 @@ impl AIConfig {
     /// * `base_url` must not be empty.
     /// * `model_name` must not be empty.
     #[new]
-    pub fn new(api_key: String, base_url: String, model_name: String, db_path: String) -> PyResult<Self> {
+    pub fn new(
+        api_key: String,
+        base_url: String,
+        model_name: String,
+        db_path: String,
+    ) -> PyResult<Self> {
         if base_url.trim().is_empty() {
-            return Err(pyo3::exceptions::PyValueError::new_err("base_url cannot be empty"));
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "base_url cannot be empty",
+            ));
         }
         if model_name.trim().is_empty() {
-            return Err(pyo3::exceptions::PyValueError::new_err("model_name cannot be empty"));
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "model_name cannot be empty",
+            ));
         }
 
         Ok(Self {
@@ -52,7 +61,8 @@ mod tests {
             "https://api.openai.com/v1".to_string(),
             "gpt-4".to_string(),
             "./memory.db".to_string(),
-        ).unwrap();
+        )
+        .unwrap();
         assert_eq!(config.model_name, "gpt-4");
     }
 
