@@ -59,13 +59,14 @@ class _ApiHandle:
     repo_summary: Any
 
 
-_API_CACHE: dict[str, _ApiHandle | None] = {"handle": None, "resolved": False}
+_API_CACHE: dict[str, Any] = {"handle": None, "resolved": False}
 
 
 def _resolve_api() -> _ApiHandle | None:
     """Return the active codemap API, preferring the new Tools surface."""
     if _API_CACHE["resolved"]:
-        return _API_CACHE["handle"]
+        cached = _API_CACHE["handle"]
+        return cached if isinstance(cached, _ApiHandle) else None
     handle = _try_tools_api() or _try_local_api()
     _API_CACHE["handle"] = handle
     _API_CACHE["resolved"] = True
