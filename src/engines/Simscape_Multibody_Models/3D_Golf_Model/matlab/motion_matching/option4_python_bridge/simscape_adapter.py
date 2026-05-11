@@ -466,8 +466,8 @@ def _sim_out_from_matlab(sim_out_m: Any) -> SimOut:
     impact_idx = sim_out_m.get("impact_idx", None)
     if impact_idx is None:
         if clubhead.shape[0] >= 2:
-            speed = np.linalg.norm(np.diff(clubhead, axis=0), axis=1)
-            impact_idx = int(np.argmax(speed))
+            diff = np.diff(clubhead, axis=0)
+            impact_idx = int(np.argmax(np.einsum("ij,ij->i", diff, diff)))
         else:
             impact_idx = 0
     else:
@@ -546,8 +546,8 @@ def _club_target_to_matlab(target: ClubTarget, matlab: Any) -> Any:
     """Convert a Python ``ClubTarget`` into a MATLAB struct dict."""
     return {
         "time": matlab.double(target.time.reshape(-1, 1).tolist()),
-        "butt": matlab.double(target.grip.tolist()),
-        "grip": matlab.double(target.grip.tolist()),
+        "butt": matlab.double(target.butt.tolist()),
+        "grip": matlab.double(target.butt.tolist()),
         "clubhead": matlab.double(target.clubhead.tolist()),
         "club_quat": matlab.double(target.club_quat.tolist()),
         "impact_idx": float(target.impact_idx + 1),  # 1-based for MATLAB

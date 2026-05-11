@@ -261,19 +261,20 @@ class LauncherUISetupMixin:
 
         if AI_AVAILABLE:
             self.btn_ai_sidebar = self._build_sidebar_button(
-                "Chat",
+                "AI Chat",
                 "chat",
                 checkable=True,
             )
             if hasattr(self, "toggle_ai_assistant"):
                 self.btn_ai_sidebar.clicked.connect(self.toggle_ai_assistant)
 
-        btn_help = self._build_sidebar_button(
-            "Help",
+        btn_docs = self._build_sidebar_button(
+            "Documentation",
             "help",
+            checkable=True,
         )
-        if hasattr(self, "_show_help_dialog"):
-            btn_help.clicked.connect(lambda: self._show_help_dialog())
+        if hasattr(self, "_toggle_context_help"):
+            btn_docs.clicked.connect(self._toggle_context_help)
 
         # Setup mutually exclusive active-state routing for navigation
         self.sidebar_group = QButtonGroup(self)
@@ -283,17 +284,17 @@ class LauncherUISetupMixin:
 
         layout.addWidget(btn_home)
         layout.addWidget(btn_engines)
+        layout.addStretch()
         if AI_AVAILABLE:
             layout.addWidget(self.btn_ai_sidebar)
-        layout.addWidget(btn_help)
+        layout.addWidget(btn_docs)
         layout.addWidget(btn_settings)
-        layout.addStretch()
 
         # Set explicit focus order for keyboard navigation
         sidebar.setFocusProxy(btn_home)
         QWidget.setTabOrder(btn_home, btn_engines)
         QWidget.setTabOrder(btn_engines, btn_settings)
-        QWidget.setTabOrder(btn_settings, btn_help)
+        QWidget.setTabOrder(btn_settings, btn_docs)
 
         return sidebar
 
@@ -631,7 +632,6 @@ class LauncherUISetupMixin:
         self.action_customize_tiles = self.layout_menu.addAction("Edit Tiles...")
         if self.action_customize_tiles:
             self.action_customize_tiles.setEnabled(False)
-        if self.action_customize_tiles:
             self.action_customize_tiles.triggered.connect(self.open_layout_manager)
         self.btn_modify_layout.setMenu(self.layout_menu)
 
