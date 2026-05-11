@@ -1037,7 +1037,14 @@ jobs:
   # =============================================================================
   rust-quality-gate:
     needs: pick-runner
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ${{ needs.pick-runner.outputs.runner }}
+          - windows-latest
+          - macos-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -1046,6 +1053,7 @@ jobs:
 
       - name: Check for Rust changes
         id: rust-changes
+        shell: bash
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             git fetch origin "${{ github.base_ref }}"
@@ -1077,6 +1085,7 @@ jobs:
 
       - name: Rust Quality Gate Skipped
         if: steps.rust-changes.outputs.has_changes != 'true'
+        shell: bash
         run: echo "No Rust changes detected; Rust quality gate is not required."
 
       - name: Install Rust toolchain
@@ -1100,7 +1109,13 @@ jobs:
 
       - name: Symlink Tools for Cargo path resolution
         if: steps.rust-changes.outputs.has_changes == 'true'
-        run: ln -sfn "$GITHUB_WORKSPACE/_tools_dep" "$GITHUB_WORKSPACE/../Tools"
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            cp -r "$GITHUB_WORKSPACE/_tools_dep" "$GITHUB_WORKSPACE/../Tools"
+          else
+            ln -sfn "$GITHUB_WORKSPACE/_tools_dep" "$GITHUB_WORKSPACE/../Tools"
+          fi
 
       - name: Cache Cargo registry and build
         if: steps.rust-changes.outputs.has_changes == 'true'
@@ -1115,14 +1130,17 @@ jobs:
 
       - name: Format Check (rustfmt)
         if: steps.rust-changes.outputs.has_changes == 'true'
+        shell: bash
         run: cargo fmt --all -- --check
 
       - name: Lint (Clippy)
         if: steps.rust-changes.outputs.has_changes == 'true'
+        shell: bash
         run: cargo clippy --all-targets -- -D warnings
 
       - name: Run Rust Tests
         if: steps.rust-changes.outputs.has_changes == 'true'
+        shell: bash
         run: |
           # Features `python` and `wasm` use mutually-exclusive FFI systems
           cargo test
@@ -1130,9 +1148,14 @@ jobs:
 
       - name: Build PyO3 Wheel (Maturin)
         if: steps.rust-changes.outputs.has_changes == 'true'
+        shell: bash
         run: |
           python3 -m venv "$RUNNER_TEMP/rust-venv"
-          source "$RUNNER_TEMP/rust-venv/bin/activate"
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            source "$RUNNER_TEMP/rust-venv/Scripts/activate"
+          else
+            source "$RUNNER_TEMP/rust-venv/bin/activate"
+          fi
           python -m pip install --upgrade pip maturin
           cd rust_core/upstream-physics
           python -m maturin build --interpreter python --features python --release
@@ -1141,8 +1164,13 @@ jobs:
 
       - name: Verify Python Bindings
         if: steps.rust-changes.outputs.has_changes == 'true'
+        shell: bash
         run: |
-          source "$RUNNER_TEMP/rust-venv/bin/activate"
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            source "$RUNNER_TEMP/rust-venv/Scripts/activate"
+          else
+            source "$RUNNER_TEMP/rust-venv/bin/activate"
+          fi
           python -m pip install target/wheels/upstream_physics-*.whl
           python -c "
           import upstream_physics
@@ -1156,7 +1184,8 @@ jobs:
           "
 
       - name: Build WASM Module (wasm-pack)
-        if: steps.rust-changes.outputs.has_changes == 'true'
+        if: steps.rust-changes.outputs.has_changes == 'true' && matrix.os != 'windows-latest' && matrix.os != 'macos-latest'
+        shell: bash
         run: |
           rustup target add wasm32-unknown-unknown
           cargo build --target wasm32-unknown-unknown --features wasm -p upstream-physics
@@ -1164,14 +1193,17 @@ jobs:
 
       - name: Rust Quality Gate Summary
         if: steps.rust-changes.outputs.has_changes == 'true'
+        shell: bash
         run: |
-          echo "## Rust Quality Gate" >> $GITHUB_STEP_SUMMARY
+          echo "## Rust Quality Gate (${{ matrix.os }})" >> $GITHUB_STEP_SUMMARY
           echo "- - rustfmt: formatted" >> $GITHUB_STEP_SUMMARY
           echo "- - clippy: no warnings" >> $GITHUB_STEP_SUMMARY
           echo "- - cargo test: all tests pass" >> $GITHUB_STEP_SUMMARY
           echo "- - maturin: wheel built" >> $GITHUB_STEP_SUMMARY
           echo "- - Python bindings: verified" >> $GITHUB_STEP_SUMMARY
-          echo "- - WASM: target compiled and verified" >> $GITHUB_STEP_SUMMARY
+          if [ "$RUNNER_OS" != "Windows" ] && [ "$RUNNER_OS" != "macOS" ]; then
+            echo "- - WASM: target compiled and verified" >> $GITHUB_STEP_SUMMARY
+          fi
 
   rust-quickstart:
     name: Rust Quickstart
