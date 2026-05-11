@@ -319,6 +319,7 @@ class LayoutManager:
                 "simulation": "Simulation",
                 "motion_matching": "Motion Matching",
                 "motion_capture": "Motion Capture",
+                "biomechanics": "Biomechanics",
                 "tool": "Tools & Data",
                 "documentation": "Documentation",
                 "external": "Tools & Data",
@@ -327,6 +328,14 @@ class LayoutManager:
                 return mapping[cat_norm]
 
         t = getattr(model, "type", "").lower()
+        if t in [
+            "mujoco_biomech",
+            "drake_biomech",
+            "opensim_biomech",
+            "pinocchio_biomech",
+            "movement_optimizer",
+        ]:
+            return "Biomechanics"
         if t in [
             "custom_humanoid",
             "drake",

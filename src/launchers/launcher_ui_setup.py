@@ -248,6 +248,17 @@ class LauncherUISetupMixin:
             checkable=True,
         )
 
+        btn_biomech = self._build_sidebar_button(
+            "Biomech",
+            "biomechanics",
+            checkable=True,
+        )
+        btn_biomech.setToolTip(
+            "Biomechanics: musculoskeletal models, multibody engines, "
+            "and movement optimization"
+        )
+        btn_biomech.setAccessibleDescription("Navigate to Biomechanics section")
+
         # If open_settings exists in the mixed-in class, use it.
         # Otherwise, we gracefully handle it to avoid crashes in tests.
         btn_settings = self._build_sidebar_button(
@@ -280,10 +291,12 @@ class LauncherUISetupMixin:
         self.sidebar_group = QButtonGroup(self)
         self.sidebar_group.addButton(btn_home, 0)
         self.sidebar_group.addButton(btn_engines, 1)
+        self.sidebar_group.addButton(btn_biomech, 2)
         self.sidebar_group.idClicked.connect(self._on_sidebar_routed)
 
         layout.addWidget(btn_home)
         layout.addWidget(btn_engines)
+        layout.addWidget(btn_biomech)
         layout.addStretch()
         if AI_AVAILABLE:
             layout.addWidget(self.btn_ai_sidebar)
@@ -293,7 +306,8 @@ class LauncherUISetupMixin:
         # Set explicit focus order for keyboard navigation
         sidebar.setFocusProxy(btn_home)
         QWidget.setTabOrder(btn_home, btn_engines)
-        QWidget.setTabOrder(btn_engines, btn_settings)
+        QWidget.setTabOrder(btn_engines, btn_biomech)
+        QWidget.setTabOrder(btn_biomech, btn_settings)
         QWidget.setTabOrder(btn_settings, btn_docs)
 
         return sidebar
@@ -303,10 +317,13 @@ class LauncherUISetupMixin:
         if not hasattr(self, "layout_manager"):
             return
 
-        if button_id == 0:
-            self.layout_manager.current_category_filter = "All"
-        elif button_id == 1:
-            self.layout_manager.current_category_filter = "Physics Engines"
+        filter_map: dict[int, str] = {
+            0: "All",
+            1: "Physics Engines",
+            2: "Biomechanics",
+        }
+        if button_id in filter_map:
+            self.layout_manager.current_category_filter = filter_map[button_id]
 
         if hasattr(self, "_rebuild_grid"):
             self._rebuild_grid()
