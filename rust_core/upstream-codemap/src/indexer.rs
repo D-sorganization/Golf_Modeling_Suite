@@ -417,7 +417,7 @@ pub fn repo_info(repo_root: &Path) -> Result<RepoInfo> {
     for row in rows.flatten() {
         langs.push(row);
     }
-    langs.sort_by(|a, b| b.1.cmp(&a.1));
+    langs.sort_by_key(|kv| std::cmp::Reverse(kv.1));
     let db_size = std::fs::metadata(db::db_path(&repo))
         .map(|m| m.len())
         .unwrap_or(0);
