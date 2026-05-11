@@ -8,6 +8,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from PyQt6.QtCore import pyqtProperty  # type: ignore[attr-defined]
 from PyQt6.QtCore import (
     QEasingCurve,
     QEvent,
@@ -15,7 +16,6 @@ from PyQt6.QtCore import (
     QPoint,
     QPropertyAnimation,
     Qt,
-    pyqtProperty,
 )
 from PyQt6.QtGui import (
     QColor,
@@ -413,7 +413,9 @@ class DraggableModelCard(QFrame):
         chip_pt = max(8, scaled_font_pt(self.tile_scale, base_pt=8))
         lbl_status.setFont(get_qfont(size=chip_pt, weight=Weights.BOLD))
         lbl_status.setProperty("status_chip", status_class)
-        lbl_status.style().polish(lbl_status)
+        style = lbl_status.style()
+        if style:
+            style.polish(lbl_status)
         lbl_status.setAlignment(Qt.AlignmentFlag.AlignCenter)
         lbl_status.setMinimumWidth(80)
 
@@ -708,7 +710,9 @@ class DraggableModelCard(QFrame):
         chip = self.findChild(QLabel, "StatusChip")
         if chip:
             chip.setProperty("status_chip", status_class)
-            chip.style().polish(chip)
+            style = chip.style()
+            if style:
+                style.polish(chip)
         # Update no-image fallback
         img = self.findChild(QLabel, "CardImage")
         if img and not img.pixmap():

@@ -159,7 +159,10 @@ class LauncherUISetupMixin:
         self.content_splitter = QSplitter(Qt.Orientation.Horizontal)
         self.content_splitter.setHandleWidth(3)
         self.content_splitter.setProperty("class", "dark")
-        self.content_splitter.style().polish(self.content_splitter)
+        _style = self.content_splitter.style()
+
+        if _style:
+            _style.polish(self.content_splitter)
 
         # Left panel: launcher grid + bottom bar
         left_panel = QWidget()
@@ -555,7 +558,10 @@ class LauncherUISetupMixin:
             raise ValueError("top_bar must be provided")
         self.lbl_status = QLabel("Checking Docker...")
         self.lbl_status.setProperty("status", "inactive-bold")
-        self.lbl_status.style().polish(self.lbl_status)
+        _style = self.lbl_status.style()
+
+        if _style:
+            _style.polish(self.lbl_status)
         top_bar.addWidget(self.lbl_status)
 
         # Engine-runtime indicator. Shows where physics engines run:
@@ -567,7 +573,10 @@ class LauncherUISetupMixin:
 
         self.lbl_execution_mode = QLabel("Runtime: Native Windows")
         self.lbl_execution_mode.setProperty("exec_mode", "warning")
-        self.lbl_execution_mode.style().polish(self.lbl_execution_mode)
+        _style = self.lbl_execution_mode.style()
+
+        if _style:
+            _style.polish(self.lbl_execution_mode)
         self.lbl_execution_mode.setToolTip(
             "Where physics engines execute — Native Windows, Docker "
             "container, or WSL2 Ubuntu. Click the ? for full details."
@@ -620,8 +629,10 @@ class LauncherUISetupMixin:
 
         self.layout_menu = QMenu(self.btn_modify_layout)
         self.action_customize_tiles = self.layout_menu.addAction("Edit Tiles...")
-        self.action_customize_tiles.setEnabled(False)
-        self.action_customize_tiles.triggered.connect(self.open_layout_manager)
+        if self.action_customize_tiles:
+            self.action_customize_tiles.setEnabled(False)
+        if self.action_customize_tiles:
+            self.action_customize_tiles.triggered.connect(self.open_layout_manager)
         self.btn_modify_layout.setMenu(self.layout_menu)
 
         # Only Layout controls remain in the top bar (config options moved to settings)
@@ -827,11 +838,17 @@ class LauncherUISetupMixin:
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setFrameShape(QFrame.Shape.NoFrame)
         self.scroll_area.setProperty("class", "transparent")
-        self.scroll_area.style().polish(self.scroll_area)
+        _style = self.scroll_area.style()
+
+        if _style:
+            _style.polish(self.scroll_area)
 
         self.grid_container = QWidget()
         self.grid_container.setProperty("class", "transparent")
-        self.grid_container.style().polish(self.grid_container)
+        _style = self.grid_container.style()
+
+        if _style:
+            _style.polish(self.grid_container)
         self.grid_layout = QGridLayout(self.grid_container)
         self.grid_layout.setSpacing(20)
         self.grid_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -849,7 +866,10 @@ class LauncherUISetupMixin:
         self.btn_launch.setFixedHeight(50)
         self.btn_launch.setFont(get_display_font(size=12, weight=Weights.BOLD))
         self.btn_launch.setProperty("class", "launch-ready")
-        self.btn_launch.style().polish(self.btn_launch)
+        _style = self.btn_launch.style()
+
+        if _style:
+            _style.polish(self.btn_launch)
         self.btn_launch.clicked.connect(self.launch_simulation)
         self.btn_launch.setCursor(Qt.CursorShape.PointingHandCursor)
         bottom_bar.addWidget(self.btn_launch)
@@ -883,7 +903,10 @@ class LauncherUISetupMixin:
         self._console_text.setReadOnly(True)
         self._console_text.setMaximumBlockCount(5000)
         self._console_text.setProperty("class", "console-dark")
-        self._console_text.style().polish(self._console_text)
+        _style = self._console_text.style()
+
+        if _style:
+            _style.polish(self._console_text)
 
         console_container = QWidget()
         console_layout = QVBoxLayout(console_container)

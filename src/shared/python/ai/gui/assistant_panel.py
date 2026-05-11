@@ -409,11 +409,11 @@ class AIAssistantPanel(QWidget):
         super().showEvent(event)
         self._refresh_models()
         if hasattr(self, "chk_auto_index") and self.chk_auto_index.isChecked():
-            self._append_system_message("Indexing codebase for full context...")
+            self._add_system_message("Indexing codebase for full context...")
             # Placeholder for actual RAG index trigger
             QtCore.QTimer.singleShot(
                 1000,
-                lambda: self._append_system_message("Codebase indexed successfully."),
+                lambda: self._add_system_message("Codebase indexed successfully."),
             )
 
     def _refresh_models(self) -> None:
@@ -542,8 +542,10 @@ class AIAssistantPanel(QWidget):
         # Refresh all child messages
         for i in range(self._message_layout.count()):
             item = self._message_layout.itemAt(i)
-            if item and item.widget() and isinstance(item.widget(), MessageWidget):
-                item.widget().refresh_theme()
+            if item:
+                w = item.widget()
+                if isinstance(w, MessageWidget):
+                    w.refresh_theme()
 
     def _create_header(self) -> QWidget:
         """Create the panel header."""
