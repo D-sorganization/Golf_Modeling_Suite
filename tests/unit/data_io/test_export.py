@@ -17,7 +17,7 @@ from src.shared.python.data_io.export import (
 
 
 class TestGetAvailableExportFormats:
-    def test_returns_dict(self) -> None:
+    def test_export_returns_dict(self) -> None:
         formats = get_available_export_formats()
         assert isinstance(formats, dict)
 
@@ -75,7 +75,7 @@ class TestGetAvailableExportFormats:
 
 
 class TestC3DExportData:
-    def test_construction(self) -> None:
+    def test_export_construction(self) -> None:
         n = 50
         data = C3DExportData(
             times=np.linspace(0, 1, n),
@@ -201,7 +201,7 @@ class TestProvenanceBackedAtomicExports:
         expected_checksum = hashlib.sha256(b"matlab-payload").hexdigest()
         sidecar_path = tmp_path / "recording.mat.provenance.json"
         sidecar = json.loads(sidecar_path.read_text())
-        assert outcome.solver_status == "success"
+        assert outcome.success is True
         assert outcome.path == output_path
         assert outcome.checksum_sha256 == expected_checksum
         assert outcome.provenance_path == sidecar_path
@@ -269,7 +269,7 @@ class TestProvenanceBackedAtomicExports:
         expected_checksum = hashlib.sha256(b"hdf5-payload").hexdigest()
         sidecar_path = tmp_path / "recording.h5.provenance.json"
         sidecar = json.loads(sidecar_path.read_text())
-        assert outcome.solver_status == "success"
+        assert outcome.success is True
         assert outcome.path == output_path
         assert outcome.checksum_sha256 == expected_checksum
         assert outcome.provenance_path == sidecar_path

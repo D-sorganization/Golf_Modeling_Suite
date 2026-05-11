@@ -119,6 +119,8 @@ dev = [
     # Type stubs for untyped third-party packages (GH2034)
     "types-PyYAML>=6.0",
     "scipy-stubs>=1.13.0",
+    # Required for URDF schema validation tests (issue #4597)
+    "lxml>=5.0.0",
 ]
 
 # GUI testing (requires PyQt6)
@@ -140,6 +142,15 @@ gui-tools = [
     "matplotlib>=3.10.8",
     "pandas>=2.0.0",
     "openpyxl>=3.1.0",   # required by pandas.read_excel for .xlsx
+]
+
+# Body-part visualisation: optional GPU-accelerated renderer (pyqtgraph.opengl).
+# Install when the matplotlib backend's per-frame budget is exceeded
+# (typically: > 30 segments × > 1000 vertices each).
+body-part-viz-gl = [
+    "pyqtgraph>=0.13",
+    "PyOpenGL>=3.1",
+    "matplotlib>=3.10.8",  # required by _hex_or_name_to_rgba in PyQtGLRenderer
 ]
 
 # Everything
@@ -325,8 +336,10 @@ pythonpath = [
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
-addopts = "-ra -q --strict-markers --strict-config --durations=20 -m \"not live_simulation and not requires_mocap_fixtures\""
+addopts = "-ra -q --strict-markers --strict-config --durations=20 -m \"not slow and not live_simulation and not e2e and not requires_network and not requires_mocap_fixtures\""
 asyncio_mode = "auto"
+timeout = 60
+timeout_method = "thread"
 # Prevent ImportPathMismatchError from conftest.py files in engine subdirectories
 norecursedirs = [
     "src",
@@ -342,12 +355,14 @@ markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
+    "e2e: full-stack smoke tests; nightly + release gate only",
     "core_only: tests that must pass in a default install with no optional engine extras",
     "requires_gl: Tests needing OpenGL/moderngl or a display",
     "headless_safe: marks tests verified to work in headless mode",
     "slow_numba: Tests that require numba JIT or are heavy",
     "asyncio: marks tests as async tests",
     "benchmark: marks tests as performance benchmarks",
+    "perf: marks fast microbenchmarks (e.g. >= 60 fps targets); excluded from default CI run",
     "serial: marks tests that must not run in parallel (sys.modules manipulation)",
     "requires_network: marks tests that require network access (skip with '-m not requires_network')",
     "requires_gpu: marks tests that require a GPU (skip with '-m not requires_gpu')",
@@ -361,6 +376,9 @@ markers = [
     "requires_torch: tests that require PyTorch importable (skipped via importorskip when missing)",
     "requires_real_dataset: tests that require the 9 GB raw Simscape parquet on disk (skipped if absent)",
     "requires_mocap_fixtures: tests that require body-marker mocap fixtures (Rajagopal2015 muscle CMC, post-MVP per #4296; loud-fail or skip when absent)",
+    "motion_pipeline: tests for the motion capture pipeline (sources, IK, matching, orchestrator)",
+    "makehuman: tests that exercise the MakeHuman mesh backend (skip without MakeHuman installed)",
+    "smplx: tests that exercise the SMPL-X mesh backend (skip without SMPL-X model files)",
 ]
 filterwarnings = [
     # Suppress hppfcl→coal rename noise (third-party, not actionable in this repo)
@@ -399,8 +417,8 @@ omit = [
 # Coverage floors by risk tier (issue #3939):
 #   - 85% for API routes, engine adapters, task management (production-critical)
 #   - 70% for shared utilities, services (important but lower risk)
-#   - 55% overall floor (raised from 45% to catch regressions)
-fail_under = 55
+#   - 65% overall floor (raised from 55% per issue #4929)
+fail_under = 75
 show_missing = true
 skip_empty = true
 precision = 1

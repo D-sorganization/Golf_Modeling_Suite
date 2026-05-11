@@ -16,9 +16,7 @@ from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import QUrl
 from PyQt6.QtGui import QDesktopServices, QKeySequence, QShortcut
-from PyQt6.QtWidgets import (
-    QMessageBox,
-)
+from PyQt6.QtWidgets import QMessageBox, QDialog
 
 from src.launchers.launcher_constants import (
     AI_AVAILABLE,
@@ -179,9 +177,7 @@ class LauncherDialogsMixin:
         Args:
             checked: Whether the button is checked.
         """
-        if not (checked is not None):
-            raise ValueError("checked must be provided")
-        if not (checked is not None):
+        if checked is None:
             raise ValueError("checked must be provided")
         if not AI_AVAILABLE or not hasattr(self, "ai_panel"):
             return
@@ -222,35 +218,19 @@ class LauncherDialogsMixin:
                 tab constants (``TAB_LAYOUT`` / ``TAB_CONFIG`` /
                 ``TAB_DIAGNOSTICS``); the Configuration tab is where
                 Engine Runtime selection and Docker Image build live.
+
+        Note: Diagnostics are now loaded lazily when the Diagnostics tab
+        is first selected, not synchronously before dialog display.
+        See issue #4916.
         """
-        if not (tab is not None):
+        if tab is None:
             raise ValueError("tab must be provided")
-        if not (tab is not None):
-            raise ValueError("tab must be provided")
-        diagnostics_data = None
-        try:
-            from src.launchers.launcher_diagnostics import LauncherDiagnostics
-
-            diag = LauncherDiagnostics()
-            diagnostics_data = diag.run_all_checks()
-
-            diagnostics_data["runtime_state"] = {
-                "available_models_count": len(self.available_models),
-                "available_model_ids": list(self.available_models.keys()),
-                "model_order_count": len(self.model_order),
-                "model_order": self.model_order,
-                "model_cards_count": len(self.model_cards),
-                "selected_model": self.selected_model,
-                "docker_available": self.docker_available,
-                "registry_loaded": self.registry is not None,
-            }
-        except ImportError as e:
-            logger.warning(f"Failed to run diagnostics: {e}")
 
         dialog = SettingsDialog(
             parent=self,
-            diagnostics_data=diagnostics_data,
+            diagnostics_data=None,  # Lazy-load on tab select
             initial_tab=tab,
+            launcher=self,
         )
         dialog.reset_layout_requested.connect(self._reset_layout_to_defaults)
         dialog.exec()
@@ -302,21 +282,21 @@ class LauncherDialogsMixin:
 
     def toggle_layout_mode(self, checked: bool) -> None:
         """Toggle tile editing mode."""
-        if not (checked is not None):
-            raise ValueError("checked must be provided")
-        if not (checked is not None):
+        if checked is None:
             raise ValueError("checked must be provided")
         self.layout_edit_mode = checked
         self.layout_manager.set_edit_mode(checked)
         if checked:
-            self.btn_modify_layout.setText("Edit Mode On")
+            self.btn_modify_layout.setText("Layout: Unlocked 🔓")
             self.btn_modify_layout.setStyleSheet(Styles.BTN_LAYOUT_EDIT_ON)
-            self.btn_customize_tiles.setEnabled(True)
+            if hasattr(self, "action_customize_tiles"):
+                self.action_customize_tiles.setEnabled(True)
             self.show_toast("Drag tiles to reorder. Double-click to launch.", "info")
         else:
-            self.btn_modify_layout.setText("Layout Locked")
+            self.btn_modify_layout.setText("Layout: Locked 🔒")
             self.btn_modify_layout.setStyleSheet(Styles.BTN_LAYOUT_LOCKED)
-            self.btn_customize_tiles.setEnabled(False)
+            if hasattr(self, "action_customize_tiles"):
+                self.action_customize_tiles.setEnabled(False)
 
     def _on_docker_mode_changed(self, state: int) -> None:
         """Handle Docker mode toggle change.
@@ -324,9 +304,7 @@ class LauncherDialogsMixin:
         Args:
             state: Qt checkbox state (0=unchecked, 2=checked)
         """
-        if not (state is not None):
-            raise ValueError("state must be provided")
-        if not (state is not None):
+        if state is None:
             raise ValueError("state must be provided")
         use_docker = state == 2
         if use_docker:
@@ -369,9 +347,7 @@ class LauncherDialogsMixin:
         Args:
             state: Qt checkbox state (0=unchecked, 2=checked)
         """
-        if not (state is not None):
-            raise ValueError("state must be provided")
-        if not (state is not None):
+        if state is None:
             raise ValueError("state must be provided")
         use_wsl = state == 2
 
@@ -446,3 +422,75 @@ class LauncherDialogsMixin:
         else:
             self.lbl_execution_mode.setText("Runtime: Native Windows")
             self.lbl_execution_mode.setStyleSheet(Styles.EXEC_MODE_WARNING)
+
+
+class ThemedModalDialog(QDialog):
+    """Custom themed frameless modal dialog."""
+
+    def __init__(self, parent=None, title="Dialog", message=""):
+        super().__init__(parent)
+        from PyQt6.QtCore import Qt
+        from PyQt6.QtGui import QColor
+        from PyQt6.QtWidgets import (
+            QVBoxLayout,
+            QLabel,
+            QHBoxLayout,
+            QPushButton,
+            QGraphicsDropShadowEffect,
+            QFrame,
+        )
+
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+
+        self.setProperty("class", "themed-modal")
+        self.style().polish(self)
+
+        layout = QVBoxLayout(self)
+
+        self.frame = QFrame(self)
+        self.frame.setStyleSheet(
+            "QFrame { background-color: #24272e; border: 1px solid #3a3f4a; border-radius: 8px; }"
+        )
+
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(20)
+        shadow.setColor(QColor(0, 0, 0, 150))
+        shadow.setOffset(0, 4)
+        self.frame.setGraphicsEffect(shadow)
+
+        frame_layout = QVBoxLayout(self.frame)
+        frame_layout.setContentsMargins(20, 20, 20, 20)
+        frame_layout.setSpacing(15)
+
+        lbl_title = QLabel(title)
+        lbl_title.setStyleSheet(
+            "color: white; font-weight: bold; font-size: 16px; border: none; background: transparent;"
+        )
+        frame_layout.addWidget(lbl_title)
+
+        lbl_msg = QLabel(message)
+        lbl_msg.setStyleSheet(
+            "color: #d4d4d4; font-size: 13px; border: none; background: transparent;"
+        )
+        lbl_msg.setWordWrap(True)
+        frame_layout.addWidget(lbl_msg)
+
+        btn_layout = QHBoxLayout()
+        btn_layout.addStretch()
+
+        self.btn_yes = QPushButton("Yes")
+        self.btn_yes.setProperty("class", "primary")
+        self.btn_yes.style().polish(self.btn_yes)
+        self.btn_yes.clicked.connect(self.accept)
+
+        self.btn_no = QPushButton("No")
+        self.btn_no.setProperty("class", "secondary")
+        self.btn_no.style().polish(self.btn_no)
+        self.btn_no.clicked.connect(self.reject)
+
+        btn_layout.addWidget(self.btn_no)
+        btn_layout.addWidget(self.btn_yes)
+
+        frame_layout.addLayout(btn_layout)
+        layout.addWidget(self.frame)

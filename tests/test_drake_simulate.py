@@ -56,7 +56,7 @@ from src.engines.physics_engines.drake.python.motion_matching.simulate import (
 class TestSimOptions:
     """Validation of the canonical options dataclass."""
 
-    def test_defaults(self) -> None:
+    def test_drake_simulate_defaults(self) -> None:
         opts = SimOptions()
         assert opts.simulation_time_s == pytest.approx(0.3)
         assert opts.sample_rate_hz == pytest.approx(1000.0)

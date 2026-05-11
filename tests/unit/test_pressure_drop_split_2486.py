@@ -47,7 +47,7 @@ class TestPressureDropFileSizes:
     """Each file must be within LOC budget after split."""
 
     @pytest.mark.unit
-    def test_coordinator_loc(self) -> None:
+    def test_pressure_drop_split_2486_coordinator_loc(self) -> None:
         loc = _count_lines(CALC_DIR / "pressure_drop_interface.py")
         assert loc <= LOC_BUDGET_COORDINATOR, (
             f"pressure_drop_interface.py has {loc} LOC; budget {LOC_BUDGET_COORDINATOR}"

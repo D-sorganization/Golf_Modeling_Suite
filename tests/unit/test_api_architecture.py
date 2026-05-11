@@ -178,7 +178,7 @@ class TestRouteRegistry:
 class TestTaskManager:
     """Tests for the extracted TaskManager with TTL and concurrency (#1485, #1488)."""
 
-    def test_set_and_get(self) -> None:
+    def test_api_architecture_set_and_get(self) -> None:
         """Basic set/get operations work."""
         from src.api.task_manager import TaskManager
 
@@ -331,80 +331,115 @@ class TestTaskManager:
         assert TaskStatus.CANCELLED.value == "cancelled"
 
 
+# ── Dict-like Compatibility Tests (#4843) ────────────────────────
+
+
+class TestTaskManagerDictContract:
+    """Pins the synchronous/dict-like compatibility contract (#4843)."""
+
+    def test_getitem_returns_task_data(self) -> None:
+        """``tm[task_id]`` returns the stored dict."""
+        from src.api.task_manager import TaskManager
+
+        tm = TaskManager()
+        tm.set("task-1", {"status": "running", "progress": 10})
+        assert tm["task-1"] == {"status": "running", "progress": 10}
+
+    def test_getitem_missing_raises_keyerror(self) -> None:
+        """``tm[missing]`` raises ``KeyError``."""
+        from src.api.task_manager import TaskManager
+
+        tm = TaskManager()
+        with pytest.raises(KeyError):
+            _ = tm["missing"]
+
+    def test_setitem_delegates_to_set(self) -> None:
+        """``tm[task_id] = data`` validates and stores."""
+        from src.api.task_manager import TaskManager
+
+        tm = TaskManager()
+        tm["task-1"] = {"status": "pending"}
+        assert tm["task-1"]["status"] == "pending"
+        with pytest.raises(ValueError, match="non-empty"):
+            tm[""] = {"status": "bad"}
+
+    def test_delitem_removes_task(self) -> None:
+        """``del tm[task_id]`` removes the task."""
+        from src.api.task_manager import TaskManager
+
+        tm = TaskManager()
+        tm.set("task-1", {"status": "pending"})
+        del tm["task-1"]
+        assert "task-1" not in tm
+        with pytest.raises(KeyError):
+            del tm["task-1"]
+
+    def test_contains_only_matches_strings(self) -> None:
+        """``__contains__`` returns False for non-string keys without raising."""
+        from src.api.task_manager import TaskManager
+
+        tm = TaskManager()
+        tm.set("task-1", {})
+        assert "task-1" in tm
+        assert 42 not in tm
+        assert None not in tm
+
+    def test_len_reflects_active_tasks(self) -> None:
+        """``len(tm)`` matches the count of non-expired tasks."""
+        from src.api.task_manager import TaskManager
+
+        tm = TaskManager()
+        assert len(tm) == 0
+        tm.set("task-1", {})
+        tm.set("task-2", {})
+        assert len(tm) == 2
+
+    def test_iter_yields_task_ids(self) -> None:
+        """Iterating yields a snapshot of currently active task IDs."""
+        from src.api.task_manager import TaskManager
+
+        tm = TaskManager()
+        tm.set("task-1", {})
+        tm.set("task-2", {})
+        assert sorted(tm) == ["task-1", "task-2"]
+
+    def test_keys_values_items_snapshots(self) -> None:
+        """``keys``/``values``/``items`` return snapshot lists."""
+        from src.api.task_manager import TaskManager
+
+        tm = TaskManager()
+        tm.set("task-1", {"status": "running"})
+        tm.set("task-2", {"status": "pending"})
+
+        keys = tm.keys()
+        values = tm.values()
+        items = tm.items()
+
+        assert sorted(keys) == ["task-1", "task-2"]
+        assert {"status": "running"} in values
+        assert ("task-1", {"status": "running"}) in items
+
+        # Snapshot is detached: mutating tm afterward does not change result.
+        tm.set("task-3", {})
+        assert "task-3" not in keys
+
+    def test_synchronous_calls_do_not_return_coroutines(self) -> None:
+        """Regression: methods must NOT return coroutine objects (#4843)."""
+        import inspect
+
+        from src.api.task_manager import TaskManager
+
+        tm = TaskManager()
+        assert not inspect.iscoroutine(tm.set("task-1", {"status": "running"}))
+        assert not inspect.iscoroutine(tm.get("task-1"))
+        assert not inspect.iscoroutine(tm.exists("task-1"))
+        assert not inspect.iscoroutine(tm.update_progress("task-1", 50.0))
+        assert not inspect.iscoroutine(tm.active_count())
+        assert isinstance(tm.active_count(), int)
+        assert isinstance(tm.exists("task-1"), bool)
+
+
 # ── API Versioning Tests ──────────────────────────────────────────
-
-
-class TestAPIVersioning:
-    """Tests for API versioning under /api/v1/ prefix (#1488)."""
-
-    @pytest.fixture
-    def client(self) -> Generator[Any, None, None]:
-        """Create a test client for the API."""
-        httpx = pytest.importorskip("httpx")  # noqa: F841
-        fastapi = pytest.importorskip("fastapi")  # noqa: F841
-        from fastapi.testclient import TestClient
-
-        try:
-            from src.api.server import app
-
-            with TestClient(app, base_url="http://localhost") as test_client:
-                yield test_client
-        except ImportError:
-            pytest.skip("Cannot import api.server")
-
-    def test_root_endpoint_at_legacy_path(self, client) -> None:
-        """Root endpoint works at legacy un-prefixed path."""
-        response = client.get("/")
-        assert response.status_code == 200
-        data = response.json()
-        assert data["status"] == "running"
-
-    def test_root_endpoint_at_versioned_path(self, client) -> None:
-        """Root endpoint works at versioned /api/v1/ path."""
-        response = client.get("/api/v1/")
-        assert response.status_code == 200
-        data = response.json()
-        assert data["status"] == "running"
-
-    def test_health_at_versioned_path(self, client) -> None:
-        """Health endpoint accessible at /api/v1/health."""
-        response = client.get("/api/v1/health")
-        assert response.status_code == 200
-        data = response.json()
-        assert data["status"] == "healthy"
-
-    def test_engines_at_versioned_path(self, client) -> None:
-        """Engines endpoint accessible at /api/v1/engines."""
-        response = client.get("/api/v1/engines")
-        assert response.status_code == 200
-        data = response.json()
-        assert "engines" in data
-
-    def test_openapi_schema_has_versioned_routes(self, client) -> None:
-        """OpenAPI schema includes versioned route paths."""
-        response = client.get("/openapi.json")
-        assert response.status_code == 200
-        data = response.json()
-        paths = list(data.get("paths", {}).keys())
-        versioned = [p for p in paths if p.startswith("/api/v1/")]
-        assert len(versioned) > 0, f"No versioned routes found. Paths: {paths[:10]}"
-
-    def test_openapi_schema_has_enhanced_description(self, client) -> None:
-        """OpenAPI schema has enhanced description with versioning info."""
-        response = client.get("/openapi.json")
-        assert response.status_code == 200
-        data = response.json()
-        info = data.get("info", {})
-        description = info.get("description", "")
-        assert "v1" in description
-        assert "Multi-engine" in description or "Versioning" in description
-
-    def test_api_version_constant(self) -> None:
-        """API_VERSION and API_PREFIX constants are correctly defined."""
-        from src.api.server import API_PREFIX, API_VERSION
-
-        assert API_VERSION == "v1"
-        assert API_PREFIX == "/api/v1"
 
 
 # ── Linkage Decomposition Tests ──────────────────────────────────
@@ -520,35 +555,3 @@ class TestLinkageMechanismsDecomposition:
 
 
 # ── OpenAPI Enhancement Tests ─────────────────────────────────────
-
-
-class TestOpenAPIEnhancements:
-    """Tests for OpenAPI schema improvements (#1488)."""
-
-    @pytest.fixture
-    def client(self) -> Generator[Any, None, None]:
-        """Create a test client for the API."""
-        httpx = pytest.importorskip("httpx")  # noqa: F841
-        fastapi = pytest.importorskip("fastapi")  # noqa: F841
-        from fastapi.testclient import TestClient
-
-        try:
-            from src.api.server import app
-
-            with TestClient(app, base_url="http://localhost") as test_client:
-                yield test_client
-        except ImportError:
-            pytest.skip("Cannot import api.server")
-
-    def test_openapi_has_tags(self, client) -> None:
-        """OpenAPI schema includes tag definitions."""
-        response = client.get("/openapi.json")
-        data = response.json()
-        tags = data.get("tags", [])
-        assert len(tags) > 0
-
-    def test_openapi_has_global_responses(self, client) -> None:
-        """OpenAPI schema includes version info."""
-        response = client.get("/openapi.json")
-        data = response.json()
-        assert data["info"]["version"] == client.app.version

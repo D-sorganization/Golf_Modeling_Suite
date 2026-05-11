@@ -383,7 +383,7 @@ class TestDrakeRecorder:
         times, data = rec.get_time_series("nonexistent_field")
         assert len(data) == 0
 
-    def test_export_to_dict(self) -> None:
+    def test_drake_gui_app_export_to_dict(self) -> None:
         """Test export_to_dict returns complete recorded data."""
         from src.engines.physics_engines.drake.python.src.drake_analysis import (
             DrakeRecorder,

@@ -23,6 +23,7 @@ Public API:
 
 from __future__ import annotations
 
+import logging
 import threading
 from dataclasses import dataclass, field
 from typing import Any, Protocol, runtime_checkable
@@ -101,6 +102,14 @@ class FitSwingProvider(Protocol):
         fit_swing(target, opts) -> CanonicalFitResult
         supports_body_target() -> bool
         supports_ball_target() -> bool
+
+    Optional methods:
+        engine_version() -> str
+            Version string of the underlying physics engine wheel
+            (e.g. ``pydrake.__version__``). Used to stamp leaderboard rows
+            so two runs against different wheels are distinguishable.
+            Defaults to ``"unknown"`` for back-compat with providers that
+            predate this hook (issue #4705).
     """
 
     engine_name: str
@@ -115,19 +124,47 @@ class FitSwingProvider(Protocol):
 
     def supports_ball_target(self) -> bool: ...
 
+    def engine_version(self) -> str:
+        """Return the underlying engine's version string.
+
+        Default implementation returns ``"unknown"`` so providers
+        predating issue #4705 stay Protocol-compliant. Real providers
+        should override to query their engine's ``__version__``
+        attribute (with a ``try/except ImportError`` fallback so the
+        provider stays constructible without the engine wheel).
+        """
+        return "unknown"
+
 
 # --- Registry ---------------------------------------------------------------
 
 _REGISTRY: dict[str, FitSwingProvider] = {}
 _REGISTRY_LOCK = threading.Lock()
+_logger = logging.getLogger(__name__)
+
+
+def _provider_qualname(provider: object) -> str:
+    """Return the fully-qualified ``module.qualname`` for a provider class.
+
+    Used to detect re-registrations that originate from the *same* logical
+    provider class even after :func:`importlib.reload` has rebuilt the
+    class object (and thus broken ``type(a) is type(b)`` identity).
+    """
+    cls = type(provider)
+    module = getattr(cls, "__module__", "") or ""
+    qualname = getattr(cls, "__qualname__", cls.__name__)
+    return f"{module}.{qualname}" if module else qualname
 
 
 def register_provider(provider: FitSwingProvider) -> None:
     """Register ``provider`` under its ``engine_name``.
 
-    Idempotent for identical re-registrations (same instance / same class
-    + same engine_name); raises :class:`ValueError` when a *different*
-    provider tries to claim an already-occupied slot.
+    Registration is idempotent: re-registering the same provider instance,
+    or any instance of the same provider class (matched by fully-qualified
+    ``module.qualname`` so :func:`importlib.reload` shadows still count),
+    is a no-op and emits a DEBUG log. Registering a *different* provider
+    class for an already-occupied ``engine_name`` raises :class:`ValueError`
+    naming both the existing and the incoming class.
     """
     name = getattr(provider, "engine_name", None)
     if not isinstance(name, str) or not name:
@@ -137,14 +174,29 @@ def register_provider(provider: FitSwingProvider) -> None:
     with _REGISTRY_LOCK:
         existing = _REGISTRY.get(name)
         if existing is provider:
+            _logger.debug(
+                "register_provider: %r already registered (same instance); no-op",
+                name,
+            )
             return
-        if existing is not None and type(existing) is type(provider):
-            # Re-import shadow: keep the first registered instance.
+        if existing is not None and (
+            type(existing) is type(provider)
+            or _provider_qualname(existing) == _provider_qualname(provider)
+        ):
+            # Same logical class — covers both ordinary re-imports and
+            # ``importlib.reload`` shadows (which rebuild the class object,
+            # so plain ``type`` identity is not enough).
+            _logger.debug(
+                "register_provider: %r already registered to %s; no-op",
+                name,
+                _provider_qualname(existing),
+            )
             return
         if existing is not None:
             raise ValueError(
                 f"engine_name {name!r} is already registered to "
-                f"{type(existing).__name__}; got {type(provider).__name__}"
+                f"{_provider_qualname(existing)}; got "
+                f"{_provider_qualname(provider)}"
             )
         _REGISTRY[name] = provider
 

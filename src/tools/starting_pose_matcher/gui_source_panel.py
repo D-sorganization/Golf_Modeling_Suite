@@ -297,6 +297,11 @@ class DataSourcesPanel(QGroupBox):
         side-effects when a session is loaded from a different machine
         whose paths no longer resolve.
         """
+        # Clear cached targets to prevent stale data when restoring a
+        # session with different (or no) source files.
+        self._club_target = None
+        self._body_target = None
+
         b = block or default_data_sources()
         self.cb_club.setChecked(b.club.enabled)
         self._club_path = b.club.file_path
@@ -386,6 +391,7 @@ class DataSourcesPanel(QGroupBox):
                 path,
                 opts=self.align_options(),
                 impact_source=self._club_target,
+                marker_set=self.combo_marker_set.currentText(),
             )
         except Exception as exc:  # noqa: BLE001
             QMessageBox.warning(

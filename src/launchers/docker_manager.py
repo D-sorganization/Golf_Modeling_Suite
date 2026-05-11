@@ -11,6 +11,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
+
 def get_docker_cmd() -> list[str]:
     """Get the base docker command, using WSL fallback on Windows if needed."""
     if shutil.which("docker"):
@@ -18,6 +19,7 @@ def get_docker_cmd() -> list[str]:
     if os.name == "nt" and shutil.which("wsl"):
         return ["wsl", "docker"]
     return ["docker"]
+
 
 from PyQt6.QtCore import QThread, pyqtSignal
 
@@ -69,9 +71,7 @@ class DockerBuildThread(QThread):
         context_path: Path | None = None,
     ) -> None:
         """Initialize the build thread."""
-        if not (target_stage is not None):
-            raise ValueError("target_stage must be provided")
-        if not (target_stage is not None):
+        if target_stage is None:
             raise ValueError("target_stage must be provided")
         super().__init__()
         self.target_stage = validate_docker_stage(target_stage)
@@ -167,9 +167,7 @@ class DockerLauncher:
             repo_root: Root directory of the repository.
             image_name: Docker image name to use for containers.
         """
-        if not (repo_root is not None):
-            raise ValueError("repo_root must be provided")
-        if not (repo_root is not None):
+        if repo_root is None:
             raise ValueError("repo_root must be provided")
         self.repo_root = repo_root
         self.image_name = image_name
@@ -227,9 +225,7 @@ class DockerLauncher:
         Returns:
             List of command arguments for docker run.
         """
-        if not (model_type is not None):
-            raise ValueError("model_type must be provided")
-        if not (model_type is not None):
+        if model_type is None:
             raise ValueError("model_type must be provided")
         cmd = get_docker_cmd() + [
             "run",
@@ -312,9 +308,7 @@ class DockerLauncher:
         Returns:
             The process object if successful, None otherwise.
         """
-        if not (model_type is not None):
-            raise ValueError("model_type must be provided")
-        if not (model_type is not None):
+        if model_type is None:
             raise ValueError("model_type must be provided")
         cmd = self.build_launch_command(model_type, repo_path, use_gpu)
         self.logger.info(f"Docker Launch: {' '.join(cmd)}")

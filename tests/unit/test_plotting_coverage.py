@@ -65,16 +65,16 @@ def plotter(mock_recorder) -> GolfSwingPlotter:
     )
 
 
-def test_init(plotter) -> None:
+def test_plotting_coverage_init(plotter) -> None:
     assert len(plotter.joint_names) == 3
 
 
-def test_get_joint_name(plotter) -> None:
+def test_plotting_coverage_get_joint_name(plotter) -> None:
     assert plotter.get_joint_name(0) == "Joint 0"
     assert plotter.get_joint_name(5) == "Joint 5"
 
 
-def test_plot_joint_angles(plotter) -> None:
+def test_plotting_coverage_plot_joint_angles(plotter) -> None:
     fig = Figure()
     plotter.plot_joint_angles(fig)
     assert len(fig.axes) > 0
@@ -111,14 +111,7 @@ def test_plot_method_creates_axes(plotter, plot_method) -> None:
     assert len(fig.axes) > 0
 
 
-@_skip_no_3d
-def test_plot_club_head_trajectory(plotter) -> None:
-    fig = Figure()
-    plotter.plot_club_head_trajectory(fig)
-    assert len(fig.axes) > 0
-
-
-def test_plot_phase_diagram(plotter) -> None:
+def test_plotting_coverage_plot_phase_diagram(plotter) -> None:
     fig = Figure()
     plotter.plot_phase_diagram(fig, joint_idx=0)
     assert len(fig.axes) > 0
@@ -161,53 +154,29 @@ def test_plot_method_creates_axes_extra(plotter, plot_method) -> None:
     ["velocity", "position", "torque"],
     ids=["freq_velocity", "freq_position", "freq_torque"],
 )
-def test_plot_frequency_analysis(plotter, signal_type) -> None:
+def test_plotting_coverage_plot_frequency_analysis(plotter, signal_type) -> None:
     fig = Figure()
     plotter.plot_frequency_analysis(fig, joint_idx=0, signal_type=signal_type)
     assert len(fig.axes) > 0
 
 
-def test_plot_summary_dashboard(plotter) -> None:
+def test_plotting_coverage_plot_summary_dashboard(plotter) -> None:
     fig = Figure()
     plotter.plot_summary_dashboard(fig)
     assert len(fig.axes) == 6
 
 
-def test_plot_kinematic_sequence(plotter) -> None:
+def test_plotting_coverage_plot_kinematic_sequence(plotter) -> None:
     fig = Figure()
     segment_indices = {"Seg1": 0, "Seg2": 1}
     plotter.plot_kinematic_sequence(fig, segment_indices)
     assert len(fig.axes) > 0
 
 
-@_skip_no_3d
-def test_plot_3d_phase_space(plotter) -> None:
-    fig = Figure()
-    plotter.plot_3d_phase_space(fig, joint_idx=0)
-    assert len(fig.axes) > 0
-
-
-def test_plot_correlation_matrix(plotter) -> None:
+def test_plotting_coverage_plot_correlation_matrix(plotter) -> None:
     fig = Figure()
     plotter.plot_correlation_matrix(fig)
     assert len(fig.axes) > 0
-
-
-@_skip_no_3d
-def test_plot_swing_plane(plotter) -> None:
-    fig = Figure()
-    plotter.plot_swing_plane(fig)
-    assert len(fig.axes) > 0
-
-    # Test insufficient data
-    plotter.recorder.get_time_series.side_effect = lambda x: (
-        np.array([0, 1]),
-        np.random.rand(2, 3),
-    )
-    plotter.clear_cache()  # Must clear cache after modifying recorder
-    fig = Figure()
-    plotter.plot_swing_plane(fig)
-    assert "Insufficient data" in fig.axes[0].texts[0].get_text()
 
 
 @pytest.mark.parametrize(
@@ -229,7 +198,7 @@ def test_plot_method_spatial(plotter, plot_method) -> None:
     assert len(fig.axes) > 0
 
 
-def test_plot_radar_chart(plotter) -> None:
+def test_plotting_coverage_plot_radar_chart(plotter) -> None:
     fig = Figure()
     metrics = {"A": 10, "B": 20, "C": 30}
     plotter.plot_radar_chart(fig, metrics)

@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -33,6 +34,7 @@ def _write_fit_result(trial_dir: Path, engine: str, data: dict | None = None) ->
             "solver": "test_solver",
             "grip_rmse_mm": 2.5,
             "clubhead_rmse_mm": 3.0,
+            "body_marker_rmse_mm": 3.0,
             "total_work_J": 100.0,
             "wall_clock_s": 10.0,
             "commit": "abc1234567890",
@@ -60,6 +62,7 @@ def test_leaderboard_cli_generates_report(tmp_path: Path) -> None:
             "solver": "test_solver",
             "grip_rmse_mm": 1.5,
             "clubhead_rmse_mm": 2.0,
+            "body_marker_rmse_mm": 2.0,
             "total_work_J": 100.0,
             "wall_clock_s": 5.0,
             "commit": "abc1234567890",
@@ -74,6 +77,7 @@ def test_leaderboard_cli_generates_report(tmp_path: Path) -> None:
             "solver": "test_solver",
             "grip_rmse_mm": 3.0,
             "clubhead_rmse_mm": 3.5,
+            "body_marker_rmse_mm": 3.5,
             "total_work_J": 100.0,
             "wall_clock_s": 15.0,
             "commit": "abc1234567890",
@@ -85,7 +89,7 @@ def test_leaderboard_cli_generates_report(tmp_path: Path) -> None:
 
     # Run the CLI command
     cmd = [
-        "python3",
+        sys.executable,
         "-m",
         "src.shared.python.motion_matching",
         "leaderboard",
@@ -125,7 +129,7 @@ def test_leaderboard_cli_default_output_path(tmp_path: Path) -> None:
 
     # Run without --output flag
     cmd = [
-        "python3",
+        sys.executable,
         "-m",
         "src.shared.python.motion_matching",
         "leaderboard",
@@ -152,7 +156,7 @@ def test_leaderboard_cli_nonexistent_dir_fails(tmp_path: Path) -> None:
     nonexistent = tmp_path / "nonexistent"
 
     cmd = [
-        "python3",
+        sys.executable,
         "-m",
         "src.shared.python.motion_matching",
         "leaderboard",

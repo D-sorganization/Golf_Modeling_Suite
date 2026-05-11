@@ -3,7 +3,7 @@
 # It requires domain-aware structural extraction to isolate its internal classes appropriately.
 
 """
-Diagnostic utilities for Golf Modeling Suite GUI Launcher.
+Diagnostic utilities for UpstreamDrift GUI Launcher.
 
 This module provides comprehensive diagnostic tools for troubleshooting
 launcher issues including:
@@ -60,7 +60,7 @@ class DiagnosticResult:
 
 
 class LauncherDiagnostics:
-    """Diagnostic utilities for the Golf Modeling Suite Launcher."""
+    """Diagnostic utilities for the UpstreamDrift Launcher."""
 
     # Expected tile model IDs
     EXPECTED_TILE_IDS = [
@@ -171,9 +171,7 @@ class LauncherDiagnostics:
     def _validate_models_yaml_content(
         self, data: Any, details: dict[str, Any]
     ) -> DiagnosticResult | None:
-        if not (details is not None):
-            raise ValueError("details must be provided")
-        if not (details is not None):
+        if details is None:
             raise ValueError("details must be provided")
         details["raw_content_preview"] = str(data)[:500] if data else "empty"
 
@@ -199,9 +197,7 @@ class LauncherDiagnostics:
     def _check_models_yaml_completeness(
         self, models: list, details: dict[str, Any]
     ) -> DiagnosticResult:
-        if not (models is not None):
-            raise ValueError("models must be provided")
-        if not (models is not None):
+        if models is None:
             raise ValueError("models must be provided")
         details["model_count"] = len(models)
         details["model_ids"] = [m.get("id", "unknown") for m in models]
@@ -766,7 +762,7 @@ def reset_layout_config() -> bool:
 def run_cli_diagnostics() -> None:
     """Run diagnostics and print results to console."""
     logger.info("=" * 60)
-    logger.info("Golf Modeling Suite - Launcher Diagnostics")
+    logger.info("UpstreamDrift - Launcher Diagnostics")
     logger.info("=" * 60)
     logger.debug("")
 

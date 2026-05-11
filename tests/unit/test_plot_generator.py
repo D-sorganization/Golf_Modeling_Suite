@@ -61,14 +61,14 @@ def generator() -> PlotGenerator:
 class TestPlotConfig:
     """Tests for PlotConfig."""
 
-    def test_default_config(self) -> None:
+    def test_plot_generator_default_config(self) -> None:
         """Test default configuration values."""
         config = PlotConfig()
         assert config.output_format == "png"
         assert config.dpi == 150
         assert config.show_grid is True
 
-    def test_custom_config(self) -> None:
+    def test_plot_generator_custom_config(self) -> None:
         """Test custom configuration."""
         config = PlotConfig(
             output_format="svg",

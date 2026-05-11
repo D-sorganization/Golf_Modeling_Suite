@@ -143,7 +143,14 @@ class TestSignalToolkitImport:
     def test_absolute_contracts_import_in_signal_core(self) -> None:
         """signal_toolkit/core.py must try absolute import path for contracts."""
         source_path = (
-            REPO_ROOT / "src" / "shared" / "python" / "signal_toolkit" / "core.py"
+            REPO_ROOT
+            / "vendor"
+            / "ud-tools"
+            / "src"
+            / "shared"
+            / "python"
+            / "signal_toolkit"
+            / "core.py"
         )
         assert source_path.exists(), f"Expected {source_path} to exist"
         source = source_path.read_text(encoding="utf-8")

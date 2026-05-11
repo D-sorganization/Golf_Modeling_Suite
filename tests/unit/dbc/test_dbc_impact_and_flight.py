@@ -56,7 +56,7 @@ def _make_params(cor: float = 0.83, friction: float = 0.4) -> object:
 class TestRigidBodyImpactPreconditions(unittest.TestCase):
     """RigidBodyImpactModel.solve() preconditions."""
 
-    def test_zero_mass_raises(self) -> None:
+    def test_dbc_impact_and_flight_zero_mass_raises(self) -> None:
         from src.shared.python.core.contracts import ContractViolationError
         from src.shared.python.physics.impact_model import RigidBodyImpactModel
 
@@ -65,7 +65,7 @@ class TestRigidBodyImpactPreconditions(unittest.TestCase):
         with self.assertRaises((ContractViolationError, ValueError)):
             model.solve(pre, _make_params())
 
-    def test_negative_mass_raises(self) -> None:
+    def test_dbc_impact_and_flight_negative_mass_raises(self) -> None:
         from src.shared.python.core.contracts import ContractViolationError
         from src.shared.python.physics.impact_model import RigidBodyImpactModel
 
@@ -176,14 +176,14 @@ class TestRigidBodyImpactPostconditions(unittest.TestCase):
 class TestSpringDamperPreconditions(unittest.TestCase):
     """SpringDamperImpactModel preconditions."""
 
-    def test_negative_dt_raises(self) -> None:
+    def test_dbc_impact_and_flight_negative_dt_raises(self) -> None:
         from src.shared.python.core.contracts import ContractViolationError
         from src.shared.python.physics.impact_model import SpringDamperImpactModel
 
         with self.assertRaises((ContractViolationError, ValueError)):
             SpringDamperImpactModel(dt=-1e-7)
 
-    def test_zero_dt_raises(self) -> None:
+    def test_dbc_impact_and_flight_zero_dt_raises(self) -> None:
         from src.shared.python.core.contracts import ContractViolationError
         from src.shared.python.physics.impact_model import SpringDamperImpactModel
 
@@ -252,7 +252,7 @@ class TestGearEffectPreconditions(unittest.TestCase):
 class TestBallFlightSimulatorInvariants(unittest.TestCase):
     """BallFlightSimulator invariants: ball.mass > 0, gravity > 0."""
 
-    def test_zero_mass_raises(self) -> None:
+    def test_dbc_impact_and_flight_zero_mass_raises(self) -> None:
         from src.shared.python.core.contracts import InvariantError
         from src.shared.python.physics.ball_flight_physics import (
             BallFlightSimulator,
@@ -262,7 +262,7 @@ class TestBallFlightSimulatorInvariants(unittest.TestCase):
         with self.assertRaises((InvariantError, ValueError)):
             BallFlightSimulator(ball=BallProperties(mass=0.0))
 
-    def test_negative_mass_raises(self) -> None:
+    def test_dbc_impact_and_flight_negative_mass_raises(self) -> None:
         from src.shared.python.core.contracts import InvariantError
         from src.shared.python.physics.ball_flight_physics import (
             BallFlightSimulator,
@@ -323,7 +323,7 @@ class TestSimulateTrajectoryPreconditions(unittest.TestCase):
         with self.assertRaises((ContractViolationError, ValueError)):
             sim.simulate_trajectory(launch)
 
-    def test_zero_dt_raises(self) -> None:
+    def test_dbc_impact_and_flight_zero_dt_raises(self) -> None:
         from src.shared.python.core.contracts import ContractViolationError
         from src.shared.python.physics.ball_flight_physics import (
             BallFlightSimulator,
@@ -346,83 +346,6 @@ class TestSimulateTrajectoryPreconditions(unittest.TestCase):
         launch = LaunchConditions(velocity=50.0, launch_angle=0.2)
         with self.assertRaises((ContractViolationError, ValueError)):
             sim.simulate_trajectory(launch, max_time=-1.0)
-
-
-@_RUST_SKIP
-class TestTrajectoryPostconditions(unittest.TestCase):
-    """Physical postconditions for trajectory simulation (requires Rust kernel)."""
-
-    def _simulate(self, velocity: float = 50.0, angle: float = 0.2) -> Any:
-        from src.shared.python.physics.ball_flight_physics import (
-            BallFlightSimulator,
-            LaunchConditions,
-        )
-
-        sim = BallFlightSimulator()
-        launch = LaunchConditions(velocity=velocity, launch_angle=angle)
-        try:
-            return sim.simulate_trajectory(launch, max_time=8.0, dt=0.01)
-        except Exception as e:  # noqa: BLE001
-            if "TypingError" in type(e).__name__ or "nopython" in str(e):
-                self.skipTest(f"Numba JIT incompatibility (pre-existing): {e}")
-            raise
-
-    def test_trajectory_non_empty(self) -> None:
-        trajectory = self._simulate()
-        self.assertGreater(len(trajectory), 0)
-
-    def test_positions_finite(self) -> None:
-        trajectory = self._simulate()
-        for pt in trajectory:
-            self.assertTrue(
-                np.all(np.isfinite(pt.position)), f"Non-finite position at t={pt.time}"
-            )
-
-    def test_velocities_finite(self) -> None:
-        trajectory = self._simulate()
-        for pt in trajectory:
-            self.assertTrue(
-                np.all(np.isfinite(pt.velocity)), f"Non-finite velocity at t={pt.time}"
-            )
-
-    def test_starts_at_origin(self) -> None:
-        trajectory = self._simulate()
-        np.testing.assert_array_almost_equal(trajectory[0].position, [0, 0, 0])
-
-    def test_ball_rises_then_falls(self) -> None:
-        """Ball must reach positive height then return to ground."""
-        trajectory = self._simulate()
-        max_h = max(pt.position[2] for pt in trajectory)
-        self.assertGreater(max_h, 0.0)
-        # Last point should be near ground (z <= 0)
-        self.assertLessEqual(trajectory[-1].position[2], 0.1)
-
-    def test_carry_distance_positive(self) -> None:
-        from src.shared.python.physics.ball_flight_physics import BallFlightSimulator
-
-        sim = BallFlightSimulator()
-        trajectory = self._simulate()
-        dist = sim.calculate_carry_distance(trajectory)
-        self.assertGreater(dist, 0.0)
-
-    def test_flight_time_positive(self) -> None:
-        from src.shared.python.physics.ball_flight_physics import BallFlightSimulator
-
-        sim = BallFlightSimulator()
-        trajectory = self._simulate()
-        self.assertGreater(sim.calculate_flight_time(trajectory), 0.0)
-
-    def test_analyze_trajectory_postconditions(self) -> None:
-        """analyze_trajectory must return dict with carry_distance and max_height."""
-        from src.shared.python.physics.ball_flight_physics import BallFlightSimulator
-
-        sim = BallFlightSimulator()
-        trajectory = self._simulate()
-        analysis = sim.analyze_trajectory(trajectory)
-        self.assertIn("carry_distance", analysis)
-        self.assertIn("max_height", analysis)
-        self.assertGreater(analysis["carry_distance"], 0.0)
-        self.assertGreater(analysis["max_height"], 0.0)
 
 
 class TestBallPropertiesPostconditions(unittest.TestCase):

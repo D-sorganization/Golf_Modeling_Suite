@@ -86,8 +86,8 @@ class TestMuJoCoSimWidget:
         assert widget.minimumHeight() == 480, (
             f"Minimum height should be 480, got {widget.minimumHeight()}"
         )
-        assert hasattr(widget, "model")
-        assert hasattr(widget, "data")
+        assert hasattr(widget, "model"), "Assertion failed: hasattr(widget, model)"
+        assert hasattr(widget, "data"), "Assertion failed: hasattr(widget, data)"
 
         widget.close()
 
@@ -115,9 +115,9 @@ class TestMuJoCoSimWidget:
         _load_model_or_skip(widget, model_xml)
 
         # Verify model loaded correctly
-        assert widget.model is not None
+        assert widget.model is not None, "Assertion failed: widget.model is not None"
         assert widget.model.nq >= 1, "Model should have at least one DOF"
-        assert widget.data is not None
+        assert widget.data is not None, "Assertion failed: widget.data is not None"
 
         widget.close()
 
@@ -254,8 +254,8 @@ class TestHumanoidLauncher:
         launcher = HumanoidLauncher()
 
         # Verify basic attributes exist
-        assert hasattr(launcher, "show")
-        assert hasattr(launcher, "close")
+        assert hasattr(launcher, "show"), "Assertion failed: hasattr(launcher, show)"
+        assert hasattr(launcher, "close"), "Assertion failed: hasattr(launcher, close)"
 
         # Clean up
         launcher.close()
@@ -297,7 +297,7 @@ class TestControlsTab:
         tab = ControlsTab(mock_sim_widget, mock_main_window)
 
         # Verify tab was created
-        assert tab is not None
+        assert tab is not None, "Assertion failed: tab is not None"
 
         # Clean up
         if hasattr(tab, "close"):

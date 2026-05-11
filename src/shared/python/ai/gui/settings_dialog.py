@@ -15,11 +15,12 @@ Security:
 
 from __future__ import annotations
 
+import contextlib
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from PyQt6.QtCore import QSettings, pyqtSignal
+from PyQt6.QtCore import QSettings, pyqtSignal, QTimer
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -52,7 +53,7 @@ if TYPE_CHECKING:
 logger = get_logger(__name__)
 
 # Settings keys
-SETTINGS_ORG = "GolfModelingSuite"
+SETTINGS_ORG = "UpstreamDrift"
 SETTINGS_APP = "AIAssistant"
 KEY_PROVIDER = "ai/provider"
 KEY_MODEL = "ai/model"
@@ -69,12 +70,15 @@ class AIProvider(Enum):
     OPENAI = auto()  # GPT-4
     ANTHROPIC = auto()  # Claude
     GEMINI = auto()  # Google Gemini
+    CLAUDE_CLI = auto()  # Anthropic's Claude Code CLI
+    CLINE_CLI = auto()  # Cline CLI
+    CODEX_CLI = auto()  # OpenAI's Codex CLI
 
 
 # Provider display info - explicitly typed for mypy
 PROVIDER_INFO: dict[AIProvider, dict[str, str | bool | list[str]]] = {
     AIProvider.OLLAMA: {
-        "name": "Ollama (Local - FREE)",
+        "name": "Ollama",
         "description": "Run AI locally on your computer. No API key needed.",
         "requires_key": False,
         "default_model": "llama3.1:8b",
@@ -92,7 +96,7 @@ PROVIDER_INFO: dict[AIProvider, dict[str, str | bool | list[str]]] = {
         "name": "OpenAI (GPT-4o)",
         "description": "Cloud-based GPT-4o. Requires OpenAI API key.",
         "requires_key": True,
-        "key_service": "golf_suite_openai_key",
+        "key_service": "upstream_drift_openai_key",
         "default_model": "gpt-4o",
         "models": ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"],
     },
@@ -100,7 +104,7 @@ PROVIDER_INFO: dict[AIProvider, dict[str, str | bool | list[str]]] = {
         "name": "Anthropic (Claude 3.5)",
         "description": "Cloud-based Claude 3.5 Sonnet. Requires Anthropic API key.",
         "requires_key": True,
-        "key_service": "golf_suite_anthropic_key",
+        "key_service": "upstream_drift_anthropic_key",
         "default_model": "claude-3-5-sonnet-20240620",
         "models": [
             "claude-3-5-sonnet-20240620",
@@ -113,9 +117,30 @@ PROVIDER_INFO: dict[AIProvider, dict[str, str | bool | list[str]]] = {
         "name": "Google Gemini (1.5)",
         "description": "Cloud-based Gemini 1.5. Requires Google API key.",
         "requires_key": True,
-        "key_service": "golf_suite_gemini_key",
+        "key_service": "upstream_drift_gemini_key",
         "default_model": "gemini-1.5-pro",
         "models": ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-1.0-pro"],
+    },
+    AIProvider.CLAUDE_CLI: {
+        "name": "Claude CLI (Agent)",
+        "description": "Run commands via Anthropic's Claude Code CLI tool.",
+        "requires_key": False,
+        "default_model": "claude-code",
+        "models": ["claude-code"],
+    },
+    AIProvider.CLINE_CLI: {
+        "name": "Cline CLI (Agent)",
+        "description": "Run tasks locally with the Cline CLI agent.",
+        "requires_key": False,
+        "default_model": "cline",
+        "models": ["cline"],
+    },
+    AIProvider.CODEX_CLI: {
+        "name": "Codex CLI (Agent)",
+        "description": "Use OpenAI's Codex CLI for local development.",
+        "requires_key": False,
+        "default_model": "codex-cli",
+        "models": ["codex-cli"],
     },
 }
 
@@ -277,6 +302,7 @@ class ProviderConfigWidget(QWidget):
     """Widget for configuring a single AI provider."""
 
     key_changed = pyqtSignal(str)  # Emits new key value
+    models_refreshed = pyqtSignal(list)  # Emits list of available models
 
     def __init__(
         self,
@@ -346,8 +372,21 @@ class ProviderConfigWidget(QWidget):
             self._test_btn.clicked.connect(self._test_ollama_connection)
             layout.addWidget(self._test_btn)
 
+            # Refresh models button
+            self._refresh_models_btn = QPushButton("🔄 Refresh Available Models")
+            self._refresh_models_btn.setToolTip(
+                "Fetch the list of installed models from your local Ollama instance"
+            )
+            self._refresh_models_btn.clicked.connect(self._refresh_ollama_models)
+            layout.addWidget(self._refresh_models_btn)
+
             self._status_label = QLabel()
             layout.addWidget(self._status_label)
+
+            # Model count display
+            self._model_count_label = QLabel()
+            self._model_count_label.setStyleSheet(Styles.TEXT_MUTED)
+            layout.addWidget(self._model_count_label)
 
         layout.addStretch()
 
@@ -429,6 +468,8 @@ class ProviderConfigWidget(QWidget):
             if success:
                 self._status_label.setText(f"✓ {message}")
                 self._status_label.setStyleSheet(Styles.COLOR_GREEN)
+                # Also refresh models on successful connection
+                self._refresh_ollama_models()
             else:
                 self._status_label.setText(f"✗ {message}")
                 self._status_label.setStyleSheet(Styles.COLOR_RED)
@@ -436,6 +477,48 @@ class ProviderConfigWidget(QWidget):
         except ImportError as e:
             self._status_label.setText(f"✗ Error: {e}")
             self._status_label.setStyleSheet(Styles.COLOR_RED)
+
+    def showEvent(self, event: Any) -> None:
+        """Refresh models automatically when the widget becomes visible."""
+        super().showEvent(event)
+        if getattr(self, "_provider", None) == AIProvider.OLLAMA:
+            # Refresh models on a short delay to not block the UI from rendering
+            QTimer.singleShot(100, self._refresh_ollama_models)
+
+    def _refresh_ollama_models(self) -> None:
+        """Refresh the list of available Ollama models."""
+        self._status_label.setText("Fetching available models...")
+        self._status_label.setStyleSheet(Styles.COLOR_RESET)
+
+        try:
+            from src.shared.python.ai.adapters.ollama_adapter import OllamaAdapter
+
+            host = self._host_input.text().strip()
+            adapter = OllamaAdapter(host=host)
+            models = adapter.list_available_models()
+
+            if models:
+                self._model_count_label.setText(
+                    f"✓ Found {len(models)} model(s): {', '.join(models[:5])}"
+                )
+                if len(models) > 5:
+                    self._model_count_label.setText(
+                        f"✓ Found {len(models)} model(s): {', '.join(models[:5])}..."
+                    )
+                self._model_count_label.setStyleSheet(Styles.COLOR_GREEN)
+                # Emit signal to update parent dialog's model combo
+                self.models_refreshed.emit(models)
+            else:
+                self._model_count_label.setText(
+                    "⚠ No models found. Pull one with: ollama pull llama3.1:8b"
+                )
+                self._model_count_label.setStyleSheet(Styles.COLOR_ORANGE)
+                self.models_refreshed.emit([])
+
+        except Exception as e:
+            self._model_count_label.setText(f"✗ Failed to fetch models: {e}")
+            self._model_count_label.setStyleSheet(Styles.COLOR_RED)
+            self.models_refreshed.emit([])
 
     def get_host(self) -> str:
         """Get Ollama host if applicable."""
@@ -620,21 +703,21 @@ class AISettingsDialog(QDialog):
         widget = QWidget()
         layout = QVBoxLayout(widget)
 
-        # Expertise level
-        expertise_group = QGroupBox("Expertise Level")
+        # Verbosity level
+        expertise_group = QGroupBox("Response Verbosity")
         expertise_layout = QVBoxLayout(expertise_group)
 
         self._expertise_combo = QComboBox()
-        self._expertise_combo.addItem("Beginner - Clear explanations, no jargon", 1)
-        self._expertise_combo.addItem("Intermediate - Some technical terms", 2)
-        self._expertise_combo.addItem("Advanced - Full technical depth", 3)
-        self._expertise_combo.addItem("Expert - Research-level precision", 4)
+        self._expertise_combo.addItem("Verbose - Detailed explanations and examples", 1)
+        self._expertise_combo.addItem("Standard - Balanced technical responses", 2)
+        self._expertise_combo.addItem("Brief - Concise, to the point", 3)
+        self._expertise_combo.addItem("Succinct - Code and precise facts only", 4)
         expertise_layout.addWidget(self._expertise_combo)
 
         expertise_desc = QLabel(
-            "This setting adjusts how the AI explains concepts. "
-            "Beginners get analogies and simple language; "
-            "experts get equations and technical details."
+            "This setting adjusts how verbose the AI responds. "
+            "Choose 'Verbose' for extensive details or 'Succinct' "
+            "for minimal, code-focused answers."
         )
         expertise_desc.setWordWrap(True)
         expertise_layout.addWidget(expertise_desc)
@@ -763,6 +846,14 @@ class AISettingsDialog(QDialog):
         for p, widget in self._provider_configs.items():
             widget.setVisible(p == provider)
 
+        # Connect models_refreshed signal for Ollama provider
+        if provider == AIProvider.OLLAMA:
+            ollama_widget = self._provider_configs[AIProvider.OLLAMA]
+            # Disconnect any previous connection to avoid duplicates
+            with contextlib.suppress(TypeError):
+                ollama_widget.models_refreshed.disconnect(self._update_ollama_models)
+            ollama_widget.models_refreshed.connect(self._update_ollama_models)
+
     def _accept(self) -> None:
         """Accept dialog and save settings."""
         # Update settings from UI
@@ -788,3 +879,27 @@ class AISettingsDialog(QDialog):
             Current AISettings.
         """
         return self._settings
+
+    def _update_ollama_models(self, models: list[str]) -> None:
+        """Update the model dropdown with freshly fetched Ollama models.
+
+        Args:
+            models: List of model names from Ollama.
+        """
+        if not models:
+            return
+
+        # Save current selection if possible
+        current = self._model_combo.currentText()
+
+        # Clear and repopulate
+        self._model_combo.clear()
+        for model in models:
+            self._model_combo.addItem(model)
+
+        # Restore selection or pick first
+        idx = self._model_combo.findText(current)
+        if idx >= 0:
+            self._model_combo.setCurrentIndex(idx)
+        elif models:
+            self._model_combo.setCurrentIndex(0)

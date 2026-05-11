@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Literal
+from collections.abc import Callable
 
 import numpy as np
 import torch
@@ -215,15 +216,15 @@ def _bound_penalty(
     return (over * over).sum(dim=-1) + (under * under).sum(dim=-1)
 
 
-def _make_lr_schedule(opts: InvertOptions) -> callable[[int], float]:
+def _make_lr_schedule(opts: InvertOptions) -> Callable[[int], float]:
     """Return ``it -> lr`` for the configured schedule."""
     base = opts.lr
     n = opts.n_iters_per_start
     if opts.schedule == "constant":
         return lambda _it: base
     # Cosine annealing from base to 0 over n iterations.
-    return (
-        lambda it: 0.5 * base * (1.0 + np.cos(np.pi * min(it, n - 1) / max(n - 1, 1)))
+    return lambda it: (
+        0.5 * base * (1.0 + np.cos(np.pi * min(it, n - 1) / max(n - 1, 1)))
     )
 
 

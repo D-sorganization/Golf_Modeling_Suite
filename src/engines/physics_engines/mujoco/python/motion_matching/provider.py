@@ -83,7 +83,12 @@ class MujocoFitSwingProvider:
         """
         club = self._extract_club(target)
         native = self._build_native_options(opts)
-        return fit_swing_mujoco(club, native)
+        result = fit_swing_mujoco(club, native)
+        # Issue #4713: opt-in CI publication of the cross-engine leaderboard.
+        from src.shared.python.motion_matching.leaderboard import maybe_append_row
+
+        maybe_append_row(self.engine_name, result, self.engine_version())
+        return result
 
     def supports_body_target(self) -> bool:
         """MuJoCo's swing fitter consumes only the club trajectory."""
@@ -92,6 +97,31 @@ class MujocoFitSwingProvider:
     def supports_ball_target(self) -> bool:
         """MuJoCo's swing fitter does not consume ball targets."""
         return False
+
+    def engine_version(self) -> str:
+        """Return the installed ``mujoco`` version, or ``"unknown"``.
+
+        Lets leaderboard rows distinguish runs across MuJoCo wheel
+        upgrades (issue #4705). Returns ``"unknown"`` when the
+        ``mujoco`` package is not installed so the provider stays
+        constructible in MuJoCo-less environments.
+        """
+        try:
+            import mujoco  # type: ignore[import-not-found]
+        except ImportError:
+            return "unknown"
+        version = getattr(mujoco, "__version__", None)
+        if isinstance(version, str) and version:
+            return version
+        try:
+            from importlib.metadata import PackageNotFoundError
+            from importlib.metadata import version as _v
+        except ImportError:  # pragma: no cover -- stdlib >=3.8
+            return "unknown"
+        try:
+            return _v("mujoco")
+        except PackageNotFoundError:
+            return "unknown"
 
     # --- Internal helpers ----------------------------------------------
 

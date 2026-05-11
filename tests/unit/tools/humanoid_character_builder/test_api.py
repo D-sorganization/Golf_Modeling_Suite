@@ -7,7 +7,8 @@ from pathlib import Path
 
 import pytest
 from humanoid_character_builder.core.body_parameters import BodyParameters
-from humanoid_character_builder.interfaces.api import (
+from humanoid_character_builder.interfaces import (
+    BuildErrorCategory,
     CharacterBuilder,
     ExportOptions,
     quick_build,
@@ -196,7 +197,7 @@ class TestCharacterBuildResult:
         # Should be approximately the specified mass
         assert abs(total_mass - 75.0) < 5.0  # Allow some variance
 
-    def test_to_dict(self) -> None:
+    def test_api_to_dict(self) -> None:
         builder = CharacterBuilder()
         params = BodyParameters()
         result = builder.build(params, generate_meshes=False)
@@ -307,7 +308,7 @@ class TestPresets:
 class TestExportOptions:
     """Tests for ExportOptions."""
 
-    def test_default_values(self) -> None:
+    def test_api_default_values(self) -> None:
         options = ExportOptions()
 
         assert options.urdf_filename == "humanoid.urdf"
@@ -315,7 +316,7 @@ class TestExportOptions:
         assert options.generate_meshes is True
         assert options.mesh_format == "stl"
 
-    def test_custom_values(self) -> None:
+    def test_api_custom_values(self) -> None:
         options = ExportOptions(
             urdf_filename="robot.urdf",
             mesh_format="obj",

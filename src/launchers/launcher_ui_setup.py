@@ -4,7 +4,7 @@ Contains menu bar, top bar, grid area, bottom bar, search, console,
 context help, and AI panel setup methods.
 """
 
-# mypy: disable-error-code="attr-defined,call-overload,arg-type"
+# mypy: disable-error-code="attr-defined,call-overload,arg-type,assignment"
 
 from __future__ import annotations
 
@@ -18,7 +18,9 @@ from PyQt6.QtGui import (
     QShortcut,
 )
 from PyQt6.QtWidgets import (
+    QButtonGroup,
     QCheckBox,
+    QComboBox,
     QDockWidget,
     QFrame,
     QGridLayout,
@@ -28,11 +30,18 @@ from PyQt6.QtWidgets import (
     QPlainTextEdit,
     QPushButton,
     QScrollArea,
+    QSlider,
     QSplitter,
     QStyle,
     QToolButton,
     QVBoxLayout,
     QWidget,
+)
+
+from src.launchers.launcher_constants import (
+    TILE_SCALE_MAX,
+    TILE_SCALE_MIN,
+    ViewMode,
 )
 
 from src.shared.python.logging_pkg.logging_config import get_logger
@@ -45,6 +54,16 @@ if TYPE_CHECKING:
 logger = get_logger(__name__)
 
 
+def _build_zoom_accessible_description() -> str:
+    """Describe the zoom slider using the configured tile-scale bounds."""
+    minimum_pct = int(round(TILE_SCALE_MIN * 100))
+    maximum_pct = int(round(TILE_SCALE_MAX * 100))
+    return (
+        f"Adjust tile size from {minimum_pct}% to {maximum_pct}%. "
+        "Use arrow keys or drag to adjust."
+    )
+
+
 class LauncherUISetupMixin:
     """Mixin for GolfLauncher UI initialization.
 
@@ -55,21 +74,35 @@ class LauncherUISetupMixin:
     def _build_sidebar_button(
         self,
         label: str,
-        icon_name: QStyle.StandardPixmap,
+        icon_name: str,
         *,
         checkable: bool = False,
     ) -> QToolButton:
-        """Create an icon-first sidebar control with accessible labeling."""
+        """Create an icon-first sidebar control with accessible labeling.
+
+        Provides both icon and visible text label for accessibility.
+        """
         button = QToolButton()
-        button.setText("")
+        button.setText(label)
         button.setToolTip(label)
         button.setAccessibleName(label)
+        button.setAccessibleDescription(f"Navigate to {label} section")
         button.setCursor(Qt.CursorShape.PointingHandCursor)
-        button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
-        button.setIcon(self.style().standardIcon(icon_name))
+        # Show both icon and text for better accessibility
+        button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
+
+        try:
+            from src.shared.python.theme.icon_utils import IconColorizer
+
+            button.setIcon(IconColorizer.get_icon(icon_name, "#d4d4d4"))
+        except (ImportError, ValueError):
+            pass
+
         button.setIconSize(QSize(22, 22))
         button.setCheckable(checkable)
         button.setAutoRaise(True)
+        # Set focus policy for keyboard navigation
+        button.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         return button
 
     def init_ui(self) -> None:
@@ -81,10 +114,32 @@ class LauncherUISetupMixin:
         central = QWidget()
         self.setCentralWidget(central)
 
+        # Outer layout to hold the title bar and then the horizontal main layout
+        outer_vbox = QVBoxLayout(central)
+        outer_vbox.setSpacing(0)
+        outer_vbox.setContentsMargins(0, 0, 0, 0)
+
+        try:
+            from src.launchers.custom_title_bar import CustomTitleBar
+
+            self.title_bar = CustomTitleBar(self)
+            self.title_bar.minimize_requested.connect(self.showMinimized)
+            self.title_bar.maximize_requested.connect(
+                lambda: (
+                    self.showNormal() if self.isMaximized() else self.showMaximized()
+                )
+            )
+            self.title_bar.close_requested.connect(self.close)
+            self.title_bar.move_requested.connect(self.move)
+            outer_vbox.addWidget(self.title_bar)
+        except ImportError:
+            pass
+
         # Main layout is now horizontal to accommodate the sidebar
-        main_layout = QHBoxLayout(central)
+        main_layout = QHBoxLayout()
         main_layout.setSpacing(0)
         main_layout.setContentsMargins(0, 0, 0, 0)
+        outer_vbox.addLayout(main_layout)
 
         # --- Global Sidebar ---
         sidebar = self._setup_global_sidebar()
@@ -103,7 +158,11 @@ class LauncherUISetupMixin:
         # --- Content area with horizontal splitter (tiles | AI chat) ---
         self.content_splitter = QSplitter(Qt.Orientation.Horizontal)
         self.content_splitter.setHandleWidth(3)
-        self.content_splitter.setStyleSheet(Styles.SPLITTER_HANDLE)
+        self.content_splitter.setProperty("class", "dark")
+        _style = self.content_splitter.style()
+
+        if _style:
+            _style.polish(self.content_splitter)
 
         # Left panel: launcher grid + bottom bar
         left_panel = QWidget()
@@ -178,14 +237,14 @@ class LauncherUISetupMixin:
 
         btn_home = self._build_sidebar_button(
             "Home",
-            QStyle.StandardPixmap.SP_DirHomeIcon,
+            "home",
             checkable=True,
         )
         btn_home.setChecked(True)
 
         btn_engines = self._build_sidebar_button(
             "Engines",
-            QStyle.StandardPixmap.SP_ComputerIcon,
+            "computer",
             checkable=True,
         )
 
@@ -193,25 +252,64 @@ class LauncherUISetupMixin:
         # Otherwise, we gracefully handle it to avoid crashes in tests.
         btn_settings = self._build_sidebar_button(
             "Settings",
-            QStyle.StandardPixmap.SP_FileDialogDetailedView,
+            "settings",
         )
         if hasattr(self, "_open_settings"):
             btn_settings.clicked.connect(self._open_settings)
 
+        from src.launchers.launcher_constants import AI_AVAILABLE
+
+        if AI_AVAILABLE:
+            self.btn_ai_sidebar = self._build_sidebar_button(
+                "AI Chat",
+                "chat",
+                checkable=True,
+            )
+            if hasattr(self, "toggle_ai_assistant"):
+                self.btn_ai_sidebar.clicked.connect(self.toggle_ai_assistant)
+
         btn_docs = self._build_sidebar_button(
             "Documentation",
-            QStyle.StandardPixmap.SP_DialogHelpButton,
+            "help",
+            checkable=True,
         )
-        if hasattr(self, "_show_help_dialog"):
-            btn_docs.clicked.connect(lambda: self._show_help_dialog())
+        if hasattr(self, "_toggle_context_help"):
+            btn_docs.clicked.connect(self._toggle_context_help)
+
+        # Setup mutually exclusive active-state routing for navigation
+        self.sidebar_group = QButtonGroup(self)
+        self.sidebar_group.addButton(btn_home, 0)
+        self.sidebar_group.addButton(btn_engines, 1)
+        self.sidebar_group.idClicked.connect(self._on_sidebar_routed)
 
         layout.addWidget(btn_home)
         layout.addWidget(btn_engines)
         layout.addStretch()
-        layout.addWidget(btn_settings)
+        if AI_AVAILABLE:
+            layout.addWidget(self.btn_ai_sidebar)
         layout.addWidget(btn_docs)
+        layout.addWidget(btn_settings)
+
+        # Set explicit focus order for keyboard navigation
+        sidebar.setFocusProxy(btn_home)
+        QWidget.setTabOrder(btn_home, btn_engines)
+        QWidget.setTabOrder(btn_engines, btn_settings)
+        QWidget.setTabOrder(btn_settings, btn_docs)
 
         return sidebar
+
+    def _on_sidebar_routed(self, button_id: int) -> None:
+        """Route sidebar navigation to filter the grid layout."""
+        if not hasattr(self, "layout_manager"):
+            return
+
+        if button_id == 0:
+            self.layout_manager.current_category_filter = "All"
+        elif button_id == 1:
+            self.layout_manager.current_category_filter = "Physics Engines"
+
+        if hasattr(self, "_rebuild_grid"):
+            self._rebuild_grid()
 
     def _setup_menu_bar(self) -> None:
         """Set up the application menu bar."""
@@ -223,9 +321,7 @@ class LauncherUISetupMixin:
         self._setup_help_menu(menubar)
 
     def _setup_file_menu(self, menubar: Any) -> None:
-        if not (menubar is not None):
-            raise ValueError("menubar must be provided")
-        if not (menubar is not None):
+        if menubar is None:
             raise ValueError("menubar must be provided")
         file_menu = menubar.addMenu("&File")
 
@@ -246,11 +342,40 @@ class LauncherUISetupMixin:
         file_menu.addAction(action_exit)
 
     def _setup_view_menu(self, menubar: Any) -> None:
-        if not (menubar is not None):
-            raise ValueError("menubar must be provided")
-        if not (menubar is not None):
+        if menubar is None:
             raise ValueError("menubar must be provided")
         view_menu = menubar.addMenu("&View")
+
+        # ---- View-mode submenu (Comfortable / Compact / Dense / List) ----
+        # The same four modes the top-bar combo exposes, but discoverable
+        # through the menu with keyboard shortcuts.
+        viewmode_menu = view_menu.addMenu("Tile &Layout")
+        from PyQt6.QtGui import QActionGroup
+
+        self._viewmode_action_group = QActionGroup(self)
+        self._viewmode_action_group.setExclusive(True)
+        self._viewmode_actions: dict[ViewMode, QAction] = {}
+        for label, mode, shortcut in (
+            ("&Comfortable", ViewMode.COMFORTABLE, "Ctrl+1"),
+            ("Co&mpact", ViewMode.COMPACT, "Ctrl+2"),
+            ("&Dense", ViewMode.DENSE, "Ctrl+3"),
+            ("&List", ViewMode.LIST, "Ctrl+4"),
+        ):
+            act = QAction(label, self)
+            act.setCheckable(True)
+            act.setShortcut(shortcut)
+            act.setToolTip(f"Switch tile layout to {label.replace('&', '')} mode")
+            act.setStatusTip(act.toolTip())
+            act.triggered.connect(
+                lambda _checked=False, m=mode: self._set_view_mode_from_menu(m)
+            )
+            self._viewmode_action_group.addAction(act)
+            viewmode_menu.addAction(act)
+            self._viewmode_actions[mode] = act
+        # Default checkmark on COMPACT (matches combo default).
+        self._viewmode_actions[ViewMode.COMPACT].setChecked(True)
+
+        view_menu.addSeparator()
 
         action_layout_mode = QAction("&Edit Layout Mode", self)
         action_layout_mode.setCheckable(True)
@@ -287,9 +412,7 @@ class LauncherUISetupMixin:
         self._setup_theme_menu(theme_menu)
 
     def _setup_tools_menu(self, menubar: Any) -> None:
-        if not (menubar is not None):
-            raise ValueError("menubar must be provided")
-        if not (menubar is not None):
+        if menubar is None:
             raise ValueError("menubar must be provided")
         tools_menu = menubar.addMenu("&Tools")
 
@@ -306,9 +429,7 @@ class LauncherUISetupMixin:
         tools_menu.addAction(action_diag)
 
     def _setup_help_menu(self, menubar: Any) -> None:
-        if not (menubar is not None):
-            raise ValueError("menubar must be provided")
-        if not (menubar is not None):
+        if menubar is None:
             raise ValueError("menubar must be provided")
         help_menu = menubar.addMenu("&Help")
 
@@ -434,12 +555,14 @@ class LauncherUISetupMixin:
     def _setup_top_bar_status_and_search(self, top_bar: QHBoxLayout) -> None:
         """Add status indicator, execution mode label, and search bar to top bar."""
         # Status Indicator
-        if not (top_bar is not None):
-            raise ValueError("top_bar must be provided")
-        if not (top_bar is not None):
+        if top_bar is None:
             raise ValueError("top_bar must be provided")
         self.lbl_status = QLabel("Checking Docker...")
-        self.lbl_status.setStyleSheet(Styles.STATUS_INACTIVE_BOLD)
+        self.lbl_status.setProperty("status", "inactive-bold")
+        _style = self.lbl_status.style()
+
+        if _style:
+            _style.polish(self.lbl_status)
         top_bar.addWidget(self.lbl_status)
 
         # Engine-runtime indicator. Shows where physics engines run:
@@ -450,7 +573,11 @@ class LauncherUISetupMixin:
         from src.launchers.runtime_mode_help import make_runtime_mode_help_button
 
         self.lbl_execution_mode = QLabel("Runtime: Native Windows")
-        self.lbl_execution_mode.setStyleSheet(Styles.EXEC_MODE_WARNING)
+        self.lbl_execution_mode.setProperty("exec_mode", "warning")
+        _style = self.lbl_execution_mode.style()
+
+        if _style:
+            _style.polish(self.lbl_execution_mode)
         self.lbl_execution_mode.setToolTip(
             "Where physics engines execute — Native Windows, Docker "
             "container, or WSL2 Ubuntu. Click the ? for full details."
@@ -472,8 +599,8 @@ class LauncherUISetupMixin:
         self.search_input.textChanged.connect(self.update_search_filter)
         top_bar.addWidget(self.search_input)
 
-    def _setup_top_bar_config_checkboxes(self) -> None:
-        """Create hidden configuration checkboxes and layout controls."""
+    def _setup_top_bar_config_checkboxes(self, top_bar: QHBoxLayout) -> None:
+        """Create config checkboxes and layout controls, adding them to top bar."""
         self.chk_live = QCheckBox("Live Viz")
         self.chk_live.setChecked(True)
 
@@ -489,44 +616,31 @@ class LauncherUISetupMixin:
         self.chk_wsl.setChecked(False)
         self.chk_wsl.stateChanged.connect(self._on_wsl_mode_changed)
 
-        # Layout controls
-        self.btn_modify_layout = QPushButton("Layout: Locked")
+        # Layout controls (combined toggle + dropdown)
+        from PyQt6.QtWidgets import QToolButton, QMenu
+
+        self.btn_modify_layout = QToolButton()
+        self.btn_modify_layout.setText("Layout: Locked 🔒")
+        self.btn_modify_layout.setPopupMode(
+            QToolButton.ToolButtonPopupMode.MenuButtonPopup
+        )
         self.btn_modify_layout.setCheckable(True)
         self.btn_modify_layout.setChecked(False)
         self.btn_modify_layout.clicked.connect(self.toggle_layout_mode)
 
-        self.btn_customize_tiles = QPushButton("Edit Tiles")
-        self.btn_customize_tiles.setEnabled(False)
-        self.btn_customize_tiles.clicked.connect(self.open_layout_manager)
+        self.layout_menu = QMenu(self.btn_modify_layout)
+        self.action_customize_tiles = self.layout_menu.addAction("Edit Tiles...")
+        if self.action_customize_tiles:
+            self.action_customize_tiles.setEnabled(False)
+            self.action_customize_tiles.triggered.connect(self.open_layout_manager)
+        self.btn_modify_layout.setMenu(self.layout_menu)
+
+        # Only Layout controls remain in the top bar (config options moved to settings)
+        top_bar.addWidget(self.btn_modify_layout)
 
     def _setup_top_bar_action_buttons(self, top_bar: QHBoxLayout) -> None:
         """Add Help, Settings, and AI Assistant buttons to top bar."""
-        if not (top_bar is not None):
-            raise ValueError("top_bar must be provided")
-        if not (top_bar is not None):
-            raise ValueError("top_bar must be provided")
-        from src.launchers.launcher_constants import AI_AVAILABLE
-
-        btn_help = QPushButton("Help")
-        btn_help.setToolTip("View documentation and user guide (F1)")
-        btn_help.clicked.connect(lambda: self._show_help_dialog())
-        btn_help.setStyleSheet(Styles.BTN_PRIMARY)
-        top_bar.addWidget(btn_help)
-
-        btn_settings = QPushButton("\u2699 Settings")
-        btn_settings.setToolTip("Diagnostics, environment, and build settings")
-        btn_settings.setStyleSheet(Styles.BTN_SECONDARY)
-        btn_settings.clicked.connect(self._open_settings)
-        top_bar.addWidget(btn_settings)
-
-        # AI Assistant Button
-        if AI_AVAILABLE:
-            self.btn_ai = QPushButton("AI Chat [...]")
-            self.btn_ai.setToolTip("Open AI Assistant for help with analysis")
-            self.btn_ai.setCheckable(True)
-            self.btn_ai.clicked.connect(self.toggle_ai_assistant)
-            self.btn_ai.setStyleSheet(Styles.BTN_AI_CHAT)
-            top_bar.addWidget(self.btn_ai)
+        # Action buttons were moved to the left sidebar per user request.
 
     def _register_top_bar_tooltips(self) -> None:
         """Register enhanced tooltips for configuration checkboxes."""
@@ -566,12 +680,146 @@ class LauncherUISetupMixin:
             "engine_selection",
         )
 
+    # ---- View-mode + zoom controls --------------------------------------
+
+    _ZOOM_SLIDER_STEPS = 100  # slider integer range -> [MIN, MAX] tile_scale
+
+    def _slider_to_scale(self, value: int) -> float:
+        """Map a slider integer ``value`` to a tile_scale float."""
+        v = max(0, min(self._ZOOM_SLIDER_STEPS, int(value)))
+        frac = v / float(self._ZOOM_SLIDER_STEPS)
+        return TILE_SCALE_MIN + (TILE_SCALE_MAX - TILE_SCALE_MIN) * frac
+
+    def _scale_to_slider(self, scale: float) -> int:
+        """Map a tile_scale float back to slider integer steps."""
+        s = max(TILE_SCALE_MIN, min(TILE_SCALE_MAX, float(scale)))
+        frac = (s - TILE_SCALE_MIN) / (TILE_SCALE_MAX - TILE_SCALE_MIN)
+        return int(round(frac * self._ZOOM_SLIDER_STEPS))
+
+    def _setup_view_mode_and_zoom(self, top_bar: QHBoxLayout) -> None:
+        """Add view-mode combobox, zoom slider, and percent label to top bar."""
+        if top_bar is None:
+            raise ValueError("top_bar must be provided")
+
+        self.view_mode_combo = QComboBox()
+        self.view_mode_combo.addItem("Comfortable", ViewMode.COMFORTABLE)
+        self.view_mode_combo.addItem("Compact", ViewMode.COMPACT)
+        self.view_mode_combo.addItem("Dense", ViewMode.DENSE)
+        self.view_mode_combo.addItem("List", ViewMode.LIST)
+        self.view_mode_combo.setCurrentIndex(1)  # Compact default
+        self.view_mode_combo.setToolTip("Choose how the model tiles are arranged")
+        self.view_mode_combo.setAccessibleName("View mode")
+        self.view_mode_combo.currentIndexChanged.connect(self._on_view_mode_changed)
+        top_bar.addWidget(self.view_mode_combo)
+
+        self.zoom_slider = QSlider(Qt.Orientation.Horizontal)
+        self.zoom_slider.setRange(0, self._ZOOM_SLIDER_STEPS)
+        self.zoom_slider.setFixedWidth(140)
+        self.zoom_slider.setToolTip("Adjust the size of the model tiles")
+        self.zoom_slider.setAccessibleName("Tile zoom")
+        self.zoom_slider.setAccessibleDescription(_build_zoom_accessible_description())
+        # Set focus policy for keyboard accessibility
+        self.zoom_slider.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+
+        # Initial position from layout_manager if available, else compact 0.5.
+        from src.launchers.launcher_constants import TILE_SCALE_DEFAULT
+
+        initial_scale = TILE_SCALE_DEFAULT
+        lm = getattr(self, "layout_manager", None)
+        if lm is not None and hasattr(lm, "tile_scale"):
+            initial_scale = float(lm.tile_scale)
+        self.zoom_slider.setValue(self._scale_to_slider(initial_scale))
+        self.zoom_slider.valueChanged.connect(self._on_zoom_slider_changed)
+        top_bar.addWidget(self.zoom_slider)
+
+        self.lbl_zoom_pct = QLabel(f"{int(round(initial_scale * 100))}%")
+        self.lbl_zoom_pct.setToolTip("Current tile size as a percentage of base")
+        top_bar.addWidget(self.lbl_zoom_pct)
+
+        # Ctrl+= / Ctrl+- shortcuts adjust zoom by one step (~1.75% scale).
+        sc_in = QShortcut(QKeySequence("Ctrl+="), self)
+        sc_in.activated.connect(lambda: self._nudge_zoom(+5))
+        sc_in_alt = QShortcut(QKeySequence("Ctrl++"), self)
+        sc_in_alt.activated.connect(lambda: self._nudge_zoom(+5))
+        sc_out = QShortcut(QKeySequence("Ctrl+-"), self)
+        sc_out.activated.connect(lambda: self._nudge_zoom(-5))
+
+    def _nudge_zoom(self, delta_steps: int) -> None:
+        """Adjust the zoom slider by ``delta_steps`` integer ticks."""
+        slider = getattr(self, "zoom_slider", None)
+        if slider is None:
+            return
+        slider.setValue(slider.value() + delta_steps)
+
+    def _on_view_mode_changed(self, index: int) -> None:
+        """Apply the selected view mode to the layout manager + grid."""
+        combo = getattr(self, "view_mode_combo", None)
+        if combo is None:
+            return
+        mode = combo.itemData(index)
+        if not isinstance(mode, ViewMode):
+            return
+        self._apply_view_mode(mode, sync_combo=False)
+
+    def _set_view_mode_from_menu(self, mode: ViewMode) -> None:
+        """Drive the view-mode change from the View menu's submenu."""
+        self._apply_view_mode(mode, sync_combo=True)
+
+    def _apply_view_mode(self, mode: ViewMode, *, sync_combo: bool) -> None:
+        """Single source of truth for changing tile layout mode.
+
+        Keeps the menubar action group, the top-bar combo, the zoom
+        slider, and the grid in sync regardless of which surface
+        triggered the change.
+        """
+        lm = getattr(self, "layout_manager", None)
+        if lm is None:
+            return
+        lm.set_view_mode(mode)
+        # Sync combo box if the change came from the menu.
+        if sync_combo:
+            combo = getattr(self, "view_mode_combo", None)
+            if combo is not None:
+                idx = combo.findData(mode)
+                if idx >= 0 and combo.currentIndex() != idx:
+                    combo.blockSignals(True)
+                    combo.setCurrentIndex(idx)
+                    combo.blockSignals(False)
+        # Sync menu action checkmarks regardless.
+        actions = getattr(self, "_viewmode_actions", None)
+        if actions and mode in actions and not actions[mode].isChecked():
+            actions[mode].setChecked(True)
+        # Update zoom slider/label to reflect the mode's default scale.
+        if hasattr(self, "zoom_slider"):
+            self.zoom_slider.blockSignals(True)
+            self.zoom_slider.setValue(self._scale_to_slider(lm.tile_scale))
+            self.zoom_slider.blockSignals(False)
+        if hasattr(self, "lbl_zoom_pct"):
+            self.lbl_zoom_pct.setText(f"{int(round(lm.tile_scale * 100))}%")
+        if hasattr(self, "grid_layout"):
+            lm.rebuild_grid(self.grid_layout)
+        if hasattr(self, "_save_layout"):
+            self._save_layout()
+
+    def _on_zoom_slider_changed(self, value: int) -> None:
+        """Live-resize all model cards to match the new slider position."""
+        lm = getattr(self, "layout_manager", None)
+        scale = self._slider_to_scale(value)
+        if hasattr(self, "lbl_zoom_pct"):
+            self.lbl_zoom_pct.setText(f"{int(round(scale * 100))}%")
+        if lm is None:
+            return
+        lm.set_tile_scale(scale)
+        if hasattr(self, "_save_layout"):
+            self._save_layout()
+
     def _setup_top_bar(self) -> QHBoxLayout:
         """Set up the top tool bar."""
         top_bar = QHBoxLayout()
 
         self._setup_top_bar_status_and_search(top_bar)
-        self._setup_top_bar_config_checkboxes()
+        self._setup_view_mode_and_zoom(top_bar)
+        self._setup_top_bar_config_checkboxes(top_bar)
         self._setup_top_bar_action_buttons(top_bar)
 
         # Context Help Dock
@@ -584,17 +832,23 @@ class LauncherUISetupMixin:
 
     def _setup_grid_area(self, layout: QVBoxLayout) -> None:
         """Set up the scrollable grid area."""
-        if not (layout is not None):
-            raise ValueError("layout must be provided")
-        if not (layout is not None):
+        if layout is None:
             raise ValueError("layout must be provided")
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setFrameShape(QFrame.Shape.NoFrame)
-        self.scroll_area.setStyleSheet(Styles.SCROLL_AREA_TRANSPARENT)
+        self.scroll_area.setProperty("class", "transparent")
+        _style = self.scroll_area.style()
+
+        if _style:
+            _style.polish(self.scroll_area)
 
         self.grid_container = QWidget()
-        self.grid_container.setStyleSheet(Styles.TRANSPARENT_BG)
+        self.grid_container.setProperty("class", "transparent")
+        _style = self.grid_container.style()
+
+        if _style:
+            _style.polish(self.grid_container)
         self.grid_layout = QGridLayout(self.grid_container)
         self.grid_layout.setSpacing(20)
         self.grid_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -611,7 +865,11 @@ class LauncherUISetupMixin:
         self.btn_launch.setEnabled(False)
         self.btn_launch.setFixedHeight(50)
         self.btn_launch.setFont(get_display_font(size=12, weight=Weights.BOLD))
-        self.btn_launch.setStyleSheet(Styles.BTN_LAUNCH_READY)
+        self.btn_launch.setProperty("class", "launch-ready")
+        _style = self.btn_launch.style()
+
+        if _style:
+            _style.polish(self.btn_launch)
         self.btn_launch.clicked.connect(self.launch_simulation)
         self.btn_launch.setCursor(Qt.CursorShape.PointingHandCursor)
         bottom_bar.addWidget(self.btn_launch)
@@ -644,7 +902,11 @@ class LauncherUISetupMixin:
         self._console_text = QPlainTextEdit()
         self._console_text.setReadOnly(True)
         self._console_text.setMaximumBlockCount(5000)
-        self._console_text.setStyleSheet(Styles.CONSOLE_DARK)
+        self._console_text.setProperty("class", "console-dark")
+        _style = self._console_text.style()
+
+        if _style:
+            _style.polish(self._console_text)
 
         console_container = QWidget()
         console_layout = QVBoxLayout(console_container)
@@ -682,9 +944,7 @@ class LauncherUISetupMixin:
 
     def _append_console_line(self, engine_name: str, line: str) -> None:
         """Append a formatted line to the console widget (GUI thread only)."""
-        if not (engine_name is not None):
-            raise ValueError("engine_name must be provided")
-        if not (engine_name is not None):
+        if engine_name is None:
             raise ValueError("engine_name must be provided")
         if not self._console_dock.isVisible():
             self._console_dock.show()
@@ -722,8 +982,12 @@ class LauncherUISetupMixin:
             self._sync_chat_session()
         except ImportError as e:
             logger.error(f"Failed to initialize AI panel: {e}")
-            self.btn_ai.setEnabled(False)
-            self.btn_ai.setToolTip(f"AI Assistant unavailable: {e}")
+            if hasattr(self, "btn_ai"):
+                self.btn_ai.setEnabled(False)
+                self.btn_ai.setToolTip(f"AI Assistant unavailable: {e}")
+            if hasattr(self, "btn_ai_sidebar"):
+                self.btn_ai_sidebar.setEnabled(False)
+                self.btn_ai_sidebar.setToolTip(f"AI Assistant unavailable: {e}")
 
     def _sync_chat_session(self) -> None:
         """Sync the launcher's chat session with the shared FastAPI server."""

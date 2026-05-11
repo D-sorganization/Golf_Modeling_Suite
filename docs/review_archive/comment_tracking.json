@@ -46,7 +46,23 @@
     "3210224501",
     "3210224508",
     "3210242653",
-    "3210242660"
+    "3210242660",
+    "3211471648",
+    "3211471651",
+    "3211158550",
+    "3211158553",
+    "3211902234",
+    "3211902238",
+    "3212069067",
+    "3213721780",
+    "3213721782",
+    "3213770810",
+    "3213770814",
+    "3214243318",
+    "3214243319",
+    "3214561039",
+    "3214592589",
+    "3215371991"
   ],
   "created_issues": {
     "3197917606": "https://github.com/D-sorganization/UpstreamDrift/issues/4140",
@@ -63,6 +79,13 @@
     "3210255790": "https://github.com/D-sorganization/UpstreamDrift/issues/4511",
     "3210224508": "https://github.com/D-sorganization/UpstreamDrift/issues/4507",
     "3210242653": "https://github.com/D-sorganization/UpstreamDrift/issues/4509",
-    "3210242660": "https://github.com/D-sorganization/UpstreamDrift/issues/4510"
+    "3210242660": "https://github.com/D-sorganization/UpstreamDrift/issues/4510",
+    "3211471648": "https://github.com/D-sorganization/UpstreamDrift/issues/4643",
+    "3211471651": "https://github.com/D-sorganization/UpstreamDrift/issues/4644",
+    "3211158550": "https://github.com/D-sorganization/UpstreamDrift/issues/4685",
+    "3211158553": "https://github.com/D-sorganization/UpstreamDrift/issues/4686",
+    "3211902238": "https://github.com/D-sorganization/UpstreamDrift/issues/4728",
+    "3213721780": "https://github.com/D-sorganization/UpstreamDrift/issues/4926",
+    "3214243319": "https://github.com/D-sorganization/UpstreamDrift/issues/5004"
   }
 }

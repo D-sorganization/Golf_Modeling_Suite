@@ -28,6 +28,7 @@ from PyQt6.QtGui import QCloseEvent, QIcon
 from PyQt6.QtWidgets import QApplication, QMainWindow, QMessageBox
 
 from src.launchers.docker_manager import DockerLauncher
+from src.launchers.embedded_tool_bootstrap import bootstrap_embeddable_tools
 from src.launchers.launcher_constants import (
     CONFIG_DIR,
     DOCKER_STAGES,
@@ -53,7 +54,7 @@ from src.launchers.ui_components import (
     AsyncStartupWorker,
     DockerCheckThread,
     DraggableModelCard,
-    GolfSplashScreen,
+    SplashScreen,
     StartupResults,
 )
 from src.shared.python.security.subprocess_utils import kill_process_tree
@@ -110,7 +111,9 @@ class GolfLauncher(
     simulation launching, and dialog/settings management.
     """
 
-    def __init__(self, startup_results: StartupResults | None = None) -> None:
+    def __init__(
+        self, startup_results: StartupResults | None = None, loading: bool = False
+    ) -> None:
         """Initialize the main window.
 
         Args:
@@ -118,7 +121,12 @@ class GolfLauncher(
                             If provided, skips redundant loading of registry and engines.
         """
         super().__init__()
+        from PyQt6.QtCore import Qt
+
+        self.loading = loading
         self.setWindowTitle("UpstreamDrift")
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         # Size to 80% of screen, capped at 1400x900
         screen = QApplication.primaryScreen()
         if screen:
@@ -137,16 +145,26 @@ class GolfLauncher(
         self._load_window_icon()
         self._init_state(startup_results)
         self._init_managers()
-        self._init_registry(startup_results)
-        self._init_engine_manager(startup_results)
-        self._build_available_models()
+        # Skip heavy initialization in loading mode; async worker will provide results
+        if not self.loading:
+            self._init_registry(startup_results)
+            self._init_engine_manager(startup_results)
+            self._build_available_models()
+
         self._init_layout_manager()
-        self._initialize_model_order()
+
+        if not self.loading:
+            self._initialize_model_order()
 
         self.init_ui()
         self._apply_theme_system()
 
-        if startup_results:
+        # Show first-run onboarding dialog if needed
+        self._show_onboarding_if_needed()
+
+        if self.loading:
+            pass  # Wait for update_startup_results
+        elif startup_results:
             self._apply_docker_status(startup_results.docker_available)
         else:
             self.check_docker()
@@ -163,6 +181,15 @@ class GolfLauncher(
 
         if self._startup_time_ms > 0:
             logger.info(f"Application startup completed in {self._startup_time_ms}ms")
+
+    def _show_onboarding_if_needed(self) -> None:
+        """Show first-run onboarding dialog if this is a new user."""
+        try:
+            from src.launchers.onboarding_dialog import show_onboarding_if_needed
+
+            show_onboarding_if_needed(self)
+        except ImportError as e:
+            logger.debug(f"Onboarding dialog not available: {e}")
 
     def _load_window_icon(self) -> None:
         icon_candidates = [
@@ -188,6 +215,11 @@ class GolfLauncher(
         self.available_models: dict[str, Any] = {}
         self.special_app_lookup: dict[str, Any] = {}
         self.current_filter_text = ""
+        # Initialize registry and engine_manager to None to preserve invariant
+        # that these attributes always exist (required by Settings dialog etc.)
+        # They will be populated by _init_registry() or update_startup_results()
+        self.registry: Any = None
+        self.engine_manager: Any = None
 
     def _init_managers(self) -> None:
         self._setup_process_console()
@@ -198,6 +230,11 @@ class GolfLauncher(
         self.model_handler_registry = ModelHandlerRegistry()
         self.docker_launcher = DockerLauncher(REPOS_ROOT)
         self.running_processes = self.process_manager.running_processes
+
+        # Bootstrap embeddable tools registry (fixes #5049)
+        # This ensures EMBEDDABLE_TOOL_REGISTRY is populated before any
+        # context menus or embedded host widgets are created
+        bootstrap_embeddable_tools()
 
     def _init_registry(self, startup_results: StartupResults | None) -> None:
         if startup_results and startup_results.registry is not None:
@@ -258,7 +295,9 @@ class GolfLauncher(
             config_file=LAYOUT_CONFIG_FILE,
             available_models=self.available_models,
             get_model_func=self._get_model,
-            create_card_func=lambda model: DraggableModelCard(model, self),
+            create_card_func=lambda model, **kwargs: DraggableModelCard(
+                model, self, **kwargs
+            ),
             create_header_func=self._create_category_header,
         )
         self.model_cards = self.layout_manager.model_cards
@@ -294,9 +333,7 @@ class GolfLauncher(
 
     def _get_model(self, model_id: str) -> Any | None:
         """Retrieve a model or application by ID."""
-        if not (model_id is not None):
-            raise ValueError("model_id must be provided")
-        if not (model_id is not None):
+        if model_id is None:
             raise ValueError("model_id must be provided")
         if model_id in self.available_models:
             return self.available_models[model_id]
@@ -340,9 +377,7 @@ class GolfLauncher(
 
     def _apply_model_selection(self, selected_ids: list[str]) -> None:
         """Apply a new set of selected models from the layout dialog."""
-        if not (selected_ids is not None):
-            raise ValueError("selected_ids must be provided")
-        if not (selected_ids is not None):
+        if selected_ids is None:
             raise ValueError("selected_ids must be provided")
         self.layout_manager.apply_model_selection(selected_ids)
         self.model_order = self.layout_manager.model_order
@@ -364,25 +399,51 @@ class GolfLauncher(
 
     def update_search_filter(self, text: str) -> None:
         """Update the search filter and rebuild grid."""
-        if not (text is not None):
-            raise ValueError("text must be provided")
-        if not (text is not None):
+        if text is None:
             raise ValueError("text must be provided")
         self.layout_manager.update_search_filter(text)
         self._rebuild_grid()
 
     def _rebuild_grid(self) -> None:
         """Rebuild the grid layout based on current model order."""
+        if getattr(self, "loading", False):
+            while self.grid_layout.count():
+                item = self.grid_layout.takeAt(0)
+                if item.widget():
+                    item.widget().deleteLater()
+
+            try:
+                from src.launchers.model_card import SkeletonCard
+            except ImportError:
+                SkeletonCard = None
+
+            if SkeletonCard:
+                for i in range(8):
+                    self.grid_layout.addWidget(
+                        SkeletonCard(self), i // GRID_COLUMNS, i % GRID_COLUMNS
+                    )
+            return
+
         self.layout_manager.rebuild_grid(self.grid_layout)
+
+    def update_startup_results(self, results: StartupResults) -> None:
+        """Transition from loading skeleton to full application."""
+        self.loading = False
+        self._startup_time_ms = results.startup_time_ms
+        self._init_registry(results)
+        self._init_engine_manager(results)
+        self._build_available_models()
+        self.layout_manager.available_models = self.available_models
+        self._initialize_model_order()
+        self._apply_docker_status(results.docker_available)
+        self._load_layout()
 
     def create_model_card(self, model: Any) -> None:
         """Creates a clickable card widget (placeholder)."""
 
     def launch_model_direct(self, model_id: str) -> None:
         """Selects and immediately launches the model (for double-click)."""
-        if not (model_id is not None):
-            raise ValueError("model_id must be provided")
-        if not (model_id is not None):
+        if model_id is None:
             raise ValueError("model_id must be provided")
         self.select_model(model_id)
         QApplication.processEvents(QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents)
@@ -391,16 +452,34 @@ class GolfLauncher(
     # -- Window management --
 
     def center_window(self) -> None:
-        """Center the window on the primary screen."""
-        screen = self.screen()
-        if not screen:
-            return
+        """Center the window on the primary screen.
 
-        geometry = self.frameGeometry()
-        available_geometry = screen.availableGeometry()
-        center_point = available_geometry.center()
-        geometry.moveCenter(center_point)
-        self.move(geometry.topLeft())
+        Delegates to _center_window() which is the single source of truth
+        using compute_centered_geometry() from launcher_layout_manager.py.
+        """
+        self._center_window()
+
+    def _center_window(self) -> None:
+        """Center the window on the primary screen using compute_centered_geometry().
+
+        This is the single source of truth for window centering. Uses
+        compute_centered_geometry() from launcher_layout_manager.py for
+        consistent geometry calculations.
+        """
+        screen = QApplication.primaryScreen()
+        if screen:
+            screen_geo = screen.availableGeometry()
+            screen_x = self._safe_int(screen_geo.x(), 0)
+            screen_y = self._safe_int(screen_geo.y(), 0)
+            screen_width = self._safe_int(screen_geo.width(), 1920)
+            screen_height = self._safe_int(screen_geo.height(), 1080)
+            w = max(self._safe_int(self.width(), 1280), 100)
+            h = max(self._safe_int(self.height(), 800), 100)
+
+            x, y, w, h = compute_centered_geometry(
+                screen_width, screen_height, w, h, screen_x, screen_y
+            )
+            self.setGeometry(x, y, w, h)
 
     def _load_layout(self) -> None:
         """Load the saved model layout from configuration file."""
@@ -456,28 +535,9 @@ class GolfLauncher(
         self._rebuild_grid()
         logger.info("Layout loaded successfully")
 
-    def _center_window(self) -> None:
-        """Center the window on the primary screen."""
-        screen = QApplication.primaryScreen()
-        if screen:
-            screen_geo = screen.availableGeometry()
-            screen_x = self._safe_int(screen_geo.x(), 0)
-            screen_y = self._safe_int(screen_geo.y(), 0)
-            screen_width = self._safe_int(screen_geo.width(), 1920)
-            screen_height = self._safe_int(screen_geo.height(), 1080)
-            w = max(self._safe_int(self.width(), 1280), 100)
-            h = max(self._safe_int(self.height(), 800), 100)
-
-            x, y, w, h = compute_centered_geometry(
-                screen_width, screen_height, w, h, screen_x, screen_y
-            )
-            self.setGeometry(x, y, w, h)
-
     def _safe_int(self, value: Any, default: int) -> int:
         """Safely convert a value to int, handling Mock objects from tests."""
-        if not (default is not None):
-            raise ValueError("default must be provided")
-        if not (default is not None):
+        if default is None:
             raise ValueError("default must be provided")
         if hasattr(value, "return_value"):
             return default
@@ -487,9 +547,7 @@ class GolfLauncher(
 
     def select_model(self, model_id: str) -> None:
         """Select a model and update UI."""
-        if not (model_id is not None):
-            raise ValueError("model_id must be provided")
-        if not (model_id is not None):
+        if model_id is None:
             raise ValueError("model_id must be provided")
         self.selected_model = model_id
 
@@ -598,9 +656,7 @@ class GolfLauncher(
 
     def _get_engine_type(self, model_type: str) -> Any:
         """Map model type to EngineType."""
-        if not (model_type is not None):
-            raise ValueError("model_type must be provided")
-        if not (model_type is not None):
+        if model_type is None:
             raise ValueError("model_type must be provided")
         _, EngineType = _lazy_load_engine_manager()
 
@@ -620,9 +676,7 @@ class GolfLauncher(
 
     def _apply_docker_status(self, available: bool) -> None:
         """Apply Docker availability status to UI."""
-        if not (available is not None):
-            raise ValueError("available must be provided")
-        if not (available is not None):
+        if available is None:
             raise ValueError("available must be provided")
         self.docker_available = available
         if available:
@@ -708,17 +762,26 @@ class GolfLauncher(
         if running_count > 0:
             word_is = "is" if running_count == 1 else "are"
             word_es = "es" if running_count > 1 else ""
-            reply = QMessageBox.question(
+
+            from src.launchers.launcher_dialogs import ThemedModalDialog
+            from PyQt6.QtWidgets import QWidget, QDialog
+
+            overlay = QWidget(self)
+            overlay.setStyleSheet("background-color: rgba(0, 0, 0, 150);")
+            overlay.setGeometry(self.rect())
+            overlay.show()
+
+            dialog = ThemedModalDialog(
                 self,
                 "Confirm Exit",
-                f"There {word_is} {running_count} "
-                f"running process{word_es}.\n\n"
-                "Closing will terminate all running simulations.\n"
-                "Are you sure you want to exit?",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                QMessageBox.StandardButton.No,
+                f"There {word_is} {running_count} running process{word_es}.\n\nClosing will terminate all running simulations.\nAre you sure you want to exit?",
             )
-            if reply == QMessageBox.StandardButton.No:
+
+            reply = dialog.exec()
+            overlay.hide()
+            overlay.deleteLater()
+
+            if reply == QDialog.DialogCode.Rejected:
                 if event:
                     event.ignore()
                 return
@@ -768,7 +831,7 @@ def main() -> None:
             import ctypes
 
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
-                "UpstreamDrift.GolfModelingSuite.Launcher.1"
+                "UpstreamDrift.Launcher.1"
             )
         except ImportError:
             logger.debug(
@@ -778,44 +841,56 @@ def main() -> None:
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
 
+    # Set global application icon
+    icon_path = ASSETS_DIR / "golf_logo.png"
+    if not icon_path.exists():
+        icon_path = ASSETS_DIR / "golf_logo.ico"
+    if icon_path.exists():
+        app.setWindowIcon(QIcon(str(icon_path)))
+
+    qss_path = ASSETS_DIR / "theme" / "dark_modern.qss"
+    if qss_path.exists():
+        try:
+            with open(qss_path) as f:
+                app.setStyleSheet(f.read())
+        except Exception as e:
+            logger.warning(f"Could not load QSS: {e}")
+
     try:
         from shared.python.plot_theme import apply_plot_theme
 
-        apply_plot_theme(settings_app="GolfModelingSuite")
+        apply_plot_theme(settings_app="UpstreamDrift")
     except ImportError:
         logger.debug("Plot theme module not available")
 
-    splash = GolfSplashScreen()
+    splash = SplashScreen()
     splash.show()
-
     worker = AsyncStartupWorker(REPOS_ROOT)
 
-    main_window = None
+    main_window = GolfLauncher(loading=True)
+    main_window.show()
 
     def on_startup_finished(results: StartupResults) -> None:
         """Create and display the main window after startup completes."""
         nonlocal main_window
         try:
-            main_window = GolfLauncher(results)
-            main_window.show()
+            main_window.update_startup_results(results)
             splash.finish(main_window)
         except Exception as e:  # noqa: BLE001
             import traceback
 
             traceback.print_exc()
-            logger.error(f"Failed to initialize GolfLauncher: {e}")
+            logger.error(f"Failed to update GolfLauncher: {e}")
             QApplication.quit()
         worker.wait(1000)
 
     def on_startup_progress(msg: str, percent: int) -> None:
-        """Forward startup progress to the splash screen."""
-        splash.show_message(msg, percent)
+        """Forward startup progress."""
+        logger.info(f"Startup progress: {percent}% - {msg}")
 
     def on_startup_error(error_msg: str) -> None:
         """Handle startup failure."""
         logger.error(f"Startup failed: {error_msg}")
-        splash.hide()
-        from PyQt6.QtWidgets import QMessageBox
 
         QMessageBox.critical(
             None, "Startup Error", f"Failed to initialize UpstreamDrift:\n\n{error_msg}"

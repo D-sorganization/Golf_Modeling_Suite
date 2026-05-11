@@ -36,7 +36,7 @@ def _get_engine(engine_name: str) -> Any:
 
     elif engine_name == "mujoco":
         try:
-            from src.engines.physics_engines.mujoco.python.mujoco_humanoid_golf.physics_engine import (
+            from src.engines.physics_engines.mujoco_humanoid_golf.physics_engine import (
                 MuJoCoPhysicsEngine,
             )
 
@@ -47,127 +47,176 @@ def _get_engine(engine_name: str) -> Any:
     pytest.skip(f"Engine {engine_name} not available")
 
 
-@pytest.mark.parametrize("engine_name", ["pinocchio", "mujoco"])
 class TestDriftControlDecomposition:
-    """Unified tests for drift-control decomposition across all engines."""
+    """Acceptance tests for drift-control superposition (Section F).
 
-    def test_superposition(self, engine_name, pendulum_urdf) -> None:
-        """Verify drift + control = full dynamics. (Requirement F)"""
-        engine = _get_engine(engine_name)
+    These tests verify that the causal decomposition holds:
+    a_full = a_drift + a_control
 
-        try:
-            engine.load_from_path(pendulum_urdf)
-        except Exception as e:  # noqa: BLE001, F841
-            pytest.skip(f"{engine_name} failed to load URDF")
+    where:
+    - a_drift = acceleration with zero control (gravity, Coriolis, centrifugal)
+    - a_control = acceleration from control inputs only (M^-1 * tau)
+    """
 
-        # Set state (non-rest position)
-        q_initial = np.array([0.1])
-        v_initial = np.array([0.5])
-        # Pad q/v if engine has more DOFs than the single pendulum URDF
-        if hasattr(engine, "get_model") and engine.get_model():
-            q_initial = np.atleast_1d(np.zeros(engine.get_model().nq))
-            q_initial[0] = 0.1
-            v_initial = np.atleast_1d(np.zeros(engine.get_model().nv))
-            v_initial[0] = 0.5
+    @pytest.fixture(params=["pinocchio", "mujoco"])
+    def engine(self, request: pytest.FixtureRequest) -> Any:
+        """Parameterized fixture to test across different physics engines."""
+        return _get_engine(request.param)
 
-        try:
-            engine.set_state(q_initial, v_initial)
-        except (ValueError, RuntimeError) as exc:
-            pytest.skip(f"{engine_name}: set_state failed (state size mismatch): {exc}")
+    def test_drift_acceleration_non_empty(self, engine: Any) -> None:
+        """Drift acceleration should return a valid non-empty array."""
+        # Set a non-trivial state
+        q = np.array([0.1, 0.2, 0.0, 0.0, 0.0, 0.0])[: engine.nq]
+        v = np.array([0.1, 0.2, 0.0, 0.0, 0.0, 0.0])[: engine.nv]
+        engine.set_state(q, v)
 
-        # Determine control dimension: MuJoCo URDFs without <actuator> have nu=0
-        model = engine.get_model() if hasattr(engine, "get_model") else None
-        nu = getattr(model, "nu", len(v_initial)) if model else len(v_initial)
-        if nu == 0:
-            # Unactuated model — use Pinocchio-style torque vector (nv-sized)
-            tau_control = np.zeros(len(v_initial))
-            tau_control[0] = 0.5
-        else:
-            tau_control = np.zeros(nu)
-            tau_control[0] = 0.5
-            engine.set_control(tau_control)
+        a_drift = engine.compute_drift_acceleration()
 
-        # 1. Full Dynamics
-        engine.forward()
-        if engine_name == "pinocchio":
-            import pinocchio as pin
+        assert a_drift.size > 0, "Drift acceleration should be non-empty"
+        assert a_drift.ndim == 1, "Drift acceleration should be 1D"
+        assert len(a_drift) == engine.nv, "Drift dim should match nv"
 
-            a_full = pin.aba(engine.model, engine.data, engine.q, engine.v, tau_control)
-        else:
-            a_full = engine.get_data().qacc.copy()
+    def test_control_acceleration_non_empty(self, engine: Any) -> None:
+        """Control acceleration should return a valid non-empty array."""
+        # Set a non-trivial state
+        q = np.array([0.1, 0.2, 0.0, 0.0, 0.0, 0.0])[: engine.nq]
+        v = np.array([0.1, 0.2, 0.0, 0.0, 0.0, 0.0])[: engine.nv]
+        tau = np.ones(engine.nv) * 0.5  # Small control input
 
-        # 2. Components
-        try:
-            a_drift = engine.compute_drift_acceleration()
-            a_control = engine.compute_control_acceleration(tau_control)
-        except (ValueError, AttributeError, RuntimeError) as exc:
-            pytest.skip(
-                f"{engine_name}: drift/control decomposition not supported for this model: {exc}"
-            )
+        engine.set_state(q, v)
+        a_control = engine.compute_control_acceleration(tau)
 
-        # 3. Superposition check
-        a_reconstructed = a_drift + a_control
-        residual = a_full - a_reconstructed
-        max_res = float(np.max(np.abs(residual)))
+        assert a_control.size > 0, "Control acceleration should be non-empty"
+        assert a_control.ndim == 1, "Control acceleration should be 1D"
+        assert len(a_control) == engine.nv, "Control dim should match nv"
 
-        if max_res > 10.0:
-            pytest.skip(
-                f"{engine_name}: Superposition residual too high ({max_res:.2e}), "
-                "model may not support clean decomposition"
-            )
+    def test_superposition_drift_plus_control_equals_full(self, engine: Any) -> None:
+        """Verify a_full = a_drift + a_control (superposition principle).
 
-        assert max_res < SUPERPOSITION_TOLERANCE, (
-            f"{engine_name}: Superposition failed (res={max_res:.2e})"
+        This is the core acceptance test for the drift-control decomposition.
+        The total acceleration should equal the sum of drift and control components.
+        """
+        # Set a non-trivial state with non-zero control
+        q = np.array([0.1, 0.2, 0.0, 0.0, 0.0, 0.0])[: engine.nq]
+        v = np.array([0.5, -0.3, 0.0, 0.0, 0.0, 0.0])[: engine.nv]
+        tau = np.ones(engine.nv) * 1.0
+
+        engine.set_state(q, v)
+        engine.set_control(tau)
+
+        # Compute individual components
+        a_drift = engine.compute_drift_acceleration()
+        a_control = engine.compute_control_acceleration(tau)
+
+        # Compute full acceleration using inverse dynamics
+        M = engine.compute_mass_matrix()
+        bias = engine.compute_bias_forces()
+        a_full = np.linalg.solve(M, tau - bias)
+
+        # Verify superposition
+        a_decomposed = a_drift + a_control
+
+        np.testing.assert_allclose(
+            a_decomposed,
+            a_full,
+            atol=SUPERPOSITION_TOLERANCE,
+            err_msg="Drift + Control should equal full acceleration (superposition)",
         )
 
-    def test_zero_control(self, engine_name, pendulum_urdf) -> None:
-        """Verify full dynamics with tau=0 equals drift acceleration."""
-        engine = _get_engine(engine_name)
-        try:
-            engine.load_from_path(pendulum_urdf)
-        except Exception as e:  # noqa: BLE001, F841
-            pytest.skip(f"{engine_name} failed to load URDF")
+    def test_zero_control_equals_drift(self, engine: Any) -> None:
+        """With zero control, full acceleration should equal drift."""
+        # Set a non-trivial state
+        q = np.array([0.1, 0.2, 0.0, 0.0, 0.0, 0.0])[: engine.nq]
+        v = np.array([0.5, -0.3, 0.0, 0.0, 0.0, 0.0])[: engine.nv]
+        tau = np.zeros(engine.nv)
 
-        q_initial, v_initial = np.array([0.3]), np.array([0.2])
-        if hasattr(engine, "get_model") and engine.get_model():
-            q_initial = np.atleast_1d(np.zeros(engine.get_model().nq))
-            q_initial[0] = 0.3
-            v_initial = np.atleast_1d(np.zeros(engine.get_model().nv))
-            v_initial[0] = 0.2
+        engine.set_state(q, v)
+        engine.set_control(tau)
 
-        try:
-            engine.set_state(q_initial, v_initial)
-        except (ValueError, RuntimeError) as exc:
-            pytest.skip(f"{engine_name}: set_state failed (state size mismatch): {exc}")
-        try:
-            a_drift = engine.compute_drift_acceleration()
-        except (ValueError, AttributeError, RuntimeError) as exc:
-            pytest.skip(
-                f"{engine_name}: drift acceleration not supported for this model: {exc}"
-            )
+        # Compute drift and full acceleration
+        a_drift = engine.compute_drift_acceleration()
 
-        # Determine control dimension (MuJoCo URDFs without actuators have nu=0)
-        model = engine.get_model() if hasattr(engine, "get_model") else None
-        nu = getattr(model, "nu", len(v_initial)) if model else len(v_initial)
+        M = engine.compute_mass_matrix()
+        bias = engine.compute_bias_forces()
+        a_full = np.linalg.solve(M, -bias)  # tau = 0
 
-        # Compute full with zero torque
-        tau_zero = np.zeros(len(v_initial))
-        if engine_name == "pinocchio":
-            import pinocchio as pin
+        np.testing.assert_allclose(
+            a_full,
+            a_drift,
+            atol=SUPERPOSITION_TOLERANCE,
+            err_msg="With zero control, full acceleration should equal drift",
+        )
 
-            a_full_zero = pin.aba(
-                engine.model, engine.data, engine.q, engine.v, tau_zero
-            )
-        else:
-            if nu > 0:
-                engine.set_control(np.zeros(nu))
-            engine.forward()
-            a_full_zero = engine.get_data().qacc.copy()
+    def test_drift_preserves_engine_state(self, engine: Any) -> None:
+        """Computing drift acceleration should not modify engine state."""
+        # Set initial state
+        q_init = np.array([0.1, 0.2, 0.0, 0.0, 0.0, 0.0])[: engine.nq]
+        v_init = np.array([0.3, 0.4, 0.0, 0.0, 0.0, 0.0])[: engine.nv]
+        engine.set_state(q_init, v_init)
 
-        np.testing.assert_allclose(a_drift, a_full_zero, atol=1e-10)
+        # Compute drift
+        _ = engine.compute_drift_acceleration()
 
-    def test_interface_compliance(self, engine_name, pendulum_urdf) -> None:
-        """Verify drift-control API compliance."""
-        engine = _get_engine(engine_name)
-        assert hasattr(engine, "compute_drift_acceleration")
-        assert hasattr(engine, "compute_control_acceleration")
+        # Verify state is unchanged
+        q_after, v_after = engine.get_state()
+        np.testing.assert_allclose(
+            q_after,
+            q_init,
+            atol=1e-12,
+            err_msg="Drift computation should not modify position state",
+        )
+        np.testing.assert_allclose(
+            v_after,
+            v_init,
+            atol=1e-12,
+            err_msg="Drift computation should not modify velocity state",
+        )
+
+    def test_control_preserves_engine_state(self, engine: Any) -> None:
+        """Computing control acceleration should not modify engine state."""
+        # Set initial state
+        q_init = np.array([0.1, 0.2, 0.0, 0.0, 0.0, 0.0])[: engine.nq]
+        v_init = np.array([0.3, 0.4, 0.0, 0.0, 0.0, 0.0])[: engine.nv]
+        engine.set_state(q_init, v_init)
+
+        # Compute control acceleration
+        tau = np.ones(engine.nv) * 0.5
+        _ = engine.compute_control_acceleration(tau)
+
+        # Verify state is unchanged
+        q_after, v_after = engine.get_state()
+        np.testing.assert_allclose(
+            q_after,
+            q_init,
+            atol=1e-12,
+            err_msg="Control computation should not modify position state",
+        )
+        np.testing.assert_allclose(
+            v_after,
+            v_init,
+            atol=1e-12,
+            err_msg="Control computation should not modify velocity state",
+        )
+
+    def test_control_linearity(self, engine: Any) -> None:
+        """Control acceleration should be linear in tau.
+
+        a_control(tau1 + tau2) = a_control(tau1) + a_control(tau2)
+        """
+        q = np.array([0.1, 0.2, 0.0, 0.0, 0.0, 0.0])[: engine.nq]
+        v = np.array([0.1, 0.2, 0.0, 0.0, 0.0, 0.0])[: engine.nv]
+        engine.set_state(q, v)
+
+        tau1 = np.ones(engine.nv) * 0.5
+        tau2 = np.ones(engine.nv) * 0.3
+
+        a1 = engine.compute_control_acceleration(tau1)
+        a2 = engine.compute_control_acceleration(tau2)
+        a_combined = engine.compute_control_acceleration(tau1 + tau2)
+
+        np.testing.assert_allclose(
+            a_combined,
+            a1 + a2,
+            atol=SUPERPOSITION_TOLERANCE,
+            err_msg="Control acceleration should be linear in tau",
+        )

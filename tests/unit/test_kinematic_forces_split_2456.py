@@ -34,7 +34,7 @@ class TestKinematicForcesFileSizes:
     """Each file must be within LOC budget after split."""
 
     @pytest.mark.unit
-    def test_coordinator_loc(self) -> None:
+    def test_kinematic_forces_split_2456_coordinator_loc(self) -> None:
         loc = _count_lines(KF_DIR / "kinematic_forces.py")
         assert loc <= LOC_BUDGET_COORDINATOR, (
             f"kinematic_forces.py has {loc} LOC; budget {LOC_BUDGET_COORDINATOR}"

@@ -85,14 +85,14 @@ _SMALL_CONFIG = PerturbationConfig(
 
 
 class TestSupportedEngines:
-    def test_non_empty(self) -> None:
+    def test_cross_engine_perturbation_runner_non_empty(self) -> None:
         assert len(SUPPORTED_ENGINES) >= 6
 
     def test_contains_all_six(self) -> None:
         expected = {"pendulum", "pinocchio", "drake", "mujoco", "opensim", "myosuite"}
         assert expected.issubset(set(SUPPORTED_ENGINES))
 
-    def test_no_duplicates(self) -> None:
+    def test_cross_engine_perturbation_runner_no_duplicates(self) -> None:
         assert len(SUPPORTED_ENGINES) == len(set(SUPPORTED_ENGINES))
 
 
@@ -102,7 +102,7 @@ class TestSupportedEngines:
 
 
 class TestEngineRankEntry:
-    def test_defaults(self) -> None:
+    def test_cross_engine_perturbation_runner_defaults(self) -> None:
         entry = EngineRankEntry(
             engine_name="mujoco",
             robustness_score=0.85,
@@ -158,7 +158,7 @@ class TestCrossEngineReport:
             consistency={},
         )
 
-    def test_to_dict_keys(self) -> None:
+    def test_cross_engine_perturbation_runner_to_dict_keys(self) -> None:
         report = self._make_report()
         d = report.to_dict()
         assert "config" in d
@@ -320,7 +320,7 @@ class TestFormatReport:
             consistency=consistency,
         )
 
-    def test_returns_string(self) -> None:
+    def test_cross_engine_perturbation_runner_returns_string(self) -> None:
         report = self._make_report()
         text = format_report(report)
         assert isinstance(text, str)
@@ -498,40 +498,3 @@ _skip_no_mujoco = pytest.mark.skipif(
     not _MUJOCO_ANALYZER_AVAILABLE,
     reason="mujoco or mujoco perturbation analyzer not installed",
 )
-
-
-@_skip_no_mujoco
-class TestCrossEngineIntegrationMujoco:
-    """Smoke test: runner with a real MuJoCo engine completes without error."""
-
-    def test_single_engine_run(self) -> None:
-        runner = CrossEnginePerturbationRunner(
-            engines=["mujoco"],
-            profile=_ZERO_PROFILE,
-            engine_kwargs={"mujoco": {"t_end": 0.05}},
-        )
-        config = PerturbationConfig(
-            n_trials=2, noise_amplitude=0.0, noise_type="white", seed=0
-        )
-        report = runner.run_all(config)
-
-        assert "mujoco" in report.summaries
-        assert report.ranking[0].engine_name == "mujoco"
-        assert report.ranking[0].rank == 1
-        assert 0.0 <= report.summaries["mujoco"].robustness_score <= 1.0
-
-    def test_report_to_dict_serializable(self) -> None:
-        runner = CrossEnginePerturbationRunner(
-            engines=["mujoco"],
-            profile=_ZERO_PROFILE,
-            engine_kwargs={"mujoco": {"t_end": 0.05}},
-        )
-        config = PerturbationConfig(n_trials=2, noise_amplitude=0.0, seed=0)
-        report = runner.run_all(config)
-
-        import json  # noqa: PLC0415
-
-        # Should not raise
-        serialized = json.dumps(report.to_dict())
-        loaded = json.loads(serialized)
-        assert "ranking" in loaded

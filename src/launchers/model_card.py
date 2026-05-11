@@ -8,6 +8,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from PyQt6.QtCore import pyqtProperty  # type: ignore[attr-defined]
 from PyQt6.QtCore import (
     QEasingCurve,
     QEvent,
@@ -15,7 +16,6 @@ from PyQt6.QtCore import (
     QPoint,
     QPropertyAnimation,
     Qt,
-    pyqtProperty,
 )
 from PyQt6.QtGui import (
     QColor,
@@ -32,6 +32,7 @@ from PyQt6.QtWidgets import (
     QGraphicsDropShadowEffect,
     QHBoxLayout,
     QLabel,
+    QPushButton,
     QVBoxLayout,
     QWidget,
 )
@@ -40,6 +41,13 @@ from src.shared.python.logging_pkg.logging_config import get_logger
 from src.shared.python.theme.style_constants import Styles
 from src.shared.python.theme.typography import Weights, get_display_font, get_qfont
 
+from .launcher_constants import (
+    TILE_SCALE_DEFAULT,
+    scaled_font_pt,
+    scaled_image_px,
+    scaled_padding_px,
+    validate_tile_scale,
+)
 from .startup import ASSETS_DIR, _get_theme_colors
 
 if TYPE_CHECKING:
@@ -91,13 +99,51 @@ MODEL_IMAGES = {
 }
 
 
+class SkeletonCard(QFrame):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setObjectName("SkeletonCard")
+        self.setMinimumSize(180, 240)
+        self.setStyleSheet("""
+            #SkeletonCard {
+                background-color: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 16px;
+            }
+        """)
+
+        # Simple pulsing animation using opacity
+        self.effect = QGraphicsDropShadowEffect(self)
+        self.effect.setBlurRadius(20)
+        self.effect.setColor(QColor(0, 0, 0, 80))
+        self.setGraphicsEffect(self.effect)
+
+        self._anim = QPropertyAnimation(self, b"windowOpacity")
+        self._anim.setDuration(1000)
+        self._anim.setStartValue(0.5)
+        self._anim.setEndValue(1.0)
+        self._anim.setLoopCount(-1)
+        self._anim.start()
+
+
 class DraggableModelCard(QFrame):
     """Draggable model card widget with reordering support."""
 
-    def __init__(self, model: Any, parent_launcher: Any) -> None:
+    def __init__(
+        self,
+        model: Any,
+        parent_launcher: Any,
+        tile_scale: float = TILE_SCALE_DEFAULT,
+        *,
+        show_description: bool = True,
+        list_mode: bool = False,
+    ) -> None:
         super().__init__(None)
         self.model = model
         self.parent_launcher = parent_launcher
+        self.tile_scale: float = validate_tile_scale(tile_scale)
+        self._show_description: bool = bool(show_description)
+        self._list_mode: bool = bool(list_mode)
 
         # Match initial drag-and-drop state to the parent's mode
         self.setAcceptDrops(bool(getattr(parent_launcher, "layout_edit_mode", False)))
@@ -154,7 +200,11 @@ class DraggableModelCard(QFrame):
         scale_factor = 1.0 + (value / 4.0) * 0.03
         if hasattr(self, "lbl_img") and hasattr(self, "base_pixmap"):  # noqa: SIM102
             if self.base_pixmap and not self.base_pixmap.isNull():
-                new_size = int(180 * scale_factor)
+                # In list mode, icon is fixed at 60x60 regardless of tile_scale.
+                # Hover animation must use the same fixed base size to avoid
+                # clipping/jitter when zoom is adjusted.
+                base_px = 60 if self._list_mode else scaled_image_px(self.tile_scale)
+                new_size = max(1, int(base_px * 0.9 * scale_factor))
                 scaled = self.base_pixmap.scaled(
                     new_size,
                     new_size,
@@ -168,6 +218,12 @@ class DraggableModelCard(QFrame):
         self._hover_anim.setStartValue(self._hover_offset)
         self._hover_anim.setEndValue(4.0)
         self._hover_anim.start()
+        # Reveal the per-tile launch button.
+        btn = getattr(self, "_btn_quick_launch", None)
+        if btn is not None:
+            self._reposition_quick_launch_button()
+            btn.show()
+            btn.raise_()
         super().enterEvent(event)
 
     def leaveEvent(self, event: QEvent | None) -> None:
@@ -175,7 +231,65 @@ class DraggableModelCard(QFrame):
         self._hover_anim.setStartValue(self._hover_offset)
         self._hover_anim.setEndValue(0.0)
         self._hover_anim.start()
+        btn = getattr(self, "_btn_quick_launch", None)
+        if btn is not None:
+            btn.hide()
         super().leaveEvent(event)
+
+    def resizeEvent(self, event: Any) -> None:  # type: ignore[override]
+        """Keep the quick-launch button anchored to the top-right corner."""
+        super().resizeEvent(event)
+        self._reposition_quick_launch_button()
+
+    def _reposition_quick_launch_button(self) -> None:
+        btn = getattr(self, "_btn_quick_launch", None)
+        if btn is None:
+            return
+        margin = 6
+        btn_w = btn.sizeHint().width()
+        btn_h = btn.sizeHint().height()
+        btn.setFixedSize(btn_w, btn_h)
+        btn.move(self.width() - btn_w - margin, margin)
+
+    def _build_quick_launch_button(self) -> None:
+        """Create the per-tile hover launch button (hidden until hover)."""
+        btn = QPushButton("Launch ▶", self)
+        btn.setObjectName("CardQuickLaunch")
+        btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn.setToolTip(f"Launch {getattr(self.model, 'name', 'this model')} now")
+        btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        # Visual: small pill with theme-friendly default styles.  Stylesheet
+        # is intentionally light-touch so the global QSS can override it.
+        btn.setStyleSheet(
+            "QPushButton#CardQuickLaunch {"
+            "  background: rgba(38, 110, 200, 220);"
+            "  color: white;"
+            "  border: none;"
+            "  border-radius: 10px;"
+            "  padding: 4px 10px;"
+            "  font-weight: 600;"
+            "  font-size: 10px;"
+            "}"
+            "QPushButton#CardQuickLaunch:hover {"
+            "  background: rgba(64, 140, 230, 240);"
+            "}"
+            "QPushButton#CardQuickLaunch:pressed {"
+            "  background: rgba(28, 90, 170, 240);"
+            "}"
+        )
+        btn.clicked.connect(self._on_quick_launch_clicked)
+        btn.hide()
+        self._btn_quick_launch = btn
+
+    def _on_quick_launch_clicked(self) -> None:
+        """Click handler: dispatch directly to the launcher's launch path."""
+        if self.parent_launcher and hasattr(
+            self.parent_launcher, "launch_model_direct"
+        ):
+            try:
+                self.parent_launcher.launch_model_direct(self.model.id)
+            except Exception:  # pragma: no cover — defensive UI
+                logger.exception("Quick-launch failed for model %s", self.model.id)
 
     def _resolve_image_name(self) -> str | None:  # noqa: C901
         """Determine the image filename for this model card."""
@@ -234,28 +348,31 @@ class DraggableModelCard(QFrame):
             return img_path
         return None
 
-    def _create_image_widget(self, layout: QVBoxLayout) -> None:
+    def _create_image_widget(self, layout: QVBoxLayout | QHBoxLayout) -> None:
         """Create and add the model image label to the layout."""
-        if not (layout is not None):
-            raise ValueError("layout must be provided")
-        if not (layout is not None):
+        if layout is None:
             raise ValueError("layout must be provided")
         img_name = self._resolve_image_name()
         img_path = self._find_image_path(img_name)
 
+        # In LIST mode the image is forced to a small (60x60) horizontal-row
+        # icon regardless of tile_scale. In other modes it scales from the
+        # 200px reference by ``tile_scale``.
+        img_size = 60 if self._list_mode else scaled_image_px(self.tile_scale)
+        pixmap_target = max(1, int(img_size * 0.9))
+
         self.lbl_img = QLabel()
         self.lbl_img.setObjectName("CardImage")
-        self.lbl_img.setFixedSize(200, 200)
+        self.lbl_img.setFixedSize(img_size, img_size)
         self.lbl_img.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.setAlignment(self.lbl_img, Qt.AlignmentFlag.AlignCenter)
         self.lbl_img.setStyleSheet(Styles.LABEL_TRANSPARENT)
         self.base_pixmap = None
 
         if img_path and img_path.exists():
             self.base_pixmap = QPixmap(str(img_path))
             pixmap = self.base_pixmap.scaled(
-                180,
-                180,
+                pixmap_target,
+                pixmap_target,
                 Qt.AspectRatioMode.KeepAspectRatio,
                 Qt.TransformationMode.SmoothTransformation,
             )
@@ -265,6 +382,12 @@ class DraggableModelCard(QFrame):
             self.lbl_img.setText("No Image")
             self.lbl_img.setStyleSheet(Styles.no_image_label(c.text_quaternary))
 
+        if self._list_mode:
+            # In list mode the icon sits to the left without centering frames.
+            layout.addWidget(self.lbl_img)
+            return
+
+        layout.setAlignment(self.lbl_img, Qt.AlignmentFlag.AlignCenter)
         img_container = QWidget()
         img_layout = QHBoxLayout(img_container)
         img_layout.setContentsMargins(0, 0, 0, 0)
@@ -273,19 +396,32 @@ class DraggableModelCard(QFrame):
         img_layout.addStretch()
         layout.addWidget(img_container)
 
-    def _create_status_chip(self, layout: QVBoxLayout) -> None:
-        """Create and add the status chip to the layout."""
-        if not (layout is not None):
+    def _create_status_chip(
+        self, layout: QVBoxLayout | QHBoxLayout, *, embed_in_row: bool = False
+    ) -> None:
+        """Create and add the status chip to the layout.
+
+        When ``embed_in_row`` is True (LIST mode) the chip is added directly
+        to the supplied horizontal layout, on the right; otherwise it is
+        centred in its own horizontal sub-layout (grid modes).
+        """
+        if layout is None:
             raise ValueError("layout must be provided")
-        if not (layout is not None):
-            raise ValueError("layout must be provided")
-        status_text, status_color, text_color = self._get_status_info()
+        status_text, status_class = self._get_status_info()
         lbl_status = QLabel(status_text)
         lbl_status.setObjectName("StatusChip")
-        lbl_status.setFont(get_qfont(size=8, weight=Weights.BOLD))
-        lbl_status.setStyleSheet(Styles.status_chip(status_color, text_color))
+        chip_pt = max(8, scaled_font_pt(self.tile_scale, base_pt=8))
+        lbl_status.setFont(get_qfont(size=chip_pt, weight=Weights.BOLD))
+        lbl_status.setProperty("status_chip", status_class)
+        style = lbl_status.style()
+        if style:
+            style.polish(lbl_status)
         lbl_status.setAlignment(Qt.AlignmentFlag.AlignCenter)
         lbl_status.setMinimumWidth(80)
+
+        if embed_in_row:
+            layout.addWidget(lbl_status)
+            return
 
         chip_layout = QHBoxLayout()
         chip_layout.addStretch()
@@ -295,31 +431,24 @@ class DraggableModelCard(QFrame):
 
     def setup_ui(self) -> None:
         """Build the model card widget layout with image, labels, and status chip."""
-        layout = QVBoxLayout(self)
-        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        if self._list_mode:
+            self._setup_list_ui()
+        else:
+            self._setup_grid_ui()
 
-        self._create_image_widget(layout)
+        self._apply_card_padding()
 
-        lbl_name = QLabel(self.model.name)
-        lbl_name.setFont(get_display_font(size=11, weight=Weights.BOLD))
-        lbl_name.setWordWrap(True)
-        lbl_name.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(lbl_name)
-
-        lbl_desc = QLabel(self.model.description)
-        lbl_desc.setFont(get_qfont(size=9))
-        lbl_desc.setObjectName("CardDescription")
-        lbl_desc.setWordWrap(True)
-        lbl_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(lbl_desc)
-
-        self._create_status_chip(layout)
+        # Quick-launch button: small floating pill in the top-right corner,
+        # revealed on hover. Hidden by default so it does not obscure the
+        # tile content. Adds a one-click launch path that bypasses the
+        # global header button for power users.
+        self._build_quick_launch_button()
 
         # Tile-level help text.  Tooltip is a one-line preview; What's-this
         # shows the description and a usage hint.
         name = getattr(self.model, "name", "this model")
         desc = getattr(self.model, "description", "") or ""
-        self.setToolTip(f"Double-click to launch {name}")
+        self.setToolTip(f"<b>{name}</b><br>{desc}<br><br><i>Double-click to launch</i>")
         self.setStatusTip(f"Selects {name}")
         self.setWhatsThis(
             f"<b>{name}</b><br>"
@@ -330,8 +459,217 @@ class DraggableModelCard(QFrame):
             "before opening the simulator."
         )
 
-    def _get_status_info(self) -> tuple[str, str, str]:
-        c = _get_theme_colors()
+    def _build_info_button(self) -> QPushButton:
+        """Create a small 'i' info button."""
+        btn = QPushButton("ℹ", self)
+        btn.setObjectName("CardInfoButton")
+        btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn.setToolTip("Click for details")
+        btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        btn.setFixedSize(18, 18)
+        btn.setStyleSheet(
+            "QPushButton#CardInfoButton {"
+            "  background: rgba(255, 255, 255, 0.1);"
+            "  color: #aaaaaa;"
+            "  border: none;"
+            "  border-radius: 9px;"
+            "  font-size: 10px;"
+            "  font-weight: bold;"
+            "}"
+            "QPushButton#CardInfoButton:hover {"
+            "  background: rgba(255, 255, 255, 0.2);"
+            "  color: #ffffff;"
+            "}"
+        )
+        btn.clicked.connect(self._show_info_dialog)
+        return btn
+
+    def _show_info_dialog(self) -> None:
+        """Show a dialog with full tile information."""
+        from PyQt6.QtWidgets import QMessageBox
+
+        QMessageBox.information(
+            self,
+            f"{self.model.name} Details",
+            f"<b>{self.model.name}</b><br><br>{self.model.description}",
+        )
+
+    def _setup_grid_ui(self) -> None:
+        """Build the vertical grid-mode layout (Comfortable/Compact/Dense)."""
+        layout = QVBoxLayout(self)
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self._create_image_widget(layout)
+
+        name_pt = scaled_font_pt(self.tile_scale)
+        self.lbl_name = QLabel(self.model.name)
+        self.lbl_name.setObjectName("CardName")
+        self.lbl_name.setFont(get_display_font(size=name_pt, weight=Weights.BOLD))
+        self.lbl_name.setWordWrap(True)
+        self.lbl_name.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        # Center the name, but keep the info button on the right
+        title_layout = QHBoxLayout()
+        title_layout.addStretch()
+        title_layout.addWidget(self.lbl_name)
+        title_layout.addWidget(
+            self._build_info_button(), alignment=Qt.AlignmentFlag.AlignTop
+        )
+        title_layout.addStretch()
+        layout.addLayout(title_layout)
+
+        desc_pt = max(scaled_font_pt(self.tile_scale, base_pt=9), 9)
+        self.lbl_desc = QLabel(self.model.description)
+        self.lbl_desc.setFont(get_qfont(size=desc_pt))
+        self.lbl_desc.setObjectName("CardDescription")
+        self.lbl_desc.setWordWrap(True)
+        self.lbl_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.lbl_desc.setVisible(self._show_description)
+        layout.addWidget(self.lbl_desc)
+
+        self._create_status_chip(layout)
+
+    def _setup_list_ui(self) -> None:
+        """Build the horizontal LIST-mode layout (icon | name+desc | status)."""
+        outer = QHBoxLayout(self)
+        outer.setSpacing(12)
+
+        self._create_image_widget(outer)
+
+        text_box = QVBoxLayout()
+        text_box.setSpacing(2)
+        name_pt = max(scaled_font_pt(self.tile_scale, base_pt=12), 10)
+        self.lbl_name = QLabel(self.model.name)
+        self.lbl_name.setObjectName("CardName")
+        self.lbl_name.setFont(get_display_font(size=name_pt, weight=Weights.BOLD))
+
+        name_layout = QHBoxLayout()
+        name_layout.addWidget(self.lbl_name)
+        name_layout.addWidget(self._build_info_button())
+        name_layout.addStretch()
+        text_box.addLayout(name_layout)
+
+        self.lbl_desc = QLabel(self.model.description)
+        self.lbl_desc.setObjectName("CardDescription")
+        self.lbl_desc.setFont(get_qfont(size=9))
+        self.lbl_desc.setVisible(self._show_description)
+        text_box.addWidget(self.lbl_desc)
+
+        outer.addLayout(text_box, 1)
+        self._create_status_chip(outer, embed_in_row=True)
+
+        # Force a row-strip footprint roughly matching the issue spec (~60 px).
+        self.setMinimumHeight(60)
+
+    def _apply_card_padding(self) -> None:
+        """Set contents margins on the active layout based on tile_scale."""
+        pad = scaled_padding_px(self.tile_scale)
+        active = self.layout()
+        if active is not None:
+            active.setContentsMargins(pad, pad, pad, pad)
+
+    def set_tile_scale(
+        self,
+        scale: float,
+        *,
+        show_description: bool | None = None,
+        list_mode: bool | None = None,
+    ) -> None:
+        """Resize this card in place using the supplied tile scale.
+
+        Existing labels/pixmap are reused — no disk reload — but the layout
+        is rebuilt when ``list_mode`` changes (vertical vs. horizontal).
+        """
+        scale = validate_tile_scale(scale)
+        if show_description is not None:
+            self._show_description = bool(show_description)
+        new_list_mode = self._list_mode if list_mode is None else bool(list_mode)
+        full_rebuild = new_list_mode != self._list_mode
+        self.tile_scale = scale
+        self._list_mode = new_list_mode
+
+        if full_rebuild:
+            # Clear children + layout, then rebuild from scratch.
+            old_layout = self.layout()
+            if old_layout is not None:
+                while old_layout.count():
+                    item = old_layout.takeAt(0)
+                    w = item.widget() if item else None
+                    if w is not None:
+                        w.setParent(None)
+                        w.deleteLater()
+                # PyQt6: detach the old layout by reparenting to a temp QWidget.
+                QWidget().setLayout(old_layout)
+            self.setup_ui()
+            return
+
+        # In-place update: image, fonts, padding, description visibility.
+        new_img = 60 if self._list_mode else scaled_image_px(self.tile_scale)
+        if hasattr(self, "lbl_img"):
+            self.lbl_img.setFixedSize(new_img, new_img)
+            if self.base_pixmap and not self.base_pixmap.isNull():
+                target = max(1, int(new_img * 0.9))
+                self.lbl_img.setPixmap(
+                    self.base_pixmap.scaled(
+                        target,
+                        target,
+                        Qt.AspectRatioMode.KeepAspectRatio,
+                        Qt.TransformationMode.SmoothTransformation,
+                    )
+                )
+        if hasattr(self, "lbl_name"):
+            base_pt = 12 if self._list_mode else 11
+            self.lbl_name.setFont(
+                get_display_font(
+                    size=scaled_font_pt(self.tile_scale, base_pt=base_pt),
+                    weight=Weights.BOLD,
+                )
+            )
+        if hasattr(self, "lbl_desc"):
+            self.lbl_desc.setVisible(self._show_description)
+            self.lbl_desc.setFont(
+                get_qfont(size=max(scaled_font_pt(self.tile_scale, base_pt=9), 9))
+            )
+        chip = self.findChild(QLabel, "StatusChip")
+        if chip is not None:
+            chip.setFont(
+                get_qfont(
+                    size=max(8, scaled_font_pt(self.tile_scale, base_pt=8)),
+                    weight=Weights.BOLD,
+                )
+            )
+        self._apply_card_padding()
+
+    # Status string -> (display_text, css_class) used when the YAML supplies
+    # an explicit launcher.status. Anything else falls back to type-based
+    # detection so older entries without a launcher block still render
+    # something meaningful (no more "Unknown" chips).
+    _STATUS_STRINGS: dict[str, tuple[str, str]] = {
+        "ready": ("Ready", "success"),
+        "available": ("Ready", "success"),
+        "stable": ("Ready", "success"),
+        "beta": ("Beta", "info"),
+        "experimental": ("Experimental", "info"),
+        "alpha": ("Alpha", "warning"),
+        "broken": ("Broken", "error"),
+        "deprecated": ("Deprecated", "warning"),
+        "external": ("External", "external"),
+    }
+
+    def _get_status_info(self) -> tuple[str, str]:
+        # 1. Prefer an explicit launcher.status from the YAML — that is the
+        #    canonical declaration. Most tiles already set it.
+        launcher = getattr(self.model, "launcher", None)
+        if isinstance(launcher, dict):
+            yaml_status = launcher.get("status")
+        else:
+            yaml_status = getattr(launcher, "status", None) if launcher else None
+        if isinstance(yaml_status, str):
+            mapped = self._STATUS_STRINGS.get(yaml_status.strip().lower())
+            if mapped is not None:
+                return mapped
+
+        # 2. Fall back to type-based detection for legacy entries.
         t = getattr(self.model, "type", "").lower()
         if t in [
             "custom_humanoid",
@@ -340,19 +678,25 @@ class DraggableModelCard(QFrame):
             "pinocchio",
             "openpose",
         ]:
-            return "GUI Ready", c.success, "#000000"
+            return "GUI Ready", "success"
 
         path_str = str(getattr(self.model, "path", ""))
         if t == "mjcf" or path_str.endswith(".xml"):
-            return "Viewer", c.chart_cyan, "#000000"
+            return "Viewer", "info"
         if t in ["opensim", "myosim"]:
-            return "Engine Ready", c.success, "#000000"
-        if t in ["matlab", "matlab_app"]:
-            return "External", c.chart_purple, "#ffffff"
+            return "Engine Ready", "success"
+        if t in ["matlab", "matlab_app", "matlab_suite"]:
+            return "External", "external"
         if t in ["urdf_generator", "c3d_viewer"]:
-            return "Utility", c.text_tertiary, "#ffffff"
+            return "Utility", "utility"
+        if t == "putting_green":
+            return "Ready", "success"
+        if t == "special_app":
+            return "Ready", "success"
+        if t == "document":
+            return "Reference", "info"
 
-        return "Unknown", c.text_tertiary, "#ffffff"
+        return "Ready", "success"
 
     def refresh_theme(self) -> None:
         """Refresh inline styles to match the current theme."""
@@ -362,10 +706,13 @@ class DraggableModelCard(QFrame):
         if desc:
             desc.setStyleSheet(f"color: {c.text_secondary};")
         # Update status chip
-        status_text, status_color, text_color = self._get_status_info()
+        status_text, status_class = self._get_status_info()
         chip = self.findChild(QLabel, "StatusChip")
         if chip:
-            chip.setStyleSheet(Styles.status_chip(status_color, text_color))
+            chip.setProperty("status_chip", status_class)
+            style = chip.style()
+            if style:
+                style.polish(chip)
         # Update no-image fallback
         img = self.findChild(QLabel, "CardImage")
         if img and not img.pixmap():
@@ -397,6 +744,23 @@ class DraggableModelCard(QFrame):
         drag.setPixmap(self.grab())
         drag.setHotSpot(self.drag_start_position)
         drag.exec(Qt.DropAction.MoveAction)
+
+    def keyPressEvent(self, event: Any) -> None:
+        """Handle keyboard navigation and activation.
+
+        Supports:
+        - Enter/Return: Launch the model
+        - Space: Select the model
+        - Arrow keys: Navigate to adjacent cards (handled by parent grid)
+        """
+        if event and event.key() in (Qt.Key.Key_Enter, Qt.Key.Key_Return):
+            if self.parent_launcher:
+                self.parent_launcher.launch_model_direct(self.model.id)
+        elif event and event.key() == Qt.Key.Key_Space:
+            if self.parent_launcher:
+                self.parent_launcher.select_model(self.model.id)
+        else:
+            super().keyPressEvent(event)
 
     def mouseDoubleClickEvent(self, event: QMouseEvent | None) -> None:
         """Launch the model directly on double-click."""

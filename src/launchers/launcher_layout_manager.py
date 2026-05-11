@@ -10,6 +10,12 @@ import json
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from src.launchers.launcher_constants import (
+    TILE_SCALE_DEFAULT,
+    ViewMode,
+    validate_tile_scale,
+    view_mode_settings,
+)
 from src.shared.python.logging_pkg.logging_config import get_logger
 
 if TYPE_CHECKING:
@@ -25,6 +31,17 @@ class LayoutConfig:
     DEFAULT_WINDOW_WIDTH = 1280
     DEFAULT_WINDOW_HEIGHT = 800
     MIN_WINDOW_Y = 50  # Ensure window title bar is visible
+
+
+def _view_mode_from_string(name: str | None) -> ViewMode:
+    """Parse a stored string into a :class:`ViewMode`, defaulting to COMPACT."""
+    if not name:
+        return ViewMode.COMPACT
+    try:
+        return ViewMode[str(name).strip().upper()]
+    except KeyError:
+        logger.warning("Unknown view_mode %r, falling back to COMPACT", name)
+        return ViewMode.COMPACT
 
 
 class LayoutManager:
@@ -53,9 +70,7 @@ class LayoutManager:
             get_model_func: Callback to retrieve a model by ID.
             create_card_func: Callback to create a model card widget.
         """
-        if not (config_file is not None):
-            raise ValueError("config_file must be provided")
-        if not (config_file is not None):
+        if config_file is None:
             raise ValueError("config_file must be provided")
         self.config_file = config_file
         self.config_dir = config_file.parent
@@ -69,6 +84,9 @@ class LayoutManager:
         self.model_cards: dict[str, Any] = {}
         self.edit_mode = False
         self.current_filter_text = ""
+        self.current_view_mode: ViewMode = ViewMode.COMPACT
+        self.tile_scale: float = TILE_SCALE_DEFAULT
+        self.current_category_filter = "All"
 
     def initialize_model_order(self, default_ids: list[str] | None = None) -> None:
         """Set a sensible default grid ordering.
@@ -128,6 +146,8 @@ class LayoutManager:
                 "selected_model": window_state.get("selected_model"),
                 "window_geometry": window_state.get("geometry", {}),
                 "options": window_state.get("options", {}),
+                "view_mode": self.current_view_mode.name.lower(),
+                "tile_scale": float(self.tile_scale),
             }
 
             with open(self.config_file, "w", encoding="utf-8") as f:
@@ -162,6 +182,19 @@ class LayoutManager:
                 self.model_order = saved_order
                 logger.info("Model layout restored from saved configuration")
 
+            # View-mode + tile-scale are additive keys; missing ones use defaults.
+            self.current_view_mode = _view_mode_from_string(
+                layout_data.get("view_mode")
+            )
+            raw_scale = layout_data.get("tile_scale")
+            if raw_scale is not None:
+                try:
+                    self.tile_scale = validate_tile_scale(float(raw_scale))
+                except (TypeError, ValueError) as exc:
+                    logger.warning(
+                        "Invalid tile_scale %r in saved layout: %s", raw_scale, exc
+                    )
+
             return layout_data
 
         except (json.JSONDecodeError, OSError, KeyError) as e:
@@ -178,11 +211,17 @@ class LayoutManager:
                 widget.deleteLater()
 
         # Create cards for any newly added models
+        _scale, _cols, show_desc, is_list = view_mode_settings(self.current_view_mode)
         for model_id in self.model_order:
             if model_id not in self.model_cards:
                 model = self._get_model(model_id)
                 if model:
-                    self.model_cards[model_id] = self._create_card(model)
+                    self.model_cards[model_id] = self._build_card(
+                        model,
+                        tile_scale=self.tile_scale,
+                        show_description=show_desc,
+                        list_mode=is_list,
+                    )
 
     def apply_model_selection(self, selected_ids: list[str]) -> list[str]:
         """Apply a new set of selected models from the layout dialog.
@@ -194,9 +233,7 @@ class LayoutManager:
             The new ordered list of model IDs.
         """
         # Keep existing order for models that are still selected
-        if not (selected_ids is not None):
-            raise ValueError("selected_ids must be provided")
-        if not (selected_ids is not None):
+        if selected_ids is None:
             raise ValueError("selected_ids must be provided")
         ordered_selection = [
             model_id for model_id in self.model_order if model_id in selected_ids
@@ -220,9 +257,7 @@ class LayoutManager:
         Returns:
             True if swap was successful, False otherwise.
         """
-        if not (source_id is not None):
-            raise ValueError("source_id must be provided")
-        if not (source_id is not None):
+        if source_id is None:
             raise ValueError("source_id must be provided")
         if not self.edit_mode:
             return False
@@ -242,24 +277,30 @@ class LayoutManager:
             return False  # ID not found
 
     def get_filtered_order(self) -> list[str]:
-        """Get model order filtered by current search text.
+        """Get model order filtered by current search text and category.
 
         Returns:
-            List of model IDs matching the current filter.
+            List of model IDs matching the current filters.
         """
-        if not self.current_filter_text:
-            return list(self.model_order)
-
         filtered = []
         for model_id in self.model_order:
             model = self._get_model(model_id)
             if not model:
                 continue
 
-            # Search in name, id, and description
-            search_content = f"{model.name} {model.id} {model.description}".lower()
-            if self.current_filter_text in search_content:
-                filtered.append(model_id)
+            # Category filter
+            if self.current_category_filter != "All":
+                cat = self._get_model_category(model)
+                if cat != self.current_category_filter:
+                    continue
+
+            # Search text filter
+            if self.current_filter_text:
+                search_content = f"{model.name} {model.id} {model.description}".lower()
+                if self.current_filter_text not in search_content:
+                    continue
+
+            filtered.append(model_id)
 
         return filtered
 
@@ -272,12 +313,18 @@ class LayoutManager:
             cat = getattr(launcher, "category", None) if launcher else None
 
         if cat:
-            if cat == "physics_engine":
-                return "Core Physics Engines"
-            if cat == "tool":
-                return "Analysis Tools"
-            if cat == "external":
-                return "Utilities"
+            cat_norm = str(cat).strip().lower()
+            mapping = {
+                "physics_engine": "Physics Engines",
+                "simulation": "Simulation",
+                "motion_matching": "Motion Matching",
+                "motion_capture": "Motion Capture",
+                "tool": "Tools & Data",
+                "documentation": "Documentation",
+                "external": "Tools & Data",
+            }
+            if cat_norm in mapping:
+                return mapping[cat_norm]
 
         t = getattr(model, "type", "").lower()
         if t in [
@@ -286,25 +333,80 @@ class LayoutManager:
             "pinocchio",
             "opensim",
             "myosim",
-            "putting_green",
         ]:
-            return "Core Physics Engines"
+            return "Physics Engines"
+        if t == "putting_green":
+            return "Simulation"
         if t == "matlab_suite":
-            return "Matlab Simscape Models"
+            return "Physics Engines"
+        if t == "document":
+            return "Documentation"
         if t == "special_app":
-            return "Analysis Tools"
-        return "Utilities"
+            return "Tools & Data"
+        return "Tools & Data"
+
+    def _build_card(self, model: Any, **kwargs: Any) -> Any:
+        """Invoke ``_create_card`` with optional keyword arguments.
+
+        Falls back to a positional-only call so legacy callbacks that accept
+        ``(model,)`` continue to work.
+        """
+        try:
+            return self._create_card(model, **kwargs)
+        except TypeError:
+            return self._create_card(model)
+
+    def set_view_mode(self, mode: ViewMode) -> None:
+        """Apply a new :class:`ViewMode` and propagate scaling to existing cards.
+
+        The actual grid is not rebuilt here — call :meth:`rebuild_grid` after.
+        """
+        if not isinstance(mode, ViewMode):
+            raise TypeError(f"mode must be a ViewMode, got {type(mode).__name__}")
+        scale, _cols, show_desc, is_list = view_mode_settings(mode)
+        self.current_view_mode = mode
+        self.tile_scale = scale
+        # When switching into/out of LIST mode the grid topology changes, so
+        # we drop existing cards and let rebuild_grid recreate them with the
+        # right list_mode flag. For grid->grid switches an in-place
+        # set_tile_scale is sufficient.
+        was_list = any(
+            getattr(c, "_list_mode", False) for c in self.model_cards.values()
+        )
+        if is_list != was_list:
+            for c in list(self.model_cards.values()):
+                c.setParent(None)
+                c.deleteLater()
+            self.model_cards.clear()
+        else:
+            for card in self.model_cards.values():
+                if hasattr(card, "set_tile_scale"):
+                    card.set_tile_scale(
+                        scale,
+                        show_description=show_desc,
+                        list_mode=is_list,
+                    )
+
+    def set_tile_scale(self, scale: float) -> None:
+        """Update tile_scale and resize all live cards in place."""
+        self.tile_scale = validate_tile_scale(scale)
+        _scale, _cols, show_desc, is_list = view_mode_settings(self.current_view_mode)
+        for card in self.model_cards.values():
+            if hasattr(card, "set_tile_scale"):
+                card.set_tile_scale(
+                    self.tile_scale,
+                    show_description=show_desc,
+                    list_mode=is_list,
+                )
 
     def rebuild_grid(self, grid_layout: QGridLayout) -> None:  # noqa: C901
-        """Rebuild the grid layout based on current model order.
+        """Rebuild the grid layout based on current model order and view mode.
 
         Args:
             grid_layout: The Qt grid layout to populate.
         """
         # Clean current layout
-        if not (grid_layout is not None):
-            raise ValueError("grid_layout must be provided")
-        if not (grid_layout is not None):
+        if grid_layout is None:
             raise ValueError("grid_layout must be provided")
         while grid_layout.count():
             item = grid_layout.takeAt(0)
@@ -313,15 +415,22 @@ class LayoutManager:
                 if widget:
                     widget.setParent(None)
 
+        scale, columns, show_desc, is_list = view_mode_settings(self.current_view_mode)
+        # Honour any explicit tile_scale set by the zoom slider, but fall
+        # back to the view-mode default if it matches the previous mode.
+        active_scale = self.tile_scale if self.tile_scale > 0 else scale
+
         # Get filtered model order
         filtered_order = self.get_filtered_order()
 
         # Group widgets by category maintaining order
-        categories = {
-            "Core Physics Engines": [],
-            "Analysis Tools": [],
-            "Matlab Simscape Models": [],
-            "Utilities": [],
+        categories: dict[str, list[Any]] = {
+            "Physics Engines": [],
+            "Simulation": [],
+            "Motion Matching": [],
+            "Motion Capture": [],
+            "Tools & Data": [],
+            "Documentation": [],
             "Other": [],
         }
 
@@ -329,7 +438,21 @@ class LayoutManager:
             if model_id not in self.model_cards:
                 model = self._get_model(model_id)
                 if model:
-                    self.model_cards[model_id] = self._create_card(model)
+                    self.model_cards[model_id] = self._build_card(
+                        model,
+                        tile_scale=active_scale,
+                        show_description=show_desc,
+                        list_mode=is_list,
+                    )
+            else:
+                # Existing card — make sure it matches current scale/mode.
+                card = self.model_cards[model_id]
+                if hasattr(card, "set_tile_scale"):
+                    card.set_tile_scale(
+                        active_scale,
+                        show_description=show_desc,
+                        list_mode=is_list,
+                    )
 
             if model_id in self.model_cards:
                 model = self._get_model(model_id)
@@ -344,21 +467,26 @@ class LayoutManager:
             if not widgets:
                 continue
 
-            # Add section header
+            # Add section header spanning the active number of columns.
             if self._create_header:
                 header = self._create_header(cat_name)
-                grid_layout.addWidget(header, row, 0, 1, LayoutConfig.GRID_COLUMNS)
+                grid_layout.addWidget(header, row, 0, 1, columns)
             row += 1
 
             col = 0
             for widget in widgets:
-                grid_layout.addWidget(widget, row, col)
-                col += 1
-                if col >= LayoutConfig.GRID_COLUMNS:
-                    col = 0
+                if is_list:
+                    # Each card occupies a full row, one card per row.
+                    grid_layout.addWidget(widget, row, 0, 1, 1)
                     row += 1
+                else:
+                    grid_layout.addWidget(widget, row, col)
+                    col += 1
+                    if col >= columns:
+                        col = 0
+                        row += 1
 
-            if col > 0:
+            if not is_list and col > 0:
                 row += 1
 
     def set_edit_mode(self, enabled: bool) -> None:
@@ -367,9 +495,7 @@ class LayoutManager:
         Args:
             enabled: Whether editing is enabled.
         """
-        if not (enabled is not None):
-            raise ValueError("enabled must be provided")
-        if not (enabled is not None):
+        if enabled is None:
             raise ValueError("enabled must be provided")
         self.edit_mode = enabled
 
@@ -407,9 +533,7 @@ def compute_centered_geometry(
     Returns:
         Tuple of (x, y, width, height) for centered window.
     """
-    if not (screen_width is not None):
-        raise ValueError("screen_width must be provided")
-    if not (screen_width is not None):
+    if screen_width is None:
         raise ValueError("screen_width must be provided")
     x = screen_x + (screen_width - window_width) // 2
     y = screen_y + (screen_height - window_height) // 2

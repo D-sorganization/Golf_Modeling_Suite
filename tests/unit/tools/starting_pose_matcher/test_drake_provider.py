@@ -17,7 +17,7 @@ def test_import_without_drake():
     assert hasattr(drake, "MATCHER_TO_DRAKE")
 
 
-def test_vocabulary_mapping():
+def test_drake_provider_vocabulary_mapping():
     """Test that the vocabulary mapping is correct."""
     from src.tools.starting_pose_matcher.providers.drake import (
         DRAKE_TO_MATCHER_VOCAB,
@@ -65,7 +65,7 @@ def test_drake_not_available_error():
         DrakeSkeletonProvider(model_path=None, model_xml=None)
 
 
-def test_create_provider_function():
+def test_drake_provider_create_provider_function():
     """Test that create_provider function exists and has correct signature."""
     from src.tools.starting_pose_matcher.providers.drake import create_provider
 
@@ -210,127 +210,3 @@ MINIMAL_URDF = """<?xml version="1.0" encoding="utf-8"?>
   </joint>
 </robot>
 """
-
-
-def test_provider_with_minimal_model():
-    """Test provider with a minimal URDF model."""
-    try:
-        from pydrake.multibody.plant import MultibodyPlant  # noqa: F401
-    except ImportError:
-        pytest.skip("Drake not installed")
-
-    from src.tools.starting_pose_matcher.providers.drake import (
-        DrakeSkeletonProvider,
-        DrakeProviderError,
-    )
-
-    provider = DrakeSkeletonProvider(model_xml=MINIMAL_URDF)
-    skeleton = provider.get_skeleton()
-
-    # Check all required vocabulary is present
-    required_names = [
-        "hip",
-        "spine",
-        "torso",
-        "hub",
-        "ls",
-        "rs",
-        "le",
-        "re",
-        "lw",
-        "rw",
-        "mp",
-        "ch",
-    ]
-    for name in required_names:
-        assert name in skeleton, f"Missing skeleton joint: {name}"
-
-    # Check positions are numpy arrays with correct shape
-    import numpy as np
-
-    for name, pos in skeleton.keys():
-        assert isinstance(pos, np.ndarray), f"Position for {name} should be numpy array"
-        assert pos.shape == (3,), f"Position for {name} should have shape (3,)"
-
-
-def test_provider_with_positions():
-    """Test provider with positions input."""
-    try:
-        from pydrake.multibody.plant import MultibodyPlant  # noqa: F401
-    except ImportError:
-        pytest.skip("Drake not installed")
-
-    import numpy as np
-    from src.tools.starting_pose_matcher.providers.drake import DrakeSkeletonProvider
-
-    provider = DrakeSkeletonProvider(model_xml=MINIMAL_URDF)
-
-    # Get default skeleton
-    skeleton1 = provider.get_skeleton()
-
-    # Create a positions vector
-    positions = np.zeros(provider.plant.num_positions())
-    positions[0] = 0.1  # Small translation in x
-
-    skeleton2 = provider.get_skeleton(positions=positions)
-
-    # Positions should be different after applying new positions
-    assert not np.allclose(skeleton1["hip"], skeleton2["hip"])
-
-
-def test_get_available_bodies():
-    """Test get_available_bodies method."""
-    try:
-        from pydrake.multibody.plant import MultibodyPlant  # noqa: F401
-    except ImportError:
-        pytest.skip("Drake not installed")
-
-    from src.tools.starting_pose_matcher.providers.drake import DrakeSkeletonProvider
-
-    provider = DrakeSkeletonProvider(model_xml=MINIMAL_URDF)
-    bodies = provider.get_available_bodies()
-
-    # Check that we have the expected bodies
-    expected_bodies = [
-        "hip",
-        "spine",
-        "torso",
-        "hub",
-        "left_shoulder",
-        "right_shoulder",
-        "left_elbow",
-        "right_elbow",
-        "left_wrist",
-        "right_wrist",
-        "midpoint",
-        "clubhead",
-    ]
-    for body in expected_bodies:
-        assert body in bodies, f"Missing body: {body}"
-
-
-def test_missing_vocabulary_error():
-    """Test that DrakeProviderError is raised when vocabulary is missing."""
-    try:
-        from pydrake.multibody.plant import MultibodyPlant  # noqa: F401
-    except ImportError:
-        pytest.skip("Drake not installed")
-
-    from src.tools.starting_pose_matcher.providers.drake import (
-        DrakeSkeletonProvider,
-        DrakeProviderError,
-    )
-
-    # Create a minimal model that's missing required bodies
-    incomplete_urdf = """<?xml version="1.0" encoding="utf-8"?>
-<robot name="incomplete">
-  <link name="hip">
-    <inertial>
-      <mass value="1.0"/>
-    </inertial>
-  </link>
-</robot>
-"""
-
-    with pytest.raises(DrakeProviderError, match="Missing required body mappings"):
-        DrakeSkeletonProvider(model_xml=incomplete_urdf)

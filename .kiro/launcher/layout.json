@@ -5,27 +5,23 @@
     "pinocchio_golf",
     "opensim_golf",
     "myosim_suite",
-    "putting_green",
-    "c3d_viewer",
-    "openpose_analysis",
-    "mediapipe_analysis",
     "model_explorer",
-    "video_analyzer",
     "data_explorer",
-    "project_map",
     "movement_optimizer",
     "matlab_suite"
   ],
   "selected_model": "matlab_suite",
   "window_geometry": {
-    "x": 40,
-    "y": 40,
-    "width": 1880,
+    "x": 1090,
+    "y": -19,
+    "width": 1913,
     "height": 992
   },
   "options": {
     "live_visualization": true,
     "gpu_acceleration": false,
     "docker_mode": false
-  }
+  },
+  "view_mode": "compact",
+  "tile_scale": 0.3025
 }

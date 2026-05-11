@@ -1,4 +1,8 @@
-"""Secret-scanning regression test for the repository tree."""
+"""Secret-scanning regression test for the repository tree.
+
+This module runs Trivy filesystem secret-scan checks to detect
+potential credential leaks in the repository.
+"""
 
 from __future__ import annotations
 
@@ -11,33 +15,35 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_trivy_secret_scan_has_no_findings() -> None:
-    """Run Trivy fs secret scanning when the CLI is available."""
+@pytest.mark.security
+def test_no_secrets_in_tree() -> None:
+    """Run Trivy filesystem secret scan on the repository tree.
+
+    This test ensures no secrets (API keys, tokens, credentials) are
+    accidentally committed to the repository.
+
+    Skips if Trivy is not installed.
+    """
     trivy = shutil.which("trivy")
     if trivy is None:
-        pytest.skip("trivy CLI is not installed in this environment")
+        pytest.skip("Trivy not installed for secret scanning")
 
     result = subprocess.run(
         [
             trivy,
             "fs",
-            "--scanners",
+            "--security-checks",
             "secret",
             "--exit-code",
             "1",
-            "--skip-dirs",
-            ".git",
-            "--skip-dirs",
-            ".mypy_cache",
-            "--skip-dirs",
-            ".pytest_cache",
-            ".",
+            "--quiet",
+            str(ROOT),
         ],
-        cwd=ROOT,
-        text=True,
         capture_output=True,
-        timeout=180,
-        check=False,
+        text=True,
+        timeout=300,
     )
 
-    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.returncode == 0, (
+        f"Trivy secret scan detected potential secrets:\n{result.stdout}\n{result.stderr}"
+    )

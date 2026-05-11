@@ -47,7 +47,7 @@ class TestPinocchioWrapper:
 
         assert isinstance(wrapper, PinocchioWrapper)
 
-    def test_compute_inverse_dynamics(self, simple_model) -> None:
+    def test_pinocchio_interface_compute_inverse_dynamics(self, simple_model) -> None:
         """Test inverse dynamics computation."""
         model, data = simple_model
         wrapper = PinocchioWrapper(model, data)
@@ -79,7 +79,7 @@ class TestPinocchioWrapper:
         assert a.shape == (model.nv,)
         assert np.all(np.isfinite(a))
 
-    def test_compute_mass_matrix(self, simple_model) -> None:
+    def test_pinocchio_interface_compute_mass_matrix(self, simple_model) -> None:
         """Test mass matrix computation."""
         model, data = simple_model
         wrapper = PinocchioWrapper(model, data)
@@ -186,15 +186,6 @@ class TestPinocchioWrapper:
 
         # Should be approximately equal (within numerical precision)
         assert np.allclose(tau, tau_computed, atol=1e-3)
-
-
-class TestPinocchioWithoutInstallation:
-    """Tests for behavior when Pinocchio is not installed."""
-
-    def test_import_error_when_not_installed(self) -> None:
-        """Test that ImportError is raised when Pinocchio is not available."""
-        if PINOCCHIO_AVAILABLE:
-            pytest.skip("Pinocchio is installed, cannot test import error")
 
         # This test would only run if Pinocchio is not installed
         # In that case, importing should raise ImportError

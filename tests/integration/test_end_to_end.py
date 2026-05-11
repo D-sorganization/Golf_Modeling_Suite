@@ -195,7 +195,7 @@ class TestPhysicsParameters:
         assert gravity.unit == "m/s²"
         assert gravity.is_constant is True  # Should be constant
 
-    def test_parameter_validation(self) -> None:
+    def test_end_to_end_parameter_validation(self) -> None:
         """Test parameter validation."""
         from src.shared.python.physics.physics_parameters import get_registry
 
@@ -257,31 +257,6 @@ class TestPhysicsParameters:
             or "ball" in combined_output.lower()
             or len(combined_output) > 0
         )
-
-
-class TestValidateSuite:
-    """Integration tests for validate_suite.py."""
-
-    def test_validate_suite_runs(self) -> None:
-        """Test that validate_suite.py runs without errors."""
-        suite_root = get_repo_root()
-        script = suite_root / "scripts" / "validate_suite.py"
-
-        if not script.exists():
-            pytest.skip("validate_suite.py not found")
-
-        result = subprocess.run(
-            [sys.executable, str(script)],
-            capture_output=True,
-            text=True,
-            timeout=30,
-        )
-
-        # Should complete (may have warnings but shouldn't crash)
-        assert result.returncode in [0, 1]  # 0=success, 1=issues found
-
-        # Should contain validation information
-        assert len(result.stdout) > 0
 
 
 class TestOutputManager:

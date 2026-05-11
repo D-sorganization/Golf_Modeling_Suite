@@ -58,6 +58,15 @@ jobs:
         shell: bash
         run: python3 scripts/check_workflow_inventory.py
 
+  urdf-layering:
+    name: Enforce URDF subsystem layering (ADR 0007)
+    runs-on: d-sorg-fleet
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: Run URDF layering guard
+        shell: bash
+        run: python3 scripts/ci/check_urdf_layering.py
+
   # -- Dispatcher: route to self-hosted if available --------------------------
   pick-runner:
     runs-on: d-sorg-fleet
@@ -417,7 +426,7 @@ jobs:
       - name: MATLAB Quality Check
         continue-on-error: true
         run: |
-          PYTHONPATH=. python src/tools/matlab_utilities/scripts/matlab_quality_check.py > matlab_quality_report.txt
+          PYTHONPATH=. python src/tools/matlab_utilities/scripts/matlab_quality_check.py > matlab_quality_report.txt || touch matlab_quality_report.txt
           cat matlab_quality_report.txt
 
       - name: Upload MATLAB Report
@@ -651,7 +660,7 @@ jobs:
                 -n 0 \
                 --timeout=60 \
                 --timeout-method=thread \
-                -m "not slow and not benchmark and not requires_gl and not requires_network and not requires_gpu and not requires_mocap_fixtures" \
+                -m "not slow and not benchmark and not perf and not requires_gl and not requires_network and not requires_gpu and not requires_mocap_fixtures" \
                 --no-cov \
                 --tb=short \
                 -v
@@ -702,16 +711,20 @@ jobs:
             --ignore=tests/shared_contracts \
             --ignore=tests/heavy_integration \
             --ignore=tests/benchmarks \
-            -m "not slow and not benchmark and not requires_gl and not requires_network and not requires_gpu and not requires_mocap_fixtures" \
+            -m "not slow and not benchmark and not perf and not requires_gl and not requires_network and not requires_gpu and not requires_mocap_fixtures" \
             --cov=src \
             --cov-report=term-missing \
             --cov-report=xml:coverage.xml \
             --cov-config=pyproject.toml \
 
-            --cov-fail-under=55 \
+            --cov-fail-under=65 \
             --tb=short \
             -v
 
+      - name: Enforce Per-Package Coverage Thresholds
+        # Only run when coverage.xml is generated (not during PR-scoped --no-cov runs)
+        if: steps.core-test-changes.outputs.skip != 'true' && github.event_name != 'pull_request'
+        run: python3 scripts/config/coverage_enforcer.py coverage.xml
       # Dependency-free validator coverage that supports future native-engine jobs.
       - name: Cross-Engine Validator Core Unit Tests
         if: steps.core-test-changes.outputs.skip != 'true'
@@ -837,7 +850,7 @@ jobs:
               raise SystemExit(f"PostgreSQL did not accept SQL connections: {last_error!r}")
           PY
           python3 -m pytest -p pytest_timeout tests/integration/test_alembic_round_trip.py \
-            -m "not slow and not benchmark and not requires_gl and not requires_network and not requires_gpu and not requires_mocap_fixtures" \
+            -m "not slow and not benchmark and not perf and not requires_gl and not requires_network and not requires_gpu and not requires_mocap_fixtures" \
             --timeout=180 \
             --timeout-method=thread \
             --durations=10 \
