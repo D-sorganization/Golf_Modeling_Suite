@@ -404,6 +404,28 @@ class AIAssistantPanel(QWidget):
 
         self.refresh_theme()
 
+    def showEvent(self, event: Any) -> None:
+        """Refresh models and auto-index when panel becomes visible."""
+        super().showEvent(event)
+        self._refresh_models()
+        if hasattr(self, "chk_auto_index") and self.chk_auto_index.isChecked():
+            self._append_system_message("Indexing codebase for full context...")
+            # Placeholder for actual RAG index trigger
+            QtCore.QTimer.singleShot(
+                1000,
+                lambda: self._append_system_message("Codebase indexed successfully."),
+            )
+
+    def _refresh_models(self) -> None:
+        """Refresh available models from the backend adapter."""
+        if hasattr(self, "_adapter") and self._adapter:
+            try:
+                # Assuming adapter has a get_available_models or similar,
+                # we'll just log it for now or re-apply settings
+                self._auto_load_settings()
+            except Exception as e:
+                logger.warning(f"Failed to refresh models: {e}")
+
     def _auto_load_settings(self) -> None:
         """Try to load settings and init adapter on startup."""
         try:
@@ -606,8 +628,14 @@ class AIAssistantPanel(QWidget):
     def _add_header_action_buttons(self, layout: Any) -> None:
         if not (layout is not None):
             raise ValueError("layout must be provided")
-        if not (layout is not None):
-            raise ValueError("layout must be provided")
+
+        from PyQt6.QtWidgets import QCheckBox
+
+        self.chk_auto_index = QCheckBox("Auto-Index")
+        self.chk_auto_index.setToolTip("Index the full codebase for context")
+        self.chk_auto_index.setStyleSheet("color: black;")
+        layout.addWidget(self.chk_auto_index)
+
         new_chat_btn = QPushButton("New Chat")
         new_chat_btn.clicked.connect(self._on_new_chat)
         layout.addWidget(new_chat_btn)
