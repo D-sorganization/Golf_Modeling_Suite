@@ -1,21 +1,21 @@
 # Review Comments Archive - 2026-05-12
 
-Generated: 2026-05-12T06:39:18.616981
+Generated: 2026-05-12T13:42:02.002274
 
 ## Reviewer (chatgpt-codex-connector[bot]) (1 comments)
 
-### PR #5301: src/config/models.yaml:84
+### PR #5304: src/shared/python/ai/gui/assistant_panel.py:320
 
 Actionable: No
 Has Suggestion: No
 
 ```
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Point golf suite tile to an allowed launcher entrypoint**
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Initialize chat UI before loading persisted sessions**
 
-Using `launch_golf_suite.py` at the repository root makes this tile unlaunchable through `ProcessManager.launch_script`: `validate_script_path()` only allows scripts whose first path segment is in the whitelist (`src`, `engines`, `launchers`, `tools`, `shared`, `examples`). With the current path, launches fail with `Script in disallowed directory`, so...
+`AIAssistantPanel.__init__` now connects `session_loaded` and calls `_load_history()` before `_setup_ui()`. Because `ChatSessionManager.load_session()` emits `session_loaded` synchronously, `_on_session_loaded()` can run before `_message_layout` exists and dereference it, which raises at startup for users who already have an active saved session. This ma...
 ```
 
-[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/5301#discussion_r3226831341)
+[View on GitHub](https://github.com/D-sorganization/UpstreamDrift/pull/5304#discussion_r3229641457)
 
 ---
 
