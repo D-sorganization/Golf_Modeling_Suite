@@ -36,11 +36,7 @@ if TYPE_CHECKING:
 
 logger = get_logger(__name__)
 
-try:
-    import upstream_muscle
-    HAS_RUST_BACKEND = True
-except ImportError:
-    HAS_RUST_BACKEND = False
+import upstream_muscle
 
 # Solver parameters
 MAX_ITERATIONS = 100  # Maximum Newton-Raphson iterations
@@ -71,9 +67,7 @@ class EquilibriumSolver:
         """
         self.muscle = muscle
         
-        self._rust_backend = None
-        if HAS_RUST_BACKEND and hasattr(muscle, '_rust_backend') and muscle._rust_backend is not None:
-            self._rust_backend = upstream_muscle.EquilibriumSolver(muscle._rust_backend)
+        self._rust_backend = upstream_muscle.EquilibriumSolver(muscle._rust_backend)
 
     def _equilibrium_residual(
         self, l_CE: float, l_MT: float, activation: float, v_CE: float = 0.0
@@ -171,52 +165,10 @@ class EquilibriumSolver:
         if initial_guess is None:
             initial_guess = INITIAL_GUESS_RATIO * self.muscle.params.l_opt
             
-        if self._rust_backend is not None:
-            try:
-                return self._rust_backend.solve_fiber_length(l_MT, activation, v_CE, initial_guess)
-            except RuntimeError as e:
-                # Fallback to python solver on failure
-                logger.warning(f"Rust equilibrium solver failed, falling back to Python: {e}")
-
-        # Define residual function for newton()
-        def residual_func(l_CE: float) -> float:
-            """Compute the muscle-tendon equilibrium residual for a given fiber length."""
-            return self._equilibrium_residual(l_CE, l_MT, activation, v_CE)
-
         try:
-            # Newton-Raphson solver from scipy
-            l_CE_solution = newton(
-                residual_func,
-                x0=initial_guess,
-                maxiter=MAX_ITERATIONS,
-                tol=TOLERANCE,
-            )
-
-            # Validate solution
-            residual = residual_func(l_CE_solution)
-            if abs(residual) > TOLERANCE * self.muscle.params.F_max:
-                logger.warning(
-                    f"Equilibrium solver converged but residual is large:\\n"
-                    f"  l_CE = {l_CE_solution:.6f} m\\n"
-                    f"  Residual = {residual:.2f} N ({abs(residual) / self.muscle.params.F_max * 100:.2f}% of F_max)\\n"
-                    f"  This may indicate numerical issues or invalid configuration"
-                )
-
-            result = float(l_CE_solution)
-            ensure(result > 0, "fiber length must be positive", result)
-            ensure(np.isfinite(result), "fiber length must be finite", result)
-            return result
-
-        except RuntimeError as e:
-            logger.error(
-                f"Muscle equilibrium solver FAILED to converge:\\n"
-                f"  l_MT = {l_MT:.6f} m\\n"
-                f"  activation = {activation:.3f}\\n"
-                f"  v_CE = {v_CE:.6f} m/s\\n"
-                f"  Initial guess: {initial_guess:.6f} m\\n"
-                f"  Max iterations: {MAX_ITERATIONS}\\n"
-                f"  Error: {e}"
-            )
+            return self._rust_backend.solve_fiber_length(l_MT, activation, v_CE, initial_guess)
+        except Exception as e:
+            logger.error(f"Muscle equilibrium solver FAILED: {e}")
             raise RuntimeError(
                 f"Muscle equilibrium solver failed for l_MT={l_MT:.6f}m, a={activation:.3f}"
             ) from e
@@ -267,32 +219,7 @@ class EquilibriumSolver:
         # Future muscle-tendon length
         l_MT_next = l_MT + v_MT * dt
 
-        if self._rust_backend is not None:
-            try:
-                return self._rust_backend.solve_fiber_velocity(l_MT, v_MT, activation, l_CE, dt)
-            except RuntimeError as e:
-                logger.warning(f"Rust fiber velocity solver failed, falling back to Python: {e}")
-
-        # Solve for future fiber length
-        try:
-            l_CE_next = self.solve_fiber_length(
-                l_MT_next, activation, v_CE=0.0, initial_guess=l_CE
-            )
-
-            # Finite difference velocity
-            v_CE = (l_CE_next - l_CE) / dt
-
-            result = float(v_CE)
-            ensure(np.isfinite(result), "fiber velocity must be finite", result)
-            return result
-
-        except RuntimeError:
-            logger.warning(
-                f"Failed to solve fiber velocity via finite difference.\\n"
-                f"  Returning zero velocity as fallback.\\n"
-                f"  l_MT = {l_MT:.6f} m, v_MT = {v_MT:.6f} m/s"
-            )
-            return 0.0
+        return self._rust_backend.solve_fiber_velocity(l_MT, v_MT, activation, l_CE, dt)
 
 
 def compute_equilibrium_state(

@@ -34,11 +34,7 @@ logger = logging.getLogger(__name__)
 logger = get_logger(__name__)
 
 
-try:
-    import upstream_muscle
-    HAS_RUST_BACKEND = True
-except ImportError:
-    HAS_RUST_BACKEND = False
+import upstream_muscle
 
 class ActivationDynamics:
     """Models neural excitation to muscle activation dynamics.
@@ -92,11 +88,9 @@ class ActivationDynamics:
         self.tau_deact = tau_deact
         self.min_activation = min_activation
         
-        self._rust_backend = None
-        if HAS_RUST_BACKEND:
-            self._rust_backend = upstream_muscle.ActivationDynamics(
-                tau_act=tau_act, tau_deact=tau_deact, min_activation=min_activation
-            )
+        self._rust_backend = upstream_muscle.ActivationDynamics(
+            tau_act=tau_act, tau_deact=tau_deact, min_activation=min_activation
+        )
 
     def compute_derivative(self, u: float, a: float) -> float:
         """Compute activation derivative da/dt.
@@ -111,28 +105,7 @@ class ActivationDynamics:
         Returns:
             Time derivative da/dt [1/s]
         """
-        if self._rust_backend is not None:
-            return self._rust_backend.compute_derivative(u, a)
-
-        # Clamp inputs
-        if not (u is not None):
-            raise ValueError("u must be provided")
-        if not (u is not None):
-            raise ValueError("u must be provided")
-        u = np.clip(u, self.min_activation, 1.0)
-        a = np.clip(a, self.min_activation, 1.0)
-
-        if u > a:
-            # Activation (rise)
-            tau = self.tau_act * (0.5 + 1.5 * a)
-        else:
-            # Deactivation (fall)
-            tau = self.tau_deact / (0.5 + 1.5 * a)
-
-        dadt = (u - a) / tau
-        result = float(dadt)
-        ensure(np.isfinite(result), "derivative da/dt must be finite", result)
-        return result
+        return self._rust_backend.compute_derivative(u, a)
 
     def update(self, u: float, a: float, dt: float) -> float:
         """Update activation state by one time step.
@@ -156,20 +129,7 @@ class ActivationDynamics:
         if not (u is not None):
             raise ValueError("u must be provided")
         require(dt > 0, "time step dt must be positive", dt)
-        if self._rust_backend is not None:
-            return self._rust_backend.update(u, a, dt)
-
-        dadt = self.compute_derivative(u, a)
-        a_new = a + dadt * dt
-
-        # Clamp result
-        result = float(np.clip(a_new, self.min_activation, 1.0))
-        ensure(
-            self.min_activation <= result <= 1.0,
-            "activation must be in [min_activation, 1.0]",
-            result,
-        )
-        return result
+        return self._rust_backend.update(u, a, dt)
 
 
 # Example usage / validation

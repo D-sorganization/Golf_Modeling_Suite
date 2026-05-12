@@ -27,11 +27,7 @@ if TYPE_CHECKING:
 
 logger = get_logger(__name__)
 
-try:
-    import upstream_muscle
-    HAS_RUST_BACKEND = True
-except ImportError:
-    HAS_RUST_BACKEND = False
+import upstream_muscle
 
 
 @dataclass
@@ -60,9 +56,7 @@ class MuscleGroup:
         self.muscles: dict[str, HillMuscleModel] = {}
         self.attachments: dict[str, MuscleAttachment] = {}
         
-        self._rust_backend = None
-        if HAS_RUST_BACKEND:
-            self._rust_backend = upstream_muscle.MuscleGroup(name)
+        self._rust_backend = upstream_muscle.MuscleGroup(name)
 
     def add_muscle(self, name: str, muscle: HillMuscleModel, moment_arm: float) -> None:
         """Add a muscle to the group.
@@ -86,8 +80,7 @@ class MuscleGroup:
         self.muscles[name] = muscle
         self.attachments[name] = MuscleAttachment(name, moment_arm)
         
-        if self._rust_backend is not None and hasattr(muscle, '_rust_backend') and muscle._rust_backend is not None:
-            self._rust_backend.add_muscle(name, muscle._rust_backend, moment_arm)
+        self._rust_backend.add_muscle(name, muscle._rust_backend, moment_arm)
 
     def compute_net_torque(
         self,
@@ -120,42 +113,11 @@ class MuscleGroup:
                 act_val,
             )
 
-        if self._rust_backend is not None:
-            try:
-                return self._rust_backend.compute_net_torque(activations, muscle_states)
-            except RuntimeError as e:
-                logger.warning(f"Rust MuscleGroup compute_net_torque failed, falling back to Python: {e}")
-
-        net_torque = 0.0
-
-        for name, muscle in self.muscles.items():
-            if name not in activations:
-                continue
-
-            # Get state
-            l_CE, v_CE = muscle_states.get(name, (muscle.params.l_opt, 0.0))
-
-            # Create temporary state object for force computation
-            from src.shared.python.biomechanics.hill_muscle import MuscleState
-
-            state = MuscleState(
-                activation=activations[name],
-                l_CE=l_CE,
-                v_CE=v_CE,
-                l_MT=0.0,  # Not used for force computation in this simplified call
-            )
-
-            # Compute force
-            force = muscle.compute_force(state)
-
-            # Add to torque (tau = r × F)
-            r = self.attachments[name].moment_arm
-            torque = r * force
-            net_torque += torque
-
-        result = float(net_torque)
-        ensure(np.isfinite(result), "net torque must be finite", result)
-        return result
+        try:
+            return self._rust_backend.compute_net_torque(activations, muscle_states)
+        except Exception as e:
+            logger.error(f"Rust MuscleGroup compute_net_torque failed: {e}")
+            raise RuntimeError(f"MuscleGroup compute_net_torque failed: {e}")
 
 
 class AntagonistPair:
@@ -175,9 +137,7 @@ class AntagonistPair:
         self.agonist = agonist
         self.antagonist = antagonist
 
-        self._rust_backend = None
-        if HAS_RUST_BACKEND and agonist._rust_backend is not None and antagonist._rust_backend is not None:
-            self._rust_backend = upstream_muscle.AntagonistPair(agonist._rust_backend, antagonist._rust_backend)
+        self._rust_backend = upstream_muscle.AntagonistPair(agonist._rust_backend, antagonist._rust_backend)
 
     def compute_net_torque(
         self,
@@ -203,25 +163,11 @@ class AntagonistPair:
         if not (agonist_activations is not None):
             raise ValueError("agonist_activations must be provided")
 
-        if self._rust_backend is not None:
-            try:
-                return self._rust_backend.compute_net_torque(agonist_activations, antagonist_activations, muscle_states)
-            except RuntimeError as e:
-                logger.warning(f"Rust AntagonistPair compute_net_torque failed, falling back to Python: {e}")
-
-        tau_agonist = self.agonist.compute_net_torque(
-            agonist_activations, muscle_states
-        )
-        tau_antagonist = self.antagonist.compute_net_torque(
-            antagonist_activations, muscle_states
-        )
-
-        # Antagonist moment arms are typically negative, so torque adds up correctly
-        # if defined that way. Here we assume compute_net_torque handles signs via moment arms.
-
-        result = tau_agonist + tau_antagonist
-        ensure(np.isfinite(result), "antagonist pair net torque must be finite", result)
-        return result
+        try:
+            return self._rust_backend.compute_net_torque(agonist_activations, antagonist_activations, muscle_states)
+        except Exception as e:
+            logger.error(f"Rust AntagonistPair compute_net_torque failed: {e}")
+            raise RuntimeError(f"AntagonistPair compute_net_torque failed: {e}")
 
     @property
     def muscle_names(self) -> list[str]:
