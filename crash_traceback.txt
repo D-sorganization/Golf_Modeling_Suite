@@ -1,0 +1,36 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\diete\Repositories\UpstreamDrift\src\launchers\golf_launcher.py", line 914, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\diete\Repositories\UpstreamDrift\src\launchers\golf_launcher.py", line 874, in main
+    main_window = GolfLauncher(loading=True)
+  File "C:\Users\diete\Repositories\UpstreamDrift\src\launchers\golf_launcher.py", line 159, in __init__
+    self.init_ui()
+    ~~~~~~~~~~~~^^
+  File "C:\Users\diete\Repositories\UpstreamDrift\src\launchers\launcher_ui_setup.py", line 182, in init_ui
+    self._setup_ai_panel()
+    ~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\diete\Repositories\UpstreamDrift\src\launchers\launcher_ui_setup.py", line 1036, in _setup_ai_panel
+    self.ai_panel = AIAssistantPanel(self)
+                    ~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\diete\Repositories\UpstreamDrift\src\shared\python\ai\gui\assistant_panel.py", line 319, in __init__
+    self._setup_ui()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\diete\Repositories\UpstreamDrift\src\shared\python\ai\gui\assistant_panel.py", line 428, in _setup_ui
+    self._sidebar = ChatHistorySidebar(self._session_manager)
+                    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\diete\Repositories\UpstreamDrift\src\shared\python\ai\gui\history_sidebar.py", line 55, in __init__
+    self._setup_ui()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\diete\Repositories\UpstreamDrift\src\shared\python\ai\gui\history_sidebar.py", line 183, in _setup_ui
+    self._setup_list_widget(self._active_list)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\diete\Repositories\UpstreamDrift\src\shared\python\ai\gui\history_sidebar.py", line 194, in _setup_list_widget
+    self._apply_list_style(list_widget)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\diete\Repositories\UpstreamDrift\src\shared\python\ai\gui\history_sidebar.py", line 138, in _apply_list_style
+    background-color: {self._theme_colors['bg_base']};
+                       ^^^^^^^^^^^^^^^^^^
+AttributeError: 'ChatHistorySidebar' object has no attribute '_theme_colors'
