@@ -1167,11 +1167,11 @@ jobs:
           python3 -m venv "$RUNNER_TEMP/rust-venv"
           source "$RUNNER_TEMP/rust-venv/bin/activate"
           python -m pip install --upgrade pip maturin
-          for crate in rust_core/upstream-physics rust_core/upstream-mocap-preproc; do
+          for crate in rust_core/upstream-physics rust_core/upstream-mocap-preproc rust_core/upstream-muscle; do
             (cd "$crate" && python -m maturin build --interpreter python --features python --release)
           done
           echo "Wheels built successfully"
-          ls ../../target/wheels/
+          ls target/wheels/
 
       - name: Verify Python Bindings
         if: steps.rust-changes.outputs.has_changes == 'true' && matrix.os == 'ubuntu-latest'
