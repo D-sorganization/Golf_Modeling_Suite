@@ -279,6 +279,41 @@ class HillMuscleModel:
         ensure(result >= 0, "muscle force must be non-negative", result)
         return result
 
+    def compute_force_batch(
+        self,
+        activations: np.ndarray,
+        l_ce: np.ndarray,
+        v_ce: np.ndarray,
+        l_mt: np.ndarray,
+    ) -> np.ndarray:
+        """Compute total muscle force for a batch of states.
+
+        Args:
+            activations: Array of activations [0, 1]
+            l_ce: Array of fiber lengths [m]
+            v_ce: Array of fiber velocities [m/s]
+            l_mt: Array of muscle-tendon lengths [m]
+
+        Returns:
+            Array of forces at the tendon [N]
+        """
+        if self._rust_backend is not None:
+            return self._rust_backend.compute_force_batch(
+                activations, l_ce, v_ce, l_mt
+            )
+            
+        n = len(activations)
+        results = np.zeros(n)
+        for i in range(n):
+            state = MuscleState(
+                activation=activations[i],
+                l_CE=l_ce[i],
+                v_CE=v_ce[i],
+                l_MT=l_mt[i],
+            )
+            results[i] = self.compute_force(state)
+        return results
+
 
 # Example usage
 if __name__ == "__main__":

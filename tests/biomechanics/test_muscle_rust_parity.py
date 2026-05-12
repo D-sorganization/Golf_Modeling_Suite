@@ -42,17 +42,9 @@ def test_hill_muscle_parity():
     activations = np.random.uniform(0, 1, 100)
     l_ces = np.random.uniform(0.05, 0.3, 100)
     v_ces = np.random.uniform(-5.0, 5.0, 100)
+    l_mts = np.full(100, 0.35)
     
-    ru_states = []
-    for i in range(100):
-        ru_states.append(upstream_muscle.MuscleState(
-            activation=float(activations[i]),
-            l_ce=float(l_ces[i]),
-            v_ce=float(v_ces[i]),
-            l_mt=0.35
-        ))
-        
-    ru_forces = ru_model.compute_force_batch(ru_states)
+    ru_forces = ru_model.compute_force_batch(activations, l_ces, v_ces, l_mts)
     
     for i in range(100):
         py_state = PyMuscleState(

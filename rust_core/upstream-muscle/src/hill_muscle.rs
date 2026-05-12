@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "python")]
+use numpy::{PyReadonlyArray1, IntoPyArray};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::pyclass)]
@@ -110,24 +112,44 @@ impl HillMuscleModel {
     }
 
     #[pyo3(name = "compute_force_batch")]
-    fn py_compute_force_batch(&self, states: Vec<MuscleState>) -> pyo3::PyResult<Vec<f64>> {
+    fn py_compute_force_batch<'py>(
+        &self,
+        py: pyo3::Python<'py>,
+        activations: PyReadonlyArray1<'py, f64>,
+        l_ce: PyReadonlyArray1<'py, f64>,
+        v_ce: PyReadonlyArray1<'py, f64>,
+        l_mt: PyReadonlyArray1<'py, f64>,
+    ) -> pyo3::PyResult<&'py numpy::PyArray1<f64>> {
         use rayon::prelude::*;
-        let mut results = vec![0.0; states.len()];
-        let mut err = None;
-        states.par_iter().zip(results.par_iter_mut()).for_each(|(state, res)| {
-            if state.activation < 0.0 || state.activation > 1.0 {
-                // Not thread safe to update err, but good enough for this
-            } else {
-                *res = self.compute_force(state);
-            }
-        });
+        let acts = activations.as_slice()?;
+        let l_ce_slice = l_ce.as_slice()?;
+        let v_ce_slice = v_ce.as_slice()?;
+        let l_mt_slice = l_mt.as_slice()?;
         
-        for state in &states {
-            if state.activation < 0.0 || state.activation > 1.0 {
-                return Err(pyo3::exceptions::PyValueError::new_err(format!("activation must be in [0, 1], got {}", state.activation)));
+        let n = acts.len();
+        if l_ce_slice.len() != n || v_ce_slice.len() != n || l_mt_slice.len() != n {
+            return Err(pyo3::exceptions::PyValueError::new_err("Array lengths must match"));
+        }
+
+        for &a in acts {
+            if a < 0.0 || a > 1.0 {
+                return Err(pyo3::exceptions::PyValueError::new_err(format!("activation must be in [0, 1], got {}", a)));
             }
         }
-        Ok(results)
+
+        let mut results = vec![0.0; n];
+        
+        results.par_iter_mut().enumerate().for_each(|(i, res)| {
+            let state = MuscleState {
+                activation: acts[i],
+                l_ce: l_ce_slice[i],
+                v_ce: v_ce_slice[i],
+                l_mt: l_mt_slice[i],
+            };
+            *res = self.compute_force(&state);
+        });
+
+        Ok(numpy::PyArray1::from_vec(py, results))
     }
 
     #[getter]
@@ -184,5 +206,16 @@ impl HillMuscleModel {
         let f_total = (f_active + f_passive + f_damping) * cos_alpha;
 
         f_total.max(0.0)
+    }
+
+    pub fn compute_force_batch(&self, activations: &[f64], states: &[MuscleState]) -> Vec<f64> {
+        use rayon::prelude::*;
+        let mut results = vec![0.0; activations.len()];
+        results.par_iter_mut().enumerate().for_each(|(i, res)| {
+            let mut state = states[i].clone();
+            state.activation = activations[i];
+            *res = self.compute_force(&state);
+        });
+        results
     }
 }
