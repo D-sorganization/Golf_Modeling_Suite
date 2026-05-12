@@ -683,3 +683,5 @@ Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linal
 | 2026-05-12 | 1.0.155 | Added Golf Simulation Suite to the GUI launcher (PR #5301). |
 | 2026-05-12 | 1.0.156 | Finalized motion-matching Rust loop optimizations, including MuJoCo torque outer-loop acceleration (slice 4) and end-to-end facade benchmarks (slice 5) (PR #5295, PR #5296). |
 ````
+   
+ 

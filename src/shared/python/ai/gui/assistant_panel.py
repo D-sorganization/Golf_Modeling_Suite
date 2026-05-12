@@ -1180,6 +1180,8 @@ class AIAssistantPanel(QWidget):
                     api_key="ollama",
                     base_url=settings.ollama_host,
                     model=settings.model,
+                    chat_path="/v1/chat/completions",
+                    embed_path="/v1/embeddings",
                 )
                 self._add_system_message("🚀 Using high-performance Rust AI backend.")
             except ImportError:
