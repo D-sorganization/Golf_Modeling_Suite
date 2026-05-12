@@ -100,7 +100,10 @@ pub fn parse_mjcf_str(xml: &str) -> UrdfResult<MujocoDocument> {
                         _ => {
                             // Unknown top-level section — preserve verbatim.
                             let xml_text = capture_subtree(&mut reader, &e, &name)?;
-                            doc.extras.push(RawSection { tag: name, xml: xml_text });
+                            doc.extras.push(RawSection {
+                                tag: name,
+                                xml: xml_text,
+                            });
                             depth = depth.saturating_sub(1);
                         }
                     }
@@ -118,7 +121,10 @@ pub fn parse_mjcf_str(xml: &str) -> UrdfResult<MujocoDocument> {
                         _ => {
                             // Re-render as a self-closing tag for round-trip.
                             let xml_text = render_empty(&e)?;
-                            doc.extras.push(RawSection { tag: name, xml: xml_text });
+                            doc.extras.push(RawSection {
+                                tag: name,
+                                xml: xml_text,
+                            });
                         }
                     }
                 }
@@ -196,10 +202,7 @@ fn parse_vec_n<const N: usize>(s: &str) -> UrdfResult<[f64; N]> {
 }
 
 // Skip events until we see the matching </tag> at the original depth.
-fn consume_until_end<B: std::io::BufRead>(
-    _reader: &mut Reader<B>,
-    _tag: &str,
-) -> UrdfResult<()> {
+fn consume_until_end<B: std::io::BufRead>(_reader: &mut Reader<B>, _tag: &str) -> UrdfResult<()> {
     // The caller invoked us on a Start event whose Empty sibling
     // already consumed all content. We rely on the next End being the
     // matching one if no children. Implemented as a no-op shim because
@@ -242,11 +245,7 @@ fn capture_subtree<B: std::io::BufRead>(
     let mut buf = Vec::new();
     while depth > 0 {
         match reader.read_event_into(&mut buf)? {
-            Event::Eof => {
-                return Err(UrdfError::Parse(format!(
-                    "unexpected EOF in <{tag}>"
-                )))
-            }
+            Event::Eof => return Err(UrdfError::Parse(format!("unexpected EOF in <{tag}>"))),
             Event::Start(e) => {
                 depth += 1;
                 write_open_tag(&mut out, &e, false);
@@ -483,11 +482,7 @@ fn parse_worldbody<B: std::io::BufRead>(reader: &mut Reader<B>) -> UrdfResult<Wo
     let mut buf = Vec::new();
     loop {
         match reader.read_event_into(&mut buf)? {
-            Event::Eof => {
-                return Err(UrdfError::Parse(
-                    "unexpected EOF in <worldbody>".into(),
-                ))
-            }
+            Event::Eof => return Err(UrdfError::Parse("unexpected EOF in <worldbody>".into())),
             Event::Start(e) => {
                 let name = tag_name(&e)?;
                 match name.as_str() {
@@ -534,7 +529,10 @@ fn parse_worldbody<B: std::io::BufRead>(reader: &mut Reader<B>) -> UrdfResult<Wo
     }
 }
 
-fn parse_body<B: std::io::BufRead>(reader: &mut Reader<B>, start: &BytesStart<'_>) -> UrdfResult<Body> {
+fn parse_body<B: std::io::BufRead>(
+    reader: &mut Reader<B>,
+    start: &BytesStart<'_>,
+) -> UrdfResult<Body> {
     let attrs = collect_attrs(start)?;
     let mut body = Body {
         name: attrs.get("name").cloned().unwrap_or_default(),
@@ -551,11 +549,7 @@ fn parse_body<B: std::io::BufRead>(reader: &mut Reader<B>, start: &BytesStart<'_
     let mut buf = Vec::new();
     loop {
         match reader.read_event_into(&mut buf)? {
-            Event::Eof => {
-                return Err(UrdfError::Parse(
-                    "unexpected EOF inside <body>".into(),
-                ))
-            }
+            Event::Eof => return Err(UrdfError::Parse("unexpected EOF inside <body>".into())),
             Event::Start(e) => {
                 let name = tag_name(&e)?;
                 match name.as_str() {
@@ -623,8 +617,12 @@ fn parse_inertial(e: &BytesStart<'_>) -> UrdfResult<Inertial> {
             .get("pos")
             .and_then(|s| parse_vec_n::<3>(s).ok())
             .unwrap_or([0.0; 3]),
-        diaginertia: attrs.get("diaginertia").and_then(|s| parse_vec_n::<3>(s).ok()),
-        fullinertia: attrs.get("fullinertia").and_then(|s| parse_vec_n::<6>(s).ok()),
+        diaginertia: attrs
+            .get("diaginertia")
+            .and_then(|s| parse_vec_n::<3>(s).ok()),
+        fullinertia: attrs
+            .get("fullinertia")
+            .and_then(|s| parse_vec_n::<6>(s).ok()),
         quat: attrs.get("quat").and_then(|s| parse_vec_n::<4>(s).ok()),
     })
 }
@@ -700,7 +698,9 @@ fn parse_geom(e: &BytesStart<'_>) -> UrdfResult<Geom> {
         group: attrs.get("group").and_then(|s| s.parse().ok()),
         contype: attrs.get("contype").and_then(|s| s.parse().ok()),
         conaffinity: attrs.get("conaffinity").and_then(|s| s.parse().ok()),
-        friction: attrs.get("friction").map(|s| parse_vec_f64(s).unwrap_or_default()),
+        friction: attrs
+            .get("friction")
+            .map(|s| parse_vec_f64(s).unwrap_or_default()),
         extra_attrs: Vec::new(),
     };
     for (k, v) in attrs {
@@ -764,11 +764,7 @@ fn parse_actuator_section<B: std::io::BufRead>(
     let mut buf = Vec::new();
     loop {
         match reader.read_event_into(&mut buf)? {
-            Event::Eof => {
-                return Err(UrdfError::Parse(
-                    "unexpected EOF in <actuator>".into(),
-                ))
-            }
+            Event::Eof => return Err(UrdfError::Parse("unexpected EOF in <actuator>".into())),
             Event::Empty(e) => {
                 let tag = tag_name(&e)?;
                 let attrs = ordered_attrs(&e)?;

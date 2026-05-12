@@ -51,7 +51,11 @@ fn round_trip_fixtures() {
         .map(|e| e.path())
         .filter(|p| p.extension().and_then(|s| s.to_str()) == Some("xml"))
         .collect::<Vec<_>>();
-    assert!(!entries.is_empty(), "no MJCF fixtures found in {}", dir.display());
+    assert!(
+        !entries.is_empty(),
+        "no MJCF fixtures found in {}",
+        dir.display()
+    );
 
     let mut passed = 0usize;
     let mut failures = Vec::new();
@@ -87,7 +91,10 @@ fn round_trip_fixtures() {
             ));
         }
     }
-    eprintln!("MJCF round-trip: {passed} / {} fixtures passed", entries.len());
+    eprintln!(
+        "MJCF round-trip: {passed} / {} fixtures passed",
+        entries.len()
+    );
     for f in &failures {
         eprintln!("  FAIL: {f}");
     }

@@ -85,7 +85,11 @@ fn corpus_round_trip_opt_in() {
     }
     let root = repo_root();
     let files = collect_mjcfs(&root);
-    eprintln!("found {} candidate MJCF files under {}", files.len(), root.display());
+    eprintln!(
+        "found {} candidate MJCF files under {}",
+        files.len(),
+        root.display()
+    );
 
     let mut parsed = 0usize;
     let mut round_trip_ok = 0usize;
