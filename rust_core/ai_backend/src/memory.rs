@@ -50,8 +50,14 @@ impl MemoryManager {
         )
         .map_err(|e| format!("DB init error: {}", e))?;
 
-        // Note: In a real deployment, sqlite-vss extension must be loaded here
-        // using sqlite3_enable_load_extension.
+        unsafe {
+            let _ = conn.load_extension_enable();
+            // Try loading the extensions. If they fail, we proceed anyway (fallback mode).
+            let _ = conn.load_extension("vector0", None);
+            let _ = conn.load_extension("vss0", None);
+            let _ = conn.load_extension_disable();
+        }
+
         let _ = conn.execute(
             "CREATE VIRTUAL TABLE IF NOT EXISTS vss_documents USING vss0(
                 embedding(384)
