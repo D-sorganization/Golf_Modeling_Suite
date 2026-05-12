@@ -1,0 +1,26 @@
+[package]
+name = "upstream-muscle"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "Rust-compiled biomechanics kernels: Hill muscle and activation dynamics"
+
+[lib]
+name = "upstream_muscle"
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = []
+python = ["pyo3", "numpy"]
+
+[dependencies]
+tools-core = { workspace = true }
+pyo3 = { workspace = true, optional = true }
+numpy = { version = "0.21", optional = true }
+rayon = "1.10.0"
+serde = { workspace = true }
+
+[dev-dependencies]
+approx = "0.5"

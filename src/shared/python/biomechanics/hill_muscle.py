@@ -30,6 +30,12 @@ logger = logging.getLogger(__name__)
 logger = get_logger(__name__)
 
 
+try:
+    import upstream_muscle
+    HAS_RUST_BACKEND = True
+except ImportError:
+    HAS_RUST_BACKEND = False
+
 @dataclass
 class MuscleParameters:
     """Parameters defining a specific muscle."""
@@ -97,6 +103,21 @@ class HillMuscleModel:
             if force_length_width is not None
             else self.DEFAULT_FORCE_LENGTH_WIDTH
         )
+        
+        self._rust_backend = None
+        if HAS_RUST_BACKEND:
+            ru_params = upstream_muscle.MuscleParameters(
+                f_max=params.F_max,
+                l_opt=params.l_opt,
+                l_slack=params.l_slack,
+                v_max=params.v_max,
+                pennation_angle=params.pennation_angle,
+                damping=params.damping
+            )
+            self._rust_backend = upstream_muscle.HillMuscleModel(
+                ru_params, 
+                force_length_width=self._force_length_width
+            )
 
     def force_length_active(self, l_norm: float) -> float:
         """Active force-length relationship (Gaussian-like curve).
@@ -107,6 +128,9 @@ class HillMuscleModel:
         Returns:
             Force multiplier [0, 1]
         """
+        if self._rust_backend is not None:
+            return self._rust_backend.force_length_active(l_norm)
+
         # Width parameter for the Gaussian force-length curve.
         # Value of 0.56 from Thelen (2003), "Adjustment of Muscle Mechanics
         # Model Parameters to Simulate Dynamic Contractions in Older Adults",
@@ -131,6 +155,9 @@ class HillMuscleModel:
             raise ValueError("l_norm must be provided")
         if not (l_norm is not None):
             raise ValueError("l_norm must be provided")
+        if self._rust_backend is not None:
+            return self._rust_backend.force_length_passive(l_norm)
+
         if l_norm <= 1.0:
             return 0.0
         # Typical exponential passive curve
@@ -155,6 +182,9 @@ class HillMuscleModel:
             raise ValueError("v_norm must be provided")
         if not (v_norm is not None):
             raise ValueError("v_norm must be provided")
+        if self._rust_backend is not None:
+            return self._rust_backend.force_velocity(v_norm)
+
         if v_norm < 0:
             # Hill's hyperbola: clamp v_norm to prevent division by zero
             # The denominator (1 - v_norm / 0.25) = 0 when v_norm = 0.25
@@ -179,6 +209,9 @@ class HillMuscleModel:
             raise ValueError("l_tendon_norm must be provided")
         if not (l_tendon_norm is not None):
             raise ValueError("l_tendon_norm must be provided")
+        if self._rust_backend is not None:
+            return self._rust_backend.tendon_force(l_tendon_norm)
+
         if l_tendon_norm <= 1.0:
             return 0.0
         # Non-linear stiffening region (toe region)
@@ -211,6 +244,15 @@ class HillMuscleModel:
             "activation must be in [0, 1]",
             state.activation,
         )
+
+        if self._rust_backend is not None:
+            ru_state = upstream_muscle.MuscleState(
+                activation=state.activation,
+                l_ce=state.l_CE,
+                v_ce=state.v_CE,
+                l_mt=state.l_MT
+            )
+            return self._rust_backend.compute_force(ru_state)
 
         # Normalize inputs
         l_norm = state.l_CE / self.params.l_opt

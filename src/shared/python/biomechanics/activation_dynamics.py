@@ -34,6 +34,12 @@ logger = logging.getLogger(__name__)
 logger = get_logger(__name__)
 
 
+try:
+    import upstream_muscle
+    HAS_RUST_BACKEND = True
+except ImportError:
+    HAS_RUST_BACKEND = False
+
 class ActivationDynamics:
     """Models neural excitation to muscle activation dynamics.
 
@@ -85,6 +91,12 @@ class ActivationDynamics:
         self.tau_act = tau_act
         self.tau_deact = tau_deact
         self.min_activation = min_activation
+        
+        self._rust_backend = None
+        if HAS_RUST_BACKEND:
+            self._rust_backend = upstream_muscle.ActivationDynamics(
+                tau_act=tau_act, tau_deact=tau_deact, min_activation=min_activation
+            )
 
     def compute_derivative(self, u: float, a: float) -> float:
         """Compute activation derivative da/dt.
@@ -99,6 +111,9 @@ class ActivationDynamics:
         Returns:
             Time derivative da/dt [1/s]
         """
+        if self._rust_backend is not None:
+            return self._rust_backend.compute_derivative(u, a)
+
         # Clamp inputs
         if not (u is not None):
             raise ValueError("u must be provided")
@@ -141,6 +156,9 @@ class ActivationDynamics:
         if not (u is not None):
             raise ValueError("u must be provided")
         require(dt > 0, "time step dt must be positive", dt)
+        if self._rust_backend is not None:
+            return self._rust_backend.update(u, a, dt)
+
         dadt = self.compute_derivative(u, a)
         a_new = a + dadt * dt
 
