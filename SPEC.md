@@ -30,16 +30,16 @@
 
 ## 1. Identity
 
-| Field                   | Value                                                                                                                                                                |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Repository Name**     | `UpstreamDrift`                                                                                                                                                      |
-| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift`                                                                                                                   |
-| **Owner**               | D-sorganization                                                                                                                                                      |
-| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                                                                                                                                       |
-| **License**             | MIT                                                                                                                                                                  |
-| **Current Version**     | 2.1.0                                                                                                                                                                |
-| **Spec Version**        | 1.0.151                                                                                                                                                              |
-| **Last Spec Update**    | 2026-05-11 (feat/consolidate-codemap-onto-tools — consolidated `src/shared/python/codemap/` onto the Tools canonical implementation; renamed mcp.py → mcp_server.py) |
+| Field                   | Value                                                                                                                                                     |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Repository Name**     | `UpstreamDrift`                                                                                                                                           |
+| **GitHub URL**          | `https://github.com/D-sorganization/UpstreamDrift`                                                                                                        |
+| **Owner**               | D-sorganization                                                                                                                                           |
+| **Primary Language(s)** | Python 3.10+, Rust, TypeScript                                                                                                                            |
+| **License**             | MIT                                                                                                                                                       |
+| **Current Version**     | 2.1.0                                                                                                                                                     |
+| **Spec Version**        | 1.0.152                                                                                                                                                   |
+| **Last Spec Update**    | 2026-05-11 (perf/mesh-primitive-sphere-rust — added an upstream-mesh bounding-sphere primitive kernel and optional Python facade path for sphere fitting) |
 
 ## 2. Purpose & Mission
 
@@ -109,11 +109,9 @@ UpstreamDrift/
 │       ├── analysis_tools.py       # Biomechanical analysis utilities
 │       └── validation_tools.py     # Cross-engine validation
 ├── rust_core/
-│   └── upstream-physics/           # Rust physics kernels
-│       ├── src/
-│       │   ├── lib.rs
-│       │   └── physics.rs
-│       └── Cargo.toml
+│   ├── upstream-physics/           # Rust physics kernels
+│   ├── upstream-mesh/              # Rust mesh kernels for convex hull and primitive fitting
+│   └── upstream-muscle/            # Rust Hill-muscle kernels
 ├── ui/
 │   ├── src/
 │   │   ├── main.ts                 # Tauri app entry point
@@ -161,6 +159,8 @@ UpstreamDrift/
 | PyQt6 GUI                | `src/launchers/golf_launcher.py`         | Professional interactive GUI with real-time 3D visualization                                |
 | Tauri Desktop App        | `ui/`                                    | Cross-platform desktop application wrapper (Windows, macOS, Linux)                          |
 | Rust Physics Kernels     | `rust_core/upstream-physics/`            | High-performance compiled physics routines for critical paths                               |
+| Rust Mesh Kernels        | `rust_core/upstream-mesh/`               | High-performance mesh kernels for convex hulls and primitive fitting facades                |
+| Rust Muscle Kernels      | `rust_core/upstream-muscle/`             | High-performance Hill-muscle and activation-dynamics kernels                                |
 | Configuration Manager    | `src/config/`                            | Centralized configuration loading, validation, and environment management                   |
 | Shared Utilities         | `src/shared/`                            | Cross-engine validators, helpers, and exception definitions                                 |
 | URDF Models              | `shared/models/`                         | Canonical model definitions (URDF format) for golf swings, human body, pendulums            |

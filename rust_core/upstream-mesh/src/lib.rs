@@ -9,6 +9,8 @@
 //!
 //! - `convex_hull`: Deterministic convex hull (vertices + triangle indices)
 //!   computed via `parry3d::transformation::convex_hull`.
+//! - `primitives`: typed primitive fitting kernels used by the Python
+//!   collision-geometry facade.
 //!
 //! ## Roadmap
 //!
@@ -18,8 +20,10 @@
 //! (sphere / box / cylinder / capsule); mesh metrics and inertia.
 
 pub mod convex_hull;
+pub mod primitives;
 
 pub use convex_hull::{compute_convex_hull, ConvexHullError, ConvexHullResult};
+pub use primitives::{fit_bounding_sphere, BoundingSphereFit, PrimitiveFitError};
 
 // ── Python bindings (feature-gated) ──────────────────────────────────────────
 
@@ -50,10 +54,28 @@ fn compute_convex_hull_py(
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))
 }
 
+/// Python-facing entry point for `upstream_mesh.fit_bounding_sphere`.
+#[cfg(feature = "python")]
+#[pyfunction]
+#[pyo3(name = "fit_bounding_sphere")]
+fn fit_bounding_sphere_py(
+    vertices: Vec<(f32, f32, f32)>,
+    center: (f32, f32, f32),
+    mesh_volume: f64,
+) -> PyResult<primitives::PyBoundingSphereFit> {
+    let pts: Vec<[f32; 3]> = vertices.into_iter().map(|(x, y, z)| [x, y, z]).collect();
+    let center = [center.0, center.1, center.2];
+    primitives::fit_bounding_sphere(&pts, center, mesh_volume)
+        .map(primitives::PyBoundingSphereFit::from)
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))
+}
+
 #[cfg(feature = "python")]
 #[pymodule]
 fn upstream_mesh(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<convex_hull::PyConvexHullResult>()?;
+    m.add_class::<primitives::PyBoundingSphereFit>()?;
     m.add_function(pyo3::wrap_pyfunction!(compute_convex_hull_py, m)?)?;
+    m.add_function(pyo3::wrap_pyfunction!(fit_bounding_sphere_py, m)?)?;
     Ok(())
 }

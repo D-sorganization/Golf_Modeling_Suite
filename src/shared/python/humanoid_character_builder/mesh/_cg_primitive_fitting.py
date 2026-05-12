@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import sys
 from typing import Any
 
 import numpy as np
@@ -74,6 +75,35 @@ def fit_box(mesh: Any) -> PrimitiveFit:
 
 def fit_sphere(mesh: Any) -> PrimitiveFit:
     try:
+        upstream_mesh = sys.modules.get("upstream_mesh")
+        if upstream_mesh is None:
+            try:
+                import upstream_mesh  # type: ignore[import-not-found]
+            except ImportError:
+                upstream_mesh = None
+        mesh_volume = float(mesh.volume)
+        if (
+            upstream_mesh is not None
+            and hasattr(upstream_mesh, "fit_bounding_sphere")
+            and np.isfinite(mesh_volume)
+            and mesh_volume > 0.0
+        ):
+            center = tuple(float(v) for v in mesh.centroid.tolist())
+            vertices = [tuple(float(v) for v in row) for row in mesh.vertices.tolist()]
+            rust_fit = upstream_mesh.fit_bounding_sphere(
+                vertices,
+                center,
+                mesh_volume,
+            )
+            return PrimitiveFit(
+                primitive_type="sphere",
+                center=tuple(float(v) for v in rust_fit.center),
+                dimensions=(float(rust_fit.radius),),
+                rotation=(0, 0, 0, 1),
+                volume_ratio=float(rust_fit.volume_ratio),
+                error_metric=float(rust_fit.error_metric),
+            )
+
         center = tuple(mesh.centroid.tolist())
         vertices = mesh.vertices - mesh.centroid
         radius = float(np.sqrt(np.max(np.einsum("ij,ij->i", vertices, vertices))))
