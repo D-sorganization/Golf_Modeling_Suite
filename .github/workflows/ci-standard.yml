@@ -1126,6 +1126,12 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Enable long Cargo git dependency paths on Windows
+        if: steps.rust-changes.outputs.has_changes == 'true' && matrix.os == 'windows-latest'
+        run: |
+          git config --global core.longpaths true
+          echo "CARGO_NET_GIT_FETCH_WITH_CLI=true" >> "$GITHUB_ENV"
+
       - name: Install Rust toolchain
         if: steps.rust-changes.outputs.has_changes == 'true'
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8
