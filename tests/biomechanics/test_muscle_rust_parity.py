@@ -63,3 +63,68 @@ def test_hill_muscle_parity():
         )
         py_f = py_model.compute_force(py_state)
         np.testing.assert_allclose(py_f, ru_forces[i], rtol=1e-5, atol=1e-8)
+
+def test_equilibrium_parity():
+    from src.shared.python.biomechanics.muscle_equilibrium import EquilibriumSolver as PyEquilibriumSolver
+    
+    f_max = 1000.0
+    l_opt = 0.12
+    l_slack = 0.25
+    v_max = 1.2
+    
+    py_params = PyMuscleParameters(F_max=f_max, l_opt=l_opt, l_slack=l_slack, v_max=v_max)
+    ru_params = upstream_muscle.MuscleParameters(f_max, l_opt, l_slack, v_max, 0.0, 0.05)
+    
+    py_model = PyHillMuscleModel(py_params)
+    ru_model = upstream_muscle.HillMuscleModel(ru_params)
+    
+    py_solver = PyEquilibriumSolver(py_model)
+    ru_solver = upstream_muscle.EquilibriumSolver(ru_model)
+    
+    np.random.seed(42)
+    l_mts = np.random.uniform(l_opt + l_slack - 0.05, l_opt + l_slack + 0.05, 10)
+    activations = np.random.uniform(0.1, 1.0, 10)
+    
+    for i in range(10):
+        py_l_ce = py_solver.solve_fiber_length(float(l_mts[i]), float(activations[i]))
+        ru_l_ce = ru_solver.solve_fiber_length(float(l_mts[i]), float(activations[i]))
+        np.testing.assert_allclose(py_l_ce, ru_l_ce, rtol=1e-5, atol=1e-6)
+        
+        py_v_ce = py_solver.solve_fiber_velocity(float(l_mts[i]), 0.1, float(activations[i]), py_l_ce)
+        ru_v_ce = ru_solver.solve_fiber_velocity(float(l_mts[i]), 0.1, float(activations[i]), ru_l_ce)
+        np.testing.assert_allclose(py_v_ce, ru_v_ce, rtol=1e-5, atol=1e-6)
+
+def test_multi_muscle_parity():
+    from src.shared.python.biomechanics.multi_muscle import MuscleGroup as PyMuscleGroup
+    from src.shared.python.biomechanics.multi_muscle import AntagonistPair as PyAntagonistPair
+    
+    # Python models
+    py_flexors = PyMuscleGroup("Flexors")
+    py_biceps_params = PyMuscleParameters(F_max=1000.0, l_opt=0.15, l_slack=0.20)
+    py_flexors.add_muscle("biceps", PyHillMuscleModel(py_biceps_params), 0.04)
+    
+    py_extensors = PyMuscleGroup("Extensors")
+    py_triceps_params = PyMuscleParameters(F_max=1200.0, l_opt=0.18, l_slack=0.22)
+    py_extensors.add_muscle("triceps", PyHillMuscleModel(py_triceps_params), -0.035)
+    
+    py_elbow = PyAntagonistPair(py_flexors, py_extensors)
+    
+    # Rust models
+    ru_flexors = upstream_muscle.MuscleGroup("Flexors")
+    ru_biceps_params = upstream_muscle.MuscleParameters(1000.0, 0.15, 0.20, 10.0, 0.0, 0.05)
+    ru_flexors.add_muscle("biceps", upstream_muscle.HillMuscleModel(ru_biceps_params), 0.04)
+    
+    ru_extensors = upstream_muscle.MuscleGroup("Extensors")
+    ru_triceps_params = upstream_muscle.MuscleParameters(1200.0, 0.18, 0.22, 10.0, 0.0, 0.05)
+    ru_extensors.add_muscle("triceps", upstream_muscle.HillMuscleModel(ru_triceps_params), -0.035)
+    
+    ru_elbow = upstream_muscle.AntagonistPair(ru_flexors, ru_extensors)
+    
+    flexor_act = {"biceps": 0.5}
+    extensor_act = {"triceps": 0.2}
+    states = {"biceps": (0.15, 0.0), "triceps": (0.18, 0.0)}
+    
+    py_torque = py_elbow.compute_net_torque(flexor_act, extensor_act, states)
+    ru_torque = ru_elbow.compute_net_torque(flexor_act, extensor_act, states)
+    
+    np.testing.assert_allclose(py_torque, ru_torque, rtol=1e-5, atol=1e-8)
