@@ -1102,6 +1102,16 @@ jobs:
         if: steps.rust-changes.outputs.has_changes != 'true'
         run: echo "No Rust changes detected; Rust quality gate is not required."
 
+      # Enable Windows long-path support before cargo clones the `tools-core`
+      # git dep. The Tools repo contains a >260-char PDF filename
+      # (`.../psa_package/References/H16-1061 PSA upgrading proposal G4 rev 06
+      # with Perez notes from 2019 01 17 9am call with Xebec - Internal Use
+      # Only.pdf`) which fails cargo's git checkout on Windows without this.
+      - name: Enable Git long paths (Windows)
+        if: steps.rust-changes.outputs.has_changes == 'true' && matrix.os == 'windows-latest'
+        shell: bash
+        run: git config --system core.longpaths true
+
       # Pin Python BEFORE installing Rust so PyO3-backed crates build cleanly
       # on hosted macos-latest / windows-latest, which default to Python 3.14.
       # `pyo3 0.24` (workspace pin) supports up to Python 3.13 only, so 3.14
