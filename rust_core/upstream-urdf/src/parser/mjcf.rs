@@ -67,15 +67,18 @@ pub fn parse_mjcf_str(xml: &str) -> UrdfResult<MujocoDocument> {
                     match name.as_str() {
                         "compiler" => {
                             doc.compiler = Some(parse_compiler(&e)?);
-                            // Read-through to matching end. <compiler>
-                            // is normally an empty element so Start is
-                            // unusual but handled here for safety.
-                            consume_until_end(&mut reader, "compiler")?;
+                            // <compiler> is normally an Empty element,
+                            // but it can contain nested directives —
+                            // discard the body to the matching close.
+                            skip_until_close(&mut reader, "compiler")?;
                             depth = depth.saturating_sub(1);
                         }
                         "option" => {
                             doc.option = Some(parse_option(&e)?);
-                            consume_until_end(&mut reader, "option")?;
+                            // Same shape as <compiler>; may contain
+                            // <flag warmstart="enable"/> etc. which we
+                            // do not model.
+                            skip_until_close(&mut reader, "option")?;
                             depth = depth.saturating_sub(1);
                         }
                         "default" => {
@@ -199,15 +202,6 @@ fn parse_vec_n<const N: usize>(s: &str) -> UrdfResult<[f64; N]> {
     let mut arr = [0.0; N];
     arr.copy_from_slice(&parts);
     Ok(arr)
-}
-
-// Skip events until we see the matching </tag> at the original depth.
-fn consume_until_end<B: std::io::BufRead>(_reader: &mut Reader<B>, _tag: &str) -> UrdfResult<()> {
-    // The caller invoked us on a Start event whose Empty sibling
-    // already consumed all content. We rely on the next End being the
-    // matching one if no children. Implemented as a no-op shim because
-    // `<compiler>`/`<option>` should always be Empty in MJCF anyway.
-    Ok(())
 }
 
 // Consume events until we read the End for `tag` at any depth ≥ 1.
