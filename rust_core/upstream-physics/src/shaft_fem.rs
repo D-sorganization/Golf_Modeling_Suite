@@ -207,17 +207,17 @@ mod tests {
     }
 
     fn assert_matrix_close(actual: BeamMatrix4, expected: BeamMatrix4) {
-        for row in 0..4 {
-            for col in 0..4 {
-                assert_relative_eq!(actual[row][col], expected[row][col], epsilon = 1e-12);
+        for (actual_row, expected_row) in actual.iter().zip(expected.iter()) {
+            for (actual_value, expected_value) in actual_row.iter().zip(expected_row.iter()) {
+                assert_relative_eq!(actual_value, expected_value, epsilon = 1e-12);
             }
         }
     }
 
     fn assert_symmetric(matrix: BeamMatrix4) {
-        for row in 0..4 {
-            for col in 0..4 {
-                assert_relative_eq!(matrix[row][col], matrix[col][row], epsilon = 1e-12);
+        for (row_index, row_values) in matrix.iter().enumerate() {
+            for (col_index, value) in row_values.iter().enumerate() {
+                assert_relative_eq!(*value, matrix[col_index][row_index], epsilon = 1e-12);
             }
         }
     }
