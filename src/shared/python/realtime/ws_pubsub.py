@@ -154,10 +154,11 @@ class WSPubSub:
                 self._spawn_server()
             return
         try:
-            self._rust_server = upstream_realtime.Server(self.host, self.port)
+            srv = upstream_realtime.Server(self.host, self.port)
+            self._rust_server = srv
             # Resolve port if caller passed 0 (OS-assigned).
             with contextlib.suppress(Exception):
-                self.port = int(self._rust_server.bound_port())
+                self.port = int(srv.bound_port())
         except Exception:
             logger.exception("failed to start rust upstream_realtime server")
             self._rust_server = None

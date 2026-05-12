@@ -28,10 +28,12 @@ pub fn validate_channel(name: &str) -> Result<(), String> {
 }
 
 /// Default per-channel broadcast capacity. Lagging subscribers drop oldest.
-/// The Python facade is single-consumer-per-subscriber and polls the
-/// receiver from a dedicated thread, so 1024 is generous headroom for a
-/// 50ms one-hop budget at >10kHz publish rates.
-pub const DEFAULT_CAPACITY: usize = 1024;
+/// Sized to comfortably hold a 10k-message burst (the latency benchmark
+/// in `tests/unit/realtime/test_latency.py`) without forcing the
+/// publisher to pace itself; the Python facade is single-consumer-per-
+/// subscriber and drives a dedicated thread that re-reads as fast as
+/// `json.loads` + the user callback allow.
+pub const DEFAULT_CAPACITY: usize = 65_536;
 
 /// Per-channel broadcast registry. Cheaply cloneable handle; the inner
 /// map is wrapped in `Mutex` because contention is one-shot at first
