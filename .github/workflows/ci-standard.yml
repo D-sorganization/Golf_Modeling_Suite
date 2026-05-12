@@ -1152,7 +1152,17 @@ jobs:
           # `cargo test` enumerates all workspace members via the resolver, so
           # new crates joining `[workspace] members = [...]` are auto-covered.
           cargo test
-          cargo test --features python
+
+      - name: Run Rust Tests (--features python)
+        # The workspace pyo3 dep enables `extension-module`, which expects
+        # libpython linkage from the loader (i.e. when Python imports the
+        # extension). Plain `cargo test` cannot satisfy that on macOS / Windows
+        # without extra linker flags or PYO3 env config; on Linux libpython is
+        # on the default search path so the test binary links cleanly. Keep
+        # the python-features lane Linux-only — the wheel build + binding
+        # smoke test below already cover the actual integration.
+        if: steps.rust-changes.outputs.has_changes == 'true' && matrix.os == 'ubuntu-latest'
+        run: cargo test --features python
 
       # ----------------------------------------------------------------------
       # The remaining steps (Maturin wheel build, Python-binding smoke test,
