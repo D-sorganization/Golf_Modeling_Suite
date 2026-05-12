@@ -10,7 +10,7 @@
     "movement_optimizer",
     "matlab_suite"
   ],
-  "selected_model": "movement_optimizer",
+  "selected_model": "myosim_suite",
   "window_geometry": {
     "x": 40,
     "y": 30,

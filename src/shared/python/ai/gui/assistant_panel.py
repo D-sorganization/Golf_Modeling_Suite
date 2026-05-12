@@ -150,15 +150,15 @@ class MessageWidget(QFrame):
             from src.shared.python.theme.theme_manager import get_theme_manager
 
             colors = get_theme_manager().get_current_colors()
-            bg_alt = getattr(
-                colors, "bg_elevated", getattr(colors, "group_bg", "#2d2d2d")
-            )
-            bg_secondary = getattr(
-                colors, "bg_highlight", getattr(colors, "input_bg", "#252526")
-            )
-            text_primary = getattr(
-                colors, "text_primary", getattr(colors, "text", "#e0e0e0")
-            )
+            
+            def _get(key, fallback):
+                if isinstance(colors, dict):
+                    return colors.get(key, fallback)
+                return getattr(colors, key, fallback)
+                
+            bg_alt = _get("bg_elevated", _get("group_bg", "#2d2d2d"))
+            bg_secondary = _get("bg_highlight", _get("input_bg", "#252526"))
+            text_primary = _get("text_primary", _get("text", "#e0e0e0"))
         except ImportError:
             bg_alt = "#2d2d2d"
             bg_secondary = "#252526"
@@ -511,19 +511,19 @@ class AIAssistantPanel(QWidget):
             from src.shared.python.theme.theme_manager import get_theme_manager
 
             colors = get_theme_manager().get_current_colors()
-            bg_primary = getattr(colors, "bg", "#1e1e1e")
-            bg_alt = getattr(
-                colors, "bg_elevated", getattr(colors, "group_bg", "#2d2d2d")
-            )
-            text_primary = getattr(
-                colors, "text_primary", getattr(colors, "text", "#e0e0e0")
-            )
-            text_muted = getattr(colors, "text_secondary", "#888888")
-            border = getattr(
-                colors, "border_default", getattr(colors, "border", "#444444")
-            )
-            accent = getattr(colors, "primary", getattr(colors, "accent", "#FF8800"))
-            button_hover = getattr(colors, "bg_highlight", "#cc6d00")
+            
+            def _get(key, fallback):
+                if isinstance(colors, dict):
+                    return colors.get(key, fallback)
+                return getattr(colors, key, fallback)
+                
+            bg_primary = _get("bg", "#1e1e1e")
+            bg_alt = _get("bg_elevated", _get("group_bg", "#2d2d2d"))
+            text_primary = _get("text_primary", _get("text", "#e0e0e0"))
+            text_muted = _get("text_secondary", "#888888")
+            border = _get("border_default", _get("border", "#444444"))
+            accent = _get("primary", _get("accent", "#FF8800"))
+            button_hover = _get("bg_highlight", "#cc6d00")
         except ImportError:
             return
 

@@ -54,22 +54,22 @@ class ChatHistorySidebar(QWidget):
         super().__init__(parent)
         self._manager = session_manager
         self._manager.sessions_updated.connect(self.refresh_lists)
-        self._setup_ui()
         self.refresh_theme()
+        self._setup_ui()
         self.refresh_lists()
 
     def refresh_theme(self) -> None:
         """Dynamically update colors based on the current theme."""
         try:
-            from src.shared.python.theme import get_current_colors
+            from src.shared.python.theme.theme_manager import get_theme_manager
 
-            colors = get_current_colors()
-            bg_base = colors.bg
-            bg_alt = colors.bg_elevated
-            text_color = colors.text_primary
-            text_muted = colors.text_secondary
-            accent = colors.primary
-            border = colors.border_default
+            colors = get_theme_manager().get_current_colors()
+            bg_base = colors.get("bg", "#1e1e1e")
+            bg_alt = colors.get("group_bg", "#252526")
+            text_color = colors.get("text", "#e0e0e0")
+            text_muted = colors.get("text_secondary", "#888888")
+            accent = colors.get("accent", "#FF8800")
+            border = colors.get("border", "#3c3c3c")
         except ImportError:
             bg_base = "#1e1e1e"
             bg_alt = "#252526"
