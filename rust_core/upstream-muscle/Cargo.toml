@@ -15,11 +15,13 @@ crate-type = ["cdylib", "rlib"]
 default = []
 # PyO3 bindings (extension-module). Off by default so `cargo test` runs without
 # linking libpython, mirroring the upstream-physics / ai_backend pattern.
-python = ["dep:pyo3"]
+python = ["dep:pyo3", "dep:numpy"]
 
 [dependencies]
 nalgebra = { workspace = true }
 pyo3 = { workspace = true, optional = true }
+rayon = "1.8"
+numpy = { version = "0.20", optional = true }
 
 [dev-dependencies]
 approx = "0.5"

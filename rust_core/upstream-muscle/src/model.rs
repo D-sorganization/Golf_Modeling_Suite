@@ -231,8 +231,37 @@ impl HillMuscleModel {
     }
 
     #[pyo3(name = "compute_force_batch")]
-    fn py_compute_force_batch(&self, states: Vec<MuscleState>) -> pyo3::PyResult<Vec<f64>> {
-        self.compute_force_batch(&states)
-            .map_err(pyo3::exceptions::PyValueError::new_err)
+    fn py_compute_force_batch<'py>(
+        &self,
+        py: pyo3::Python<'py>,
+        activations: numpy::PyReadonlyArray1<'py, f64>,
+        l_ce: numpy::PyReadonlyArray1<'py, f64>,
+        v_ce: numpy::PyReadonlyArray1<'py, f64>,
+        l_mt: numpy::PyReadonlyArray1<'py, f64>,
+    ) -> pyo3::PyResult<&'py numpy::PyArray1<f64>> {
+        use rayon::prelude::*;
+        let acts = activations.as_slice()?;
+        let l_ce_slice = l_ce.as_slice()?;
+        let v_ce_slice = v_ce.as_slice()?;
+        let l_mt_slice = l_mt.as_slice()?;
+        
+        let n = acts.len();
+        if l_ce_slice.len() != n || v_ce_slice.len() != n || l_mt_slice.len() != n {
+            return Err(pyo3::exceptions::PyValueError::new_err("Array lengths must match"));
+        }
+
+        let mut results = vec![0.0; n];
+        
+        results.par_iter_mut().enumerate().for_each(|(i, res)| {
+            let state = MuscleState {
+                activation: acts[i],
+                l_ce: l_ce_slice[i],
+                v_ce: v_ce_slice[i],
+                l_mt: l_mt_slice[i],
+            };
+            *res = self.compute_force(&state).unwrap_or(0.0);
+        });
+
+        Ok(numpy::PyArray1::from_vec(py, results))
     }
 }

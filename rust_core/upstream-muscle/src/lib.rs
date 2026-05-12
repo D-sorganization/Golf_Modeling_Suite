@@ -33,6 +33,8 @@
 pub mod activation;
 pub mod hill;
 pub mod model;
+pub mod multi_muscle;
+pub mod muscle_equilibrium;
 
 // Convenience re-exports so callers can `use upstream_muscle::{f_l, f_v, f_t};`.
 pub use activation::ActivationDynamics;
@@ -104,6 +106,14 @@ fn upstream_muscle(_py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<model::HillMuscleModel>()?;
     m.add_class::<model::MuscleParameters>()?;
     m.add_class::<model::MuscleState>()?;
+    
+    m.add_class::<muscle_equilibrium::PyEquilibriumSolver>()?;
+    m.add_function(wrap_pyfunction!(muscle_equilibrium::compute_equilibrium_state, m)?)?;
+    
+    m.add_class::<multi_muscle::MuscleAttachment>()?;
+    m.add_class::<multi_muscle::MuscleGroup>()?;
+    m.add_class::<multi_muscle::AntagonistPair>()?;
+
     m.add(
         "DEFAULT_FORCE_LENGTH_WIDTH",
         hill::DEFAULT_FORCE_LENGTH_WIDTH,
