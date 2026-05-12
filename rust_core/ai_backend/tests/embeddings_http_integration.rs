@@ -1,4 +1,8 @@
 //! Integration tests for the embeddings HTTP endpoint.
+//!
+//! Gated to `not(feature = "python")` — see the module docstring on
+//! `llm_http_integration.rs` for the macOS-arm64 linker rationale.
+#![cfg(not(feature = "python"))]
 
 use std::sync::Arc;
 

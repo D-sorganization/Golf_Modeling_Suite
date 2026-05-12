@@ -3,6 +3,19 @@
 //! Uses `wiremock` to stand up an in-process OpenAI-compatible mock so we
 //! exercise the full reqwest -> response-parsing path without hitting a
 //! real provider.
+//!
+//! These tests build a separate test binary against the `ai_backend` rlib.
+//! When the `python` feature is on, the workspace `pyo3` dep activates
+//! `extension-module`, which means the resulting cdylib expects libpython
+//! symbols to be resolved by the loader — not by the linker. That
+//! configuration is incompatible with a normal `cargo test` binary on
+//! macOS arm64 (the linker fails to resolve `_PyErr_Print`, etc.). The
+//! integration tests don't touch the Python bindings, so we gate them out
+//! when `python` is enabled and rely on the `cargo test` (no features)
+//! lane to run them. Tracked under #5238 — when we ship a Python-side
+//! streaming iterator integration test, it'll live on the maturin-build
+//! side, not here.
+#![cfg(not(feature = "python"))]
 
 use ai_backend::config::AIConfig;
 use ai_backend::llm::AIEngine;
