@@ -13,7 +13,7 @@ crate-type = ["cdylib", "rlib"]
 
 [features]
 default = []
-python = ["pyo3"]
+python = ["pyo3", "numpy"]
 wasm = ["dep:wasm-bindgen", "dep:serde-wasm-bindgen"]
 
 [dependencies]
@@ -23,6 +23,7 @@ wasm-bindgen = { workspace = true, optional = true }
 serde-wasm-bindgen = { workspace = true, optional = true }
 serde = { workspace = true }
 nalgebra = { workspace = true }
+numpy = { version = "0.21", optional = true }
 
 [dev-dependencies]
 approx = "0.5"

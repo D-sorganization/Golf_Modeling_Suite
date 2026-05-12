@@ -21,6 +21,9 @@ pub mod contact;
 pub mod rk4;
 pub mod swing_plane;
 
+#[cfg(feature = "python")]
+pub mod motion_matching;
+
 // Re-export primary types from tools-core for convenience.
 pub use tools_core::Vector3;
 
@@ -86,6 +89,9 @@ fn upstream_physics(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<ball_flight::TrajectoryPoint>()?;
     m.add_class::<ball_flight::BallTrajectoryResult>()?;
     m.add_function(pyo3::wrap_pyfunction!(simulate_ball_trajectory_py, m)?)?;
+
+    m.add_function(wrap_pyfunction!(motion_matching::compute_finite_difference, m)?)?;
+    m.add_function(wrap_pyfunction!(motion_matching::pinocchio_rnea_loop, m)?)?;
 
     Ok(())
 }

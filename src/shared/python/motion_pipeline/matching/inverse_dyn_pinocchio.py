@@ -16,6 +16,12 @@ from typing import Any, Optional
 
 import numpy as np
 
+try:
+    import upstream_physics
+    HAS_RUST_BACKEND = True
+except ImportError:
+    HAS_RUST_BACKEND = False
+
 from ..contracts import (
     JointStateFrame,
     JointTrajectory,
@@ -76,6 +82,10 @@ class PinocchioInverseDynMatchingSolver(BaseMotionMatchingSolver):
             raise ValueError("Trajectory must have at least one frame")
         times = np.asarray([f.timestamp for f in traj.frames], dtype=float)
         q = np.asarray([list(f.q) for f in traj.frames], dtype=float)
+
+        if HAS_RUST_BACKEND:
+            qdot, qddot = upstream_physics.compute_finite_difference(times, q)
+            return times, q, qdot, qddot
 
         # qdot
         if all(f.qdot is not None for f in traj.frames):
@@ -201,20 +211,35 @@ class PinocchioInverseDynMatchingSolver(BaseMotionMatchingSolver):
             )
 
         torque_frames: list[TorqueFrame] = []
-        for i, t in enumerate(times):
-            q = q_all[i]
-            v = qdot_all[i]
-            a = qddot_all[i]
-            tau = pin.rnea(model, data, q, v, a)
-            tau_arr = np.asarray(tau, dtype=float).flatten()
-            if not np.all(np.isfinite(tau_arr)):
-                raise RuntimeError(f"RNEA produced non-finite torques at frame {i}")
-            torque_frames.append(
-                TorqueFrame(
-                    timestamp=float(t),
-                    tau=tau_arr.tolist(),
+        if HAS_RUST_BACKEND:
+            try:
+                torques_all = upstream_physics.pinocchio_rnea_loop(
+                    pin.rnea, model, data, q_all, qdot_all, qddot_all
                 )
-            )
+                for i, t in enumerate(times):
+                    torque_frames.append(
+                        TorqueFrame(
+                            timestamp=float(t),
+                            tau=torques_all[i].tolist(),
+                        )
+                    )
+            except Exception as e:
+                raise RuntimeError(str(e)) from e
+        else:
+            for i, t in enumerate(times):
+                q = q_all[i]
+                v = qdot_all[i]
+                a = qddot_all[i]
+                tau = pin.rnea(model, data, q, v, a)
+                tau_arr = np.asarray(tau, dtype=float).flatten()
+                if not np.all(np.isfinite(tau_arr)):
+                    raise RuntimeError(f"RNEA produced non-finite torques at frame {i}")
+                torque_frames.append(
+                    TorqueFrame(
+                        timestamp=float(t),
+                        tau=tau_arr.tolist(),
+                    )
+                )
 
         # Build per-DOF joint-name list (one entry per axis) so the torque
         # trajectory's invariant matches the per-frame tau length.
