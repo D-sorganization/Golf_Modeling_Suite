@@ -19,6 +19,7 @@ pub mod aerodynamics;
 pub mod ball_flight;
 pub mod contact;
 pub mod rk4;
+pub mod shaft_fem;
 pub mod swing_plane;
 
 // Re-export primary types from tools-core for convenience.
