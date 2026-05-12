@@ -13,6 +13,8 @@ members = [
     "rust_core/upstream-urdf",
     "rust_core/upstream-mesh",
     "rust_core/upstream-muscle",
+    "rust_core/upstream-motion-matching",
+    "rust_core/upstream-pinocchio-id",
 ]
 exclude = ["ui/src-tauri"]
 
