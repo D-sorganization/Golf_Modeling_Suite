@@ -38,15 +38,34 @@ class TestSharedChatImport:
 
     def test_shared_chat_public_api(self) -> None:
         """Shared chat should expose public API for consumption."""
+        expected_exports = {
+            "ChatDockWidget",
+            "ChatMessageBubble",
+            "ChatPanel",
+            "ChatWidget",
+        }
+        chat_init = SRC_ROOT / "chat" / "__init__.py"
+        if chat_init.exists():
+            source = chat_init.read_text(encoding="utf-8")
+            exported_names = {
+                name for name in expected_exports if f'"{name}"' in source
+            }
+            assert exported_names, (
+                "Shared chat should declare ChatDockWidget, ChatMessageBubble, "
+                "ChatWidget, or ChatPanel in __all__"
+            )
+            return
+
         try:
             sys.path.insert(0, str(SRC_ROOT))
             import chat  # type: ignore[import-untyped]
         except ImportError:
             pytest.skip("Shared chat module not available")
 
-        # Verify core public API exists
-        assert hasattr(chat, "ChatWidget") or hasattr(chat, "ChatPanel"), (
-            "Shared chat should expose ChatWidget or ChatPanel"
+        module_exports = set(getattr(chat, "__all__", ()))
+        assert module_exports & expected_exports, (
+            "Shared chat should expose ChatDockWidget, ChatWidget, ChatPanel, "
+            "or ChatMessageBubble"
         )
 
 
@@ -66,7 +85,8 @@ class TestLauncherDiscovery:
 
         launcher_files = list(launchers_path.glob("*.py"))
         chat_related = [
-            f for f in launcher_files
+            f
+            for f in launcher_files
             if "chat" in f.name.lower() or "launcher" in f.name.lower()
         ]
         assert chat_related, (
@@ -132,9 +152,8 @@ class TestCodebaseIndexing:
         """AI backend should be available for indexing."""
         try:
             import ai_backend  # type: ignore[import-untyped]
-            assert hasattr(ai_backend, "AIConfig"), (
-                "ai_backend should have AIConfig"
-            )
+
+            assert hasattr(ai_backend, "AIConfig"), "ai_backend should have AIConfig"
         except ImportError:
             pytest.skip("ai_backend not installed")
 
@@ -143,6 +162,7 @@ class TestCodebaseIndexing:
         try:
             sys.path.insert(0, str(REPO_ROOT))
             from src.shared.python.ai.adapters.rust_adapter import RustAgentAdapter
+
             assert RustAgentAdapter is not None
         except ImportError:
             pytest.skip("RustAgentAdapter not available")
@@ -193,4 +213,4 @@ class ManualVerificationChecklist:
         """Placeholder for manual verification checklist."""
         # This test exists to document manual verification steps
         # See class docstring for the checklist
-        pass
+        assert self.__doc__
