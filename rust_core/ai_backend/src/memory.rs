@@ -223,7 +223,7 @@ fn try_load_vss(conn: &Connection) -> bool {
     let candidates: &[&str] = &[
         lib_name,
         #[cfg(any(target_os = "linux", target_os = "macos"))]
-        &format!("./vendored/{}", lib_name).leak(),
+        format!("./vendored/{}", lib_name).leak(),
     ];
 
     for candidate in candidates {
