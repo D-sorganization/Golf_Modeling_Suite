@@ -323,7 +323,9 @@ class TestModelPackV1LegacySchema:
     This test verifies that legacy provider manifests are properly normalized.
     """
 
-    def test_load_model_pack_v1_schema_with_minimal_fields(self, tmp_path: Path) -> None:
+    def test_load_model_pack_v1_schema_with_minimal_fields(
+        self, tmp_path: Path
+    ) -> None:
         """Test loading a minimal model_pack/v1 style manifest from external provider."""
         manifest_path = tmp_path / "model_pack.yaml"
         # This is the format used by external provider repos (MuJoCo_Models, etc.)
