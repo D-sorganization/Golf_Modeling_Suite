@@ -123,12 +123,12 @@ def _impact_idx_from_clubhead(clubhead: npt.NDArray[np.float64]) -> int:
         )
         raise ValueError(msg)
     diffs = np.diff(clubhead, axis=0)
-    speeds = np.linalg.norm(diffs, axis=1)
     # ``np.argmax`` returns the first occurrence (0-based) into ``diffs``;
     # the corresponding clubhead sample lies at index ``argmax + 1``.
     # That happens to keep us in [1, N-1], i.e. strictly inside the
-    # open interval the schema requires.
-    return int(np.argmax(speeds)) + 1
+    # interval, away from boundaries.
+    # ⚡ Bolt: np.argmax(np.einsum(...)) avoids intermediate allocations and sqrt overhead
+    return int(np.argmax(np.einsum("ij,ij->i", diffs, diffs))) + 1
 
 
 def _sim_out_to_club_target(
