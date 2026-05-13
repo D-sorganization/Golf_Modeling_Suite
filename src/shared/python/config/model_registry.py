@@ -21,6 +21,7 @@ from src.shared.python.config.model_pack_manifest import (
 from src.shared.python.config.model_source_providers import (
     ResolvedModelSource,
     collect_engine_provider_paths,
+    iter_registered_sources,
     resolve_model_source,
 )
 from src.shared.python.config.provider_catalog import iter_provider_manifest_specs
@@ -90,6 +91,8 @@ def _resolve_provider_source_root(
     """Resolve provider-relative entry source roots against the provider repo."""
     if not entry_source_root:
         return provider_source_root
+    if entry_source_root in iter_registered_sources():
+        return entry_source_root
     entry_root = Path(entry_source_root)
     if provider_source_root and not entry_root.is_absolute():
         return str(Path(provider_source_root) / entry_root)
@@ -446,7 +449,7 @@ class ModelRegistry(ContractChecker):
                     self.models[entry.id] = self._build_model_config(
                         entry,
                         provider=manifest.provider,
-                        source_root=entry.source_root or str(provider_root),
+                        source_root=str(provider_root),
                     )
                 logger.info(
                     "Loaded %d provider models from %s",
