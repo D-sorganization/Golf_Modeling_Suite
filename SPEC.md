@@ -687,4 +687,5 @@ Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linal
 | 2026-05-12 | 1.0.162 | Clarified shared chat smoke coverage so the public API contract asserts the exported `ChatDockWidget` and `ChatMessageBubble` symbols from `src/shared/python/chat/__init__.py`. |
 | 2026-05-12 | 1.0.159 | Updated workflow governance for the Rust realtime soak workflow by pinning its Rust toolchain action to a full commit SHA and registering the workflow in the active inventory with the current 71-workflow no-growth cap. |
 | 2026-05-12 | 1.0.160 | Added a documented hidden-launcher contract so hidden feature entries must carry an owner and reason, preventing undiscoverable app features from drifting without accountability (#5314). |
+| 2026-05-12 | 1.0.162 | Added a canonical launcher category taxonomy and category grouping contract so provider-backed entries such as biomechanics tools are discoverable instead of being rejected by legacy manifest validation (#5314). |
 ````
