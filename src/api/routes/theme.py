@@ -21,5 +21,6 @@ theme_manager = ThemeManager.instance(
 )
 
 # Create the router using the shared factory
-# This will expose /active, /, /builtin, /custom endpoints
-router = create_theme_router(theme_manager)
+# This will expose /themes/active, /themes/, /themes/builtin, /themes/custom endpoints
+# The /themes prefix ensures proper routing under /api/v1/themes when mounted
+router = create_theme_router(theme_manager, prefix="/themes")
