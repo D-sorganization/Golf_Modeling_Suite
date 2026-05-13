@@ -45,7 +45,7 @@ jobs:
         with: { node-version: "24" }
       - run: |
           npm install -g @google/jules
-          python3 -m ensurepip --upgrade || true
+          python -m ensurepip --upgrade || true
           pip install ruff==0.14.10
 
       - name: Identify Target File

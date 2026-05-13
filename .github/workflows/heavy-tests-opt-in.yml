@@ -66,13 +66,13 @@ jobs:
       - name: Install Python dependencies
         timeout-minutes: 20
         run: |
-          python3 -m ensurepip --upgrade || true
+          python -m ensurepip --upgrade || true
           pip install --upgrade pip
-          python3 -m ensurepip --upgrade || true
+          python -m ensurepip --upgrade || true
           if [ -f pyproject.toml ]; then pip install -e ".[dev,test]" || pip install -e .; fi
-          python3 -m ensurepip --upgrade || true
+          python -m ensurepip --upgrade || true
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          python3 -m ensurepip --upgrade || true
+          python -m ensurepip --upgrade || true
           pip install \
             pinocchio \
             pink \

@@ -72,9 +72,9 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          python3 -m ensurepip --upgrade || true
+          python -m ensurepip --upgrade || true
           pip install -r requirements.txt
-          python3 -m ensurepip --upgrade || true
+          python -m ensurepip --upgrade || true
           pip install ruff black mypy
           npm install -g @google/jules
 
