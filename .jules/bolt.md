@@ -37,7 +37,3 @@
 ## 2026-05-12 - Optimize sum of squares along axis using einsum and vdot
 **Learning:** Computing sum of squares over a dimension, or MSE with `np.mean(x**2)` causes a large intermediate allocation in `numpy` before it gets reduced/averaged. For frequently called hot paths, avoiding these allocations matters.
 **Action:** Use `np.vdot(x, x)` or `np.vdot(x, x)/x.size` to compute total squared norm or MSE. Use `np.einsum('ij,ij->i', x, x)` to compute row-wise squared norms without allocating a fully squared temporary matrix. Make sure the type is appropriately float.
-
-## 2026-05-18 - Optimize norm calculation in drake visualizer
-**Learning:** `np.linalg.norm(..., axis=1)` creates intermediate memory allocations and has overhead when used in frequent or large operations like calculating geodesic error frames.
-**Action:** Replace `np.linalg.norm(q, axis=1)` with `np.sqrt(np.einsum('ij,ij->i', q, q))[:, np.newaxis]` to directly calculate the row-wise magnitudes while avoiding temporary allocations and matching the original `keepdims=True` shape.
