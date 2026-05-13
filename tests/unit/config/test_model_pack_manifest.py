@@ -314,6 +314,7 @@ class TestModelPackManifest:
         ]
 
 
+@pytest.mark.unit
 class TestModelPackV1LegacySchema:
     """Test reconciliation of model_pack/v1 provider schema with UpstreamDrift manifest.
 
