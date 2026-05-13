@@ -446,7 +446,7 @@ class ModelRegistry(ContractChecker):
                     self.models[entry.id] = self._build_model_config(
                         entry,
                         provider=manifest.provider,
-                        source_root=str(provider_root),
+                        source_root=entry.source_root or str(provider_root),
                     )
                 logger.info(
                     "Loaded %d provider models from %s",
