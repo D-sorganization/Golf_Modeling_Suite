@@ -127,7 +127,7 @@ def _impact_idx_from_clubhead(clubhead: npt.NDArray[np.float64]) -> int:
     # the corresponding clubhead sample lies at index ``argmax + 1``.
     # That happens to keep us in [1, N-1], i.e. strictly inside the
     # interval, away from boundaries.
-    # ⚡ Bolt: np.argmax(np.einsum(...)) avoids intermediate allocations and sqrt overhead
+    # ⚡ Bolt: np.argmax(np.einsum(...)) avoids allocations & sqrt overhead
     return int(np.argmax(np.einsum("ij,ij->i", diffs, diffs))) + 1
 
 
