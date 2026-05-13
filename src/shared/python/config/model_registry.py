@@ -83,6 +83,19 @@ def _normalize_discovery_mode(raw_value: str | None) -> str:
     return mode
 
 
+def _resolve_provider_source_root(
+    entry_source_root: str | None,
+    provider_source_root: str | None,
+) -> str | None:
+    """Resolve provider-relative entry source roots against the provider repo."""
+    if not entry_source_root:
+        return provider_source_root
+    entry_root = Path(entry_source_root)
+    if provider_source_root and not entry_root.is_absolute():
+        return str(Path(provider_source_root) / entry_root)
+    return entry_source_root
+
+
 @dataclass
 class ModelConfig:
     """Configuration for a physics model."""
@@ -336,7 +349,7 @@ class ModelRegistry(ContractChecker):
             engine_type=entry.engine_type,
             capabilities=entry.capabilities,
             provider=entry.provider or provider,
-            source_root=entry.source_root or source_root,
+            source_root=_resolve_provider_source_root(entry.source_root, source_root),
             working_dir=entry.working_dir,
             python_paths=entry.python_paths,
             identity=entry.identity,
