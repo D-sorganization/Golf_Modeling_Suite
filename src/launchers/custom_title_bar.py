@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel, QToolButton
 from PyQt6.QtCore import Qt, QPoint, pyqtSignal
 from PyQt6.QtGui import QMouseEvent
+from PyQt6.QtWidgets import QHBoxLayout, QLabel, QToolButton, QWidget
 
 try:
     from src.shared.python.theme.icon_utils import IconColorizer
@@ -16,7 +16,7 @@ class CustomTitleBar(QWidget):
     close_requested = pyqtSignal()
     move_requested = pyqtSignal(QPoint)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, *, show_close_button: bool = True):
         super().__init__(parent)
         self.setFixedHeight(40)
         self.setProperty("class", "title-bar")
@@ -66,22 +66,31 @@ class CustomTitleBar(QWidget):
         color = "#d4d4d4"
         self.btn_min = QToolButton()
         self.btn_max = QToolButton()
-        self.btn_close = QToolButton()
+        self.btn_close: QToolButton | None = (
+            QToolButton() if show_close_button else None
+        )
 
         if IconColorizer:
             self.btn_min.setIcon(IconColorizer.get_icon("minimize", color))
             self.btn_max.setIcon(IconColorizer.get_icon("maximize", color))
-            self.btn_close.setIcon(IconColorizer.get_icon("close", color))
+            if self.btn_close is not None:
+                self.btn_close.setIcon(IconColorizer.get_icon("close", color))
         else:
             self.btn_min.setText("-")
             self.btn_max.setText("[]")
-            self.btn_close.setText("X")
+            if self.btn_close is not None:
+                self.btn_close.setText("X")
 
         self.btn_min.clicked.connect(self._minimize_window)
         self.btn_max.clicked.connect(self._maximize_window)
-        self.btn_close.clicked.connect(self._close_window)
+        if self.btn_close is not None:
+            self.btn_close.clicked.connect(self._close_window)
 
-        for btn in (self.btn_min, self.btn_max, self.btn_close):
+        buttons = [self.btn_min, self.btn_max]
+        if self.btn_close is not None:
+            buttons.append(self.btn_close)
+
+        for btn in buttons:
             btn.setStyleSheet("""
                 QToolButton { border: none; background: transparent; padding: 5px; color: #d4d4d4; font-weight: bold; }
                 QToolButton:hover { background-color: rgba(255, 255, 255, 0.1); border-radius: 4px; }

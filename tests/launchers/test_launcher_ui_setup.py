@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import (
     QToolButton,
     QVBoxLayout,
 )  # noqa: E402
+from src.launchers.custom_title_bar import CustomTitleBar
 from src.launchers.launcher_ui_setup import LauncherUISetupMixin  # noqa: E402
 
 
@@ -52,6 +53,25 @@ def test_init_ui_with_ai(launcher) -> None:
     with patch.object(launcher, "_setup_ai_panel") as mock_ai:
         launcher.init_ui()
         mock_ai.assert_called_once()
+
+
+def test_init_ui_places_close_button_in_menu_bar_corner(launcher) -> None:
+    with patch("src.launchers.launcher_constants.AI_AVAILABLE", False):
+        launcher.init_ui()
+
+    assert isinstance(launcher.btn_menu_close, QToolButton)
+    launcher.btn_menu_close.setToolTip.assert_called_once_with("Close the launcher")
+    launcher.btn_menu_close.setAccessibleName.assert_called_once_with("Close launcher")
+    assert hasattr(launcher, "title_bar")
+    assert launcher.title_bar.btn_close is None
+
+
+def test_custom_title_bar_can_hide_close_button(qapp) -> None:
+    title_bar = CustomTitleBar(show_close_button=False)
+
+    assert title_bar.btn_min is not None
+    assert title_bar.btn_max is not None
+    assert title_bar.btn_close is None
 
 
 def test_setup_menu_bar(launcher) -> None:

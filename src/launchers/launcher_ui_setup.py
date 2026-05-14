@@ -123,7 +123,7 @@ class LauncherUISetupMixin:
         try:
             from src.launchers.custom_title_bar import CustomTitleBar
 
-            self.title_bar = CustomTitleBar(self)
+            self.title_bar = CustomTitleBar(self, show_close_button=False)
             self.title_bar.minimize_requested.connect(self.showMinimized)
             self.title_bar.maximize_requested.connect(
                 lambda: (
@@ -405,6 +405,41 @@ class LauncherUISetupMixin:
         self._setup_view_menu(menubar)
         self._setup_tools_menu(menubar)
         self._setup_help_menu(menubar)
+        self._install_menu_bar_close_button(menubar)
+
+    def _install_menu_bar_close_button(self, menubar: Any) -> None:
+        """Place the launcher close button in the menu bar's top-right corner."""
+        if menubar is None:
+            raise ValueError("menubar must be provided")
+        close_button = QToolButton(menubar)
+        self.btn_menu_close = close_button
+        close_button.setAutoRaise(True)
+        close_button.setToolTip("Close the launcher")
+        close_button.setStatusTip("Quits the application")
+        close_button.setAccessibleName("Close launcher")
+        close_button.clicked.connect(self.close)
+
+        try:
+            from src.shared.python.theme.icon_utils import IconColorizer
+
+            close_button.setIcon(IconColorizer.get_icon("close", "#d4d4d4"))
+        except (ImportError, ValueError):
+            close_button.setText("X")
+
+        close_button.setStyleSheet("""
+            QToolButton {
+                border: none;
+                background: transparent;
+                color: #d4d4d4;
+                margin: 2px 6px 2px 0;
+                padding: 4px;
+            }
+            QToolButton:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+                border-radius: 4px;
+            }
+        """)
+        menubar.setCornerWidget(close_button, Qt.Corner.TopRightCorner)
 
     def _setup_file_menu(self, menubar: Any) -> None:
         if menubar is None:
@@ -1091,9 +1126,7 @@ class LauncherUISetupMixin:
             url = "http://127.0.0.1:8000/api/chat/sessions"
             req = urllib.request.Request(url, method="GET")
             # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
-            with urllib.request.urlopen(
-                req, timeout=2
-            ) as resp:  # nosec B310 - hardcoded localhost URL, no external input
+            with urllib.request.urlopen(req, timeout=2) as resp:  # nosec B310 - hardcoded localhost URL, no external input
                 sessions = json.loads(resp.read().decode("utf-8"))
 
             session_id = sessions[0]["session_id"] if sessions else None
