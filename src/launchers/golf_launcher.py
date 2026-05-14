@@ -873,6 +873,13 @@ def main() -> None:
     except ImportError:
         logger.debug("Plot theme module not available")
 
+    try:
+        from shared.python.theme.zoom import install_application_zoom
+
+        install_application_zoom(app)
+    except ImportError as e:
+        logger.debug(f"Zoom support not available: {e}")
+
     splash = SplashScreen()
     splash.show()
     worker = AsyncStartupWorker(REPOS_ROOT)
