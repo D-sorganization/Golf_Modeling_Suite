@@ -128,4 +128,34 @@ __all__ = [
     "is_production",
     "is_wsl",
     "require_env",
+    "get_setting",
+    "load_settings",
+    "save_settings",
 ]
+
+
+def get_setting(key: str, default: object = None) -> object:
+    """Retrieve a named setting value.
+
+    Currently a stub — returns *default* for any key. Full implementation
+    will look up *key* from the layered config (env → YAML → hard-coded
+    default) once that layer is wired in.
+    """
+    return default
+
+
+def load_settings() -> dict[str, object]:
+    """Load all settings into a dictionary.
+
+    Currently a stub — returns an empty mapping. Full implementation will
+    merge environment variables, YAML defaults, and hard-coded fallbacks.
+    """
+    return {}
+
+
+def save_settings(settings: dict[str, object]) -> None:
+    """Persist a settings dictionary to the configured backend.
+
+    Currently a stub — no-op. Full implementation will write to the
+    appropriate YAML file or database.
+    """

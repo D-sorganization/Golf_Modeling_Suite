@@ -323,9 +323,13 @@ def add_provenance_to_csv(
     return provenance
 
 
+# Convenience alias used in docstring examples and external call-sites.
+add_provenance_header = add_provenance_header_file
+
 # Export public API
 __all__ = [
     "ProvenanceInfo",
+    "add_provenance_header",
     "add_provenance_header_file",
     "add_provenance_to_csv",
 ]
