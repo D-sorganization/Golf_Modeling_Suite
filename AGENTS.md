@@ -292,6 +292,26 @@ plot_cartesian_delta_summary, summarize_for_pr_comment}` —
 - `LaunchMode` enum + `resolve_launch_mode()` for per-tile routing
   (AUTO / NEW_WINDOW / TAB / DOCK / EXTERNAL).
 
+### Tools sidebar (optional)
+
+`src/shared/python/gui_launcher/tools_sidebar_integration.py` is the
+host-side adapter for the **Unified Tools Sidebar**, a PyQt dock widget
+that ships from the sibling [`D-sorganization/Tools`](https://github.com/D-sorganization/Tools)
+repository. The widget itself lives in Tools; UpstreamDrift only owns
+the optional install path and the Sidekick design-token passthrough.
+
+- **Setup:** run `scripts/setup_tools_workspace.sh` to wire an editable
+  sibling checkout, or pass `--tools-mode editable` to pytest (see the
+  `--tools-mode` fixture in `tests/conftest.py` and the "Cross-Repo
+  Dependencies" section of `CLAUDE.md`).
+- **Detection:** `gui_launcher.is_tools_sidebar_available()` returns
+  whether the shared module imports. `LauncherDiagnostics.check_tools_sidebar()`
+  exposes the same probe in the diagnostic report.
+- **Fallback:** when the sibling repo isn't installed (the default),
+  `install_tools_sidebar()` no-ops and the launcher continues to run.
+  The Sidekick design tokens still apply to the React/Tauri shell; only
+  the optional PyQt sidebar is skipped.
+
 ### Rust kernels
 
 - `rust_core/upstream-physics/` — RK4 integrator, aerodynamics, contact,
