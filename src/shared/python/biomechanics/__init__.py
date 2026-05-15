@@ -29,7 +29,7 @@ except ImportError:
     plot_grf_and_com_3d = None  # type: ignore[assignment]
 
 try:
-    from .humanoid_urdf_contracts import ContractViolation, ValidationReport, describe
+    from .humanoid_urdf_contracts import ContractViolation, ValidationReport, describe  # type: ignore[attr-defined]
 except ImportError:
     ContractViolation = None  # type: ignore[assignment,misc]
     ValidationReport = None  # type: ignore[assignment,misc]

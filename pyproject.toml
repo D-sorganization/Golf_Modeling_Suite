@@ -303,6 +303,9 @@ exclude = [
     "src/shared/python/analysis/nonlinear_dynamics.py",
     "src/shared/python/optimization/swing_optimizer.py",
     "src/research/deformable/objects.py",
+    # spatial_algebra pose6dof uses numpy type aliases (Vec3/Mat3) as type annotations,
+    # which is not valid in mypy strict mode.  Pre-existing on feature/simulation-data-store.
+    "src/shared/python/spatial_algebra/pose6dof/",
 ]
 
 [[tool.mypy.overrides]]
