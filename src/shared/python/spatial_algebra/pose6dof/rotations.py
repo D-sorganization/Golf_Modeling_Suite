@@ -1,3 +1,5 @@
+from typing import TypeAlias
+
 import numpy as np
 import numpy.typing as npt
 
@@ -5,9 +7,9 @@ from src.shared.python.contracts import require
 
 from ..spatial_vectors import skew
 
-Vec3 = npt.NDArray[np.float64]
-Mat3 = npt.NDArray[np.float64]
-Quat = npt.NDArray[np.float64]
+Vec3: TypeAlias = npt.NDArray[np.float64]
+Mat3: TypeAlias = npt.NDArray[np.float64]
+Quat: TypeAlias = npt.NDArray[np.float64]
 
 
 def euler_to_rotation_matrix(
