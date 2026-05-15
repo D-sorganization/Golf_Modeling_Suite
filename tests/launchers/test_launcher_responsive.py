@@ -1,85 +1,96 @@
 """Tests for responsive sizing and zoom filtering in UpstreamDrift launcher."""
 
+import inspect
+
 import pytest
-from PyQt6.QtCore import QEvent, Qt
-from PyQt6.QtWidgets import QApplication, QLineEdit, QSlider, QWidget
-from PyQt6.QtGui import QWheelEvent
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QApplication
+
+
+class _Angle:
+    def __init__(self, y: int) -> None:
+        self._y = y
+
+    def y(self) -> int:
+        return self._y
+
+
+class _WheelEvent:
+    def __init__(self, modifiers: object, delta_y: int) -> None:
+        self._modifiers = modifiers
+        self._delta_y = delta_y
+        self.accepted = False
+
+    def modifiers(self) -> object:
+        return self._modifiers
+
+    def angleDelta(self) -> _Angle:  # noqa: N802
+        return _Angle(self._delta_y)
+
+    def accept(self) -> None:
+        self.accepted = True
+
+
+class _Settings:
+    def __init__(self) -> None:
+        self.saved: dict[str, object] = {}
+
+    def value(
+        self,
+        key: str,
+        defaultValue: object | None = None,
+        **_kwargs: object,
+    ) -> object:
+        return self.saved.get(key, defaultValue)
+
+    def setValue(self, key: str, value: object) -> None:  # noqa: N802
+        self.saved[key] = value
 
 
 def test_launcher_ui_setup_responsive(qapp: QApplication) -> None:
-    """Verify that LauncherUISetupMixin initializes with responsive sizing instead of fixed widths."""
+    """Launcher search and zoom controls avoid fixed-width clipping."""
     from src.launchers.launcher_ui_setup import LauncherUISetupMixin
-    from PyQt6.QtWidgets import QMainWindow
 
-    class DummyLauncher(QMainWindow, LauncherUISetupMixin):
-        """Minimal mock of GolfLauncher to test UI setup."""
+    source = inspect.getsource(LauncherUISetupMixin._setup_top_bar_status_and_search)
+    zoom_source = inspect.getsource(LauncherUISetupMixin._setup_view_mode_and_zoom)
 
-        def __init__(self):
-            super().__init__()
-            # Setup necessary fields that the mixin expects
-            self.status = QWidget()
-            self._setup_ui()
-
-        # Mock out methods that would fail without full setup
-        def _populate_groups(self): pass
-        def _filter_models(self): pass
-        def apply_styles(self): pass
-        def _setup_search_shortcuts(self): pass
-        def _init_overlay(self): pass
-
-    try:
-        ui = DummyLauncher()
-        
-        # Verify search_input doesn't have a hardcoded 250 max width anymore
-        # It should have minimum width set to 250 via set_text_minimum_width
-        assert ui.search_input is not None
-        
-        # Verify zoom slider is responsive (minimumWidth = 140, not fixedWidth)
-        assert ui.zoom_slider is not None
-    except Exception as e:
-        pytest.fail(f"Launcher UI Setup failed with: {e}")
+    assert "set_text_minimum_width" in source
+    assert "TextWidthSpec(minimum_px=250)" in source
+    assert "self.zoom_slider.setMinimumWidth(140)" in zoom_source
+    assert "self.zoom_slider.setFixedWidth(140)" not in zoom_source
 
 
 def test_cross_engine_dashboard_responsive(qapp: QApplication) -> None:
-    """Verify that CrossEngineDashboardWindow uses minimum width instead of fixed width."""
-    import unittest.mock
-    with unittest.mock.patch('src.shared.python.theme.apply_theme_to_window', create=True), \
-         unittest.mock.patch('src.shared.python.theme.get_theme_manager', return_value=None, create=True):
-        from src.launchers.cross_engine_dashboard import _create_dashboard_window_class
-        
-        WindowCls = _create_dashboard_window_class()
-        window = WindowCls()
-    
-    # We replaced panel.setFixedWidth(260) with panel.setMinimumWidth(260)
-    # The config panel is the first widget in the central widget layout
-    central = window.centralWidget()
-    assert central is not None
-    layout = central.layout()
-    assert layout is not None
-    
-    config_panel = layout.itemAt(0).widget()
-    assert config_panel is not None
+    """Cross-engine dashboard config panel uses a responsive minimum width."""
+    from src.launchers.cross_engine_dashboard import _create_dashboard_window_class
+
+    WindowCls = _create_dashboard_window_class()
+    source = inspect.getsource(WindowCls)
+
+    assert "panel.setMinimumWidth(260)" in source
+    assert "panel.setFixedWidth(260)" not in source
 
 
 def test_application_zoom_controller_filtering(qapp: QApplication) -> None:
-    """Verify that ApplicationZoomController intercepts and processes Ctrl+Wheel events."""
+    """ApplicationZoomController intercepts Ctrl+Wheel but ignores plain wheel."""
     try:
-        from src.shared.python.theme.zoom import ApplicationZoomController
-        from PyQt6.QtCore import QPoint
-        
-        controller = ApplicationZoomController(qapp)
-        # Create a wheel event with Ctrl modifier
-        event = QWheelEvent(
-            QPoint(0, 0), QPoint(0, 0), QPoint(0, 120), QPoint(0, 120),
-            Qt.MouseButton.NoButton,
-            Qt.KeyboardModifier.ControlModifier,
-            Qt.ScrollPhase.NoScrollPhase,
-            False
+        from src.shared.python.theme.zoom import ApplicationZoomController, ZoomConfig
+
+        settings = _Settings()
+        controller = ApplicationZoomController(
+            qapp,
+            ZoomConfig(minimum_percent=60, maximum_percent=180, settings_key="zoom"),
+            settings,
         )
-        
-        # We just verify it doesn't crash when filtering and returns True (intercepted)
-        result = controller.eventFilter(qapp, event)
-        assert result is True
-        
     except ImportError:
         pytest.skip("ApplicationZoomController not available in this environment")
+
+    plain_event = _WheelEvent(Qt.KeyboardModifier.NoModifier, 120)
+    assert controller._handle_wheel(plain_event) is False
+    assert controller.zoom_percent == 100
+
+    ctrl_event = _WheelEvent(Qt.KeyboardModifier.ControlModifier, 120)
+    assert controller._handle_wheel(ctrl_event) is True
+    assert ctrl_event.accepted is True
+    assert controller.zoom_percent == 110
+    assert settings.saved["zoom"] == 110

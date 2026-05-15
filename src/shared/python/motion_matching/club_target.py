@@ -12,6 +12,8 @@ from typing import Literal
 
 import numpy as np
 
+from src.shared.python.core.vector_math import row_euclidean_norm
+
 # Validation tolerances (per CLUB_IK_SPEC § "Validation rules").
 QUAT_NORM_TOL = 1.0e-6
 MAX_POSITION_NORM_M = 5.0
@@ -107,7 +109,7 @@ def _validate_positions(t: ClubTarget) -> None:
     for name, arr in (("butt", t.butt), ("clubhead", t.clubhead)):
         if not np.all(np.isfinite(arr)):
             raise ValueError(f"{name} contains NaN or Inf")
-        norms = np.linalg.norm(arr, axis=1)
+        norms = row_euclidean_norm(arr)
         if np.any(norms >= MAX_POSITION_NORM_M):
             raise ValueError(
                 f"{name} has |r| >= {MAX_POSITION_NORM_M} m "
@@ -120,7 +122,7 @@ def _validate_clubtarget(t: ClubTarget) -> None:
     n = _validate_time(t.time)
     _validate_shapes(t, n)
     _validate_positions(t)
-    qnorms = np.linalg.norm(t.club_quat, axis=1)
+    qnorms = row_euclidean_norm(t.club_quat)
     if np.any(np.abs(qnorms - 1.0) > QUAT_NORM_TOL):
         max_dev = float(np.abs(qnorms - 1.0).max())
         raise ValueError(

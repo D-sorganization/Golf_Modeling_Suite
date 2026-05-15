@@ -10,6 +10,7 @@ from typing import Any
 import numpy as np
 from scipy import optimize
 
+from src.shared.python.core.vector_math import row_euclidean_norm
 from src.shared.python.logging_pkg.logging_config import get_logger
 
 from ._data_fitting_models import (
@@ -308,7 +309,8 @@ class ParameterEstimator:
             raise ValueError("proximal_markers must be provided")
         if not (proximal_markers is not None):
             raise ValueError("proximal_markers must be provided")
-        distances = np.linalg.norm(distal_markers - proximal_markers, axis=1)
+        diff = distal_markers - proximal_markers
+        distances = row_euclidean_norm(diff)
 
         mean_length = float(np.mean(distances))
         std_length = float(np.std(distances))

@@ -12,6 +12,7 @@ from collections.abc import Iterable
 import numpy as np
 import pandas as pd
 
+from src.shared.python.core.vector_math import row_euclidean_norm
 from src.shared.python.logging_pkg.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -162,7 +163,8 @@ def validate_shaft_length(timesteps: pd.DataFrame) -> None:
     head = np.asarray(timesteps["r_clubhead"].tolist(), dtype=float)
     if butt.shape != head.shape or butt.shape[1] != 3:
         return
-    dist = np.linalg.norm(head - butt, axis=1)
+    diff = head - butt
+    dist = row_euclidean_norm(diff)
     bad_mask = (dist < _SHAFT_MIN_M) | (dist > _SHAFT_MAX_M)
     if bad_mask.any():
         idx = int(np.argmax(bad_mask))
