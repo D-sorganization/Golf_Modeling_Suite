@@ -81,7 +81,11 @@ class BetweenTwoMarkersFitter:
 
         midpoint = 0.5 * (a_valid + b_valid)
         delta = b_valid - a_valid
-        length = np.linalg.norm(delta, axis=1)
+        # Cast to float64 before einsum: integer dtypes (e.g. int32) overflow in
+        # np.einsum when per-axis values exceed ~46340, producing NaN lengths.
+        # copy=False avoids an allocation when delta is already float.
+        delta_f = delta.astype(np.float64, copy=False)
+        length = np.sqrt(np.einsum("ij,ij->i", delta_f, delta_f))
 
         # DbC: collinear markers (zero-length segment) cannot define orientation.
         if not bool(np.all(length > 0.0)):
@@ -90,7 +94,7 @@ class BetweenTwoMarkersFitter:
                 "cannot define an axis"
             )
 
-        axis = delta / length[:, None]
+        axis = delta_f / length[:, None]
         rot_valid = _axis_to_rotation(axis)
 
         centroid[idx] = midpoint
@@ -110,7 +114,12 @@ class BetweenTwoMarkersFitter:
 
 
 def _require_marker(markers_xyz: dict[str, np.ndarray], name: str) -> np.ndarray:
-    """Return the ``(T, 3)`` trajectory for ``name`` or raise ``KeyError``."""
+    """Return the ``(T, 3)`` trajectory for ``name`` or raise ``KeyError``.
+
+    Note: integer-dtype trajectories are accepted; the fitter casts ``delta``
+    to ``float64`` internally before computing norms, so callers need not
+    pre-convert integer marker arrays.
+    """
     if name not in markers_xyz:
         raise KeyError(f"missing marker {name!r} in markers_xyz")
     arr = markers_xyz[name]

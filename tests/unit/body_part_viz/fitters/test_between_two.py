@@ -162,3 +162,25 @@ def test_all_invalid_frames_returns_zero_centroid() -> None:
     fitted = BetweenTwoMarkersFitter().fit(StubShape(), _binding(), {"a": a, "b": b})
     assert not bool(fitted.valid_mask.any())
     assert np.allclose(fitted.centroid, 0.0)
+
+
+def test_integer_dtype_above_int32_overflow_threshold() -> None:
+    """Regression: int32 einsum overflows when per-axis delta > ~46340.
+
+    Values above the threshold produce negative intermediate squares in int32,
+    which previously caused NaN lengths (sqrt of negative) or wrong scale
+    factors.  Casting delta to float64 before einsum must prevent this.
+    """
+    # 50_000 > 46340 — safely above the int32 per-axis overflow boundary.
+    a = np.array([[0, 0, 0]], dtype=np.int32)
+    b = np.array([[50_000, 50_000, 50_000]], dtype=np.int32)
+
+    fitted = BetweenTwoMarkersFitter().fit(StubShape(), _binding(), {"a": a, "b": b})
+
+    expected_length = np.sqrt(3.0) * 50_000.0  # ~86602.54
+    assert bool(fitted.valid_mask[0]), "frame should be valid"
+    assert np.isfinite(fitted.scale[0, 0]), "scale must be finite (not NaN)"
+    assert fitted.scale[0, 0] > 0.0, "scale must be positive (not negative)"
+    assert np.isclose(fitted.scale[0, 0], expected_length, rtol=1e-6), (
+        f"expected scale {expected_length}, got {fitted.scale[0, 0]}"
+    )
