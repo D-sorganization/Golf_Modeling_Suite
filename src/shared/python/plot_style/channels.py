@@ -217,6 +217,7 @@ def magnitude_channel(
 
     # ``np.linalg.norm`` propagates NaN — preserves the contract used by
     # ``auto_range`` and ``value_at``.
+    vector_per_frame = np.asarray(vector_per_frame, dtype=np.float64)
     magnitudes = np.sqrt(
         np.einsum("...i,...i->...", vector_per_frame, vector_per_frame)
     )
