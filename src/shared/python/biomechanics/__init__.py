@@ -4,14 +4,23 @@ from __future__ import annotations
 
 from .activation_dynamics import ActivationDynamics
 from .biomechanics_data import BiomechanicalData
-from .dynamic_com import BiomechanicalModel, SegmentDefinition, add_segment
 from .hill_muscle import HillMuscleModel, MuscleParameters, MuscleState
 from .kinematic_sequence import SegmentPeak, SegmentTimingResult
 from .multi_muscle import MuscleAttachment, MuscleGroup
 from .muscle_equilibrium import EquilibriumSolver
 from .swing_comparison import ComparisonMetric, DTWResult, SwingComparator
-from .swing_plane_analysis import SwingPlaneAnalyzer, SwingPlaneMetrics, fit_plane
+from .swing_plane_analysis import SwingPlaneAnalyzer, SwingPlaneMetrics
 from .ztcf import ZTCFResult
+
+# dynamic_com depends on humanoid_character_builder which has optional vendor deps
+try:
+    from .dynamic_com import BiomechanicalModel, SegmentDefinition
+
+    _dynamic_com_available = True
+except ImportError:
+    BiomechanicalModel = None  # type: ignore[assignment,misc]
+    SegmentDefinition = None  # type: ignore[assignment,misc]
+    _dynamic_com_available = False
 
 # Optional modules with external dependencies
 try:
@@ -58,10 +67,6 @@ __all__: list[str] = [
     "ActivationDynamics",
     # biomechanics_data
     "BiomechanicalData",
-    # dynamic_com
-    "BiomechanicalModel",
-    "SegmentDefinition",
-    "add_segment",
     # hill_muscle
     "HillMuscleModel",
     "MuscleParameters",
@@ -81,12 +86,13 @@ __all__: list[str] = [
     # swing_plane_analysis
     "SwingPlaneAnalyzer",
     "SwingPlaneMetrics",
-    "fit_plane",
     # ztcf
     "ZTCFResult",
 ]
 
 # Append optional symbols when available
+if _dynamic_com_available:
+    __all__.extend(["BiomechanicalModel", "SegmentDefinition"])
 if ContractViolation is not None:
     __all__.extend(["ContractViolation", "ValidationReport", "describe"])
 if f_l is not None:
