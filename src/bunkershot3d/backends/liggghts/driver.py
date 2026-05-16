@@ -24,7 +24,7 @@ class LiggghtsDriver:
             NotImplementedError: LiggghtsDriver is not yet implemented.
                 Use the MPM backend instead.
         """
-        raise NotImplementedError(
+        raise NotImplementedError(  # tracked: #5486
             "LiggghtsDriver is not yet implemented. Use the MPM backend instead."
         )
 
@@ -51,6 +51,6 @@ class LiggghtsDriver:
             NotImplementedError: LiggghtsDriver is not yet implemented.
                 Use the MPM backend instead.
         """
-        raise NotImplementedError(
+        raise NotImplementedError(  # tracked: #5486
             "LiggghtsDriver is not yet implemented. Use the MPM backend instead."
         )
