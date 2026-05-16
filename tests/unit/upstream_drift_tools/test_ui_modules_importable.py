@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 
-from src.shared.python.sidekick.process_calculators.scrubber.tests.test_scrubber_engine import (
+from sidekick.process_calculators.scrubber.tests.test_scrubber_engine import (
     ScrubberEngine,
     ScrubberInputs,
     TestScrubberEngine,
 )
-from src.shared.python.sidekick.ui.mixins.base_calculator_mixin import (
+from sidekick.ui.mixins.base_calculator_mixin import (
     BaseCalculatorMixin,
     CalculatorStateMixin,
 )
-from src.shared.python.sidekick.ui.widgets.mixins.data_processor_ops import (
+from sidekick.ui.widgets.mixins.data_processor_ops import (
     DataProcessorOpsMixin,
 )
 

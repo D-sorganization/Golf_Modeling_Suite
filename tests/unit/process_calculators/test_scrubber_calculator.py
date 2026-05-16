@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from src.shared.python.sidekick.process_calculators.scrubber_calculator import (
+from sidekick.process_calculators.scrubber_calculator import (
     PACKING_DATABASE,
     calculate_gas_density,
     calculate_gas_viscosity,

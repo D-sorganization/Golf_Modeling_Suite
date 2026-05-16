@@ -1,11 +1,11 @@
-"""Tests for src.shared.python.sidekick.calculators.conversion.service (Issues #1949, #1744)."""
+"""Tests for sidekick.calculators.conversion.service (Issues #1949, #1744)."""
 
 from __future__ import annotations
 
 import math
 
 import pytest
-from src.shared.python.sidekick.calculators.conversion.service import (
+from sidekick.calculators.conversion.service import (
     ConversionResult,
     IncompatibleUnitsError,
     InvalidValueError,

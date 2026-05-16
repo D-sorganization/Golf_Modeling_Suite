@@ -4,8 +4,8 @@ Canonical path:
 ``src/shared/python/sidekick/lab/bio/_c3d_io.py`` (issue #4484).
 """
 
-from src.shared.python.sidekick.lab.bio._c3d_io import *  # noqa: F401,F403
-from src.shared.python.sidekick.lab.bio._c3d_io import (  # noqa: F401
+from sidekick.lab.bio._c3d_io import *  # noqa: F401,F403
+from sidekick.lab.bio._c3d_io import (  # noqa: F401
     build_metadata,
     load_c3d,
 )

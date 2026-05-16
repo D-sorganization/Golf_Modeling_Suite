@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from src.shared.python.sidekick.process_calculators.psa_package.psa_model import (
+from sidekick.process_calculators.psa_package.psa_model import (
     DEFAULT_COMPONENTS,
     PSAModel,
     PSAResults,

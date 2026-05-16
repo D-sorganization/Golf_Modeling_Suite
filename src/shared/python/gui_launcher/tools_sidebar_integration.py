@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 _SIDEBAR_MODULE_CANDIDATES = (
     "sidekick.ui.tools_sidebar",
     "shared.python.sidekick.ui.tools_sidebar",
-    "src.shared.python.sidekick.ui.tools_sidebar",
+    "sidekick.ui.tools_sidebar",
 )
 _SIDEBAR_CLASS_CANDIDATES = (
     "ToolsSidebar",

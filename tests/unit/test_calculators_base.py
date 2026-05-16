@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from src.shared.python.sidekick.calculators.base import (
+from sidekick.calculators.base import (
     BaseCalculationEngine,
 )
 

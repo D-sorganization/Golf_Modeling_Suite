@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.shared.python.sidekick.calculators.electrical.glass_interface import (
+from sidekick.calculators.electrical.glass_interface import (
     GlassPropertiesInterface,
 )
 

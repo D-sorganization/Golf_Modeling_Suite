@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.shared.python.sidekick.ui.managers.unit_preferences_manager import (
+from sidekick.ui.managers.unit_preferences_manager import (
     UNIT_CATEGORIES,
     UNIT_PRESETS,
     UnitPreferencesManager,

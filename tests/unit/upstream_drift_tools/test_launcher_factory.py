@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.shared.python.sidekick.launcher_factory import (
+from sidekick.launcher_factory import (
     LauncherConfig,
     LauncherError,
     create_launcher_config,

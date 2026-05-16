@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import pytest
-from src.shared.python.sidekick.process_calculators.scrubber.engine.scrubber_engine import (
+from sidekick.process_calculators.scrubber.engine.scrubber_engine import (
     ScrubberEngine,
 )
-from src.shared.python.sidekick.process_calculators.scrubber.models.scrubber_models import (
+from sidekick.process_calculators.scrubber.models.scrubber_models import (
     ScrubberInputs,
     ScrubberResults,
 )

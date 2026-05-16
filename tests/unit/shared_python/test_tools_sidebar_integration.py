@@ -239,7 +239,7 @@ def test_is_tools_sidebar_available_false_when_no_module_present() -> None:
     candidates = (
         "sidekick.ui.tools_sidebar",
         "shared.python.sidekick.ui.tools_sidebar",
-        "src.shared.python.sidekick.ui.tools_sidebar",
+        "sidekick.ui.tools_sidebar",
     )
     cleared = {name: None for name in candidates if name not in sys.modules}
     with patch.dict(sys.modules, cleared):

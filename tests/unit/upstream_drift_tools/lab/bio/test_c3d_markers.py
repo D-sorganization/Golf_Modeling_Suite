@@ -18,14 +18,14 @@ import logging
 
 import numpy as np
 import pytest
-from src.shared.python.sidekick.lab.bio._c3d_markers import (
+from sidekick.lab.bio._c3d_markers import (
     build_points_dataframe,
     validate_marker_positions,
 )
-from src.shared.python.sidekick.lab.bio._c3d_models import C3DMetadata
+from sidekick.lab.bio._c3d_models import C3DMetadata
 from tests.unit.sidekick.lab.bio._synthetic import _synthetic_c3d_dict
 
-WARNING_LOGGER = "src.shared.python.sidekick.lab.bio._c3d_markers"
+WARNING_LOGGER = "sidekick.lab.bio._c3d_markers"
 
 
 def test_min_negative_one_point_nine_seven_does_not_warn(

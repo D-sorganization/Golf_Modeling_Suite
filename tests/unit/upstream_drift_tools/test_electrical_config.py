@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
-from src.shared.python.sidekick.calculators.electrical.config import (
+from sidekick.calculators.electrical.config import (
     ElectrodeConfig,
 )
 

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from src.shared.python.sidekick.process_calculators.pressure_drop_calculator.utils.gas_properties import (
+from sidekick.process_calculators.pressure_drop_calculator.utils.gas_properties import (
     calculate_compressibility_factor,
     calculate_heat_capacity_ratio,
     calculate_ideal_gas_cp,

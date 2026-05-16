@@ -1,9 +1,9 @@
-"""Tests for src.shared.python.sidekick.protocols (Issues #1949, #1744)."""
+"""Tests for sidekick.protocols (Issues #1949, #1744)."""
 
 from __future__ import annotations
 
 import pytest
-from src.shared.python.sidekick.protocols import (
+from sidekick.protocols import (
     CalculationResult,
     Calculator,
     DataTransformer,

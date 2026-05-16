@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from src.shared.python.sidekick.utils.paths import get_repo_root
+from sidekick.utils.paths import get_repo_root
 
 
 class TestGetRepoRoot:

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from src.shared.python.sidekick.calculators.mechanical.trc_geometry import (
+from sidekick.calculators.mechanical.trc_geometry import (
     LayerConfig,
     TRCGeometryEngine,
     VesselDimensions,

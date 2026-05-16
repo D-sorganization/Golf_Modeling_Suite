@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 
-from src.shared.python.sidekick.calculators.thermo.steam_engine import (
+from sidekick.calculators.thermo.steam_engine import (
     STANDARD_ATMOSPHERIC_PRESSURE,
     SteamCalculationEngine,
     SteamProperties,

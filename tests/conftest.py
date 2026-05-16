@@ -186,7 +186,7 @@ class OptionalCollectionRule:
 
 
 _PROCESS_CALCULATOR_ANCHOR = (
-    "src.shared.python.sidekick.process_calculators.acid_gas_dewpoint_calculator"
+    "sidekick.process_calculators.acid_gas_dewpoint_calculator"
 )
 _PROCESS_CALCULATOR_TESTS = (
     "tests/unit/process_calculators",

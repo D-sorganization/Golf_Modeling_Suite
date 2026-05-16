@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from src.shared.python.sidekick.process_calculators.analysis_utils import (
+from sidekick.process_calculators.analysis_utils import (
     evaluate_output,
 )
 

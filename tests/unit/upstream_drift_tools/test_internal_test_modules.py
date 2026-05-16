@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from src.shared.python.sidekick.tests.calculators.conversion.test_conversion import (
+from sidekick.tests.calculators.conversion.test_conversion import (
     TestUnitConversion,
 )
-from src.shared.python.sidekick.tests.calculators.electrical.test_electrical_model import (
+from sidekick.tests.calculators.electrical.test_electrical_model import (
     TestElectricalModel,
 )
-from src.shared.python.sidekick.tests.calculators.mechanical.test_trc_geometry import (
+from sidekick.tests.calculators.mechanical.test_trc_geometry import (
     TestTRCGeometryEngine,
 )
 

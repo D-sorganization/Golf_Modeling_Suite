@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.shared.python.sidekick.ui.catppuccin_theme import (
+from sidekick.ui.catppuccin_theme import (
     COLORS,
     get_stylesheet,
 )

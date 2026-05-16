@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.shared.python.sidekick.utils.unit_constants import (
+from sidekick.utils.unit_constants import (
     ATMOSPHERE_TO_PASCAL,
     CELSIUS_OFFSET,
     FOOT_TO_METER,

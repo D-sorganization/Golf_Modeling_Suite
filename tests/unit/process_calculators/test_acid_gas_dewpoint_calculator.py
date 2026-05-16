@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from src.shared.python.sidekick.process_calculators.acid_gas_dewpoint_calculator import (
+from sidekick.process_calculators.acid_gas_dewpoint_calculator import (
     AcidGasComposition,
     AcidGasDewpointCalculator,
     DewpointResult,

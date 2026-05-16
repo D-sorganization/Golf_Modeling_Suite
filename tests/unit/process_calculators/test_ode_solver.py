@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from src.shared.python.sidekick.process_calculators.ode_solver import (
+from sidekick.process_calculators.ode_solver import (
     ODESolver,
 )
 

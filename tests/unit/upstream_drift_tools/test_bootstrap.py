@@ -5,7 +5,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from src.shared.python.sidekick.bootstrap import ensure_paths
+from sidekick.bootstrap import ensure_paths
 
 
 class TestEnsurePaths:
