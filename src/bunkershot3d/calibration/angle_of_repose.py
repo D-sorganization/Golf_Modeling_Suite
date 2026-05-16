@@ -32,7 +32,7 @@ class AngleOfReposeExperiment:
             NotImplementedError: Angle of repose calibration requires real
                 LIGGGHTS output. Stub removed in #5486.
         """
-        raise NotImplementedError(
+        raise NotImplementedError(  # tracked: #5486
             "Angle of repose calibration requires real LIGGGHTS output. "
             "Stub removed in #5486."
         )
@@ -44,7 +44,7 @@ class AngleOfReposeExperiment:
         Raises:
             NotImplementedError: Calibration requires a working run_simulation.
         """
-        raise NotImplementedError(
+        raise NotImplementedError(  # tracked: #5486
             "calibrate() requires a working run_simulation(). Stub removed in #5486."
         )
 
