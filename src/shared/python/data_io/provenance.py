@@ -272,12 +272,14 @@ def add_provenance_header_file(file: TextIO, provenance: ProvenanceInfo) -> None
         ...     f.write("time,position,velocity\\n")
         ...     # ... write data
     """
-    if not (file is not None):
-        raise ValueError("file must be provided")
-    if not (file is not None):
+    if file is None:
         raise ValueError("file must be provided")
     file.writelines(line + "\n" for line in provenance.to_header_lines())
     file.write("#\n")  # Blank comment line separator
+
+
+#: Canonical short alias for :func:`add_provenance_header_file`.
+add_provenance_header = add_provenance_header_file
 
 
 def add_provenance_to_csv(
