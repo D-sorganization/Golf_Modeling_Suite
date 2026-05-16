@@ -23,7 +23,7 @@ from PyQt6.QtCore import QSize
 pytestmark = pytest.mark.ui
 
 
-from tests.unit.launcher.test_layout_hierarchy import ui_setup  # noqa: F401,E402
+# The ``ui_setup`` fixture is provided by tests/unit/launcher/conftest.py.
 
 
 _REQUIRED_BUTTON_LABELS = (
@@ -74,8 +74,7 @@ class TestSidebarIcons:
     def test_button_has_non_null_icon(self, ui_setup, label) -> None:
         buttons = _find_sidebar_buttons(ui_setup)
         assert label in buttons, (
-            f"sidebar is missing the {label!r} button — check "
-            "_setup_global_sidebar()"
+            f"sidebar is missing the {label!r} button — check _setup_global_sidebar()"
         )
         _assert_button_has_icon(buttons[label])
 

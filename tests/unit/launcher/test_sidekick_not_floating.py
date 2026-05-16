@@ -23,8 +23,8 @@ from PyQt6.QtWidgets import QApplication, QSplitter
 pytestmark = pytest.mark.ui
 
 
-# Shared launcher harness — reuse the dummy from test_layout_hierarchy.
-from tests.unit.launcher.test_layout_hierarchy import _outer_vbox, ui_setup  # noqa: F401,E402
+# The ``ui_setup`` fixture is provided by tests/unit/launcher/conftest.py.
+from tests.unit.launcher.test_layout_hierarchy import _outer_vbox  # noqa: E402
 
 
 @pytest.fixture
@@ -98,9 +98,7 @@ class TestSidekickEmbedding:
         ui_setup, _splitter, _calls = ui_setup_with_sidekick
         # The launcher main window itself is the only window we expect.
         top_level = [
-            w
-            for w in QApplication.topLevelWidgets()
-            if w.isWindow() and w is not None
+            w for w in QApplication.topLevelWidgets() if w.isWindow() and w is not None
         ]
         # Filter to widgets that are descendants of QMainWindow — the
         # offscreen platform creates other helper top-levels (style proxy,
@@ -109,9 +107,7 @@ class TestSidekickEmbedding:
         from PyQt6.QtWidgets import QDockWidget
 
         floating_docks = [
-            w
-            for w in top_level
-            if isinstance(w, QDockWidget) and w.isFloating()
+            w for w in top_level if isinstance(w, QDockWidget) and w.isFloating()
         ]
         assert not floating_docks, (
             f"unexpected floating QDockWidget(s): {floating_docks!r}"
@@ -137,9 +133,7 @@ class TestSidekickEmbedding:
             "widget produced by create_tools_sidebar()"
         )
 
-    def test_install_does_not_call_adddockwidget(
-        self, ui_setup_with_sidekick
-    ) -> None:
+    def test_install_does_not_call_adddockwidget(self, ui_setup_with_sidekick) -> None:
         ui_setup, _splitter, _calls = ui_setup_with_sidekick
         # The QMainWindow API ``addDockWidget`` should not have populated
         # any dock area with a Sidekick dock.  We assert no QDockWidget

@@ -27,7 +27,6 @@ from __future__ import annotations
 
 import pytest
 from PyQt6.QtWidgets import (
-    QApplication,
     QMenuBar,
     QSplitter,
     QVBoxLayout,
@@ -39,72 +38,9 @@ from src.launchers.custom_title_bar import CustomTitleBar
 pytestmark = pytest.mark.ui
 
 
-# ---------------------------------------------------------------------------
-# Shared launcher fixture (DRY) — a stripped-down mixin-only instance.
-# ---------------------------------------------------------------------------
-
-
-@pytest.fixture
-def ui_setup(qapp):
-    """Construct just enough of the launcher to call ``init_ui``.
-
-    The full ``GolfLauncher`` pulls in async startup workers, Docker
-    probes, and a worker thread pool that we do not need here.  We
-    mount the UI-setup mixin on a bare ``QMainWindow`` subclass that
-    provides the handful of attribute/method stubs ``init_ui`` reads
-    from its co-mixins.
-    """
-    from PyQt6.QtWidgets import QMainWindow
-
-    from src.launchers.launcher_ui_setup import LauncherUISetupMixin
-
-    class _DummyLayoutManager:
-        tile_scale = 0.75
-
-        def set_view_mode(self, *_a, **_k) -> None: ...
-        def set_tile_scale(self, *_a, **_k) -> None: ...
-        def rebuild_grid(self, *_a, **_k) -> None: ...
-
-    # Import the production ``_install_sidekick_sidebar`` so we can bind
-    # it to the harness — the install method lives on ``GolfLauncher``
-    # itself, not on the UI mixin, but the layout integration that
-    # #5624 fixes is the same regardless of caller.
-    from src.launchers.golf_launcher import GolfLauncher as _RealLauncher
-
-    class _UIHarness(LauncherUISetupMixin, QMainWindow):  # type: ignore[misc]
-        # Re-use the production install method so #5624 tests exercise
-        # the real code path.
-        _install_sidekick_sidebar = _RealLauncher._install_sidekick_sidebar
-
-        def __init__(self) -> None:
-            super().__init__()
-            self.layout_manager = _DummyLayoutManager()
-            self.docker_available = False
-
-        # The grid uses these on _on_view_mode_changed; safe no-ops.
-        def _show_preferences(self, *_a, **_k) -> None: ...
-        def _toggle_layout_mode_from_menu(self, *_a, **_k) -> None: ...
-        def _toggle_context_help(self, *_a, **_k) -> None: ...
-        def _show_help_dialog(self, *_a, **_k) -> None: ...
-        def _show_shortcuts_overlay(self, *_a, **_k) -> None: ...
-        def _show_about_dialog(self, *_a, **_k) -> None: ...
-        def _open_project_map(self, *_a, **_k) -> None: ...
-        def _open_settings(self, *_a, **_k) -> None: ...
-        def _show_help_dialog_topic(self, *_a, **_k) -> None: ...
-        def _on_docker_mode_changed(self, *_a, **_k) -> None: ...
-        def _on_wsl_mode_changed(self, *_a, **_k) -> None: ...
-        def toggle_layout_mode(self, *_a, **_k) -> None: ...
-        def open_layout_manager(self, *_a, **_k) -> None: ...
-        def update_search_filter(self, *_a, **_k) -> None: ...
-        def launch_simulation(self, *_a, **_k) -> None: ...
-        def _setup_theme_menu(self, *_a, **_k) -> None: ...
-        def apply_styles(self) -> None: ...
-
-    window = _UIHarness()
-    window.init_ui()
-    yield window
-    window.deleteLater()
-    QApplication.processEvents()
+# The ``ui_setup`` fixture is defined in ``tests/unit/launcher/conftest.py``
+# so it is reusable from the sidekick and icon tests without cross-file
+# imports.
 
 
 def _outer_vbox(window) -> QVBoxLayout:
@@ -182,9 +118,7 @@ class TestLayoutHierarchy:
         splitter_indices = [
             i for i, w in enumerate(widgets) if isinstance(w, QSplitter)
         ]
-        menubar_indices = [
-            i for i, w in enumerate(widgets) if isinstance(w, QMenuBar)
-        ]
+        menubar_indices = [i for i, w in enumerate(widgets) if isinstance(w, QMenuBar)]
         assert splitter_indices, "expected at least one QSplitter in outer_vbox"
         assert menubar_indices, "expected a QMenuBar in outer_vbox"
         assert min(splitter_indices) > max(menubar_indices), (
