@@ -137,7 +137,7 @@ class InitCache:
         }
 
     @precondition(
-        lambda self, key: isinstance(key, str) and key,
+        lambda self, key: isinstance(key, str) and bool(key),
         "key must be non-empty string",
     )
     @postcondition(
@@ -168,7 +168,7 @@ class InitCache:
         return entry
 
     @precondition(
-        lambda self, key: isinstance(key, str) and key,
+        lambda self, key: isinstance(key, str) and bool(key),
         "key must be non-empty string",
     )
     def put(
@@ -279,7 +279,7 @@ class ProfiledInitializer:
     @precondition(
         lambda self, phase_name, duration_s: (
             isinstance(phase_name, str)
-            and phase_name
+            and bool(phase_name)
             and isinstance(duration_s, (int, float))
             and duration_s >= 0
         ),
@@ -300,7 +300,7 @@ class ProfiledInitializer:
             duration_s=duration_s,
             memory_delta_mb=0.0,  # Placeholder
             cache_hit=cache_hit,
-            timestamp=time.time(),
+            timestamp=str(time.time()),
         )
         self.profiles.append(profile)
         logger.debug(
