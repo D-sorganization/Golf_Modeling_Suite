@@ -256,6 +256,11 @@ class LauncherUISetupMixin:
         # Initialize Overlay
         self._init_overlay()
 
+        # Fix #5618 root cause #1: raise the title bar above any dock widgets
+        # that were added during init_ui so it is never z-order occluded.
+        if hasattr(self, "title_bar"):
+            self.title_bar.raise_()
+
     def _setup_global_sidebar(self) -> QWidget:
         """Create the global sidebar navigation."""
         sidebar = QWidget()
