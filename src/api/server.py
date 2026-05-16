@@ -49,10 +49,13 @@ from .middleware.upload_limits import validate_upload_size
 from .rate_limit import limiter
 from .route_registry import register_routes
 from .services.analysis_service import AnalysisService
+from .services.chat_service import ChatService
 from .services.simulation_service import SimulationService
 from .task_manager import TaskManager
 from .utils.tracing import RequestTracer
 from .versioning import get_app_version
+from .routes import chat_ws, realtime as realtime_route, simulation_ws
+from src.shared.python.app_state import agent_context, get_state_logger
 
 setup_logging()
 logger = get_logger(__name__)
@@ -141,6 +144,11 @@ async def lifespan(fastapi_app: FastAPI) -> AsyncGenerator[None, None]:
         # Initialize video pipeline with default config
         video_pipeline = _init_video_pipeline()
         fastapi_app.state.video_pipeline = video_pipeline
+
+        # Initialize chat service wired to app state (issue #5470)
+        fastapi_app.state.chat_service = ChatService(
+            app_state_provider=lambda: agent_context(get_state_logger().store)
+        )
 
         # All routes now use FastAPI Depends() for dependency injection.
         # No legacy configure() calls needed.
@@ -270,6 +278,18 @@ logger.info("Registered %d route modules under /api", _legacy_api_count)
 # Register all routes under /api/v1/ prefix (versioned API)
 _versioned_count = register_routes(app, prefix=API_PREFIX)
 logger.info("Registered %d route modules under %s", _versioned_count, API_PREFIX)
+
+# Register explicitly excluded WebSocket routes
+app.include_router(chat_ws.router, prefix=API_PREFIX)
+app.include_router(simulation_ws.router, prefix=API_PREFIX)
+app.include_router(chat_ws.router, prefix="")
+app.include_router(simulation_ws.router, prefix="")
+
+# Realtime IPC layer (issue #4997) — combined HTTP + WS endpoints under
+# /realtime; mounted at root so cross-process clients (WSPubSub) can use the
+# canonical "/realtime/publish" and "/realtime/subscribe" paths.
+app.include_router(realtime_route.router, prefix="")
+app.include_router(realtime_route.router, prefix=API_PREFIX)
 
 
 if __name__ == "__main__":

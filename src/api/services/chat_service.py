@@ -8,15 +8,17 @@ sessions to disk for cross-process sharing.
 from __future__ import annotations
 
 import asyncio
+import json
 import threading
 import time
 import uuid
 from collections import OrderedDict
-from collections.abc import AsyncIterator
-from datetime import timezone
+from collections.abc import AsyncIterator, Callable
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from src.shared.python.app_state import get_state_logger
 from src.shared.python.core.contracts import precondition
 from src.shared.python.core.error_utils import InvalidRequestError
 from src.shared.python.logging_pkg.logging_config import get_logger
@@ -42,7 +44,15 @@ class ChatService:
     SESSION_TTL_SECONDS = 7200  # 2 hours
     PERSIST_DIR = Path.home() / ".golf_modeling_suite" / "chat_sessions"
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        app_state_provider: Callable[[], dict[str, Any]] | None = None,
+    ) -> None:
+        if app_state_provider is not None and not callable(app_state_provider):
+            raise TypeError(
+                "app_state_provider must be a callable returning a dict, or None"
+            )
+        self._app_state_provider = app_state_provider
         self._sessions: OrderedDict[str, ConversationContext] = OrderedDict()
         self._timestamps: dict[str, float] = {}
         self._adapter: BaseAgentAdapter | None = None
@@ -124,6 +134,32 @@ class ChatService:
         except ImportError as e:
             logger.error("ChatService: could not create fallback adapter: %s", e)
 
+    def _build_app_state_message(self) -> Any | None:
+        """Build a system :class:`Message` containing the current app state.
+
+        Returns ``None`` when no provider is configured or when the provider
+        raises an exception (degraded gracefully — chat continues).
+
+        Returns:
+            A ``Message(role="system", ...)`` instance, or ``None``.
+        """
+        if self._app_state_provider is None:
+            return None
+        try:
+            state = self._app_state_provider()
+            content = "Current application state:\n" + json.dumps(
+                state, indent=2, default=str
+            )
+            from src.shared.python.ai.types import Message
+
+            return Message(role="system", content=content)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "ChatService: app_state_provider raised %s — skipping state injection",
+                exc,
+            )
+            return None
+
     def get_or_create_session(self, session_id: str | None) -> ConversationContext:
         """Return existing session or create a new one."""
         from src.shared.python.ai.types import ConversationContext
@@ -187,7 +223,12 @@ class ChatService:
 
             ctx.add_user_message(content)
             self._persist_session(session_id)
-            return str(uuid.uuid4().hex[:12])
+
+        get_state_logger().log_event(
+            "chat.message_sent",
+            {"session_id": session_id, "role": "user"},
+        )
+        return str(uuid.uuid4().hex[:12])
 
     @precondition(
         lambda self, session_id: session_id is not None and len(session_id) > 0,
@@ -209,19 +250,21 @@ class ChatService:
                 return
 
         # Build engine context system message
+        from src.shared.python.ai.types import Message
+
+        temp_messages = list(ctx.messages)
         engine = ctx.metadata.get("last_engine")
         if engine:
             system_hint = (
                 f"The user is currently working in the {engine} physics engine. "
                 "Tailor your responses to that context when relevant."
             )
-            # Temporarily inject system context (don't persist it)
-            from src.shared.python.ai.types import Message
-
-            temp_messages = list(ctx.messages)
             temp_messages.insert(0, Message(role="system", content=system_hint))
-        else:
-            temp_messages = list(ctx.messages)
+
+        # Inject app state context if a provider is configured
+        app_state_msg = self._build_app_state_message()
+        if app_state_msg is not None:
+            temp_messages.insert(0, app_state_msg)
 
         # Create a temporary context copy for the adapter
         from src.shared.python.ai.types import ConversationContext
@@ -233,7 +276,6 @@ class ChatService:
             metadata=ctx.metadata,
         )
 
-        import json
         import queue
 
         from src.shared.python.ai.types import ToolCall
@@ -311,6 +353,14 @@ class ChatService:
                             )
                             self._persist_session(session_id)
 
+                    get_state_logger().log_event(
+                        "chat.response_received",
+                        {
+                            "session_id": session_id,
+                            "chars": len(complete_response),
+                        },
+                    )
+
                     if not tool_calls:
                         break
 
@@ -364,6 +414,9 @@ class ChatService:
             # hanging the queue consumer.
             except Exception as e:  # noqa: BLE001
                 chunk_queue.put(f"\n[Error: {e}]")
+                get_state_logger().log_exception(
+                    e, context="ChatService.stream_response"
+                )
             finally:
                 chunk_queue.put(None)  # Sentinel
 
@@ -380,6 +433,102 @@ class ChatService:
             yield item
 
         thread.join(timeout=5.0)
+
+    def refresh_models(self) -> dict[str, Any]:
+        """Poll the configured provider for available chat models.
+
+        Returns a payload matching the ``ChatModelListResponse`` contract
+        (Tools issue #2547 / PR #2566): a list of ``{"name", "provider",
+        "display_name"}`` entries plus an ISO-8601 ``refreshed_at``
+        timestamp. Failure to reach the provider is logged and yields an
+        empty list — the chat session itself stays alive.
+        """
+        models: list[dict[str, Any]] = []
+        provider_id = "unknown"
+        adapter = self._adapter
+        if adapter is not None:
+            provider_id = type(adapter).__name__.replace("Adapter", "").lower()
+            list_models = getattr(adapter, "list_available_models", None)
+            if callable(list_models):
+                try:
+                    raw_models = list_models()
+                except Exception as exc:  # noqa: BLE001
+                    # Adapter may raise transport errors (AIConnectionError,
+                    # OSError, httpx errors). Degrade gracefully so the chat
+                    # session doesn't drop.
+                    logger.warning(
+                        "ChatService.refresh_models: %s.list_available_models "
+                        "failed: %s",
+                        type(adapter).__name__,
+                        exc,
+                    )
+                    raw_models = []
+                for entry in raw_models:
+                    if isinstance(entry, str):
+                        models.append(
+                            {
+                                "name": entry,
+                                "provider": provider_id,
+                                "display_name": None,
+                            }
+                        )
+                    elif isinstance(entry, dict):
+                        name = str(entry.get("name", ""))
+                        if name:
+                            models.append(
+                                {
+                                    "name": name,
+                                    "provider": str(entry.get("provider", provider_id)),
+                                    "display_name": entry.get("display_name"),
+                                }
+                            )
+        return {
+            "models": models,
+            "refreshed_at": datetime.now(UTC).isoformat(),
+        }
+
+    async def run_codemap_rebuild(self) -> dict[str, Any]:
+        """Run the in-tree codemap rebuild and return a status payload.
+
+        Tools issue #2549 / PR #2567: handler for the chat ``index_codebase``
+        WebSocket action. Wraps the existing
+        ``src.shared.python.codemap.indexer.rebuild`` pathway and returns
+        a dict shaped like ``ChatIndexStatusResponse``. Runs in a worker
+        thread so the WebSocket loop stays responsive.
+        """
+
+        def _rebuild_in_thread() -> dict[str, Any]:
+            try:
+                from src.shared.python.codemap import discover_repo_root
+                from src.shared.python.codemap.indexer import rebuild
+
+                repo_root = discover_repo_root()
+                stats = rebuild(repo_root)
+                return {
+                    "state": "complete",
+                    "files_parsed": stats.files_parsed,
+                    "symbols_inserted": stats.symbols_inserted,
+                    "duration_seconds": float(stats.elapsed_s),
+                    "error": None,
+                }
+            except Exception as exc:  # noqa: BLE001
+                # Indexer can raise from import failures, sqlite errors, or
+                # filesystem permission issues — treat all as soft errors
+                # so the chat session stays alive.
+                logger.warning(
+                    "ChatService.run_codemap_rebuild failed: %s: %s",
+                    type(exc).__name__,
+                    exc,
+                )
+                return {
+                    "state": "error",
+                    "files_parsed": 0,
+                    "symbols_inserted": 0,
+                    "duration_seconds": None,
+                    "error": str(exc),
+                }
+
+        return await asyncio.to_thread(_rebuild_in_thread)
 
     def get_session_history(self, session_id: str) -> list[dict[str, Any]]:
         """Return message history for a session."""
