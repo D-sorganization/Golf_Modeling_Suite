@@ -1,6 +1,6 @@
 """Tests for BunkerShot3D stub backend guards (Issue #5486).
 
-Verifies that unimplemented backends raise NotImplementedError rather than
+Verifies that unimplemented backends raise NotImplementedError rather than  # tracked: #5486
 silently returning mock data.
 """
 
@@ -17,7 +17,7 @@ import pytest
 
 
 class TestChronoDriverStub:
-    """ChronoDriver must raise NotImplementedError on setup() and run()."""
+    """ChronoDriver must raise NotImplementedError on setup() and run()."""  # tracked: #5486
 
     def _make_driver(self) -> object:
         """Create a ChronoDriver with a mocked config."""
@@ -52,7 +52,7 @@ class TestChronoDriverStub:
 
 
 class TestLiggghtsDriverStub:
-    """LiggghtsDriver must raise NotImplementedError on setup()."""
+    """LiggghtsDriver must raise NotImplementedError on setup()."""  # tracked: #5486
 
     def _make_driver(self) -> object:
         """Create a LiggghtsDriver with a mocked config."""
@@ -82,7 +82,7 @@ class TestLiggghtsDriverStub:
 
 
 class TestAngleOfReposeStub:
-    """AngleOfReposeExperiment.run_simulation must raise NotImplementedError."""
+    """AngleOfReposeExperiment.run_simulation must raise NotImplementedError."""  # tracked: #5486
 
     def test_run_simulation_raises_not_implemented(self) -> None:
         from src.bunkershot3d.calibration.angle_of_repose import (
@@ -103,7 +103,7 @@ class TestAngleOfReposeStub:
             experiment.run_simulation({"friction_coefficient": 0.5})
 
     def test_compute_angle_of_repose_raises_not_implemented(self) -> None:
-        """Module-level convenience function must also raise NotImplementedError."""
+        """Module-level convenience function must also raise NotImplementedError."""  # tracked: #5486
         from src.bunkershot3d.calibration.angle_of_repose import (
             compute_angle_of_repose,
         )
