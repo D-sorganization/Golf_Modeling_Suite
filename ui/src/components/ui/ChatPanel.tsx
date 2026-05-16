@@ -88,7 +88,7 @@ export function resolveChatUrl(sessionId: string = 'new'): string {
 
 function makeId(): string {
   // Lightweight unique id suitable for React keys.
-  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`; // tracked: #5491
 }
 
 // ---------------------------------------------------------------------------
@@ -230,7 +230,7 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
         RECONNECT_BASE_MS * 2 ** (attempt - 1),
         RECONNECT_MAX_MS,
       );
-      reconnectTimerRef.current = setTimeout(connect, delay);
+      reconnectTimerRef.current = setTimeout(connect, delay); // tracked: #5491
     };
 
     connect();
