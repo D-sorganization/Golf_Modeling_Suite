@@ -134,8 +134,17 @@ def test_condense_to_memory_uses_condenser_when_available(
 
 
 def test_condense_to_memory_falls_back_when_unavailable() -> None:
-    svc = MagicMock(spec=["list", "search", "archive", "unarchive", "delete",
-                          "export", "load_as_context"])
+    svc = MagicMock(
+        spec=[
+            "list",
+            "search",
+            "archive",
+            "unarchive",
+            "delete",
+            "export",
+            "load_as_context",
+        ]
+    )
     adapter = HistoryServiceAdapter(service=svc)
     result = adapter.condense_to_memory(["c1"])
     assert result["status"] == "stub"
@@ -157,9 +166,7 @@ def test_load_memory_reads_user_memory_file(tmp_path) -> None:
 
 def test_load_memory_returns_empty_skeleton_when_missing(tmp_path) -> None:
     svc = MagicMock()
-    adapter = HistoryServiceAdapter(
-        service=svc, memory_path=tmp_path / "nope.json"
-    )
+    adapter = HistoryServiceAdapter(service=svc, memory_path=tmp_path / "nope.json")
     mem = adapter.load_memory()
     assert mem == {
         "identity": {},
@@ -174,20 +181,23 @@ def test_save_memory_writes_user_memory_file(tmp_path) -> None:
     svc = MagicMock()
     adapter = HistoryServiceAdapter(service=svc, memory_path=memory_file)
     adapter.save_memory(
-        {"identity": {"name": "Bob"}, "preferences": {},
-         "projects": {}, "knowledge": {}}
+        {
+            "identity": {"name": "Bob"},
+            "preferences": {},
+            "projects": {},
+            "knowledge": {},
+        }
     )
     assert memory_file.exists()
     import json
+
     data = json.loads(memory_file.read_text(encoding="utf-8"))
     assert data["identity"]["name"] == "Bob"
 
 
 def test_save_memory_precondition_rejects_non_dict(tmp_path) -> None:
     svc = MagicMock()
-    adapter = HistoryServiceAdapter(
-        service=svc, memory_path=tmp_path / "m.json"
-    )
+    adapter = HistoryServiceAdapter(service=svc, memory_path=tmp_path / "m.json")
     with pytest.raises(TypeError, match="dict"):
         adapter.save_memory("not a dict")  # type: ignore[arg-type]
 
@@ -203,8 +213,6 @@ def test_reset_memory_removes_file(tmp_path) -> None:
 
 def test_reset_memory_noop_when_missing(tmp_path) -> None:
     svc = MagicMock()
-    adapter = HistoryServiceAdapter(
-        service=svc, memory_path=tmp_path / "absent.json"
-    )
+    adapter = HistoryServiceAdapter(service=svc, memory_path=tmp_path / "absent.json")
     # Should not raise.
     adapter.reset_memory()

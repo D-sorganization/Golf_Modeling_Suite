@@ -23,12 +23,20 @@ def qapp() -> QApplication:
 def fake_adapter() -> MagicMock:
     a = MagicMock()
     a.list_active.return_value = [
-        {"id": "c1", "title": "Active chat",
-         "timestamp": "2026-05-01T12:00:00", "snippet": "S"},
+        {
+            "id": "c1",
+            "title": "Active chat",
+            "timestamp": "2026-05-01T12:00:00",
+            "snippet": "S",
+        },
     ]
     a.list_archived.return_value = [
-        {"id": "c2", "title": "Archived chat",
-         "timestamp": "2026-04-01T12:00:00", "snippet": "T"},
+        {
+            "id": "c2",
+            "title": "Archived chat",
+            "timestamp": "2026-04-01T12:00:00",
+            "snippet": "T",
+        },
     ]
     a.load_as_context.return_value = {"messages": [], "session_id": "c1"}
     return a

@@ -23,18 +23,34 @@ def qapp() -> QApplication:
 def fake_adapter() -> MagicMock:
     a = MagicMock()
     a.list_active.return_value = [
-        {"id": "c1", "title": "First chat",
-         "timestamp": "2026-05-01T12:00:00", "snippet": "Hello there"},
-        {"id": "c2", "title": "Second chat",
-         "timestamp": "2026-05-02T12:00:00", "snippet": "Another"},
+        {
+            "id": "c1",
+            "title": "First chat",
+            "timestamp": "2026-05-01T12:00:00",
+            "snippet": "Hello there",
+        },
+        {
+            "id": "c2",
+            "title": "Second chat",
+            "timestamp": "2026-05-02T12:00:00",
+            "snippet": "Another",
+        },
     ]
     a.list_archived.return_value = [
-        {"id": "c3", "title": "Old chat",
-         "timestamp": "2026-04-01T12:00:00", "snippet": "Old"},
+        {
+            "id": "c3",
+            "title": "Old chat",
+            "timestamp": "2026-04-01T12:00:00",
+            "snippet": "Old",
+        },
     ]
     a.search.return_value = [
-        {"id": "c1", "title": "First chat",
-         "timestamp": "2026-05-01T12:00:00", "snippet": "Hello there"},
+        {
+            "id": "c1",
+            "title": "First chat",
+            "timestamp": "2026-05-01T12:00:00",
+            "snippet": "Hello there",
+        },
     ]
     return a
 
@@ -94,8 +110,12 @@ def test_empty_search_restores_recent_listing(qapp, fake_adapter) -> None:
 
 def test_search_results_replace_recent_view(qapp, fake_adapter) -> None:
     fake_adapter.search.return_value = [
-        {"id": "c2", "title": "Second chat",
-         "timestamp": "2026-05-02T12:00:00", "snippet": "Another"},
+        {
+            "id": "c2",
+            "title": "Second chat",
+            "timestamp": "2026-05-02T12:00:00",
+            "snippet": "Another",
+        },
     ]
     pane = HistorySidebarPane(fake_adapter, debounce_ms=0)
     pane.refresh()

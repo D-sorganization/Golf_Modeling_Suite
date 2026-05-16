@@ -63,9 +63,7 @@ def test_panel_loads_existing_values_into_fields(qapp, adapter) -> None:
 def test_panel_save_round_trip_persists(qapp, adapter) -> None:
     panel = MemoryPanel(adapter)
     panel.refresh()
-    panel.set_section_text(
-        "preferences", json.dumps({"theme": "light", "lang": "en"})
-    )
+    panel.set_section_text("preferences", json.dumps({"theme": "light", "lang": "en"}))
     panel.save()
     adapter.save_memory.assert_called_once()
     saved = adapter.save_memory.call_args[0][0]
