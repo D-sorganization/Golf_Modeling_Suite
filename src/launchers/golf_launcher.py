@@ -445,7 +445,43 @@ class GolfLauncher(
         _QTimer.singleShot(100, self._show_onboarding_if_needed)
 
     def create_model_card(self, model: Any) -> None:
-        """Creates a clickable card widget (placeholder)."""
+        """Create a clickable card widget for *model*.
+
+        Raises:
+            NotImplementedError: Always — callers must use
+                :class:`DraggableModelCard` directly or delegate to
+                :class:`LayoutManager` (issue #5488).
+        """
+        raise NotImplementedError(
+            "create_model_card is a deprecated stub. "
+            "Use DraggableModelCard(model, self) or LayoutManager directly."
+        )
+
+    def _handle_startup_timeout(self) -> None:
+        """Handle expiry of the startup guard timer (issue #5488).
+
+        Called when ``AsyncStartupWorker`` has not delivered results within
+        the allowed startup window.  Clears the ``loading`` flag so the UI
+        is not permanently stuck, logs an error-level message, and surfaces a
+        modal warning dialog if PyQt6 is available.
+        """
+        self.loading = False
+        logger.error(
+            "Startup timeout: AsyncStartupWorker did not deliver results "
+            "within the expected window. The launcher may be in a degraded state."
+        )
+        try:
+            from PyQt6.QtWidgets import QMessageBox
+
+            QMessageBox.warning(
+                self,
+                "Startup Timeout",
+                "The launcher startup timed out.\n\n"
+                "Model tiles may not have loaded correctly. "
+                "Try restarting the application.",
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Could not show startup-timeout dialog: %s", exc)
 
     def launch_model_direct(self, model_id: str) -> None:
         """Selects and immediately launches the model (for double-click)."""
