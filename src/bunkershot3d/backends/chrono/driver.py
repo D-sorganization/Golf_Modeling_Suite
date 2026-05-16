@@ -21,7 +21,7 @@ class ChronoDriver:
             NotImplementedError: ChronoDriver is not yet implemented.
                 Use the MPM backend instead.
         """
-        raise NotImplementedError(
+        raise NotImplementedError(  # tracked: #5486
             "ChronoDriver is not yet implemented. Use the MPM backend instead."
         )
 
@@ -32,6 +32,6 @@ class ChronoDriver:
             NotImplementedError: ChronoDriver is not yet implemented.
                 Use the MPM backend instead.
         """
-        raise NotImplementedError(
+        raise NotImplementedError(  # tracked: #5486
             "ChronoDriver is not yet implemented. Use the MPM backend instead."
         )
