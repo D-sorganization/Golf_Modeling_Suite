@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Tests for ChatPanel.
  *
  * Mocks WebSocket so we can drive server messages and assert UI state.
@@ -236,6 +236,115 @@ describe('ChatPanel', () => {
       expect(el.style.backgroundColor).toBe('');
       expect(el.style.borderColor).toBe('');
       expect(el.style.color).toBe('');
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// #5469 - cross-shell parity tests
+// ---------------------------------------------------------------------------
+
+describe('ChatPanel - quick actions (#5469)', () => {
+  it('renders the quick-action bar with all three default actions', async () => {
+    render(<ChatPanel />);
+    await waitForSocket();
+
+    const bar = screen.getByTestId('chat-quick-actions');
+    expect(bar).toBeInTheDocument();
+
+    expect(screen.getByTestId('quick-action-run-diagnostics')).toBeInTheDocument();
+    expect(screen.getByTestId('quick-action-explain-error')).toBeInTheDocument();
+    expect(screen.getByTestId('quick-action-show-status')).toBeInTheDocument();
+  });
+
+  it('quick-action click sends the prompt without adding a user bubble first', async () => {
+    render(<ChatPanel />);
+    const socket = await waitForSocket();
+
+    const btn = screen.getByTestId('quick-action-show-status');
+    act(() => { fireEvent.click(btn); });
+
+    await waitFor(() => expect(socket.sent.length).toBe(1));
+    const payload = JSON.parse(socket.sent[0].data) as Record<string, unknown>;
+    expect(payload.action).toBe('send');
+    expect(typeof payload.message).toBe('string');
+    expect((payload.message as string).length).toBeGreaterThan(0);
+  });
+
+  it('quick-action buttons are disabled while streaming', async () => {
+    render(<ChatPanel />);
+    const socket = await waitForSocket();
+
+    // Start streaming
+    act(() => { socket.emit({ type: 'chunk', content: 'Hello' }); });
+
+    await waitFor(() => {
+      const btn = screen.getByTestId('quick-action-run-diagnostics') as HTMLButtonElement;
+      expect(btn.disabled).toBe(true);
+    });
+  });
+});
+
+describe('ChatPanel - retry on error (#5469)', () => {
+  it('shows retry button after an error message', async () => {
+    render(<ChatPanel />);
+    const socket = await waitForSocket();
+
+    // Send a message first so lastUserMessageRef is set
+    fireEvent.change(screen.getByTestId('chat-input'), { target: { value: 'hello' } });
+    fireEvent.click(screen.getByTestId('chat-send'));
+
+    act(() => { socket.emit({ type: 'error', detail: 'timeout' }); });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('chat-retry')).toBeInTheDocument();
+    });
+  });
+
+  it('retry button re-sends the last user message', async () => {
+    render(<ChatPanel />);
+    const socket = await waitForSocket();
+
+    // Send a message
+    fireEvent.change(screen.getByTestId('chat-input'), { target: { value: 'retry me' } });
+    fireEvent.click(screen.getByTestId('chat-send'));
+
+    // Server responds with error
+    act(() => { socket.emit({ type: 'error', detail: 'oops' }); });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('chat-retry')).toBeInTheDocument();
+    });
+
+    // Click retry
+    const initialSentCount = socket.sent.length;
+    act(() => { fireEvent.click(screen.getByTestId('chat-retry')); });
+
+    await waitFor(() => {
+      expect(socket.sent.length).toBeGreaterThan(initialSentCount);
+    });
+    const retryPayload = JSON.parse(socket.sent[socket.sent.length - 1].data) as Record<string, unknown>;
+    expect(retryPayload.message).toBe('retry me');
+  });
+
+  it('retry button disappears after successful response', async () => {
+    render(<ChatPanel />);
+    const socket = await waitForSocket();
+
+    fireEvent.change(screen.getByTestId('chat-input'), { target: { value: 'q' } });
+    fireEvent.click(screen.getByTestId('chat-send'));
+
+    act(() => { socket.emit({ type: 'error', detail: 'fail' }); });
+    await waitFor(() => { expect(screen.getByTestId('chat-retry')).toBeInTheDocument(); });
+
+    // Next successful response clears it
+    act(() => {
+      socket.emit({ type: 'chunk', content: 'ok' });
+      socket.emit({ type: 'complete', session_id: 'x' });
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('chat-retry')).not.toBeInTheDocument();
     });
   });
 });

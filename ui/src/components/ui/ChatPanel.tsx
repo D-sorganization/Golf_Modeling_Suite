@@ -1,20 +1,8 @@
-/**
- * ChatPanel — minimum-viable chat UI wired to the FastAPI chat WebSocket.
+﻿/**
+ * ChatPanel - minimum-viable chat UI wired to the FastAPI chat WebSocket.
  *
- * Backend protocol (see src/api/routes/chat_ws.py):
- *   Client -> Server:
- *     {"action": "send", "message": "...", "engine_context": "mujoco"?}
- *     {"action": "history"}
- *     {"action": "new_session"}
- *   Server -> Client:
- *     {"type": "session_info", "session_id": "..."}
- *     {"type": "chunk", "content": "..."}
- *     {"type": "complete", "session_id": "..."}
- *     {"type": "history", "messages": [...]}
- *     {"type": "error", "detail": "..."}
- *
- * Connects to {VITE_API_URL || ws://localhost:8000}/ws/chat/new with
- * exponential backoff reconnect (capped at 30 s).
+ * #5469 - cross-shell parity: retry-on-error + quick-action buttons.
+ * #5470 - app-state context injection is handled server-side in chat_ws.py.
  *
  * See issue #3505.
  */
@@ -28,7 +16,7 @@ import {
   type FormEvent,
   type KeyboardEvent,
 } from 'react';
-import { Send, MessageSquare } from 'lucide-react';
+import { Send, MessageSquare, RotateCcw } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -57,11 +45,22 @@ interface ServerMessage {
 }
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Constants
 // ---------------------------------------------------------------------------
 
 const RECONNECT_BASE_MS = 500;
 const RECONNECT_MAX_MS = 30_000;
+
+/**
+ * Quick-action prompts surfaced as one-click buttons.
+ * Mirrors QUICK_ACTIONS in AIAssistantPanel (PyQt) for #5469 cross-shell parity.
+ */
+// eslint-disable-next-line react-refresh/only-export-components
+export const QUICK_ACTIONS: ReadonlyArray<{ label: string; prompt: string }> = [
+  { label: 'Run Diagnostics', prompt: 'Run full launcher diagnostics and summarise the results.' },
+  { label: 'Explain Error', prompt: 'Explain the last error message in simple terms.' },
+  { label: 'Show Status', prompt: 'What is the current application health status?' },
+];
 
 /**
  * Resolve the chat WebSocket URL.
@@ -107,6 +106,8 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
   const [input, setInput] = useState('');
   const [status, setStatus] = useState<ConnectionStatus>('connecting');
   const [streaming, setStreaming] = useState(false);
+  // ID of the most-recent error message eligible for retry (#5469 parity).
+  const [retryMessageId, setRetryMessageId] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -114,6 +115,8 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const closedByUserRef = useRef(false);
   const assistantIdRef = useRef<string | null>(null);
+  // Tracks the last user message so the retry button can re-send it (#5469).
+  const lastUserMessageRef = useRef<string | null>(null);
   const listEndRef = useRef<HTMLDivElement | null>(null);
 
   const targetUrl = useMemo(() => url ?? resolveChatUrl('new'), [url]);
@@ -158,6 +161,8 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
         case 'complete':
           assistantIdRef.current = null;
           setStreaming(false);
+          // A successful response clears any pending retry target.
+          setRetryMessageId(null);
           break;
         case 'history':
           if (Array.isArray(payload.messages)) {
@@ -170,11 +175,14 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
             );
           }
           break;
-        case 'error':
+        case 'error': {
+          // Capture the error message id so the retry button can reference it.
+          const errorId = makeId();
+          setRetryMessageId(errorId);
           setMessages((prev) => [
             ...prev,
             {
-              id: makeId(),
+              id: errorId,
               role: 'system',
               content: payload.detail ?? 'Unknown error',
             },
@@ -182,6 +190,7 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
           setStreaming(false);
           assistantIdRef.current = null;
           break;
+        }
         default:
           break;
       }
@@ -261,35 +270,47 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
     }
   }, [messages]);
 
-  const sendMessage = useCallback(() => {
-    const text = input.trim();
-    if (!text) return;
-    const socket = wsRef.current;
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: makeId(),
-          role: 'system',
-          content: 'Not connected. Message not sent.',
-        },
-      ]);
-      return;
-    }
+  /**
+   * Core send helper. Optional *override* bypasses the controlled textarea
+   * and skips adding a duplicate user bubble (used by quick-actions/retry).
+   */
+  const sendMessage = useCallback(
+    (override?: string) => {
+      const text = (override ?? input).trim();
+      if (!text) return;
+      const socket = wsRef.current;
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: makeId(),
+            role: 'system',
+            content: 'Not connected. Message not sent.',
+          },
+        ]);
+        return;
+      }
 
-    setMessages((prev) => [
-      ...prev,
-      { id: makeId(), role: 'user', content: text },
-    ]);
-    const payload: Record<string, string> = { action: 'send', message: text };
-    if (engineContext) {
-      payload.engine_context = engineContext;
-    }
-    socket.send(JSON.stringify(payload));
-    assistantIdRef.current = null;
-    setStreaming(true);
-    setInput('');
-  }, [input, engineContext]);
+      if (!override) {
+        // Only add a user bubble for typed messages, not quick-actions/retry.
+        setMessages((prev) => [
+          ...prev,
+          { id: makeId(), role: 'user', content: text },
+        ]);
+      }
+
+      const payload: Record<string, string> = { action: 'send', message: text };
+      if (engineContext) {
+        payload.engine_context = engineContext;
+      }
+      lastUserMessageRef.current = text;
+      socket.send(JSON.stringify(payload));
+      assistantIdRef.current = null;
+      setStreaming(true);
+      if (!override) setInput('');
+    },
+    [input, engineContext],
+  );
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -302,6 +323,15 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
       sendMessage();
     }
   };
+
+  /** Handle retry: remove error bubble and re-send the last user message. */
+  const handleRetry = useCallback(() => {
+    const msg = lastUserMessageRef.current;
+    if (!msg) return;
+    setMessages((prev) => prev.filter((m) => m.id !== retryMessageId));
+    setRetryMessageId(null);
+    sendMessage(msg);
+  }, [retryMessageId, sendMessage]);
 
   const statusColor: Record<ConnectionStatus, string> = {
     connecting: 'text-yellow-400',
@@ -397,8 +427,8 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
         {messages.map((m) => (
           <div
             key={m.id}
-            className={`flex ${
-              m.role === 'user' ? 'justify-end' : 'justify-start'
+            className={`flex flex-col ${
+              m.role === 'user' ? 'items-end' : 'items-start'
             }`}
             data-role={m.role}
           >
@@ -408,6 +438,20 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
             >
               {m.content}
             </div>
+            {/* Retry button on the most recent error message (#5469 parity) */}
+            {m.id === retryMessageId && lastUserMessageRef.current && (
+              <button
+                type="button"
+                onClick={handleRetry}
+                aria-label="Retry last message"
+                data-testid="chat-retry"
+                disabled={status !== 'connected'}
+                className="sidekick-chat-retry mt-1 flex items-center gap-1 text-xs px-2 py-1 rounded border disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <RotateCcw className="w-3 h-3" aria-hidden="true" />
+                Retry
+              </button>
+            )}
           </div>
         ))}
         {streaming && (
@@ -420,6 +464,26 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
           </div>
         )}
         <div ref={listEndRef} />
+      </div>
+
+      {/* Quick actions - mirrors QUICK_ACTIONS in AIAssistantPanel (#5469) */}
+      <div
+        className="sidekick-chat-quick-actions flex flex-wrap gap-1 px-3 pt-2"
+        data-testid="chat-quick-actions"
+      >
+        {QUICK_ACTIONS.map(({ label, prompt }) => (
+          <button
+            key={label}
+            type="button"
+            aria-label={`Quick action: ${label}`}
+            data-testid={`quick-action-${label.replace(/\s+/g, '-').toLowerCase()}`}
+            disabled={status !== 'connected' || streaming}
+            onClick={() => sendMessage(prompt)}
+            className="text-xs px-2 py-1 rounded border disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {/* Composer */}

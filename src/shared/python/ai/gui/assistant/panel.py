@@ -86,6 +86,8 @@ class AIAssistantPanel(QWidget):
 
         self._tools_registry = get_global_registry()
         self._rag_store = SimpleRAGStore()
+        # Track last user message for retry (#5469).
+        self._last_user_message: str | None = None
 
         self._session_manager = ChatSessionManager()
         self._session_manager.session_loaded.connect(self._on_session_loaded)
@@ -220,6 +222,7 @@ class AIAssistantPanel(QWidget):
         ) = build_input_area()
         self._input_edit.submit_requested.connect(self._on_send)
         self._send_btn.clicked.connect(self._on_send)
+        self._add_quick_actions(self._input_container)  # #5469 parity
         msg_splitter.addWidget(self._input_container)
 
         msg_splitter.setSizes([400, 100])
@@ -514,6 +517,7 @@ class AIAssistantPanel(QWidget):
         self._context.add_user_message(message)
         self._save_history()
         self.message_sent.emit(message)
+        self._last_user_message = message  # store for retry (#5469)
 
         if self._adapter:
             self._process_message(message)
@@ -601,6 +605,81 @@ class AIAssistantPanel(QWidget):
             except (TypeError, RuntimeError):
                 pass
         self._current_worker = None
+
+        # Offer retry (#5469 cross-shell parity: retry on error).
+        if self._last_user_message:
+            self._add_retry_button(self._last_user_message)
+
+    # ------------------------------------------------------------------ #
+    # #5469 cross-shell parity: retry on error + quick actions           #
+    # ------------------------------------------------------------------ #
+
+    #: Quick-action prompts surfaced as buttons below the input area.
+    QUICK_ACTIONS: list[tuple[str, str]] = [
+        ("Run Diagnostics", "Run full launcher diagnostics and summarise the results."),
+        ("Explain Error", "Explain the last error message in simple terms."),
+        ("Show Status", "What is the current application health status?"),
+    ]
+
+    def _add_retry_button(self, message: str) -> None:
+        """Add a one-shot Retry button after an error response.
+
+        Args:
+            message: The user message to re-submit on click.
+        """
+        if message is None:
+            raise ValueError("message must be provided")
+
+        retry_btn = QPushButton("Retry")
+        retry_btn.setToolTip("Resend the last message")
+        retry_btn.setObjectName("SidekickRetryButton")
+
+        def _on_click() -> None:
+            retry_btn.setEnabled(False)
+            retry_btn.deleteLater()
+            self._input_edit.setPlainText(message)
+            self._on_send()
+
+        retry_btn.clicked.connect(_on_click)
+        idx = self._message_layout.count() - 1
+        self._message_layout.insertWidget(idx, retry_btn)
+        self._scroll_to_bottom()
+
+    def _add_quick_actions(self, parent: QWidget) -> None:
+        """Inject quick-action buttons into *parent* (typically the composer area).
+
+        Args:
+            parent: The widget to add the button row to.
+        """
+        if parent is None:
+            raise ValueError("parent must be provided")
+
+        from PyQt6.QtWidgets import QHBoxLayout
+
+        qa_row = QHBoxLayout()
+        qa_row.setContentsMargins(0, 4, 0, 0)
+        qa_row.setSpacing(4)
+
+        for label, prompt in self.QUICK_ACTIONS:
+            btn = QPushButton(label)
+            btn.setObjectName("SidekickQuickAction")
+            btn.setToolTip(prompt)
+
+            def _make_handler(p: str):  # type: ignore[return]
+                def _handler() -> None:
+                    self._input_edit.setPlainText(p)
+                    self._on_send()
+
+                return _handler
+
+            btn.clicked.connect(_make_handler(prompt))
+            qa_row.addWidget(btn)
+
+        qa_row.addStretch()
+
+        parent_layout = parent.layout()
+        if parent_layout is not None:
+            parent_layout.addLayout(qa_row)
 
     def _add_message_to_ui(
         self,

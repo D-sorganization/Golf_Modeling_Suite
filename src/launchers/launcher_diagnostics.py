@@ -37,6 +37,7 @@ ASSETS_DIR = Path(__file__).parent / "assets"
 CONFIG_DIR = Path.home() / ".golf_modeling_suite"
 LAYOUT_CONFIG_FILE = CONFIG_DIR / "launcher_layout.json"
 
+
 def load_models_yaml() -> dict[str, Any]:
     """Load and return the canonical models.yaml configuration.
 
@@ -65,7 +66,9 @@ def _derive_tile_metadata() -> tuple[list[str], dict[str, str]]:
         tile_names = {m["id"]: m["name"] for m in models}
         return tile_ids, tile_names
     except Exception:
-        logger.warning("Could not derive tile metadata from models.yaml; using empty defaults")
+        logger.warning(
+            "Could not derive tile metadata from models.yaml; using empty defaults"
+        )
         return [], {}
 
 
@@ -121,7 +124,6 @@ class LauncherDiagnostics:
     # Expected tile model IDs and names -- derived from models.yaml at class definition
     EXPECTED_TILE_IDS, EXPECTED_TILE_NAMES = _derive_tile_metadata()
 
-
     def __init__(self) -> None:
         """Initialize diagnostics."""
         self.results: list[DiagnosticResult] = []
@@ -152,7 +154,7 @@ class LauncherDiagnostics:
         failed = sum(1 for r in self.results if r.status == "fail")
         warnings = sum(1 for r in self.results if r.status == "warning")
 
-        return {
+        report = {
             "summary": {
                 "total_checks": len(self.results),
                 "passed": passed,
@@ -165,6 +167,11 @@ class LauncherDiagnostics:
             "checks": [r.to_dict() for r in self.results],
             "recommendations": self._generate_recommendations(),
         }
+
+        # Wire results into Sidekick chat-agent context (issue #5470).
+        record_diagnostic_run(report)
+
+        return report
 
     def check_python_environment(self) -> DiagnosticResult:
         """Check Python environment configuration."""
@@ -906,7 +913,9 @@ def reset_layout_config() -> bool:
             LAYOUT_CONFIG_FILE.rename(backup_path)
             logger.info("Backed up existing config to %s", backup_path)
 
-        logger.info(f"Layout config reset - launcher will use defaults ({len(LauncherDiagnostics.EXPECTED_TILE_IDS)} tiles)")
+        logger.info(
+            f"Layout config reset - launcher will use defaults ({len(LauncherDiagnostics.EXPECTED_TILE_IDS)} tiles)"
+        )
         return True
     except (RuntimeError, ValueError, OSError) as e:
         logger.error("Failed to reset layout config: %s", e)
@@ -985,3 +994,63 @@ if __name__ == "__main__":
     else:
         run_cli_diagnostics()
 
+
+# ---------------------------------------------------------------------------
+# #5470 — Sidekick: wire diagnostics history into chat-agent context
+# ---------------------------------------------------------------------------
+
+
+def record_diagnostic_run(results: dict[str, Any]) -> None:
+    """Record a completed diagnostic run into the Sidekick chat-context buffer.
+
+    Converts the ``checks`` list from :meth:`LauncherDiagnostics.run_all_checks`
+    into an event payload and feeds it into the module-level ring buffer via
+    :func:`src.shared.python.ai.chat_context.record_event`.
+
+    This wires diagnostic history into the system-prompt context injected by
+    :func:`src.api.routes.chat_ws._maybe_inject_chat_context`, so the Sidekick
+    assistant can see recent health status when answering user questions.
+
+    Args:
+        results: The dict returned by :meth:`LauncherDiagnostics.run_all_checks`.
+
+    Raises:
+        TypeError: If ``results`` is not a dict.
+    """
+    if not isinstance(results, dict):
+        raise TypeError(
+            "results must be a dict from LauncherDiagnostics.run_all_checks"
+        )
+
+    try:
+        from src.shared.python.ai.chat_context import record_event
+    except ImportError as exc:  # pragma: no cover — optional in headless envs
+        logger.warning("chat_context unavailable; skipping diagnostic record: %s", exc)
+        return
+
+    summary = results.get("summary", {})
+    checks = results.get("checks", [])
+
+    # Compact payload: summary + list of non-passing checks only to stay
+    # within the 4 KB ring-buffer size cap.
+    non_passing = [c for c in checks if c.get("status") != "pass"]
+
+    payload: dict[str, Any] = {
+        "timestamp": summary.get(
+            "timestamp", time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        ),
+        "status": summary.get("status", "unknown"),
+        "passed": summary.get("passed", 0),
+        "failed": summary.get("failed", 0),
+        "warnings": summary.get("warnings", 0),
+        "non_passing_checks": non_passing,
+    }
+
+    record_event("diagnostic", payload)
+    logger.debug(
+        "Recorded diagnostic run: status=%s passed=%s failed=%s warnings=%s",
+        payload["status"],
+        payload["passed"],
+        payload["failed"],
+        payload["warnings"],
+    )
