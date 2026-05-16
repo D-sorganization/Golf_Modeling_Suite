@@ -48,12 +48,35 @@ export type ConnectionStatus =
   | 'disconnected'
   | 'error';
 
+export interface ChatModelInfo {
+  name: string;
+  provider: string;
+  display_name?: string | null;
+}
+
+export interface ChatIndexStatus {
+  state: 'running' | 'complete' | 'error';
+  files_parsed?: number;
+  symbols_inserted?: number;
+  duration_seconds?: number | null;
+  error?: string | null;
+}
+
 interface ServerMessage {
   type: string;
   session_id?: string;
   content?: string;
   detail?: string;
   messages?: Array<{ role: ChatRole; content: string }>;
+  /** Populated when type === 'model_list' */
+  models?: ChatModelInfo[];
+  refreshed_at?: string;
+  /** Populated when type === 'index_status' */
+  state?: 'running' | 'complete' | 'error';
+  files_parsed?: number;
+  symbols_inserted?: number;
+  duration_seconds?: number | null;
+  error?: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -100,9 +123,26 @@ interface ChatPanelProps {
   engineContext?: string;
   /** Override the resolved WebSocket URL (mostly for tests). */
   url?: string;
+  /**
+   * Called when the server pushes a model_list frame (e.g. after
+   * refresh_models). Lets parent components populate a model selector.
+   * Mirrors the PyQt `models_refreshed` signal.
+   */
+  onModelsRefreshed?: (models: ChatModelInfo[]) => void;
+  /**
+   * Called when the server pushes an index_status frame. Lets parent
+   * components surface codebase-indexing progress.
+   * Mirrors the PyQt `index_status_changed` signal.
+   */
+  onIndexStatus?: (status: ChatIndexStatus) => void;
 }
 
-export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
+export function ChatPanel({
+  engineContext,
+  url,
+  onModelsRefreshed,
+  onIndexStatus,
+}: ChatPanelProps = {}) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [status, setStatus] = useState<ConnectionStatus>('connecting');
@@ -170,6 +210,28 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
             );
           }
           break;
+        case 'model_list':
+          // Mirrors the PyQt `models_refreshed` signal. Forwards the server-
+          // pushed model list to the parent component so it can populate a
+          // model selector. Gap 2 fix — see docs/development/sidekick_parity.md.
+          if (Array.isArray(payload.models) && onModelsRefreshed) {
+            onModelsRefreshed(payload.models);
+          }
+          break;
+        case 'index_status':
+          // Mirrors the PyQt `index_status_changed` signal. Forwards
+          // codebase-indexing progress to the parent component.
+          // Gap 2 fix — see docs/development/sidekick_parity.md.
+          if (onIndexStatus && payload.state) {
+            onIndexStatus({
+              state: payload.state,
+              files_parsed: payload.files_parsed ?? 0,
+              symbols_inserted: payload.symbols_inserted ?? 0,
+              duration_seconds: payload.duration_seconds ?? null,
+              error: payload.error ?? null,
+            });
+          }
+          break;
         case 'error':
           setMessages((prev) => [
             ...prev,
@@ -186,7 +248,7 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
           break;
       }
     },
-    [appendAssistantChunk]
+    [appendAssistantChunk, onModelsRefreshed, onIndexStatus]
   );
 
   // Connect (and re-connect with exponential backoff).

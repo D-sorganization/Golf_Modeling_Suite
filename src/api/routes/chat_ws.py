@@ -24,12 +24,16 @@ async def chat_stream(websocket: WebSocket, session_id: str = "new") -> None:  #
             {"action": "send", "message": "...", "engine_context": "mujoco"}
             {"action": "history"}
             {"action": "new_session"}
+            {"action": "refresh_models"}
+            {"action": "index_codebase"}
 
         Server -> Client:
             {"type": "session_info", "session_id": "..."}
             {"type": "chunk", "content": "..."}
             {"type": "complete", "session_id": "..."}
             {"type": "history", "messages": [...]}
+            {"type": "model_list", "models": [...], "refreshed_at": "..."}
+            {"type": "index_status", "state": "running"|"complete"|"error", ...}
             {"type": "error", "detail": "..."}
     """
     if not (websocket is not None):
@@ -61,7 +65,9 @@ async def chat_stream(websocket: WebSocket, session_id: str = "new") -> None:  #
                     )
                     continue
 
-                engine_context = msg.get("engine_context")
+                # Accept both keys: React clients send ``engine_context``;
+                # PyQt clients send ``app_context``. Mirrors router_factory.py.
+                engine_context = msg.get("engine_context") or msg.get("app_context")
 
                 try:
                     chat_service.add_user_message(
@@ -94,6 +100,37 @@ async def chat_stream(websocket: WebSocket, session_id: str = "new") -> None:  #
                 await websocket.send_json(
                     {"type": "session_created", "session_id": session_id}
                 )
+
+            elif action == "refresh_models":
+                # Tools issue #2547 / PR #2566: poll the configured provider
+                # for available models and ship the result over the chat
+                # socket so the dock widget can repopulate its dropdown.
+                payload = chat_service.refresh_models()
+                await websocket.send_json(
+                    {
+                        "type": "model_list",
+                        "models": payload["models"],
+                        "refreshed_at": payload["refreshed_at"],
+                    }
+                )
+
+            elif action == "index_codebase":
+                # Tools issue #2549 / PR #2567. Run the existing
+                # codemap.indexer.rebuild pathway in a worker thread and
+                # ship a ``running`` event up front, then a final
+                # ``complete`` (or ``error``) event when the rebuild
+                # finishes. We deliberately don't reimplement the
+                # indexer here — see ``src/shared/python/codemap``.
+                await websocket.send_json(
+                    {
+                        "type": "index_status",
+                        "state": "running",
+                        "files_parsed": 0,
+                        "symbols_inserted": 0,
+                    }
+                )
+                payload = await chat_service.run_codemap_rebuild()
+                await websocket.send_json({"type": "index_status", **payload})
 
             else:
                 await websocket.send_json(
