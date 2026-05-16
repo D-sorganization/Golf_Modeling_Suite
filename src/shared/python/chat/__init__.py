@@ -1,8 +1,13 @@
-"""Shared AI chat widget and contract models.
+"""Shared AI chat widget, service base, and contract models.
 
 Provides a portable ChatDockWidget (QDockWidget + QWebSocket) that connects
 to any FastAPI-based chat WebSocket endpoint, plus Pydantic contract models
-for the chat protocol.
+for the chat protocol, a shared ChatServiceBase for session management,
+and a reusable WebSocket router factory.
+
+Importing this package also registers :class:`~.sidekick_tool.SidekickTool`
+with the launcher's embeddable-tool registry (guarded by
+:func:`contextlib.suppress` so headless contexts are unaffected).
 
 Usage::
 
@@ -15,6 +20,13 @@ Usage::
     )
     main_window.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
 """
+
+import contextlib
+
+with contextlib.suppress(ImportError):
+    from . import sidekick_tool as _sidekick_tool  # noqa: F401
+
+from .service_base import ChatMessage, ChatServiceBase, ChatSession
 
 try:
     from .models import (
@@ -40,6 +52,10 @@ def __getattr__(name: str):
         from . import chat_dock_widget
 
         return getattr(chat_dock_widget, name)
+    if name == "create_chat_router":
+        from .router_factory import create_chat_router
+
+        return create_chat_router
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
@@ -50,4 +66,8 @@ __all__ = [
     "ChatChunkResponse",
     "ChatSessionInfo",
     "ChatHistoryResponse",
+    "ChatServiceBase",
+    "ChatSession",
+    "ChatMessage",
+    "create_chat_router",
 ]
