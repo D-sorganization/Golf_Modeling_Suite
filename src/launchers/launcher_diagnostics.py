@@ -134,6 +134,53 @@ class LauncherDiagnostics:
         self.results: list[DiagnosticResult] = []
         self._start_time = time.time()
 
+    @staticmethod
+    def _push_to_ring_buffer(results: list[DiagnosticResult]) -> None:
+        """Emit diagnostic results into the app-state ring buffer (issue #5474).
+
+                Called at the end of :meth:
+        un_all_checks after all checks complete.
+                Uses a lazy import so the ring buffer is only required at call-time.
+                Best-effort: any import or record error is silently swallowed.
+        """
+        try:
+            from src.shared.python.ai.chat_context import record_event
+
+            for r in results:
+                record_event(
+                    "diagnostic",
+                    {
+                        "check": r.name,
+                        "status": r.status,
+                        "message": r.message,
+                        "duration_ms": r.duration_ms,
+                    },
+                )
+        except Exception:  # noqa: BLE001
+            pass
+
+    def _record_result(self, result: DiagnosticResult) -> None:
+        """Append *result* to ``self.results`` and push it to the ring buffer.
+
+        Best-effort ring-buffer write: any failure from `record_event` is
+        silently swallowed so a buffer outage never breaks the diagnostic run.
+        """
+        self.results.append(result)
+        try:
+            from src.shared.python.ai.chat_context import record_event
+
+            record_event(
+                "diagnostic",
+                {
+                    "check": result.name,
+                    "status": result.status,
+                    "message": result.message,
+                    "duration_ms": result.duration_ms,
+                },
+            )
+        except Exception:  # noqa: BLE001
+            pass
+
     def run_all_checks(self) -> dict[str, Any]:
         """Run all diagnostic checks and return comprehensive report.
 
@@ -154,6 +201,9 @@ class LauncherDiagnostics:
         self.check_biomech_siblings()
         self.check_tools_sidebar()
 
+        # Feed all results into the app-state ring buffer so the Sidekick
+        # chat assistant can include them via get_chat_context() (issue #5474).
+        self._push_to_ring_buffer(self.results)
         # Calculate summary
         passed = sum(1 for r in self.results if r.status == "pass")
         failed = sum(1 for r in self.results if r.status == "fail")
@@ -192,7 +242,7 @@ class LauncherDiagnostics:
             details=details,
             duration_ms=(time.time() - start) * 1000,
         )
-        self.results.append(result)
+        self._record_result(result)
         return result
 
     def _validate_models_yaml_content(
