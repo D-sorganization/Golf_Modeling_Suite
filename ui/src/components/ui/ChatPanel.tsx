@@ -17,6 +17,12 @@
  * exponential backoff reconnect (capped at 30 s).
  *
  * See issue #3505.
+ *
+ * Added in #5491:
+ *   - react-markdown rendering for assistant bubbles
+ *   - Retry connection button when status is error/disconnected
+ *   - Quick-action buttons in empty state
+ *   - onPaste clipboard image capture in composer
  */
 
 import {
@@ -25,10 +31,13 @@ import {
   useMemo,
   useRef,
   useState,
+  type ClipboardEvent,
   type FormEvent,
   type KeyboardEvent,
 } from 'react';
-import { Send, MessageSquare } from 'lucide-react';
+import { Send, MessageSquare, RefreshCw, Paperclip, X } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import rehypeSanitize from 'rehype-sanitize';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -54,6 +63,14 @@ interface ServerMessage {
   content?: string;
   detail?: string;
   messages?: Array<{ role: ChatRole; content: string }>;
+}
+
+
+interface PastedImage {
+  /** Object URL for preview — revoke on removal. */
+  objectUrl: string;
+  /** Original filename or a generated fallback. */
+  name: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -92,6 +109,22 @@ function makeId(): string {
 }
 
 // ---------------------------------------------------------------------------
+// Quick-action definitions (#5491)
+// ---------------------------------------------------------------------------
+
+interface QuickAction {
+  label: string;
+  message: string;
+}
+
+const QUICK_ACTIONS: QuickAction[] = [
+  { label: 'Summarize last run', message: 'Summarize the last simulation run.' },
+  { label: 'Show FSP metrics', message: 'Show the current FSP metrics.' },
+  { label: 'Compare engines', message: 'Compare the available physics engines for this scenario.' },
+  { label: 'List parameters', message: 'List all configurable parameters for the active engine.' },
+];
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -108,6 +141,7 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
   const [status, setStatus] = useState<ConnectionStatus>('connecting');
   const [streaming, setStreaming] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [pastedImage, setPastedImage] = useState<PastedImage | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectAttemptsRef = useRef(0);
@@ -115,6 +149,8 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
   const closedByUserRef = useRef(false);
   const assistantIdRef = useRef<string | null>(null);
   const listEndRef = useRef<HTMLDivElement | null>(null);
+  // Stable ref so the retry callback can always access the latest connect fn.
+  const connectRef = useRef<(() => void) | null>(null);
 
   const targetUrl = useMemo(() => url ?? resolveChatUrl('new'), [url]);
 
@@ -230,9 +266,10 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
         RECONNECT_BASE_MS * 2 ** (attempt - 1),
         RECONNECT_MAX_MS,
       );
-      reconnectTimerRef.current = setTimeout(connect, delay);
+      reconnectTimerRef.current = setTimeout(connect, delay); // tracked: #3505
     };
 
+    connectRef.current = connect;
     connect();
 
     return () => {
@@ -261,35 +298,50 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
     }
   }, [messages]);
 
-  const sendMessage = useCallback(() => {
-    const text = input.trim();
-    if (!text) return;
-    const socket = wsRef.current;
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
+
+  // Revoke object URL on unmount to avoid memory leaks.
+  useEffect(() => {
+    return () => {
+      if (pastedImage) {
+        URL.revokeObjectURL(pastedImage.objectUrl);
+      }
+    };
+  }, [pastedImage]);
+
+  const sendMessage = useCallback(
+    (overrideText?: string) => {
+      const text = (overrideText ?? input).trim();
+      if (!text) return;
+      const socket = wsRef.current;
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: makeId(),
+            role: 'system',
+            content: 'Not connected. Message not sent.',
+          },
+        ]);
+        return;
+      }
+
       setMessages((prev) => [
         ...prev,
-        {
-          id: makeId(),
-          role: 'system',
-          content: 'Not connected. Message not sent.',
-        },
+        { id: makeId(), role: 'user', content: text },
       ]);
-      return;
-    }
-
-    setMessages((prev) => [
-      ...prev,
-      { id: makeId(), role: 'user', content: text },
-    ]);
-    const payload: Record<string, string> = { action: 'send', message: text };
-    if (engineContext) {
-      payload.engine_context = engineContext;
-    }
-    socket.send(JSON.stringify(payload));
-    assistantIdRef.current = null;
-    setStreaming(true);
-    setInput('');
-  }, [input, engineContext]);
+      const payload: Record<string, string> = { action: 'send', message: text };
+      if (engineContext) {
+        payload.engine_context = engineContext;
+      }
+      socket.send(JSON.stringify(payload));
+      assistantIdRef.current = null;
+      setStreaming(true);
+      if (!overrideText) {
+        setInput('');
+      }
+    },
+    [input, engineContext],
+  );
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -303,6 +355,54 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
     }
   };
 
+
+  /** Capture image/* items from clipboard paste in the composer (#5491). */
+  const handlePaste = useCallback(
+    (event: ClipboardEvent<HTMLTextAreaElement>) => {
+      const items = Array.from(event.clipboardData?.items ?? []);
+      const imageItem = items.find((item) => item.type.startsWith('image/'));
+      if (!imageItem) return;
+
+      event.preventDefault(); // do not paste as text
+      const file = imageItem.getAsFile();
+      if (!file) return;
+
+      if (pastedImage) {
+        URL.revokeObjectURL(pastedImage.objectUrl);
+      }
+      const objectUrl = URL.createObjectURL(file);
+      const name =
+        file.name && file.name !== 'image.png' ? file.name : 'pasted-image.png';
+      setPastedImage({ objectUrl, name });
+    },
+    [pastedImage],
+  );
+
+  const removePastedImage = useCallback(() => {
+    if (pastedImage) {
+      URL.revokeObjectURL(pastedImage.objectUrl);
+      setPastedImage(null);
+    }
+  }, [pastedImage]);
+
+  /** Manual retry — cancel any pending backoff timer and reconnect now (#5491). */
+  const handleRetry = useCallback(() => {
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+    reconnectAttemptsRef.current = 0;
+    if (wsRef.current) {
+      try {
+        wsRef.current.close();
+      } catch {
+        // ignore
+      }
+      wsRef.current = null;
+    }
+    connectRef.current?.();
+  }, []);
+
   const statusColor: Record<ConnectionStatus, string> = {
     connecting: 'text-yellow-400',
     connected: 'text-green-400',
@@ -315,6 +415,8 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
     disconnected: 'Disconnected',
     error: 'Error',
   };
+
+  const showRetry = status === 'error' || status === 'disconnected';
 
   return (
     <div
@@ -354,11 +456,31 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
             </span>
           )}
         </div>
-        <span
-          className={`text-xs font-mono flex items-center gap-1 ${statusColor[status]}`}
-          aria-live="polite"
-          data-testid="chat-status"
-        >
+        <div className="flex items-center gap-2">
+          {/* Retry button — visible when disconnected or errored (#5491) */}
+          {showRetry && (
+            <button
+              type="button"
+              onClick={handleRetry}
+              aria-label="Retry connection"
+              data-testid="chat-retry"
+              className="sidekick-focus-ring flex items-center gap-1 px-2 py-1 rounded border text-xs transition-colors"
+              style={{
+                backgroundColor: 'transparent',
+                borderColor: 'var(--sidekick-color-warning, #f59e0b)',
+                color: 'var(--sidekick-color-warning, #f59e0b)',
+              }}
+            >
+              <RefreshCw className="w-3 h-3" aria-hidden="true" />
+              Retry
+            </button>
+          )}
+
+          <span
+            className={`text-xs font-mono flex items-center gap-1 ${statusColor[status]}`}
+            aria-live="polite"
+            data-testid="chat-status"
+          >
           <span
             aria-hidden
             style={{
@@ -372,8 +494,9 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
                   : 'var(--sidekick-color-warning, #f59e0b)',
             }}
           />
-          {statusLabel[status]}
-        </span>
+            {statusLabel[status]}
+          </span>
+        </div>
       </div>
 
       {/* Messages */}
@@ -387,11 +510,40 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
         data-testid="chat-messages"
       >
         {messages.length === 0 && (
-          <div
-            className="text-center pt-6"
-            style={{ color: 'var(--sidekick-color-text-subtle)' }}
-          >
-            Start a conversation. Press Enter to send, Shift+Enter for newline.
+          <div className="flex flex-col items-center gap-4 pt-6">
+            <p
+              className="text-center text-sm"
+              style={{ color: 'var(--sidekick-color-text-subtle)' }}
+            >
+              Start a conversation. Press Enter to send, Shift+Enter for newline.
+            </p>
+
+            {/* Quick-action buttons (#5491) */}
+            <div
+              className="flex flex-wrap justify-center gap-2"
+              aria-label="Quick actions"
+              data-testid="chat-quick-actions"
+            >
+              {QUICK_ACTIONS.map((qa) => (
+                <button
+                  key={qa.label}
+                  type="button"
+                  onClick={() => {
+                    setInput(qa.message);
+                    sendMessage(qa.message);
+                  }}
+                  disabled={status !== 'connected'}
+                  className="sidekick-focus-ring px-3 py-1.5 rounded border text-xs transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{
+                    backgroundColor: 'var(--sidekick-color-surface-raised, #374151)',
+                    borderColor: 'var(--sidekick-color-border)',
+                    color: 'var(--sidekick-color-text)',
+                  }}
+                >
+                  {qa.label}
+                </button>
+              ))}
+            </div>
           </div>
         )}
         {messages.map((m) => (
@@ -403,7 +555,11 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
             data-role={m.role}
           >
             <div
-              className="sidekick-chat-bubble max-w-[80%] rounded-lg px-3 py-2 whitespace-pre-wrap break-words border"
+              className={`sidekick-chat-bubble max-w-[80%] rounded-lg px-3 py-2 break-words border${
+                m.role === 'assistant'
+                  ? ' prose prose-invert prose-sm max-w-none'
+                  : ' whitespace-pre-wrap'
+              }`}
               style={{
                 backgroundColor:
                   m.role === 'user'
@@ -419,7 +575,14 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
               }}
               data-role={m.role}
             >
-              {m.content}
+              {/* Render markdown for assistant messages only (#5491) */}
+              {m.role === 'assistant' ? (
+                <ReactMarkdown rehypePlugins={[rehypeSanitize]}>
+                  {m.content}
+                </ReactMarkdown>
+              ) : (
+                m.content
+              )}
             </div>
           </div>
         ))}
@@ -435,6 +598,42 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
         <div ref={listEndRef} />
       </div>
 
+      {/* Pasted image preview (#5491) */}
+      {pastedImage && (
+        <div
+          className="flex items-center gap-2 px-3 py-2 border-t text-xs"
+          style={{
+            borderTopColor: 'var(--sidekick-color-border)',
+            backgroundColor: 'var(--sidekick-color-surface-raised, #1f2937)',
+          }}
+          data-testid="chat-image-preview"
+        >
+          <Paperclip className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+          <img
+            src={pastedImage.objectUrl}
+            alt="Pasted attachment preview"
+            className="h-10 w-10 object-cover rounded border"
+            style={{ borderColor: 'var(--sidekick-color-border)' }}
+          />
+          <span
+            className="flex-1 truncate font-mono"
+            style={{ color: 'var(--sidekick-color-text-subtle)' }}
+            title={pastedImage.name}
+          >
+            {pastedImage.name}
+          </span>
+          <button
+            type="button"
+            onClick={removePastedImage}
+            aria-label="Remove attachment"
+            className="sidekick-focus-ring rounded p-0.5 transition-colors"
+            style={{ color: 'var(--sidekick-color-text-subtle)' }}
+          >
+            <X className="w-3 h-3" aria-hidden="true" />
+          </button>
+        </div>
+      )}
+
       {/* Composer */}
       <form
         onSubmit={handleSubmit}
@@ -445,9 +644,10 @@ export function ChatPanel({ engineContext, url }: ChatPanelProps = {}) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
           placeholder={
             status === 'connected'
-              ? 'Ask a question...'
+              ? 'Ask a question... (paste an image to attach)'
               : 'Waiting for connection...'
           }
           rows={2}
