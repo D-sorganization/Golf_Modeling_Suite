@@ -522,12 +522,76 @@ _SCRIPT_HANDLERS = [
         script_path="src/shared/python/pose_estimation/openpose_gui.py",
         display_name="OpenPose",
     ),
+    # --- Tile handlers added for issues #5512, #5513, #5515, #5516, #5517 ---
+    ScriptHandler(
+        model_types={"shot_tracer"},
+        script_path="src/launchers/shot_tracer.py",
+        display_name="Shot Tracer",
+    ),
+    ScriptHandler(
+        model_types={"pose_studio"},
+        script_path="src/tools/pose_studio/__main__.py",
+        display_name="Pose Studio",
+    ),
+    ScriptHandler(
+        model_types={"drake_dashboard"},
+        script_path="src/launchers/drake_dashboard.py",
+        display_name="Drake Dashboard",
+    ),
+    ScriptHandler(
+        model_types={"mujoco_dashboard"},
+        script_path="src/launchers/mujoco_dashboard.py",
+        display_name="MuJoCo Dashboard",
+    ),
+    ScriptHandler(
+        model_types={"pinocchio_dashboard"},
+        script_path="src/launchers/pinocchio_dashboard.py",
+        display_name="Pinocchio Dashboard",
+    ),
+    ScriptHandler(
+        model_types={"swing_optimization"},
+        script_path="src/tools/swing_optimization/launch.py",
+        display_name="Swing Optimization",
+    ),
+    ScriptHandler(
+        model_types={"injury_risk"},
+        script_path="src/tools/injury_risk/launch.py",
+        display_name="Injury Risk Analysis",
+    ),
 ]
 
 
 # Backward-compatible aliases for the old per-engine handler classes.
 # These were replaced by the data-driven ModuleHandler/ScriptHandler tables
 # but some tests import them by name.
+
+# Named aliases for tile handlers added in issues #5512 and #5513.
+ShotTracerHandler = type(
+    "ShotTracerHandler",
+    (ScriptHandler,),
+    {
+        "__init__": lambda self: ScriptHandler.__init__(
+            self,
+            model_types={"shot_tracer"},
+            script_path="src/launchers/shot_tracer.py",
+            display_name="Shot Tracer",
+        ),
+    },
+)
+
+PoseStudioHandler = type(
+    "PoseStudioHandler",
+    (ScriptHandler,),
+    {
+        "__init__": lambda self: ScriptHandler.__init__(
+            self,
+            model_types={"pose_studio"},
+            script_path="src/tools/pose_studio/__main__.py",
+            display_name="Pose Studio",
+        ),
+    },
+)
+
 HumanoidMuJoCoHandler = type(
     "HumanoidMuJoCoHandler",
     (ModuleHandler,),

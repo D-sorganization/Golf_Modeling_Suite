@@ -292,6 +292,143 @@
         "project_overview"
       ],
       "order": 15
+    },
+    {
+      "id": "shot_tracer",
+      "name": "Shot Tracer",
+      "description": "Multi-model ball-flight shot tracer with 3-D trajectory comparison across physics engines",
+      "category": "simulation",
+      "type": "special_app",
+      "path": "src/launchers/shot_tracer.py",
+      "logo": "golf_logo.png",
+      "status": "ready",
+      "capabilities": ["trajectory", "ball_flight", "multi_model", "3d_visualization"],
+      "order": 16
+    },
+    {
+      "id": "pose_studio",
+      "name": "Pose Studio",
+      "description": "Cross-engine interactive pose editor for building and validating starting poses",
+      "category": "tool",
+      "type": "special_app",
+      "path": "src/tools/pose_studio/__main__.py",
+      "logo": "movement_optimizer.png",
+      "status": "experimental",
+      "capabilities": ["pose_editing", "cross_engine", "ik", "retargeting"],
+      "order": 17
+    },
+    {
+      "id": "drake_dashboard",
+      "name": "Drake Dashboard",
+      "description": "Unified analytics dashboard backed by the Drake physics engine",
+      "category": "physics_engine",
+      "type": "special_app",
+      "path": "src/launchers/drake_dashboard.py",
+      "logo": "golf_robot_cropped.png",
+      "status": "experimental",
+      "capabilities": ["rigid_body", "optimization", "contact", "dashboard"],
+      "order": 18
+    },
+    {
+      "id": "mujoco_dashboard",
+      "name": "MuJoCo Dashboard",
+      "description": "Unified analytics dashboard backed by the MuJoCo physics engine",
+      "category": "physics_engine",
+      "type": "special_app",
+      "path": "src/launchers/mujoco_dashboard.py",
+      "logo": "golf_robot_cropped.png",
+      "status": "experimental",
+      "capabilities": ["rigid_body", "contact", "tendons", "dashboard"],
+      "order": 19
+    },
+    {
+      "id": "pinocchio_dashboard",
+      "name": "Pinocchio Dashboard",
+      "description": "Unified analytics dashboard backed by the Pinocchio rigid-body engine",
+      "category": "physics_engine",
+      "type": "special_app",
+      "path": "src/launchers/pinocchio_dashboard.py",
+      "logo": "pinocchio.png",
+      "status": "experimental",
+      "capabilities": ["rigid_body", "inverse_kinematics", "jacobian", "dashboard"],
+      "order": 20
+    },
+    {
+      "id": "swing_optimization",
+      "name": "Swing Optimization",
+      "description": "Cross-engine trajectory optimisation for golf swing mechanics; REST API at /analysis/optimize",
+      "category": "biomechanics",
+      "type": "special_app",
+      "path": "src/tools/swing_optimization/launch.py",
+      "logo": "movement_optimizer.png",
+      "status": "experimental",
+      "web_route": "/tools/swing-optimization",
+      "capabilities": ["trajectory_optimization", "biomechanics", "cross_engine"],
+      "order": 21
+    },
+    {
+      "id": "injury_risk",
+      "name": "Injury Risk Analysis",
+      "description": "Joint stress, spinal load and swing-modification recommendations for injury prevention",
+      "category": "biomechanics",
+      "type": "special_app",
+      "path": "src/tools/injury_risk/launch.py",
+      "logo": "golf_logo.png",
+      "status": "experimental",
+      "capabilities": ["injury_risk", "joint_stress", "spinal_load", "swing_modifications"],
+      "order": 22
+    },
+    {
+      "id": "terrain_api",
+      "name": "Terrain API",
+      "description": "REST API for terrain height-map queries, slope analysis, and course surface modelling (6 endpoints)",
+      "category": "tool",
+      "type": "special_app",
+      "path": "src/api/routes/terrain.py",
+      "logo": "putting_green_modern.png",
+      "status": "utility",
+      "web_route": "/tools/terrain",
+      "capabilities": ["terrain", "height_map", "slope", "surface_modeling"],
+      "order": 23
+    },
+    {
+      "id": "analysis_tools_api",
+      "name": "Analysis Tools API",
+      "description": "REST API for swing analysis, kinematics, and biomechanics computation endpoints",
+      "category": "tool",
+      "type": "special_app",
+      "path": "src/api/routes/analysis_tools.py",
+      "logo": "data_explorer_modern.png",
+      "status": "utility",
+      "web_route": "/tools/analysis",
+      "capabilities": ["swing_analysis", "kinematics", "biomechanics", "api"],
+      "order": 24
+    },
+    {
+      "id": "chat_sidekick",
+      "name": "Chat / AI Sidekick",
+      "description": "AI assistant chat panel — ask questions about the suite, get analysis help, or stream results",
+      "category": "tool",
+      "type": "special_app",
+      "path": "src/tools/sidekick/_embed_adapter.py",
+      "logo": "golf_logo.png",
+      "status": "experimental",
+      "web_route": "/chat",
+      "capabilities": ["ai_chat", "assistant", "streaming", "analysis_help"],
+      "order": 25
+    },
+    {
+      "id": "motion_pipeline",
+      "name": "Motion Pipeline",
+      "description": "End-to-end markerless mocap pipeline: video → pose estimation → retargeting → physics-engine motion matching",
+      "category": "motion_matching",
+      "type": "special_app",
+      "path": "src/launchers/motion_capture_launcher.py",
+      "logo": "mediapipe.png",
+      "status": "experimental",
+      "web_route": "/tools/motion-pipeline",
+      "capabilities": ["markerless_mocap", "pose_estimation", "retargeting", "motion_matching", "orchestration"],
+      "order": 26
     }
   ]
 }

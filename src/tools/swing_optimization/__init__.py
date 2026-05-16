@@ -1,0 +1,1 @@
+"""Swing Optimization launcher package."""
