@@ -10,7 +10,16 @@ def test_angle_of_repose_optimization() -> None:
     # Target is 32.0. Mock relation: 20.0 + (friction * 24.0)
     # 32 = 20 + 24f => f = 12/24 = 0.5
 
-    optimizer = CalibrationOptimizer(exp)
+    # The placeholder formula in AngleOfReposeExperiment is now opt-in
+    # via ``use_mock=True`` (see #5486). Wrap the experiment so the
+    # optimizer's call site does not need to know about the kwarg.
+    class _MockOnlyExperiment:
+        target_angle = exp.target_angle
+
+        def run_simulation(self, params: dict) -> float:
+            return exp.run_simulation(params, use_mock=True)
+
+    optimizer = CalibrationOptimizer(_MockOnlyExperiment())
     best_params = optimizer.optimize()
 
     assert "friction_coefficient" in best_params

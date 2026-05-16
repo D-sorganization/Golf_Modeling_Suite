@@ -108,7 +108,10 @@ models:
     launcher:
       category: "simulation"
       logo: "assets/bunkershot_icon.png"
-      status: "ready"
+      # The chrono and liggghts backends are stubs that raise
+      # BackendNotImplementedError; only the MuJoCo/MPM driver runs.
+      # See #5486 and follow-ups #5551, #5552, #5553.
+      status: "experimental"
       default_launch: "tab"
 
   # =============================================================================

@@ -5,7 +5,9 @@ from bunkershot3d.calibration.drained_shear_cell import DrainedShearCellExperime
 
 def test_angle_of_repose() -> None:
     exp = AngleOfReposeExperiment(backend="mock")
-    angle = exp.run_simulation({"friction_coefficient": 0.5})
+    # The placeholder formula must now be opted into explicitly so callers
+    # cannot mistake it for a real angle-of-repose simulation (see #5486).
+    angle = exp.run_simulation({"friction_coefficient": 0.5}, use_mock=True)
     assert angle == 32.0  # 20.0 + (0.5 * 24.0)
 
     best = exp.calibrate()
