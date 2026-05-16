@@ -38,6 +38,7 @@ from PyQt6.QtWidgets import (
 from src.shared.python.ai.gui.settings_dialog import AISettingsDialog
 from src.shared.python.ai.rag.indexer_worker import IndexerWorker
 from src.shared.python.ai.rag.simple_rag import SimpleRAGStore
+from src.shared.python.ai.sample_tools import register_golf_suite_tools
 from src.shared.python.ai.tool_registry import ToolCategory, get_global_registry
 from src.shared.python.ai.tools.file_ops import register_file_tools
 from src.shared.python.logging_pkg.logging_config import get_logger
@@ -330,8 +331,15 @@ class AIAssistantPanel(QWidget):
                 self._add_message_to_ui(msg.role, msg.content, msg.timestamp)
 
     def _init_tools(self) -> None:
-        """Initialize default tools."""
-        # 1. File Ops
+        """Initialize default tools including the full Golf Suite tool set.
+
+        Registers Golf Suite simulation/analysis tools so they are reachable
+        from the desktop assistant (fixes issue #5475 — tools=[] regression).
+        """
+        # 1. Golf Suite tools (simulation, analysis, validation, education)
+        register_golf_suite_tools(self._tools_registry)
+
+        # 2. File Ops
         register_file_tools(self._tools_registry)
 
         # 2. RAG Search Tool
@@ -684,12 +692,16 @@ class AIAssistantPanel(QWidget):
         self._set_status("Thinking...")
         self._send_btn.setEnabled(False)
 
+        # Build tool list from registry in OpenAI format (compatible with all
+        # adapters via ToolDeclaration conversion in StreamWorker.run).
+        tools = self._tools_registry.get_tools_for_provider("openai")
+
         # Create streaming worker
         self._current_worker = StreamWorker(
             self._adapter,
             message,
             self._context,
-            [],  # Tools will be added later
+            tools,
         )
         self._current_worker.chunk_received.connect(self._on_stream_chunk)
         self._current_worker.finished.connect(self._on_stream_finished)

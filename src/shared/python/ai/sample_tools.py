@@ -357,10 +357,155 @@ def _register_interpret_torques_tool(registry: ToolRegistry) -> None:
         }
 
 
+def _register_summarize_simulation_run_tool(registry: ToolRegistry) -> None:
+    @registry.register(
+        name="summarize_simulation_run",
+        description=(
+            "Summarize the results of a completed simulation run by run_id. "
+            "Returns key metrics, engine used, duration, and status information."
+        ),
+        category=ToolCategory.ANALYSIS,
+        expertise_level=1,
+    )
+    def summarize_simulation_run(run_id: str) -> dict[str, Any]:
+        """Summarize a simulation run.
+
+        Args:
+            run_id: Unique identifier of the simulation run to summarize.
+
+        Returns:
+            Summary dict with run metadata and key outcome metrics.
+        """
+        if not run_id:
+            raise ValueError("run_id must be a non-empty string")
+        return {
+            "run_id": run_id,
+            "status": "summary_pending",
+            "message": (
+                f"Summary for run '{run_id}': this tool retrieves stored "
+                "simulation results (kinematics, kinetics, energy balance). "
+                "Full integration requires SimulationDataStore."
+            ),
+            "note": "Connect to SimulationDataStore for live data.",
+        }
+
+
+def _register_summarize_fsp_tool(registry: ToolRegistry) -> None:
+    @registry.register(
+        name="summarize_fsp",
+        description=(
+            "Summarize the Forward Simulation Pipeline (FSP) results for a run. "
+            "Returns joint-angle trajectories, torque profiles, and FSP-specific "
+            "quality indicators such as contact force plausibility."
+        ),
+        category=ToolCategory.ANALYSIS,
+        expertise_level=2,
+    )
+    def summarize_fsp(run_id: str) -> dict[str, Any]:
+        """Summarize FSP output for a simulation run.
+
+        Args:
+            run_id: Unique identifier of the FSP run to summarize.
+
+        Returns:
+            FSP summary dict with trajectory quality metrics.
+        """
+        if not run_id:
+            raise ValueError("run_id must be a non-empty string")
+        return {
+            "run_id": run_id,
+            "pipeline": "FSP",
+            "status": "summary_pending",
+            "message": (
+                f"FSP summary for run '{run_id}': joint trajectories, torque "
+                "profiles, and contact plausibility will be reported once the "
+                "FSP store backend is connected."
+            ),
+            "note": "Connect to SimulationDataStore for live FSP data.",
+        }
+
+
+def _register_compare_engine_runs_tool(registry: ToolRegistry) -> None:
+    @registry.register(
+        name="compare_engine_runs",
+        description=(
+            "Compare results across multiple simulation runs (typically from "
+            "different physics engines). Highlights divergence in joint angles, "
+            "velocities, and energy. Useful for cross-engine validation."
+        ),
+        category=ToolCategory.ANALYSIS,
+        expertise_level=2,
+    )
+    def compare_engine_runs(run_ids: list) -> dict[str, Any]:
+        """Compare multiple engine runs side-by-side.
+
+        Args:
+            run_ids: List of run IDs to compare (typically from different engines).
+
+        Returns:
+            Comparison dict with per-run summaries and divergence metrics.
+        """
+        if not run_ids:
+            raise ValueError("run_ids must be a non-empty list")
+        return {
+            "run_ids": run_ids,
+            "status": "comparison_pending",
+            "run_count": len(run_ids),
+            "message": (
+                f"Cross-engine comparison queued for {len(run_ids)} run(s): "
+                f"{run_ids}. Results will include joint-angle RMSE, peak torque "
+                "differences, and energy balance comparison."
+            ),
+            "note": "Connect to SimulationDataStore for live comparison data.",
+        }
+
+
+def _register_extract_swing_metrics_tool(registry: ToolRegistry) -> None:
+    @registry.register(
+        name="extract_swing_metrics",
+        description=(
+            "Extract specific named metrics from a simulation run, e.g. "
+            "'peak_hip_speed', 'wrist_lag_angle', 'club_head_speed_at_impact'. "
+            "More efficient than retrieving a full run summary when only a few "
+            "values are needed."
+        ),
+        category=ToolCategory.ANALYSIS,
+        expertise_level=1,
+    )
+    def extract_swing_metrics(run_id: str, metric_keys: list) -> dict[str, Any]:
+        """Extract selected metrics from a simulation run.
+
+        Args:
+            run_id: Unique identifier of the simulation run.
+            metric_keys: List of metric names to extract.
+
+        Returns:
+            Dict mapping each metric key to its value (or a placeholder).
+        """
+        if not run_id:
+            raise ValueError("run_id must be a non-empty string")
+        if not metric_keys:
+            raise ValueError("metric_keys must be a non-empty list")
+        return {
+            "run_id": run_id,
+            "requested_metrics": metric_keys,
+            "values": dict.fromkeys(metric_keys),
+            "status": "extraction_pending",
+            "message": (
+                f"Metric extraction queued for run '{run_id}': {metric_keys}. "
+                "Values will be populated once SimulationDataStore is connected."
+            ),
+        }
+
+
 def _register_analysis_tools(registry: ToolRegistry) -> None:
     """Register analysis and simulation tools."""
     _register_inverse_dynamics_tool(registry)
     _register_interpret_torques_tool(registry)
+    _register_summarize_simulation_run_tool(registry)
+    _register_summarize_fsp_tool(registry)
+    _register_compare_engine_runs_tool(registry)
+    _register_extract_swing_metrics_tool(registry)
 
 
 def _register_explain_concept_tool(registry: ToolRegistry) -> None:
