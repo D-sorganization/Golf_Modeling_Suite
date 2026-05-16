@@ -41,3 +41,20 @@ __all__: list[str] = [
     "__version__",
     "generate_reference_trajectory",
 ]
+
+# Exceptions
+from .exceptions import BackendNotImplementedError
+
+__all__ = [
+    "BackendNotImplementedError",
+    "ChronoDriver",
+    "LiggghtsDriver",
+    "MPMDriver",
+    "AngleOfReposeExperiment",
+    "CalibrationOptimizer",
+    "DrainedShearCellExperiment",
+    "ClubheadGenerator",
+    "BunkerShotResultReader",
+    "BunkerShotResultWriter",
+]
+
