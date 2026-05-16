@@ -206,15 +206,35 @@ class UnifiedToolsSidebar(QWidget):
     def _make_python_repl_widget(self, _sidebar: Any) -> QWidget:
         """Create the Python REPL widget for the Python REPL tab.
 
+        Uses :class:`~python_repl.PythonReplWidget` which provides an
+        interactive Python execution surface that shares variables with
+        the workspace registry.  Degrades gracefully to a placeholder
+        when Qt widgets cannot be constructed (e.g. headless CI).
+
         Args:
             _sidebar: The sidebar instance (matches factory signature).
 
         Returns:
-            A placeholder until a Qt-capable REPL widget is wired in.
+            The PythonReplWidget Qt widget, or a placeholder on failure.
 
-        Issue #5617.
+        Postcondition: returned widget is never None.
+
+        Issue #5649 — wire PythonReplWidget instead of placeholder.
         """
-        logger.debug("Python REPL tab: created placeholder")
+        try:
+            from .python_repl import PythonReplWidget
+
+            repl = PythonReplWidget(
+                namespace={},
+                registry=self.registry,
+                parent=self,
+            )
+            if repl.widget is not None:
+                logger.debug("Python REPL tab: created PythonReplWidget")
+                return repl.widget
+        except Exception:  # noqa: BLE001 — degrade gracefully
+            logger.debug("Python REPL widget unavailable, using placeholder")
+
         return self._placeholder("Python REPL")
 
     def _make_workspace_widget(self, _sidebar: Any) -> QWidget:
