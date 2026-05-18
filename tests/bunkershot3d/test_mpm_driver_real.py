@@ -9,6 +9,7 @@ import pytest
 import h5py
 from bunkershot3d.backends.mpm.driver import MPMDriver
 
+
 @pytest.fixture
 def dummy_config(tmp_path: Path) -> Path:
     yaml_content = """
@@ -53,15 +54,16 @@ def test_driver_state_evolves(dummy_config: Path, tmp_path: Path) -> None:
     driver = MPMDriver(dummy_config)
     output_path = tmp_path / "result.h5"
     driver.run(output_path)
-    
+
     assert output_path.exists()
-    
+
     # Read the output HDF5 and verify the state changed
     from bunkershot3d.io.schema import BunkerShotResultReader
+
     reader = BunkerShotResultReader(output_path)
     times, positions, _ = reader.read_clubhead_states()
     reader.close()
-    
+
     assert len(times) >= 2
     # The clubhead is moving along +x at 5.0 m/s without a trajectory file
     dist = np.linalg.norm(positions[-1] - positions[0])
@@ -74,30 +76,33 @@ def test_driver_output_changes_with_input(dummy_config: Path, tmp_path: Path) ->
     driver1 = MPMDriver(dummy_config)
     out1 = tmp_path / "result1.h5"
     driver1.run(out1)
-    
+
     # Modify the config to simulate a different input state (longer duration -> more movement)
     import yaml
+
     with open(dummy_config) as f:
         cfg = yaml.safe_load(f)
     cfg["trajectory"]["duration"] = 0.010
     cfg2_path = tmp_path / "canonical2.yaml"
     with open(cfg2_path, "w") as f:
         yaml.dump(cfg, f)
-        
+
     driver2 = MPMDriver(cfg2_path)
     out2 = tmp_path / "result2.h5"
     driver2.run(out2)
-    
+
     from bunkershot3d.io.schema import BunkerShotResultReader
-    
+
     reader1 = BunkerShotResultReader(out1)
     _, pos1, _ = reader1.read_clubhead_states()
     pos1_end = pos1[-1]
     reader1.close()
-    
+
     reader2 = BunkerShotResultReader(out2)
     _, pos2, _ = reader2.read_clubhead_states()
     pos2_end = pos2[-1]
     reader2.close()
-        
-    assert not np.allclose(pos1_end, pos2_end), "Driver output did not change with input state"
+
+    assert not np.allclose(pos1_end, pos2_end), (
+        "Driver output did not change with input state"
+    )
