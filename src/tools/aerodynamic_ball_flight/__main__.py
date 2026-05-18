@@ -5,10 +5,13 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPu
 import pyvista as pv
 from pyvistaqt import QtInteractor
 
-from src.shared.python.physics.ball_enhanced_simulator import EnhancedBallFlightSimulator
+from src.shared.python.physics.ball_enhanced_simulator import (
+    EnhancedBallFlightSimulator,
+)
 from src.shared.python.physics.ball_launch_conditions import LaunchConditions
 
 logger = logging.getLogger(__name__)
+
 
 class AeroBallFlightWindow(QMainWindow):
     def __init__(self):
@@ -36,14 +39,14 @@ class AeroBallFlightWindow(QMainWindow):
         # Simple launch conditions
         launch = LaunchConditions(
             velocity=70.0,
-            launch_angle=0.2, # ~11.5 deg
+            launch_angle=0.2,  # ~11.5 deg
             azimuth_angle=0.0,
             spin_rate=2500.0,
-            spin_axis=np.array([0.0, -1.0, 0.0])
+            spin_axis=np.array([0.0, -1.0, 0.0]),
         )
 
         trajectory = self.simulator.simulate_trajectory(launch)
-        
+
         points = []
         for p in trajectory:
             points.append(p.position)
@@ -51,7 +54,7 @@ class AeroBallFlightWindow(QMainWindow):
         if points:
             poly = pv.MultipleLines(points=points)
             self.plotter.add_mesh(poly, color="blue", line_width=2)
-            
+
             # Start and End markers
             start_sphere = pv.Sphere(radius=0.5, center=points[0])
             end_sphere = pv.Sphere(radius=0.5, center=points[-1])
@@ -61,12 +64,14 @@ class AeroBallFlightWindow(QMainWindow):
         self.plotter.add_axes()
         self.plotter.reset_camera()
 
+
 def main():
     logging.basicConfig(level=logging.INFO)
     app = QApplication(sys.argv)
     window = AeroBallFlightWindow()
     window.show()
     sys.exit(app.exec())
+
 
 if __name__ == "__main__":
     main()
