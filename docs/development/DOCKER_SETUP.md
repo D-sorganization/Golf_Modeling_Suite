@@ -44,23 +44,33 @@ docker-compose up --build
 
 ## Detailed Usage
 
-### Development (recommended)
+### Switching to Docker Environment in the App
 
-Live code editing with hot-reload on both frontend and backend:
+You can switch the simulation environment to Docker directly from the UpstreamDrift launcher UI:
 
-```bash
-docker-compose up
-```
+1. Open the UpstreamDrift launcher.
+2. Click the gear icon or **Settings** button to open the Settings dialog.
+3. Navigate to the **Configuration** tab.
+4. Under the "Execution Environment" section, check **Docker container (Linux, sandboxed)**.
+   *(Note: This requires Docker to be installed and the image to be built first.)*
 
-Source files are volume-mounted, so edits are reflected immediately.
+### Building the Docker Image
 
-### Build Only (no compose)
+You can build the Docker image directly from the Launcher UI or via CLI:
+
+#### Via Launcher UI:
+1. Open the **Settings** dialog and navigate to the **Configuration** tab.
+2. Scroll down to the **Docker Image** section.
+3. Select the desired stage (e.g., `all` to include every engine).
+4. Click **Build Image** and wait for the process to complete.
+
+#### Via CLI:
 
 ```bash
 # Build image
 docker build -t golf-suite:latest .
 
-# Run container
+# Run container manually
 docker run -p 8001:8001 -v $(pwd):/workspace golf-suite:latest \
     python3 -m uvicorn src.api.server:app --host 0.0.0.0 --port 8001
 ```

@@ -118,6 +118,8 @@ class LayoutManager:
                 "video_analyzer",
                 "data_explorer",
                 "project_map",
+                "golf_simulation_suite",
+                "aerodynamic_ball_flight",
             ]
 
         # Filter to available models

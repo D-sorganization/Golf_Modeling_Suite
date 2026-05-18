@@ -1382,7 +1382,15 @@ libraries during UI development.
 Docker provides an isolated, reproducible environment that is particularly useful
 for CI/CD, deployment, and users who want to avoid managing system dependencies.
 
-### Building the Docker Image
+### Switching to Docker via the UI
+
+You can switch to the Docker environment directly from the UpstreamDrift launcher UI:
+1. Open the launcher and click the **Settings** button (gear icon).
+2. Go to the **Configuration** tab.
+3. Under "Execution Environment," check **Docker container (Linux, sandboxed)**.
+4. If you have not built the image yet, use the **Docker Image** section below it to select a stage (e.g. `all`) and click **Build Image**.
+
+### Building the Docker Image (CLI)
 
 ```bash
 # Standard image (MuJoCo + core tools)

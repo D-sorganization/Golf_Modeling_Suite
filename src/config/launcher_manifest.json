@@ -393,6 +393,18 @@
       "order": 20
     },
     {
+      "id": "aerodynamic_ball_flight",
+      "name": "Aerodynamic Ball Flight",
+      "description": "Enhanced ball flight simulator with aerodynamic modeling",
+      "category": "simulation",
+      "type": "special_app",
+      "path": "src/tools/aerodynamic_ball_flight/__main__.py",
+      "logo": "golf_logo.svg",
+      "status": "gui_ready",
+      "capabilities": ["ball_flight", "aerodynamics", "simulation"],
+      "order": 20
+    },
+    {
       "id": "swing_optimizer",
       "name": "Swing Optimizer",
       "description": "Trajectory optimization with constraint solving and cost functions",
