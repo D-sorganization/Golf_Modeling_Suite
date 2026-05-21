@@ -14,7 +14,6 @@ from PyQt6.QtWidgets import (
     QTabWidget,
     QWidget,
 )
-
 from shared.python.theme.integration import ThemedWindowMixin
 
 from ..psa_model import PSAModel
