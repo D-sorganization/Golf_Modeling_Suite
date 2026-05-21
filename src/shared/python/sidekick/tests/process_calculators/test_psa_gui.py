@@ -184,7 +184,7 @@ def test_psa_main_window_initialization(mock_show, mock_msg_box, dummy_qapp):
         assert mock_msg_box.critical.called
 
         # Test notebook launches
-        with patch(
+        with patch(  # noqa: SIM117
             "upstream_drift_tools.process_calculators.psa_package.psa_gui.subprocess.Popen"
         ) as mock_popen:
             with patch(
@@ -194,7 +194,7 @@ def test_psa_main_window_initialization(mock_show, mock_msg_box, dummy_qapp):
                 window._launch_jupyter()
                 assert mock_popen.called
 
-        with patch(
+        with patch(  # noqa: SIM117
             "upstream_drift_tools.process_calculators.psa_package.psa_gui.subprocess.Popen"
         ) as mock_popen2:
             with patch(
