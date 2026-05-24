@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import difflib
 import sys
 from pathlib import Path
@@ -14,7 +15,7 @@ _OUTPUT_FORMATS = ("json", "csv")
 _HELP_EPILOG = """Examples:
   python -m sidekick
   python -m sidekick gui --profile calc-first --theme solarized
-  python -m sidekick run --calculator unit-converter --inputs ./inputs.json
+  python -m sidekick run --calculator wgs_reactor --inputs ./inputs.json
 """
 
 
@@ -62,6 +63,12 @@ def _normalize_argv(argv: list[str] | None) -> list[str]:
     if head.startswith("-"):
         return ["gui", *args]
     return args
+
+
+def _calculator_id(value: str) -> str:
+    if not re.match(r"^[a-z][a-z0-9_]*$", value):
+        raise argparse.ArgumentTypeError(f"invalid calculator id: {value}")
+    return value
 
 
 def _resolved_path(value: str) -> Path:
@@ -135,6 +142,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     run_parser.add_argument(
         "--calculator",
+        type=_calculator_id,
         required=True,
         metavar="ID",
         help="Registered calculator identifier to invoke.",
@@ -200,17 +208,21 @@ def launch_gui(args: argparse.Namespace) -> int:
 
 
 def run_headless(args: argparse.Namespace) -> int:
-    """Reserve the ``run`` subcommand contract until issue #5982 lands."""
+    """Run a headless calculation via the runner registry."""
     from src.shared.python.core.process_safety import narrow_catch
+    from sidekick.standalone.runner import run_calculator
 
-    with narrow_catch(ValueError, FileNotFoundError, log_message="sidekick run"):
+    with narrow_catch(
+        ValueError, KeyError, FileNotFoundError, log_message="sidekick run"
+    ):
         if args.output is not None and not args.output.parent.exists():
             raise FileNotFoundError(args.output.parent)
-        sys.stderr.write(
-            "sidekick run parsing is ready; execution lands in issue #5982.\n"
+
+        output = str(args.output) if args.output else "-"
+        return run_calculator(
+            args.calculator, str(args.inputs), output=output, fmt=args.format
         )
-        return 1
-    sys.stderr.write("sidekick run failed; check calculator arguments and paths.\n")
+
     return 1
 
 

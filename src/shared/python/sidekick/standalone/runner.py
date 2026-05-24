@@ -11,9 +11,14 @@ from __future__ import annotations
 import json
 import logging
 import math
+import csv
+import io
+import difflib
+from src.shared.python.sidekick.protocols import CalculationResult, ValidationResult
 from pathlib import Path
 import sys
-from typing import Any
+import re
+from dataclasses import asdict
 
 logger = logging.getLogger(__name__)
 
@@ -21,16 +26,19 @@ logger = logging.getLogger(__name__)
 # Registry
 # ---------------------------------------------------------------------------
 
-# Maps CLI name → callable(inputs: dict) -> dict.
+EXIT_OK, EXIT_GENERIC, EXIT_VALIDATION, EXIT_UNKNOWN_CALCULATOR = 0, 1, 3, 4
+_CALCULATOR_ID_RE = re.compile(r"^[a-z][a-z0-9_]*$")
+
+# Maps CLI name → dict with "calculate" and "validate" functions
 # Add new calculators here; do NOT import GUI modules at module level.
-_REGISTRY: dict[str, Any] = {}
+_REGISTRY: dict[str, dict] = {}
 
 
-def register(name: str):
+def register(name: str, *, validate=None):
     """Decorator: register a headless calculation function under *name*."""
 
     def _decorator(fn):
-        _REGISTRY[name] = fn
+        _REGISTRY[name] = {"calculate": fn, "validate": validate}
         return fn
 
     return _decorator
@@ -41,8 +49,37 @@ def register(name: str):
 # ---------------------------------------------------------------------------
 
 
-@register("wgs_reactor")
-def _wgs_reactor(inputs: dict) -> dict:
+def _wgs_reactor_validate(inputs: dict) -> ValidationResult:
+    errors = []
+    warnings = []
+
+    T_c = inputs.get("temperature_c", 350.0)
+    try:
+        T_c = float(T_c)
+        if not (-273.15 < T_c <= 2000.0):
+            errors.append(f"temperature_c {T_c} out of range")
+    except (TypeError, ValueError):
+        errors.append("temperature_c must be a number")
+
+    for name, default in [
+        ("co_fraction", 0.30),
+        ("h2o_fraction", 0.40),
+        ("co2_fraction", 0.10),
+        ("h2_fraction", 0.20),
+    ]:
+        val = inputs.get(name, default)
+        try:
+            val = float(val)
+            if not (0.0 <= val <= 1.0):
+                errors.append(f"{name}={val} must be in [0, 1]")
+        except (TypeError, ValueError):
+            errors.append(f"{name} must be a number")
+
+    return ValidationResult(valid=len(errors) == 0, errors=errors, warnings=warnings)
+
+
+@register("wgs_reactor", validate=_wgs_reactor_validate)
+def _wgs_reactor(inputs: dict) -> CalculationResult:
     """Headless Water-Gas Shift reactor calculation.
 
     Computes equilibrium composition and key performance metrics without
@@ -123,19 +160,32 @@ def _wgs_reactor(inputs: dict) -> dict:
         "h2": y_h2_eq,
     }
 
-    result = {
+    values = {
         "temperature_c": T_c,
         "equilibrium_constant": K_eq,
         "extent_of_reaction": xi,
         "co_conversion_fraction": co_conversion,
-        "equilibrium_composition": equilibrium_composition,
+        "co_fraction": y_co_eq,
+        "h2o_fraction": y_h2o_eq,
+        "co2_fraction": y_co2_eq,
+        "h2_fraction": y_h2_eq,
+    }
+    units = {
+        "temperature_c": "°C",
+        "equilibrium_constant": "",
+        "extent_of_reaction": "",
+        "co_conversion_fraction": "",
+        "co_fraction": "",
+        "h2o_fraction": "",
+        "co2_fraction": "",
+        "h2_fraction": "",
     }
 
     total = sum(equilibrium_composition.values())
     assert abs(total - 1.0) < 1e-6, f"mole fractions sum to {total}, expected 1.0"
     assert 0.0 <= co_conversion <= 1.0, f"co_conversion={co_conversion} out of [0,1]"
 
-    return result
+    return CalculationResult(values=values, units=units, warnings=[], metadata={})
 
 
 # ---------------------------------------------------------------------------
@@ -143,13 +193,61 @@ def _wgs_reactor(inputs: dict) -> dict:
 # ---------------------------------------------------------------------------
 
 
-def run_calculator(calculator: str, inputs_path: str, output: str = "-") -> int:
-    """Run *calculator* with inputs from *inputs_path* and write JSON results.
+def closest_calculator_matches(name: str, n: int = 3) -> list[str]:
+    try:
+        from src.shared.python.sidekick.agent.feature_catalog import build_feature_catalog
+        catalog = build_feature_catalog()
+        known = [k.split(".")[-1] for k in catalog.keys() if k.startswith("calculator.")]
+        all_known = list(set(known) | set(_REGISTRY.keys()))
+        return difflib.get_close_matches(name, all_known, n=n, cutoff=0.6)
+    except Exception:
+        return difflib.get_close_matches(name, list(_REGISTRY.keys()), n=n, cutoff=0.6)
+
+
+def _load_inputs(path: Path) -> dict:
+    if path.suffix in {".yaml", ".yml"}:
+        try:
+            import yaml
+
+            with open(path, encoding="utf-8") as fh:
+                return yaml.safe_load(fh) or {}
+        except ImportError:
+            logger.warning("PyYAML not installed, treating as JSON")
+    with open(path, encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def _format_result(result: CalculationResult, fmt: str) -> str:
+    if fmt == "csv":
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(["key", "value"])
+        for k, v in result.values.items():
+            writer.writerow([k, v])
+
+        # units row
+        units_strs = []
+        for k, v in result.units.items():
+            if v:
+                units_strs.append(f"{k}={v}")
+            else:
+                units_strs.append(f"{k}=-")
+        writer.writerow(["units", ";".join(units_strs)])
+        return output.getvalue()
+
+    return json.dumps(asdict(result), indent=2)
+
+
+def run_calculator(
+    calculator: str, inputs_path: str, output: str = "-", fmt: str = "json"
+) -> int:
+    """Run *calculator* with inputs from *inputs_path* and write results.
 
     Args:
         calculator:  Name of the registered calculator (e.g. ``wgs_reactor``).
         inputs_path: Path to a JSON file with calculator inputs.
         output:      Output path; ``"-"`` means stdout.
+        fmt:         Output format; "json" or "csv".
 
     Returns:
         Exit code (0 = success, non-zero = failure).
@@ -158,46 +256,56 @@ def run_calculator(calculator: str, inputs_path: str, output: str = "-") -> int:
         *calculator* must be a non-empty string.
         *inputs_path* must point to a readable JSON file.
     """
-    assert isinstance(calculator, str) and calculator, (
-        "calculator name must be non-empty"
-    )
-    assert isinstance(inputs_path, str) and inputs_path, "inputs_path must be non-empty"
+    if not _CALCULATOR_ID_RE.match(calculator):
+        logger.error("Invalid calculator id format.")
+        return EXIT_GENERIC
 
     if calculator not in _REGISTRY:
-        logger.error(
-            "Unknown calculator '%s'. Available: %s", calculator, sorted(_REGISTRY)
+        matches = closest_calculator_matches(calculator)
+        error_json = json.dumps(
+            {
+                "error": "Unknown calculator id",
+                "calculator": calculator,
+                "suggestions": matches,
+            }
         )
-        return 1
+        sys.stderr.write(error_json + "\n")
+        return EXIT_UNKNOWN_CALCULATOR
 
     path = Path(inputs_path)
-    if not path.exists():
-        logger.error("Inputs file not found: %s", path)
-        return 1
+    try:
+        inputs = _load_inputs(path)
+    except Exception as exc:  # noqa: BLE001
+        logger.error(f"Failed to load inputs: {exc}")
+        return EXIT_GENERIC
+
+    validate_fn = _REGISTRY[calculator].get("validate")
+    if validate_fn:
+        validation_result = validate_fn(inputs)
+        if not validation_result.valid:
+            error_json = json.dumps(
+                {"error": "Validation failed", "errors": validation_result.errors}
+            )
+            sys.stderr.write(error_json + "\n")
+            return EXIT_VALIDATION
 
     try:
-        with open(path, encoding="utf-8") as fh:
-            inputs = json.load(fh)
-    except json.JSONDecodeError as exc:
-        logger.error("Failed to parse inputs JSON: %s", exc)
-        return 1
-
-    try:
-        result = _REGISTRY[calculator](inputs)
+        result = _REGISTRY[calculator]["calculate"](inputs)
     except (ValueError, AssertionError) as exc:
         logger.error("Calculation failed: %s", exc)
-        return 1
+        return EXIT_GENERIC
 
-    output_json = json.dumps(result, indent=2)
+    output_str = _format_result(result, fmt)
 
     if output == "-":
-        sys.stdout.write(output_json + "\n")
+        sys.stdout.write(output_str + "\n" if fmt == "json" else output_str)
     else:
         out_path = Path(output)
         out_path.parent.mkdir(parents=True, exist_ok=True)
-        out_path.write_text(output_json, encoding="utf-8")
+        out_path.write_text(output_str, encoding="utf-8")
         logger.info("Results written to %s", out_path)
 
-    return 0
+    return EXIT_OK
 
 
 def list_calculators() -> list[str]:
