@@ -137,6 +137,27 @@ class TestSensitiveDataFilter:
         assert "key1" not in record.msg
         assert "pass1" not in record.msg
 
+    def test_redacts_quoted_json(self) -> None:
+        flt = SensitiveDataFilter()
+        record = self._make_record('{"password": "secret_value"}')
+        flt.filter(record)
+        assert "secret_value" not in record.msg
+        assert "REDACTED" in record.msg
+
+    def test_redacts_braced_value(self) -> None:
+        flt = SensitiveDataFilter()
+        record = self._make_record("password=secret}")
+        flt.filter(record)
+        assert "secret" not in record.msg
+        assert "REDACTED" in record.msg
+
+    def test_redacts_comma_value(self) -> None:
+        flt = SensitiveDataFilter()
+        record = self._make_record("api_key='secret,value'")
+        flt.filter(record)
+        assert "secret,value" not in record.msg
+        assert "REDACTED" in record.msg
+
 
 # ---------------------------------------------------------------------------
 # get_logger
