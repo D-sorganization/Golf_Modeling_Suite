@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.10+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.0                                              |
-| **Spec Version**        | 1.0.190                                            |
+| **Spec Version**        | 1.0.191                                            |
 | **Last Spec Update**    | 2026-05-24                                         |
 
 ## 2. Purpose & Mission
@@ -467,6 +467,7 @@ Beyond standard tools, CI enforces custom checks:
 - **Import Depth**: Maximum 4 import levels to prevent circular dependencies
 - **Physics Fitness**: Cross-engine validation must pass with <5% tolerance
 - **Security Audit Isolation**: `pip-audit` runs with `scripts/config/pip_audit_waivers.json` and `scripts/ci/check_pip_audit_waivers.py` so waivers require issue tracking, expiry, and current pip-audit findings before ignore flags are emitted
+- **Log Sanitization**: Logs must be sanitized to redact sensitive secrets (e.g. passwords, API keys) properly without causing valid JSON to break or leaking suffixes containing commas/braces.
 - **Blocking SAST and Secret Scans**: `ci-standard.yml` runs blocking Bandit, Semgrep, pip-audit, and Trivy filesystem scans for pull requests and pushes
 - **Error-Handling Ratchet**: `scripts/ci/check_error_handling_ratchet.py` blocks increases in grandfathered broad catches, unused `noqa` debt, raw `subprocess.Popen(...)`, and `asyncio.gather(...)` calls that omit `return_exceptions=`, including multiline gather calls whose arguments span multiple lines.
 - **Type and Coverage Ratchets**: `scripts/check_mypy_exclusion_budget.py` blocks unowned mypy exclusions, non-monotonic exclusion schedules, and missing production package coverage-ratchet metadata.
