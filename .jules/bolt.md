@@ -86,3 +86,6 @@
 ## 2026-05-23 - trimesh ImportErrors
 **Learning:** Hard-coded imports of `trimesh` in files like `_mesh_decimation.py` and `_mesh_io.py` can cause tests or other modules that import them to fail if `trimesh` isn't installed.
 **Action:** Always wrap `import trimesh` with a `try...except ImportError` block and conditionally check if `trimesh is None` to safely handle environments where it is missing, or alternatively, make sure to add it to the test environment requirements.
+## 2024-05-24 - Optimize Drake constraint residual penalty computation
+**Learning:** Replaced element-wise squaring `np.sum(arr ** 2)` with in-place multiplication `np.sum(arr * arr)` in Drake's constraint residual evaluation.
+**Action:** Avoids unnecessary intermediate array allocations during the hot loop of residual aggregation. Using `vdot` directly is not possible since Drake's `AutoDiffXd` type lacks a `.conjugate()` method.
