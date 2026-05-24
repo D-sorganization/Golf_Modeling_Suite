@@ -1,15 +1,18 @@
-"""Simscape :class:`LiveKinematicsService` implementation (Subtask 3 of #4895).
+"""Simscape :class:`LiveKinematicsService` implementation.
 
-Connects to the MATLAB engine via the existing
-:func:`load_matlab_3d_engine` machinery in :mod:`src.engines.loaders`.
-If MATLAB / the MATLAB engine API is unavailable,
-:func:`create_simscape_service` falls back to a
-:class:`MockKinematicsService` configured with
-``engine_name="simscape"``.
+Loads a Simscape Multibody model through
+:class:`src.engines.simscape.adapter.SimscapeAdapter`, which spins up
+the MATLAB engine. ``set_pose`` maps :class:`CanonicalPose` to joint
+values using the Simscape :class:`PoseConventionAdapter` joint layout
+and writes ``<joint>_q`` entries into the MATLAB workspace.
+``step()`` and ``reset()`` delegate to the underlying engine adapter.
 
-Method bodies that drive Simulink directly currently raise
-:class:`NotImplementedError` with a TODO: #4963 tied to follow-up
-against the EPIC #4895 Pose Studio engine bridge.
+``get_link_transforms`` currently returns an empty dict: pulling
+body-frame transforms back out of the MATLAB engine is still pending
+and will land alongside the Pose Studio engine bridge.
+
+Falls back to :class:`MockKinematicsService` when MATLAB (and the
+MATLAB Engine API for Python) is not installed.
 """
 
 from __future__ import annotations

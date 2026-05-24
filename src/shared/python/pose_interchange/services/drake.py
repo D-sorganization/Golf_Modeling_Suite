@@ -1,15 +1,16 @@
-"""Drake :class:`LiveKinematicsService` implementation (Subtask 3 of #4895).
+"""Drake :class:`LiveKinematicsService` implementation.
 
-The real implementation lazily imports :mod:`pydrake` and loads a URDF
-via the multibody plant's :class:`pydrake.multibody.parsing.Parser`.
-If :mod:`pydrake` is unavailable, :func:`create_drake_service` falls
-back to a :class:`MockKinematicsService` configured with
-``engine_name="drake"``.
+Loads a URDF via :class:`pydrake.multibody.parsing.Parser` into a
+:class:`MultibodyPlant` (with a :class:`SceneGraph`), maps
+:class:`CanonicalPose` to plant positions ``q`` using the Drake
+:class:`PoseConventionAdapter`, and returns world-frame transforms by
+iterating ``plant.GetBodyIndices`` and calling ``EvalBodyPoseInWorld``.
+``step()`` advances the Drake :class:`Simulator` by ``dt`` seconds;
+``reset()`` restores the cached default context and reinitialises the
+simulator.
 
-Method bodies that require non-trivial Drake plumbing currently raise
-:class:`NotImplementedError` with a TODO: #4963 tied to follow-up;
-this PR only commits the wiring scaffold so downstream code can target
-``LiveKinematicsService`` without waiting on the full Drake bridge.
+Falls back to :class:`MockKinematicsService` when the :mod:`pydrake`
+wheel is not installed.
 """
 
 from __future__ import annotations

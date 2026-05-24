@@ -1,14 +1,17 @@
-"""OpenSim :class:`LiveKinematicsService` implementation (Subtask 3 of #4895).
+"""OpenSim :class:`LiveKinematicsService` implementation.
 
-Lazily imports :mod:`opensim` and loads a ``.osim`` file via
-:class:`opensim.Model`.  If the wheel is unavailable,
-:func:`create_opensim_service` falls back to a
-:class:`MockKinematicsService` configured with
-``engine_name="opensim"``.
+Loads a ``.osim`` file via :class:`opensim.Model` and initialises a
+:class:`SimTK.State`. ``set_pose`` maps :class:`CanonicalPose` to
+coordinate values using the OpenSim :class:`PoseConventionAdapter`
+joint layout, writes them into the model's coordinate set, then calls
+``realizePosition`` so downstream queries see fresh body transforms.
+``get_link_transforms`` iterates the model's ``BodySet`` and returns
+each body's ``getTransformInGround`` as a 4x4 SE(3) matrix.
+``step()`` integrates an :class:`opensim.Manager` forward by ``dt``;
+``reset()`` re-initialises the system state.
 
-Method bodies that require non-trivial OpenSim wiring currently raise
-:class:`NotImplementedError` with a TODO: #4963 tied to follow-up
-against the EPIC #4895 Pose Studio engine bridge.
+Falls back to :class:`MockKinematicsService` when the :mod:`opensim`
+wheel is not installed.
 """
 
 from __future__ import annotations
