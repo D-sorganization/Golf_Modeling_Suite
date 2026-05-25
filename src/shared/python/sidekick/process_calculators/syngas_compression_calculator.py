@@ -27,7 +27,9 @@ import os
 from typing import TYPE_CHECKING, Any, cast
 
 from shared.python.theme.integration import get_theme_manager
-from shared.python.theme.matplotlib_style import apply_plot_theme
+from shared.python.theme.matplotlib_style import (
+    apply_golf_suite_style as apply_plot_theme,
+)
 
 from .constants import (
     ATOL_ZERO,
