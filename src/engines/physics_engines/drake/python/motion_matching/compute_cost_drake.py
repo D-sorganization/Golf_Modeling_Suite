@@ -82,9 +82,8 @@ def compute_cost_drake(
 
     j, breakdown = _shared_compute_cost(theta, target, _shared_sim_fn, cost_opts)
     if constraint_residuals:
-        penalty = float(
-            sum(np.sum((arr := np.asarray(r)) * arr) for r in constraint_residuals)
-        )
+        penalty_sum = sum(np.sum((arr := np.asarray(r)) * arr) for r in constraint_residuals)
+        penalty = float(penalty_sum.value() if hasattr(penalty_sum, 'value') else penalty_sum)
         j = j + penalty
         breakdown = CostBreakdown(
             position=breakdown.position,
