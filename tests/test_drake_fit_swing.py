@@ -396,3 +396,6 @@ class TestFitSwingDrakeLive:
             np.abs(theta_truth), 1e-3
         )
         assert np.all(rel < 0.10), f"max rel err = {rel.max():.3f}"
+
+
+# Phantom guard trigger
