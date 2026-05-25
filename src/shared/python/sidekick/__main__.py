@@ -70,7 +70,6 @@ def _calculator_id(value: str) -> str:
         raise argparse.ArgumentTypeError(f"invalid calculator id: {value}")
     return value
 
-
 def _resolved_path(value: str) -> Path:
     if not value or not value.strip():
         raise argparse.ArgumentTypeError("path must be a non-empty string")
@@ -212,16 +211,12 @@ def run_headless(args: argparse.Namespace) -> int:
     from src.shared.python.core.process_safety import narrow_catch
     from sidekick.standalone.runner import run_calculator
 
-    with narrow_catch(
-        ValueError, KeyError, FileNotFoundError, log_message="sidekick run"
-    ):
+    with narrow_catch(ValueError, KeyError, FileNotFoundError, log_message="sidekick run"):
         if args.output is not None and not args.output.parent.exists():
             raise FileNotFoundError(args.output.parent)
 
         output = str(args.output) if args.output else "-"
-        return run_calculator(
-            args.calculator, str(args.inputs), output=output, fmt=args.format
-        )
+        return run_calculator(args.calculator, str(args.inputs), output=output, fmt=args.format)
 
     return 1
 

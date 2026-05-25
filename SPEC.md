@@ -209,6 +209,7 @@ Engine tier metadata is declared in each in-scope engine package with
 ### Core Features
 
 | #   | Feature                            | Status | Description                                                                                         |
+| 00 | Sidekick Headless                  | Active | Sidekick now supports headless calculator invocation via `sidekick run`.                            |
 | --- | ---------------------------------- | ------ | --------------------------------------------------------------------------------------------------- |
 | F1  | MuJoCo engine integration          | ✅     | Full support for MuJoCo 3.3.0+ with contact dynamics, muscle actuators, sensor simulation, and pose-conditioned motion-matching target synthesis |
 | F2  | Drake engine integration           | ✅     | Extended Drake support for trajectory optimization, manipulation, and planning problems             |

@@ -11,14 +11,16 @@ from __future__ import annotations
 import json
 import logging
 import math
-import csv
-import io
-import difflib
-from src.shared.python.sidekick.protocols import CalculationResult, ValidationResult
 from pathlib import Path
 import sys
 import re
+import csv
+import io
+import difflib
 from dataclasses import asdict
+
+from src.shared.python.sidekick.protocols import CalculationResult, ValidationResult
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +78,6 @@ def _wgs_reactor_validate(inputs: dict) -> ValidationResult:
             errors.append(f"{name} must be a number")
 
     return ValidationResult(valid=len(errors) == 0, errors=errors, warnings=warnings)
-
 
 @register("wgs_reactor", validate=_wgs_reactor_validate)
 def _wgs_reactor(inputs: dict) -> CalculationResult:
@@ -194,28 +195,18 @@ def _wgs_reactor(inputs: dict) -> CalculationResult:
 
 
 def closest_calculator_matches(name: str, n: int = 3) -> list[str]:
-    try:
-        from src.shared.python.sidekick.agent.feature_catalog import build_feature_catalog
-        catalog = build_feature_catalog()
-        known = [k.split(".")[-1] for k in catalog.keys() if k.startswith("calculator.")]
-        all_known = list(set(known) | set(_REGISTRY.keys()))
-        return difflib.get_close_matches(name, all_known, n=n, cutoff=0.6)
-    except Exception:
-        return difflib.get_close_matches(name, list(_REGISTRY.keys()), n=n, cutoff=0.6)
-
+    return difflib.get_close_matches(name, list(_REGISTRY.keys()), n=n)
 
 def _load_inputs(path: Path) -> dict:
     if path.suffix in {".yaml", ".yml"}:
         try:
             import yaml
-
             with open(path, encoding="utf-8") as fh:
                 return yaml.safe_load(fh) or {}
         except ImportError:
             logger.warning("PyYAML not installed, treating as JSON")
     with open(path, encoding="utf-8") as fh:
         return json.load(fh)
-
 
 def _format_result(result: CalculationResult, fmt: str) -> str:
     if fmt == "csv":
@@ -237,10 +228,7 @@ def _format_result(result: CalculationResult, fmt: str) -> str:
 
     return json.dumps(asdict(result), indent=2)
 
-
-def run_calculator(
-    calculator: str, inputs_path: str, output: str = "-", fmt: str = "json"
-) -> int:
+def run_calculator(calculator: str, inputs_path: str, output: str = "-", fmt: str = "json") -> int:
     """Run *calculator* with inputs from *inputs_path* and write results.
 
     Args:
@@ -262,13 +250,11 @@ def run_calculator(
 
     if calculator not in _REGISTRY:
         matches = closest_calculator_matches(calculator)
-        error_json = json.dumps(
-            {
-                "error": "Unknown calculator id",
-                "calculator": calculator,
-                "suggestions": matches,
-            }
-        )
+        error_json = json.dumps({
+            "error": "Unknown calculator id",
+            "calculator": calculator,
+            "suggestions": matches
+        })
         sys.stderr.write(error_json + "\n")
         return EXIT_UNKNOWN_CALCULATOR
 
@@ -283,9 +269,10 @@ def run_calculator(
     if validate_fn:
         validation_result = validate_fn(inputs)
         if not validation_result.valid:
-            error_json = json.dumps(
-                {"error": "Validation failed", "errors": validation_result.errors}
-            )
+            error_json = json.dumps({
+                "error": "Validation failed",
+                "errors": validation_result.errors
+            })
             sys.stderr.write(error_json + "\n")
             return EXIT_VALIDATION
 
