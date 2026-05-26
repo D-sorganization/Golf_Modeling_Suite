@@ -147,3 +147,11 @@ These issues are already tracked in GitHub and represent planned improvements.
 - **GitHub Issue**: #6090
 - **Status**: Blocked
 - **Description**: Wait for the audit verdict matrix from #6089, then split execution by tool into adopt EmbeddableTool, document standalone opt-out, or remove scaffolds.
+
+## Phase 7: sg-optimizer Phase 4
+
+### Phase 7.1: Library browser + map widget + tracing
+
+- **GitHub Issue**: #6273
+- **Status**: Blocked
+- **Description**: Blocked by Phases 2, 3. Features include `widgets/library_browser.py` for thumbnails and metadata, `widgets/map_widget.py` for Google/OSM tiles via `QtWebEngineView`, a polygon tracing tool, Google Maps API key handling, and updating `.env.example`.
