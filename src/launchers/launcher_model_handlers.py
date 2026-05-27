@@ -20,7 +20,6 @@ from src.launchers.launcher_model_sources import (
     get_model_working_directory,
     resolve_model_artifact_path,
 )
-from src.shared.python.config.environment import get_api_port
 from src.shared.python.logging_pkg.logging_config import get_logger
 
 if TYPE_CHECKING:
@@ -639,12 +638,8 @@ class DocumentHandler:
             return False
 
 
-class APIBackedHandler:
-    """Handler for launching API-backed services.
-
-    API-backed services represent web routes or endpoints. In the desktop launcher,
-    these are opened in the default system web browser.
-    """
+class ApiBackedHandler:
+    """Handler for API-backed tiles that do not launch local processes directly."""
 
     MODEL_TYPES = {"api_backed"}
 
@@ -656,24 +651,14 @@ class APIBackedHandler:
         self,
         model: Any,
         repo_path: Path,
-        process_manager: Any,
+        process_manager: ProcessManager,
     ) -> bool:
-        """Launch the API-backed service by opening its web route in a browser."""
-        web_route = getattr(model, "web_route", "")
-        if not web_route:
-            logger.error("APIBackedHandler: model has no web_route")
-            return False
-
-        import webbrowser
-
-        url = f"http://localhost:{get_api_port()}{web_route}"
-        try:
-            webbrowser.open(url)
-            logger.info("APIBackedHandler: opened browser to %s", url)
-            return True
-        except Exception as e:  # noqa: BLE001
-            logger.error("APIBackedHandler: failed to open web browser: %s", e)
-            return False
+        """API-backed tiles do not launch local processes directly."""
+        logger.info(
+            "ApiBackedHandler: launch requested for api-backed tile %s",
+            getattr(model, "id", "unknown"),
+        )
+        return True
 
 
 # ============================================================
@@ -760,7 +745,7 @@ class ModelHandlerRegistry:
             GolfSimulationSuiteHandler(),
             MatlabFileHandler(),
             DocumentHandler(),
-            APIBackedHandler(),
+            ApiBackedHandler(),
         ]
 
     def register_handler(self, handler: ModelHandler) -> None:

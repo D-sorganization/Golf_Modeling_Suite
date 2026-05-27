@@ -65,7 +65,7 @@ class DialogsManager:
         if UI_COMPONENTS_AVAILABLE:
             from src.shared.python.ui import ToastManager
 
-            self.toast_manager: ToastManager | None = ToastManager(self)
+            self.toast_manager: ToastManager | None = ToastManager(self.launcher)
 
             # Setup keyboard shortcuts
             self._setup_keyboard_shortcuts()
@@ -89,7 +89,7 @@ class DialogsManager:
         try:
             from src.launchers.feature_menu import register_feature_menu
 
-            self._feature_menu_actions = register_feature_menu(self, menubar)
+            self._feature_menu_actions = register_feature_menu(self.launcher, menubar)
         except ImportError as exc:  # pragma: no cover - guarded
             logger.debug("feature_menu unavailable: %s", exc)
             self._feature_menu_actions = {}
@@ -140,7 +140,7 @@ class DialogsManager:
         else:
             from src.launchers.ui_components import HelpDialog as LegacyHelpDialog
 
-            dialog = LegacyHelpDialog(self)
+            dialog = LegacyHelpDialog(self.launcher)
             dialog.exec()
 
     def _open_project_map(self) -> None:
@@ -149,7 +149,7 @@ class DialogsManager:
         if project_map.exists():
             from src.shared.python.ui.qt.widgets.document_reader import show_document
 
-            show_document(project_map)
+            show_document(project_map, self.launcher)
         else:
             QMessageBox.warning(
                 self.launcher,
@@ -181,7 +181,7 @@ class DialogsManager:
         if UI_COMPONENTS_AVAILABLE:
             from src.shared.python.ui import ShortcutsOverlay
 
-            overlay = ShortcutsOverlay(self)
+            overlay = ShortcutsOverlay(self.launcher)
             overlay.show()
             overlay.setFocus()
 
@@ -353,11 +353,11 @@ class DialogsManager:
 
         self._ai_visible = checked
         # Keep the toggle button in sync when called programmatically
-        btn = getattr(self, "btn_toggle_right_sidebar", None) or getattr(
-            self, "btn_ai_sidebar", None
-        )
-        if btn is not None and btn.isChecked() != checked:
-            btn.setChecked(checked)
+        if (
+            hasattr(self, "btn_ai_sidebar")
+            and self.btn_ai_sidebar.isChecked() != checked
+        ):
+            self.btn_ai_sidebar.setChecked(checked)
 
         if hasattr(self, "sidekick_sidebar") and self.sidekick_sidebar is not None:
             self.sidekick_sidebar.setVisible(checked)
@@ -394,7 +394,7 @@ class DialogsManager:
         from src.launchers.settings_dialog import SettingsWidget
 
         settings_widget = SettingsWidget(
-            launcher=self,
+            launcher=self.launcher,
             initial_tab=tab,
         )
         settings_widget.reset_layout_requested.connect(self._reset_layout_to_defaults)
@@ -471,36 +471,6 @@ class DialogsManager:
         if checked:
             self.show_toast("Drag tiles to reorder. Double-click to launch.", "info")
 
-    def _on_windows_mode_changed(self, state: int) -> None:
-        """Handle Windows Native mode toggle change."""
-        if state is None:
-            raise ValueError("state must be provided")
-        use_windows = state == 2
-        if use_windows:
-            if hasattr(self, "chk_docker") and self.chk_docker.isChecked():
-                self.chk_docker.setChecked(False)
-            if hasattr(self, "chk_wsl") and self.chk_wsl.isChecked():
-                self.chk_wsl.setChecked(False)
-            logger.info("Windows Native mode enabled")
-            if hasattr(self, "toast_manager") and self.toast_manager:
-                self.show_toast(
-                    "Local Windows mode - engines will run natively", "info"
-                )
-        else:
-            logger.info("Windows Native mode disabled")
-            # If neither docker nor wsl is checked, fallback to Windows (Default)
-            if (
-                hasattr(self, "chk_docker")
-                and not self.chk_docker.isChecked()
-                and hasattr(self, "chk_wsl")
-                and not self.chk_wsl.isChecked()
-            ):
-                self.chk_windows.setChecked(True)
-
-        self.update_execution_status()
-        if hasattr(self, "btn_launch"):
-            self.update_launch_button()
-
     def _on_docker_mode_changed(self, state: int) -> None:
         """Handle Docker mode toggle change.
 
@@ -511,11 +481,9 @@ class DialogsManager:
             raise ValueError("state must be provided")
         use_docker = state == 2
         if use_docker:
-            # Disable WSL and Windows native mode if Docker is enabled (mutually exclusive)
+            # Disable WSL mode if Docker is enabled (mutually exclusive)
             if hasattr(self, "chk_wsl") and self.chk_wsl.isChecked():
                 self.chk_wsl.setChecked(False)
-            if hasattr(self, "chk_windows") and self.chk_windows.isChecked():
-                self.chk_windows.setChecked(False)
 
             if not self.docker_available:
                 if getattr(self.launcher, "loading", False):
@@ -539,15 +507,7 @@ class DialogsManager:
                 )
         else:
             logger.info("Docker mode disabled")
-            # If neither docker nor wsl is checked, fallback to Windows (Default)
-            if (
-                hasattr(self, "chk_wsl")
-                and not self.chk_wsl.isChecked()
-                and hasattr(self, "chk_windows")
-                and not self.chk_windows.isChecked()
-            ):
-                self.chk_windows.setChecked(True)
-            elif hasattr(self, "toast_manager") and self.toast_manager:
+            if hasattr(self, "toast_manager") and self.toast_manager:
                 self.show_toast("Local mode - engines will run on host system", "info")
 
         # Update UI status
@@ -568,11 +528,9 @@ class DialogsManager:
         use_wsl = state == 2
 
         if use_wsl:
-            # Disable Docker and Windows native mode if WSL is enabled (mutually exclusive)
+            # Disable Docker mode if WSL is enabled (mutually exclusive)
             if hasattr(self, "chk_docker") and self.chk_docker.isChecked():
                 self.chk_docker.setChecked(False)
-            if hasattr(self, "chk_windows") and self.chk_windows.isChecked():
-                self.chk_windows.setChecked(False)
 
             # Check if WSL is available
             if getattr(self.launcher, "loading", False):
@@ -612,15 +570,7 @@ class DialogsManager:
                 )
         else:
             logger.info("WSL mode disabled")
-            # If neither docker nor wsl is checked, fallback to Windows (Default)
-            if (
-                hasattr(self, "chk_docker")
-                and not self.chk_docker.isChecked()
-                and hasattr(self, "chk_windows")
-                and not self.chk_windows.isChecked()
-            ):
-                self.chk_windows.setChecked(True)
-            elif hasattr(self, "toast_manager") and self.toast_manager:
+            if hasattr(self, "toast_manager") and self.toast_manager:
                 self.show_toast("Local Windows mode", "info")
 
         # Update UI status
@@ -643,13 +593,13 @@ class DialogsManager:
             return
 
         if hasattr(self, "chk_wsl") and self.chk_wsl.isChecked():
-            self.lbl_execution_mode.setText("Runtime: WSL2")
+            self.lbl_execution_mode.setText("Runtime: WSL2 (Ubuntu Linux)")
             self.lbl_execution_mode.setStyleSheet(Styles.EXEC_MODE_DOCKER)
         elif hasattr(self, "chk_docker") and self.chk_docker.isChecked():
-            self.lbl_execution_mode.setText("Runtime: Docker")
+            self.lbl_execution_mode.setText("Runtime: Docker (Linux container)")
             self.lbl_execution_mode.setStyleSheet(Styles.EXEC_MODE_DOCKER)
         else:
-            self.lbl_execution_mode.setText("Runtime: Windows")
+            self.lbl_execution_mode.setText("Runtime: Native Windows")
             self.lbl_execution_mode.setStyleSheet(Styles.EXEC_MODE_WARNING)
 
     def show_dependency_error(
