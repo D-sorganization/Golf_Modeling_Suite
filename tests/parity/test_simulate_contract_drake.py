@@ -305,7 +305,10 @@ def test_q_width_matches_plant_dof(mocked_pydrake: dict[str, MagicMock]) -> None
 # --------------------------------------------------------------------------- #
 
 
-_PYDRAKE_AVAILABLE = importlib.util.find_spec("pydrake") is not None
+try:
+    _PYDRAKE_AVAILABLE = importlib.util.find_spec("pydrake") is not None
+except (ValueError, ImportError):
+    _PYDRAKE_AVAILABLE = False
 
 
 @pytest.mark.requires_drake
