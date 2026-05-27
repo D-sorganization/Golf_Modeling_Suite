@@ -81,11 +81,11 @@ def test_show_help_dialog_false(launcher) -> None:
         instance.exec.assert_called_once()
 
 
-@patch("src.launchers.launcher_dialogs.QDesktopServices.openUrl")
-def test_open_project_map_exists(mock_open, launcher) -> None:
+@patch("src.shared.python.ui.qt.widgets.document_reader.show_document")
+def test_open_project_map_exists(mock_show, launcher) -> None:
     with patch("src.launchers.launcher_dialogs.Path.exists", return_value=True):
         launcher._open_project_map()
-        mock_open.assert_called_once()
+        mock_show.assert_called_once()
 
 
 @patch("src.launchers.launcher_dialogs.QMessageBox.warning")
