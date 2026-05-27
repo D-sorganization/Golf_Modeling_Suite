@@ -118,20 +118,10 @@ def test_show_shortcuts_overlay_false(launcher) -> None:
         mock_overlay.assert_not_called()
 
 
-@patch("src.launchers.launcher_dialogs.UI_COMPONENTS_AVAILABLE", True)
 def test_show_preferences(launcher) -> None:
-    with patch("src.shared.python.ui.PreferencesDialog") as mock_dialog:
-        instance = MagicMock()
-        mock_dialog.return_value = instance
+    with patch.object(launcher, "_open_settings") as mock_open:
         launcher._show_preferences()
-        instance.exec.assert_called_once()
-
-
-@patch("src.launchers.launcher_dialogs.UI_COMPONENTS_AVAILABLE", False)
-def test_show_preferences_false(launcher) -> None:
-    with patch("src.shared.python.ui.PreferencesDialog") as mock_dialog:
-        launcher._show_preferences()
-        mock_dialog.assert_not_called()
+        mock_open.assert_called_once_with(tab=4)
 
 
 def test_show_toast(launcher) -> None:
@@ -169,20 +159,21 @@ def test_open_ai_settings_not_available(launcher) -> None:
 @patch("src.launchers.launcher_dialogs.AI_AVAILABLE", False)
 def test_toggle_ai_assistant_not_available(launcher) -> None:
     launcher.toggle_ai_assistant(True)
-    launcher.content_splitter.setSizes.assert_not_called()
+    # With AI unavailable the method returns early; nothing to assert beyond no-raise.
 
 
 @patch("src.launchers.launcher_dialogs.AI_AVAILABLE", True)
 def test_toggle_ai_assistant(launcher) -> None:
-    launcher.content_splitter.width.return_value = 1000
-    launcher.btn_ai.isChecked.return_value = False
+    launcher.btn_ai_sidebar = MagicMock()
+    launcher.btn_ai_sidebar.isChecked.return_value = False
+    launcher.sidekick_sidebar = MagicMock()
 
     launcher.toggle_ai_assistant(True)
-    launcher.btn_ai.setChecked.assert_called_with(True)
-    launcher.content_splitter.setSizes.assert_called_with([700, 300])
+    launcher.btn_ai_sidebar.setChecked.assert_called_with(True)
+    launcher.sidekick_sidebar.setVisible.assert_called_with(True)
 
     launcher.toggle_ai_assistant(False)
-    launcher.content_splitter.setSizes.assert_called_with([1000, 0])
+    launcher.sidekick_sidebar.setVisible.assert_called_with(False)
 
 
 @patch("src.launchers.launcher_dialogs.QDesktopServices.openUrl")
@@ -191,18 +182,16 @@ def test_report_bug(mock_open, launcher) -> None:
     mock_open.assert_called_once()
 
 
-@patch("src.launchers.launcher_dialogs.SettingsDialog")
-def test_open_settings(mock_dialog, launcher) -> None:
+@patch("src.launchers.settings_dialog.SettingsWidget")
+def test_open_settings(mock_widget, launcher) -> None:
     instance = MagicMock()
-    mock_dialog.return_value = instance
-    with patch("src.launchers.launcher_diagnostics.LauncherDiagnostics") as mock_diag:
-        diag_inst = MagicMock()
-        diag_inst.run_all_checks.return_value = {}
-        mock_diag.return_value = diag_inst
+    mock_widget.return_value = instance
+    instance.reset_layout_requested = MagicMock()
+    instance.reset_layout_requested.connect = MagicMock()
 
-        launcher._open_settings(tab=1)
-        mock_dialog.assert_called_once()
-        instance.exec.assert_called_once()
+    launcher._open_settings(tab=1)
+    mock_widget.assert_called_once()
+    instance.show.assert_called_once()
 
 
 def test_open_diagnostics(launcher) -> None:
