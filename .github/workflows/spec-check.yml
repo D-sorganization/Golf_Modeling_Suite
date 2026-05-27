@@ -170,3 +170,7 @@ jobs:
           elif [[ "${{ steps.check.outputs.source_changed }}" == "false" ]]; then
             echo "   No source files changed  -  spec update not required."
           fi
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
