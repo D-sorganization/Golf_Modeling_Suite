@@ -100,6 +100,9 @@ class TestSecretKeyPlaceholderRejection:
     def test_dotenv_example_x_api_key_placeholder_is_recognised(self) -> None:
         assert "generate_another_random_string_here" in KNOWN_SECRET_KEY_PLACEHOLDERS
 
+    def test_dotenv_example_ai_key_placeholder_is_recognised(self) -> None:
+        assert "your_key_here" in KNOWN_SECRET_KEY_PLACEHOLDERS
+
 
 class TestValidateAdminPasswordStrength:
     def test_strong_password_passes(self) -> None:

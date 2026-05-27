@@ -42,6 +42,7 @@ KNOWN_SECRET_KEY_PLACEHOLDERS: frozenset[str] = frozenset(
         "UNSAFE-NO-SECRET-KEY-SET-AUTHENTICATION-WILL-FAIL",
         "generate_a_random_string_here",
         "generate_another_random_string_here",
+        "your_key_here",
     }
 )
 
