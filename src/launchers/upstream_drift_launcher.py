@@ -848,7 +848,7 @@ class UpstreamDriftLauncher(QMainWindow):
                 :class:`DraggableModelCard` directly or delegate to
                 :class:`LayoutManager` (issue #5488).
         """
-        raise NotImplementedError(
+        raise NotImplementedError(  # tracked: #5488
             "create_model_card is a deprecated stub. "
             "Use DraggableModelCard(model, self) or LayoutManager directly."
         )
