@@ -276,10 +276,10 @@ def test_open_layout_manager(mock_dialog, launcher) -> None:
 def test_toggle_layout_mode(launcher) -> None:
     launcher.toggle_layout_mode(True)
     assert launcher.layout_edit_mode is True
-    launcher.btn_customize_tiles.setEnabled.assert_called_with(True)
+    launcher.layout_manager.set_edit_mode.assert_called_with(True)
 
     launcher.toggle_layout_mode(False)
-    launcher.btn_customize_tiles.setEnabled.assert_called_with(False)
+    launcher.layout_manager.set_edit_mode.assert_called_with(False)
 
 
 def test_on_docker_mode_changed(launcher) -> None:
