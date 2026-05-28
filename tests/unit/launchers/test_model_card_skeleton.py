@@ -13,8 +13,8 @@ def test_skeleton_card_initialization(qapp) -> None:
     # Check Animation
     assert hasattr(card, "_anim")
     anim = card._anim
-    assert anim.propertyName() == b"pulseOpacity"
+    assert anim.propertyName() == b"windowOpacity"
     assert anim.duration() == 1000
-    assert anim.startValue() == 0.3
-    assert anim.endValue() == 0.3
+    assert anim.startValue() == 0.5
+    assert anim.endValue() == 1.0
     assert anim.loopCount() == -1

@@ -448,10 +448,11 @@ def test_check_docker_deps_success(
 
 @patch("PyQt6.QtWidgets.QMessageBox.information")
 @patch("subprocess.run")
-@patch("pathlib.Path.exists", return_value=True)
+@patch("pathlib.Path.exists")
 def test_check_wsl_deps_success(
     mock_exists, mock_run, mock_info, parent_launcher, qapp
 ) -> None:
+    mock_exists.side_effect = lambda self: ".venv-wsl" in str(self)
     dialog = SettingsWidget(parent=parent_launcher, initial_tab=TAB_CONFIG)
 
     res_run = MagicMock()
