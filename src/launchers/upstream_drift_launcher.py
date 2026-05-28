@@ -239,8 +239,8 @@ class LauncherOrchestrator:
         self.registry = None
         self.engine_manager = None
         self.docker_available = False
-        self.available_models = {}
-        self.special_app_lookup = {}
+        self.available_models: dict[str, Any] = {}
+        self.special_app_lookup: dict[str, Any] = {}
 
     def initialize_from_results(self, startup_results: "StartupResults | None") -> None:
         """Initialize domain state from async startup results."""

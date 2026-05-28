@@ -401,6 +401,10 @@ class PuttingGreenHandler:
         )
         return process is not None
 
+    def get_dockable_ui(self, model: Any, repo_path: Path) -> Any | None:
+        """Putting Green handler does not provide a dockable UI widget."""
+        return None
+
 
 class BiomechExerciseHandler:
     """Handler for launching biomechanics exercise dashboards."""
@@ -450,6 +454,10 @@ class BiomechExerciseHandler:
             extra_python_paths=get_model_python_paths(model, repo_path),
         )
         return process is not None
+
+    def get_dockable_ui(self, model: Any, repo_path: Path) -> Any | None:
+        """BiomechExercise handler does not provide a dockable UI widget."""
+        return None
 
 
 class GolfSimulationSuiteHandler:
@@ -503,6 +511,10 @@ class GolfSimulationSuiteHandler:
             extra_python_paths=get_model_python_paths(model, repo_path),
         )
         return process is not None
+
+    def get_dockable_ui(self, model: Any, repo_path: Path) -> Any | None:
+        """Golf Simulation Suite handler does not provide a dockable UI widget."""
+        return None
 
 
 def _open_with_system_app(file_path: Path, handler_name: str) -> bool:
@@ -569,6 +581,10 @@ class _SystemFileHandler:
             return False
 
         return _open_with_system_app(file_path, self.HANDLER_NAME)
+
+    def get_dockable_ui(self, model: Any, repo_path: Path) -> Any | None:
+        """System file handlers do not provide a dockable UI widget."""
+        return None
 
 
 class MatlabFileHandler(_SystemFileHandler):
@@ -637,6 +653,10 @@ class DocumentHandler:
             )
             return False
 
+    def get_dockable_ui(self, model: Any, repo_path: Path) -> Any | None:
+        """Document handler does not provide a dockable UI widget."""
+        return None
+
 
 class ApiBackedHandler:
     """Handler for API-backed tiles that do not launch local processes directly."""
@@ -659,6 +679,10 @@ class ApiBackedHandler:
             getattr(model, "id", "unknown"),
         )
         return True
+
+    def get_dockable_ui(self, model: Any, repo_path: Path) -> Any | None:
+        """API-backed handler does not provide a dockable UI widget."""
+        return None
 
 
 # ============================================================

@@ -100,8 +100,8 @@ class _StubEngine:
         """Integrate with Euler + damping."""
         effective_dt = dt if dt is not None else 0.01
         damping = 0.95
-        self._q = self._q + self._v * effective_dt
-        self._v = self._v * damping
+        self._q = self._q + self._v * effective_dt  # type: ignore[assignment]
+        self._v = self._v * damping  # type: ignore[assignment]
 
     def get_state(self) -> tuple[np.ndarray, np.ndarray]:
         """Return (positions, velocities)."""
@@ -353,13 +353,13 @@ def _try_build_real_engine(name: str) -> object | None:
                 MuJoCoPhysicsEngine,
             )
 
-            return MuJoCoPhysicsEngine()
+            return MuJoCoPhysicsEngine()  # type: ignore[abstract]
         if name == "drake":
             from src.engines.physics_engines.drake.python.drake_physics_engine import (  # noqa: PLC0415
                 DrakePhysicsEngine,
             )
 
-            return DrakePhysicsEngine()
+            return DrakePhysicsEngine()  # type: ignore[abstract]
         if name == "pinocchio":
             from src.engines.physics_engines.pinocchio.python.pinocchio_physics_engine import (  # noqa: PLC0415
                 PinocchioPhysicsEngine,
@@ -411,7 +411,7 @@ def _run_with_results(
         raise ValueError("At least one engine name must be provided")
     runner = CrossEnginePerturbationRunner(config)
     for name in engine_names:
-        runner.register_engine(name, _build_engine(name))
+        runner.register_engine(name, _build_engine(name))  # type: ignore[arg-type]
     n_steps = round(config.t_end / config.dt)
     base_profile = np.zeros(n_steps)
     results = runner.run_comparison(base_profile)
@@ -522,6 +522,8 @@ def _create_dashboard_window_class() -> type:  # noqa: C901
         QWidget,
     )
 
+    FigureCanvasQTAgg: Any = None
+    Figure: Any = None
     try:
         import matplotlib  # noqa: PLC0415
 
@@ -532,8 +534,6 @@ def _create_dashboard_window_class() -> type:  # noqa: C901
         _has_mpl = True
     except ImportError:
         _has_mpl = False
-        FigureCanvasQTAgg = None
-        Figure = None
 
     class ComparisonWorkerSignals(QObject):
         """Signals for the ComparisonWorker."""
@@ -593,7 +593,7 @@ def _create_dashboard_window_class() -> type:  # noqa: C901
             try:
                 from src.shared.python.theme import apply_theme_to_window
 
-                if apply_theme_to_window:
+                if callable(apply_theme_to_window):
                     apply_theme_to_window(self)
             except ImportError:
                 pass
@@ -791,7 +791,7 @@ def _create_dashboard_window_class() -> type:  # noqa: C901
             return panel
 
         @staticmethod
-        def _style_ax(ax: object, colors: Any) -> None:
+        def _style_ax(ax: Any, colors: Any) -> None:
             """Apply theme styling to a Matplotlib axes."""
             ax.tick_params(colors=colors.text_secondary, labelsize=9)
             for spine in ax.spines.values():
@@ -1017,7 +1017,7 @@ def get_dockable_ui() -> object:
     return _build_qt_window()
 
 
-def _build_qt_window(*, shape_per_engine: bool = True) -> object:
+def _build_qt_window(*, shape_per_engine: bool = True) -> Any:
     """Build and return the QMainWindow instance (deferred Qt import).
 
     Parameters
