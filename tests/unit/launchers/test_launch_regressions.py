@@ -143,6 +143,7 @@ class TestSignalToolkitImport:
 
     def test_absolute_contracts_import_in_signal_core(self) -> None:
         """signal_toolkit/core.py must try absolute import path for contracts."""
+
         source_path = (
             REPO_ROOT
             / "vendor"

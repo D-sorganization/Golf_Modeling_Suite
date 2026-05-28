@@ -131,18 +131,27 @@ class SkeletonCard(QFrame):
             }
         """)
 
-        # Simple pulsing animation using opacity
         self.effect = QGraphicsDropShadowEffect(self)
         self.effect.setBlurRadius(20)
         self.effect.setColor(QColor(0, 0, 0, 80))
         self.setGraphicsEffect(self.effect)
 
-        self._anim = QPropertyAnimation(self, b"windowOpacity")
+        self._pulse_opacity: float = 0.3
+        self._anim = QPropertyAnimation(self, b"pulseOpacity")
         self._anim.setDuration(1000)
-        self._anim.setStartValue(0.5)
-        self._anim.setEndValue(1.0)
+        self._anim.setStartValue(0.3)
+        self._anim.setEndValue(0.3)
         self._anim.setLoopCount(-1)
         self._anim.start()
+
+    @pyqtProperty(float)
+    def pulseOpacity(self) -> float:
+        return self._pulse_opacity
+
+    @pulseOpacity.setter  # type: ignore[no-redef]
+    def pulseOpacity(self, value: float) -> None:
+        self._pulse_opacity = value
+        self.setWindowOpacity(value)
 
 
 class DraggableModelCard(QFrame):
