@@ -211,7 +211,12 @@ def run_calculator(
         if not vr.valid:
             sys.stderr.write(json.dumps({"errors": vr.errors}) + "\n")
             return 3
-        calc_result = fn.calculate(inputs)
+        try:
+            calc_result = fn.calculate(inputs)
+        except (ValueError, AssertionError) as exc:
+            logger.error("Calculation failed: %s", exc)
+            sys.stderr.write(json.dumps({"errors": [str(exc)]}) + "\n")
+            return 3
         values: dict[str, Any] = getattr(calc_result, "values", {})
         units: dict[str, str] = getattr(calc_result, "units", {})
         output_data: Any = {"values": values, "units": units}
@@ -247,7 +252,12 @@ def run_calculator(
             out_path.parent.mkdir(parents=True, exist_ok=True)
             out_path.write_text(output_str, encoding="utf-8")
         except OSError as exc:
+            # Preserve the legacy "sidekick run failed" stderr prefix that
+            # tests/unit/sidekick/test_cli.py treats as the user-facing
+            # error contract, while still emitting the structured JSON
+            # body for machine consumers (#6533).
             logger.error("sidekick run failed: %s", exc)
+            sys.stderr.write(f"sidekick run failed: {exc}\n")
             sys.stderr.write(json.dumps({"error": f"Write failed: {exc}"}) + "\n")
             return 1
         logger.info("Results written to %s", out_path)
