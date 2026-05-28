@@ -448,7 +448,7 @@ def test_check_docker_deps_success(
 
 @patch("PyQt6.QtWidgets.QMessageBox.information")
 @patch("subprocess.run")
-@patch("pathlib.Path.exists")
+@patch("pathlib.Path.exists", autospec=True)
 def test_check_wsl_deps_success(
     mock_exists, mock_run, mock_info, parent_launcher, qapp
 ) -> None:
