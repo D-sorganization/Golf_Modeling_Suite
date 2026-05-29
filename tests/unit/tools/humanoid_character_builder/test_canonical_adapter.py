@@ -12,7 +12,7 @@ migration is tracked as a follow-up.
 
 from __future__ import annotations
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 
 import pytest
 from humanoid_character_builder import BodyParameters
