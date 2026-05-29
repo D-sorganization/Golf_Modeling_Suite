@@ -144,7 +144,7 @@ def test_csv_duplicate_timestamps(tmp_path: Path) -> None:
     # Loose: at least no crash. Strict: should raise.
     try:
         result = load_any(p)
-    except Exception:
+    except Exception:  # noqa: BLE001 - malformed input may raise any error
         return
     # If it loaded, contract requires non-decreasing timestamps which is
     # technically satisfied by 0 == 0, but identical timestamps are a smell.

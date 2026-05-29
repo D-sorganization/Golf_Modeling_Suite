@@ -46,13 +46,13 @@ def loaded_body():
         from src.shared.python.motion_matching.load_body_target import (
             load_body_target,
         )
-    except Exception as exc:  # pragma: no cover - import-time failure
+    except Exception as exc:  # noqa: BLE001 # pragma: no cover - import-time failure
         pytest.skip(f"load_body_target unavailable: {exc}")
     try:
         return load_body_target(DRIVER_C3D)
     except ImportError as exc:  # ezc3d optional dependency missing
         pytest.skip(f"C3D loader dependency unavailable: {exc}")
-    except Exception as exc:  # pragma: no cover - loader-side failure
+    except Exception as exc:  # noqa: BLE001 # pragma: no cover - loader-side failure
         pytest.skip(f"failed to load C3D fixture: {exc}")
 
 

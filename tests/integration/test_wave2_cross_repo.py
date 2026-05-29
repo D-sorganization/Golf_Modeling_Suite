@@ -79,7 +79,7 @@ class TestSharedAnthropometricConfig:
                 config = yaml.safe_load(f)
                 assert config is not None
                 assert "segments" in config or "masses" in config
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - surface any load failure
             pytest.fail(f"Failed to load anthropometric YAML: {e}")
 
 

@@ -113,7 +113,6 @@ def test_models_yaml_has_chat_assistant_entry() -> None:
 def test_sidekick_create_widget_headless() -> None:
     """create_main_widget works headlessly when PyQt6 is mocked."""
     mock_widget_instance = MagicMock()
-    mock_ChatDockWidget = MagicMock(return_value=mock_widget_instance)
 
     with (
         patch.dict(
