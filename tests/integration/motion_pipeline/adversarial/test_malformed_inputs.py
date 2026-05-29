@@ -44,16 +44,8 @@ def _write(tmp_path: Path, name: str, content: bytes) -> Path:
 
 
 @pytest.mark.parametrize("ext", sorted(set(FORMAT_EXT.values())))
-def test_empty_file_rejected(tmp_path: Path, ext: str, request) -> None:
+def test_empty_file_rejected(tmp_path: Path, ext: str) -> None:
     """0-byte files of every recognised extension must be rejected."""
-    if ext == ".c3d":
-        request.node.add_marker(
-            pytest.mark.xfail(
-                strict=True,
-                reason="GH #4721 — c3d adapter raises raw OSError on empty file instead of typed AdapterContractError",
-                raises=OSError,
-            )
-        )
     p = _write(tmp_path, f"empty{ext}", b"")
     with pytest.raises((UnsupportedFormatError, AdapterContractError, ValueError)):
         load_any(p)

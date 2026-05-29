@@ -246,6 +246,7 @@ def test_library_full_body_at_address(fig_ax) -> None:
     ``data/C3D_TA_Driver.c3d`` to keep CI stable across c3d-loader
     upgrades. The renderer code path is identical.
     """
+    pytest.importorskip("trimesh")
     from src.shared.python.body_part_viz.asset_library import ShapeLibrary
     from src.shared.python.body_part_viz.fitters.between_two import (
         BetweenTwoMarkersFitter,
