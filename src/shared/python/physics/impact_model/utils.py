@@ -139,5 +139,5 @@ def validate_energy_balance(
         ),
         "expected_loss_factor": expected_loss_factor,
         "ball_ke_post": float(ke_ball_post),
-        "ball_launch_speed": float(math.sqrt(np.dot(post_state.ball_velocity, post_state.ball_velocity))),  # ⚡ Bolt: math.sqrt(np.dot) is ~3x faster than np.linalg.norm  # ⚡ Bolt: math.sqrt(np.dot) is ~3x faster than np.linalg.norm,
+        "ball_launch_speed": float(math.sqrt(np.dot(post_state.ball_velocity, post_state.ball_velocity))),  # ⚡ Bolt: math.sqrt(np.dot) is ~3x faster than np.linalg.norm
     }
