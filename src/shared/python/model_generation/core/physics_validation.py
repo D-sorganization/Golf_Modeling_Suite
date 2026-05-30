@@ -410,7 +410,9 @@ class PhysicsValidator:
         for i, (name1, center1, radius1) in enumerate(collision_spheres):
             for _j, (name2, center2, radius2) in enumerate(collision_spheres[i + 1 :]):
                 diff = center1 - center2
-                distance = math.sqrt(np.dot(diff, diff))  # ⚡ Bolt: math.sqrt(np.dot) is ~3x faster than np.linalg.norm
+                distance = math.sqrt(
+                    np.dot(diff, diff)
+                )  # ⚡ Bolt: math.sqrt(np.dot) is ~3x faster than np.linalg.norm
                 min_separation = distance - radius1 - radius2
 
                 result.min_separation = min(result.min_separation, min_separation)
@@ -555,15 +557,21 @@ class PhysicsValidator:
 
             if c2 == 0 or c1 <= 0:
                 diff = point - p1
-                dist = math.sqrt(np.dot(diff, diff))  # ⚡ Bolt: math.sqrt(np.dot) is ~3x faster than np.linalg.norm
+                dist = math.sqrt(
+                    np.dot(diff, diff)
+                )  # ⚡ Bolt: math.sqrt(np.dot) is ~3x faster than np.linalg.norm
             elif c2 <= c1:
                 diff = point - p2
-                dist = math.sqrt(np.dot(diff, diff))  # ⚡ Bolt: math.sqrt(np.dot) is ~3x faster than np.linalg.norm
+                dist = math.sqrt(
+                    np.dot(diff, diff)
+                )  # ⚡ Bolt: math.sqrt(np.dot) is ~3x faster than np.linalg.norm
             else:
                 b = c1 / c2
                 pb = p1 + b * v
                 diff = point - pb
-                dist = math.sqrt(np.dot(diff, diff))  # ⚡ Bolt: math.sqrt(np.dot) is ~3x faster than np.linalg.norm
+                dist = math.sqrt(
+                    np.dot(diff, diff)
+                )  # ⚡ Bolt: math.sqrt(np.dot) is ~3x faster than np.linalg.norm
 
             min_dist = min(min_dist, float(dist))
 
