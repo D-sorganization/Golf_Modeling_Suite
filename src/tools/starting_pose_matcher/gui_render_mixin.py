@@ -16,6 +16,7 @@ from __future__ import annotations
 from contextlib import suppress
 
 import numpy as np
+import math
 
 from src.shared.python.motion_matching.diagnostics._skeleton_render import (
     equalize_3d_axes as _shared_equalize_3d_axes,
@@ -137,13 +138,16 @@ class _RenderMixin:
                 "dx_mm": float(d_mid[0]),
                 "dy_mm": float(d_mid[1]),
                 "dz_mm": float(d_mid[2]),
-                "norm_mm": float(np.linalg.norm(d_mid)),
+                # ⚡ Bolt: math.sqrt(np.dot) avoids intermediate allocations and argument parsing overhead of np.linalg.norm for small 1D arrays
+                "norm_mm": float(math.sqrt(np.dot(d_mid, d_mid))),
             }
             ch_target = self._mocap_pos_for(slot, "club")
             if ch_target is not None and "ch" in slot.skeleton.joints:
                 moved_ch = self.transform.apply(slot.skeleton.joints["ch"][None, :])[0]
+                moved_diff = (moved_ch - ch_target) * 1000.0
+                # ⚡ Bolt: Extracting expression to a variable prevents re-evaluating the subtraction and multiplication when using np.dot
                 entry["clubhead_norm_mm"] = float(
-                    np.linalg.norm((moved_ch - ch_target) * 1000.0)
+                    math.sqrt(np.dot(moved_diff, moved_diff))
                 )
             out[key] = entry
         return out
@@ -509,22 +513,26 @@ class _RenderMixin:
             n = hub - torso
         else:
             n = np.array([0.0, 0.0, 1.0])
-        nn = float(np.linalg.norm(n))
+        # ⚡ Bolt: math.sqrt(np.dot) avoids intermediate allocations and argument parsing overhead of np.linalg.norm for small 1D arrays
+        nn = float(math.sqrt(np.dot(n, n)))
         n = np.array([0.0, 0.0, 1.0]) if nn < 1e-6 else n / nn
 
         # In-plane axis: project (rs - ls) onto the plane orthogonal to n.
         rs_dir = rs - ls
         rs_dir = rs_dir - np.dot(rs_dir, n) * n
-        rd = float(np.linalg.norm(rs_dir))
+        # ⚡ Bolt: math.sqrt(np.dot) avoids np.linalg.norm overhead
+        rd = float(math.sqrt(np.dot(rs_dir, rs_dir)))
         if rd < 1e-6:
             # Pick any perpendicular if shoulders are degenerate.
             rs_dir = np.array([1.0, 0.0, 0.0])
             rs_dir = rs_dir - np.dot(rs_dir, n) * n
-            rd = float(np.linalg.norm(rs_dir))
+            # ⚡ Bolt: math.sqrt(np.dot) avoids np.linalg.norm overhead
+            rd = float(math.sqrt(np.dot(rs_dir, rs_dir)))
             if rd < 1e-6:
                 rs_dir = np.array([0.0, 1.0, 0.0])
                 rs_dir = rs_dir - np.dot(rs_dir, n) * n
-                rd = float(np.linalg.norm(rs_dir))
+                # ⚡ Bolt: math.sqrt(np.dot) avoids np.linalg.norm overhead
+                rd = float(math.sqrt(np.dot(rs_dir, rs_dir)))
                 if rd < 1e-6:
                     return
         rs_dir = rs_dir / rd

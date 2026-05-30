@@ -39,6 +39,7 @@ Shared infrastructure (per AGENTS.md / issue #4376)
 """
 
 from __future__ import annotations
+import math
 
 import json
 import logging
@@ -704,8 +705,10 @@ def solve_shaft_rz_deg(
     """
     shaft_t_xy = (np.asarray(ch_target) - np.asarray(mp_target))[:2]
     shaft_m_xy = (np.asarray(ch_skel) - np.asarray(mp_skel))[:2]
-    nt = float(np.linalg.norm(shaft_t_xy))
-    nm = float(np.linalg.norm(shaft_m_xy))
+    # ⚡ Bolt: math.sqrt(np.dot) avoids intermediate allocations and argument parsing overhead of np.linalg.norm for small 1D arrays
+    nt = float(math.sqrt(np.dot(shaft_t_xy, shaft_t_xy)))
+    # ⚡ Bolt: math.sqrt(np.dot) avoids intermediate allocations and argument parsing overhead of np.linalg.norm for small 1D arrays
+    nm = float(math.sqrt(np.dot(shaft_m_xy, shaft_m_xy)))
     if nt < 1e-9 or nm < 1e-9:
         return 0.0
     a_t = float(np.arctan2(shaft_t_xy[1], shaft_t_xy[0]))

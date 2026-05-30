@@ -26,6 +26,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+import math
 import pandas as pd  # noqa: F401 — preserved for downstream typing parity
 from matplotlib.backends.backend_qtagg import (
     FigureCanvasQTAgg as FigureCanvas,
@@ -890,8 +891,9 @@ class MainWidget(_RenderMixin, _BuildersMixin, _SessionMixin, QWidget):
         if self.cb_fit_scale.isChecked():
             shaft_t = ch_target - mp_target
             shaft_m = ch_skel - mp_skel
-            len_t = float(np.linalg.norm(shaft_t))
-            len_m = float(np.linalg.norm(shaft_m))
+            # ⚡ Bolt: math.sqrt(np.dot) avoids intermediate allocations and argument parsing overhead of np.linalg.norm for small 1D arrays
+            len_t = float(math.sqrt(np.dot(shaft_t, shaft_t)))
+            len_m = float(math.sqrt(np.dot(shaft_m, shaft_m)))
             if len_m > 1e-6 and len_t > 1e-6:
                 new_scale = float(
                     np.clip(
@@ -903,8 +905,11 @@ class MainWidget(_RenderMixin, _BuildersMixin, _SessionMixin, QWidget):
         scale = max(1e-3, self.s_scale.value())
 
         # Solve Rz from XY-plane shaft directions (delegated to core).
-        nt = float(np.linalg.norm((ch_target - mp_target)[:2]))
-        nm = float(np.linalg.norm((ch_skel - mp_skel)[:2]))
+        shaft_target_xy = (ch_target - mp_target)[:2]
+        # ⚡ Bolt: Extracting to a variable avoids duplicating the array slice, and math.sqrt(np.dot) avoids np.linalg.norm overhead
+        nt = float(math.sqrt(np.dot(shaft_target_xy, shaft_target_xy)))
+        shaft_skel_xy = (ch_skel - mp_skel)[:2]
+        nm = float(math.sqrt(np.dot(shaft_skel_xy, shaft_skel_xy)))
         if nt < 1e-6 or nm < 1e-6:
             self._notify(
                 "Shaft projection onto XY plane is degenerate (vertical "
