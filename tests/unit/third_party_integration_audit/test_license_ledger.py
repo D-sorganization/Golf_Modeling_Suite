@@ -2,16 +2,23 @@
 
 from __future__ import annotations
 
+import importlib.util
+import sys
 from pathlib import Path
 
-from scripts.legal.check_license_ledger import (
-    declared_dependency_names,
-    ledger_package_names,
-    validate_license_ledger,
-)
-
-
 ROOT = Path(__file__).resolve().parents[3]
+_LEDGER_SCRIPT = ROOT / "scripts" / "legal" / "check_license_ledger.py"
+
+_spec = importlib.util.spec_from_file_location("check_license_ledger", _LEDGER_SCRIPT)
+assert _spec is not None
+assert _spec.loader is not None
+_ledger_module = importlib.util.module_from_spec(_spec)
+sys.modules[_spec.name] = _ledger_module
+_spec.loader.exec_module(_ledger_module)
+
+declared_dependency_names = _ledger_module.declared_dependency_names
+ledger_package_names = _ledger_module.ledger_package_names
+validate_license_ledger = _ledger_module.validate_license_ledger
 
 
 def test_license_ledger_covers_declared_dependencies() -> None:
