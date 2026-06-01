@@ -20,7 +20,6 @@ the Protocol/registry adaptation layer.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
@@ -164,27 +163,23 @@ class TestFitSwingShape:
 
 
 # ---------------------------------------------------------------------------
-# 3. MultiSourceTarget / ClubBallTarget duck-typing.
+# 3. MultiSourceTarget / ClubBallTarget canonical unwrap (#6935).
 # ---------------------------------------------------------------------------
-
-
-@dataclass
-class _MultiSourceLike:
-    """Shape stand-in for the still-evolving MultiSourceTarget (#4509).
-
-    We only need the ``.club`` attribute to exist for the Drake provider
-    to consume it; richer fields will appear once #4509 lands.
-    """
-
-    club: ClubTarget
+#
+# Drake now delegates to the shared ``resolve_club_target`` (issue #6935) so a
+# canonical ``MultiSourceTarget`` is unwrapped identically across every engine.
+# (The old loose duck-typing on any ``.club`` attribute was the divergence
+# #6935 set out to remove.)
 
 
 class TestMultiSourceAdaptation:
     def test_target_with_club_attribute_is_accepted(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        from src.shared.python.motion_matching.provider import MultiSourceTarget
+
         target = _make_target()
-        wrapped = _MultiSourceLike(club=target)
+        wrapped = MultiSourceTarget(club=target)
         theta0 = np.zeros(1 * COEFFS_PER_JOINT)
         opts = FitOptions(n_joints=1, theta0=theta0, max_iterations=5)
 

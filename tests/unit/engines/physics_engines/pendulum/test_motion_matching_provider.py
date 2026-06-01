@@ -6,7 +6,11 @@ import pytest
 import numpy as np
 
 from src.shared.python.motion_matching.club_target import ClubTarget, SourceProvenance
-from src.shared.python.motion_matching.provider import FitOptions, MultiSourceTarget
+from src.shared.python.motion_matching.provider import (
+    FitOptions,
+    MultiSourceTarget,
+    resolve_club_target,
+)
 from src.shared.python.motion_matching.provider_registry import (
     clear_registry,
     get_provider,
@@ -63,11 +67,9 @@ def test_extract_club_from_multisource(dummy_club_target: ClubTarget) -> None:
 
 
 def test_extract_club_rejects_invalid() -> None:
-    """Test that _extract_club raises errors on bad input."""
-    provider = PendulumFitSwingProvider()
-
-    with pytest.raises(TypeError, match="MultiSourceTarget or ClubTarget"):
-        provider._extract_club("not a target")  # type: ignore
+    """Test that the shared unwrap raises errors on bad input (#6935)."""
+    with pytest.raises(TypeError, match="MultiSourceTarget"):
+        resolve_club_target("not a target")  # type: ignore
 
     with pytest.raises(ValueError, match="at least one of \\(club, body\\) set"):
         MultiSourceTarget(club=None, body=None)

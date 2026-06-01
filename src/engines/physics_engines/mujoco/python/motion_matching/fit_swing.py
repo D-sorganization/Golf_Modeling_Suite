@@ -36,9 +36,7 @@ are safe. Parallel fits MUST use ``multiprocessing`` (not threads).
 from __future__ import annotations
 
 import hashlib
-import os
 import platform
-import subprocess
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -152,22 +150,14 @@ def _hash_target(target: ClubTarget) -> str:
 
 
 def _git_commit_short() -> str:
-    """Return the short SHA of HEAD, or ``"unknown"`` if not in a repo."""
-    try:
-        out = subprocess.check_output(
-            ["git", "rev-parse", "--short", "HEAD"],
-            cwd=os.path.dirname(__file__),
-            stderr=subprocess.DEVNULL,
-            timeout=2.0,
-        )
-        return out.decode("ascii").strip() or "unknown"
-    except (
-        subprocess.CalledProcessError,
-        FileNotFoundError,
-        subprocess.TimeoutExpired,
-        OSError,
-    ):
-        return "unknown"
+    """Return the short SHA of HEAD, or ``"unknown"`` if not in a repo.
+
+    Delegates to the shared probe (issue #6939) so the git-commit logic is
+    not reimplemented per engine.
+    """
+    from src.shared.python.motion_matching.provenance import git_commit_short
+
+    return git_commit_short()
 
 
 def _mujoco_version() -> str:
