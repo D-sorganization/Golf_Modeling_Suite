@@ -343,7 +343,9 @@ def fit_swing_mujoco(target: ClubTarget, options: FitOptions) -> FitResult:
                 theta_in, target, sim_opts, options.cost, cache=jac_cache
             )
 
-        res = minimize(
+        # scipy-stubs' ``minimize`` overloads do not cover these
+        # (callable, ndarray, method, jac/bounds, options=dict) forms.
+        res = minimize(  # type: ignore[call-overload]
             J,
             theta0,
             method=options.method,
@@ -352,7 +354,7 @@ def fit_swing_mujoco(target: ClubTarget, options: FitOptions) -> FitResult:
             options=scipy_options,
         )
     elif jac_mode == "finite_difference":
-        res = minimize(
+        res = minimize(  # type: ignore[call-overload]
             J,
             theta0,
             method=options.method,

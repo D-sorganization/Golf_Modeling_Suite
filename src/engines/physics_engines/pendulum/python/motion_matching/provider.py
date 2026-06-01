@@ -122,8 +122,10 @@ class PendulumFitSwingProvider:
         t0 = time.perf_counter()
         theta0 = np.zeros(14)  # 14 polynomial coefficients
 
-        # Scipy minimize loop
-        res = minimize(
+        # Scipy minimize loop. scipy-stubs' ``minimize`` overloads do not
+        # cover this (callable, ndarray, method=str, options=dict) form, so
+        # the call is type-ignored rather than restructured.
+        res = minimize(  # type: ignore[call-overload]
             cost_func,
             theta0,
             method="SLSQP",
