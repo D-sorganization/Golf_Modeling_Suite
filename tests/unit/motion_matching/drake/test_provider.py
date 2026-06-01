@@ -103,6 +103,23 @@ def _make_simout_from(target: ClubTarget, theta: np.ndarray) -> SimOut:
 
 
 class TestRegistration:
+    @pytest.fixture(autouse=True)
+    def _ensure_drake_registered(self) -> None:
+        """Re-register Drake before each registration assertion.
+
+        The motion-matching registry is a process-global shared by every
+        engine, and other test modules (e.g. the pendulum provider tests)
+        call ``clear_registry()``; since each engine's package auto-registers
+        only once at import time, a prior wipe would otherwise leave Drake
+        absent here when tests run in the same worker. Registration is
+        idempotent, so this is a safe order-independent guard.
+        """
+        from src.shared.python.motion_matching.provider_registry import (
+            register_provider,
+        )
+
+        register_provider(DrakeFitSwingProvider())
+
     def test_drake_engine_is_registered(self) -> None:
         assert "drake" in available_engines()
 
