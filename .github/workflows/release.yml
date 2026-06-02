@@ -38,7 +38,6 @@ jobs:
       id-token: write
       attestations: write
     steps:
-
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           fetch-depth: 0
@@ -97,7 +96,7 @@ jobs:
         with:
           subject-path: "dist/*"
       - name: Upload artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: dist
           path: dist/
@@ -115,7 +114,6 @@ jobs:
           - { runner: d-sorg-fleet-docker, python: "3.13" }
     runs-on: ${{ matrix.runner }}
     steps:
-
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
       - name: Isolate Python tool cache (prevent shared-cache races)
         if: runner.os != 'Windows'
