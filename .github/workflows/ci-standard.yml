@@ -1153,10 +1153,22 @@ jobs:
               )
             fi
 
-            if [ "${#changed_tests[@]}" -eq 0 ]; then
-              echo "No Python test changes detected; skipping PR-scoped core tests."
-              echo "Falling through to default test lane to ensure coverage."
-              # Do not exit here - fall through to default test lane below
+            mapfile -t changed_core_targets < <(
+              git diff --name-only --diff-filter=ACMRT "${merge_base:-origin/${{ github.base_ref }}}" HEAD -- \
+                'src/**/*.py' \
+                'tests/**/*.py' \
+                'pyproject.toml' \
+                'requirements*.txt' \
+                'environment.yml' \
+                ':(exclude)src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/**'
+            )
+
+            if [ "${#changed_tests[@]}" -eq 0 ] && [ "${#changed_core_targets[@]}" -eq 0 ]; then
+              echo "No core Python/test/dependency changes detected; skipping core tests for this workflow-only PR."
+              exit 0
+            elif [ "${#changed_tests[@]}" -eq 0 ]; then
+              echo "No Python test changes detected for changed core targets."
+              echo "Falling through to default test lane to ensure source/dependency coverage."
             else
               echo "Running PR-scoped core tests:"
               printf '  %s\n' "${changed_tests[@]}"

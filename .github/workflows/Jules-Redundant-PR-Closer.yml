@@ -74,7 +74,6 @@ jobs:
           path: .jules-tools
           token: ${{ steps.app-token.outputs.token }}
 
-
       - name: Isolate Python tool cache (prevent shared-cache races)
         if: runner.os != 'Windows'
         shell: bash

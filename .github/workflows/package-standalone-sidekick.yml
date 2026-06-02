@@ -42,7 +42,6 @@ jobs:
         working-directory: ui
         run: npm ci
 
-
       - name: Build frontend
         working-directory: ui
         run: npm run build
@@ -108,7 +107,6 @@ jobs:
         python: ["3.10", "3.11", "3.12"]
 
     steps:
-
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
       - name: Isolate Python tool cache (prevent shared-cache races)
         if: runner.os != 'Windows'

@@ -38,7 +38,6 @@ jobs:
       id-token: write
       attestations: write
     steps:
-
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           fetch-depth: 0
@@ -115,7 +114,6 @@ jobs:
           - { runner: d-sorg-fleet-docker, python: "3.13" }
     runs-on: ${{ matrix.runner }}
     steps:
-
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
       - name: Isolate Python tool cache (prevent shared-cache races)
         if: runner.os != 'Windows'
