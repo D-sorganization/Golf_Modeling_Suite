@@ -10,6 +10,7 @@ Enhanced main application with Excel data loading and advanced visualization
 
 import logging
 import sys
+import math
 from pathlib import Path
 from typing import Any
 
@@ -627,7 +628,9 @@ class WiffleGolfMainWindow(QMainWindow):
                 ]
             )
 
-            distance = np.linalg.norm(prov1_pos - wiffle_pos)
+            # ⚡ Bolt: math.hypot is faster than np.linalg.norm for small 1D arrays
+            diff = prov1_pos - wiffle_pos
+            distance = math.hypot(diff[0], diff[1], diff[2])
 
             # Update status bar with frame info
             time_val = self.baseq_data.iloc[frame_idx]["Time"]
