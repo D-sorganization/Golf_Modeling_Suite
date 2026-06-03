@@ -120,7 +120,9 @@ class TestFormationController:
         """Test."""
         f = FormationConfig.line_formation(2)
         fc = FormationController(["a", "b"], f)
-        err = fc.get_formation_error(np.array([0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]), {"a": np.zeros(3)})
+        err = fc.get_formation_error(
+            np.array([0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]), {"a": np.zeros(3)}
+        )
         assert err == 0.0
 
 
