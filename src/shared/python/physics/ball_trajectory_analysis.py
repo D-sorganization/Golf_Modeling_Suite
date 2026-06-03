@@ -50,7 +50,9 @@ class TrajectoryAnalysisMixin:
         if len(trajectory) < 2:
             return 0.0
         v = trajectory[-1].velocity
-        v_horiz = math.hypot(v[0], v[1])  # ⚡ Bolt: math.hypot is ~5x faster than np.linalg.norm
+        v_horiz = math.hypot(
+            v[0], v[1]
+        )  # ⚡ Bolt: math.hypot is ~5x faster than np.linalg.norm
         if v_horiz < NUMERICAL_EPSILON:
             return 90.0
         return float(np.degrees(np.arctan2(-v[2], v_horiz)))
