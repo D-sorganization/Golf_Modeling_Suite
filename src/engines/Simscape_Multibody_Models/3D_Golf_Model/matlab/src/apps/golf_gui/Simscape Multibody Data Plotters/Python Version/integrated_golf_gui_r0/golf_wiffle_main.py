@@ -9,8 +9,8 @@ Enhanced main application with Excel data loading and advanced visualization
 """
 
 import logging
-import sys
 import math
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -612,19 +612,23 @@ class WiffleGolfMainWindow(QMainWindow):
 
         # Calculate frame-specific metrics
         try:
+            # ⚡ Bolt: Extract rows once to avoid expensive repeated pandas .iloc lookups  # noqa: E501
+            baseq_row = self.baseq_data.iloc[frame_idx]
+            ztcfq_row = self.ztcfq_data.iloc[frame_idx]
+
             prov1_pos = np.array(
                 [
-                    self.baseq_data.iloc[frame_idx]["CHx"],
-                    self.baseq_data.iloc[frame_idx]["CHy"],
-                    self.baseq_data.iloc[frame_idx]["CHz"],
+                    baseq_row["CHx"],
+                    baseq_row["CHy"],
+                    baseq_row["CHz"],
                 ]
             )
 
             wiffle_pos = np.array(
                 [
-                    self.ztcfq_data.iloc[frame_idx]["CHx"],
-                    self.ztcfq_data.iloc[frame_idx]["CHy"],
-                    self.ztcfq_data.iloc[frame_idx]["CHz"],
+                    ztcfq_row["CHx"],
+                    ztcfq_row["CHy"],
+                    ztcfq_row["CHz"],
                 ]
             )
 
@@ -633,7 +637,7 @@ class WiffleGolfMainWindow(QMainWindow):
             distance = math.hypot(diff[0], diff[1], diff[2])
 
             # Update status bar with frame info
-            time_val = self.baseq_data.iloc[frame_idx]["Time"]
+            time_val = baseq_row["Time"]
             self.statusBar().showMessage(
                 f"Frame {frame_idx + 1}, Time: {time_val:.3f}s, "
                 f"Distance: {distance:.3f}m"  # noqa: E501
