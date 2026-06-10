@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.301                                            |
+| **Spec Version**        | 1.0.302                                            |
 | **Last Spec Update**    | 2026-06-11                                         |
 
 ## 2. Purpose & Mission
@@ -70,6 +70,11 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 
 ### Recent Spec Updates
 
+- **2026-06-10** - Closed the #7273 PR-scoped coverage bypass in standard CI.
+  PRs that change source, test, or dependency targets now fall through to the
+  coverage-producing core test lane instead of using the workflow-only
+  `--no-cov` shortcut, and per-package coverage enforcement runs whenever that
+  lane produces `coverage.xml`.
 - **2026-06-10** - Hardened the audit regressions tracked by #7269, #7270,
   and #7271. Model Explorer inspect/compare path resolution now rejects
   absolute paths and parent traversal before resolving candidates only under
