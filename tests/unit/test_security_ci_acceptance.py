@@ -43,8 +43,14 @@ def test_standard_ci_runs_blocking_semgrep_and_trivy() -> None:
 
 def test_standard_ci_uses_locked_python_dependencies_for_dev_and_audit() -> None:
     workflow = _read(".github/workflows/ci-standard.yml")
+    makefile = _read("Makefile")
+    dev_lock = _read("requirements-dev.lock")
 
     assert "requirements*.lock" in workflow
+    assert (
+        "python3 -m piptools compile --extra dev --extra gui-test "
+        "-o requirements-dev.lock pyproject.toml"
+    ) in makefile
     assert (
         "python -m pip install --no-cache-dir --ignore-installed -r requirements-dev.lock"
         in workflow
@@ -72,6 +78,9 @@ def test_standard_ci_uses_locked_python_dependencies_for_dev_and_audit() -> None
     assert 'pip install --no-cache-dir -e ".[dev]"' not in workflow
     assert 'pip install --no-cache-dir -e ".[dev,gui-test]"' not in workflow
     assert "pip-audit\n" not in workflow
+
+    assert "pyqt6==" in dev_lock.lower()
+    assert "pytest-qt==" in dev_lock.lower()
 
 
 def test_docker_security_scan_blocks_high_and_critical() -> None:
