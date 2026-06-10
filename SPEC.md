@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.294                                            |
+| **Spec Version**        | 1.0.295                                            |
 | **Last Spec Update**    | 2026-06-11                                         |
 
 ## 2. Purpose & Mission
@@ -76,6 +76,12 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
   library reports declared attachment frames and payload warnings, and
   Frankenstein composition uses declared interface-frame origins when
   assembling models.
+- **2026-06-10** - Hardened Rust mocap Python binding errors for #7252.
+  `upstream-mocap-io` validates `parse_c3d` / `parse_trc` / `parse_bvh`
+  path preconditions before file access, maps missing files to
+  `FileNotFoundError`, maps other file-access failures to `OSError`, and
+  preserves malformed present files as `ValueError` parse failures with the
+  format and path in the error context.
 - **2026-06-10** - Made motion-pipeline hook failures observable for #7250.
   `PipelineConfig.strict_hooks` now switches per-stage hooks from lenient
   traceback logging to fail-fast `HookExecutionError` diagnostics, while the
@@ -917,7 +923,8 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-06-10 | 1.0.294 | Restored model explorer attachment-point metadata for #7206. Bundled model definitions can now ship schema-validated `<model>.attachments.json` sidecars that declare stable parent and child interface frames, the model library exposes declared attachment points with payload warnings for missing links or malformed manifests, and Frankenstein composition places attachments from those declared interface-frame origins instead of relying on implicit link origins. |
+| 2026-06-10 | 1.0.295 | Restored model explorer attachment-point metadata for #7206. Bundled model definitions can now ship schema-validated `<model>.attachments.json` sidecars that declare stable parent and child interface frames, the model library exposes declared attachment points with payload warnings for missing links or malformed manifests, and Frankenstein composition places attachments from those declared interface-frame origins instead of relying on implicit link origins. |
+| 2026-06-10 | 1.0.294 | Rust mocap FFI binding error-contract hardening for #7252. `upstream-mocap-io` now validates non-empty and NUL-free Python binding paths before parser entry, maps missing files from `parse_c3d` / `parse_trc` / `parse_bvh` to `FileNotFoundError`, maps other file-access errors to `OSError`, and keeps malformed present files as `ValueError` parse failures that include the format and path context. Rust binding tests and Python parity tests cover missing-file and malformed-present-file behavior across all three formats while preserving the marker/unit parser contracts. |
 | 2026-06-10 | 1.0.293 | First #7207 model explorer library-panel unification slice. `ModelLoaderDialog` now exposes one searchable Library tree built from every `ModelLibrary.list_available_models()` category, including sibling repositories, and model rows show first-party format badges inferred from explicit model metadata or category defaults. Headless panel-model tests cover flattening, sibling inclusion, search, category grouping, and badge logic. |
 | 2026-06-10 | 1.0.292 | Motion-pipeline hook exception handling for #7250. `PipelineConfig.strict_hooks` now controls per-stage hook failure policy: default lenient mode logs failures with `logger.exception` so tracebacks are observable while the pipeline continues, and strict mode raises `HookExecutionError` with the stage, hook name, and original exception chained as the cause. Focused orchestrator unit tests cover both modes. |
 | 2026-06-10 | 1.0.291 | Added the bounded inverse swing optimization core for #7220. `src/shared/python/physics/swing_optimizer.py` adds `FlightTarget`, `ClubPreset`, `SwingOptimizer`, and diagnostics around SciPy SLSQP over speed/loft/attack/face-to-path while composing the existing `SwingBallFlightPipeline`; focused physics tests cover roundtrip, unreachable target, and timeout behavior. |
