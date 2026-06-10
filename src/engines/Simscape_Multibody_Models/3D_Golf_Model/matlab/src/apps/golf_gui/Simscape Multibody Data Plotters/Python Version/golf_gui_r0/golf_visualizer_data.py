@@ -100,51 +100,64 @@ class DataProcessor:
             raise ValueError("frame_idx must be provided")
         if frame_idx in self.cache:
             return self.cache[frame_idx]
+        # ⚡ Bolt: Extract rows once to avoid expensive repeated pandas .iloc lookups  # noqa: E501
+        def _get_row(ds: pd.DataFrame | None, idx: int) -> pd.Series | None:
+            if ds is None:
+                return None
+            try:
+                return ds.iloc[idx]
+            except IndexError:
+                return None
+
+        baseq_row = _get_row(datasets.get("BASEQ"), frame_idx)
+        ztcfq_row = _get_row(datasets.get("ZTCFQ"), frame_idx)
+        deltaq_row = _get_row(datasets.get("DELTAQ"), frame_idx)
+
         frame_data = FrameData(
             frame_idx=frame_idx,
             time=frame_idx * 0.001,
-            butt=self._safe_extract_point(datasets["BASEQ"], frame_idx, "Butt"),
-            clubhead=self._safe_extract_point(datasets["BASEQ"], frame_idx, "Clubhead"),
-            midpoint=self._safe_extract_point(datasets["BASEQ"], frame_idx, "MidPoint"),
+            butt=self._safe_extract_point(baseq_row, "Butt"),
+            clubhead=self._safe_extract_point(baseq_row, "Clubhead"),
+            midpoint=self._safe_extract_point(baseq_row, "MidPoint"),
             left_wrist=self._safe_extract_point(
-                datasets["BASEQ"], frame_idx, "LeftWrist"
+                baseq_row, "LeftWrist"
             ),  # noqa: E501
             left_elbow=self._safe_extract_point(
-                datasets["BASEQ"], frame_idx, "LeftElbow"
+                baseq_row, "LeftElbow"
             ),  # noqa: E501
             left_shoulder=self._safe_extract_point(
-                datasets["BASEQ"], frame_idx, "LeftShoulder"
+                baseq_row, "LeftShoulder"
             ),  # noqa: E501
             right_wrist=self._safe_extract_point(
-                datasets["BASEQ"], frame_idx, "RightWrist"
+                baseq_row, "RightWrist"
             ),  # noqa: E501
             right_elbow=self._safe_extract_point(
-                datasets["BASEQ"], frame_idx, "RightElbow"
+                baseq_row, "RightElbow"
             ),  # noqa: E501
             right_shoulder=self._safe_extract_point(
-                datasets["BASEQ"], frame_idx, "RightShoulder"
+                baseq_row, "RightShoulder"
             ),  # noqa: E501
-            hub=self._safe_extract_point(datasets["BASEQ"], frame_idx, "Hub"),
+            hub=self._safe_extract_point(baseq_row, "Hub"),
             forces={
                 "BASEQ": self._safe_extract_vector(
-                    datasets["BASEQ"], frame_idx, "TotalHandForceGlobal"
+                    baseq_row, "TotalHandForceGlobal"
                 ),
                 "ZTCFQ": self._safe_extract_vector(
-                    datasets["ZTCFQ"], frame_idx, "TotalHandForceGlobal"
+                    ztcfq_row, "TotalHandForceGlobal"
                 ),
                 "DELTAQ": self._safe_extract_vector(
-                    datasets["DELTAQ"], frame_idx, "TotalHandForceGlobal"
+                    deltaq_row, "TotalHandForceGlobal"
                 ),
             },
             torques={
                 "BASEQ": self._safe_extract_vector(
-                    datasets["BASEQ"], frame_idx, "EquivalentMidpointCoupleGlobal"
+                    baseq_row, "EquivalentMidpointCoupleGlobal"
                 ),
                 "ZTCFQ": self._safe_extract_vector(
-                    datasets["ZTCFQ"], frame_idx, "EquivalentMidpointCoupleGlobal"
+                    ztcfq_row, "EquivalentMidpointCoupleGlobal"
                 ),
                 "DELTAQ": self._safe_extract_vector(
-                    datasets["DELTAQ"], frame_idx, "EquivalentMidpointCoupleGlobal"
+                    deltaq_row, "EquivalentMidpointCoupleGlobal"
                 ),
             },
         )
@@ -152,29 +165,29 @@ class DataProcessor:
         return frame_data
 
     def _safe_extract_point(
-        self, dataset: pd.DataFrame, frame_idx: int, column: str
+        self, row_series: pd.Series | None, column: str
     ) -> np.ndarray:  # noqa: E501
         """Safely extract 3D point with fallbacks"""
-        if dataset is None:
-            raise ValueError("dataset must be provided")
+        if row_series is None:
+            return np.array([0.0, 0.0, 0.0], dtype=np.float32)
         try:
-            point = dataset[column].iloc[frame_idx]
+            point = row_series[column]
             if isinstance(point, list | np.ndarray) and len(point) == 3:
                 return np.array(point, dtype=np.float32)
-        except (TypeError, ValueError, IndexError):
+        except (TypeError, ValueError, KeyError):
             pass
         return np.array([0.0, 0.0, 0.0], dtype=np.float32)
 
     def _safe_extract_vector(
-        self, dataset: pd.DataFrame, frame_idx: int, column: str
+        self, row_series: pd.Series | None, column: str
     ) -> np.ndarray:  # noqa: E501
         """Safely extract 3D vector with fallbacks"""
-        if dataset is None:
-            raise ValueError("dataset must be provided")
+        if row_series is None:
+            return np.array([0.0, 0.0, 0.0], dtype=np.float32)
         try:
-            vector = dataset[column].iloc[frame_idx]
+            vector = row_series[column]
             if isinstance(vector, list | np.ndarray) and len(vector) == 3:
                 return np.array(vector, dtype=np.float32)
-        except (TypeError, ValueError, IndexError):
+        except (TypeError, ValueError, KeyError):
             pass
         return np.array([0.0, 0.0, 0.0], dtype=np.float32)
