@@ -83,6 +83,19 @@ def test_standard_ci_uses_locked_python_dependencies_for_dev_and_audit() -> None
         assert package in dev_lock.lower()
 
 
+def test_standard_ci_shell_continuations_are_not_split_by_blank_lines() -> None:
+    workflow = _read(".github/workflows/ci-standard.yml")
+    lines = workflow.splitlines()
+
+    blank_continuations = [
+        line_number
+        for line_number, line in enumerate(lines[:-1], start=1)
+        if line.rstrip().endswith("\\") and not lines[line_number].strip()
+    ]
+
+    assert blank_continuations == []
+
+
 def test_docker_security_scan_blocks_high_and_critical() -> None:
     workflow = _read(".github/workflows/docker-security-scan.yml")
 

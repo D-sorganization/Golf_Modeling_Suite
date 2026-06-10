@@ -78,7 +78,9 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
   includes the GUI-test extra so `--no-deps` editable installs still provide
   real PyQt6/pytest-qt modules in the unit gates, and `pip-audit` runs directly
   against the committed runtime/dev lock files instead of a live resolver
-  result.
+  result. The standard CI acceptance tests also reject blank lines immediately
+  after shell continuations so the core pytest coverage command cannot be split
+  into a partial command again (#7303).
 - **2026-06-10** - Closed the #7273 PR-scoped coverage bypass in standard CI.
   PRs that change source, test, or dependency targets now fall through to the
   coverage-producing core test lane instead of using the workflow-only
