@@ -23,6 +23,7 @@ except OSError as exc:  # Broken local torch installs fail this way on import.
         "or create a CUDA venv as documented in README.md."
     ) from exc
 
+from src.shared.python.motion_matching._checkpoint_artifacts import load_checkpoint_dict
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 DEFAULT_DATASET = SCRIPT_DIR / "data" / "processed" / "golf_inverse_ready.parquet"
@@ -282,16 +283,21 @@ def train(config: TrainConfig) -> None:
                     "model_state_dict": model.state_dict(),
                     "input_columns": input_columns,
                     "target_columns": target_columns,
-                    "x_mean": x_mean,
-                    "x_std": x_std,
-                    "y_mean": y_mean,
-                    "y_std": y_std,
+                    "x_mean": x_mean.tolist(),
+                    "x_std": x_std.tolist(),
+                    "y_mean": y_mean.tolist(),
+                    "y_std": y_std.tolist(),
                     "config": asdict(config),
                 },
                 best_path,
             )
 
-    checkpoint = torch.load(best_path, map_location=device, weights_only=False)
+    checkpoint = load_checkpoint_dict(
+        best_path,
+        map_location=device,
+        required_keys=("model_state_dict",),
+        artifact_name="per-step surrogate checkpoint",
+    )
     model.load_state_dict(checkpoint["model_state_dict"])
     model.eval()
     with torch.no_grad():

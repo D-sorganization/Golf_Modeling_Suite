@@ -182,8 +182,14 @@ def test_load_with_stats_round_trip(tmp_path: Path) -> None:
     state, tau = _stats(n)
     ckpt_path = tmp_path / "ts.pt"
     payload = model.state_payload()
-    payload["state_stats"] = state
-    payload["tau_stats"] = tau
+    payload["state_stats"] = {
+        "mean": state["mean"].tolist(),
+        "std": state["std"].tolist(),
+    }
+    payload["tau_stats"] = {
+        "mean": tau["mean"].tolist(),
+        "std": tau["std"].tolist(),
+    }
     torch.save(payload, ckpt_path)
     loaded = load_with_stats(ckpt_path)
     assert hasattr(loaded, "_state_stats")

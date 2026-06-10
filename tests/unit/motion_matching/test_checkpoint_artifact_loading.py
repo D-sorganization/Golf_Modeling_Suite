@@ -1,0 +1,71 @@
+"""Regression tests for safe motion-matching checkpoint loading."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+
+torch = pytest.importorskip("torch")
+
+from src.shared.python.motion_matching._checkpoint_artifacts import (  # noqa: E402
+    load_checkpoint_dict,
+    require_schema_version,
+)
+
+
+class _UnsafePayload:
+    def __reduce__(self):
+        return (eval, ("'unsafe'",))
+
+
+@pytest.mark.unit
+@pytest.mark.requires_torch
+def test_load_checkpoint_dict_uses_weights_only_true(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    ckpt = tmp_path / "checkpoint.pt"
+    ckpt.write_bytes(b"placeholder")
+    seen: dict[str, object] = {}
+
+    def fake_load(path, *, map_location=None, weights_only=None):
+        seen["path"] = path
+        seen["map_location"] = map_location
+        seen["weights_only"] = weights_only
+        return {"state_dict": {}, "config": {}, "schema_version": "1.0"}
+
+    monkeypatch.setattr(
+        "src.shared.python.motion_matching._checkpoint_artifacts.torch.load",
+        fake_load,
+    )
+
+    payload = load_checkpoint_dict(
+        ckpt,
+        map_location="cpu",
+        required_keys=("state_dict", "config"),
+        artifact_name="test checkpoint",
+    )
+
+    assert payload["schema_version"] == "1.0"
+    assert seen == {"path": ckpt, "map_location": "cpu", "weights_only": True}
+
+
+@pytest.mark.unit
+@pytest.mark.requires_torch
+def test_load_checkpoint_dict_rejects_pickle_globals(tmp_path: Path) -> None:
+    ckpt = tmp_path / "unsafe.pt"
+    torch.save({"payload": _UnsafePayload()}, ckpt)
+
+    with pytest.raises(ValueError, match="cannot be loaded safely"):
+        load_checkpoint_dict(ckpt, required_keys=("payload",))
+
+
+@pytest.mark.unit
+def test_require_schema_version_rejects_mismatch() -> None:
+    with pytest.raises(ValueError, match="schema_version"):
+        require_schema_version(
+            {"schema_version": "0.9"},
+            "1.0",
+            artifact_name="test checkpoint",
+        )
