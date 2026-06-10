@@ -79,8 +79,8 @@ def test_standard_ci_uses_locked_python_dependencies_for_dev_and_audit() -> None
     assert 'pip install --no-cache-dir -e ".[dev,gui-test]"' not in workflow
     assert "pip-audit\n" not in workflow
 
-    assert "pyqt6==" in dev_lock.lower()
-    assert "pytest-qt==" in dev_lock.lower()
+    for package in ("pyqt6==", "pyqt6-qt6==", "pyqt6-sip==", "pytest-qt=="):
+        assert package in dev_lock.lower()
 
 
 def test_docker_security_scan_blocks_high_and_critical() -> None:
