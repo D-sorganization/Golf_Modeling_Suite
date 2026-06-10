@@ -80,7 +80,8 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
   validates allowed local origins plus token claims so local sockets are not
   ambiently reachable from arbitrary browser contexts. The Tauri backend IPC
   capability now ships concrete v2 permission definitions so Rust/Tauri checks
-  can resolve the four local backend commands.
+  can resolve the four local backend commands, and the Tauri Linux dependency
+  install now retries apt lock collisions on the self-hosted runner pool.
 - **2026-06-10** - Tightened API and model-library boundary contracts for
   #7297, #7298, and #7299. Data Explorer import/list responses now expose the
   durable `dataset_id` required by row pagination, filter operators are
@@ -116,6 +117,7 @@ force_download=True)` enforces the HTTPS-only `source_url` policy before any
   result. The standard CI acceptance tests also reject blank lines immediately
   after shell continuations so the core pytest coverage command cannot be split
   into a partial command again (#7303).
+
 - **2026-06-10** - Closed the #7273 PR-scoped coverage bypass in standard CI.
   PRs that change source, test, or dependency targets now fall through to the
   coverage-producing core test lane instead of using the workflow-only
@@ -1020,7 +1022,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-06-11 | 1.0.321 | Local WebSocket hardening and Tauri permission manifest repair for #7275, plus coverage gate fix for #7273. API WebSocket auth now validates launcher capability tokens and allowed Origins before accepting local connections, the React client propagates the launcher manifest token, and the Tauri IPC capability defines concrete permissions. Standard CI now sends PRs that change source, tests, or dependency targets through the coverage-producing core test lane. |
+| 2026-06-11 | 1.0.321 | Local WebSocket hardening, Tauri permission manifest repair, and Tauri build apt-lock hardening for #7275, plus coverage gate fix for #7273. API WebSocket auth now validates launcher capability tokens and allowed Origins, the React client propagates the launcher manifest token, the Tauri IPC capability defines concrete permissions, and `.github/workflows/tauri-build.yml` retries apt dependency installs. Standard CI now sends PRs that change source, tests, or dependency targets through the coverage-producing core test lane. |
 | 2026-06-11 | 1.0.318 | Data Explorer and model-library boundary contracts for #7297, #7298, and #7299. Import/list responses expose durable `dataset_id` values, Data Explorer filter requests reject unsupported operators at the request boundary, and forced model-library downloads validate HTTPS-only `source_url` values before any download I/O. |
 | 2026-06-11 | 1.0.312 | Blocking DRY duplication ratchet for #7315. Added `scripts/ci/check_dry_duplication_gate.py` with focused tests, explicit production-`src` include/exclude config, and an owned no-growth baseline for existing duplicated logic fingerprints; `ci-standard.yml` now runs the checker inside `repo-structure-gates` so duplicate growth feeds the required `quality-gate` aggregate while `Code-Metrics.yml` remains advisory/manual reporting. |
 | 2026-06-11 | 1.0.311 | PR-scoped unit gate hardening for #7314. Standard CI no longer lets source/dependency PRs pass solely by running changed test files; those PRs fall through to the dependency-light unit lane with targeted coverage. `coverage_enforcer.py` now supports a PR-mode changed-file ratchet so changed production policy files must appear in targeted coverage and meet their policy threshold. |
