@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.306                                            |
+| **Spec Version**        | 1.0.307                                            |
 | **Last Spec Update**    | 2026-06-11                                         |
 
 ## 2. Purpose & Mission
@@ -70,6 +70,10 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 
 ### Recent Spec Updates
 
+- **2026-06-10** - Narrowed PR-scoped source coverage in standard CI to the
+  changed `src/**/*.py` targets after the coverage-bypass fix. Source and
+  dependency PRs still produce coverage and enforce the 75% floor, but focused
+  PRs no longer fail against unrelated full-repository zero-coverage modules.
 - **2026-06-10** - Enforced the #7277 Docker build timeout while process
   stdout remains open. `src/launchers/docker_manager.py` now reads build output
   through a background queue while the build thread owns a wall-clock timeout
