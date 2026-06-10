@@ -54,6 +54,7 @@ __all__ = [
     "URDFCodeEditorWidget",
     # Frankenstein mode
     "FrankensteinEditor",
+    "CompositionWorkspace",
     # Chain manipulation
     "ChainManipulationWidget",
     "KinematicTree",
@@ -99,6 +100,10 @@ def __getattr__(name: str) -> type:  # noqa: C901
         from .frankenstein_editor import FrankensteinEditor
 
         return FrankensteinEditor
+    if name == "CompositionWorkspace":
+        from .composition_workspace import CompositionWorkspace
+
+        return CompositionWorkspace
     if name == "ChainManipulationWidget":
         from .chain_manipulation import ChainManipulationWidget
 

@@ -429,6 +429,26 @@ class MainWidget(QWidget):
                 self, "Error", f"Failed to open Frankenstein mode: {e}"
             )
 
+    def open_composition_workspace(self) -> None:
+        try:
+            from PyQt6.QtWidgets import QDialog, QVBoxLayout
+
+            from .composition_workspace import CompositionWorkspace
+
+            dialog = QDialog(self)
+            dialog.setWindowTitle("Model Composition Workspace")
+            dialog.setMinimumSize(1400, 760)
+            layout = QVBoxLayout(dialog)
+            workspace = CompositionWorkspace()
+            layout.addWidget(workspace)
+            dialog.exec()
+            self.status_bar.showMessage("Composition workspace closed")
+        except ImportError as e:
+            logger.error(f"Failed to open composition workspace: {e}")
+            QMessageBox.critical(
+                self, "Error", f"Failed to open composition workspace: {e}"
+            )
+
     def open_code_editor(self) -> None:
         try:
             from PyQt6.QtWidgets import QDialog, QVBoxLayout
@@ -611,6 +631,13 @@ class MainWidget(QWidget):
         frankenstein_action.setToolTip("Combine components from multiple URDFs")
         frankenstein_action.triggered.connect(self.open_frankenstein_mode)
         tools_menu.addAction(frankenstein_action)
+
+        composition_action = QAction("&Composition Workspace...", self)
+        composition_action.setToolTip(
+            "Browse models, attach source to working model, validate, and export"
+        )
+        composition_action.triggered.connect(self.open_composition_workspace)
+        tools_menu.addAction(composition_action)
 
         code_editor_action = QAction("&Code Editor...", self)
         code_editor_action.setToolTip("Edit URDF XML directly with syntax highlighting")

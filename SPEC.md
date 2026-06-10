@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.299                                            |
+| **Spec Version**        | 1.0.300                                            |
 | **Last Spec Update**    | 2026-06-11                                         |
 
 ## 2. Purpose & Mission
@@ -70,6 +70,12 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 
 ### Recent Spec Updates
 
+- **2026-06-10** - Added the #7207 Model Explorer composition workspace.
+  `src/tools/model_explorer/composition_workspace.py` now provides a unified
+  searchable library panel, source/working model loading, validation-visible
+  attach flow, and URDF/MJCF export path backed by the existing
+  `CompositionFlowController`. The workspace is reachable from the Model
+  Explorer Tools menu and covered by offscreen Qt workflow tests.
 - **2026-06-10** - Added the #7214 C3D viewer renderer decision and backend
   contract. ADR-0030 chooses `pyqtgraph.opengl`/PyQtGL as the first desktop
   GPU playback backend while retaining matplotlib fallback, and
@@ -940,6 +946,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-06-10 | 1.0.300 | Model Explorer composition workspace for #7207. Added `CompositionWorkspace`, a unified library-to-Frankenstein workflow that loads source and working models from the searchable library panel, attaches through the existing `CompositionFlowController`, surfaces validation status, exports URDF/MJCF, and is available from the Model Explorer Tools menu with offscreen Qt workflow coverage. |
 | 2026-06-10 | 1.0.299 | Cross-engine equivalence import-boundary fix for #7214. `CalibrationOptimizer.optimize()` now imports `scipy.optimize.differential_evolution` lazily so importing `src.bunkershot3d.postproc.wrench_trace` through shared simulation backends does not require optional calibration optimizer dependencies in the equivalence CI environment. |
 | 2026-06-10 | 1.0.298 | C3D viewer renderer backend decision for #7214. Added ADR-0030 choosing PyQtGL as the first desktop GPU playback path while keeping matplotlib fallback, plus a focused `viewer_3d_backend.py` decision contract that carries the 60 fps target and parity checklist for scrubbing, speed control, loop playback, marker groups, view presets, and skeleton overlay before replacement. |
 | 2026-06-10 | 1.0.297 | Model explorer composition-flow controller for #7207. Added `CompositionFlowController` to attach a complete source URDF model to a working Frankenstein model via selected or declared attachment points, copy links/joints/materials with deterministic name mapping, validate the composed result immediately, and export validation-gated URDF or MJCF preview content. `FrankensteinEditor` now exposes an Attach Source Model action plus public export helper, and `URDFModel.from_file()` carries attachment sidecar metadata into the editor. Focused headless tests cover human-plus-arm composition, MJCF export, validation refusal, and the offscreen editor attach/export path. |
