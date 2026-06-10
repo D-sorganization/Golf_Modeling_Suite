@@ -79,6 +79,8 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
   through a shared helper that calls `torch.load(..., weights_only=True)`,
   validates mapping-shaped artifacts, and keeps inverse, inverse-timestep,
   compact surrogate, and per-step surrogate loaders on the same safe contract.
+  The changed-file architecture ratchet exposed pre-existing surrogate
+  train/optimize budget violations, now tracked for decomposition in #7294.
 - **2026-06-10** - Hardened the Jules PR AutoFix `workflow_run` trust boundary.
   Failed-CI `workflow_run` events now use read-only metadata resolution and a
   PR comment that asks maintainers to run the privileged fixer through explicit
