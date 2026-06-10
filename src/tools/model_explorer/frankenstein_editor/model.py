@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import copy
-import xml.etree.ElementTree as ET  # stdlib retained for Element/SubElement
+import xml.etree.ElementTree as ET  # noqa: S405  # nosemgrep: python.lang.security.use-defused-xml.use-defused-xml  # build-only; parse via DefusedET
 from dataclasses import dataclass, field
 from pathlib import Path
 

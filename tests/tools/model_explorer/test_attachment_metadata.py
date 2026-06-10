@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ET  # noqa: S405  # nosemgrep: python.lang.security.use-defused-xml.use-defused-xml  # build-only
 from pathlib import Path
 
 from src.tools.model_explorer.attachment_metadata import (
