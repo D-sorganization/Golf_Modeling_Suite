@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.292                                            |
+| **Spec Version**        | 1.0.294                                            |
 | **Last Spec Update**    | 2026-06-11                                         |
 
 ## 2. Purpose & Mission
@@ -70,6 +70,12 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 
 ### Recent Spec Updates
 
+- **2026-06-10** - Restored model explorer attachment-point metadata for
+  #7206. Bundled model definitions can now ship
+  `<model>.attachments.json` sidecars validated by a JSON schema, the model
+  library reports declared attachment frames and payload warnings, and
+  Frankenstein composition uses declared interface-frame origins when
+  assembling models.
 - **2026-06-10** - Made motion-pipeline hook failures observable for #7250.
   `PipelineConfig.strict_hooks` now switches per-stage hooks from lenient
   traceback logging to fail-fast `HookExecutionError` diagnostics, while the
@@ -911,6 +917,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-06-10 | 1.0.294 | Restored model explorer attachment-point metadata for #7206. Bundled model definitions can now ship schema-validated `<model>.attachments.json` sidecars that declare stable parent and child interface frames, the model library exposes declared attachment points with payload warnings for missing links or malformed manifests, and Frankenstein composition places attachments from those declared interface-frame origins instead of relying on implicit link origins. |
 | 2026-06-10 | 1.0.293 | First #7207 model explorer library-panel unification slice. `ModelLoaderDialog` now exposes one searchable Library tree built from every `ModelLibrary.list_available_models()` category, including sibling repositories, and model rows show first-party format badges inferred from explicit model metadata or category defaults. Headless panel-model tests cover flattening, sibling inclusion, search, category grouping, and badge logic. |
 | 2026-06-10 | 1.0.292 | Motion-pipeline hook exception handling for #7250. `PipelineConfig.strict_hooks` now controls per-stage hook failure policy: default lenient mode logs failures with `logger.exception` so tracebacks are observable while the pipeline continues, and strict mode raises `HookExecutionError` with the stage, hook name, and original exception chained as the cause. Focused orchestrator unit tests cover both modes. |
 | 2026-06-10 | 1.0.291 | Added the bounded inverse swing optimization core for #7220. `src/shared/python/physics/swing_optimizer.py` adds `FlightTarget`, `ClubPreset`, `SwingOptimizer`, and diagnostics around SciPy SLSQP over speed/loft/attack/face-to-path while composing the existing `SwingBallFlightPipeline`; focused physics tests cover roundtrip, unreachable target, and timeout behavior. |
