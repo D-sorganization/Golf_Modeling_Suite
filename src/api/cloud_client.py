@@ -24,7 +24,9 @@ class CloudClient:
         """Load token from local cache if user previously logged in."""
         token_file = Path.home() / ".golf-suite" / "cloud_token"
         if token_file.exists():
-            self.token = token_file.read_text().strip()
+            cached_token = token_file.read_text().strip()
+            if cached_token:
+                self.token = cached_token
 
     @property
     def is_logged_in(self) -> bool:
