@@ -234,7 +234,7 @@ def _linear_interp_keypoints(
         for j, kp in enumerate(frame.keypoints):
             if kp.confidence < 0.5:
                 # Interpolate from before/after
-                if after and j < len(after.keypoints):
+                if after and j < len(before.keypoints) and j < len(after.keypoints):
                     t = (i - start + 1) / (end - start + 2)
                     kp_before = before.keypoints[j]
                     kp_after = after.keypoints[j]

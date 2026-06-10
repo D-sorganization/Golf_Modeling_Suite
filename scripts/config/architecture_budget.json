@@ -17,6 +17,22 @@
       "owner": "@dieterolson @D-sorganization/core-maintainers",
       "reason": "Issue #7217 legacy launcher decomposition: main remains over the function-lines budget until startup and window orchestration move into focused launcher modules.",
       "expires_on": "2026-09-30"
+    },
+    {
+      "path": "src/shared/python/motion_pipeline/preprocessing/_gap_fill_pure_python.py",
+      "symbol": "_pca_reconstruct_markers",
+      "rule": "function-lines",
+      "owner": "@dieterolson @D-sorganization/core-maintainers",
+      "reason": "Issue #7285: pre-existing PCA reconstruction helper exceeds the changed-file architecture budget; split into focused helpers after the #7270 crash fix lands.",
+      "expires_on": "2026-08-31"
+    },
+    {
+      "path": "src/shared/python/motion_pipeline/preprocessing/gap_fill.py",
+      "symbol": "_pca_reconstruct_markers_python",
+      "rule": "function-lines",
+      "owner": "@dieterolson @D-sorganization/core-maintainers",
+      "reason": "Issue #7285: pre-existing PCA reconstruction helper exceeds the changed-file architecture budget; split into focused helpers after the #7270 crash fix lands.",
+      "expires_on": "2026-08-31"
     }
   ]
 }
