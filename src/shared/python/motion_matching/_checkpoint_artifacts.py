@@ -6,13 +6,11 @@ import pickle
 from pathlib import Path
 from typing import Any
 
-import torch
-
 
 def load_checkpoint_dict(
     path: str | Path,
     *,
-    map_location: str | torch.device | None = None,
+    map_location: str | object | None = None,
     required_keys: tuple[str, ...] = (),
     artifact_name: str = "checkpoint",
 ) -> dict[str, Any]:
@@ -21,11 +19,7 @@ def load_checkpoint_dict(
     if not ckpt_path.exists():
         raise FileNotFoundError(f"checkpoint not found: {ckpt_path}")
     try:
-        payload = torch.load(
-            ckpt_path,
-            map_location=map_location,
-            weights_only=True,
-        )
+        payload = _load_weights_only_checkpoint(ckpt_path, map_location=map_location)
     except pickle.UnpicklingError as exc:
         raise ValueError(
             f"{artifact_name} at {ckpt_path} cannot be loaded safely; "
@@ -43,6 +37,20 @@ def load_checkpoint_dict(
             f"{', '.join(missing)}"
         )
     return payload
+
+
+def _load_weights_only_checkpoint(
+    path: Path,
+    *,
+    map_location: str | object | None,
+) -> Any:
+    import torch
+
+    return torch.load(
+        path,
+        map_location=map_location,
+        weights_only=True,
+    )
 
 
 def require_schema_version(

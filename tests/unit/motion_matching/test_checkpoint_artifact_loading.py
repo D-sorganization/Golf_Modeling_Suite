@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 from pathlib import Path
+import sys
 
 import pytest
 
-torch = pytest.importorskip("torch")
-
-from src.shared.python.motion_matching._checkpoint_artifacts import (  # noqa: E402
+from src.shared.python.motion_matching._checkpoint_artifacts import (
     load_checkpoint_dict,
     require_schema_version,
 )
@@ -20,7 +19,6 @@ class _UnsafePayload:
 
 
 @pytest.mark.unit
-@pytest.mark.requires_torch
 def test_load_checkpoint_dict_uses_weights_only_true(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -29,14 +27,13 @@ def test_load_checkpoint_dict_uses_weights_only_true(
     ckpt.write_bytes(b"placeholder")
     seen: dict[str, object] = {}
 
-    def fake_load(path, *, map_location=None, weights_only=None):
+    def fake_load(path, *, map_location=None):
         seen["path"] = path
         seen["map_location"] = map_location
-        seen["weights_only"] = weights_only
         return {"state_dict": {}, "config": {}, "schema_version": "1.0"}
 
     monkeypatch.setattr(
-        "src.shared.python.motion_matching._checkpoint_artifacts.torch.load",
+        "src.shared.python.motion_matching._checkpoint_artifacts._load_weights_only_checkpoint",
         fake_load,
     )
 
@@ -48,12 +45,43 @@ def test_load_checkpoint_dict_uses_weights_only_true(
     )
 
     assert payload["schema_version"] == "1.0"
+    assert seen == {"path": ckpt, "map_location": "cpu"}
+
+
+@pytest.mark.unit
+def test_load_weights_only_checkpoint_forwards_safe_torch_options(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    from src.shared.python.motion_matching import _checkpoint_artifacts
+
+    ckpt = tmp_path / "checkpoint.pt"
+    ckpt.write_bytes(b"placeholder")
+    seen: dict[str, object] = {}
+
+    class _TorchModule:
+        @staticmethod
+        def load(path, *, map_location=None, weights_only=None):
+            seen["path"] = path
+            seen["map_location"] = map_location
+            seen["weights_only"] = weights_only
+            return {"state_dict": {}}
+
+    monkeypatch.setitem(sys.modules, "torch", _TorchModule())
+
+    payload = _checkpoint_artifacts._load_weights_only_checkpoint(
+        ckpt,
+        map_location="cpu",
+    )
+
+    assert payload == {"state_dict": {}}
     assert seen == {"path": ckpt, "map_location": "cpu", "weights_only": True}
 
 
 @pytest.mark.unit
 @pytest.mark.requires_torch
 def test_load_checkpoint_dict_rejects_pickle_globals(tmp_path: Path) -> None:
+    torch = pytest.importorskip("torch")
     ckpt = tmp_path / "unsafe.pt"
     torch.save({"payload": _UnsafePayload()}, ckpt)
 
