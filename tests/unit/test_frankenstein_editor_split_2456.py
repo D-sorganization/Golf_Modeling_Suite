@@ -5,9 +5,9 @@ Tests run red before the split and green after.
 
 from __future__ import annotations
 
-import xml.etree.ElementTree as ET
 from pathlib import Path
 
+import defusedxml.ElementTree as ET
 import pytest
 
 REPO = Path(__file__).parents[2]
@@ -117,7 +117,8 @@ class TestFrankensteinLegacyCompatibility:
     def test_legacy_model_uses_canonical_validation_contract(self) -> None:
         from src.tools.model_explorer._frankenstein_model import URDFModel
 
-        model = URDFModel.from_element(ET.Element("robot", name="shim_contract"))
+        root = ET.fromstring('<robot name="shim_contract" />')
+        model = URDFModel.from_element(root)
 
         assert hasattr(model, "validate_composition")
         assert model.to_xml(force=True).startswith("<?xml")
