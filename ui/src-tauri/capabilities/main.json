@@ -3,12 +3,5 @@
   "identifier": "main-capability",
   "description": "Main window capability for audited backend process IPC.",
   "windows": ["main"],
-  "permissions": [
-    "core:default",
-    "log:default",
-    "allow-start-backend",
-    "allow-stop-backend",
-    "allow-backend-status",
-    "allow-get-diagnostics"
-  ]
+  "permissions": ["core:default", "log:default"]
 }

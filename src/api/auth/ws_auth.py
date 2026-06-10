@@ -106,7 +106,7 @@ async def enforce_local_websocket_guard(websocket: WebSocket) -> bool:
         or not compare_digest(provided_token, expected_token)
     ):
         logger.warning(
-            "WebSocket local guard rejected missing or invalid launcher token. path=%s",
+            "WebSocket local guard rejected missing or invalid launcher proof. path=%s",
             websocket.url.path,
         )
         await websocket.close(code=_WS_CLOSE_POLICY_VIOLATION)
@@ -138,7 +138,7 @@ async def resolve_ws_user(websocket: WebSocket) -> User | LocalUser | None:
         if not await enforce_local_websocket_guard(websocket):
             return None
         logger.warning(
-            "WebSocket accepted with local launcher Origin/token guard "
+            "WebSocket accepted with local launcher Origin/capability guard "
             "(local/auth-disabled mode). "
             "path=%s",
             websocket.url.path,
