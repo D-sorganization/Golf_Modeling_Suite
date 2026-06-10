@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.319                                            |
+| **Spec Version**        | 1.0.320                                            |
 | **Last Spec Update**    | 2026-06-11                                         |
 
 ## 2. Purpose & Mission
@@ -74,6 +74,11 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
   CI. Source and dependency PRs now fall through to the dependency-light unit
   lane instead of passing solely on touched test files, and targeted PR coverage
   invokes a changed-file coverage ratchet for production policy files.
+- **2026-06-10** - Replaced pickle-enabled motion-matching checkpoint loads
+  for #7276 with safe artifact loading. Motion checkpoint readers now route
+  through a shared helper that calls `torch.load(..., weights_only=True)`,
+  validates mapping-shaped artifacts, and keeps inverse, inverse-timestep,
+  compact surrogate, and per-step surrogate loaders on the same safe contract.
 - **2026-06-10** - Hardened the Jules PR AutoFix `workflow_run` trust boundary.
   Failed-CI `workflow_run` events now use read-only metadata resolution and a
   PR comment that asks maintainers to run the privileged fixer through explicit
