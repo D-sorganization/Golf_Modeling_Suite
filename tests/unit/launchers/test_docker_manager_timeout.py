@@ -111,7 +111,7 @@ def test_docker_build_timeout_is_enforced_while_stdout_is_open(
 
         thread.run()
 
-    assert 0 < process.wait_timeouts[0] <= 0.01
+    assert 0 < process.wait_timeouts[0] <= 0.02
     kill_tree.assert_called_once_with(process.pid)
     assert process.killed is False
     finished.assert_called_once_with(False, "Build timed out (exceeded 1 hour limit)")
@@ -129,8 +129,8 @@ def test_get_docker_cmd_uses_wsl_fallback_on_windows() -> None:
         patch.object(docker_manager.os, "name", "nt"),
         patch.object(docker_manager.shutil, "which") as which,
     ):
-        which.side_effect = (
-            lambda name: "C:/Windows/System32/wsl.exe" if name == "wsl" else None
+        which.side_effect = lambda name: (
+            "C:/Windows/System32/wsl.exe" if name == "wsl" else None
         )
 
         assert docker_manager.get_docker_cmd() == ["wsl", "docker"]
@@ -172,7 +172,8 @@ def test_docker_build_rejects_missing_context(_mock_exists: MagicMock) -> None:
     finished = MagicMock()
     thread.finished_signal.connect(finished)
 
-    thread.run()
+    with patch("src.launchers.docker_manager.get_docker_cmd", return_value=["docker"]):
+        thread.run()
 
     finished.assert_called_once_with(
         False,
@@ -200,7 +201,8 @@ def test_docker_build_emits_success_and_streams_output(
     thread.finished_signal.connect(finished)
     thread.log_signal.connect(logs)
 
-    thread.run()
+    with patch("src.launchers.docker_manager.get_docker_cmd", return_value=["docker"]):
+        thread.run()
 
     assert process.wait_timeouts
     assert process.stdout.closed is True

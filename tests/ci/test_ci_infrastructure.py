@@ -481,7 +481,16 @@ class TestCIEnvironmentCompatibility:
             in workflow
         )
         assert '"${coverage_args[@]}"' in workflow
-        assert "steps.core-tests.outputs.coverage_generated == 'true'" in workflow
+        assert 'echo "full_coverage_generated=true" >> "$GITHUB_OUTPUT"' in workflow
+        assert "steps.core-tests.outputs.full_coverage_generated == 'true'" in workflow
+        assert (
+            "steps.core-tests.outputs.coverage_generated == 'true'"
+            not in workflow[
+                workflow.index(
+                    "- name: Enforce Per-Package Coverage Thresholds"
+                ) : workflow.index("- name: Cross-Engine Validator Core Unit Tests")
+            ]
+        )
         assert (
             "github.event_name != 'pull_request'"
             not in workflow[

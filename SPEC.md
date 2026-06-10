@@ -72,8 +72,9 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 
 - **2026-06-10** - Narrowed PR-scoped source coverage in standard CI to the
   changed `src/**/*.py` targets after the coverage-bypass fix. Source and
-  dependency PRs still produce coverage and enforce the 75% floor, but focused
-  PRs no longer fail against unrelated full-repository zero-coverage modules.
+  dependency PRs still produce coverage and enforce the 75% floor, while the
+  full per-package coverage enforcer runs only after the default full-coverage
+  lane so focused PRs do not fail against unrelated modules.
 - **2026-06-10** - Enforced the #7277 Docker build timeout while process
   stdout remains open. `src/launchers/docker_manager.py` now reads build output
   through a background queue while the build thread owns a wall-clock timeout

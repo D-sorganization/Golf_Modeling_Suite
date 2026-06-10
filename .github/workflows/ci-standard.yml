@@ -1315,6 +1315,7 @@ jobs:
           # Optional native-engine extras such as Drake/Pinocchio/OpenSim/MyoSuite
           # are intentionally not provisioned here.
           echo "coverage_generated=true" >> "$GITHUB_OUTPUT"
+          echo "full_coverage_generated=true" >> "$GITHUB_OUTPUT"
           xvfb-run --auto-servernum python -m pytest \
             -p no:xvfb \
             -n 2 \
@@ -1334,8 +1335,9 @@ jobs:
             -v
 
       - name: Enforce Per-Package Coverage Thresholds
-        # Run only when the default coverage lane generated coverage.xml.
-        if: steps.core-test-changes.outputs.skip != 'true' && steps.core-tests.outputs.coverage_generated == 'true'
+        # Run only when the default full coverage lane generated coverage.xml.
+        # PR-scoped targeted coverage intentionally omits unrelated packages.
+        if: steps.core-test-changes.outputs.skip != 'true' && steps.core-tests.outputs.full_coverage_generated == 'true'
         run: python3 scripts/config/coverage_enforcer.py coverage.xml
       # Dependency-free validator coverage that supports future native-engine jobs.
       - name: Cross-Engine Validator Core Unit Tests
