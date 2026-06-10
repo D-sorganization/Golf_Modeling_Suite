@@ -803,7 +803,7 @@ jobs:
           python -m ensurepip --upgrade || true
           "$python" -m pip install --force-reinstall --no-deps "sortedcontainers>=2.4.0" "hypothesis>=6.0.0"
           "$python" -m pip install --no-cache-dir --ignore-installed -r requirements-dev.lock
-          "$python" -m pip install --no-cache-dir -c requirements-dev.lock -e ".[gui-test]"
+          "$python" -m pip install --no-cache-dir --no-deps -e ".[gui-test]"
           # Prevent environment pollution conflict between pytest-recording and pytest-vcr
           "$python" -m pip uninstall -y pytest-vcr pytest-recording || true
           python -m ensurepip --upgrade || true
@@ -1125,7 +1125,7 @@ jobs:
           python -m ensurepip --upgrade || true
           "$python" -m pip install --force-reinstall --no-deps "sortedcontainers>=2.4.0" "hypothesis>=6.0.0"
           "$python" -m pip install --no-cache-dir --ignore-installed -r requirements-dev.lock
-          "$python" -m pip install --no-cache-dir -c requirements-dev.lock -e ".[gui-test]"
+          "$python" -m pip install --no-cache-dir --no-deps -e ".[gui-test]"
           # Prevent environment pollution conflict between pytest-recording and pytest-vcr
           "$python" -m pip uninstall -y pytest-vcr pytest-recording || true
           python -m ensurepip --upgrade || true
@@ -1619,7 +1619,7 @@ jobs:
           python -m ensurepip --upgrade || true
           "$python" -m pip install --force-reinstall --no-deps "sortedcontainers>=2.4.0" "hypothesis>=6.0.0"
           "$python" -m pip install --no-cache-dir --ignore-installed -r requirements-dev.lock
-          "$python" -m pip install --no-cache-dir -c requirements-dev.lock -e ".[gui-test]"
+          "$python" -m pip install --no-cache-dir --no-deps -e ".[gui-test]"
           # Prevent environment pollution conflict between pytest-recording and pytest-vcr
           "$python" -m pip uninstall -y pytest-vcr pytest-recording || true
           python -m ensurepip --upgrade || true

@@ -6,7 +6,11 @@ import json
 import re
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[2]
+
+pytestmark = pytest.mark.unit
 
 
 def _read(path: str) -> str:
@@ -51,9 +55,9 @@ def test_standard_ci_uses_locked_python_dependencies_for_dev_and_audit() -> None
     )
     assert 'python -m pip install --no-cache-dir --no-deps -e ".[dev]"' in workflow
     assert (
-        '"$python" -m pip install --no-cache-dir -c requirements-dev.lock -e ".[gui-test]"'
-        in workflow
+        '"$python" -m pip install --no-cache-dir --no-deps -e ".[gui-test]"' in workflow
     )
+    assert "-c requirements-dev.lock" not in workflow
 
     assert (
         '"$audit_python" -m pip_audit -r requirements-dev.lock --format json '
@@ -68,6 +72,15 @@ def test_standard_ci_uses_locked_python_dependencies_for_dev_and_audit() -> None
     assert 'pip install --no-cache-dir -e ".[dev]"' not in workflow
     assert 'pip install --no-cache-dir -e ".[dev,gui-test]"' not in workflow
     assert "pip-audit\n" not in workflow
+
+
+def test_docker_security_scan_blocks_high_and_critical() -> None:
+    workflow = _read(".github/workflows/docker-security-scan.yml")
+
+    assert 'severity: "CRITICAL,HIGH"' in workflow
+    assert 'exit-code: "1"' in workflow
+    assert "Fail the build on HIGH or CRITICAL vulnerabilities." in workflow
+    assert "ignore-unfixed: true" not in workflow
 
 
 def test_codeowners_has_two_owners_for_critical_paths() -> None:
