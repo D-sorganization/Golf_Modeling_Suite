@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import json
-import xml.etree.ElementTree as ET  # noqa: S405  # nosemgrep: python.lang.security.use-defused-xml.use-defused-xml  # build-only
 from pathlib import Path
+
+import defusedxml.ElementTree as ET
 
 from src.tools.model_explorer.attachment_metadata import (
     attachment_warnings_for_link,
@@ -132,7 +133,7 @@ def test_loaded_model_uses_declared_interface_frame_for_attachment_joint(
     model_path = _write_model(tmp_path)
     _write_sidecar(model_path, _manifest_data())
     model = URDFModel.from_file(model_path)
-    model.add_link(ET.Element("link", {"name": "club"}))
+    model.add_link(ET.fromstring('<link name="club" />'))
 
     joint_name, warnings = model.add_attachment_joint(
         parent_link="hand",

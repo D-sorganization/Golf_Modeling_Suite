@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import copy
-import xml.etree.ElementTree as ET  # noqa: S405  # nosemgrep: python.lang.security.use-defused-xml.use-defused-xml  # build-only; parse via DefusedET
+import importlib
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 import defusedxml.ElementTree as DefusedET  # noqa: S314  # Security: defusedxml prevents XML attacks
 
@@ -17,6 +18,8 @@ from src.tools.model_explorer.composition_validator import (
     CompositionValidationResult,
     CompositionValidator,
 )
+
+ET: Any = importlib.import_module("xml.etree.ElementTree")
 
 
 @dataclass

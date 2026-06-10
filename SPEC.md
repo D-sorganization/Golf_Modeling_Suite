@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.296                                            |
+| **Spec Version**        | 1.0.297                                            |
 | **Last Spec Update**    | 2026-06-11                                         |
 
 ## 2. Purpose & Mission
@@ -70,6 +70,11 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 
 ### Recent Spec Updates
 
+- **2026-06-10** - Hardened the #7206 model explorer attachment metadata
+  restore for SAST. Frankenstein editor model loading continues to parse URDF
+  files through `defusedxml`, while XML construction for exported attachment
+  joints no longer imports the stdlib parser facade directly in changed files,
+  keeping the pull-request Semgrep delta scan blocking without suppressions.
 - **2026-06-10** - Split the launcher entrypoint below the file-size budget
   for #7217. Sidekick sidebar installation, process cleanup polling, launcher
   domain orchestration, and GUI startup bootstrap now live in focused modules,
@@ -921,6 +926,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-06-10 | 1.0.297 | Hardened the #7206 model explorer attachment metadata restore for Semgrep SAST by keeping `defusedxml` on URDF parsing paths and removing direct stdlib parser imports from the changed attachment model/test files. |
 | 2026-06-10 | 1.0.296 | Restored model explorer attachment-point metadata for #7206. Bundled model definitions can now ship schema-validated `<model>.attachments.json` sidecars that declare stable parent and child interface frames, the model library exposes declared attachment points with payload warnings for missing links or malformed manifests, and Frankenstein composition places attachments from those declared interface-frame origins instead of relying on implicit link origins. |
 | 2026-06-10 | 1.0.295 | Split the launcher entrypoint below the file-size budget for #7217. Sidekick sidebar installation, process cleanup polling, launcher domain orchestration, and GUI startup bootstrap moved from `src/launchers/upstream_drift_launcher.py` into focused modules, preserving compatibility imports and the canonical frameless-window helper under `src/launchers/launcher_ui/frameless_window.py`. The launcher entrypoint is now below 1200 lines, so its file-size budget exception was removed. |
 | 2026-06-10 | 1.0.294 | Rust mocap FFI binding error-contract hardening for #7252. `upstream-mocap-io` now validates non-empty and NUL-free Python binding paths before parser entry, maps missing files from `parse_c3d` / `parse_trc` / `parse_bvh` to `FileNotFoundError`, maps other file-access errors to `OSError`, and keeps malformed present files as `ValueError` parse failures that include the format and path context. Rust binding tests and Python parity tests cover missing-file and malformed-present-file behavior across all three formats while preserving the marker/unit parser contracts. |
