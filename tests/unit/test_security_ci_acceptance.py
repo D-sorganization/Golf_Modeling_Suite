@@ -37,6 +37,39 @@ def test_standard_ci_runs_blocking_semgrep_and_trivy() -> None:
     assert '"fs"' in trivy_test
 
 
+def test_standard_ci_uses_locked_python_dependencies_for_dev_and_audit() -> None:
+    workflow = _read(".github/workflows/ci-standard.yml")
+
+    assert "requirements*.lock" in workflow
+    assert (
+        "python -m pip install --no-cache-dir --ignore-installed -r requirements-dev.lock"
+        in workflow
+    )
+    assert (
+        "python3 -m pip install --no-cache-dir --ignore-installed -r requirements.lock"
+        in workflow
+    )
+    assert 'python -m pip install --no-cache-dir --no-deps -e ".[dev]"' in workflow
+    assert (
+        '"$python" -m pip install --no-cache-dir -c requirements-dev.lock -e ".[gui-test]"'
+        in workflow
+    )
+
+    assert (
+        '"$audit_python" -m pip_audit -r requirements-dev.lock --format json '
+        "--output pip-audit-report.json"
+    ) in workflow
+    assert (
+        '"$audit_python" -m pip_audit -r requirements-dev.lock '
+        '"${pip_audit_waiver_flags[@]}"'
+    ) in workflow
+    assert "python -m pip_audit -r requirements.lock" in workflow
+
+    assert 'pip install --no-cache-dir -e ".[dev]"' not in workflow
+    assert 'pip install --no-cache-dir -e ".[dev,gui-test]"' not in workflow
+    assert "pip-audit\n" not in workflow
+
+
 def test_codeowners_has_two_owners_for_critical_paths() -> None:
     codeowners = _read(".github/CODEOWNERS")
     required_paths = {".github/workflows/", "scripts/", "/src/"}
