@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.301                                            |
+| **Spec Version**        | 1.0.302                                            |
 | **Last Spec Update**    | 2026-06-11                                         |
 
 ## 2. Purpose & Mission
@@ -70,6 +70,12 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 
 ### Recent Spec Updates
 
+- **2026-06-10** - Locked the #7278 standard CI dependency and audit
+  contract to committed artifacts. Python jobs that install project runtime or
+  dev dependencies now seed environments from `requirements.lock` or
+  `requirements-dev.lock` before editable installs, and `pip-audit` runs
+  directly against the committed runtime/dev lock files instead of a live
+  resolver result.
 - **2026-06-10** - Hardened the audit regressions tracked by #7269, #7270,
   and #7271. Model Explorer inspect/compare path resolution now rejects
   absolute paths and parent traversal before resolving candidates only under
