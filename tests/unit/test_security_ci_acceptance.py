@@ -82,6 +82,11 @@ def test_standard_ci_uses_locked_python_dependencies_for_dev_and_audit() -> None
     for package in ("pyqt6==", "pyqt6-qt6==", "pyqt6-sip==", "pytest-qt=="):
         assert package in dev_lock.lower()
 
+    assert "idna==3.18" in dev_lock
+    assert "idna==3.11" not in dev_lock
+    assert "pygments==2.20.0" in dev_lock
+    assert "pygments==2.19.2" not in dev_lock
+
 
 def test_standard_ci_shell_continuations_are_not_split_by_blank_lines() -> None:
     workflow = _read(".github/workflows/ci-standard.yml")
