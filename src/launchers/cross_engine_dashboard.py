@@ -56,6 +56,7 @@ from src.launchers.cross_engine_dashboard_stubs import StubEngine as _StubEngine
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
+    from PyQt6.QtWidgets import QMainWindow
 
 logger = get_logger(__name__)
 
@@ -328,7 +329,7 @@ def build_dashboard_style_set(
     return PlotStyleSet(entries=entries)
 
 
-def _try_build_real_engine(name: str) -> object | None:
+def _try_build_real_engine(name: str) -> Any | None:
     """Attempt to instantiate a real physics engine by name.
 
     Returns the engine instance on success, or None if the package is
@@ -340,7 +341,6 @@ def _try_build_real_engine(name: str) -> object | None:
         One of 'mujoco', 'drake', 'pinocchio'.
 
     Returns
-    -------
     SteppableEngine instance or None
     """
     try:
@@ -368,7 +368,7 @@ def _try_build_real_engine(name: str) -> object | None:
     return None
 
 
-def _build_engine(name: str) -> object:
+def _build_engine(name: str) -> Any:
     """Return a real engine instance or a stub if the real one is unavailable.
 
     Parameters
@@ -377,7 +377,6 @@ def _build_engine(name: str) -> object:
         Engine name.
 
     Returns
-    -------
     SteppableEngine instance (real or stub)
     """
     if name == "pendulum_stub":
@@ -660,6 +659,17 @@ def _trial_zero_trajectories(
 class _DashboardConfigPanelMixin:
     """Build the dashboard configuration controls."""
 
+    _qt: Any
+    _engine_checks: dict[str, Any]
+    _trials_spin: Any
+    _amp_spin: Any
+    _tend_spin: Any
+    _dt_spin: Any
+    _run_btn: Any
+    _status_label: Any
+
+    def _on_run(self) -> None: ...
+
     def _build_config_panel(self) -> Any:
         qt = self._qt
         panel = qt.QWidget()
@@ -784,6 +794,11 @@ class _DashboardThemeMixin:
 class _DashboardChartPanelMixin(_DashboardThemeMixin):
     """Build chart widgets and canvas bindings."""
 
+    _qt: Any
+    _mpl: Any
+    _ax_tr: Any
+    _traj_renderer: MatplotlibMarkerRenderer | None
+
     def _build_chart_panel(self) -> Any:
         qt = self._qt
         panel = qt.QWidget()
@@ -819,6 +834,23 @@ class _DashboardChartPanelMixin(_DashboardThemeMixin):
 
 class _DashboardRunMixin:
     """Handle dashboard run actions and completion callbacks."""
+
+    _engine_checks: dict[str, Any]
+    _status_label: Any
+    _tend_spin: Any
+    _dt_spin: Any
+    _amp_spin: Any
+    _trials_spin: Any
+    _run_btn: Any
+    _comparison_worker_class: Any
+    _thread_pool: Any
+
+    def _update_charts(
+        self, engine_names: list[str], cv_summary: dict[str, float]
+    ) -> None: ...
+    def _update_trajectory_overlay(
+        self, trajectories: dict[str, np.ndarray]
+    ) -> None: ...
 
     def _on_run(self) -> None:
         """Build config, run comparison in background thread."""
@@ -866,6 +898,18 @@ class _DashboardRunMixin:
 
 class _DashboardChartUpdateMixin(_DashboardThemeMixin):
     """Update chart canvases from comparison results."""
+
+    _mpl: Any
+    _ax_rs: Any
+    _canvas_rs: Any
+    _ax_cv: Any
+    _canvas_cv: Any
+    _traj_renderer: MatplotlibMarkerRenderer | None
+    _ax_tr: Any
+    _traj_handles: dict[str, Any]
+    _canvas_tr: Any
+    _shape_per_engine: bool
+    _style_template: Any
 
     def _update_charts(
         self,
@@ -954,8 +998,10 @@ def _create_dashboard_window_class() -> type:
     mpl = _load_dashboard_mpl_bindings()
     comparison_worker_class = _create_comparison_worker_class(qt)
 
+    base_cls = QMainWindow if TYPE_CHECKING else qt.QMainWindow
+
     class _Window(
-        qt.QMainWindow,
+        base_cls,  # type: ignore[misc, valid-type]
         _DashboardConfigPanelMixin,
         _DashboardChartPanelMixin,
         _DashboardRunMixin,

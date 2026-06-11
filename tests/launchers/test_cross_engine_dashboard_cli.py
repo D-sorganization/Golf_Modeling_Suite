@@ -18,6 +18,8 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
+from typing import Any
+
 from src.launchers import cross_engine_dashboard as ced
 from src.shared.python.pendulum_simulator.cross_engine_perturbation import (
     CrossEngineRunResult,
@@ -52,7 +54,7 @@ def test_try_build_real_engine_returns_none_on_unknown() -> None:
 
 
 def test_build_engine_returns_stub_for_unknown() -> None:
-    eng = ced._build_engine("pendulum_stub")
+    eng: Any = ced._build_engine("pendulum_stub")
     # Whatever it is, calling step / reset / get_state must work.
     eng.reset()
     eng.set_control(np.zeros(2))
