@@ -56,57 +56,12 @@ from src.shared.python.plot_style import (
     PresetLibrary,
 )
 from src.shared.python.logging_pkg.logging_config import get_logger
+from src.launchers.cross_engine_dashboard_stubs import StubEngine as _StubEngine
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
 
 logger = get_logger(__name__)
-# ---------------------------------------------------------------------------
-# Engine stub (graceful degradation when physics package is not installed)
-# ---------------------------------------------------------------------------
-
-
-class _StubEngine:
-    """Minimal SteppableEngine stub for engines not available in the environment.
-
-    Simulates a trivial overdamped first-order system for demonstration purposes.
-    All state values remain near zero with random perturbations applied.
-
-    Design by Contract
-    ------------------
-    Pre:  name must be a non-empty string
-    Post: get_state() returns two 1-D arrays of equal length
-    """
-
-    def __init__(self, name: str, n_dof: int = 2) -> None:
-        if not name:
-            raise ValueError("Engine stub name must be non-empty")
-        self._name = name
-        self._n_dof = n_dof
-        self._q = np.zeros(n_dof)
-        self._v = np.zeros(n_dof)
-
-    def reset(self) -> None:
-        """Reset state to zero."""
-        self._q = np.zeros(self._n_dof)
-        self._v = np.zeros(self._n_dof)
-
-    def set_control(self, u: np.ndarray) -> None:
-        """Apply control as an impulse to velocity."""
-        u_arr = np.asarray(u, dtype=float)
-        n = min(len(u_arr), self._n_dof)
-        self._v[:n] += u_arr[:n] * 0.01  # small gain
-
-    def step(self, dt: float | None = None) -> None:
-        """Integrate with Euler + damping."""
-        effective_dt = dt if dt is not None else 0.01
-        damping = 0.95
-        self._q = self._q + self._v * effective_dt  # type: ignore[assignment]
-        self._v = self._v * damping  # type: ignore[assignment]
-
-    def get_state(self) -> tuple[np.ndarray, np.ndarray]:
-        """Return (positions, velocities)."""
-        return self._q.copy(), self._v.copy()
 
 
 # ---------------------------------------------------------------------------
@@ -1009,7 +964,7 @@ class CrossEngineDashboardWindow:
     def __new__(cls, *args: object, **kwargs: object) -> CrossEngineDashboardWindow:
         # Defer actual class body to _CrossEngineDashboardWindowImpl which is
         # created after verifying PyQt6 is available.
-        raise NotImplementedError(
+        raise NotImplementedError(  # tracked: #7288
             "Do not instantiate CrossEngineDashboardWindow directly. "
             "Use create_window() instead."
         )
