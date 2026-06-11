@@ -36,6 +36,7 @@ import argparse
 import contextlib
 import logging
 import sys
+from types import SimpleNamespace
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
@@ -517,6 +518,477 @@ def _run_headless(
 # GUI — main window
 # ---------------------------------------------------------------------------
 
+_CV_METRIC_KEYS = (
+    "cv_total_energy_final",
+    "cv_end_effector_speed_final",
+    "cv_peak_end_effector_speed",
+)
+_CV_METRIC_LABELS = ("Energy", "Speed", "Peak Speed")
+
+
+def _load_dashboard_qt_bindings() -> Any:
+    """Return Qt classes used by the lazy dashboard window factory."""
+    from PyQt6.QtCore import (  # noqa: PLC0415
+        QObject,
+        QRunnable,
+        QThreadPool,
+        pyqtSignal,
+    )
+    from PyQt6.QtWidgets import (  # noqa: PLC0415
+        QCheckBox,
+        QDoubleSpinBox,
+        QGroupBox,
+        QHBoxLayout,
+        QLabel,
+        QMainWindow,
+        QPushButton,
+        QSpinBox,
+        QVBoxLayout,
+        QWidget,
+    )
+
+    return SimpleNamespace(
+        QCheckBox=QCheckBox,
+        QDoubleSpinBox=QDoubleSpinBox,
+        QGroupBox=QGroupBox,
+        QHBoxLayout=QHBoxLayout,
+        QLabel=QLabel,
+        QMainWindow=QMainWindow,
+        QObject=QObject,
+        QPushButton=QPushButton,
+        QRunnable=QRunnable,
+        QSpinBox=QSpinBox,
+        QThreadPool=QThreadPool,
+        QVBoxLayout=QVBoxLayout,
+        QWidget=QWidget,
+        pyqtSignal=pyqtSignal,
+    )
+
+
+def _load_dashboard_mpl_bindings() -> Any:
+    """Return Matplotlib bindings, preserving no-Matplotlib GUI fallback."""
+    try:
+        import matplotlib  # noqa: PLC0415
+
+        matplotlib.use("QtAgg")
+        from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg  # noqa: PLC0415
+        from matplotlib.figure import Figure  # noqa: PLC0415
+    except ImportError:
+        return SimpleNamespace(has_mpl=False, FigureCanvasQTAgg=None, Figure=None)
+    return SimpleNamespace(
+        has_mpl=True,
+        FigureCanvasQTAgg=FigureCanvasQTAgg,
+        Figure=Figure,
+    )
+
+
+def _cv_values(cv_summary: dict[str, float]) -> list[float]:
+    """Return dashboard CV values in stable chart order."""
+    return [cv_summary.get(key, 0.0) for key in _CV_METRIC_KEYS]
+
+
+def _robustness_score(cv_values: list[float]) -> float:
+    """Convert aggregate CV values into the displayed robustness score."""
+    mean_cv = float(np.mean(cv_values)) if cv_values else 0.0
+    return max(0.0, min(1.0, 1.0 - mean_cv))
+
+
+def _draw_bar_value_labels(
+    ax: Any,
+    bars: Any,
+    values: list[float],
+    *,
+    y_offset: float,
+    fmt: str,
+) -> None:
+    """Annotate a bar chart with centered numeric labels."""
+    for bar, val in zip(bars, values, strict=True):
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + y_offset,
+            fmt.format(val),
+            ha="center",
+            va="bottom",
+            color="#d0d0f0",
+            fontsize=8,
+        )
+
+
+def _draw_robustness_chart(
+    ax: Any,
+    canvas: Any,
+    colors: Any,
+    engine_names: list[str],
+    robustness_per_engine: list[float],
+    style_ax: Any,
+) -> None:
+    """Draw the robustness score chart on the supplied axes/canvas."""
+    ax.clear()
+    ax.set_facecolor("#1a1a2e")
+    x = np.arange(len(engine_names))
+    bars = ax.bar(
+        x,
+        robustness_per_engine,
+        color="#5555b0",
+        edgecolor="#303070",
+        width=0.5,
+    )
+    ax.set_xticks(x)
+    ax.set_xticklabels(
+        [_format_engine_result_label(name) for name in engine_names],
+        fontsize=8,
+    )
+    ax.set_ylim(0.0, 1.0)
+    ax.set_ylabel("Robustness Score", fontsize=9)
+    ax.axhline(0.5, color="#ff6060", linewidth=0.8, linestyle="--")
+    style_ax(ax, colors)
+    _draw_bar_value_labels(ax, bars, robustness_per_engine, y_offset=0.02, fmt="{:.2f}")
+    canvas.draw()
+
+
+def _draw_cv_chart(
+    ax: Any,
+    canvas: Any,
+    colors: Any,
+    cv_values: list[float],
+    style_ax: Any,
+) -> None:
+    """Draw the aggregate coefficient-of-variation chart."""
+    ax.clear()
+    ax.set_facecolor("#1a1a2e")
+    x = np.arange(len(_CV_METRIC_LABELS))
+    bars = ax.bar(
+        x,
+        cv_values,
+        color="#8040c0",
+        edgecolor="#502080",
+        width=0.5,
+    )
+    ax.set_xticks(x)
+    ax.set_xticklabels(_CV_METRIC_LABELS, fontsize=9)
+    ax.set_ylabel("CV", fontsize=9)
+    ax.axhline(1.0, color="#ff6060", linewidth=0.8, linestyle="--")
+    style_ax(ax, colors)
+    _draw_bar_value_labels(ax, bars, cv_values, y_offset=0.01, fmt="{:.3f}")
+    canvas.draw()
+
+
+def _create_comparison_worker_class(qt: Any) -> type:
+    """Build the QRunnable worker class against the lazy Qt bindings."""
+
+    class ComparisonWorkerSignals(qt.QObject):
+        """Signals for the ComparisonWorker."""
+
+        finished = qt.pyqtSignal(list, dict, dict)
+        error = qt.pyqtSignal(str)
+
+    class ComparisonWorker(qt.QRunnable):
+        """Run cross-engine comparison in a background thread."""
+
+        def __init__(
+            self, engine_names: list[str], config: CrossEngineSimConfig
+        ) -> None:
+            super().__init__()
+            self.signals = ComparisonWorkerSignals()
+            self.engine_names = engine_names
+            self.config = config
+
+        def run(self) -> None:
+            """Execute comparison and emit results."""
+            try:
+                results, cv_summary = _run_with_results(self.engine_names, self.config)
+                trajectories = _trial_zero_trajectories(results)
+                self.signals.finished.emit(self.engine_names, cv_summary, trajectories)
+            except Exception as e:  # noqa: BLE001
+                self.signals.error.emit(str(e))
+
+    return ComparisonWorker
+
+
+def _trial_zero_trajectories(
+    results: dict[str, CrossEngineRunResult],
+) -> dict[str, np.ndarray]:
+    """Extract first-trial 2D-capable trajectories from run results."""
+    trajectories: dict[str, np.ndarray] = {}
+    for name, run_result in results.items():
+        if not run_result.metrics_per_trial:
+            continue
+        traj = np.asarray(run_result.metrics_per_trial[0].trajectory_q, dtype=float)
+        if traj.ndim == 2 and traj.shape[1] >= 2:
+            trajectories[name] = traj
+    return trajectories
+
+
+class _DashboardConfigPanelMixin:
+    """Build the dashboard configuration controls."""
+
+    def _build_config_panel(self) -> Any:
+        qt = self._qt
+        panel = qt.QWidget()
+        panel.setMinimumWidth(260)
+        layout = qt.QVBoxLayout(panel)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(6)
+        layout.addWidget(self._build_engine_group())
+        layout.addWidget(self._build_sim_config_group())
+        layout.addWidget(self._build_run_group())
+        layout.addStretch()
+        return panel
+
+    def _build_engine_group(self) -> Any:
+        qt = self._qt
+        grp = qt.QGroupBox("Engines")
+        lay = qt.QVBoxLayout(grp)
+        lay.setSpacing(4)
+        self._engine_checks = {}
+        for name in _ENGINE_NAMES:
+            cb = qt.QCheckBox(name)
+            cb.setChecked(name == "pendulum_stub")
+            self._engine_checks[name] = cb
+            lay.addWidget(cb)
+        return grp
+
+    def _build_sim_config_group(self) -> Any:
+        qt = self._qt
+        grp = qt.QGroupBox("Simulation Config")
+        lay = qt.QVBoxLayout(grp)
+        lay.setSpacing(4)
+        self._add_spin_row(lay, "Trials:", "_trials_spin", qt.QSpinBox, (1, 500), 10)
+        self._add_spin_row(
+            lay, "Amplitude:", "_amp_spin", qt.QDoubleSpinBox, (0.0, 5.0), 0.1, 3, 0.01
+        )
+        self._add_spin_row(
+            lay, "t_end (s):", "_tend_spin", qt.QDoubleSpinBox, (0.1, 10.0), 1.5, 2, 0.1
+        )
+        self._add_spin_row(
+            lay, "dt (s):", "_dt_spin", qt.QDoubleSpinBox, (0.001, 0.1), 0.01, 3, 0.001
+        )
+        return grp
+
+    def _add_spin_row(
+        self,
+        layout: Any,
+        label: str,
+        attr: str,
+        spin_cls: Any,
+        value_range: tuple[float, float],
+        value: float,
+        decimals: int | None = None,
+        single_step: float | None = None,
+    ) -> None:
+        qt = self._qt
+        row = qt.QHBoxLayout()
+        row.addWidget(qt.QLabel(label))
+        spin = spin_cls()
+        spin.setRange(*value_range)
+        spin.setValue(value)
+        if single_step is not None:
+            spin.setSingleStep(single_step)
+        if decimals is not None:
+            spin.setDecimals(decimals)
+        setattr(self, attr, spin)
+        row.addWidget(spin)
+        layout.addLayout(row)
+
+    def _build_run_group(self) -> Any:
+        qt = self._qt
+        grp = qt.QGroupBox("Run")
+        lay = qt.QVBoxLayout(grp)
+        lay.setSpacing(4)
+        self._run_btn = qt.QPushButton("Run Comparison")
+        self._run_btn.clicked.connect(self._on_run)
+        lay.addWidget(self._run_btn)
+        self._status_label = qt.QLabel("Ready")
+        lay.addWidget(self._status_label)
+        return grp
+
+
+class _DashboardThemeMixin:
+    """Theme helpers shared by chart panel and chart rendering."""
+
+    def _get_theme_colors(self) -> Any:
+        """Retrieve the current theme colors mapped as a SimpleNamespace."""
+        try:
+            from src.shared.python.theme import DARK_THEME, get_theme_manager
+
+            tm = get_theme_manager()
+            raw_c = tm.get_current_colors() if tm else None
+            if raw_c:
+                return SimpleNamespace(
+                    bg=raw_c.get("bg", "#1a1d23"),
+                    bg_elevated=raw_c.get(
+                        "table_header", raw_c.get("group_bg", "#2a2d35")
+                    ),
+                    text_secondary=raw_c.get(
+                        "text_secondary", raw_c.get("label", "#8b949e")
+                    ),
+                    border_default=raw_c.get("border", "#3a3d45"),
+                )
+            return DARK_THEME
+        except ImportError:
+            return SimpleNamespace(
+                bg="#12121e",
+                bg_elevated="#1a1a2e",
+                text_secondary="#8080b0",
+                border_default="#303050",
+            )
+
+    @staticmethod
+    def _style_ax(ax: Any, colors: Any) -> None:
+        """Apply theme styling to a Matplotlib axes."""
+        ax.tick_params(colors=colors.text_secondary, labelsize=9)
+        for spine in ax.spines.values():
+            spine.set_edgecolor(colors.border_default)
+        ax.yaxis.label.set_color(colors.text_secondary)
+        ax.xaxis.label.set_color(colors.text_secondary)
+
+
+class _DashboardChartPanelMixin(_DashboardThemeMixin):
+    """Build chart widgets and canvas bindings."""
+
+    def _build_chart_panel(self) -> Any:
+        qt = self._qt
+        panel = qt.QWidget()
+        layout = qt.QVBoxLayout(panel)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(6)
+        c = self._get_theme_colors()
+        self._add_chart_group(layout, "Robustness Score (1 − CV, per engine)", "rs", c)
+        self._add_chart_group(layout, "Coefficient of Variation per Metric", "cv", c)
+        self._add_chart_group(
+            layout, "Trajectory Overlay (per-engine, plot_style)", "tr", c
+        )
+        self._traj_renderer = MatplotlibMarkerRenderer(self._ax_tr)
+        return panel
+
+    def _add_chart_group(
+        self, layout: Any, title: str, suffix: str, colors: Any
+    ) -> None:
+        qt = self._qt
+        mpl = self._mpl
+        group = qt.QGroupBox(title)
+        group_layout = qt.QVBoxLayout(group)
+        figure = mpl.Figure(figsize=(5, 2.5), facecolor=colors.bg)
+        canvas = mpl.FigureCanvasQTAgg(figure)
+        axis = figure.add_subplot(111)
+        axis.set_facecolor(colors.bg_elevated)
+        self._style_ax(axis, colors)
+        setattr(self, f"_canvas_{suffix}", canvas)
+        setattr(self, f"_ax_{suffix}", axis)
+        group_layout.addWidget(canvas)
+        layout.addWidget(group)
+
+
+class _DashboardRunMixin:
+    """Handle dashboard run actions and completion callbacks."""
+
+    def _on_run(self) -> None:
+        """Build config, run comparison in background thread."""
+        selected = [name for name, cb in self._engine_checks.items() if cb.isChecked()]
+        if not selected:
+            self._status_label.setText("Select at least one engine")
+            logger.warning("No engines selected for comparison")
+            return
+        try:
+            config = CrossEngineSimConfig(
+                t_end=self._tend_spin.value(),
+                dt=self._dt_spin.value(),
+                noise_amplitude=self._amp_spin.value(),
+                n_trials=self._trials_spin.value(),
+            )
+        except ValueError as exc:
+            self._status_label.setText(f"Config error: {exc}")
+            logger.error("Invalid CrossEngineSimConfig: %s", exc)
+            return
+        self._run_btn.setEnabled(False)
+        self._status_label.setText("Running…")
+        worker = self._comparison_worker_class(selected, config)
+        worker.signals.finished.connect(self._on_comparison_finished)
+        worker.signals.error.connect(self._on_comparison_error)
+        self._thread_pool.start(worker)
+
+    def _on_comparison_finished(
+        self,
+        engine_names: list[str],
+        cv_summary: dict[str, float],
+        trajectories: dict[str, np.ndarray] | None = None,
+    ) -> None:
+        """Handle successful comparison completion."""
+        self._update_charts(engine_names, cv_summary)
+        self._update_trajectory_overlay(trajectories or {})
+        self._status_label.setText("Done")
+        self._run_btn.setEnabled(True)
+
+    def _on_comparison_error(self, error_msg: str) -> None:
+        """Handle comparison failure."""
+        self._status_label.setText(f"Error: {error_msg}")
+        logger.error("Comparison failed: %s", error_msg)
+        self._run_btn.setEnabled(True)
+
+
+class _DashboardChartUpdateMixin(_DashboardThemeMixin):
+    """Update chart canvases from comparison results."""
+
+    def _update_charts(
+        self,
+        engine_names: list[str],
+        cv_summary: dict[str, float],
+    ) -> None:
+        """Refresh Robustness Score and CV charts from the latest results."""
+        if not self._mpl.has_mpl or not engine_names:
+            return
+        colors = self._get_theme_colors()
+        values = _cv_values(cv_summary)
+        robustness = _robustness_score(values)
+        robustness_per_engine = [robustness] * len(engine_names)
+        _draw_robustness_chart(
+            self._ax_rs,
+            self._canvas_rs,
+            colors,
+            engine_names,
+            robustness_per_engine,
+            self._style_ax,
+        )
+        _draw_cv_chart(self._ax_cv, self._canvas_cv, colors, values, self._style_ax)
+
+    def _update_trajectory_overlay(
+        self,
+        trajectories: dict[str, np.ndarray],
+    ) -> None:
+        """Render per-engine trajectory overlays via plot_style (#4810)."""
+        if not self._mpl.has_mpl or self._traj_renderer is None:
+            return
+        colors = self._get_theme_colors()
+        ax = self._ax_tr
+        for handle in list(self._traj_handles.values()):
+            with contextlib.suppress(KeyError):  # pragma: no cover - defensive
+                self._traj_renderer.remove(handle)
+        self._traj_handles.clear()
+        ax.clear()
+        ax.set_facecolor("#1a1a2e")
+        self._style_ax(ax, colors)
+        if not trajectories:
+            self._canvas_tr.draw()
+            return
+        self._traj_handles = _render_trajectory_overlay(
+            ax,
+            trajectories,
+            self._traj_renderer,
+            shape_per_engine=self._shape_per_engine,
+            template=self._style_template,
+        )
+        ax.set_xlabel("q[0]", fontsize=9)
+        ax.set_ylabel("q[1]", fontsize=9)
+        ax.legend(
+            list(self._traj_handles.keys()),
+            fontsize=8,
+            loc="best",
+            facecolor="#1a1a2e",
+            edgecolor="#303050",
+            labelcolor="#d0d0f0",
+        )
+        self._canvas_tr.draw()
+
 
 class CrossEngineDashboardWindow:
     """Main window for the Cross-Engine Perturbation Comparison Dashboard.
@@ -543,7 +1015,7 @@ class CrossEngineDashboardWindow:
         )
 
 
-def _create_dashboard_window_class() -> type:  # noqa: C901
+def _create_dashboard_window_class() -> type:
     """Construct and return the _Window class with deferred Qt/mpl imports.
 
     Returns
@@ -553,511 +1025,61 @@ def _create_dashboard_window_class() -> type:  # noqa: C901
 
     Raises
     ------
-    ImportError if PyQt6 or Matplotlib is not available.
+    ImportError if PyQt6 is not available.
     """
-    from PyQt6.QtCore import (  # noqa: PLC0415
-        QObject,
-        QRunnable,
-        QThreadPool,
-        pyqtSignal,
-    )
-    from PyQt6.QtWidgets import (  # noqa: PLC0415
-        QCheckBox,
-        QDoubleSpinBox,
-        QGroupBox,
-        QHBoxLayout,
-        QLabel,
-        QMainWindow,
-        QPushButton,
-        QSpinBox,
-        QVBoxLayout,
-        QWidget,
-    )
+    qt = _load_dashboard_qt_bindings()
+    mpl = _load_dashboard_mpl_bindings()
+    comparison_worker_class = _create_comparison_worker_class(qt)
 
-    FigureCanvasQTAgg: Any = None
-    Figure: Any = None
-    try:
-        import matplotlib  # noqa: PLC0415
-
-        matplotlib.use("QtAgg")
-        from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg  # noqa: PLC0415
-        from matplotlib.figure import Figure  # noqa: PLC0415
-
-        _has_mpl = True
-    except ImportError:
-        _has_mpl = False
-
-    class ComparisonWorkerSignals(QObject):
-        """Signals for the ComparisonWorker."""
-
-        # Payload: (engine_names, cv_summary, trajectories_per_engine)
-        finished = pyqtSignal(list, dict, dict)
-        error = pyqtSignal(str)
-
-    class ComparisonWorker(QRunnable):
-        """Worker thread for cross-engine comparison (issue #2715).
-
-        Runs the CPU-heavy Monte Carlo simulation comparison in a background thread
-        to prevent UI blocking.
-        """
-
-        def __init__(
-            self, engine_names: list[str], config: CrossEngineSimConfig
-        ) -> None:
-            super().__init__()
-            self.signals = ComparisonWorkerSignals()
-            self.engine_names = engine_names
-            self.config = config
-
-        def run(self) -> None:
-            """Execute comparison and emit results."""
-            try:
-                results, cv_summary = _run_with_results(self.engine_names, self.config)
-                # Extract trial-0 position trajectory per engine for the overlay
-                trajectories: dict[str, np.ndarray] = {}
-                for name, run_result in results.items():
-                    if run_result.metrics_per_trial:
-                        traj = np.asarray(
-                            run_result.metrics_per_trial[0].trajectory_q,
-                            dtype=float,
-                        )
-                        if traj.ndim == 2 and traj.shape[1] >= 2:
-                            trajectories[name] = traj
-                self.signals.finished.emit(self.engine_names, cv_summary, trajectories)
-            # Worker thread must survive any error to emit a signal back to the
-            # GUI thread rather than crashing silently.
-            except Exception as e:  # noqa: BLE001
-                self.signals.error.emit(str(e))
-
-    class _Window(QMainWindow):
+    class _Window(
+        qt.QMainWindow,
+        _DashboardConfigPanelMixin,
+        _DashboardChartPanelMixin,
+        _DashboardRunMixin,
+        _DashboardChartUpdateMixin,
+    ):
         """Cross-Engine Perturbation Comparison Dashboard main window."""
 
         def __init__(
             self,
-            parent: QWidget | None = None,
+            parent: Any | None = None,
             *,
             shape_per_engine: bool = True,
         ) -> None:
             super().__init__(parent)
+            self._qt = qt
+            self._mpl = mpl
+            self._comparison_worker_class = comparison_worker_class
             self.setWindowTitle("Cross-Engine Perturbation Comparison Dashboard")
             self.setMinimumSize(900, 620)
-
-            try:
-                from src.shared.python.theme import apply_theme_to_window
-
-                if callable(apply_theme_to_window):
-                    apply_theme_to_window(self)
-            except ImportError:
-                pass
-
+            self._apply_dashboard_theme()
             self._shape_per_engine = bool(shape_per_engine)
-            # Single MatplotlibMarkerRenderer reused across overlays — DRY
-            # enforced by _render_trajectory_overlay (#4810).
             self._traj_renderer: MatplotlibMarkerRenderer | None = None
             self._traj_handles: dict[str, str] = {}
             self._style_template: MarkerStyle | None = _default_marker_style_template()
+            self._build_window_layout()
+            self._thread_pool = qt.QThreadPool.globalInstance()
 
-            central = QWidget()
+        def _apply_dashboard_theme(self) -> None:
+            """Apply the repository theme when available."""
+            try:
+                from src.shared.python.theme import apply_theme_to_window
+            except ImportError:
+                return
+            if callable(apply_theme_to_window):
+                apply_theme_to_window(self)
+
+        def _build_window_layout(self) -> None:
+            """Create the central dashboard layout."""
+            central = self._qt.QWidget()
             central.setObjectName("central")
             self.setCentralWidget(central)
-
-            root = QHBoxLayout(central)
+            root = self._qt.QHBoxLayout(central)
             root.setContentsMargins(8, 8, 8, 8)
             root.setSpacing(8)
-
             root.addWidget(self._build_config_panel(), stretch=0)
-            if _has_mpl:
+            if self._mpl.has_mpl:
                 root.addWidget(self._build_chart_panel(), stretch=1)
-
-            # Thread pool for background tasks
-            self._thread_pool = QThreadPool.globalInstance()
-
-        # ------------------------------------------------------------------
-        # Config panel
-        # ------------------------------------------------------------------
-
-        def _build_config_panel(self) -> QWidget:
-            panel = QWidget()
-            panel.setMinimumWidth(260)
-            layout = QVBoxLayout(panel)
-            layout.setContentsMargins(0, 0, 0, 0)
-            layout.setSpacing(6)
-
-            layout.addWidget(self._build_engine_group())
-            layout.addWidget(self._build_sim_config_group())
-            layout.addWidget(self._build_run_group())
-            layout.addStretch()
-            return panel
-
-        def _build_engine_group(self) -> QGroupBox:
-            grp = QGroupBox("Engines")
-            lay = QVBoxLayout(grp)
-            lay.setSpacing(4)
-            self._engine_checks: dict[str, QCheckBox] = {}
-            for name in _ENGINE_NAMES:
-                cb = QCheckBox(name)
-                cb.setChecked(name == "pendulum_stub")
-                self._engine_checks[name] = cb
-                lay.addWidget(cb)
-            return grp
-
-        def _build_sim_config_group(self) -> QGroupBox:
-            grp = QGroupBox("Simulation Config")
-            lay = QVBoxLayout(grp)
-            lay.setSpacing(4)
-
-            # n_trials
-            row = QHBoxLayout()
-            row.addWidget(QLabel("Trials:"))
-            self._trials_spin = QSpinBox()
-            self._trials_spin.setRange(1, 500)
-            self._trials_spin.setValue(10)
-            row.addWidget(self._trials_spin)
-            lay.addLayout(row)
-
-            # amplitude
-            row2 = QHBoxLayout()
-            row2.addWidget(QLabel("Amplitude:"))
-            self._amp_spin = QDoubleSpinBox()
-            self._amp_spin.setRange(0.0, 5.0)
-            self._amp_spin.setSingleStep(0.01)
-            self._amp_spin.setValue(0.1)
-            self._amp_spin.setDecimals(3)
-            row2.addWidget(self._amp_spin)
-            lay.addLayout(row2)
-
-            # t_end
-            row3 = QHBoxLayout()
-            row3.addWidget(QLabel("t_end (s):"))
-            self._tend_spin = QDoubleSpinBox()
-            self._tend_spin.setRange(0.1, 10.0)
-            self._tend_spin.setSingleStep(0.1)
-            self._tend_spin.setValue(1.5)
-            self._tend_spin.setDecimals(2)
-            row3.addWidget(self._tend_spin)
-            lay.addLayout(row3)
-
-            # dt
-            row4 = QHBoxLayout()
-            row4.addWidget(QLabel("dt (s):"))
-            self._dt_spin = QDoubleSpinBox()
-            self._dt_spin.setRange(0.001, 0.1)
-            self._dt_spin.setSingleStep(0.001)
-            self._dt_spin.setValue(0.01)
-            self._dt_spin.setDecimals(3)
-            row4.addWidget(self._dt_spin)
-            lay.addLayout(row4)
-
-            return grp
-
-        def _build_run_group(self) -> QGroupBox:
-            grp = QGroupBox("Run")
-            lay = QVBoxLayout(grp)
-            lay.setSpacing(4)
-            self._run_btn = QPushButton("Run Comparison")
-            self._run_btn.clicked.connect(self._on_run)
-            lay.addWidget(self._run_btn)
-            self._status_label = QLabel("Ready")
-            lay.addWidget(self._status_label)
-            return grp
-
-        def _get_theme_colors(self) -> Any:
-            """Retrieve the current theme colors mapped as a SimpleNamespace."""
-            try:
-                from types import SimpleNamespace
-                from src.shared.python.theme import DARK_THEME, get_theme_manager
-
-                tm = get_theme_manager()
-                raw_c = tm.get_current_colors() if tm else None
-                if raw_c:
-                    return SimpleNamespace(
-                        bg=raw_c.get("bg", "#1a1d23"),
-                        bg_elevated=raw_c.get(
-                            "table_header", raw_c.get("group_bg", "#2a2d35")
-                        ),
-                        text_secondary=raw_c.get(
-                            "text_secondary", raw_c.get("label", "#8b949e")
-                        ),
-                        border_default=raw_c.get("border", "#3a3d45"),
-                    )
-                return DARK_THEME
-            except ImportError:
-
-                class FallbackColors:
-                    bg = "#12121e"
-                    bg_elevated = "#1a1a2e"
-                    text_secondary = "#8080b0"
-                    border_default = "#303050"
-
-                return FallbackColors()
-
-        # ------------------------------------------------------------------
-        # Chart panel
-        # ------------------------------------------------------------------
-
-        def _build_chart_panel(self) -> QWidget:
-            panel = QWidget()
-            layout = QVBoxLayout(panel)
-            layout.setContentsMargins(0, 0, 0, 0)
-            layout.setSpacing(6)
-
-            c = self._get_theme_colors()
-
-            # Robustness Score chart
-            rs_grp = QGroupBox("Robustness Score (1 − CV, per engine)")
-            rs_lay = QVBoxLayout(rs_grp)
-            fig_rs = Figure(figsize=(5, 2.5), facecolor=c.bg)
-            self._canvas_rs = FigureCanvasQTAgg(fig_rs)
-            self._ax_rs = fig_rs.add_subplot(111)
-            self._ax_rs.set_facecolor(c.bg_elevated)
-            self._style_ax(self._ax_rs, c)
-            rs_lay.addWidget(self._canvas_rs)
-            layout.addWidget(rs_grp)
-
-            # CV chart
-            cv_grp = QGroupBox("Coefficient of Variation per Metric")
-            cv_lay = QVBoxLayout(cv_grp)
-            fig_cv = Figure(figsize=(5, 2.5), facecolor=c.bg)
-            self._canvas_cv = FigureCanvasQTAgg(fig_cv)
-            self._ax_cv = fig_cv.add_subplot(111)
-            self._ax_cv.set_facecolor(c.bg_elevated)
-            self._style_ax(self._ax_cv, c)
-            cv_lay.addWidget(self._canvas_cv)
-            layout.addWidget(cv_grp)
-
-            # Trajectory overlay (issue #4810)
-            tr_grp = QGroupBox("Trajectory Overlay (per-engine, plot_style)")
-            tr_lay = QVBoxLayout(tr_grp)
-            fig_tr = Figure(figsize=(5, 2.5), facecolor=c.bg)
-            self._canvas_tr = FigureCanvasQTAgg(fig_tr)
-            self._ax_tr = fig_tr.add_subplot(111)
-            self._ax_tr.set_facecolor(c.bg_elevated)
-            self._style_ax(self._ax_tr, c)
-            tr_lay.addWidget(self._canvas_tr)
-            layout.addWidget(tr_grp)
-
-            # Bind a single renderer to the overlay axes — reused across
-            # every comparison run.  DRY (#4810).
-            self._traj_renderer = MatplotlibMarkerRenderer(self._ax_tr)
-
-            return panel
-
-        @staticmethod
-        def _style_ax(ax: Any, colors: Any) -> None:
-            """Apply theme styling to a Matplotlib axes."""
-            ax.tick_params(colors=colors.text_secondary, labelsize=9)
-            for spine in ax.spines.values():
-                spine.set_edgecolor(colors.border_default)
-            ax.yaxis.label.set_color(colors.text_secondary)
-            ax.xaxis.label.set_color(colors.text_secondary)
-
-        # ------------------------------------------------------------------
-        # Slots
-        # ------------------------------------------------------------------
-
-        def _on_run(self) -> None:
-            """Build config, run comparison in background thread."""
-            selected = [
-                name for name, cb in self._engine_checks.items() if cb.isChecked()
-            ]
-            if not selected:
-                self._status_label.setText("Select at least one engine")
-                logger.warning("No engines selected for comparison")
-                return
-
-            try:
-                config = CrossEngineSimConfig(
-                    t_end=self._tend_spin.value(),
-                    dt=self._dt_spin.value(),
-                    noise_amplitude=self._amp_spin.value(),
-                    n_trials=self._trials_spin.value(),
-                )
-            except ValueError as exc:
-                self._status_label.setText(f"Config error: {exc}")
-                logger.error("Invalid CrossEngineSimConfig: %s", exc)
-                return
-
-            self._run_btn.setEnabled(False)
-            self._status_label.setText("Running…")
-
-            worker = ComparisonWorker(selected, config)
-            worker.signals.finished.connect(self._on_comparison_finished)
-            worker.signals.error.connect(self._on_comparison_error)
-            self._thread_pool.start(worker)
-
-        def _on_comparison_finished(
-            self,
-            engine_names: list[str],
-            cv_summary: dict[str, float],
-            trajectories: dict[str, np.ndarray] | None = None,
-        ) -> None:
-            """Handle successful comparison completion."""
-            self._update_charts(engine_names, cv_summary)
-            self._update_trajectory_overlay(trajectories or {})
-            self._status_label.setText("Done")
-            self._run_btn.setEnabled(True)
-
-        def _on_comparison_error(self, error_msg: str) -> None:
-            """Handle comparison failure."""
-            self._status_label.setText(f"Error: {error_msg}")
-            logger.error("Comparison failed: %s", error_msg)
-            self._run_btn.setEnabled(True)
-
-        # ------------------------------------------------------------------
-        # Chart update
-        # ------------------------------------------------------------------
-
-        def _update_charts(
-            self,
-            engine_names: list[str],
-            cv_summary: dict[str, float],
-        ) -> None:
-            """Refresh Robustness Score and CV charts from the latest results.
-
-            Parameters
-            ----------
-            engine_names : list of str
-                Names of engines that were run.
-            cv_summary : dict
-                Output of CrossEnginePerturbationRunner.compute_cv_summary().
-
-            Design by Contract
-            ------------------
-            Pre:  engine_names is non-empty
-            Pre:  cv_summary has the three standard CV keys
-            Post: both canvases are redrawn
-            """
-            if not _has_mpl:
-                return
-            if not engine_names:
-                return
-
-            c = self._get_theme_colors()
-
-            metric_keys = [
-                "cv_total_energy_final",
-                "cv_end_effector_speed_final",
-                "cv_peak_end_effector_speed",
-            ]
-            metric_labels = ["Energy", "Speed", "Peak Speed"]
-
-            # Robustness Score: use mean CV across metrics per engine.
-            # Since compute_cv_summary returns aggregate CVs (not per-engine),
-            # we compute a single robustness score for the ensemble.
-            cv_values = [cv_summary.get(k, 0.0) for k in metric_keys]
-            mean_cv = float(np.mean(cv_values)) if cv_values else 0.0
-            robustness = max(0.0, min(1.0, 1.0 - mean_cv))
-            robustness_per_engine = [robustness] * len(engine_names)
-
-            ax = self._ax_rs
-            ax.clear()
-            ax.set_facecolor("#1a1a2e")
-            x = np.arange(len(engine_names))
-            bars = ax.bar(
-                x,
-                robustness_per_engine,
-                color="#5555b0",
-                edgecolor="#303070",
-                width=0.5,
-            )
-            ax.set_xticks(x)
-            ax.set_xticklabels(
-                [_format_engine_result_label(name) for name in engine_names],
-                fontsize=8,
-            )
-            ax.set_ylim(0.0, 1.0)
-            ax.set_ylabel("Robustness Score", fontsize=9)
-            ax.axhline(0.5, color="#ff6060", linewidth=0.8, linestyle="--")
-            self._style_ax(ax, c)
-
-            # Annotate bar values
-            for bar, val in zip(bars, robustness_per_engine, strict=True):
-                ax.text(
-                    bar.get_x() + bar.get_width() / 2,
-                    bar.get_height() + 0.02,
-                    f"{val:.2f}",
-                    ha="center",
-                    va="bottom",
-                    color="#d0d0f0",
-                    fontsize=8,
-                )
-
-            self._canvas_rs.draw()
-
-            # CV chart — one bar per metric
-            ax2 = self._ax_cv
-            ax2.clear()
-            ax2.set_facecolor("#1a1a2e")
-            x2 = np.arange(len(metric_labels))
-            bars2 = ax2.bar(
-                x2,
-                cv_values,
-                color="#8040c0",
-                edgecolor="#502080",
-                width=0.5,
-            )
-            ax2.set_xticks(x2)
-            ax2.set_xticklabels(metric_labels, fontsize=9)
-            ax2.set_ylabel("CV", fontsize=9)
-            ax2.axhline(1.0, color="#ff6060", linewidth=0.8, linestyle="--")
-            self._style_ax(ax2, c)
-
-            for bar, val in zip(bars2, cv_values, strict=True):
-                ax2.text(
-                    bar.get_x() + bar.get_width() / 2,
-                    bar.get_height() + 0.01,
-                    f"{val:.3f}",
-                    ha="center",
-                    va="bottom",
-                    color="#d0d0f0",
-                    fontsize=8,
-                )
-
-            self._canvas_cv.draw()
-
-        def _update_trajectory_overlay(
-            self,
-            trajectories: dict[str, np.ndarray],
-        ) -> None:
-            """Render per-engine trajectory overlays via plot_style (#4810).
-
-            One :class:`PaletteColor` per engine, recognisable shape per
-            engine (when ``shape_per_engine`` is enabled), all routed
-            through the single :class:`MatplotlibMarkerRenderer`.
-            """
-            if not _has_mpl or self._traj_renderer is None:
-                return
-            c = self._get_theme_colors()
-            ax = self._ax_tr
-            # Remove any prior handles to avoid stacking artists across runs.
-            for handle in list(self._traj_handles.values()):
-                with contextlib.suppress(KeyError):  # pragma: no cover - defensive
-                    self._traj_renderer.remove(handle)
-            self._traj_handles.clear()
-            ax.clear()
-            ax.set_facecolor("#1a1a2e")
-            self._style_ax(ax, c)
-            if not trajectories:
-                self._canvas_tr.draw()
-                return
-            self._traj_handles = _render_trajectory_overlay(
-                ax,
-                trajectories,
-                self._traj_renderer,
-                shape_per_engine=self._shape_per_engine,
-                template=self._style_template,
-            )
-            ax.set_xlabel("q[0]", fontsize=9)
-            ax.set_ylabel("q[1]", fontsize=9)
-            ax.legend(
-                list(self._traj_handles.keys()),
-                fontsize=8,
-                loc="best",
-                facecolor="#1a1a2e",
-                edgecolor="#303050",
-                labelcolor="#d0d0f0",
-            )
-            self._canvas_tr.draw()
 
     return _Window
 
