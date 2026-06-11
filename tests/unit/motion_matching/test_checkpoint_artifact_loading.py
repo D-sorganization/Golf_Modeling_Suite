@@ -79,6 +79,46 @@ def test_load_weights_only_checkpoint_forwards_safe_torch_options(
 
 
 @pytest.mark.unit
+def test_load_checkpoint_dict_rejects_missing_file(tmp_path: Path) -> None:
+    with pytest.raises(FileNotFoundError, match="checkpoint not found"):
+        load_checkpoint_dict(tmp_path / "missing.pt")
+
+
+@pytest.mark.unit
+def test_load_checkpoint_dict_rejects_non_dict_payload(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    ckpt = tmp_path / "checkpoint.pt"
+    ckpt.write_bytes(b"placeholder")
+
+    monkeypatch.setattr(
+        "src.shared.python.motion_matching._checkpoint_artifacts._load_weights_only_checkpoint",
+        lambda path, *, map_location=None: ["state_dict"],
+    )
+
+    with pytest.raises(ValueError, match="not a dict payload"):
+        load_checkpoint_dict(ckpt, artifact_name="test checkpoint")
+
+
+@pytest.mark.unit
+def test_load_checkpoint_dict_rejects_missing_required_keys(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    ckpt = tmp_path / "checkpoint.pt"
+    ckpt.write_bytes(b"placeholder")
+
+    monkeypatch.setattr(
+        "src.shared.python.motion_matching._checkpoint_artifacts._load_weights_only_checkpoint",
+        lambda path, *, map_location=None: {"state_dict": {}},
+    )
+
+    with pytest.raises(ValueError, match="missing required key\\(s\\): config"):
+        load_checkpoint_dict(ckpt, required_keys=("state_dict", "config"))
+
+
+@pytest.mark.unit
 @pytest.mark.requires_torch
 def test_load_checkpoint_dict_rejects_pickle_globals(tmp_path: Path) -> None:
     torch = pytest.importorskip("torch")
@@ -97,3 +137,12 @@ def test_require_schema_version_rejects_mismatch() -> None:
             "1.0",
             artifact_name="test checkpoint",
         )
+
+
+@pytest.mark.unit
+def test_require_schema_version_accepts_expected_version() -> None:
+    require_schema_version(
+        {"schema_version": "1.0"},
+        "1.0",
+        artifact_name="test checkpoint",
+    )
