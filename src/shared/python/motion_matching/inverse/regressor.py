@@ -334,7 +334,9 @@ class InverseRegressor(nn.Module):
             h = block(h)
         h = self.head_norm(h)
         raw = self.head(h)
-        return torch.tanh(raw) * self.coefficient_scale
+        scale = self.coefficient_scale
+        assert isinstance(scale, Tensor)
+        return torch.tanh(raw) * scale
 
     # ----- (de)serialisation ----- #
 

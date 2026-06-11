@@ -373,7 +373,9 @@ class SwingInverseCVAE(nn.Module):
     def _decode(self, z: Tensor, context: Tensor) -> Tensor:
         raw = self.decoder(torch.cat([z, context], dim=-1))
         # Bound-aware activation: tanh -> scale by per-letter symmetric bound.
-        return torch.tanh(raw) * self.coefficient_bounds
+        bounds = self.coefficient_bounds
+        assert isinstance(bounds, Tensor)
+        return torch.tanh(raw) * bounds
 
     # ---------------- input validation ----------------
 

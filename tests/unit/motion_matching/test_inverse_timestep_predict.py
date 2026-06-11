@@ -76,7 +76,7 @@ def test_predict_torques_attached_stats() -> None:
 def test_predict_torques_requires_model_type() -> None:
     """Pin: non-model arg rejected with TypeError."""
     with pytest.raises(TypeError, match="TimestepInverseDynamics"):
-        predict_torques("nope", np.zeros((1, 5)), np.zeros((1, 5)), np.zeros((1, 5)))
+        predict_torques("nope", np.zeros((1, 5)), np.zeros((1, 5)), np.zeros((1, 5)))  # type: ignore[arg-type]
 
 
 def test_predict_torques_requires_stats() -> None:

@@ -10,7 +10,7 @@ from typing import Any
 def load_checkpoint_dict(
     path: str | Path,
     *,
-    map_location: str | object | None = None,
+    map_location: Any = None,
     required_keys: tuple[str, ...] = (),
     artifact_name: str = "checkpoint",
 ) -> dict[str, Any]:
@@ -42,7 +42,7 @@ def load_checkpoint_dict(
 def _load_weights_only_checkpoint(
     path: Path,
     *,
-    map_location: str | object | None,
+    map_location: Any,
 ) -> Any:
     import torch
 
