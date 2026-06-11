@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.304                                            |
+| **Spec Version**        | 1.0.305                                            |
 | **Last Spec Update**    | 2026-06-11                                         |
 
 ## 2. Purpose & Mission
@@ -77,6 +77,17 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
   install dependencies, run autofix tools, commit, or push. Standard CI now
   enforces that boundary with `scripts/check_workflow_run_trust_boundary.py`
   and focused regression coverage.
+- **2026-06-10** - Locked the #7278 standard CI dependency and audit
+  contract to committed artifacts. Python jobs that install project runtime or
+  dev dependencies now seed environments from `requirements.lock` or
+  `requirements-dev.lock` before no-dependency editable installs, avoiding
+  pip constraints parsing for lock entries with extras. The dev lock now
+  includes the GUI-test extra so `--no-deps` editable installs still provide
+  real PyQt6/pytest-qt modules in the unit gates, and `pip-audit` runs directly
+  against the committed runtime/dev lock files instead of a live resolver
+  result. The standard CI acceptance tests also reject blank lines immediately
+  after shell continuations so the core pytest coverage command cannot be split
+  into a partial command again (#7303).
 - **2026-06-10** - Closed the #7273 PR-scoped coverage bypass in standard CI.
   PRs that change source, test, or dependency targets now fall through to the
   coverage-producing core test lane instead of using the workflow-only
@@ -981,7 +992,8 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-06-10 | 1.0.304 | Jules PR AutoFix workflow-run trust-boundary hardening for #7312. The privileged `workflow_run` path now performs read-only failed-CI metadata analysis and posts manual dispatch instructions instead of checking out or executing PR-controlled code. The write-capable iterative fixer is restricted to explicit `workflow_dispatch` with an input branch. Added `scripts/check_workflow_run_trust_boundary.py`, wired it into standard CI, documented it in `scripts/README.md`, and added focused regression tests for unsafe workflow-run checkout/install/writeback patterns and the current Jules workflow contract. |
+| 2026-06-10 | 1.0.305 | Jules PR AutoFix workflow-run trust-boundary hardening for #7312. The privileged `workflow_run` path now performs read-only failed-CI metadata analysis and posts manual dispatch instructions instead of checking out or executing PR-controlled code. The write-capable iterative fixer is restricted to explicit `workflow_dispatch` with an input branch. Added `scripts/check_workflow_run_trust_boundary.py`, wired it into standard CI, documented it in `scripts/README.md`, and added focused regression tests for unsafe workflow-run checkout/install/writeback patterns and the current Jules workflow contract. |
+| 2026-06-10 | 1.0.304 | Lock-backed CI dependency install follow-up for #7278. Standard CI jobs now install committed `requirements-dev.lock` artifacts before editable package installs and use `--no-deps` for local editable extras so pip never treats extras-bearing lock entries as invalid constraints. The dev lock and `make sync-deps` target now cover the `gui-test` extra so unit gates retain real PyQt6/pytest-qt imports, and the static security CI acceptance test rejects `-c requirements-dev.lock` regressions while keeping the dev/runtime pip-audit lock checks. |
 | 2026-06-10 | 1.0.302 | Audit hygiene fixes for #7279 and #7282. `.github/workflows/docker-security-scan.yml` now blocks HIGH and CRITICAL Trivy container vulnerabilities in the table scan while retaining SARIF upload, and audited API/launcher production modules now use the canonical logging infrastructure instead of direct module-level `logging.getLogger` calls. Added security CI acceptance coverage for the Docker HIGH/CRITICAL gate and a repo-hygiene test for the remediated logger modules. |
 | 2026-06-10 | 1.0.301 | Audit regression fixes for #7269, #7270, and #7271. Model Explorer API path resolution now validates caller paths before filesystem reads and resolves only within approved model directories, closing the direct existing-path containment bypass. Motion-pipeline keypoint gap filling now guards both before/after neighbor keypoint indexes and pins mismatched-neighbor behavior in the main and pure-Python implementations. `SwingBallFlightPipeline` now emits `LaunchConditions` in the units consumed by `BallFlightSimulator`: launch and azimuth angles in radians, spin rate in RPM, with updated DbC validation and unit tests. |
 | 2026-06-10 | 1.0.300 | Completed the #7207 model explorer composition UX flow. Added `CompositionUxController` for library drag payloads, non-mutating drop/ghost previews, highlighted target/source links, validation summaries, committed drops, and a validation-aware export chooser that enables URDF/MJCF while explicitly marking SDF/OSIM unavailable until writers exist. `FrankensteinEditor` now exposes preview, commit, and export-choice hooks, with offscreen tests covering simple humanoid plus arm preview, commit, validation pass, and MJCF export. |
