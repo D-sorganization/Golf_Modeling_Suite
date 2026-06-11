@@ -218,9 +218,10 @@ def test_create_dashboard_window_class_returns_window_object(qapp) -> None:
     obj.deleteLater()
 
 
-def test_cross_engine_dashboard_window_new_raises() -> None:
-    with pytest.raises(NotImplementedError):
-        ced.CrossEngineDashboardWindow()
+def test_cross_engine_dashboard_window_factory_returns_window(qapp) -> None:
+    win = ced.CrossEngineDashboardWindow()
+    assert win is not None
+    win.deleteLater()
 
 
 def test_load_dashboard_mpl_bindings_disables_broken_subplot(monkeypatch) -> None:

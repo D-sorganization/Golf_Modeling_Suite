@@ -1,7 +1,3 @@
-# ARCHITECTURE_DEBT:
-# This module historically exceeds standard length metrics and accumulates excessive domain responsibility.
-# It requires domain-aware structural extraction to isolate its internal classes appropriately.
-
 """Cross-Engine Perturbation Comparison Dashboard.
 
 Addresses GH2020: provides a PyQt6 interactive dashboard (and optional CLI)
@@ -64,10 +60,6 @@ if TYPE_CHECKING:
 logger = get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
-# Engine registry helpers
-# ---------------------------------------------------------------------------
-
 _ENGINE_NAMES = ("mujoco", "drake", "pinocchio", "pendulum_stub")
 
 _DEFAULT_ENGINE_CONVENTION = {
@@ -122,10 +114,6 @@ def _format_engine_result_log_label(name: str) -> str:
     return f"{name} [velocity: {convention['velocity']}; units: {convention['units']}]"
 
 
-# ---------------------------------------------------------------------------
-# Plot-style integration (issue #4810)
-# ---------------------------------------------------------------------------
-#
 # Curated palette indices for trajectory overlays.  ``tab10`` is the
 # colour-blind-friendly default; engines listed here get a deterministic
 # entry, anything outside the table falls back to a hash-stable index so
@@ -400,11 +388,6 @@ def _build_engine(name: str) -> object:
     return _StubEngine(name)
 
 
-# ---------------------------------------------------------------------------
-# Headless / CLI runner
-# ---------------------------------------------------------------------------
-
-
 def _run_with_results(
     engine_names: list[str],
     config: CrossEngineSimConfig,
@@ -468,10 +451,6 @@ def _run_headless(
 
     return cv_summary
 
-
-# ---------------------------------------------------------------------------
-# GUI — main window
-# ---------------------------------------------------------------------------
 
 _CV_METRIC_KEYS = (
     "cv_total_energy_final",
@@ -949,29 +928,14 @@ class _DashboardChartUpdateMixin(_DashboardThemeMixin):
         self._canvas_tr.draw()
 
 
-class CrossEngineDashboardWindow:
-    """Main window for the Cross-Engine Perturbation Comparison Dashboard.
-
-    This class is only instantiated when PyQt6 is available.  All Qt imports
-    are deferred to this class's module-level import block (see below).
-
-    Parameters
-    ----------
-    parent : QWidget, optional
-
-    Design by Contract
-    ------------------
-    Pre:  PyQt6 must be importable
-    Post: window is shown and interactive after __init__ returns
-    """
-
-    def __new__(cls, *args: object, **kwargs: object) -> CrossEngineDashboardWindow:
-        # Defer actual class body to _CrossEngineDashboardWindowImpl which is
-        # created after verifying PyQt6 is available.
-        raise NotImplementedError(  # tracked: #7288
-            "Do not instantiate CrossEngineDashboardWindow directly. "
-            "Use create_window() instead."
-        )
+def CrossEngineDashboardWindow(
+    parent: Any | None = None,
+    *,
+    shape_per_engine: bool = True,
+) -> Any:
+    """Return the lazily constructed dashboard window instance."""
+    cls = _create_dashboard_window_class()
+    return cls(parent, shape_per_engine=shape_per_engine)
 
 
 def _create_dashboard_window_class() -> type:
@@ -1041,11 +1005,6 @@ def _create_dashboard_window_class() -> type:
                 root.addWidget(self._build_chart_panel(), stretch=1)
 
     return _Window
-
-
-# ---------------------------------------------------------------------------
-# CLI entry point
-# ---------------------------------------------------------------------------
 
 
 def get_dockable_ui() -> object:
