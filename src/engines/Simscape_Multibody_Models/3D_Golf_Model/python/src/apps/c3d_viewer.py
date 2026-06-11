@@ -486,9 +486,11 @@ class MainWidget(QtWidgets.QWidget):
         """Return the largest marker track length for progress reporting."""
         if self.model is None:
             return 0
+        model = self.model
+        markers = model.markers
         frame_counts = [
             int(getattr(marker.position, "shape", [len(marker.position)])[0])
-            for marker in self.model.markers.values()
+            for marker in markers.values()
             if getattr(marker, "position", None) is not None
         ]
         return max(frame_counts, default=0)
