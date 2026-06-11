@@ -42,10 +42,10 @@ def test_resolve_cost_config():
     assert c.regularizer_kind == "total_work"
 
     with pytest.raises(ValueError):
-        resolve_cost_config("invalid_mode")
+        resolve_cost_config("invalid_mode")  # type: ignore[arg-type]
 
     with pytest.raises(ValueError):
-        resolve_cost_config("position", regularizer_kind="invalid")
+        resolve_cost_config("position", regularizer_kind="invalid")  # type: ignore[arg-type]
 
 
 @pytest.mark.unit
