@@ -168,10 +168,10 @@ if not _has_pyqt6 and "PyQt6" not in sys.modules:
         def instance(cls):
             return MagicMock()
 
-    DummyWidget.Shape = MagicMock()
-    DummyWidget.ToolButtonPopupMode = MagicMock()
-    DummyWidget.setTabOrder = MagicMock()
-    DummyWidget.DockWidgetFeature = MagicMock()
+    DummyWidget.Shape = MagicMock()  # type: ignore[attr-defined]
+    DummyWidget.ToolButtonPopupMode = MagicMock()  # type: ignore[attr-defined]
+    DummyWidget.setTabOrder = MagicMock()  # type: ignore[attr-defined]
+    DummyWidget.DockWidgetFeature = MagicMock()  # type: ignore[attr-defined]
 
     qt_widgets = MagicMock()
     qt_widgets.QWidget = DummyWidget
@@ -782,7 +782,7 @@ def pytest_collection_modifyitems(
     ``_ud_unmarked_suite_count`` for the terminal summary; raises
     ``pytest.UsageError`` only when enforcement is enabled.
     """
-    unmarked = find_unmarked(items)
+    unmarked = find_unmarked(items)  # type: ignore[arg-type]
     config._ud_unmarked_suite_count = len(unmarked)  # type: ignore[attr-defined]
     config._ud_unmarked_suite_nodeids = [  # type: ignore[attr-defined]
         item.nodeid for item in unmarked

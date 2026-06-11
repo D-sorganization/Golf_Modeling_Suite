@@ -26,6 +26,7 @@ import json
 import pathlib
 import sys
 from collections.abc import Iterable
+from typing import TypeGuard
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
@@ -89,13 +90,15 @@ def _decorator_suite_markers(
     return markers
 
 
-def _is_test_function(node: ast.AST) -> bool:
+def _is_test_function(
+    node: ast.AST,
+) -> TypeGuard[ast.AsyncFunctionDef | ast.FunctionDef]:
     return isinstance(
         node, (ast.AsyncFunctionDef, ast.FunctionDef)
     ) and node.name.startswith("test")
 
 
-def _is_test_class(node: ast.AST) -> bool:
+def _is_test_class(node: ast.AST) -> TypeGuard[ast.ClassDef]:
     return isinstance(node, ast.ClassDef) and node.name.startswith("Test")
 
 
