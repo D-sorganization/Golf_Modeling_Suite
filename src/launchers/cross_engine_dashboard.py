@@ -1002,10 +1002,10 @@ def _create_dashboard_window_class() -> type:
 
     class _Window(
         base_cls,  # type: ignore[misc, valid-type]
+        _DashboardChartUpdateMixin,
+        _DashboardRunMixin,
         _DashboardConfigPanelMixin,
         _DashboardChartPanelMixin,
-        _DashboardRunMixin,
-        _DashboardChartUpdateMixin,
     ):
         """Cross-Engine Perturbation Comparison Dashboard main window."""
 
