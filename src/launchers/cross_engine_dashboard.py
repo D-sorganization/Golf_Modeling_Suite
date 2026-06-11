@@ -528,7 +528,11 @@ def _load_dashboard_mpl_bindings() -> Any:
         matplotlib.use("QtAgg")
         from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg  # noqa: PLC0415
         from matplotlib.figure import Figure  # noqa: PLC0415
+
+        Figure(figsize=(1, 1)).add_subplot(111)
     except ImportError:
+        return SimpleNamespace(has_mpl=False, FigureCanvasQTAgg=None, Figure=None)
+    except (TypeError, ValueError, RuntimeError):
         return SimpleNamespace(has_mpl=False, FigureCanvasQTAgg=None, Figure=None)
     return SimpleNamespace(
         has_mpl=True,

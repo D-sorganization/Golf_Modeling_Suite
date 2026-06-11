@@ -223,6 +223,23 @@ def test_cross_engine_dashboard_window_new_raises() -> None:
         ced.CrossEngineDashboardWindow()
 
 
+def test_load_dashboard_mpl_bindings_disables_broken_subplot(monkeypatch) -> None:
+    healthy_bindings = ced._load_dashboard_mpl_bindings()
+    figure_class = healthy_bindings.Figure
+    original_add_subplot = figure_class.add_subplot
+
+    def broken_add_subplot(self, *args, **kwargs):
+        raise TypeError("broken subplot")
+
+    monkeypatch.setattr(figure_class, "add_subplot", broken_add_subplot)
+    try:
+        bindings = ced._load_dashboard_mpl_bindings()
+    finally:
+        monkeypatch.setattr(figure_class, "add_subplot", original_add_subplot)
+
+    assert bindings.has_mpl is False
+
+
 def test_dashboard_window_on_run_with_no_engines(qapp) -> None:
     win = ced._build_qt_window()
     # Uncheck every engine and click Run — should refuse to start.
