@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.332                                            |
+| **Spec Version**        | 1.0.334                                            |
 | **Last Spec Update**    | 2026-06-11                                         |
 
 ## 2. Purpose & Mission
@@ -79,12 +79,25 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
   baseline-ratchet collection behavior from `tests/conftest.py`; contributor
   guidance lives in `docs/development/test-marker-conventions.md` with
   focused unit coverage for the static scanner and runtime helpers.
+- **2026-06-11** - Promoted Law-of-Demeter enforcement from advisory
+  Pinocchio-only lint to a blocking repo-wide production `src/` ratchet.
+  `quality-gate.yml` now runs `scripts/ci/check_lod.py src --baseline
+scripts/ci/lod_baseline.txt`; the checked-in baseline records existing
+  path/chain counts and the required `quality-gate` status fails on any new
+  non-allowlisted deep attribute chain.
 - **2026-06-11** - Tightened motion matching runtime contracts for #7304,
   #7305, #7306, and #7309. Internal request construction now rejects invalid
   cost weights and solver configuration before backend dispatch, metric helpers
   fail on mismatched frame/DOF shapes instead of truncating, solver result
   postconditions validate reference-aligned time grids plus torque/activation
   finiteness, and successful internal results must carry a matched payload.
+- **2026-06-11** - Replaced pickle-enabled motion-matching checkpoint loads
+  for #7276 with safe artifact loading. Motion checkpoint readers now route
+  through a shared helper that calls `torch.load(..., weights_only=True)`,
+  validates mapping-shaped artifacts, and keeps inverse, inverse-timestep,
+  compact surrogate, and per-step surrogate loaders on the same safe contract.
+  The changed-file architecture ratchet exposed pre-existing surrogate
+  train/optimize budget violations, now tracked for decomposition in #7294.
 - **2026-06-11** - Isolated optional dependency import mocks for #7307.
   Tests for OpenSim, MuJoCo video export, and Drake visualizer/analysis
   imports now install fake optional packages only inside scoped import
@@ -118,6 +131,14 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
   CI. Source and dependency PRs now fall through to the dependency-light unit
   lane instead of passing solely on touched test files, and targeted PR coverage
   invokes a changed-file coverage ratchet for production policy files.
+- **2026-06-10** - Added the #7275 local WebSocket origin and launcher-token
+  guard. Browser WebSocket clients now request a short-lived launcher
+  capability token before opening simulation/chat sockets, and the backend
+  validates allowed local origins plus token claims so local sockets are not
+  ambiently reachable from arbitrary browser contexts. The Tauri backend IPC
+  capability now ships concrete v2 permission definitions so Rust/Tauri checks
+  can resolve the four local backend commands, and the Tauri Linux dependency
+  install now retries apt lock collisions on the self-hosted runner pool.
 - **2026-06-10** - Hardened the optional cloud client cache contract for
   #7300. Empty or whitespace-only `~/.golf-suite/cloud_token` files are now
   treated as absent credentials, leaving `CloudClient.token` as `None` and
@@ -131,6 +152,23 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
   results for invalid operators, and `ModelLibrary.load_model(...,
 force_download=True)` enforces the HTTPS-only `source_url` policy before any
   download I/O.
+- **2026-06-10** - Hardened the Jules PR AutoFix `workflow_run` trust boundary.
+  Failed-CI `workflow_run` events now use read-only metadata resolution and a
+  PR comment that asks maintainers to run the privileged fixer through explicit
+  `workflow_dispatch`; only the manual dispatch path can check out PR code,
+  install dependencies, run autofix tools, commit, or push. Standard CI now
+  enforces that boundary with `scripts/check_workflow_run_trust_boundary.py`
+  and focused regression coverage.
+- **2026-06-10** - Narrowed PR-scoped source coverage in standard CI to the
+  changed `src/**/*.py` targets after the coverage-bypass fix. Source and
+  dependency PRs still produce coverage and enforce the 75% floor, while the
+  full per-package coverage enforcer runs only after the default full-coverage
+  lane so focused PRs do not fail against unrelated modules.
+- **2026-06-10** - Enforced the #7277 Docker build timeout while process
+  stdout remains open. `src/launchers/docker_manager.py` now reads build output
+  through a background queue while the build thread owns a wall-clock timeout
+  and terminates the process tree on expiry, including the regression case
+  where stdout never reaches EOF.
 - **2026-06-10** - Closed the #7283 simulation WebSocket dependency-boundary
   gap. The simulation stream now resolves its engine manager through a
   WebSocket-safe dependency accessor instead of reaching directly through
@@ -890,6 +928,11 @@ Beyond standard tools, CI enforces custom checks:
   paths, excludes receiver parameters (`self`/`cls`) from method counts, and
   requires owned, linked exceptions in
   `scripts/config/architecture_budget.json`.
+- **Law of Demeter Ratchet**: `scripts/ci/check_lod.py` scans production
+  `src/` Python files and blocks new deep application object chains beyond the
+  checked-in `scripts/ci/lod_baseline.txt` path/chain counts while preserving
+  documented library API allowances for Qt, numpy, pandas, matplotlib, scipy,
+  and engine namespace access.
 - **Agent Docs Consistency**: `scripts/check_agent_docs_consistency.py`
   validates literal repo-relative paths documented in agent guidance while
   treating glob/brace references such as `scripts/**` and
@@ -919,6 +962,7 @@ Beyond standard tools, CI enforces custom checks:
 | Workflow                       | Trigger                                | Purpose                                                                               | Blocking?          |
 | ------------------------------ | -------------------------------------- | ------------------------------------------------------------------------------------- | ------------------ |
 | `ci-standard.yml`              | Push/PR                                | Lint, type check, unit/integration tests, workflow inventory, blocking security scans | Yes                |
+| `quality-gate.yml`             | PR/manual dispatch                     | Blocking repo-wide Law-of-Demeter ratchet for production `src/` Python code           | Yes                |
 | `heavy-tests-opt-in.yml`       | Manual dispatch or `/heavy-test` label | Cross-engine and physics validation (long-running)                                    | No (opt-in)        |
 | `nightly-cross-validation.yml` | Daily 2:00 UTC                         | Full multi-engine validation suite against all model variations                       | No (informational) |
 | `tauri-build.yml`              | Tag release                            | Build desktop apps for Windows/macOS/Linux                                            | Yes (for releases) |
@@ -1058,14 +1102,18 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-06-11 | 1.0.332 | Suite-marker ratchet enforcement for #7272. CI Standard now runs `scripts/ci/check_suite_marker_ratchet.py` against `scripts/config/suite_marker_baseline.json`, failing net-new tests that lack a recognized suite marker while allowing legacy unmarked-test debt to shrink. The shared `tests.support.suite_markers` helpers now normalize nodeids, load the baseline, and support report-only, strict, and baseline-ratchet collection behavior from `tests/conftest.py`; contributor guidance lives in `docs/development/test-marker-conventions.md` with focused unit coverage for the static scanner and runtime helpers. |
+| 2026-06-11 | 1.0.334 | Suite-marker ratchet enforcement for #7272. CI Standard now runs `scripts/ci/check_suite_marker_ratchet.py` against `scripts/config/suite_marker_baseline.json`, failing net-new tests that lack a recognized suite marker while allowing legacy unmarked-test debt to shrink. The shared `tests.support.suite_markers` helpers now normalize nodeids, load the baseline, and support report-only, strict, and baseline-ratchet collection behavior from `tests/conftest.py`; contributor guidance lives in `docs/development/test-marker-conventions.md` with focused unit coverage for the static scanner and runtime helpers. |
+| 2026-06-11 | 1.0.333 | Law-of-Demeter enforcement for #7308. `scripts/ci/check_lod.py` now defaults to repo-wide production `src/` scanning, supports a checked-in no-growth baseline, and preserves documented library API allowances. `.github/workflows/quality-gate.yml` now runs the LOD scan as the blocking required `quality-gate` status with `scripts/ci/lod_baseline.txt` representing current grandfathered path/chain counts. |
+| 2026-06-11 | 1.0.332 | Safe motion checkpoint loading for #7276. Replaced pickle-enabled motion-matching checkpoint loads with safe artifact loading via `torch.load(..., weights_only=True)`. Validates mapping-shaped artifacts, keeping inverse, inverse-timestep, compact surrogate, and per-step surrogate loaders on the same safe contract. Exceeded surrogate train/optimize function budgets are tracked as exceptions in `architecture_budget.json`. |
 | 2026-06-11 | 1.0.331 | Resolve merge conflicts in SPEC.md for PR 7316 by merging origin/main, retaining all changelog entries, and bumping Spec Version. |
 | 2026-06-11 | 1.0.330 | Simulation WebSocket dependency-boundary conflict refresh for #7283. `simulation_stream` keeps resolving the engine manager through the WebSocket-safe dependency accessor after the #7304/#7305/#7306/#7309 runtime-contract `main` update, and missing app-state manager configuration still emits a structured `service_unavailable` frame before clean close. |
+| 2026-06-11 | 1.0.329 | Safe motion checkpoint loading conflict refresh for #7276. The safe checkpoint artifact helper remains wired through inverse, inverse-timestep, compact surrogate, and per-step surrogate loading after the #7317 training/optimization architecture split and #7304/#7305/#7306/#7309 runtime-contract update, preserving mapping validation and `weights_only=True` reads while keeping the new helperized training and optimization contexts. |
 | 2026-06-11 | 1.0.328 | Motion matching runtime contract hardening for #7304, #7305, #7306, and #7309. `CostWeights` and internal `MotionMatchingRequest` now reject invalid numeric configuration at construction, shared metric validation fails on frame/DOF shape mismatches instead of silently truncating, the solver result postcondition gate validates reference-aligned time grids plus finite torque/activation payloads, and internal successful `MotionMatchingResult` objects must include a matched trajectory, torque trajectory, or activation trajectory payload. |
 | 2026-06-11 | 1.0.328 | Cross-engine dashboard window factory follow-up for #7316. `CrossEngineDashboardWindow()` now constructs the deferred PyQt window instead of raising a direct-instantiation placeholder, preserving the extracted fallback-engine stub and `_build_qt_window()` launcher path while keeping `src/launchers/cross_engine_dashboard.py` below the 1200-line file-size gate. |
 | 2026-06-11 | 1.0.325 | Cross-engine dashboard architecture split for #7288. `src/launchers/cross_engine_dashboard.py` now keeps the public `CrossEngineDashboardWindow` compatibility facade thin, constructs the concrete PyQt window class through a deferred factory, and imports the fallback engine stub from `src/launchers/cross_engine_dashboard_stubs.py`, removing the dashboard architecture-budget exception while preserving the existing CLI and window-construction contracts. |
 | 2026-06-11 | 1.0.326 | Motion surrogate training architecture split for #7317. Compact surrogate training now uses `SurrogateTrainingOptions`, explicit training context construction, and loop-state helpers while preserving legacy keyword call compatibility. Per-step dynamics training separates data preparation, runtime setup, fitting, evaluation, and output writing. Per-step optimization now routes legacy positional options through `OptimizationOptions`, uses an optimization context, isolates tracking/regularizer loss helpers, and writes optimized torque outputs plus summaries through a dedicated artifact writer. |
 | 2026-06-11 | 1.0.323 | Cloud client cached-token hardening for #7300. `CloudClient._load_cached_token()` now ignores empty and whitespace-only cache files instead of treating `""` as an authenticated token, `CloudClient.is_logged_in` requires a truthy token, and focused tests pin both invalid-cache cases while preserving valid cached-token behavior. |
+| 2026-06-11 | 1.0.321 | Local WebSocket hardening, Tauri permission manifest repair, and Tauri build apt-lock hardening for #7275, plus coverage gate fix for #7273. API WebSocket auth now validates launcher capability tokens and allowed Origins, the React client propagates the launcher manifest token, the Tauri IPC capability defines concrete permissions, and `.github/workflows/tauri-build.yml` retries apt dependency installs. Standard CI now sends PRs that change source, tests, or dependency targets through the coverage-producing core test lane. |
 | 2026-06-11 | 1.0.320 | Optional dependency mock isolation for #7307. Added `scoped_import_with_optional_mocks()` to shared test support, converted the called-out OpenSim, MuJoCo, and Drake tests from module-scope `sys.modules` mutation/import patching to per-test scoped import fixtures, removed the MuJoCo subtree-wide fake dependency conftest, and added a repo-hygiene guard that fails on new module-scope optional dependency mocks for `opensim`, `mujoco`, `cv2`, `imageio`, and `pydrake`. |
 | 2026-06-11 | 1.0.318 | Data Explorer and model-library boundary contracts for #7297, #7298, and #7299. Import/list responses expose durable `dataset_id` values, Data Explorer filter requests reject unsupported operators at the request boundary, and forced model-library downloads validate HTTPS-only `source_url` values before any download I/O. |
 | 2026-06-11 | 1.0.312 | Blocking DRY duplication ratchet for #7315. Added `scripts/ci/check_dry_duplication_gate.py` with focused tests, explicit production-`src` include/exclude config, and an owned no-growth baseline for existing duplicated logic fingerprints; `ci-standard.yml` now runs the checker inside `repo-structure-gates` so duplicate growth feeds the required `quality-gate` aggregate while `Code-Metrics.yml` remains advisory/manual reporting. |
