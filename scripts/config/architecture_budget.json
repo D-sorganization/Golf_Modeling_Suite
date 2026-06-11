@@ -19,22 +19,6 @@
       "expires_on": "2026-09-30"
     },
     {
-      "path": "src/launchers/cross_engine_dashboard.py",
-      "symbol": "_create_dashboard_window_class",
-      "rule": "function-lines",
-      "owner": "@dieterolson @D-sorganization/core-maintainers",
-      "reason": "Issue #7288: pre-existing dashboard window factory exceeds the changed-file architecture budget; split UI construction, orchestration, and rendering after the #7282 logging hygiene fix lands.",
-      "expires_on": "2026-08-31"
-    },
-    {
-      "path": "src/launchers/cross_engine_dashboard.py",
-      "symbol": "_create_dashboard_window_class._Window._update_charts",
-      "rule": "function-lines",
-      "owner": "@dieterolson @D-sorganization/core-maintainers",
-      "reason": "Issue #7288: pre-existing chart update method exceeds the changed-file architecture budget; extract a chart renderer after the #7282 logging hygiene fix lands.",
-      "expires_on": "2026-08-31"
-    },
-    {
       "path": "src/shared/python/motion_matching/surrogate/compact/training.py",
       "symbol": "train_surrogate",
       "rule": "function-lines",
