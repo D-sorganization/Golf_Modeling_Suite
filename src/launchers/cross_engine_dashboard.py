@@ -883,7 +883,8 @@ def _create_dashboard_window_class() -> type:  # noqa: C901
             worker = ComparisonWorker(selected, config)
             worker.signals.finished.connect(self._on_comparison_finished)
             worker.signals.error.connect(self._on_comparison_error)
-            self._thread_pool.start(worker)
+            if self._thread_pool is not None:
+                self._thread_pool.start(worker)
 
         def _on_comparison_finished(
             self,
