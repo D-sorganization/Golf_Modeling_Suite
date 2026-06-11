@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.328                                            |
+| **Spec Version**        | 1.0.331                                            |
 | **Last Spec Update**    | 2026-06-11                                         |
 
 ## 2. Purpose & Mission
@@ -70,6 +70,12 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 
 ### Recent Spec Updates
 
+- **2026-06-11** - Tightened motion matching runtime contracts for #7304,
+  #7305, #7306, and #7309. Internal request construction now rejects invalid
+  cost weights and solver configuration before backend dispatch, metric helpers
+  fail on mismatched frame/DOF shapes instead of truncating, solver result
+  postconditions validate reference-aligned time grids plus torque/activation
+  finiteness, and successful internal results must carry a matched payload.
 - **2026-06-11** - Isolated optional dependency import mocks for #7307.
   Tests for OpenSim, MuJoCo video export, and Drake visualizer/analysis
   imports now install fake optional packages only inside scoped import
@@ -116,6 +122,11 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
   results for invalid operators, and `ModelLibrary.load_model(...,
 force_download=True)` enforces the HTTPS-only `source_url` policy before any
   download I/O.
+- **2026-06-10** - Closed the #7283 simulation WebSocket dependency-boundary
+  gap. The simulation stream now resolves its engine manager through a
+  WebSocket-safe dependency accessor instead of reaching directly through
+  `websocket.app.state`, and missing engine-manager state returns a structured
+  `service_unavailable` frame before the connection closes cleanly.
 - **2026-06-10** - Locked the #7278 standard CI dependency and audit
   contract to committed artifacts. Python jobs that install project runtime or
   dev dependencies now seed environments from `requirements.lock` or
@@ -1032,6 +1043,9 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-06-11 | 1.0.331 | Resolve merge conflicts in SPEC.md for PR 7316 by merging origin/main, retaining all changelog entries, and bumping Spec Version. |
+| 2026-06-11 | 1.0.330 | Simulation WebSocket dependency-boundary conflict refresh for #7283. `simulation_stream` keeps resolving the engine manager through the WebSocket-safe dependency accessor after the #7304/#7305/#7306/#7309 runtime-contract `main` update, and missing app-state manager configuration still emits a structured `service_unavailable` frame before clean close. |
+| 2026-06-11 | 1.0.328 | Motion matching runtime contract hardening for #7304, #7305, #7306, and #7309. `CostWeights` and internal `MotionMatchingRequest` now reject invalid numeric configuration at construction, shared metric validation fails on frame/DOF shape mismatches instead of silently truncating, the solver result postcondition gate validates reference-aligned time grids plus finite torque/activation payloads, and internal successful `MotionMatchingResult` objects must include a matched trajectory, torque trajectory, or activation trajectory payload. |
 | 2026-06-11 | 1.0.328 | Cross-engine dashboard window factory follow-up for #7316. `CrossEngineDashboardWindow()` now constructs the deferred PyQt window instead of raising a direct-instantiation placeholder, preserving the extracted fallback-engine stub and `_build_qt_window()` launcher path while keeping `src/launchers/cross_engine_dashboard.py` below the 1200-line file-size gate. |
 | 2026-06-11 | 1.0.325 | Cross-engine dashboard architecture split for #7288. `src/launchers/cross_engine_dashboard.py` now keeps the public `CrossEngineDashboardWindow` compatibility facade thin, constructs the concrete PyQt window class through a deferred factory, and imports the fallback engine stub from `src/launchers/cross_engine_dashboard_stubs.py`, removing the dashboard architecture-budget exception while preserving the existing CLI and window-construction contracts. |
 | 2026-06-11 | 1.0.326 | Motion surrogate training architecture split for #7317. Compact surrogate training now uses `SurrogateTrainingOptions`, explicit training context construction, and loop-state helpers while preserving legacy keyword call compatibility. Per-step dynamics training separates data preparation, runtime setup, fitting, evaluation, and output writing. Per-step optimization now routes legacy positional options through `OptimizationOptions`, uses an optimization context, isolates tracking/regularizer loss helpers, and writes optimized torque outputs plus summaries through a dedicated artifact writer. |
