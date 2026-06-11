@@ -131,9 +131,8 @@ def test_compute_phase_stratified_metrics():
 
     assert compute_phase_stratified_metrics(pred, target, time) == {}
 
-    time = np.array([1.0, 1.0])
-    assert compute_phase_stratified_metrics(pred, target, time) == {}
-    assert compute_phase_stratified_metrics(pred, target, time) == {}
+    time_nonempty = np.array([1.0, 1.0])
+    assert compute_phase_stratified_metrics(pred, target, time_nonempty) == {}
 
 
 @pytest.mark.unit
