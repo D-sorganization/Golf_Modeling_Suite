@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.370                                            |
+| **Spec Version**        | 1.0.371                                            |
 | **Last Spec Update**    | 2026-06-13                                         |
 
 ## 2. Purpose & Mission
@@ -70,6 +70,9 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 
 ### Recent Spec Updates
 
+- **2026-06-13** - Tightened signal-toolkit limit preconditions so saturation
+  requires `lower < upper` and rate limiting requires `max_rate > 0`, matching
+  the optional-stack contract tests.
 - **2026-06-13** - Scoped PR core-test dependency-light execution to affected
   unit areas when source files change, preventing self-hosted runner OOMs from
   full-repository core test attempts while leaving normal coverage reporting in
@@ -1347,6 +1350,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-06-13 | 1.0.371 | Tightened signal-toolkit limit preconditions so saturation requires `lower < upper` and rate limiting requires `max_rate > 0`, matching the optional-stack contract tests. |
 | 2026-06-13 | 1.0.370 | Scoped PR core-test dependency-light execution to affected unit areas when source files change, preventing self-hosted runner OOMs from full-repository core test attempts while leaving normal coverage reporting in place for full-coverage runs. |
 | 2026-06-13 | 1.0.369 | Restored Sidekick JSON I/O compatibility in optional-stack tests. Default records-oriented JSON reads/writes now use stdlib JSON to avoid pandas JSON C-extension failures in the optional-stack environment, while non-default JSON options continue through pandas. |
 | 2026-06-13 | 1.0.368 | Aligned CI numpy/scipy repair pins with the lockfile runtime, added fast `scipy.signal` import checks after the reinstall step, kept core tests serial to avoid native-stack xdist worker termination, and recorded temporary shared-chat architecture-budget exceptions for `ChatDockWidget` legacy decomposition debt under issue #7362. |
