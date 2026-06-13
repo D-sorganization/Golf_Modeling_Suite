@@ -219,8 +219,8 @@ class TestDragModel:
                 assert np.sign(drag[i]) == -np.sign(typical_velocity[i])
 
     def test_drag_proportional_to_speed_squared(self) -> None:
-        """Test drag magnitude scales with v^2."""
-        model = DragModel()
+        """Test drag magnitude scales with v^2 when Cd is held constant."""
+        model = DragModel(reynolds_correction=False)
         v1 = np.array([10.0, 0.0, 0.0])
         v2 = np.array([20.0, 0.0, 0.0])  # 2x velocity
 
