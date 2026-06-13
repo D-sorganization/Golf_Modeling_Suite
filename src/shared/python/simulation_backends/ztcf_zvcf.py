@@ -293,6 +293,11 @@ def ztcf_acceleration(
     """
     q_arr = _as_state_vector("q", q)
     v_arr = _as_state_vector("v", v)
+    require(
+        q_arr.shape == v_arr.shape,
+        f"q and v must share shape; got q={q_arr.shape}, v={v_arr.shape}",
+        value=(q_arr.shape, v_arr.shape),
+    )
     bias = np.asarray(provider.bias_forces(q_arr, v_arr), dtype=float)
     require(
         bias.shape == v_arr.shape,
@@ -338,6 +343,11 @@ def zvcf_acceleration(
     """
     q_arr = _as_state_vector("q", q)
     tau_arr = _as_state_vector("tau", tau)
+    require(
+        q_arr.shape == tau_arr.shape,
+        f"q and tau must share shape; got q={q_arr.shape}, tau={tau_arr.shape}",
+        value=(q_arr.shape, tau_arr.shape),
+    )
     bias_zero_v = np.asarray(
         provider.bias_forces(q_arr, np.zeros_like(tau_arr)), dtype=float
     )
