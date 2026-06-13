@@ -342,6 +342,25 @@ jobs:
           set -o pipefail
           : > /tmp/unit-test-results.txt
           rc=0
+          run_with_heartbeat() {
+            label="$1"
+            shift
+            "$@" &
+            cmd_pid=$!
+            (
+              while kill -0 "$cmd_pid" 2>/dev/null; do
+                sleep 60
+                echo "::notice::$label still running at $(date -u +%H:%M:%SZ)"
+              done
+            ) &
+            heartbeat_pid=$!
+            wait "$cmd_pid"
+            status=$?
+            kill "$heartbeat_pid" 2>/dev/null || true
+            wait "$heartbeat_pid" 2>/dev/null || true
+            return "$status"
+          }
+
           mapfile -t unit_targets < <(
             find tests/unit -mindepth 1 -maxdepth 1 \
               \( -type d -o -type f -name "test_*.py" \) \
@@ -350,13 +369,16 @@ jobs:
           )
           for target in "${unit_targets[@]}"; do
             echo "## Optional-stack unit target: $target" | tee -a /tmp/unit-test-results.txt
-            xvfb-run --auto-servernum pytest "$target" \
-              -p no:xvfb \
-              --timeout=60 \
-              --timeout-method=thread \
-              -v --tb=short \
-              -m "not slow and not benchmark and not requires_gl and not requires_network and not requires_gpu" \
-              2>&1 | tee -a /tmp/unit-test-results.txt
+            run_with_heartbeat "optional-stack unit target $target" bash -o pipefail -c '
+              xvfb-run --auto-servernum pytest "$1" \
+                -p no:xvfb \
+                --timeout=60 \
+                --timeout-method=thread \
+                -v --tb=short \
+                --durations=20 \
+                -m "not slow and not benchmark and not requires_gl and not requires_network and not requires_gpu" \
+                2>&1 | tee -a /tmp/unit-test-results.txt
+            ' bash "$target"
             target_rc=$?
             if [[ "$target_rc" -eq 5 ]]; then
               echo "::warning::No runnable tests collected for $target; treating as skipped optional coverage."
