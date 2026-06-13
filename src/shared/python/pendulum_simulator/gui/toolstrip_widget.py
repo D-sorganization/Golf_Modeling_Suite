@@ -651,6 +651,12 @@ class ToolStrip(QWidget):
         )
         self.chk_3d.toggled.connect(self.mode_3d_toggled.emit)
         extra_col.addWidget(self.chk_3d)
+        self._add_3d_view_sliders(extra_col)
+        extra_col.addStretch()
+        layout.addLayout(extra_col)
+
+    def _add_3d_view_sliders(self, extra_col: QVBoxLayout) -> None:
+        """Add compact 3D azimuth and tilt controls."""
         azimuth_row = QHBoxLayout()
         azimuth_row.setContentsMargins(0, 0, 0, 0)
         azimuth_row.setSpacing(2)
@@ -697,8 +703,6 @@ class ToolStrip(QWidget):
         self._lbl_tilt.setStyleSheet("color:#606080;font-size:10px;min-width:30px;")
         tilt_row.addWidget(self._lbl_tilt)
         extra_col.addLayout(tilt_row)
-        extra_col.addStretch()
-        layout.addLayout(extra_col)
 
     def _overlay_build_frame_rows(self, overlay_layout: QVBoxLayout) -> None:  # type: ignore[no-redef]
         """Build rows A-D: force/mobility/force-ellipsoid checkboxes and segment row."""
