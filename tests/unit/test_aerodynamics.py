@@ -230,6 +230,24 @@ class TestDragModel:
         # Drag should be ~4x for 2x velocity
         assert drag2 / drag1 == pytest.approx(4.0, rel=0.1)
 
+    def test_drag_scales_with_speed_squared_and_reynolds_cd(self) -> None:
+        """Test Reynolds-corrected drag scales by both v^2 and effective Cd."""
+        air_density = 1.225
+        model = DragModel()
+        v1 = np.array([10.0, 0.0, 0.0])
+        v2 = np.array([20.0, 0.0, 0.0])
+
+        cd1 = model.get_effective_coefficient(v1, air_density=air_density)
+        cd2 = model.get_effective_coefficient(v2, air_density=air_density)
+        drag1 = np.linalg.norm(model.calculate(v1, air_density=air_density))
+        drag2 = np.linalg.norm(model.calculate(v2, air_density=air_density))
+
+        # Around this speed range the dimpled-sphere drag crisis lowers Cd,
+        # so the observed ratio is intentionally less than pure v^2 scaling.
+        assert cd2 < cd1
+        expected_ratio = (cd2 / cd1) * (20.0 / 10.0) ** 2
+        assert drag2 / drag1 == pytest.approx(expected_ratio, rel=1e-12)
+
     def test_zero_velocity_zero_drag(self) -> None:
         """Test zero velocity produces zero drag."""
         model = DragModel()
