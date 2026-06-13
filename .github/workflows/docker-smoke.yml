@@ -107,9 +107,11 @@ jobs:
           IFS=',' read -ra FEATURES <<< "$MUST_HAVE"
           for feature in "${FEATURES[@]}"; do
             echo "Checking that '$feature' is AVAILABLE in profile '$PROFILE'..."
-            STATUS=$(docker run --rm upstream-drift-smoke:${PROFILE} \
-              python -m src.shared.python.feature_registry --check "${feature}" --json \
-              2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('status','UNKNOWN'))" 2>/dev/null || echo "PROBE_ERROR")
+            if STATUS=$(python3 scripts/ci/docker_feature_probe.py "upstream-drift-smoke:${PROFILE}" "${feature}"); then
+              :
+            else
+              STATUS="PROBE_ERROR"
+            fi
 
             if [ "$STATUS" = "AVAILABLE" ]; then
               echo "  [OK] $feature -> $STATUS"
@@ -135,9 +137,11 @@ jobs:
           IFS=',' read -ra FEATURES <<< "$MUST_NOT_HAVE"
           for feature in "${FEATURES[@]}"; do
             echo "Checking that '$feature' is NOT available in profile '$PROFILE'..."
-            STATUS=$(docker run --rm upstream-drift-smoke:${PROFILE} \
-              python -m src.shared.python.feature_registry --check "${feature}" --json \
-              2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('status','UNKNOWN'))" 2>/dev/null || echo "PROBE_ERROR")
+            if STATUS=$(python3 scripts/ci/docker_feature_probe.py "upstream-drift-smoke:${PROFILE}" "${feature}"); then
+              :
+            else
+              STATUS="PROBE_ERROR"
+            fi
 
             if [ "$STATUS" != "AVAILABLE" ]; then
               echo "  [OK] $feature -> $STATUS (not leaked)"
