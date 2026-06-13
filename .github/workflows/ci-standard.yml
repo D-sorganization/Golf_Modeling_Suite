@@ -843,7 +843,8 @@ jobs:
           # Prevent environment pollution conflict between pytest-recording and pytest-vcr
           "$python" -m pip uninstall -y pytest-vcr pytest-recording || true
           python -m ensurepip --upgrade || true
-          "$python" -m pip install --force-reinstall --no-cache-dir "numpy==2.2.6" "scipy==1.14.1"
+          "$python" -m pip install --force-reinstall --no-cache-dir "numpy==2.2.6" "scipy==1.15.3"
+          "$python" -c "import numpy, scipy; from scipy import signal; print(f'numpy={numpy.__version__} scipy={scipy.__version__} signal=ok')"
       - name: Run Green-Suite Unit Gate
         # No `|| true` / `continue-on-error`: any non-skip unit failure must
         # red this job and, via the `quality-gate` aggregate below, block merge.
@@ -1175,7 +1176,8 @@ jobs:
           # Prevent environment pollution conflict between pytest-recording and pytest-vcr
           "$python" -m pip uninstall -y pytest-vcr pytest-recording || true
           python -m ensurepip --upgrade || true
-          "$python" -m pip install --force-reinstall --no-cache-dir "numpy==2.2.6" "scipy==1.14.1"
+          "$python" -m pip install --force-reinstall --no-cache-dir "numpy==2.2.6" "scipy==1.15.3"
+          "$python" -c "import numpy, scipy; from scipy import signal; print(f'numpy={numpy.__version__} scipy={scipy.__version__} signal=ok')"
 
       - name: Document Native Engine Coverage In Core Lane
         if: steps.core-test-changes.outputs.skip != 'true'
@@ -1754,7 +1756,8 @@ jobs:
           # Prevent environment pollution conflict between pytest-recording and pytest-vcr
           "$python" -m pip uninstall -y pytest-vcr pytest-recording || true
           python -m ensurepip --upgrade || true
-          "$python" -m pip install --force-reinstall --no-cache-dir "numpy==2.2.6" "scipy==1.14.1"
+          "$python" -m pip install --force-reinstall --no-cache-dir "numpy==2.2.6" "scipy==1.15.3"
+          "$python" -c "import numpy, scipy; from scipy import signal; print(f'numpy={numpy.__version__} scipy={scipy.__version__} signal=ok')"
       - name: Run Shared Tools Consumer Contracts
         env:
           QT_QPA_PLATFORM: offscreen

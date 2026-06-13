@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.366                                            |
+| **Spec Version**        | 1.0.367                                            |
 | **Last Spec Update**    | 2026-06-13                                         |
 
 ## 2. Purpose & Mission
@@ -70,6 +70,12 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 
 ### Recent Spec Updates
 
+- **2026-06-13** - Restored shared-python optional-stack compatibility
+  contracts: package-root config and provenance exports remain importable
+  under the test harness fallback, AI adapters preserve empty-message and
+  legacy token/error contracts, validation and signal-toolkit helpers enforce
+  documented preconditions, and partial Rust wheels no longer make FSP
+  primitive tests fail when the FSP API is absent.
 - **2026-06-13** - Restored optional-stack robotics compatibility contracts:
   QP, whole-body-control, and motion-planning result objects again expose the
   canonical `solver_status` aliases expected by optional robotics callers, WBC
@@ -1329,6 +1335,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-06-13 | 1.0.367 | Restored shared-python optional-stack compatibility contracts. Package-root `config` and `data_io` exports remain importable under the fallback test harness, `add_provenance_header` supports both file and string helper forms, AI adapters preserve empty-current-message, token-usage, and connection-error behavior, validation/signal-toolkit helpers enforce their documented preconditions, and FSP primitive tests skip partial Rust wheels that do not expose the FSP API. |
 | 2026-06-13 | 1.0.366 | Restored optional-stack robotics compatibility contracts. `QPSolution`, `WBCSolution`, and `PlannerResult` again expose canonical `solver_status` aliases, `WBCSolution.final_cost` remains a legacy alias for `cost`, and the default IMU gravity vector preserves the historical 9.81 m/s^2 sensor contract while keeping the broader shared physics constants unchanged. |
 | 2026-06-12 | 1.0.365 | Consolidated parity CI follow-up after #7496. Moved BallFlight validation/color helpers into a non-component module to satisfy React Fast Refresh linting, added a fail-closed launch-mode fallback for web launcher contracts, deferred diagnostics launcher imports to request time to preserve API layer direction, extracted recording JSON artifact writing below the changed-function architecture budget, shared export-format validation across request models, and marked newly introduced parity tests with explicit suite markers so the ratchet remains blocking without expanding the baseline. |
 | 2026-06-12 | 1.0.360 | Web settings parity for #7457. Added `GET/PUT /settings` (`src/api/routes/settings.py`) persisting a validated `WebSettings` document (appearance/notifications/simulation defaults) atomically to `~/.upstreamdrift/web_settings.json`, a web `/settings` route (`ui/src/pages/Settings.tsx`) with theme selection via the shared `/themes` router, root-CSS-var font scaling, notification preferences consumed by the toast provider, and once-per-session simulation-default hydration that never clobbers in-session edits (#7424 guard). Feature-parity registry: `settings.preferences` → parity; desktop-only settings tabs recorded as a pending-decision exemption (#7460). |

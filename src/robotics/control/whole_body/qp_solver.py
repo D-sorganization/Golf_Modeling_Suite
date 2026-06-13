@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -215,6 +215,8 @@ class ScipyQPSolver(QPSolver):
 
         from scipy.optimize import minimize
 
+        minimize_qp = cast(Any, minimize)
+
         start_time = time.perf_counter()
 
         n = problem.n_vars
@@ -232,7 +234,7 @@ class ScipyQPSolver(QPSolver):
         constraints = self._build_constraints(problem)
 
         try:
-            result = minimize(
+            result = minimize_qp(
                 objective,
                 x0,
                 method=self._method,
