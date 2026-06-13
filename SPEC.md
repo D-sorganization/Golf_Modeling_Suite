@@ -2,7 +2,7 @@
 
 <!--
   TEMPLATE VERSION: 1.0.0
-  LAST UPDATED: 2026-06-13
+  LAST UPDATED: 2026-06-14
 
   This is the canonical specification template for all repositories in the
   D-sorganization fleet. Every repo MUST have a SPEC.md at its root.
@@ -1656,4 +1656,5 @@ Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linal
 - `extract_dynamics_dataset` also requires torch now so we require torch to test it in `test_surrogate_perstep_relocation.py`.
 
 ### 2024-06-13
-* **Performance:** Optimized `grf_visualization.py` by extracting DataFrame columns to NumPy arrays (`.values`) before plotting loops, avoiding expensive and repeated `.iloc` series creation.
+
+- **Performance:** Optimized `grf_visualization.py` by extracting DataFrame columns to NumPy arrays (`.values`) before plotting loops, avoiding expensive and repeated `.iloc` series creation.

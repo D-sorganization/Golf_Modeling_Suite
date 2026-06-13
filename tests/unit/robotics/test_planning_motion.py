@@ -144,7 +144,7 @@ class TestPlannerResult:
             num_iterations=100,
             planning_time=0.5,
         )
-        assert result.status == PlannerStatus.SUCCESS
+        assert result.success
         assert len(result.path) == 2
 
     def test_failure_result(self) -> None:
@@ -153,7 +153,7 @@ class TestPlannerResult:
             status=PlannerStatus.FAILURE,
             num_iterations=1000,
         )
-        assert result.status != PlannerStatus.SUCCESS
+        assert not result.success
         assert len(result.path) == 0
 
     def test_success_requires_path(self) -> None:
@@ -214,7 +214,7 @@ class TestRRTPlanner:
 
         result = planner.plan(q_start, q_goal)
 
-        assert result.status == PlannerStatus.SUCCESS
+        assert result.success
         assert len(result.path) >= 2
         assert np.allclose(result.path[0], q_start)
         assert (
@@ -264,12 +264,9 @@ class TestRRTPlanner:
         result = planner.plan(np.array([0.0, 0.0]), np.array([2.0, 2.0]))
 
         # Should find path around obstacle
-        assert (
-            result.status == PlannerStatus.SUCCESS
-            or result.status == PlannerStatus.FAILURE
-        )
+        assert result.success or result.status == PlannerStatus.FAILURE
         # Path should avoid obstacle if found
-        if result.status == PlannerStatus.SUCCESS:
+        if result.success:
             for waypoint in result.path:
                 assert np.linalg.norm(waypoint - np.array([1.0, 1.0])) >= 0.25
 
@@ -368,7 +365,7 @@ class TestRRTStarPlanner:
 
         result = planner.plan(q_start, q_goal)
 
-        assert result.status == PlannerStatus.SUCCESS
+        assert result.success
         assert len(result.path) >= 2
         assert np.allclose(result.path[0], q_start)
 
@@ -399,7 +396,7 @@ class TestRRTStarPlanner:
 
         result = planner.plan(np.array([0.0, 0.0]), np.array([2.0, 2.0]))
 
-        if result.status == PlannerStatus.SUCCESS:
+        if result.success:
             # Path length should be reasonable (not much longer than straight line)
             straight_line_dist = np.sqrt(8)  # sqrt(2^2 + 2^2)
             assert result.path_length < straight_line_dist * 2
@@ -421,14 +418,14 @@ class TestRRTStarPlanner:
 
         # Just check that planning succeeds and produces reasonable result
         assert result.status in [PlannerStatus.SUCCESS, PlannerStatus.FAILURE]
-        if result.status == PlannerStatus.SUCCESS:
+        if result.success:
             assert result.path_length > 0
 
     def test_get_best_cost(self, planner: RRTStarPlanner) -> None:
         """Test getting best path cost."""
         result = planner.plan(np.array([0.0, 0.0]), np.array([1.0, 1.0]))
 
-        if result.status == PlannerStatus.SUCCESS:
+        if result.success:
             best_cost = planner.get_best_cost()
             assert best_cost > 0
             assert best_cost < float("inf")
@@ -499,10 +496,7 @@ class TestPlannerIntegration:
 
         # Both should find a path in this simple case
         # (though not guaranteed with limited iterations)
-        if (
-            rrt_result.status == PlannerStatus.SUCCESS
-            and rrt_star_result.status == PlannerStatus.SUCCESS
-        ):
+        if rrt_result.success and rrt_star_result.success:
             # RRT* should generally find equal or better paths
             # (not strictly guaranteed in all cases)
             assert rrt_star_result.path_length <= rrt_result.path_length * 1.5
@@ -557,5 +551,5 @@ class TestPlannerIntegration:
         result = planner.plan(q_start, q_goal)
 
         # Should succeed in open space
-        assert result.status == PlannerStatus.SUCCESS
+        assert result.success
         assert result.path[0].shape == (6,)
