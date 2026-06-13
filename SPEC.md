@@ -82,6 +82,9 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 - **2026-06-12** - Refreshed the pinned `python:3.12-slim` Docker base digest
   and configured the blocking Trivy table scan to ignore unfixed OS findings,
   keeping the gate focused on actionable HIGH/CRITICAL vulnerabilities.
+- **2026-06-12** - Kept the Rust Python-binding verification lane on the
+  locked Python dependency contract by installing `requirements-dev.lock`
+  before the editable `.[dev]` package install and using `--no-deps`.
 - **2026-06-12** - Moved shared plot-series label generation into a Qt-free
   `src.shared.python.plot_labels` helper so headless analysis can reuse plotting
   label contracts without importing the Matplotlib/PyQt plotting package.
@@ -412,8 +415,8 @@ force_download=True)` enforces the HTTPS-only `source_url` policy before any
   `--no-cov` shortcut, and per-package coverage enforcement runs whenever that
   lane produces `coverage.xml`.
 - **2026-06-10** - Closed the #7279/#7282 audit hygiene wave. The Docker
-  security scan still uploads HIGH/CRITICAL SARIF findings, but the table scan
-  is now the blocking HIGH/CRITICAL gate without `ignore-unfixed`. The audited
+  security scan still uploads HIGH/CRITICAL SARIF findings, while the table scan
+  is the blocking gate for fixable HIGH/CRITICAL findings. The audited
   API and launcher production modules now route module loggers through
   `logging_pkg.logging_config.get_logger(__name__)`, with a repo-hygiene test
   preventing the remediated files from returning to direct `logging.getLogger`.
