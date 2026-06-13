@@ -57,6 +57,7 @@ jobs:
     timeout-minutes: 120
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         include:
           # slim: api + pendulum + core MuJoCo; Pinocchio and Drake must be ABSENT

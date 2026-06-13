@@ -103,3 +103,4 @@ def test_docker_workflows_use_runner_local_buildkit_cache() -> None:
         assert "cache-to: type=local" in workflow
         assert "Prepare local BuildKit cache" in workflow
         assert "Promote local BuildKit cache" in workflow
+        assert "max-parallel: 1" in workflow
