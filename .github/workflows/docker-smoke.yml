@@ -85,6 +85,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5
 
+      - name: Prepare local BuildKit cache (profile=${{ matrix.profile }})
+        run: |
+          CACHE_BASE="${{ runner.tool_cache }}/buildx-cache/upstream-drift/smoke-${{ matrix.profile }}"
+          rm -rf "${CACHE_BASE}-next"
+          mkdir -p "${CACHE_BASE}"
+
       - name: Build modular image (profile=${{ matrix.profile }})
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf
         with:
@@ -94,8 +100,17 @@ jobs:
             PROFILE=${{ matrix.profile }}
           load: true
           tags: upstream-drift-smoke:${{ matrix.profile }}
-          cache-from: type=gha,scope=smoke-${{ matrix.profile }}
-          cache-to: type=gha,scope=smoke-${{ matrix.profile }},mode=max
+          cache-from: type=local,src=${{ runner.tool_cache }}/buildx-cache/upstream-drift/smoke-${{ matrix.profile }}
+          cache-to: type=local,dest=${{ runner.tool_cache }}/buildx-cache/upstream-drift/smoke-${{ matrix.profile }}-next,mode=max
+
+      - name: Promote local BuildKit cache (profile=${{ matrix.profile }})
+        if: always()
+        run: |
+          CACHE_BASE="${{ runner.tool_cache }}/buildx-cache/upstream-drift/smoke-${{ matrix.profile }}"
+          if [ -d "${CACHE_BASE}-next" ]; then
+            rm -rf "${CACHE_BASE}"
+            mv "${CACHE_BASE}-next" "${CACHE_BASE}"
+          fi
 
       - name: Positive capability checks (profile=${{ matrix.profile }})
         # Each feature listed in must_have must report AVAILABLE inside the image.

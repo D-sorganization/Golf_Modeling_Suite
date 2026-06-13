@@ -86,3 +86,20 @@ def test_docker_smoke_workflow_uses_diagnostic_probe_helper() -> None:
     assert workflow.count("scripts/ci/docker_feature_probe.py") == 2
     assert "src.shared.python.feature_registry --check" not in workflow
     assert "2>/dev/null" not in workflow
+
+
+def test_docker_workflows_use_runner_local_buildkit_cache() -> None:
+    workflow_paths = [
+        REPO_ROOT / ".github" / "workflows" / "docker-smoke.yml",
+        REPO_ROOT / ".github" / "workflows" / "docker-size-gates.yml",
+    ]
+
+    for workflow_path in workflow_paths:
+        workflow = workflow_path.read_text(encoding="utf-8")
+
+        assert "type=gha" not in workflow
+        assert "buildx-cache/upstream-drift" in workflow
+        assert "cache-from: type=local" in workflow
+        assert "cache-to: type=local" in workflow
+        assert "Prepare local BuildKit cache" in workflow
+        assert "Promote local BuildKit cache" in workflow
