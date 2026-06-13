@@ -261,7 +261,7 @@ export function HelpPanel({ initialTopicId, isOpen: controlledOpen, onClose }: H
             {selectedContent ? (
               <div>
                 {/* Topic title */}
-                <h3 className="text-xl font-bold text-gray-100 mb-1">
+                <h3 className="heading-sub text-gray-100 mb-1">
                   {selectedContent.title}
                 </h3>
                 <p className="text-sm text-gray-400 mb-4">{selectedContent.short}</p>
@@ -348,7 +348,7 @@ export function HelpPanel({ initialTopicId, isOpen: controlledOpen, onClose }: H
             ) : (
               // No topic selected - show overview
               <div>
-                <h3 className="text-xl font-bold text-gray-100 mb-2">
+                <h3 className="heading-sub text-gray-100 mb-2">
                   UpstreamDrift Help
                 </h3>
                 <p className="text-sm text-gray-400 mb-6">
