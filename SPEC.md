@@ -38,8 +38,8 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.365                                            |
-| **Last Spec Update**    | 2026-06-12                                         |
+| **Spec Version**        | 1.0.366                                            |
+| **Last Spec Update**    | 2026-06-13                                         |
 
 ## 2. Purpose & Mission
 
@@ -70,6 +70,11 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 
 ### Recent Spec Updates
 
+- **2026-06-13** - Restored optional-stack robotics compatibility contracts:
+  QP, whole-body-control, and motion-planning result objects again expose the
+  canonical `solver_status` aliases expected by optional robotics callers, WBC
+  results expose `final_cost` as the legacy alias for `cost`, and default IMU
+  gravity remains on the historical 9.81 m/s^2 sensor contract.
 - **2026-06-12** - Documented the consolidated parity CI follow-up: frontend
   Fast Refresh helpers now live outside component modules, diagnostics imports
   respect API/launcher layer boundaries, recording export artifact writing is
@@ -1324,6 +1329,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-06-13 | 1.0.366 | Restored optional-stack robotics compatibility contracts. `QPSolution`, `WBCSolution`, and `PlannerResult` again expose canonical `solver_status` aliases, `WBCSolution.final_cost` remains a legacy alias for `cost`, and the default IMU gravity vector preserves the historical 9.81 m/s^2 sensor contract while keeping the broader shared physics constants unchanged. |
 | 2026-06-12 | 1.0.365 | Consolidated parity CI follow-up after #7496. Moved BallFlight validation/color helpers into a non-component module to satisfy React Fast Refresh linting, added a fail-closed launch-mode fallback for web launcher contracts, deferred diagnostics launcher imports to request time to preserve API layer direction, extracted recording JSON artifact writing below the changed-function architecture budget, shared export-format validation across request models, and marked newly introduced parity tests with explicit suite markers so the ratchet remains blocking without expanding the baseline. |
 | 2026-06-12 | 1.0.360 | Web settings parity for #7457. Added `GET/PUT /settings` (`src/api/routes/settings.py`) persisting a validated `WebSettings` document (appearance/notifications/simulation defaults) atomically to `~/.upstreamdrift/web_settings.json`, a web `/settings` route (`ui/src/pages/Settings.tsx`) with theme selection via the shared `/themes` router, root-CSS-var font scaling, notification preferences consumed by the toast provider, and once-per-session simulation-default hydration that never clobbers in-session edits (#7424 guard). Feature-parity registry: `settings.preferences` → parity; desktop-only settings tabs recorded as a pending-decision exemption (#7460). |
 | 2026-06-12 | 1.0.359 | Fixed vendored Sidekick science accuracy for issues #7411, #7412, and #7413: Buck vapor pressure restores the correct constant roles, `signal_toolkit.calculus.Integrator` includes the upper-bound sample in definite integrals, and SCFM/ACFM/Nm3 plus ppmv/mg/Nm3 conversions use one DIN 1343 normal state. Added reference-value and property tests for vapor pressure, calculus integration, and conversion consistency. |
