@@ -38,8 +38,8 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.365                                            |
-| **Last Spec Update**    | 2026-06-12                                         |
+| **Spec Version**        | 1.0.366                                            |
+| **Last Spec Update**    | 2026-06-13                                         |
 
 ## 2. Purpose & Mission
 
@@ -77,7 +77,9 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
   deployment, and robotics unit directories so the optional-stack lane does not
   couple unrelated shared-python baseline failures to focused performance PRs;
   CI contract tests assert the current PyQt fallback and Rust wheel install
-  order.
+  order. CI Standard now starts Xvfb with an atomic dynamic display reservation
+  and cleanup step so parallel self-hosted PR jobs do not collide on display
+  `:99`.
 - **2026-06-12** - Documented the consolidated parity CI follow-up: frontend
   Fast Refresh helpers now live outside component modules, diagnostics imports
   respect API/launcher layer boundaries, recording export artifact writing is

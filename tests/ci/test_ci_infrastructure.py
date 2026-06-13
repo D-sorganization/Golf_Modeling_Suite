@@ -217,6 +217,31 @@ class TestCIEnvironmentCompatibility:
         # This should not raise in CI with xvfb
         os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
+    def test_ci_standard_xvfb_uses_dynamic_display_reservation(self) -> None:
+        """Self-hosted PR jobs must not collide on a single fixed X display."""
+        workflow = (REPO_ROOT / ".github" / "workflows" / "ci-standard.yml").read_text(
+            encoding="utf-8",
+        )
+        start_step = workflow[
+            workflow.index("- name: Start Xvfb") : workflow.index(
+                "- name: Clean Stale Coverage Data"
+            )
+        ]
+        stop_step = workflow[
+            workflow.index("- name: Stop Xvfb") : workflow.index(
+                "- name: Enforce Per-Package Coverage Thresholds"
+            )
+        ]
+
+        assert "for display_num in $(seq 90 129)" in start_step
+        assert 'lockdir="/tmp/upstreamdrift-xvfb-${display_num}.lock"' in start_step
+        assert 'mkdir "$lockdir"' in start_step
+        assert 'echo "DISPLAY=:${display_num}" >> "$GITHUB_ENV"' in start_step
+        assert "Xvfb :99" not in start_step
+        assert "UPSTREAMDRIFT_XVFB_PID" in stop_step
+        assert "UPSTREAMDRIFT_XVFB_LOCKDIR" in stop_step
+        assert "rmdir" in stop_step
+
     def test_pr_scoped_core_tests_treat_all_skipped_selection_as_noop(self) -> None:
         """PR-scoped pytest must not fail when every selected test self-skips."""
         workflow = (REPO_ROOT / ".github" / "workflows" / "ci-standard.yml").read_text(
