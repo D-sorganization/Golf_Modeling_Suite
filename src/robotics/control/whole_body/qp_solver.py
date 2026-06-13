@@ -125,6 +125,11 @@ class QPSolution:
     dual_eq: NDArray[np.float64] | None = None
     dual_ineq: NDArray[np.float64] | None = None
 
+    @property
+    def solver_status(self) -> str:
+        """Backward-compatible canonical solver status."""
+        return "success" if self.success else "failure"
+
 
 class QPSolver(ABC):
     """Abstract base class for QP solvers."""

@@ -98,6 +98,11 @@ class PlannerResult:
         """Check if planning was successful."""
         return self.status == PlannerStatus.SUCCESS
 
+    @property
+    def solver_status(self) -> str:
+        """Backward-compatible canonical solver status."""
+        return "success" if self.success else self.status.name.lower()
+
     def get_path_array(self) -> np.ndarray:
         """Get path as numpy array.
 
