@@ -533,12 +533,15 @@ class TestCIEnvironmentCompatibility:
             if step.get("name") == "Run Core Test Suite"
         )
         assert "--timeout=60" in core_step["run"]
-        assert "-n 2" in core_step["run"]
+        assert "pytest_parallel_args=(-n 0)" in core_step["run"]
+        assert (
+            "using serial pytest to avoid xdist worker termination" in core_step["run"]
+        )
 
     def test_ci_standard_pr_scoped_tests_cannot_bypass_coverage_for_source(
         self,
     ) -> None:
-        """PR-scoped tests must collect targeted coverage for source changes."""
+        """Source PRs must run the scoped dependency-light lane."""
         workflow = (REPO_ROOT / ".github" / "workflows" / "ci-standard.yml").read_text(
             encoding="utf-8"
         )
@@ -552,9 +555,10 @@ class TestCIEnvironmentCompatibility:
         assert 'echo "coverage_generated=true" >> "$GITHUB_OUTPUT"' in workflow
         assert "Full dependency-light lane will run after PR-scoped tests" in workflow
         assert (
-            "Source/dependency targets changed; running the dependency-light unit lane"
+            "Source/dependency targets changed; running scoped dependency-light unit targets"
             in workflow
         )
+        assert "PR-scoped dependency-light lane is running without coverage" in workflow
         assert '"${coverage_args[@]}"' in workflow
         selected_test_block_start = workflow.index(
             "printf '  %s\\n' \"${changed_tests[@]}\""
@@ -604,10 +608,7 @@ class TestCIEnvironmentCompatibility:
 
         assert source_branch in pr_block
         assert pr_block.index(source_branch) < pr_block.index(changed_test_command)
-        assert (
-            "running the dependency-light unit lane instead of only changed tests"
-            in pr_block
-        )
+        assert "running scoped dependency-light unit targets for this PR" in pr_block
 
     def test_ci_standard_pr_targeted_coverage_runs_changed_file_ratchet(
         self,
