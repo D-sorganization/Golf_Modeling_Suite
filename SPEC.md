@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.369                                            |
+| **Spec Version**        | 1.0.370                                            |
 | **Last Spec Update**    | 2026-06-13                                         |
 
 ## 2. Purpose & Mission
@@ -70,6 +70,10 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 
 ### Recent Spec Updates
 
+- **2026-06-13** - Scoped PR core-test dependency-light execution to affected
+  unit areas when source files change, preventing self-hosted runner OOMs from
+  full-repository core test attempts while leaving normal coverage reporting in
+  place for full-coverage runs.
 - **2026-06-13** - Restored Sidekick JSON I/O compatibility in optional-stack
   tests by using stdlib JSON for default records-oriented reads and writes,
   avoiding pandas JSON C-extension failures in the optional-stack environment
@@ -1343,6 +1347,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-06-13 | 1.0.370 | Scoped PR core-test dependency-light execution to affected unit areas when source files change, preventing self-hosted runner OOMs from full-repository core test attempts while leaving normal coverage reporting in place for full-coverage runs. |
 | 2026-06-13 | 1.0.369 | Restored Sidekick JSON I/O compatibility in optional-stack tests. Default records-oriented JSON reads/writes now use stdlib JSON to avoid pandas JSON C-extension failures in the optional-stack environment, while non-default JSON options continue through pandas. |
 | 2026-06-13 | 1.0.368 | Aligned CI numpy/scipy repair pins with the lockfile runtime, added fast `scipy.signal` import checks after the reinstall step, kept core tests serial to avoid native-stack xdist worker termination, and recorded temporary shared-chat architecture-budget exceptions for `ChatDockWidget` legacy decomposition debt under issue #7362. |
 | 2026-06-13 | 1.0.367 | Restored shared-python optional-stack compatibility contracts. Package-root `config` and `data_io` exports remain importable under the fallback test harness, `add_provenance_header` supports both file and string helper forms, AI adapters preserve empty-current-message, token-usage, and connection-error behavior, validation/signal-toolkit helpers enforce their documented preconditions, and FSP primitive tests skip partial Rust wheels that do not expose the FSP API. |

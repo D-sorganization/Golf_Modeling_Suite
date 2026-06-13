@@ -1217,6 +1217,13 @@ jobs:
         run: |
           export COVERAGE_FILE="$RUNNER_TEMP/.coverage"
           coverage_args=(--cov=src)
+          coverage_report_args=(
+            --cov-report=term-missing
+            --cov-report=xml:coverage.xml
+            --cov-config=pyproject.toml
+            --cov-fail-under=75
+          )
+          dependency_light_targets=()
 
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             # Fetch base branch with enough depth for merge-base resolution.
@@ -1289,8 +1296,16 @@ jobs:
               echo "No core Python/test/dependency changes detected; skipping core tests for this workflow-only PR."
               exit 0
             elif [ "${#changed_coverage_targets[@]}" -gt 0 ]; then
-              echo "Source/dependency targets changed; running the dependency-light unit lane instead of only changed tests."
+              echo "Source/dependency targets changed; running scoped dependency-light unit targets for this PR."
               printf '%s\n' "${changed_coverage_targets[@]}" > "$RUNNER_TEMP/changed_coverage_targets.txt"
+              dependency_light_targets=(
+                tests/unit/shared_python
+                tests/unit/sidekick
+                tests/unit/robotics
+                tests/unit/scripts/test_check_mypy_exclusion_budget.py
+              )
+              coverage_args=(--no-cov)
+              coverage_report_args=()
             elif [ "${#changed_tests[@]}" -eq 0 ]; then
               echo "No Python test changes detected for changed core targets."
               echo "Falling through to targeted coverage lane to ensure source/dependency coverage."
@@ -1384,14 +1399,20 @@ jobs:
           pytest_parallel_args=(-n 0)
           echo "Core lane: using serial pytest to avoid xdist worker termination."
 
-          echo "coverage_generated=true" >> "$GITHUB_OUTPUT"
-          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${#changed_coverage_targets[@]}" -gt 0 ]; then
-            printf '%s\n' "${changed_coverage_targets[@]}" > "$RUNNER_TEMP/changed_coverage_targets.txt"
-            echo "pr_targeted_coverage_generated=true" >> "$GITHUB_OUTPUT"
+          if [ "${coverage_args[0]:-}" = "--no-cov" ]; then
+            echo "coverage_generated=false" >> "$GITHUB_OUTPUT"
+            echo "PR-scoped dependency-light lane is running without coverage to avoid self-hosted runner OOM."
           else
-            echo "full_coverage_generated=true" >> "$GITHUB_OUTPUT"
+            echo "coverage_generated=true" >> "$GITHUB_OUTPUT"
+            if [ "${{ github.event_name }}" = "pull_request" ] && [ "${#changed_coverage_targets[@]}" -gt 0 ]; then
+              printf '%s\n' "${changed_coverage_targets[@]}" > "$RUNNER_TEMP/changed_coverage_targets.txt"
+              echo "pr_targeted_coverage_generated=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "full_coverage_generated=true" >> "$GITHUB_OUTPUT"
+            fi
           fi
           run_with_heartbeat "core pytest lane" xvfb-run --auto-servernum python -m pytest \
+            "${dependency_light_targets[@]}" \
             -p no:xvfb \
             "${pytest_parallel_args[@]}" \
             --timeout=60 \
@@ -1402,10 +1423,7 @@ jobs:
             --ignore=src/engines/Simscape_Multibody_Models/3D_Golf_Model/matlab/motion_matching/option4_python_bridge/tests \
             -m "not slow and not benchmark and not perf and not requires_gl and not requires_network and not requires_gpu and not requires_mocap_fixtures" \
             "${coverage_args[@]}" \
-            --cov-report=term-missing \
-            --cov-report=xml:coverage.xml \
-            --cov-config=pyproject.toml \
-            --cov-fail-under=75 \
+            "${coverage_report_args[@]}" \
             --tb=short \
             --durations=20 \
             -v
