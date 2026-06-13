@@ -736,6 +736,7 @@ class TestSpinDecay:
         ball = BallProperties(spin_decay_rate=0.0)
         assert ball.spin_decay_rate == 0.0
 
+    @pytest.mark.unit
     def test_spin_decay_changes_carry(self) -> None:
         """Spin decay should materially change carry vs constant spin.
 
