@@ -37,6 +37,24 @@ def _as_vector3(name: str, value: np.ndarray) -> np.ndarray:
     return vector
 
 
+def _active_motion_vectors(
+    velocity: np.ndarray,
+    spin: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray, float, float] | None:
+    """Normalize velocity/spin vectors for spin-induced forces."""
+    velocity_vector = _as_vector3("velocity", velocity)
+    spin_vector = _as_vector3("spin", spin)
+    speed = float(
+        math.sqrt(np.dot(velocity_vector, velocity_vector))
+    )  # ⚡ Bolt: math.sqrt(np.dot) is ~3x faster than np.linalg.norm
+    spin_magnitude = float(
+        math.sqrt(np.dot(spin_vector, spin_vector))
+    )  # ⚡ Bolt: math.sqrt(np.dot) is ~3x faster than np.linalg.norm
+    if speed < 1e-10 or spin_magnitude < 1e-10:
+        return None
+    return velocity_vector, spin_vector, speed, spin_magnitude
+
+
 class DragModel:
     """Model for aerodynamic drag force.
 
@@ -151,17 +169,10 @@ class LiftModel:
         air_density: float = float(AIR_DENSITY_SEA_LEVEL_KG_M3),
     ) -> np.ndarray:
         """Calculate lift force from spin."""
-        velocity_vector = _as_vector3("velocity", velocity)
-        spin_vector = _as_vector3("spin", spin)
-        speed = float(
-            math.sqrt(np.dot(velocity_vector, velocity_vector))
-        )  # ⚡ Bolt: math.sqrt(np.dot) is ~3x faster than np.linalg.norm
-        spin_magnitude = float(
-            math.sqrt(np.dot(spin_vector, spin_vector))
-        )  # ⚡ Bolt: math.sqrt(np.dot) is ~3x faster than np.linalg.norm
-
-        if speed < 1e-10 or spin_magnitude < 1e-10:
-            return np.zeros_like(velocity_vector)
+        motion = _active_motion_vectors(velocity, spin)
+        if motion is None:
+            return np.zeros(3)
+        velocity_vector, spin_vector, speed, spin_magnitude = motion
 
         spin_axis = spin_vector / spin_magnitude
         lift_dir = np.cross(spin_axis, velocity_vector)
@@ -210,17 +221,10 @@ class MagnusModel:
         air_density: float = float(AIR_DENSITY_SEA_LEVEL_KG_M3),
     ) -> np.ndarray:
         """Calculate Magnus force."""
-        velocity_vector = _as_vector3("velocity", velocity)
-        spin_vector = _as_vector3("spin", spin)
-        speed = float(
-            math.sqrt(np.dot(velocity_vector, velocity_vector))
-        )  # ⚡ Bolt: math.sqrt(np.dot) is ~3x faster than np.linalg.norm
-        spin_magnitude = float(
-            math.sqrt(np.dot(spin_vector, spin_vector))
-        )  # ⚡ Bolt: math.sqrt(np.dot) is ~3x faster than np.linalg.norm
-
-        if speed < 1e-10 or spin_magnitude < 1e-10:
-            return np.zeros_like(velocity_vector)
+        motion = _active_motion_vectors(velocity, spin)
+        if motion is None:
+            return np.zeros(3)
+        velocity_vector, spin_vector, speed, spin_magnitude = motion
 
         magnus_dir = np.cross(spin_vector, velocity_vector)
         magnus_norm = float(math.hypot(*magnus_dir))
