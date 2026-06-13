@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.387                                            |
+| **Spec Version**        | 1.0.388                                            |
 | **Last Spec Update**    | 2026-06-13                                         |
 
 ## 2. Purpose & Mission
@@ -70,6 +70,10 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 
 ### Recent Spec Updates
 
+- **2026-06-13** - The modular Docker `slim` profile contract now explicitly
+  includes the core MuJoCo runtime, matching the package's default physics
+  dependency and keeping slim smoke tests focused on excluding Pinocchio and
+  Drake.
 - **2026-06-13** - The legacy runtime Docker entrypoint now honors explicit
   container commands such as `docker run image python -c ...` while preserving
   the default FastAPI server startup for bare `docker run image`.

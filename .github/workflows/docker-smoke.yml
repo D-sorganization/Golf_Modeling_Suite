@@ -59,13 +59,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # slim: api + pendulum only; mujoco and pinocchio must be ABSENT
+          # slim: api + pendulum + core MuJoCo; Pinocchio and Drake must be ABSENT
           - profile: slim
-            must_have: "api,pendulum"
-            must_not_have: "mujoco,pinocchio,drake"
+            must_have: "api,pendulum,mujoco"
+            must_not_have: "pinocchio,drake"
             advisory: false
 
-          # standard: slim + mujoco + pinocchio; drake must be ABSENT
+          # standard: slim + Pinocchio; Drake must be ABSENT
           - profile: standard
             must_have: "api,pendulum,mujoco,pinocchio"
             must_not_have: "drake"
