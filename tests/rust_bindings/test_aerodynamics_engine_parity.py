@@ -181,7 +181,7 @@ class TestAerodynamicsEngineParity:
         spin_rpm = 2600.0
         dt = 0.01
         env = EnvironmentalConditions()
-        ball = BallProperties(spin_decay_rate=0.05)
+        ball = BallProperties(cd0=0.25, spin_decay_rate=0.05)
         launch = LaunchConditions(
             velocity=speed,
             launch_angle=launch_angle,

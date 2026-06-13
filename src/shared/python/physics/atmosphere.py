@@ -178,7 +178,7 @@ MAX_VALID_REYNOLDS: float = 1.0e7
 # manufacturer-specific calibration.
 _RE_PRECRITICAL: float = 4.0e4  # plateau before drag crisis begins
 _CD_PRECRITICAL: float = 0.50  # subcritical / pre-crisis Cd for dimpled sphere
-_RE_MIN_CD: float = 8.0e4  # log-Re centre of the drag-crisis transition
+_RE_MIN_CD: float = 7.0e4  # log-Re centre of the drag-crisis transition
 _CD_MIN: float = 0.22  # minimum Cd in the trans/super-critical regime
 _RE_HIGH: float = 1.0e7  # high-Re asymptote
 _CD_HIGH: float = 0.30  # high-Re asymptote Cd
