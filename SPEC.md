@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.373                                            |
+| **Spec Version**        | 1.0.374                                            |
 | **Last Spec Update**    | 2026-06-13                                         |
 
 ## 2. Purpose & Mission
@@ -1356,6 +1356,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-06-13 | 1.0.374 | Restored optional-stack aerodynamic contracts by normalizing vector-shaped velocity/spin inputs, preserving drag-coefficient tuning through the Reynolds correction, centering the drag-crisis transition at the documented 8e4 Reynolds boundary, and clamping randomized air density to the physical floor. |
 | 2026-06-13 | 1.0.373 | Refined pointwise ZTCF/ZVCF dimension validation to allow canonical-v2 `nq = nv + 1` states only when the redundant configuration coordinate is populated, while still rejecting plain wrong-length zero vectors. |
 | 2026-06-13 | 1.0.372 | Restored optional-stack ZTCF/ZVCF input length validation for pointwise acceleration helpers and reapplied the Settings page root theme marker after active-theme round-trip. |
 | 2026-06-13 | 1.0.371 | Tightened signal-toolkit limit preconditions so saturation requires `lower < upper` and rate limiting requires `max_rate > 0`, matching the optional-stack contract tests. |
