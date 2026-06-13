@@ -70,6 +70,11 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 
 ### Recent Spec Updates
 
+- **2026-06-13** - CI Standard source PRs now skip the changed-tests-only
+  targeted coverage branch and fall through to the dependency-light coverage
+  lane; optional-stack unit targets use a 180s per-test timeout for
+  migration-heavy API tests; CI contract tests assert the current PyQt fallback
+  and Rust wheel install order.
 - **2026-06-12** - Documented the consolidated parity CI follow-up: frontend
   Fast Refresh helpers now live outside component modules, diagnostics imports
   respect API/launcher layer boundaries, recording export artifact writing is

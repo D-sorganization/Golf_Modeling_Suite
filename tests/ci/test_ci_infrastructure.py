@@ -798,9 +798,9 @@ class TestCIEnvironmentCompatibility:
         """The global PyQt fallback may prevent crashes, but not satisfy UI asserts."""
         conftest = (REPO_ROOT / "tests" / "conftest.py").read_text(encoding="utf-8")
         pyqt_fallback = conftest[
-            conftest.index(
-                'if not _has_pyqt6 and "PyQt6" not in sys.modules:'
-            ) : conftest.index("@pytest.fixture(autouse=True)")
+            conftest.index("if not _has_pyqt6:") : conftest.index(
+                "@pytest.fixture(autouse=True)"
+            )
         ]
 
         for forbidden in [
@@ -849,7 +849,7 @@ class TestCIEnvironmentCompatibility:
         ]:
             assert path in rust_gate
 
-        editable_install = 'python -m pip install --no-cache-dir -e ".[dev]"'
+        editable_install = 'python -m pip install --no-cache-dir --no-deps -e ".[dev]"'
         wheel_install = "python -m pip install --force-reinstall target/wheels/*.whl"
         assert editable_install in binding_step
         assert wheel_install in binding_step

@@ -1286,43 +1286,6 @@ jobs:
             if [ "${#changed_tests[@]}" -eq 0 ] && [ "${#changed_core_targets[@]}" -eq 0 ]; then
               echo "No core Python/test/dependency changes detected; skipping core tests for this workflow-only PR."
               exit 0
-            elif [ "${#changed_coverage_targets[@]}" -gt 0 ] && [ "${#changed_tests[@]}" -gt 0 ]; then
-              echo "Running PR-scoped tests with targeted coverage for changed source files:"
-              printf '%s\n' "${changed_coverage_targets[@]}" > "$RUNNER_TEMP/changed_coverage_targets.txt"
-              coverage_mode=(
-                "${coverage_args[@]}"
-                --cov-report=term-missing
-                --cov-report=xml:coverage.xml
-                --cov-config=pyproject.toml
-                --cov-fail-under=75
-              )
-              echo "coverage_generated=true" >> "$GITHUB_OUTPUT"
-              echo "pr_targeted_coverage_generated=true" >> "$GITHUB_OUTPUT"
-              printf '  %s\n' "${changed_tests[@]}"
-              set +e
-              xvfb-run --auto-servernum python -m pytest "${changed_tests[@]}" \
-                -p no:xvfb \
-                -n 0 \
-                --timeout=60 \
-                --timeout-method=thread \
-                -m "not slow and not benchmark and not perf and not requires_gl and not requires_network and not requires_gpu and not requires_mocap_fixtures" \
-                -o addopts="" \
-                "${coverage_mode[@]}" \
-                --tb=short \
-                -v
-              pytest_exit_code=$?
-              set -e
-
-              if [ $pytest_exit_code -eq 0 ]; then
-                echo "All PR-scoped targeted-coverage tests passed."
-                exit 0
-              elif [ $pytest_exit_code -eq 5 ]; then
-                echo "WARNING: pytest exit code 5 (no tests collected) detected."
-                echo "Falling through to the dependency-light unit lane."
-              else
-                echo "PR-scoped targeted-coverage tests failed with exit code $pytest_exit_code"
-                exit $pytest_exit_code
-              fi
             elif [ "${#changed_coverage_targets[@]}" -gt 0 ]; then
               echo "Source/dependency targets changed; running the dependency-light unit lane instead of only changed tests."
               printf '%s\n' "${changed_coverage_targets[@]}" > "$RUNNER_TEMP/changed_coverage_targets.txt"
