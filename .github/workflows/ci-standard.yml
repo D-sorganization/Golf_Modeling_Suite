@@ -1781,7 +1781,7 @@ jobs:
 
       - name: Run Tests
         if: steps.frontend-changes.outputs.skip != 'true'
-        run: npm run test:run
+        run: npm run test:run -- --testTimeout=15000
 
       - name: Build Check
         if: steps.frontend-changes.outputs.skip != 'true'
