@@ -287,7 +287,7 @@ structlog==25.5.0
     # via upstream-drift (pyproject.toml)
 sympy==1.14.0
     # via upstream-drift (pyproject.toml)
-tornado==6.5.5
+tornado==6.5.6
     # via bokeh
 types-pyyaml==6.0.12.20260408
     # via upstream-drift (pyproject.toml)
