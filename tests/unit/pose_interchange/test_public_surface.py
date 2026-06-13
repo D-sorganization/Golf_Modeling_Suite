@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import pytest
+
 import src.shared.python.pose_interchange as pose_interchange
+
+pytestmark = pytest.mark.unit
 
 
 def test_public_surface_documents_canonical_v2_contract() -> None:
