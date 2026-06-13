@@ -2117,23 +2117,22 @@ jobs:
           # new crates joining `[workspace] members = [...]` are auto-covered.
           cargo test
 
-      - name: Run Rust Tests (--features python)
-        # The workspace pyo3 dep enables `extension-module`, which expects
-        # libpython linkage from the loader (i.e. when Python imports the
-        # extension). Plain `cargo test` cannot satisfy that on macOS / Windows
-        # without extra linker flags or PYO3 env config; on Linux libpython is
-        # on the default search path so the test binary links cleanly. Keep
-        # the python-features lane Linux-only — the wheel build + binding
-        # smoke test below already cover the actual integration.
+      - name: Check Rust Python Features
+        # The workspace pyo3 dependency enables `extension-module`, so Python
+        # feature crates are built as importable extension modules whose Python
+        # symbols are resolved by the interpreter loader. A `cargo test`
+        # executable links those symbols directly and fails on Linux too. Use
+        # `cargo check` for all Python-feature targets here, then let the
+        # maturin wheel build + binding smoke tests below cover integration.
         if: steps.rust-changes.outputs.has_changes == 'true' && matrix.os == 'ubuntu-latest'
-        run: cargo test --features python
+        run: cargo check --workspace --all-targets --features python
 
       # ----------------------------------------------------------------------
       # The remaining steps (Maturin wheel build, Python-binding/source tests,
       # WASM target build) are slow and largely platform-independent. We keep
       # them on Linux only so the cross-platform matrix stays focused on the
-      # acceptance-criteria checks (fmt / clippy / test / test --features
-      # python) without burning Windows + macOS minutes on redundant work.
+      # acceptance-criteria checks (fmt / clippy / test / python-feature check)
+      # without burning Windows + macOS minutes on redundant work.
       # ----------------------------------------------------------------------
       - name: Build PyO3 Wheel (Maturin)
         if: steps.rust-changes.outputs.has_changes == 'true' && matrix.os == 'ubuntu-latest'
@@ -2207,8 +2206,8 @@ jobs:
           echo "- rustfmt: formatted" >> $GITHUB_STEP_SUMMARY
           echo "- clippy: no warnings" >> $GITHUB_STEP_SUMMARY
           echo "- cargo test: all tests pass" >> $GITHUB_STEP_SUMMARY
-          echo "- cargo test --features python: all tests pass" >> $GITHUB_STEP_SUMMARY
           if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            echo "- cargo check --features python: all targets typecheck" >> $GITHUB_STEP_SUMMARY
             echo "- maturin: wheel built" >> $GITHUB_STEP_SUMMARY
             echo "- Python bindings and source adapters: verified" >> $GITHUB_STEP_SUMMARY
             echo "- WASM: target compiled and verified" >> $GITHUB_STEP_SUMMARY
