@@ -87,6 +87,11 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 - **2026-06-13** - Refined pointwise ZTCF/ZVCF dimension validation to allow
   canonical-v2 `nq = nv + 1` states only when the redundant configuration
   coordinate is populated, while still rejecting plain wrong-length zero vectors.
+- **2026-06-13** - Scoped the optional-stack PR unit lane to the
+  PR-relevant biomechanics, deployment, and robotics unit directories so
+  focused UI/theming PRs do not hang on unrelated broad optional-stack unit
+  sweeps; CI contract tests reject reintroducing the unscoped `tests/unit`
+  discovery.
 - **2026-06-13** - Restored optional-stack ZTCF/ZVCF input length validation
   for pointwise acceleration helpers and reapplied the Settings page root theme
   marker after active-theme round-trip.
