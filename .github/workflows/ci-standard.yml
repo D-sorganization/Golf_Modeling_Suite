@@ -1953,6 +1953,9 @@ jobs:
         os: [ubuntu-latest]
     runs-on: d-sorg-fleet-docker
     timeout-minutes: 25
+    env:
+      CARGO_HOME: ${{ runner.temp }}/cargo-home
+      CARGO_NET_GIT_FETCH_WITH_CLI: true
     defaults:
       run:
         # Git Bash is preinstalled on `windows-latest`, so a single `bash`
@@ -2069,7 +2072,7 @@ jobs:
       - name: Configure Cargo Git dependency fetches
         if: steps.rust-changes.outputs.has_changes == 'true'
         run: |
-          echo "CARGO_NET_GIT_FETCH_WITH_CLI=true" >> "$GITHUB_ENV"
+          mkdir -p "$CARGO_HOME"
           git config --global --unset-all url.git@github.com:.insteadOf || true
           git config --global --unset-all url.ssh://git@github.com/.insteadOf || true
           git config --global --unset-all url.https://github.com/.insteadOf || true
@@ -2095,8 +2098,8 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: |
-            ~/.cargo/registry
-            ~/.cargo/git
+            ${{ env.CARGO_HOME }}/registry
+            ${{ env.CARGO_HOME }}/git
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
