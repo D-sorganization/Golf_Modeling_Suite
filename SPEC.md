@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.377                                            |
+| **Spec Version**        | 1.0.378                                            |
 | **Last Spec Update**    | 2026-06-13                                         |
 
 ## 2. Purpose & Mission
@@ -70,6 +70,9 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 
 ### Recent Spec Updates
 
+- **2026-06-13** - Documented the C3D Rust facade benchmark as a regression
+  guard with runner jitter allowance while preserving the strict parser-only
+  10x performance gate.
 - **2026-06-13** - Restored Rust/Python aerodynamic parity by keeping the
   dimpled-sphere drag-crisis centre aligned with the Rust kernel and by
   matching the public simulator parity fixture's drag coefficient to the Rust
