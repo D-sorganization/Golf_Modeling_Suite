@@ -1352,17 +1352,11 @@ jobs:
           fi
 
           # Run the targeted, dependency-light CI lane:
-          # - Bounded parallelism (-n 2 --dist loadscope) so no single worker
-          #   process imports the entire 2k+ module test graph at once. A
-          #   monolithic serial (-n 0) run accumulated every test module's
-          #   top-level imports (mujoco/torch/etc.) plus coverage data for all
-          #   of src/ in one long-lived process, whose peak RSS exceeded the
-          #   self-hosted runner memory and was OOM-killed (exit 137). Two
-          #   workers each hold only their loadscope subset, halving per-process
-          #   peak memory, while pytest-cov combines the per-worker coverage
-          #   data so the measured percentage is unchanged. loadscope keeps each
-          #   test module (and its fixtures / serial-marked sys.modules edits)
-          #   on a single worker. See PR fixing the tests-matrix OOM.
+          # - Serial execution (-n 0) avoids native GUI/MuJoCo xdist worker
+          #   termination on self-hosted runners, where worker crashes prevent
+          #   pytest-cov from collecting coverage data and fail the matrix before
+          #   reporting any test assertion. The PR-scoped path above is also
+          #   serial for the same stability reason.
           # - 60 second timeout per test
           # - Skip slow tests in CI for faster feedback
           # - Coverage measurement on src/ (pytest-cov)
@@ -1387,6 +1381,9 @@ jobs:
             return "$rc"
           }
 
+          pytest_parallel_args=(-n 0)
+          echo "Core lane: using serial pytest to avoid xdist worker termination."
+
           echo "coverage_generated=true" >> "$GITHUB_OUTPUT"
           if [ "${{ github.event_name }}" = "pull_request" ] && [ "${#changed_coverage_targets[@]}" -gt 0 ]; then
             printf '%s\n' "${changed_coverage_targets[@]}" > "$RUNNER_TEMP/changed_coverage_targets.txt"
@@ -1396,8 +1393,7 @@ jobs:
           fi
           run_with_heartbeat "core pytest lane" xvfb-run --auto-servernum python -m pytest \
             -p no:xvfb \
-            -n 2 \
-            --dist loadscope \
+            "${pytest_parallel_args[@]}" \
             --timeout=60 \
             --timeout-method=thread \
             --ignore=tests/shared_contracts \

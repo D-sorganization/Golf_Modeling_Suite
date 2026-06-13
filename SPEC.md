@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.367                                            |
+| **Spec Version**        | 1.0.369                                            |
 | **Last Spec Update**    | 2026-06-13                                         |
 
 ## 2. Purpose & Mission
@@ -70,12 +70,20 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 
 ### Recent Spec Updates
 
+- **2026-06-13** - Restored Sidekick JSON I/O compatibility in optional-stack
+  tests by using stdlib JSON for default records-oriented reads and writes,
+  avoiding pandas JSON C-extension failures in the optional-stack environment
+  while preserving pandas for non-default JSON options.
 - **2026-06-13** - Restored shared-python optional-stack compatibility
   contracts: package-root config and provenance exports remain importable
   under the test harness fallback, AI adapters preserve empty-message and
   legacy token/error contracts, validation and signal-toolkit helpers enforce
   documented preconditions, and partial Rust wheels no longer make FSP
-  primitive tests fail when the FSP API is absent.
+  primitive tests fail when the FSP API is absent. Aligned CI numpy/scipy
+  repair pins with the lockfile runtime, kept core tests serial to avoid
+  native-stack xdist worker termination, and added temporary shared-chat
+  architecture-budget exceptions for the pre-existing Qt dock decomposition debt
+  tracked by issue #7362.
 - **2026-06-13** - Restored optional-stack robotics compatibility contracts:
   QP, whole-body-control, and motion-planning result objects again expose the
   canonical `solver_status` aliases expected by optional robotics callers, WBC
@@ -1335,6 +1343,8 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-06-13 | 1.0.369 | Restored Sidekick JSON I/O compatibility in optional-stack tests. Default records-oriented JSON reads/writes now use stdlib JSON to avoid pandas JSON C-extension failures in the optional-stack environment, while non-default JSON options continue through pandas. |
+| 2026-06-13 | 1.0.368 | Aligned CI numpy/scipy repair pins with the lockfile runtime, added fast `scipy.signal` import checks after the reinstall step, kept core tests serial to avoid native-stack xdist worker termination, and recorded temporary shared-chat architecture-budget exceptions for `ChatDockWidget` legacy decomposition debt under issue #7362. |
 | 2026-06-13 | 1.0.367 | Restored shared-python optional-stack compatibility contracts. Package-root `config` and `data_io` exports remain importable under the fallback test harness, `add_provenance_header` supports both file and string helper forms, AI adapters preserve empty-current-message, token-usage, and connection-error behavior, validation/signal-toolkit helpers enforce their documented preconditions, and FSP primitive tests skip partial Rust wheels that do not expose the FSP API. |
 | 2026-06-13 | 1.0.366 | Restored optional-stack robotics compatibility contracts. `QPSolution`, `WBCSolution`, and `PlannerResult` again expose canonical `solver_status` aliases, `WBCSolution.final_cost` remains a legacy alias for `cost`, and the default IMU gravity vector preserves the historical 9.81 m/s^2 sensor contract while keeping the broader shared physics constants unchanged. |
 | 2026-06-12 | 1.0.365 | Consolidated parity CI follow-up after #7496. Moved BallFlight validation/color helpers into a non-component module to satisfy React Fast Refresh linting, added a fail-closed launch-mode fallback for web launcher contracts, deferred diagnostics launcher imports to request time to preserve API layer direction, extracted recording JSON artifact writing below the changed-function architecture budget, shared export-format validation across request models, and marked newly introduced parity tests with explicit suite markers so the ratchet remains blocking without expanding the baseline. |
