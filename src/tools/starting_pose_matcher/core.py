@@ -664,9 +664,12 @@ def load_simscape_trajectory_csv(path: str | Path) -> SkeletonTrajectory:
 
     times = df["time"].astype(float).to_numpy()
 
-    # ⚡ Bolt: Extract columns as stacked arrays to avoid expensive pandas .iloc in the loop
-    # Pre-stacking arrays is ~4x faster than using .iloc on each row
-    col_arrays = {short: np.column_stack([df[c].values for c in xyz]).astype(float) for short, xyz in resolved.items()}
+    # Pre-extract resolved XYZ columns to avoid materializing a pandas row
+    # for every trajectory frame.
+    col_arrays = {
+        short: df.loc[:, xyz].to_numpy(dtype=float, copy=True)
+        for short, xyz in resolved.items()
+    }
 
     frames: list[Skeleton] = []
     n = len(df)
@@ -675,7 +678,7 @@ def load_simscape_trajectory_csv(path: str | Path) -> SkeletonTrajectory:
         for short, arr in col_arrays.items():
             v = arr[i]
             if np.all(np.isfinite(v)):
-                joints[short] = v
+                joints[short] = v.copy()
         if "lw" in joints and "rw" in joints:
             joints["mp"] = (joints["lw"] + joints["rw"]) / 2.0
             joints["butt"] = joints["mp"].copy()
