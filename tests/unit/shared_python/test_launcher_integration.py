@@ -64,12 +64,13 @@ def test_dashboard_launch(monkeypatch: pytest.MonkeyPatch, qapp: Any) -> None:
         title="Test Dashboard",
         engine_args=["arg1"],
         engine_kwargs={"kwarg1": "val"},
+        event_loop_runner=lambda _app: 0,
     )
 
     # Verify initialization
     mock_engine_class.assert_called_once_with("arg1", kwarg1="val")
     mock_window.assert_called_once_with(mock_engine, title="Test Dashboard")
-    mock_qapp.exec.assert_called_once_with()
+    mock_qapp.exec.assert_not_called()
     mock_exit.assert_called_once_with(0)
 
 

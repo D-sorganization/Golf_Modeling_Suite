@@ -13,6 +13,7 @@ from typing import Any
 import pytest
 
 os.environ.setdefault("GOLF_AUTH_DISABLED", "true")
+os.environ.setdefault("API_LIMIT_SIMULATE", "1000/minute")
 
 _PARITY_API_IMPORT_ERROR: ImportError | None = None
 
