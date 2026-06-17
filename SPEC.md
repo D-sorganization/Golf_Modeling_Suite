@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.431                                            |
+| **Spec Version**        | 1.0.432                                            |
 | **Last Spec Update**    | 2026-06-17                                         |
 
 ## 2. Purpose & Mission
@@ -70,6 +70,11 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 
 ### Recent Spec Updates
 
+- **2026-06-17** - Closed the test-only PR core-lane OOM regression for issue
+  #7635: CI Standard now exits after changed-test PR slices pass when no
+  source/dependency coverage targets changed, while preserving the scoped
+  dependency-light lane for source/dependency PRs and the no-collected-tests
+  fallback.
 - **2026-06-17** - Closed the push-scoped Semgrep regression for issue #7633
   by making the SVG backdrop regression-test inspection helpers parse generated
   SVGs with defusedxml instead of stdlib ElementTree.
@@ -1646,6 +1651,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-06-17 | 1.0.432 | Closed the test-only PR core-lane OOM regression for issue #7635. CI Standard now exits after changed-test PR slices pass when no source/dependency coverage targets changed, preserving the no-collected-tests fallback and the scoped dependency-light lane for source/dependency PRs. |
 | 2026-06-17 | 1.0.431 | Closed the push-scoped Semgrep regression for issue #7633 by making `tests/unit/scripts/test_remove_icon_backdrops.py` parse generated SVGs with defusedxml in its assertion helpers while preserving the existing entity-bearing SVG rejection coverage. |
 | 2026-06-17 | 1.0.430 | Restored the suite-marker ratchet for issue #7631 by marking the three #7629 Bandit regression tests as unit tests: coverage XML entity rejection, SVG entity rejection, and `download_to_file()` local-file scheme rejection before opener invocation. |
 | 2026-06-17 | 1.0.429 | Cleared the main-branch Bandit security-scan regression for issue #7629. `scripts/build_humanoid_models.py`, `scripts/build_humanoid_osim.py`, `scripts/config/coverage_enforcer.py`, and `scripts/remove_icon_backdrops.py` now route XML parsing through defusedxml while keeping stdlib ElementTree for XML construction/writing where needed. `src/shared/python/security/security_utils.py::download_to_file()` now validates URL schemes internally before the audited opener. Focused regression tests cover entity-bearing XML rejection and local file URL rejection before `urlopen` is called. |

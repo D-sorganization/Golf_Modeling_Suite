@@ -605,7 +605,10 @@ class TestCIEnvironmentCompatibility:
         assert 'coverage_args+=(--cov="${coverage_module//\\//.}")' in workflow
         assert "src/**/*.py" in workflow
         assert 'echo "coverage_generated=true" >> "$GITHUB_OUTPUT"' in workflow
-        assert "Full dependency-light lane will run after PR-scoped tests" in workflow
+        assert (
+            "Source/dependency coverage targets changed; targeted coverage lane will run after PR-scoped tests"
+            in workflow
+        )
         assert (
             "Source/dependency targets changed; running scoped dependency-light unit targets"
             in workflow
@@ -710,8 +713,8 @@ class TestCIEnvironmentCompatibility:
             ]
         )
 
-    def test_ci_standard_test_only_prs_fall_through_to_full_lane(self) -> None:
-        """Changed tests may run first, but must not be the only PR coverage."""
+    def test_ci_standard_test_only_prs_stop_after_changed_tests_pass(self) -> None:
+        """Changed-test-only PRs should not launch the broad core lane."""
         workflow = (REPO_ROOT / ".github" / "workflows" / "ci-standard.yml").read_text(
             encoding="utf-8"
         )
@@ -721,14 +724,17 @@ class TestCIEnvironmentCompatibility:
             )
         ]
 
-        assert "Full dependency-light lane will run after PR-scoped tests" in (
+        assert (
+            "No source/dependency coverage targets changed; PR-scoped tests passed, skipping targeted coverage lane"
+            in selected_tests_block
+        )
+        assert 'echo "coverage_generated=false" >> "$GITHUB_OUTPUT"' in (
             selected_tests_block
         )
-        assert (
-            "No source/dependency coverage targets changed; skipping targeted coverage lane"
-            not in selected_tests_block
+        assert "exit 0" in selected_tests_block
+        assert "Full dependency-light lane will run after PR-scoped tests" not in (
+            selected_tests_block
         )
-        assert "exit 0" not in selected_tests_block
 
     def test_ci_optional_stack_prs_run_scoped_unit_lane(self) -> None:
         """The optional-stack workflow must run deterministic PR-relevant unit targets."""

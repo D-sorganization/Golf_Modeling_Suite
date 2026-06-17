@@ -1413,6 +1413,11 @@ jobs:
               # - Other: Tests failed or error
               if [ $pytest_exit_code -eq 0 ]; then
                 echo "All PR-scoped tests passed."
+                if [ "${#changed_coverage_targets[@]}" -eq 0 ]; then
+                  echo "No source/dependency coverage targets changed; PR-scoped tests passed, skipping targeted coverage lane."
+                  echo "coverage_generated=false" >> "$GITHUB_OUTPUT"
+                  exit 0
+                fi
               elif [ $pytest_exit_code -eq 5 ]; then
                 # Exit code 5 means no tests were collected, not that tests were skipped
                 # This can happen if changed files don't contain any test functions
@@ -1430,7 +1435,7 @@ jobs:
                 exit $pytest_exit_code
               fi
 
-              echo "Full dependency-light lane will run after PR-scoped tests."
+              echo "Source/dependency coverage targets changed; targeted coverage lane will run after PR-scoped tests."
             fi
           fi
 
