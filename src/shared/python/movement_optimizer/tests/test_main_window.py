@@ -37,7 +37,7 @@ pytestmark = pytest.mark.skipif(not _QT_AVAILABLE, reason="Qt not available")
 
 def _make_result(cost: float = 42.0, success: bool = True) -> Any:
     """Create a minimal OptimizationResult for testing."""
-    from conftest import make_test_result
+    from movement_optimizer.tests.conftest import make_test_result
 
     r = make_test_result(cost=cost)
     r.success = success
@@ -180,7 +180,7 @@ class _FakeSidebar:
         )
 
     def set_comparison_available(self, available: bool) -> None:
-        self.compare_btn.enabled = available  # type: ignore
+        self.compare_btn.enabled = available  # type: ignore[attr-defined]
 
     def set_cancellation_available(self, available: bool) -> None:
         self.cancel_btn.enabled = available
@@ -269,7 +269,7 @@ class TestUpdateResultSummary:
             window,
             "Squat",
             _make_result(),
-            exercise_type="squat",  # type: ignore
+            exercise_type="squat",  # type: ignore[arg-type]
         )  # type: ignore[arg-type]
         text = window.sidebar.result_label.text
         assert "Ankle" in text
@@ -284,7 +284,7 @@ class TestUpdateResultSummary:
             window,
             "Bench",
             _make_result(),
-            exercise_type="bench_press",  # type: ignore
+            exercise_type="bench_press",  # type: ignore[arg-type]
         )  # type: ignore[arg-type]
         text = window.sidebar.result_label.text
         assert "Shoulder" in text
@@ -299,7 +299,7 @@ class TestUpdateResultSummary:
             window,
             "Squat",
             _make_result(),
-            exercise_type="squat",  # type: ignore
+            exercise_type="squat",  # type: ignore[arg-type]
         )  # type: ignore[arg-type]
         text = window.sidebar.result_label.text
         assert "J" in text
@@ -330,7 +330,7 @@ class TestUpdateResultSummary:
             window,
             "Deadlift",
             _make_result(),
-            exercise_type="deadlift",  # type: ignore
+            exercise_type="deadlift",  # type: ignore[arg-type]
         )  # type: ignore[arg-type]
         text = window.sidebar.result_label.text
         # The text should contain at least one numeric value followed by "N·m"
@@ -495,7 +495,7 @@ class TestResolveExerciseParams:
         window = _FakeWindow()
         _body, _dyn, etype, _bar, _dur, _smoothness = OptimizationMixin._resolve_exercise_params(
             window,
-            0,  # type: ignore
+            0,  # type: ignore[arg-type]
         )  # type: ignore[arg-type]
         assert etype == "squat"
 
@@ -505,7 +505,7 @@ class TestResolveExerciseParams:
         window = _FakeWindow()
         _body, _dyn, etype, _bar, _dur, _smoothness = OptimizationMixin._resolve_exercise_params(
             window,
-            2,  # type: ignore
+            2,  # type: ignore[arg-type]
         )  # type: ignore[arg-type]
         assert etype == "deadlift"
 
@@ -530,7 +530,7 @@ class TestResolveExerciseParams:
         window.sidebar.bar_slider.current = 100.0
         _body, _dyn, _etype, bar, _dur, _smoothness = OptimizationMixin._resolve_exercise_params(
             window,
-            0,  # type: ignore
+            0,  # type: ignore[arg-type]
         )  # type: ignore[arg-type]
         assert bar == pytest.approx(100.0)
 
@@ -542,7 +542,7 @@ class TestResolveExerciseParams:
         window.sidebar.dur_slider.current = 1.0
         _body, _dyn, _etype, _bar, dur, _smoothness = OptimizationMixin._resolve_exercise_params(
             window,
-            1,  # type: ignore
+            1,  # type: ignore[arg-type]
         )  # type: ignore[arg-type]
         assert dur >= 3.0
 

@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.428                                            |
+| **Spec Version**        | 1.0.429                                            |
 | **Last Spec Update**    | 2026-06-17                                         |
 
 ## 2. Purpose & Mission
@@ -70,6 +70,10 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 
 ### Recent Spec Updates
 
+- **2026-06-17** - Further hardened the suppression discipline ratchet for
+  issue #7625 by coding remaining Movement Optimizer test `type: ignore`
+  suppressions and making `test_main_window.py` import its vendored fixture
+  helper explicitly.
 - **2026-06-17** - Restored the current-main test-layout gate for issue
   #7626 by adding `src/shared/python/movement_optimizer/tests` to the root
   pytest `testpaths` contract and the intentional in-tree package-test
