@@ -6,10 +6,13 @@ engine-vs-API consistency testing.
 
 from __future__ import annotations
 
+import os
 from collections.abc import Generator
 from typing import Any
 
 import pytest
+
+os.environ.setdefault("GOLF_AUTH_DISABLED", "true")
 
 _PARITY_API_IMPORT_ERROR: ImportError | None = None
 
