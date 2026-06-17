@@ -38,7 +38,7 @@
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.430                                            |
+| **Spec Version**        | 1.0.431                                            |
 | **Last Spec Update**    | 2026-06-17                                         |
 
 ## 2. Purpose & Mission
@@ -70,6 +70,9 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 
 ### Recent Spec Updates
 
+- **2026-06-17** - Closed the push-scoped Semgrep regression for issue #7633
+  by making the SVG backdrop regression-test inspection helpers parse generated
+  SVGs with defusedxml instead of stdlib ElementTree.
 - **2026-06-17** - Restored the suite-marker ratchet for issue #7631 by
   marking the three #7629 Bandit regression tests as unit tests, preserving
   the explicit suite ownership contract for new tests.
@@ -1643,6 +1646,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-06-17 | 1.0.431 | Closed the push-scoped Semgrep regression for issue #7633 by making `tests/unit/scripts/test_remove_icon_backdrops.py` parse generated SVGs with defusedxml in its assertion helpers while preserving the existing entity-bearing SVG rejection coverage. |
 | 2026-06-17 | 1.0.430 | Restored the suite-marker ratchet for issue #7631 by marking the three #7629 Bandit regression tests as unit tests: coverage XML entity rejection, SVG entity rejection, and `download_to_file()` local-file scheme rejection before opener invocation. |
 | 2026-06-17 | 1.0.429 | Cleared the main-branch Bandit security-scan regression for issue #7629. `scripts/build_humanoid_models.py`, `scripts/build_humanoid_osim.py`, `scripts/config/coverage_enforcer.py`, and `scripts/remove_icon_backdrops.py` now route XML parsing through defusedxml while keeping stdlib ElementTree for XML construction/writing where needed. `src/shared/python/security/security_utils.py::download_to_file()` now validates URL schemes internally before the audited opener. Focused regression tests cover entity-bearing XML rejection and local file URL rejection before `urlopen` is called. |
 | 2026-06-17 | 1.0.423 | Optimized lower-body simulator history eviction for #7561. `LowerBodySimulator` now records scrub/playback frames in a bounded `deque`, preserving FIFO order, frame indexing, and clear/restore behavior while avoiding the previous `list.pop(0)` overflow path in the simulation step loop. |
