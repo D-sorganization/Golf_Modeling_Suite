@@ -111,6 +111,7 @@ class TestSafetyMonitorCheckCommand:
         st = m.check_command(cmd)
         assert not st.is_safe
 
+    @pytest.mark.unit
     def test_velocity_command_violation(self) -> None:
         m = SafetyMonitor(_cfg())
         cmd = ControlCommand(
@@ -122,6 +123,7 @@ class TestSafetyMonitorCheckCommand:
         assert not st.is_safe
         assert any("velocity" in violation for violation in st.violations)
 
+    @pytest.mark.unit
     def test_emergency_stop_rejects_command(self) -> None:
         m = SafetyMonitor(_cfg())
         m.trigger_emergency_stop()
@@ -190,6 +192,7 @@ class TestSafetyMonitorComputeSafe:
         np.testing.assert_array_almost_equal(safe.velocity_targets, np.ones(3) * 0.5)
         np.testing.assert_array_almost_equal(safe.torque_commands, np.ones(3) * 0.5)
 
+    @pytest.mark.unit
     def test_velocity_targets_are_clipped_at_default_speed(self) -> None:
         m = SafetyMonitor(_cfg())
         cmd = ControlCommand(
@@ -201,6 +204,7 @@ class TestSafetyMonitorComputeSafe:
         assert safe.velocity_targets is not None
         assert np.all(np.abs(safe.velocity_targets) <= m.limits.max_joint_velocity)
 
+    @pytest.mark.unit
     def test_emergency_stop_zeroes_actuation_after_speed_override_change(self) -> None:
         m = SafetyMonitor(_cfg())
         m.trigger_emergency_stop()
@@ -236,6 +240,7 @@ class TestSafetyMonitorMisc:
         m.set_speed_override(-1.0)
         assert m._speed_override == 0.0
 
+    @pytest.mark.unit
     def test_set_speed_override_remains_zero_during_emergency_stop(self) -> None:
         m = SafetyMonitor(_cfg())
         m.trigger_emergency_stop()
