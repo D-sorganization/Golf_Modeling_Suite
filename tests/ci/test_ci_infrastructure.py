@@ -158,18 +158,31 @@ class TestEngineAvailabilityFlags:
         assert is_engine_available("scipy") is True
         assert is_engine_available("structlog") is True
 
-    def test_get_available_engines_returns_list(self) -> None:
-        """Test that get_available_engines returns a list."""
-        from src.shared.python.engine_core.engine_availability import (
-            get_available_engines,
-        )
+    def test_get_available_engines_returns_list(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Test that get_available_engines returns a list for core deps."""
+        from src.shared.python.engine_core import engine_availability
 
-        available = get_available_engines()
-        assert isinstance(available, list)
-        assert len(available) > 0
-        # Core dependencies should be in the list
-        assert "numpy" in available
-        assert "scipy" in available
+        core_engine_mapping = {
+            "numpy": "numpy",
+            "scipy": "scipy",
+            "structlog": "structlog",
+        }
+        monkeypatch.setattr(engine_availability, "_MODULE_MAPPING", core_engine_mapping)
+        engine_availability.reset_engine_status_cache()
+
+        try:
+            available = engine_availability.get_available_engines()
+            assert isinstance(available, list)
+            assert len(available) > 0
+            assert set(available) <= set(core_engine_mapping)
+            # Core dependencies should be in the list
+            assert "numpy" in available
+            assert "scipy" in available
+            assert "structlog" in available
+        finally:
+            engine_availability.reset_engine_status_cache()
 
 
 class TestOptionalDependencyHandling:
