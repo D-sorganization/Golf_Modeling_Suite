@@ -467,6 +467,9 @@ class TestCIEnvironmentCompatibility:
             assert f"command -v {executable}" in verify_script
             assert f"{executable} --version" in verify_script
 
+        cache_step = steps[step_names.index("Cache Rust target (check)")]
+        assert "${{ runner.name }}" in cache_step["with"]["key"]
+
     def test_tauri_build_contract_matches_package_scripts(self) -> None:
         """The Tauri action must invoke an npm script declared by the UI package."""
         try:
@@ -517,6 +520,11 @@ class TestCIEnvironmentCompatibility:
         assert windows_setup["shell"] == "pwsh"
         assert "rustup target add $env:RUST_TARGET" in windows_setup["run"]
         assert "dtolnay/rust-toolchain" not in windows_setup.get("uses", "")
+
+        cache_step = steps[step_names.index("Cache Rust target (build)")]
+        cache_key = cache_step["with"]["key"]
+        assert "${{ runner.name }}" in cache_key
+        assert "${{ matrix.target }}" in cache_key
 
     def test_bot_ci_trigger_validates_token_before_authenticated_trigger(
         self,

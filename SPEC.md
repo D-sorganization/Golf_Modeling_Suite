@@ -74,7 +74,9 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
   exposed two packaging-lane failures: the UI package now declares the
   `tauri` npm script expected by `tauri-apps/tauri-action`, and the Windows
   self-hosted build bootstraps Rust through PowerShell so it does not depend on
-  Git Bash path rewriting for the Rust setup action.
+  Git Bash path rewriting for the Rust setup action. The Tauri Rust target
+  caches are now keyed by runner name to prevent proc-macro artifacts compiled
+  against one self-hosted runner's glibc from being restored on another.
 - **2026-06-18** - Hardened the Tauri Build check after the UI audit recovery
   PR exposed DeskComputer runner PATH drift: `CARGO_HOME` is now rooted at the
   workspace, the Rust toolchain verifier persists `$CARGO_HOME/bin` into
