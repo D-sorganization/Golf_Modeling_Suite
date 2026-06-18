@@ -143,26 +143,26 @@ jobs:
   # Build - Full build on main/release
   # ===========================================================================
   build:
-    name: Build (${{ matrix.platform }})
+    name: Build (${{ matrix.artifact_name }})
     needs: check
     if: github.event_name == 'release' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     strategy:
       fail-fast: false
       matrix:
         include:
-          - platform: d-sorg-fleet-docker
+          - artifact_name: linux-x64
             os: linux
+            runner: d-sorg-fleet-docker
             target: x86_64-unknown-linux-gnu
-            artifact: linux-x64
-          - platform: [self-hosted, Windows]
+          - artifact_name: windows-x64
             os: windows
+            runner: [self-hosted, Windows]
             target: x86_64-pc-windows-msvc
-            artifact: windows-x64
           # macOS leg removed: org has no `[self-hosted, macOS]` runners. Jobs
           # with this label queued indefinitely. Re-add when macOS runner
           # capacity is provisioned and macOS becomes an active deliverable.
 
-    runs-on: ${{ matrix.platform }}
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
@@ -174,7 +174,7 @@ jobs:
           cache: "npm"
           cache-dependency-path: ui/package-lock.json
 
-      - name: Setup Rust
+      - name: Setup Rust (Unix)
         if: matrix.os != 'windows'
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8
         with:
@@ -194,6 +194,8 @@ jobs:
             $env:PATH = "$cargoBin;$env:PATH"
             $cargoBin | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           }
+          rustup toolchain install stable --profile minimal --target $env:RUST_TARGET
+          rustup default stable
           rustup target add $env:RUST_TARGET
           rustup --version
           rustc --version
@@ -242,7 +244,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: golf-modeling-suite-${{ matrix.artifact }}
+          name: golf-modeling-suite-${{ matrix.artifact_name }}
           path: |
             ui/src-tauri/target/release/bundle/**/*
           if-no-files-found: warn

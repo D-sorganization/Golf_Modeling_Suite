@@ -9,10 +9,10 @@ These tests verify that:
 This file addresses infrastructure issues identified in CI pipeline failures.
 """
 
+import json
 import sys
 import subprocess
 import re
-import json
 from pathlib import Path
 from typing import Any
 
@@ -470,32 +470,52 @@ class TestCIEnvironmentCompatibility:
         cache_step = steps[step_names.index("Cache Rust target (check)")]
         assert "${{ runner.name }}" in cache_step["with"]["key"]
 
-    def test_tauri_build_contract_matches_package_scripts(self) -> None:
-        """The Tauri action must invoke an npm script declared by the UI package."""
-        try:
-            import yaml
-        except ImportError:
-            pytest.skip("PyYAML is required for workflow structure checks")
-
-        workflow = yaml.safe_load(
-            (REPO_ROOT / ".github" / "workflows" / "tauri-build.yml").read_text(
-                encoding="utf-8",
-            ),
-        )
-        package = json.loads(
+    def test_tauri_action_script_exists_for_build_workflow(self) -> None:
+        """The Tauri action invokes npm run tauri build by default."""
+        package_json = json.loads(
             (REPO_ROOT / "ui" / "package.json").read_text(encoding="utf-8")
         )
+        scripts = package_json["scripts"]
+
+        assert scripts["tauri"] == "tauri"
+        assert scripts["tauri:build"] == "tauri build"
+
+    def test_tauri_build_matrix_uses_named_runner_metadata(self) -> None:
+        """Tauri build jobs must not expose array runner labels in job names."""
+        try:
+            import yaml
+        except ImportError:
+            pytest.skip("PyYAML is required for workflow structure checks")
+
+        workflow_path = REPO_ROOT / ".github" / "workflows" / "tauri-build.yml"
+        workflow_text = workflow_path.read_text(encoding="utf-8")
+        workflow = yaml.safe_load(workflow_text)
         build_job = workflow["jobs"]["build"]
-        steps = build_job["steps"]
-        tauri_step = next(
-            step for step in steps if step.get("name") == "Build Tauri app"
+        matrix_entries = build_job["strategy"]["matrix"]["include"]
+
+        assert build_job["name"] == "Build (${{ matrix.artifact_name }})"
+        assert build_job["runs-on"] == "${{ matrix.runner }}"
+        assert "matrix.platform" not in workflow_text
+        assert {entry["artifact_name"] for entry in matrix_entries} == {
+            "linux-x64",
+            "windows-x64",
+        }
+        for entry in matrix_entries:
+            assert "platform" not in entry
+            assert isinstance(entry["artifact_name"], str)
+            assert entry["os"] in {"linux", "windows"}
+
+        upload = next(
+            step
+            for step in build_job["steps"]
+            if step.get("name") == "Upload artifacts"
+        )
+        assert upload["with"]["name"] == (
+            "golf-modeling-suite-${{ matrix.artifact_name }}"
         )
 
-        assert package["scripts"]["tauri"] == "tauri"
-        assert tauri_step["with"]["projectPath"] == "ui"
-
-    def test_tauri_windows_build_uses_powershell_rust_bootstrap(self) -> None:
-        """Windows self-hosted builds must not depend on Bash path handling."""
+    def test_tauri_windows_build_avoids_bash_rust_toolchain_action(self) -> None:
+        """Windows self-hosted build setup must avoid the bash-based Rust action."""
         try:
             import yaml
         except ImportError:
@@ -507,21 +527,31 @@ class TestCIEnvironmentCompatibility:
             ),
         )
         build_job = workflow["jobs"]["build"]
-        matrix_entries = build_job["strategy"]["matrix"]["include"]
         steps = build_job["steps"]
-        step_names = [step.get("name") for step in steps]
-        windows_setup = steps[step_names.index("Setup Rust (Windows)")]
-        linux_setup = steps[step_names.index("Setup Rust")]
+        unix_setup = next(
+            step for step in steps if step.get("name") == "Setup Rust (Unix)"
+        )
+        windows_setup = next(
+            step for step in steps if step.get("name") == "Setup Rust (Windows)"
+        )
 
-        assert any(entry["os"] == "windows" for entry in matrix_entries)
-        assert any(entry["os"] == "linux" for entry in matrix_entries)
-        assert linux_setup["if"] == "matrix.os != 'windows'"
+        assert unix_setup["if"] == "matrix.os != 'windows'"
+        assert "dtolnay/rust-toolchain" in unix_setup["uses"]
         assert windows_setup["if"] == "matrix.os == 'windows'"
         assert windows_setup["shell"] == "pwsh"
-        assert "rustup target add $env:RUST_TARGET" in windows_setup["run"]
         assert "dtolnay/rust-toolchain" not in windows_setup.get("uses", "")
+        windows_script = windows_setup["run"]
+        assert (
+            "rustup toolchain install stable --profile minimal --target $env:RUST_TARGET"
+            in windows_script
+        )
+        assert "rustup default stable" in windows_script
+        assert "rustup target add $env:RUST_TARGET" in windows_script
+        assert "cargo --version" in windows_script
 
-        cache_step = steps[step_names.index("Cache Rust target (build)")]
+        cache_step = next(
+            step for step in steps if step.get("name") == "Cache Rust target (build)"
+        )
         cache_key = cache_step["with"]["key"]
         assert "${{ runner.name }}" in cache_key
         assert "${{ matrix.target }}" in cache_key
