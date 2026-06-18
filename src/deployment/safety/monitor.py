@@ -138,6 +138,25 @@ class SafetyMonitor:
         self._human_nearby = False
         self._emergency_stop = False
 
+    def _build_status(self, violations: list[str], warnings: list[str]) -> SafetyStatus:
+        if violations:
+            level = SafetyStatusLevel.ERROR
+            is_safe = False
+        elif warnings:
+            level = SafetyStatusLevel.WARNING
+            is_safe = True
+        else:
+            level = SafetyStatusLevel.OK
+            is_safe = True
+
+        return SafetyStatus(
+            level=level,
+            is_safe=is_safe,
+            violations=violations,
+            warnings=warnings,
+            speed_override=self._speed_override,
+        )
+
     def check_state(self, state: RobotState) -> SafetyStatus:  # noqa: C901
         """Check if current state is safe.
 
@@ -189,24 +208,7 @@ class SafetyMonitor:
         if self._emergency_stop:
             violations.append("Emergency stop active")
 
-        # Determine status level
-        if violations:
-            level = SafetyStatusLevel.ERROR
-            is_safe = False
-        elif warnings:
-            level = SafetyStatusLevel.WARNING
-            is_safe = True
-        else:
-            level = SafetyStatusLevel.OK
-            is_safe = True
-
-        return SafetyStatus(
-            level=level,
-            is_safe=is_safe,
-            violations=violations,
-            warnings=warnings,
-            speed_override=self._speed_override,
-        )
+        return self._build_status(violations, warnings)
 
     def check_command(self, command: ControlCommand) -> SafetyStatus:  # noqa: C901
         """Check if command would result in safe state.
@@ -261,24 +263,7 @@ class SafetyMonitor:
         if self._emergency_stop:
             violations.append("Emergency stop active")
 
-        # Determine status
-        if violations:
-            level = SafetyStatusLevel.ERROR
-            is_safe = False
-        elif warnings:
-            level = SafetyStatusLevel.WARNING
-            is_safe = True
-        else:
-            level = SafetyStatusLevel.OK
-            is_safe = True
-
-        return SafetyStatus(
-            level=level,
-            is_safe=is_safe,
-            violations=violations,
-            warnings=warnings,
-            speed_override=self._speed_override,
-        )
+        return self._build_status(violations, warnings)
 
     def compute_safe_command(  # noqa: C901
         self,
