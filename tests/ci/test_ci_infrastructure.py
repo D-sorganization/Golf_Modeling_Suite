@@ -480,6 +480,26 @@ class TestCIEnvironmentCompatibility:
         assert scripts["tauri"] == "tauri"
         assert scripts["tauri:build"] == "tauri build"
 
+    def test_tauri_npm_and_rust_minor_versions_match(self) -> None:
+        """The Tauri release build rejects mismatched npm and Rust minors."""
+        package_lock = json.loads(
+            (REPO_ROOT / "ui" / "package-lock.json").read_text(encoding="utf-8")
+        )
+        cargo_lock = (REPO_ROOT / "ui" / "src-tauri" / "Cargo.lock").read_text(
+            encoding="utf-8"
+        )
+        tauri_match = re.search(
+            r'(?ms)^name = "tauri"\s+version = "([^"]+)"',
+            cargo_lock,
+        )
+        assert tauri_match is not None
+
+        rust_minor = ".".join(tauri_match.group(1).split(".")[:2])
+        npm_packages = package_lock["packages"]
+        for package_name in ("@tauri-apps/api", "@tauri-apps/cli"):
+            npm_version = npm_packages[f"node_modules/{package_name}"]["version"]
+            assert ".".join(npm_version.split(".")[:2]) == rust_minor
+
     def test_tauri_build_matrix_uses_named_runner_metadata(self) -> None:
         """Tauri build jobs must not expose array runner labels in job names."""
         try:
