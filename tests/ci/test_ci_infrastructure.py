@@ -12,6 +12,7 @@ This file addresses infrastructure issues identified in CI pipeline failures.
 import sys
 import subprocess
 import re
+import json
 from pathlib import Path
 from typing import Any
 
@@ -422,6 +423,57 @@ class TestCIEnvironmentCompatibility:
         for executable in ("rustup", "rustc", "cargo"):
             assert f"command -v {executable}" in verify_script
             assert f"{executable} --version" in verify_script
+
+    def test_tauri_build_contract_matches_package_scripts(self) -> None:
+        """The Tauri action must invoke an npm script declared by the UI package."""
+        try:
+            import yaml
+        except ImportError:
+            pytest.skip("PyYAML is required for workflow structure checks")
+
+        workflow = yaml.safe_load(
+            (REPO_ROOT / ".github" / "workflows" / "tauri-build.yml").read_text(
+                encoding="utf-8",
+            ),
+        )
+        package = json.loads(
+            (REPO_ROOT / "ui" / "package.json").read_text(encoding="utf-8")
+        )
+        build_job = workflow["jobs"]["build"]
+        steps = build_job["steps"]
+        tauri_step = next(
+            step for step in steps if step.get("name") == "Build Tauri app"
+        )
+
+        assert package["scripts"]["tauri"] == "tauri"
+        assert tauri_step["with"]["projectPath"] == "ui"
+
+    def test_tauri_windows_build_uses_powershell_rust_bootstrap(self) -> None:
+        """Windows self-hosted builds must not depend on Bash path handling."""
+        try:
+            import yaml
+        except ImportError:
+            pytest.skip("PyYAML is required for workflow structure checks")
+
+        workflow = yaml.safe_load(
+            (REPO_ROOT / ".github" / "workflows" / "tauri-build.yml").read_text(
+                encoding="utf-8",
+            ),
+        )
+        build_job = workflow["jobs"]["build"]
+        matrix_entries = build_job["strategy"]["matrix"]["include"]
+        steps = build_job["steps"]
+        step_names = [step.get("name") for step in steps]
+        windows_setup = steps[step_names.index("Setup Rust (Windows)")]
+        linux_setup = steps[step_names.index("Setup Rust")]
+
+        assert any(entry["os"] == "windows" for entry in matrix_entries)
+        assert any(entry["os"] == "linux" for entry in matrix_entries)
+        assert linux_setup["if"] == "matrix.os != 'windows'"
+        assert windows_setup["if"] == "matrix.os == 'windows'"
+        assert windows_setup["shell"] == "pwsh"
+        assert "rustup target add $env:RUST_TARGET" in windows_setup["run"]
+        assert "dtolnay/rust-toolchain" not in windows_setup.get("uses", "")
 
     def test_bot_ci_trigger_validates_token_before_authenticated_trigger(
         self,
