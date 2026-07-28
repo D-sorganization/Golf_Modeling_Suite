@@ -20,6 +20,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+import yaml
 
 # Try to import the launcher diagnostics module
 try:
@@ -33,6 +34,15 @@ except ImportError as e:
     pytest.skip(
         f"Cannot import launcher_diagnostics module: {e}", allow_module_level=True
     )
+
+
+def _local_model_ids() -> set[str]:
+    models_yaml = Path("src/config/models.yaml")
+    data = yaml.safe_load(models_yaml.read_text(encoding="utf-8"))
+    assert isinstance(data, dict)
+    models = data["models"]
+    assert isinstance(models, list)
+    return {model["id"] for model in models}
 
 
 @pytest.fixture(autouse=True)
@@ -113,8 +123,14 @@ class TestLauncherDiagnostics:
         """Test that expected tile IDs are defined."""
         diag = LauncherDiagnostics()
         expected_ids = diag.EXPECTED_TILE_IDS
+        local_ids = _local_model_ids()
 
-        assert len(expected_ids) == 17, "Assertion failed: len(expected_ids) == 17"
+        assert set(diag.PARENT_MANIFEST_TILE_IDS) == local_ids, (
+            "Assertion failed: parent manifest IDs match local models.yaml"
+        )
+        assert set(expected_ids) >= local_ids, (
+            "Assertion failed: runtime expected IDs cover local models.yaml IDs"
+        )
         assert "mujoco_unified" in expected_ids, (
             "Assertion failed: mujoco_unified in expected_ids"
         )
@@ -170,18 +186,22 @@ class TestLauncherDiagnostics:
         assert "passed" in summary, "Assertion failed: passed in summary"
         assert "failed" in summary, "Assertion failed: failed in summary"
         assert "warnings" in summary, "Assertion failed: warnings in summary"
+        assert "infos" in summary, "Assertion failed: infos in summary"
         assert "status" in summary, "Assertion failed: status in summary"
         assert "timestamp" in summary, "Assertion failed: timestamp in summary"
         assert "expected_tiles" in summary, (
             "Assertion failed: expected_tiles in summary"
         )
-        assert summary["expected_tiles"] == 17, (
-            "Assertion failed: summary[expected_tiles] == 17"
-        )
+        assert summary["expected_tiles"] == len(
+            LauncherDiagnostics.EXPECTED_TILE_IDS
+        ), "Assertion failed: summary[expected_tiles] matches expected IDs"
 
         # Verify counts add up
         assert (
-            summary["passed"] + summary["failed"] + summary["warnings"]
+            summary["passed"]
+            + summary["failed"]
+            + summary["warnings"]
+            + summary["infos"]
             == summary["total_checks"]
         )
 
@@ -498,8 +518,8 @@ class TestCLIDiagnostics:
             run_cli_diagnostics()
 
         log_text = caplog.text
-        assert "Golf Modeling Suite" in log_text, (
-            "Assertion failed: Golf Modeling Suite in log_text"
+        assert "UpstreamDrift - Launcher Diagnostics" in log_text, (
+            "Assertion failed: UpstreamDrift - Launcher Diagnostics in log_text"
         )
         assert "Status:" in log_text, "Assertion failed: Status: in log_text"
         assert "Recommendations:" in log_text, (
