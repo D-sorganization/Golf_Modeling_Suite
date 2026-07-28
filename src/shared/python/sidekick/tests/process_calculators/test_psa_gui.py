@@ -92,12 +92,8 @@ def test_results_panel_initialization(dummy_qapp):
     assert panel.h2_recovery_label.text() == "85.50%"
 
 
-@patch(
-    "sidekick.process_calculators.psa_package.ui.sensitivity_plot.calculate_o2_safety_analysis"
-)
-@patch(
-    "sidekick.process_calculators.psa_package.ui.sensitivity_plot.calculate_sensitivity"
-)
+@patch("sidekick.process_calculators.psa_package.psa_gui.calculate_o2_safety_analysis")
+@patch("sidekick.process_calculators.psa_package.psa_gui.calculate_sensitivity")
 def test_sensitivity_plot_widget(mock_calc_sens, mock_calc_o2, dummy_qapp):
     """Test the sensitivity plot widget."""
     import numpy as np
@@ -129,12 +125,12 @@ def test_sensitivity_plot_widget(mock_calc_sens, mock_calc_o2, dummy_qapp):
         widget._update_plot()
 
 
-@patch("sidekick.process_calculators.psa_package.ui.main_window.QMessageBox")
+@patch("sidekick.process_calculators.psa_package.psa_gui.QMessageBox")
 @patch("PyQt6.QtWidgets.QMainWindow.show")
 def test_psa_main_window_initialization(mock_show, mock_msg_box, dummy_qapp):
     """Test PSA main window initialization."""
     with patch(
-        "sidekick.process_calculators.psa_package.ui.main_window.PSAModel"
+        "sidekick.process_calculators.psa_package.psa_gui.PSAModel"
     ) as mock_model:
         mock_results = MagicMock()
         mock_results.h2_recovery_pct = 85.5
@@ -190,20 +186,20 @@ def test_psa_main_window_initialization(mock_show, mock_msg_box, dummy_qapp):
 
         # Test notebook launches
         with patch(  # noqa: SIM117
-            "sidekick.process_calculators.psa_package.ui.main_window.subprocess.Popen"
+            "sidekick.process_calculators.psa_package.psa_gui.subprocess.Popen"
         ) as mock_popen:
             with patch(
-                "sidekick.process_calculators.psa_package.ui.main_window.os.path.exists",
+                "sidekick.process_calculators.psa_package.psa_gui.os.path.exists",
                 return_value=True,
             ):
                 window._launch_jupyter()
                 assert mock_popen.called
 
         with patch(  # noqa: SIM117
-            "sidekick.process_calculators.psa_package.ui.main_window.subprocess.Popen"
+            "sidekick.process_calculators.psa_package.psa_gui.subprocess.Popen"
         ) as mock_popen2:
             with patch(
-                "sidekick.process_calculators.psa_package.ui.main_window.os.path.exists",
+                "sidekick.process_calculators.psa_package.psa_gui.os.path.exists",
                 return_value=True,
             ):
                 window._launch_webapp()
@@ -211,7 +207,7 @@ def test_psa_main_window_initialization(mock_show, mock_msg_box, dummy_qapp):
 
         # Test Colab launch
         with patch(
-            "sidekick.process_calculators.psa_package.ui.main_window.webbrowser.open"
+            "sidekick.process_calculators.psa_package.psa_gui.webbrowser.open"
         ) as mock_web:
             window._launch_colab()
             assert not mock_web.called
