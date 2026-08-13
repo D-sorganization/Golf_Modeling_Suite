@@ -2640,3 +2640,4 @@ Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linal
 
 - Optimized sum of squares calculation in `launch_monitor` module using `np.vdot` instead of `np.sum` to avoid intermediate array allocations. (spec-exempt: micro-optimization)
 - `spec-exempt` (#8483): Moved Sidekick readiness monitoring, degradation reporting, and workspace seeding from the main launcher facade into the existing launcher-owned `SidekickSidebarManager`.
+- (spec-exempt: security fix) Fixed user enumeration via timing attack in `/login` endpoint by ensuring a dummy password verification is performed even if the user is not found, to normalize response time.
