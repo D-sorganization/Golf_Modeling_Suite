@@ -108,3 +108,8 @@
 ## 2025-02-23 - Fast Small Vector Norms
 **Learning:** `math.hypot(*v)` unpacks the elements. If `v` has 4 elements, it will fail on older python versions (<=3.7).
 **Action:** The codebase uses Python 3.12+, so unpacking 3 or 4 elements into `math.hypot` is supported and safe.
+
+## 2024-05-30 - [Replacing Np.Linalg.Norm With Math.Sqrt(Np.Vdot) in IK Loop]
+**Learning:** In tight iterative loops (like the Levenberg-Marquardt IK solver in `pinocchio_backend.py`), using `np.linalg.norm` for small error arrays incurs significant Python overhead due to NumPy's dispatching. Using `math.sqrt(np.vdot(err, err))` bypasses this overhead and is noticeably faster for small 1D arrays, resulting in an overall speedup for IK iterations without altering mathematics or data types.
+**Action:** When finding operations on small static vectors in hot loops (like IK solvers), prefer explicitly calculating the norm with `math.sqrt(np.vdot(arr, arr))` over `np.linalg.norm` if the vector length is small but dynamic (or hard to unpack).
+
