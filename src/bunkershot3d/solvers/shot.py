@@ -391,9 +391,10 @@ def _entry_position(
             f"vertical velocity is {kinematics.velocity_m_s[2]:.6g} m/s; set "
             "free_flight_lead_steps=0 for a level or rising delivery"
         )
-    return position - (
-        config.free_flight_lead_steps * config.time_step_s
-    ) * kinematics.velocity_m_s
+    return (
+        position
+        - (config.free_flight_lead_steps * config.time_step_s) * kinematics.velocity_m_s
+    )
 
 
 @dataclass(slots=True)

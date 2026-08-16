@@ -123,9 +123,7 @@ def shot(wedge: SurfaceElements) -> ShotResult:
         refusal_policy=RefusalPolicy.REPORT,
     )
     angle = math.radians(_ATTACK_ANGLE_DEG)
-    velocity = _DELIVERY_SPEED_M_S * np.array(
-        [-math.cos(angle), 0.0, -math.sin(angle)]
-    )
+    velocity = _DELIVERY_SPEED_M_S * np.array([-math.cos(angle), 0.0, -math.sin(angle)])
     return simulate_shot(
         solver,
         wedge,
@@ -173,9 +171,7 @@ class TestDivotMetricsFromARawShot:
         assert 0.002 < divot.max_depth_m < 0.060
         assert divot.length_m > 0.0
         assert divot.section_area_m2 > 0.0
-        assert divot.volume_m3 == pytest.approx(
-            divot.section_area_m2 * _SOLE_WIDTH_M
-        )
+        assert divot.volume_m3 == pytest.approx(divot.section_area_m2 * _SOLE_WIDTH_M)
         assert divot.mass_kg > 0.0
         assert divot.submerged_duration_s > 0.0
 
