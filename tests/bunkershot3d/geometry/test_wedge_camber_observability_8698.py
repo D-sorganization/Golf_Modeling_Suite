@@ -142,12 +142,19 @@ class TestTheCallerCanDetectTheSubstitution:
         )
 
     def test_an_unclamped_design_reports_no_substitution(self) -> None:
+        """The flag must not be trivially true: a clean design says so.
+
+        The unrelieved centre station is the one that carries the *declared*
+        camber; relieved stations are a separate account, checked below.
+        """
         wedge = build_reference_wedge()
         result = loft_wedge(wedge, camber_fit=CamberFit.NEAREST, **COARSE)
         assert result.camber_was_clamped is False
         assert result.effective_camber_area_m2 == wedge.sole_camber_area_m2
         assert result.camber_substitution_m2 == 0.0
-        assert result.clamped_stations == ()
+        centre = next(s for s in result.stations if s.sole_width_m == wedge.sole_width_m)
+        assert centre.was_clamped is False
+        assert centre.camber_substitution_m2 == 0.0
 
     def test_relieved_stations_are_reported_station_by_station(self) -> None:
         """Relief scales the request; a narrow station may still not carry it.
