@@ -365,6 +365,52 @@ def _require_constructible_declaration(
     )
 
 
+def _stitch_sections(
+    geometry: WedgeGeometry,
+    span: NDArray[np.float64],
+    sections: list[NDArray[np.float64]],
+) -> TriangleMesh:
+    """Place the cross-sections in the head frame and close them into a solid.
+
+    Args:
+        geometry: The wedge design vector, supplying the face progression.
+        span: Spanwise station positions, heel to toe.
+        sections: One planar polygon per station, all the same length.
+
+    Returns:
+        A mesh that has passed :func:`~.mesh.require_watertight`.
+
+    Raises:
+        MeshValidationError: If the stitched mesh is not a valid solid.
+    """
+    half = float(span[-1])
+    n_stations = len(sections)
+    n_points = sections[0].shape[0]
+    vertices = np.zeros((n_stations * n_points + 2, 3))
+    for index, (station, polygon) in enumerate(zip(span, sections, strict=True)):
+        block = slice(index * n_points, (index + 1) * n_points)
+        vertices[block, 0] = polygon[:, 0] + geometry.face_progression_m
+        vertices[block, 1] = station
+        vertices[block, 2] = polygon[:, 1]
+    vertices[-2] = (
+        float(sections[0][:, 0].mean()) + geometry.face_progression_m,
+        -half,
+        float(sections[0][:, 1].mean()),
+    )
+    vertices[-1] = (
+        float(sections[-1][:, 0].mean()) + geometry.face_progression_m,
+        half,
+        float(sections[-1][:, 1].mean()),
+    )
+
+    faces = _stitch(n_stations, n_points)
+    mesh = TriangleMesh(vertices, faces)
+    if signed_volume_m3(mesh) < 0.0:
+        mesh = TriangleMesh(vertices, faces[:, ::-1])
+    require_watertight(mesh, context="lofted wedge head")
+    return mesh
+
+
 def loft_wedge(
     geometry: WedgeGeometry,
     *,
@@ -436,29 +482,7 @@ def loft_wedge(
         polygon = _chamfer_rear_corner(polygon, geometry.trailing_relief_fraction)
         sections.append(_apply_rocker(polygon, float(lift), top_z_m))
 
-    n_points = sections[0].shape[0]
-    vertices = np.zeros((n_stations * n_points + 2, 3))
-    for index, (station, polygon) in enumerate(zip(span, sections, strict=True)):
-        block = slice(index * n_points, (index + 1) * n_points)
-        vertices[block, 0] = polygon[:, 0] + geometry.face_progression_m
-        vertices[block, 1] = station
-        vertices[block, 2] = polygon[:, 1]
-    vertices[-2] = (
-        float(sections[0][:, 0].mean()) + geometry.face_progression_m,
-        -half,
-        float(sections[0][:, 1].mean()),
-    )
-    vertices[-1] = (
-        float(sections[-1][:, 0].mean()) + geometry.face_progression_m,
-        half,
-        float(sections[-1][:, 1].mean()),
-    )
-
-    faces = _stitch(n_stations, n_points)
-    mesh = TriangleMesh(vertices, faces)
-    if signed_volume_m3(mesh) < 0.0:
-        mesh = TriangleMesh(vertices, faces[:, ::-1])
-    require_watertight(mesh, context="lofted wedge head")
+    mesh = _stitch_sections(geometry, span, sections)
     return LoftedWedge(
         mesh=mesh,
         geometry=geometry,

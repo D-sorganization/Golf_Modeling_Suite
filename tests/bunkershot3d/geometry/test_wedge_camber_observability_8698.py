@@ -152,7 +152,9 @@ class TestTheCallerCanDetectTheSubstitution:
         assert result.camber_was_clamped is False
         assert result.effective_camber_area_m2 == wedge.sole_camber_area_m2
         assert result.camber_substitution_m2 == 0.0
-        centre = next(s for s in result.stations if s.sole_width_m == wedge.sole_width_m)
+        centre = next(
+            s for s in result.stations if s.sole_width_m == wedge.sole_width_m
+        )
         assert centre.was_clamped is False
         assert centre.camber_substitution_m2 == 0.0
 

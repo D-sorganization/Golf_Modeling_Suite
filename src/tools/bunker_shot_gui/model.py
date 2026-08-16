@@ -908,9 +908,7 @@ class WorkbenchModel:
             shot=shot,
             playability=window,
             # Free: the build is cached, and run_shot has already made it.
-            effective_camber_area_m2=self.head_build(
-                geometry
-            ).effective_camber_area_m2,
+            effective_camber_area_m2=self.head_build(geometry).effective_camber_area_m2,
         )
 
     def compare(

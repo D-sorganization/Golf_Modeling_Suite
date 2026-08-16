@@ -125,8 +125,10 @@ def _scalar_axis(
         Two options per matching parameter; ``(_KEEP_BASE,)`` when absent.
     """
     options = tuple(
-        (f"{parameter.name} = {bound * names[parameter.name] * scale:.3f} {unit}",
-         bound * names[parameter.name])
+        (
+            f"{parameter.name} = {bound * names[parameter.name] * scale:.3f} {unit}",
+            bound * names[parameter.name],
+        )
         for parameter in parameters
         if parameter.name in names
         for bound in (float(parameter.lower), float(parameter.upper))
@@ -147,8 +149,7 @@ def _bounce_axis(
         convention; ``(_KEEP_BASE_BOUNCE,)`` when none is present.
     """
     options: list[_BounceOption] = [
-        (f"{parameter.name} = {bound:.3f} deg",
-         (_BOUNCE_NAMES[parameter.name], bound))
+        (f"{parameter.name} = {bound:.3f} deg", (_BOUNCE_NAMES[parameter.name], bound))
         for parameter in parameters
         if parameter.name in _BOUNCE_NAMES
         for bound in (float(parameter.lower), float(parameter.upper))
