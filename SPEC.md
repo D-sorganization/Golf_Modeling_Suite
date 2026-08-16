@@ -50,6 +50,30 @@ passivity, work--energy, time-refinement, station-refinement, and engine-parity
 gates pass; no natural active-set transition occurs. This qualifies a synthetic
 contact discretization, not measured grip pressure, shaft response, delivery
 benefit, timing economy, human transfer, or technique.
+Issues #8703 and #8704 (epic #8699) withdraw two BunkerShot3D outputs from
+quotable status. The `dig_vs_skid` verdict returned `MARGINAL` at all 77 demo
+design points with slope ratios spanning 0.9987--1.0000: the shipped 10 mm
+entry window is about 0.4 ms at a 25 m/s delivery, over which a 0.3 kg head
+under an order-5 N.s impulse cannot deflect measurably. Resizing the window was
+measured over 48 design points before being rejected -- the ratio span grows
+from 0.0015 at 10 mm to 0.28 at half the divot length, but its correlation with
+maximum sole depth is negative at every informative window (-0.50 to -0.68), so
+a resized window inverts the verdict rather than calibrating it. The ratio is
+pinned at 1 for a vanishing window and at 0 for a window spanning the divot,
+for every design, so no window size is a free parameter. Every `DigSkidResult`
+therefore carries a `DigSkidCalibration` reporting `calibrated=False`, and both
+degenerate window ends are refused rather than clipped. A separating verdict
+requires a quantity that varies with the design -- sole depth does -- and an
+absolute threshold that is not published. Issue #8704 makes the sand-to-ball
+transfer efficiency a function of the bed's relative density,
+`eta(D_r) = efficiency * (1 - packing_sensitivity * (1 - D_r))`, which restores
+the physical ordering of ball speed with lie firmness (firm 11.37 m/s, wet
+8.12, fluffy 7.84, plugged 7.09, against a previous inverted firm 12.13 /
+fluffy 12.55 / plugged 12.60). The direction follows critical-state dilatancy;
+the magnitude is an assumed placeholder recorded in the launch provenance under
+`bed_packing_dependence`, and ball speed remains `BEYOND_VALIDATION` because
+issue #8616 found no published measurement of ball speed, launch angle or spin
+out of sand.
 Issue #8556 remains blocked on governed human bilateral six-axis
 grip-wrench acquisition, and all new scientific content must regenerate the
 inventory and reopen adjudication until every new candidate is reviewed.
