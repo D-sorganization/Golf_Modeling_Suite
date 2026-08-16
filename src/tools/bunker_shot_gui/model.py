@@ -617,7 +617,7 @@ class WorkbenchModel:
             impulse_n_s=float(np.linalg.norm(result.impulse_n_s)),
             entry_speed_mps=result.entry_speed_m_s,
             exit_speed_mps=result.exit_speed_m_s,
-            max_depth_m=result.max_depth_m,
+            max_depth_m=result.max_sole_depth_m,
             contact_duration_s=result.contact_duration_s,
             peak_inertial_fraction=(
                 float(result.inertial_fractions.max())
