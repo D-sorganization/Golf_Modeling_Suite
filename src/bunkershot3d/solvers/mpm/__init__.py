@@ -54,13 +54,27 @@ from .constitutive import (
     reconstruct,
     yield_function,
 )
+from .grid import (
+    NODES_PER_PARTICLE,
+    STENCIL_WIDTH,
+    GridInterpolation,
+    PlaneStrainGrid,
+    apic_angular_momentum,
+    cross_2d,
+)
 
 __all__ = [
     "HARDIN_RICHART_ANGULAR_COEFFICIENT_KPA",
     "HARDIN_RICHART_ROUND_COEFFICIENT_KPA",
+    "NODES_PER_PARTICLE",
     "PLANE_STRAIN_DIMENSION",
     "SAND_POISSON_RATIO",
+    "STENCIL_WIDTH",
+    "GridInterpolation",
+    "PlaneStrainGrid",
     "SandContinuum",
+    "apic_angular_momentum",
+    "cross_2d",
     "drucker_prager_alpha",
     "hencky_kirchhoff_principal",
     "principal_stretches",
