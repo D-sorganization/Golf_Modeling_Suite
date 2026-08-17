@@ -17,6 +17,7 @@ What this package is
 * :mod:`.grid` -- the Eulerian background grid, quadratic B-splines and
   the **APIC** transfers, which conserve linear *and* angular momentum
   where PIC damps and FLIP rings.
+* :mod:`.state` -- particles, bed initialisation and the domain walls.
 * :mod:`.body` -- the clubhead as a rigid moving plane-strain section,
   with the contact treatment that stops material tunnelling through it.
 * :mod:`.solver` -- :class:`~bunkershot3d.solvers.mpm.solver.PlaneStrainMPMSolver`,
@@ -24,8 +25,21 @@ What this package is
   protocol so F1 is swappable with F0.
 * :mod:`.envelope` -- the F1 validity verdict, its caveats, and the
   quantities ADR-0033 refuses outright.
-* :mod:`.verification` -- conservation residuals, the analytic cases, the
+* :mod:`.verification` -- conservation residuals, the analytic case, the
   grid-convergence study and the F0 cross-check.
+
+Verified is not validated
+-------------------------
+
+The :mod:`.verification` suite shows this solver **solves its equations
+correctly**: mass exactly, momentum to round-off, energy at first order
+in the step, a 1.6% match to a closed-form consolidation answer, and
+monotone grid convergence with a 1.1% GCI.  None of that is evidence that
+the equations describe golf bunker sand.  Validation for this package
+stands at NASA-STD-7009B level **0 of 4** because issue #8616 found no
+published measurement of any quantity it produces, so every verdict this
+tier issues is :attr:`~bunkershot3d.solvers.envelope.EnvelopeStatus.BEYOND_VALIDATION`
+and cannot be better.
 
 What it is not
 --------------
@@ -34,13 +48,14 @@ Plane strain has **no out-of-plane flow**: sand moving heel-to-toe along
 the face does not exist in this model, and no refinement adds it.  F1 is
 specified at bulk resolution (``dx ~ 1-2 mm``) for the 10-100 mm flow
 features, so the ~0.5 mm leading edge is deliberately under-resolved and
-**club force remains F0's to report**.  Validation for this package
-stands at NASA-STD-7009B level 0 of 4; nothing here is a physical
-prediction.
+**club force remains F0's to report** --
+:func:`~bunkershot3d.solvers.mpm.envelope.require_quotable` raises rather
+than leaving that to documentation.
 """
 
 from __future__ import annotations
 
+from .body import ContactImpulse, RigidSection, convex_hull_2d, plane_torque_about_y
 from .constitutive import (
     HARDIN_RICHART_ANGULAR_COEFFICIENT_KPA,
     HARDIN_RICHART_ROUND_COEFFICIENT_KPA,
@@ -54,6 +69,14 @@ from .constitutive import (
     reconstruct,
     yield_function,
 )
+from .envelope import (
+    F1_STANDING_CAVEATS,
+    MIN_CELLS_PER_GRAIN,
+    MIN_CELLS_PER_RESOLVED_FEATURE,
+    RefusedQuantity,
+    evaluate_f1_envelope,
+    require_quotable,
+)
 from .grid import (
     NODES_PER_PARTICLE,
     STENCIL_WIDTH,
@@ -62,23 +85,73 @@ from .grid import (
     apic_angular_momentum,
     cross_2d,
 )
+from .solver import (
+    DEFAULT_CFL_NUMBER,
+    MPMRun,
+    PlaneStrainMPMSolver,
+    StepDiagnostics,
+    cfl_time_step_s,
+)
+from .state import (
+    DomainWalls,
+    ParticleState,
+    WallCondition,
+    settled_bed,
+    surface_profile_m,
+)
+from .verification import (
+    ColumnEquilibrium,
+    F0CrossCheck,
+    column_grid_convergence,
+    cross_check_against_f0,
+    elastic_column_equilibrium,
+    energy_residuals,
+    free_fall_residuals,
+)
 
 __all__ = [
+    "DEFAULT_CFL_NUMBER",
+    "F1_STANDING_CAVEATS",
     "HARDIN_RICHART_ANGULAR_COEFFICIENT_KPA",
     "HARDIN_RICHART_ROUND_COEFFICIENT_KPA",
+    "MIN_CELLS_PER_GRAIN",
+    "MIN_CELLS_PER_RESOLVED_FEATURE",
     "NODES_PER_PARTICLE",
     "PLANE_STRAIN_DIMENSION",
     "SAND_POISSON_RATIO",
     "STENCIL_WIDTH",
+    "ColumnEquilibrium",
+    "ContactImpulse",
+    "DomainWalls",
+    "F0CrossCheck",
     "GridInterpolation",
+    "MPMRun",
+    "ParticleState",
     "PlaneStrainGrid",
+    "PlaneStrainMPMSolver",
+    "RefusedQuantity",
+    "RigidSection",
     "SandContinuum",
+    "StepDiagnostics",
+    "WallCondition",
     "apic_angular_momentum",
+    "cfl_time_step_s",
+    "column_grid_convergence",
+    "convex_hull_2d",
     "cross_2d",
+    "cross_check_against_f0",
     "drucker_prager_alpha",
+    "elastic_column_equilibrium",
+    "energy_residuals",
+    "evaluate_f1_envelope",
+    "free_fall_residuals",
     "hencky_kirchhoff_principal",
+    "plane_torque_about_y",
     "principal_stretches",
     "project_to_yield_surface",
     "reconstruct",
+    "require_quotable",
+    "settled_bed",
+    "surface_profile_m",
     "yield_function",
 ]
