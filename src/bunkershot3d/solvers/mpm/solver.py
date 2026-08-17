@@ -61,7 +61,7 @@ from ..elements import SurfaceElements
 from ..envelope import GRAVITY_M_S2, RefusalPolicy, ValidityVerdict
 from ..exceptions import SolverInputError
 from ..protocol import FidelityTier, IntrusionState, SolverResult, Wrench
-from .body import RigidSection
+from .body import ContactImpulse, RigidSection
 from .constitutive import (
     SandContinuum,
     hencky_kirchhoff_principal,
@@ -105,6 +105,19 @@ _DIMENSION = 2
 _MASS_FLOOR_KG = 1e-15
 _MIN_APPROACH_CLEARANCE_CELLS = 2.0
 _SURFACE_BINS = 64
+
+_NO_CONTACT = ContactImpulse(
+    node_index=np.zeros(0, dtype=np.int64),
+    impulse_n_s=np.zeros((0, _DIMENSION)),
+    position_m=np.zeros((0, _DIMENSION)),
+    stress_force_n=np.zeros(_DIMENSION),
+    n_swept=0,
+)
+"""The ledger of a step with no intruder at all.
+
+A bed marched without a club is a *closed* system, which is the only
+configuration whose momentum budget is an identity rather than a balance
+against a boundary -- so it is what the conservation cases run on."""
 
 
 def cfl_time_step_s(
@@ -213,7 +226,10 @@ class MPMRun:
         time_step_s: The CFL step the march used.
         particles: Final particle state.
         grid: The background grid.
-        section: Final club pose.
+        section: Final club pose, or ``None`` for a bed marched with no
+            intruder at all -- which is what the conservation cases need,
+            since a closed system is the only one whose momentum budget
+            is an identity rather than a balance against a boundary.
         free_surface_height_m: The undisturbed surface the run started
             from.
         bed_x_bounds_m: Horizontal extent of the bed.
@@ -223,7 +239,7 @@ class MPMRun:
     time_step_s: float
     particles: ParticleState
     grid: PlaneStrainGrid
-    section: RigidSection
+    section: RigidSection | None
     free_surface_height_m: float
     bed_x_bounds_m: tuple[float, float]
 
@@ -521,7 +537,7 @@ class PlaneStrainMPMSolver:
     def march(
         self,
         particles: ParticleState,
-        section: RigidSection,
+        section: RigidSection | None,
         grid: PlaneStrainGrid,
         *,
         n_steps: int,
@@ -587,7 +603,8 @@ class PlaneStrainMPMSolver:
                 damping_per_step=damping_per_step,
             )
             diagnostics.append(report)
-            moving = moving.advanced(time_step_s)
+            if moving is not None:
+                moving = moving.advanced(time_step_s)
 
         return MPMRun(
             steps=tuple(diagnostics),
@@ -604,7 +621,7 @@ class PlaneStrainMPMSolver:
     def _advance(
         self,
         particles: ParticleState,
-        section: RigidSection,
+        section: RigidSection | None,
         grid: PlaneStrainGrid,
         node_positions: NDArray[np.float64],
         *,
@@ -640,13 +657,15 @@ class PlaneStrainMPMSolver:
         if damping_per_step > 0.0:
             updated *= 1.0 - damping_per_step
         apply_wall_conditions(grid, updated, self.walls)
-        updated, impulse = section.project_grid_velocity(
-            node_positions,
-            updated,
-            nodal_mass,
-            time_step_s=time_step_s,
-            stress_force_n=applied_force,
-        )
+        impulse = _NO_CONTACT
+        if section is not None:
+            updated, impulse = section.project_grid_velocity(
+                node_positions,
+                updated,
+                nodal_mass,
+                time_step_s=time_step_s,
+                stress_force_n=applied_force,
+            )
 
         particles.velocity_m_s = gather_velocity(stencil, updated)
         particles.affine = affine_from_grid_velocity(grid, stencil, updated)
@@ -661,17 +680,20 @@ class PlaneStrainMPMSolver:
         particles.position_m = (
             particles.position_m + time_step_s * particles.velocity_m_s
         )
-        particles.position_m, particles.velocity_m_s, pushed = section.push_out(
-            particles.position_m, particles.velocity_m_s
-        )
+        pushed = 0
+        if section is not None:
+            particles.position_m, particles.velocity_m_s, pushed = section.push_out(
+                particles.position_m, particles.velocity_m_s
+            )
 
+        reference = (
+            np.zeros(_DIMENSION) if section is None else section.reference_point_m
+        )
         return StepDiagnostics(
             time_s=float(elapsed_s),
             contact_force_n_per_m=impulse.force_on_body_n(time_step_s),
             stress_force_n_per_m=-impulse.stress_force_n,
-            contact_torque_n=impulse.torque_on_body_n_m(
-                time_step_s, section.reference_point_m
-            ),
+            contact_torque_n=impulse.torque_on_body_n_m(time_step_s, reference),
             n_contacts=impulse.n_contacts,
             n_swept=impulse.n_swept,
             n_pushed_out=int(pushed),
@@ -737,8 +759,12 @@ class PlaneStrainMPMSolver:
         if len(state.elements) == 0:
             raise SolverInputError("the intruder has no surface elements")
 
-    def _require_courant(self, section: RigidSection, time_step_s: float) -> None:
+    def _require_courant(
+        self, section: RigidSection | None, time_step_s: float
+    ) -> None:
         """Runtime assertion of the CFL condition, as a ``raise``."""
+        if section is None:
+            return
         travel = section.max_speed_m_s * float(time_step_s)
         if travel > self.cell_size_m:
             raise SolverInputError(
