@@ -276,9 +276,13 @@ class TestApicRoundTrip:
 class TestCrossProduct:
     """Plane strain leaves one component of a cross product alive."""
 
-    def test_matches_numpy(self) -> None:
+    def test_matches_the_embedded_three_dimensional_cross(self) -> None:
+        """NumPy 2 deprecated the 2-D cross, so the check embeds in 3-D."""
         rng = np.random.default_rng(29)
         left = rng.normal(size=(50, 2))
         right = rng.normal(size=(50, 2))
-        expected = np.cross(left, right)
+        zeros = np.zeros(50)
+        left_3d = np.stack([left[:, 0], left[:, 1], zeros], axis=1)
+        right_3d = np.stack([right[:, 0], right[:, 1], zeros], axis=1)
+        expected = np.cross(left_3d, right_3d)[:, 2]
         np.testing.assert_allclose(cross_2d(left, right), expected, atol=1e-15)

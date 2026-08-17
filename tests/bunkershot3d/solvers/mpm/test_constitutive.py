@@ -180,19 +180,61 @@ class TestHenckyStress:
 
 
 class TestSvdRoundTrip:
-    """The decomposition the return mapping runs inside."""
+    """The closed-form 2x2 decomposition the return mapping runs inside.
+
+    Only three properties are relied on downstream, so those are what get
+    tested -- not whether the factors happen to agree with LAPACK's, which
+    they need not and do not.
+    """
+
+    @staticmethod
+    def _sample(seed: int, scale: float = 0.05) -> np.ndarray:
+        rng = np.random.default_rng(seed)
+        return np.eye(2) + rng.normal(scale=scale, size=(512, 2, 2))
 
     def test_reconstruction_is_exact(self) -> None:
-        rng = np.random.default_rng(11)
-        gradient = np.eye(2) + rng.normal(scale=0.05, size=(64, 2, 2))
+        gradient = self._sample(11)
         left, stretches, right_transposed = principal_stretches(gradient)
         rebuilt = reconstruct(left, np.log(stretches), right_transposed)
         np.testing.assert_allclose(rebuilt, gradient, rtol=0.0, atol=1e-13)
+
+    def test_reconstruction_survives_an_inverted_particle(self) -> None:
+        """det(F) < 0 puts the second singular value below zero if unhandled."""
+        gradient = self._sample(13, scale=1.5)
+        assert float(np.linalg.det(gradient).min()) < 0.0
+        left, stretches, right_transposed = principal_stretches(gradient)
+        assert float(stretches.min()) >= 0.0
+        rebuilt = reconstruct(left, np.log(stretches), right_transposed)
+        np.testing.assert_allclose(rebuilt, gradient, rtol=0.0, atol=1e-12)
+
+    def test_singular_values_match_lapack(self) -> None:
+        gradient = self._sample(17, scale=0.8)
+        _, stretches, _ = principal_stretches(gradient)
+        expected = np.linalg.svd(gradient, compute_uv=False)
+        np.testing.assert_allclose(stretches, expected, rtol=1e-12, atol=1e-14)
+
+    def test_left_factor_is_orthogonal(self) -> None:
+        """The Kirchhoff stress is coaxial with it, so it must be a rotation."""
+        gradient = self._sample(19, scale=0.6)
+        left, _, right_transposed = principal_stretches(gradient)
+        identity = np.broadcast_to(np.eye(2), left.shape)
+        np.testing.assert_allclose(
+            left @ np.transpose(left, (0, 2, 1)), identity, atol=1e-13
+        )
+        np.testing.assert_allclose(
+            right_transposed @ np.transpose(right_transposed, (0, 2, 1)),
+            identity,
+            atol=1e-13,
+        )
 
     def test_a_degenerate_gradient_still_has_a_logarithm(self) -> None:
         gradient = np.zeros((1, 2, 2))
         _, stretches, _ = principal_stretches(gradient)
         assert np.all(np.isfinite(np.log(stretches)))
+
+    def test_a_malformed_gradient_is_refused(self) -> None:
+        with pytest.raises(CalibrationError, match=r"shape \(n, 2, 2\)"):
+            principal_stretches(np.zeros((4, 3, 3)))
 
 
 class TestSandContinuum:

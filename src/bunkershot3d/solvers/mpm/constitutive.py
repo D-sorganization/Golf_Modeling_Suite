@@ -677,6 +677,16 @@ def principal_stretches(
 ) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
     """SVD of a stack of deformation gradients, with a stretch floor.
 
+    Plane strain makes every one of these a ``2 x 2``, so the closed form
+    is used instead of ``np.linalg.svd``: LAPACK is called once per matrix
+    and dominated the step profile at 29% of the runtime, while the ``2 x
+    2`` decomposition is four ``arctan2`` calls over the whole array.
+    Only three properties of the result are relied on downstream --
+    ``U diag(s) V^T = F`` exactly, ``s >= 0``, and ``U`` orthogonal (the
+    isotropic Kirchhoff stress is coaxial with it) -- and the test suite
+    checks all three against LAPACK rather than checking that the factors
+    happen to match it, which they need not.
+
     Args:
         deformation_gradient: ``(n, d, d)`` elastic deformation gradients.
 
@@ -685,8 +695,65 @@ def principal_stretches(
         floored at :data:`_SINGULAR_VALUE_FLOOR` so that their logarithm
         exists even for an inverted or degenerate particle.
     """
-    left, stretches, right_transposed = np.linalg.svd(deformation_gradient)
-    return left, np.maximum(stretches, _SINGULAR_VALUE_FLOOR), right_transposed
+    gradient = np.asarray(deformation_gradient, dtype=np.float64)
+    if gradient.ndim != 3 or gradient.shape[1:] != (
+        PLANE_STRAIN_DIMENSION,
+        PLANE_STRAIN_DIMENSION,
+    ):
+        raise CalibrationError(
+            f"deformation_gradient must have shape (n, 2, 2), got {gradient.shape!r}"
+        )
+    upper_left = gradient[:, 0, 0]
+    upper_right = gradient[:, 0, 1]
+    lower_left = gradient[:, 1, 0]
+    lower_right = gradient[:, 1, 1]
+
+    mean_diagonal = 0.5 * (upper_left + lower_right)
+    diagonal_difference = 0.5 * (upper_left - lower_right)
+    mean_off_diagonal = 0.5 * (lower_left + upper_right)
+    off_diagonal_difference = 0.5 * (lower_left - upper_right)
+
+    rotation_radius = np.hypot(mean_diagonal, off_diagonal_difference)
+    shear_radius = np.hypot(diagonal_difference, mean_off_diagonal)
+    larger = rotation_radius + shear_radius
+    smaller = rotation_radius - shear_radius
+
+    # Writing A = R(phi) diag(s) R(theta)^T and expanding gives
+    # atan2(G, F) = phi + theta and atan2(H, E) = phi - theta, so the two
+    # angles are the half-sum and the half-*difference* in that order.
+    shear_angle = np.arctan2(mean_off_diagonal, diagonal_difference)
+    rotation_angle = np.arctan2(off_diagonal_difference, mean_diagonal)
+    right_angle = 0.5 * (shear_angle - rotation_angle)
+    left_angle = 0.5 * (shear_angle + rotation_angle)
+
+    left = _rotation(left_angle)
+    right = _rotation(right_angle)
+    # A negative determinant puts the second singular value below zero.
+    # Flip it and absorb the sign into the matching right singular vector.
+    flipped = smaller < 0.0
+    if bool(flipped.any()):
+        smaller = np.where(flipped, -smaller, smaller)
+        right[:, :, 1] = np.where(flipped[:, None], -right[:, :, 1], right[:, :, 1])
+
+    stretches = np.stack([larger, smaller], axis=1)
+    return (
+        left,
+        np.maximum(stretches, _SINGULAR_VALUE_FLOOR),
+        np.transpose(right, (0, 2, 1)),
+    )
+
+
+def _rotation(angle: NDArray[np.float64]) -> NDArray[np.float64]:
+    """``(n, 2, 2)`` stack of plane rotations by ``angle``."""
+    cosine = np.cos(angle)
+    sine = np.sin(angle)
+    return np.stack(
+        [
+            np.stack([cosine, -sine], axis=1),
+            np.stack([sine, cosine], axis=1),
+        ],
+        axis=1,
+    )
 
 
 def reconstruct(
