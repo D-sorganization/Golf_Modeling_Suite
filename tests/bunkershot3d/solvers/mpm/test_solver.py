@@ -134,9 +134,7 @@ class TestProtocolConformance:
         )
 
     @pytest.mark.slow
-    def test_the_force_opposes_the_motion(
-        self, solver: PlaneStrainMPMSolver
-    ) -> None:
+    def test_the_force_opposes_the_motion(self, solver: PlaneStrainMPMSolver) -> None:
         state = sole_state()
         result = solver.solve(state)
         assert float(result.wrench.force_n @ state.velocity_m_s) < 0.0
@@ -258,18 +256,14 @@ class TestTimeStep:
 class TestApproachHistory:
     """A continuum has no instantaneous answer, and says so."""
 
-    def test_a_static_query_is_refused(
-        self, solver: PlaneStrainMPMSolver
-    ) -> None:
+    def test_a_static_query_is_refused(self, solver: PlaneStrainMPMSolver) -> None:
         state = IntrusionState(
             sole_state().elements, (0.0, 0.0, 0.0), free_surface_height_m=0.0
         )
         with pytest.raises(SolverInputError, match="no approach direction"):
             solver.run(state)
 
-    def test_a_bodiless_query_is_refused(
-        self, solver: PlaneStrainMPMSolver
-    ) -> None:
+    def test_a_bodiless_query_is_refused(self, solver: PlaneStrainMPMSolver) -> None:
         empty = SurfaceElements(np.zeros((0, 3)), np.zeros((0, 3)), np.zeros(0))
         state = IntrusionState(empty, (10.0, 0.0, -4.0))
         with pytest.raises(SolverInputError, match="no surface elements"):
@@ -280,7 +274,9 @@ class TestApproachHistory:
     ) -> None:
         section = solver.section_from_state(sole_state())
         assert section.area_m2 > 0.0
-        np.testing.assert_allclose(section.velocity_m_s[0], 12.0 * math.cos(math.radians(20.0)))
+        np.testing.assert_allclose(
+            section.velocity_m_s[0], 12.0 * math.cos(math.radians(20.0))
+        )
 
 
 class TestEnvelope:
@@ -367,9 +363,7 @@ class TestEnvelope:
                 effective_width_m=0.03,
             )
 
-    def test_a_strict_policy_raises_on_a_refusal(
-        self, material: SandContinuum
-    ) -> None:
+    def test_a_strict_policy_raises_on_a_refusal(self, material: SandContinuum) -> None:
         strict = PlaneStrainMPMSolver(
             material=material,
             cell_size_m=material.grain_diameter_m,
@@ -384,9 +378,7 @@ class TestRefusedQuantities:
     """ADR-0033's "Refused" means the API raises, not that docs discourage."""
 
     @pytest.mark.parametrize("quantity", list(RefusedQuantity))
-    def test_every_refused_quantity_raises(
-        self, quantity: RefusedQuantity
-    ) -> None:
+    def test_every_refused_quantity_raises(self, quantity: RefusedQuantity) -> None:
         with pytest.raises(OutOfEnvelopeError, match=quantity.value):
             require_quotable(quantity)
 
@@ -438,9 +430,7 @@ class TestRunTrace:
         with pytest.raises(SolverInputError, match="window_s"):
             run.averaged_force_n_per_m(0.0)
 
-    def test_a_zero_step_march_is_refused(
-        self, material: SandContinuum, run
-    ) -> None:
+    def test_a_zero_step_march_is_refused(self, material: SandContinuum, run) -> None:
         solver = PlaneStrainMPMSolver(
             material=material, cell_size_m=0.004, effective_width_m=0.03
         )
