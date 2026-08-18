@@ -302,9 +302,9 @@ class TestDataReaderAdditionalFormats:
         # (e.g. NpzFile), and whose .item() returns a dict
         data_dict = {"col_a": [1.0, 2.0], "col_b": [3.0, 4.0]}
         mock_result = MagicMock()  # not an np.ndarray instance
-        mock_result.__class__ = (
-            object  # ensure isinstance(mock_result, np.ndarray) is False
-        )
+        # Reassigning __class__ makes isinstance(mock_result, np.ndarray)
+        # False; mypy rightly dislikes the type pun, which is the point.
+        mock_result.__class__ = object  # type: ignore[assignment]
         mock_result.item.return_value = data_dict
 
         # Patch np.load in the io module namespace
