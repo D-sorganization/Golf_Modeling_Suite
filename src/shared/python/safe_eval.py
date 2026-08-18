@@ -255,9 +255,7 @@ def validate_expression(
     except SyntaxError as exc:
         raise ValueError(f"Invalid syntax: {exc}") from exc
 
-    node_count = 0
-    for node in ast.walk(tree):
-        node_count += 1
+    for node_count, node in enumerate(ast.walk(tree), start=1):
         if node_count > MAX_AST_NODES:
             raise ValueError(
                 f"Expression too complex: more than {MAX_AST_NODES} AST nodes"
@@ -269,9 +267,12 @@ def validate_expression(
 
         # Reject string/bytes constants (repetition-bomb material; the math
         # evaluator has no business with large strings). Numbers are fine.
-        if isinstance(node, ast.Constant) and isinstance(node.value, str | bytes):
-            if len(node.value) > MAX_STR_CONSTANT_LENGTH:
-                raise ValueError("String/bytes constant exceeds allowed length")
+        if (
+            isinstance(node, ast.Constant)
+            and isinstance(node.value, str | bytes)
+            and len(node.value) > MAX_STR_CONSTANT_LENGTH
+        ):
+            raise ValueError("String/bytes constant exceeds allowed length")
 
         # Bound exponentiation to defeat bignum pow bombs (e.g. 9**9**9**9).
         if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Pow):

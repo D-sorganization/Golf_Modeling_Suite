@@ -329,7 +329,7 @@ class OllamaAdapter(BaseAgentAdapter):
                     )
                     index += 1
 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - defensive catch-all at subsystem boundary (grandfathered)
             logger.error("Ollama streaming error: %s", e)
             self._handle_error(e)
 

@@ -503,10 +503,12 @@ class TestScrubberErrorPaths:
         )
         # calculate_gas_density is locally imported inside the function;
         # patch it from the source module to trigger the except path.
-        with patch(
-            "upstream_drift_tools.process_calculators.scrubber_calculator.calculate_gas_density",
-            side_effect=ValueError("density fail"),
+        with (
+            patch(
+                "upstream_drift_tools.process_calculators.scrubber_calculator.calculate_gas_density",
+                side_effect=ValueError("density fail"),
+            ),
+            pytest.raises(HTTPException) as exc_info,
         ):
-            with pytest.raises(HTTPException) as exc_info:
-                calculate_scrubber(req)
+            calculate_scrubber(req)
         assert exc_info.value.status_code == 422

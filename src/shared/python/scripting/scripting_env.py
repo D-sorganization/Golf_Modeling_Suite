@@ -275,12 +275,15 @@ def _screen_source_for_escapes(source: str) -> None:
         # (2) Dunder string literals anywhere — these have no legitimate use
         # in console code and are the payload for indirect traversal such as
         # ``vars(x)['__class__']`` or ``getattr(x, '__class__')``.
-        if isinstance(node, ast.Constant) and isinstance(node.value, str):
-            if _is_dunder(node.value):
-                raise SecurityError(
-                    f"use of dunder name literal '{node.value}' is blocked "
-                    "in the scripting sandbox"
-                )
+        if (
+            isinstance(node, ast.Constant)
+            and isinstance(node.value, str)
+            and _is_dunder(node.value)
+        ):
+            raise SecurityError(
+                f"use of dunder name literal '{node.value}' is blocked "
+                "in the scripting sandbox"
+            )
 
         # (3) Introspection-gadget calls with a fabricated/dunder name arg.
         if isinstance(node, ast.Call):

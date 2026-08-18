@@ -133,9 +133,11 @@ class TestTransformColumnErrorPath:
         """TypeError/ValueError during transform → undo + TransformationError."""
         engine = _engine_with_data()
         # Patching np.log to raise TypeError to trigger lines 337-339
-        with patch("numpy.log", side_effect=TypeError("type error")):
-            with pytest.raises(TransformationError, match="type error"):
-                engine.transform_column("x", "log")
+        with (
+            patch("numpy.log", side_effect=TypeError("type error")),
+            pytest.raises(TransformationError, match="type error"),
+        ):
+            engine.transform_column("x", "log")
 
 
 # ---------------------------------------------------------------------------

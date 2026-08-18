@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import contextlib
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -95,13 +96,15 @@ class TestValidateSpecWithJsonschema:
             "project": {"id": "P001", "title": "Test"},
             "equipment": [{"id": "V101", "w": 5.0, "h": 5.0}],
         }
-        # Patch schema to return truthy value so jsonschema path is exercised
-        with patch.object(_val, "_load_schema", return_value={"type": "object"}):
-            # jsonschema may or may not be installed; either way should not crash for valid spec  # noqa: E501
-            try:
-                validate_spec(valid_spec)
-            except SpecValidationError:
-                pass  # may raise for missing fields, but not from schema
+        # Patch schema to return truthy value so jsonschema path is exercised.
+        # jsonschema may or may not be installed; either way this should not
+        # crash for a valid spec. It may raise for missing fields, but not
+        # from the schema itself.
+        with (
+            patch.object(_val, "_load_schema", return_value={"type": "object"}),
+            contextlib.suppress(SpecValidationError),
+        ):
+            validate_spec(valid_spec)
 
     def test_validate_spec_schema_violation_raises(self):
         """When jsonschema raises, SpecValidationError is re-raised."""
@@ -118,10 +121,12 @@ class TestValidateSpecWithJsonschema:
             "Schema violation: missing field"
         )
 
-        with patch.object(_val, "_load_schema", return_value=mock_schema):
-            with patch.dict("sys.modules", {"jsonschema": mock_jsonschema}):
-                with pytest.raises(SpecValidationError, match="Schema violation"):
-                    validate_spec(valid_spec)
+        with (
+            patch.object(_val, "_load_schema", return_value=mock_schema),
+            patch.dict("sys.modules", {"jsonschema": mock_jsonschema}),
+            pytest.raises(SpecValidationError, match="Schema violation"),
+        ):
+            validate_spec(valid_spec)
 
     def test_validate_spec_import_error_skipped(self):
         """When jsonschema ImportError, validation continues without schema check."""
@@ -136,7 +141,9 @@ class TestValidateSpecWithJsonschema:
         mock_jsonschema = MagicMock()
         mock_jsonschema.validate.side_effect = ImportError("no jsonschema")
 
-        with patch.object(_val, "_load_schema", return_value=mock_schema):
-            with patch.dict("sys.modules", {"jsonschema": mock_jsonschema}):
-                # Should not raise due to ImportError
-                validate_spec(valid_spec)  # should pass (no errors in valid_spec)
+        with (
+            patch.object(_val, "_load_schema", return_value=mock_schema),
+            patch.dict("sys.modules", {"jsonschema": mock_jsonschema}),
+        ):
+            # Should not raise due to ImportError
+            validate_spec(valid_spec)  # should pass (no errors in valid_spec)

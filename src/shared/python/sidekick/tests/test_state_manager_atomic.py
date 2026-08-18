@@ -61,9 +61,11 @@ def test_atomic_write_text_leaves_prior_file_intact_on_failure(
     target = tmp_path / "data.json"
     target.write_text("OLD", encoding="utf-8")
 
-    with patch("utils.file_utils.os.replace", side_effect=OSError("boom")):
-        with pytest.raises(OSError):
-            atomic_write_text(target, "NEW")
+    with (
+        patch("utils.file_utils.os.replace", side_effect=OSError("boom")),
+        pytest.raises(OSError),
+    ):
+        atomic_write_text(target, "NEW")
 
     # Destination still holds the old contents; no temp file remains.
     assert target.read_text(encoding="utf-8") == "OLD"

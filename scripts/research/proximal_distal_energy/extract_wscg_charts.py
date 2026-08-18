@@ -9,6 +9,8 @@ import zipfile
 from pathlib import Path
 from xml.etree import ElementTree
 
+from defusedxml import ElementTree as SafeElementTree
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SOURCE_DIR = (
     REPO_ROOT
@@ -73,7 +75,7 @@ def _cache_values(node: ElementTree.Element, path: str) -> list[float]:
 def extract_series() -> list[dict[str, float | int | str]]:
     """Return long-form observations from every cached series in chart 1."""
     with zipfile.ZipFile(CHART_DECK) as archive:
-        root = ElementTree.fromstring(archive.read("ppt/charts/chart1.xml"))
+        root = SafeElementTree.fromstring(archive.read("ppt/charts/chart1.xml"))
     rows: list[dict[str, float | int | str]] = []
     series_nodes = root.findall(".//c:ser", CHART_NS)
     series_nodes.extend(root.findall(".//c15:ser", CHART_NS))

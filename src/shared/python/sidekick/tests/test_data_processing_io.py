@@ -146,9 +146,11 @@ class TestDataWriter:
     def test_write_pickle(self, sample_df: pd.DataFrame):
         from sidekick.data_processing.io import DataWriter
 
-        with tempfile.NamedTemporaryFile(suffix=".pkl", delete=False) as f:
-            with pytest.raises(ValueError, match="Pickle format is disabled"):
-                DataWriter.write_file(sample_df, f.name, format_type="pickle")
+        with (
+            tempfile.NamedTemporaryFile(suffix=".pkl", delete=False) as f,
+            pytest.raises(ValueError, match="Pickle format is disabled"),
+        ):
+            DataWriter.write_file(sample_df, f.name, format_type="pickle")
 
     def test_write_numpy(self, sample_df: pd.DataFrame):
         from sidekick.data_processing.io import DataWriter

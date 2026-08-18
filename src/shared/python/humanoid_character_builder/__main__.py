@@ -32,9 +32,7 @@ def main():
     )
 
     # "presets list"
-    presets_list_parser = presets_subparsers.add_parser(
-        "list", help="List available presets"
-    )
+    presets_subparsers.add_parser("list", help="List available presets")
 
     args = parser.parse_args()
 
@@ -48,21 +46,20 @@ def main():
                 f.write(urdf_xml)
 
             print(f"Successfully built character and saved to {args.output}")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - CLI boundary: report and exit non-zero
             print(f"Error building character: {e}", file=sys.stderr)
             sys.exit(1)
 
-    elif args.command == "presets":
-        if args.presets_command == "list":
-            try:
-                builder = CharacterBuilder()
-                presets = builder.list_presets()
-                print("Available presets:")
-                for preset in presets:
-                    print(f"  - {preset}")
-            except Exception as e:
-                print(f"Error listing presets: {e}", file=sys.stderr)
-                sys.exit(1)
+    elif args.command == "presets" and args.presets_command == "list":
+        try:
+            builder = CharacterBuilder()
+            presets = builder.list_presets()
+            print("Available presets:")
+            for preset in presets:
+                print(f"  - {preset}")
+        except Exception as e:  # noqa: BLE001 - CLI boundary: report and exit non-zero
+            print(f"Error listing presets: {e}", file=sys.stderr)
+            sys.exit(1)
 
 
 if __name__ == "__main__":

@@ -85,7 +85,7 @@ class ImmediateExecutor:
         future: Future = Future()
         try:
             future.set_result(fn(*args))
-        except Exception as exc:  # pragma: no cover - exercised via Future.result
+        except Exception as exc:  # pragma: no cover - exercised via Future.result  # noqa: BLE001 - defensive catch-all at subsystem boundary (grandfathered)
             future.set_exception(exc)
         return future
 
