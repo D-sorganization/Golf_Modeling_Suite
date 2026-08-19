@@ -146,7 +146,7 @@ class BitnetAdapter(BaseAgentAdapter):
             if result.returncode == 0 or "usage" in result.stdout.lower():
                 return True, f"Found {self.llama_cli}"
             return False, f"Executable failed: {result.stderr}"
-        except Exception as e:  # noqa: BLE001 - defensive catch-all at subsystem boundary (grandfathered)
+        except Exception as e:
             return False, f"Failed to execute {self.llama_cli}: {e}"
 
     def _format_prompt(self, context: ConversationContext, message: str) -> str:
@@ -203,7 +203,7 @@ class BitnetAdapter(BaseAgentAdapter):
                 usage=self._normalize_token_counts({}),
                 metadata={"stdout": result.stdout},
             )
-        except Exception as e:  # noqa: BLE001 - defensive catch-all at subsystem boundary (grandfathered)
+        except Exception as e:
             logger.error("Failed to run BitNet: %s", e)
             return self._handle_error(e)
 
@@ -287,7 +287,7 @@ class BitnetAdapter(BaseAgentAdapter):
                 content=f"\n[Error: BitNet stream timed out after {self.timeout}s]",
                 is_final=True,
             )
-        except Exception as e:  # noqa: BLE001 - defensive catch-all at subsystem boundary (grandfathered)
+        except Exception as e:
             logger.error("Failed to stream BitNet: %s", e)
             self._terminate(process)
             yield AgentChunk(content=f"\n[Error: {e}]", is_final=True)

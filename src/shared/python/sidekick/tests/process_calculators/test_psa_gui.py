@@ -383,29 +383,25 @@ def test_psa_main_window_initialization(
         assert mock_msg_box.critical.called
 
         # Test notebook launches
-        with (
-            patch(
-                "upstream_drift_tools.process_calculators.psa_package.psa_gui.subprocess.Popen"
-            ) as mock_popen,
-            patch(
+        with patch(
+            "upstream_drift_tools.process_calculators.psa_package.psa_gui.subprocess.Popen"
+        ) as mock_popen:
+            with patch(
                 "upstream_drift_tools.process_calculators.psa_package.psa_gui.os.path.exists",
                 return_value=True,
-            ),
-        ):
-            window._launch_jupyter()
-            assert mock_popen.called
+            ):
+                window._launch_jupyter()
+                assert mock_popen.called
 
-        with (
-            patch(
-                "upstream_drift_tools.process_calculators.psa_package.psa_gui.subprocess.Popen"
-            ) as mock_popen2,
-            patch(
+        with patch(
+            "upstream_drift_tools.process_calculators.psa_package.psa_gui.subprocess.Popen"
+        ) as mock_popen2:
+            with patch(
                 "upstream_drift_tools.process_calculators.psa_package.psa_gui.os.path.exists",
                 return_value=True,
-            ),
-        ):
-            window._launch_webapp()
-            assert mock_popen2.called
+            ):
+                window._launch_webapp()
+                assert mock_popen2.called
 
         # Test Colab launch
         with patch(

@@ -348,7 +348,8 @@ def apply_preset(
     base = preset.config
     merged_env = dict(base.env)
     if env:
-        merged_env.update(env)
+        for key, value in env.items():
+            merged_env[key] = value
 
     final_command = command if command is not None else base.command
     final_args = list(args) if args is not None else list(base.args)

@@ -64,15 +64,11 @@ class AutoCompleteLineEdit(QLineEdit):
 
     def keyPressEvent(self, event: QKeyEvent | None) -> None:
         """Handle Tab key for autocompletion to commit the inline suggestion."""
-        if (
-            event is not None
-            and event.key() == Qt.Key.Key_Tab
-            and self.auto_completer
-            and self.auto_completer.currentCompletion()
-        ):
-            # Commit the current inline completion
-            self.setText(self.auto_completer.currentCompletion())
-            event.accept()
-            return
+        if event is not None and event.key() == Qt.Key.Key_Tab:
+            if self.auto_completer and self.auto_completer.currentCompletion():
+                # Commit the current inline completion
+                self.setText(self.auto_completer.currentCompletion())
+                event.accept()
+                return
 
         super().keyPressEvent(event)

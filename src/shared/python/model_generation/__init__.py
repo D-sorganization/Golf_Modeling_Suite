@@ -47,8 +47,9 @@ __all__ = [
     # Convenience functions
     "quick_urdf",
     "quick_build",
-    # All lazy-loaded names (keys are str by construction)
-] + list(LAZY_IMPORTS)
+    # All lazy-loaded names
+    *LAZY_IMPORTS.keys(),
+]
 
 
 def __getattr__(name: str) -> Any:

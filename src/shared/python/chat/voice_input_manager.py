@@ -9,7 +9,6 @@ Tools issue #2744.
 
 from __future__ import annotations
 
-import contextlib
 import logging
 from collections.abc import Callable
 from typing import Any
@@ -153,8 +152,10 @@ class VoiceInputManager:
 
     def _on_transcription(self, text: str) -> None:
         for cb in self._transcription_ready_callbacks:
-            with contextlib.suppress(Exception):
+            try:
                 cb(text)
+            except Exception:  # noqa: BLE001
+                pass
         self._worker = None
 
     def _on_error(self, message: str) -> None:
@@ -166,5 +167,7 @@ class VoiceInputManager:
 
     def _emit_error(self, message: str) -> None:
         for cb in self._error_occurred_callbacks:
-            with contextlib.suppress(Exception):
+            try:
                 cb(message)
+            except Exception:  # noqa: BLE001
+                pass

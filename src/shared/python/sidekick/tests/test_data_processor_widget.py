@@ -88,12 +88,10 @@ def test_open_file_failure(empty_widget) -> None:
 
 
 def test_open_file_cancel(empty_widget) -> None:
-    with (
-        patch("PyQt6.QtWidgets.QFileDialog.getOpenFileName", return_value=("", "")),
-        patch.object(empty_widget.engine, "load_file") as mock_load,
-    ):
-        empty_widget.open_file()
-        mock_load.assert_not_called()
+    with patch("PyQt6.QtWidgets.QFileDialog.getOpenFileName", return_value=("", "")):
+        with patch.object(empty_widget.engine, "load_file") as mock_load:
+            empty_widget.open_file()
+            mock_load.assert_not_called()
 
 
 def test_save_file_no_data(empty_widget) -> None:

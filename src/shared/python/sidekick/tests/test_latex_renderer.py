@@ -58,11 +58,9 @@ def test_expr_to_latex_parse_failure() -> None:
 
 def test_expr_to_latex_no_sympy() -> None:
     """Test _expr_to_latex behavior when SymPy is unavailable."""
-    with (
-        patch("sidekick.latex_renderer._SYMPY_AVAILABLE", False),
-        pytest.raises(LatexRenderError, match="sympy is not installed"),
-    ):
-        _expr_to_latex("x**2")
+    with patch("sidekick.latex_renderer._SYMPY_AVAILABLE", False):
+        with pytest.raises(LatexRenderError, match="sympy is not installed"):
+            _expr_to_latex("x**2")
 
 
 def test_make_label_widget_success(qapp: Any) -> None:
@@ -75,11 +73,9 @@ def test_make_label_widget_success(qapp: Any) -> None:
 
 def test_make_label_widget_no_qt() -> None:
     """Test _make_label_widget when Qt is unavailable."""
-    with (
-        patch("sidekick.latex_renderer._QT_AVAILABLE", False),
-        pytest.raises(LatexRenderError, match="PyQt6 is not installed"),
-    ):
-        _make_label_widget("test_text")
+    with patch("sidekick.latex_renderer._QT_AVAILABLE", False):
+        with pytest.raises(LatexRenderError, match="PyQt6 is not installed"):
+            _make_label_widget("test_text")
 
 
 from sidekick.latex_renderer import _MATPLOTLIB_AVAILABLE

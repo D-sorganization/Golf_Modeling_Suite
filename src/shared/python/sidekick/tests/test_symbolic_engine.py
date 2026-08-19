@@ -27,11 +27,9 @@ def test_is_sympy_available() -> None:
 
 def test_require_sympy_raises_when_missing() -> None:
     """Test that functions raise SymbolicEngineError when sympy is missing."""
-    with (
-        patch("sidekick.symbolic_engine._SYMPY_AVAILABLE", False),
-        pytest.raises(SymbolicEngineError, match="sympy is not installed"),
-    ):
-        symbolic_solve("x**2 - 4")
+    with patch("sidekick.symbolic_engine._SYMPY_AVAILABLE", False):
+        with pytest.raises(SymbolicEngineError, match="sympy is not installed"):
+            symbolic_solve("x**2 - 4")
 
 
 def test_symbolic_solve_success() -> None:

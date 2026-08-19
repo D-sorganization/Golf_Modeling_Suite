@@ -49,12 +49,11 @@ def _build_override_mapping(
 
     if parameter_names is None:
         raise ValueError("parameter_names must be provided")
-    tracked = {"Temperature", "O2/Feed Ratio", "Steam/Feed Ratio", "Pressure"}
-    return {
-        name: value
-        for name, value in zip(parameter_names, values, strict=False)
-        if name in tracked
-    }
+    override: dict[str, float] = {}
+    for name, value in zip(parameter_names, values, strict=False):
+        if name in {"Temperature", "O2/Feed Ratio", "Steam/Feed Ratio", "Pressure"}:
+            override[name] = value
+    return override
 
 
 def _compute_gradient_component(

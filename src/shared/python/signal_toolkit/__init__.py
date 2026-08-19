@@ -69,8 +69,8 @@ def __getattr__(name: str) -> Any:
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
-# Lazy-loaded names first (keys are str by construction).
-__all__ = list(LAZY) + [
+__all__ = [
+    *LAZY.keys(),
     "PolynomialGeneratorWidget",
     "SignalToolkitWidget",
     "HAS_POLYNOMIAL_GENERATOR",

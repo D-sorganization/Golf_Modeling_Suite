@@ -300,12 +300,10 @@ def test_show_menus(qapp) -> None:
 def test_copy_selected_text_focused(qapp) -> None:
     calc = MockCalculator()
     text = QTextEdit("focused text")
-    with (
-        patch.object(calc, "focusWidget", return_value=text),
-        patch.object(calc, "copy_to_clipboard") as mock_copy,
-    ):
-        calc.copy_selected_text()
-        mock_copy.assert_called_with("focused text")
+    with patch.object(calc, "focusWidget", return_value=text):
+        with patch.object(calc, "copy_to_clipboard") as mock_copy:
+            calc.copy_selected_text()
+            mock_copy.assert_called_with("focused text")
 
 
 def test_copy_selected_text_unfocused(qapp) -> None:
@@ -315,13 +313,11 @@ def test_copy_selected_text_unfocused(qapp) -> None:
 
     # text.hasFocus() typically false normally unless actively rendering/selected
     # mock it
-    with (
-        patch.object(text, "hasFocus", return_value=True),
-        patch.object(calc, "focusWidget", return_value=None),
-        patch.object(calc, "copy_to_clipboard") as mock_copy,
-    ):
-        calc.copy_selected_text()
-        mock_copy.assert_called_with("unfocused text")
+    with patch.object(text, "hasFocus", return_value=True):
+        with patch.object(calc, "focusWidget", return_value=None):
+            with patch.object(calc, "copy_to_clipboard") as mock_copy:
+                calc.copy_selected_text()
+                mock_copy.assert_called_with("unfocused text")
 
 
 def test_restore_input_state_invalid_value(qapp) -> None:
@@ -484,9 +480,7 @@ def test_exceptions_coverage(qapp) -> None:
     # get_text_from_widget exception
     # pass something that throws RuntimeError when checked type
     class BadWidget:
-        # Deliberately shadows __class__ so type inspection raises,
-        # exercising get_text_from_widget's error path.
-        def __class__(self) -> Any:  # type: ignore[override]
+        def __class__(self) -> Any:
             raise RuntimeError
 
     calc.get_text_from_widget(BadWidget())
