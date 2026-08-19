@@ -485,7 +485,7 @@ inventory and reopen adjudication until every new candidate is reviewed.
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
 
-| **Spec Version** | 1.0.548 |
+| **Spec Version** | 1.0.545 |
 | **Last Spec Update** | 2026-08-19 |
 
 ## 2. Purpose & Mission
@@ -517,6 +517,25 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 
 ### Recent Spec Updates
 
+- **2026-08-19** - Closed the false-green hole in CI Standard's `tests` lane
+  (issue #8771). `main` @ `6b68f94` reported `tests (3.11)` / `tests (3.12)`
+  as successful without running the unit suite. The lane derives its scope
+  from `git diff <base> HEAD`, but read that diff through
+  `mapfile -t x < <(git diff ...)`, which discards git's exit code. The push
+  diff base was not present in the shallow checkout, so all four diffs failed
+  with `fatal: bad object 59ecef7d...`, every `changed_*` array came back
+  empty, and the "no core Python/test/dependency changes detected" branch
+  exited 0. The green badge covered 14 tests, not ~2,500. Three changes: the
+  diffs are captured through files so the step's `-e` makes a failed diff
+  fatal; an unresolvable diff base is now an explicit `::error::` and exit 1
+  rather than an inferred "nothing changed"; and pushes to the default branch
+  always run the full lane unscoped, because path-scoping is a pull-request
+  latency optimisation and on trunk it lets a commit that touches no Python
+  vouch for a suite it never ran. A genuine "nothing relevant changed" skip
+  now emits a `::warning::` and a job-summary block stating that the suite was
+  not executed, so a passing check can be told apart from a green suite. The
+  same silent-failure shape in the `Check for core test relevant changes`
+  pre-step is hardened identically.
 - **2026-08-19** - Git-ignored the test-run artefacts that have twice been
   committed at the repository root (issue #8771). The autouse
   `_prevent_repo_root_io` fixture chdirs every test into `tmp_path` so they are
@@ -2975,6 +2994,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-19 | 1.0.545 | Closed CI Standard's false-green `tests` lane: `mapfile < <(git diff ...)` discarded git's exit code, so an unresolvable push diff base (`fatal: bad object`) produced empty change sets that the skip branch read as "nothing changed" and exited 0 - `main` @ `6b68f94` reported `tests (3.11)`/`tests (3.12)` green over 14 tests while the ~2,500-test unit suite never ran. Diffs are now captured through files so `-e` catches a failed diff, an unresolvable diff base fails loudly instead of being inferred as "no changes", pushes to the default branch always run the full lane unscoped, and a genuine no-op skip emits a `::warning::` plus a job-summary block saying the suite was not executed. The `Check for core test relevant changes` pre-step is hardened the same way (#8771). |
 | 2026-08-19 | 1.0.548 | Git-ignored the root-level test-run artefacts (`base.csv`, `base.json`, `base.mat`, `base.h5`, `base.*.provenance.json`, `pytest_report*.txt`, `golf_modeling_suite.db`). `_prevent_repo_root_io` stops tests producing them (#7935) but nothing stopped them being staged: #8322 committed nine such files at the root and #8747 deleted them again. Patterns are root-anchored, so the tracked `docs/research/proximal_distal_energy_transfer/data/wscg_two_hand_raw/base.csv` fixture is not affected; verified no tracked path is newly ignored (#8771). |
 | 2026-08-19 | 1.0.547 | Restored `optional-stack-check (3.11)`: the SpaceMouse, VR-controller and haptic `connect()` stubs in `src/deployment/teleoperation/devices.py` return `False` again instead of raising `NotImplementedError`. #8322 introduced the raise, kept the three tests asserting `not dev.connect()`, and deleted the #7360 docstring explaining why `False` is the honest answer for a stub with no hardware driver. `BaseInputDevice.connect`, the ROS2/UDP controller stubs and `test_base_input_device` all keep the `False` contract, so the overrides were inconsistent with their own parent class. #8322 also rewrote six assertions in `tests/deployment/test_teleoperation.py` and `tests/deployment/wave5_deployment/test_teleoperation.py` from `assert not d.connect()` to `pytest.raises(NotImplementedError)` while missing the third file - which is why `optional-stack-check` went red and `unit-test-gate` did not, and why the repo has since asserted both contracts at once. All of it is restored to the pre-#8322 text so a single contract holds again; the `#8058` reference is retained. 288 deployment tests pass, nothing skipped or deleted (#8771). |
 | 2026-08-18 | 1.0.543 | Added a "Load Private Corpus" button to the Launch Monitor Analytics Sessions tab and a matching File-menu action, backed by `MainWidget.load_private_corpus_sessions()`: one session per corpus source (261,666 shots across 27 sources in ~3 s), repeatable without duplicates, failing closed with a dialog when no authorized checkout or Parquet reader is available. Five regression tests cover the success, idempotence, fail-closed, and both UI-affordance paths over synthetic fixtures. Trends and Dispersion stay inert against corpus data pending capture-timestamp and lateral-carry extraction, tracked as data-authority issues #18/#19. |
