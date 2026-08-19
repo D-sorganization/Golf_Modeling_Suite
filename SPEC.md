@@ -485,8 +485,8 @@ inventory and reopen adjudication until every new candidate is reviewed.
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
 
-| **Spec Version** | 1.0.542 |
-| **Last Spec Update** | 2026-08-16 |
+| **Spec Version** | 1.0.549 |
+| **Last Spec Update** | 2026-08-19 |
 
 ## 2. Purpose & Mission
 
@@ -516,6 +516,25 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 ## 4. Architecture Overview
 
 ### Recent Spec Updates
+
+- **2026-08-19** - Repaired all five `profile-size-matrix` Docker builds
+  (issue #8771). `Dockerfile.modular`'s builder stage copies a deliberate
+  minimal slice - `src/shared/python/__init__.py`, `engine_core/` and
+  `feature_registry/` - so resolving a profile does not invalidate the layer
+  cache on every source change. `scripts/docker/install_features.py` then did
+  `from src.shared.python.feature_registry.features import get_feature`, and
+  importing a submodule executes every parent package `__init__` first: once
+  `src/shared/python/__init__.py` grew an eager `from . import ai`, and `ai/`
+  is not in the slice, every modular image build died at `ImportError: cannot
+  import name 'ai' from partially initialized module`. The script now loads
+  `features.py` from its path with no parent package, which is what its own
+  comment always claimed ("read the features module in isolation") and what
+  makes the builder slice self-sufficient regardless of what any package
+  `__init__` later imports. `features.py` depends only on `dataclasses` and
+  `typing`. The module is registered in `sys.modules` before execution
+  because `@dataclass` resolves `cls.__module__` through it while processing
+  the class body. `src/shared/python/__init__.py` is a Tools-owned child copy
+  and is deliberately left untouched.
 
 - **2026-08-16** - Scoped BunkerShot3D's camber-clamped flag so it cannot
   understate substitution (`src/bunkershot3d/geometry/lofting.py`,
@@ -860,6 +879,25 @@ study,vandv,provenance,units}`, with subpackages re-exported by name and a
   remain synthetic mechanism tiers; muscle, scapular, tissue-slack, equipment,
   human-performance, and universal-technique claims remain unsupported.
 
+- **2026-08-18** - Added a first-class corpus entry point to the Launch
+  Monitor Analytics workbench. A "Load Private Corpus" button on the Sessions
+  tab and a matching File-menu action load every source in the authorized
+  private corpus as one session per source (261,666 shots across 27 sources in
+  about 3 seconds), through `MainWidget.load_private_corpus_sessions()`. The
+  action is repeatable — already-loaded sources are skipped rather than
+  raising — and fails closed with a dialog, not a traceback, when no
+  authorized checkout or Parquet reader is present. The Trends and Dispersion
+  tabs remain inert for corpus data because the corpus carries no capture
+  timestamp or lateral carry; both gaps are tracked as data-authority issues
+  #18 and #19 and are recoverable from retained native fields.
+- **2026-08-19** - Bound the Launch Monitor Analytics Dispersion and Trends
+  tabs to corpus data. The data authority now extracts lateral carry, flight
+  time, and a capture date, and `launch_monitor.corpus` maps them onto the
+  canonical `lateral_carry` (m), `flight_time` (s), and `captured_at` fields.
+  Both tabs were previously inert against the corpus for want of a lateral
+  coordinate and a time column; they now run over 20,099 and 8,488 shots
+  respectively. Column selection is filtered against the dataset schema, so a
+  corpus pinned before those columns exist still loads.
 - **2026-08-18** - Connected Launch Monitor Analytics to the private shot
   corpus. `launch_monitor.corpus.load_private_corpus()` reads the data
   authority's source-partitioned Parquet corpus (261,666 shots across 27
@@ -2652,6 +2690,8 @@ overlapping fixture names in nested conftests.
 
 | Tool       | Version | Purpose                                                                            | Blocking? |
 | ---------- | ------- | ---------------------------------------------------------------------------------- | --------- |
+| 2026-08-19 | 1.0.544 | Mapped the data authority's new `lateral_carry_yd`, `flight_time_s`, and `captured_at` corpus columns onto the canonical `lateral_carry`/`flight_time`/`captured_at` fields in `launch_monitor.corpus`, making the Dispersion (20,099 shots) and Trends (8,488 shots) tabs runnable against corpus data for the first time. Column selection now filters against the dataset schema so an older pinned corpus still loads. |
+| 2026-08-18 | 1.0.544 | Bumped `vendor/ud-tools` to the heavy-hit epic merge (Tools #4562/#4568): the coupled ball-head-hands impact model quantifying hand/body influence (<1% ball-speed effect for physiological hands, rigid-shaft upper bound reported), the `swing_sim.body_chain/1` golfer-model interchange with runtime-free MJCF/URDF/.osim parsers (MuJoCo, Drake, Pinocchio, OpenSim), and the `golf_club.impact_coupling_report/1` counterfactual wire. Launcher-manifest smoke test green on the new pin. |
 | 2026-08-18 | 1.0.543 | Bumped `vendor/ud-tools` 6472d03 -> ac59066: Tools' Club Fitting Tester epic C1-C5 (Tools #4549/#4557) - shared mesh inertia tensor, shaft forward-dynamics delivery deltas, the `golf_club.fitting_document/1` OEM wire, the `swing_sim.delivery_trajectory/1` biomech interchange with Drake/MuJoCo/OpenSim export adapters, and the counterfactual fitting engine emitting `golf_club.fitting_report/1`. Launcher-manifest smoke test green on the new pin. |
 | 2026-08-16 | 1.0.539 | Made BunkerShot3D's F0 solver and W7 metrics compose without hand-padding (issues #8702, #8700, #8701 under epic #8699). `bunkershot3d.solvers.shot.simulate_shot` now records the whole strike rather than the contact: a free-flight lead-in (`ShotSettings.free_flight_lead_steps`, 3.5 steps) brackets the entry crossing, and the march integrates through the disengaged tail until the sole reference is back above the free surface, so both `depth = 0` crossings the divot metrics interpolate are inside the record. `StrikeTrace.from_shot` is the metrics-layer view of an in-memory shot, one sample per recorded sample with nothing synthesised. `ShotSettings.max_time_s` moves from 10 ms to 200 ms because a nominal bunker shot does not clear the sand until ~10.8 ms, and a window that ends first now raises `ShotTruncatedError` from the solver -- naming `max_time_s` and the time reached, and carrying the partial trace -- instead of surfacing as `divot_metrics` refusing to locate an exit; `require_exit=False` keeps deliberate fixed-window marches legal. `ShotResult.depths_m` was engaged-element depth documented as sole depth (non-monotone, and reading zero while the sole was millimetres under), and is split into `engaged_depths_m` and a geometric `sole_depths_m`. `src/tools/bunker_shot_gui/bridge.py` drops its private free-flight placement and ballistic zero-wrench coast-out and consumes the library composition instead. 19 new tests; no new dependencies. |
 | 2026-04-27 | 1.0.83  | Fixed Bandit B604 false positive alerts in test files by adding nosec annotations. |
@@ -2737,13 +2777,47 @@ Beyond standard tools, CI enforces custom checks:
 
 | Workflow                       | Trigger                                | Purpose                                                                               | Blocking?          |
 | ------------------------------ | -------------------------------------- | ------------------------------------------------------------------------------------- | ------------------ |
-| `ci-standard.yml`              | Push/PR                                | Lint, type check, unit/integration tests, workflow inventory, blocking security scans | Yes                |
+| `ci-standard.yml`              | Push/PR (no PR path filter)            | Lint, type check, unit/integration tests, workflow inventory, blocking security scans | Yes                |
 | `quality-gate.yml`             | PR/manual dispatch                     | Blocking repo-wide Law-of-Demeter ratchet for production `src/` Python code           | Yes                |
+| `docs-ci.yml`                  | PR touching docs/markdown              | Docs governance for docs-only PRs                                                     | No (not required)  |
 | `heavy-tests-opt-in.yml`       | Manual dispatch or `/heavy-test` label | Cross-engine and physics validation (long-running)                                    | No (opt-in)        |
 | `nightly-cross-validation.yml` | Daily 2:00 UTC                         | Full multi-engine validation suite against all model variations                       | No (informational) |
 | `tauri-build.yml`              | Tag release                            | Build desktop apps for Windows/macOS/Linux                                            | Yes (for releases) |
 | `vendor-freshness.yml`         | Weekly                                 | Check for stale dependencies and security updates                                     | No (warning-only)  |
 | `docker-size-gates.yml`        | Push                                   | Ensure Docker image size stays <800 MB                                                | Yes                |
+
+### Required Status Checks
+
+Branch protection matches required checks by **context name**, so a check name is
+a repository-level contract: any job carrying a required name publishes under that
+context, and protection is satisfied by whichever job reported. Two rules follow.
+
+**One publisher per required name.** Exactly one job may be named `quality-gate` —
+the `ci-standard.yml` aggregate. Three jobs previously shared the name
+(`ci-standard.yml`, `quality-gate.yml`, `docs-ci.yml`), which allowed a merge while
+the aggregate was failing. `tests/ci/test_ci_infrastructure.py` enforces uniqueness.
+
+**A required check must report on every PR.** A required context that never reports
+blocks the PR indefinitely. A job skipped by a job-level `if:` still publishes a
+check run and counts as satisfied, but a workflow skipped by a trigger **path
+filter** publishes nothing. Required workflows therefore carry no PR path filter and
+skip work per job instead: `ci-standard.yml` classifies the diff in its
+`changed-paths` job and gates the substantive jobs on
+`needs.changed-paths.outputs.code`, so docs-only PRs skip the suite while
+`quality-gate` still reports. The aggregate accepts `skipped` gates only on
+docs-only changes, and only once `pick-runner` and `changed-paths` themselves
+succeeded — otherwise an infrastructure failure that skips everything would read as
+a pass.
+
+| Context            | Published by                       | Required | Notes                                                             |
+| ------------------ | ---------------------------------- | -------- | ----------------------------------------------------------------- |
+| `quality-gate`     | `ci-standard.yml` aggregate        | Yes      | Also required org-wide by the `Repository_Protections` ruleset     |
+| `lod-quality-gate` | `quality-gate.yml`                 | Yes      | No path filter, so it reports on every PR                          |
+| `docs-quality-gate`| `docs-ci.yml`                      | **No**   | Docs-only trigger; requiring it would block every code-only PR     |
+
+Repository-specific required contexts belong on the repo-scoped `Protect Main`
+ruleset. The organization ruleset `Repository_Protections` applies to every repo in
+the org, so contexts added there must exist in all of them.
 
 ## 9. Dependencies
 
@@ -2886,10 +2960,14 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-19 | 1.0.549 | Repaired all five `profile-size-matrix` Docker builds. `scripts/docker/install_features.py` reached the feature registry through `from src.shared.python.feature_registry.features import ...`, which executes every parent package `__init__`; `Dockerfile.modular`'s builder stage deliberately copies only `__init__.py`, `engine_core/` and `feature_registry/` so profile resolution does not invalidate the layer cache, so an eager `from . import ai` in that `__init__` broke every modular build with `ImportError: cannot import name 'ai' from partially initialized module`. The script now loads `features.py` by path with no parent package - what its own comment always claimed - making the builder slice self-sufficient regardless of what any package `__init__` imports later; the module is registered in `sys.modules` before execution because `@dataclass` resolves `cls.__module__` through it. Verified against a reconstructed builder slice: all five profiles resolve with `src/shared/python/__init__.py` left exactly as it is on `main`, since it is a Tools-owned child copy (#8771). |
+| 2026-08-19 | 1.0.548 | Git-ignored the root-level test-run artefacts (`base.csv`, `base.json`, `base.mat`, `base.h5`, `base.*.provenance.json`, `pytest_report*.txt`, `golf_modeling_suite.db`). `_prevent_repo_root_io` stops tests producing them (#7935) but nothing stopped them being staged: #8322 committed nine such files at the root and #8747 deleted them again. Patterns are root-anchored, so the tracked `docs/research/proximal_distal_energy_transfer/data/wscg_two_hand_raw/base.csv` fixture is not affected; verified no tracked path is newly ignored (#8771). |
+| 2026-08-19 | 1.0.547 | Restored `optional-stack-check (3.11)`: the SpaceMouse, VR-controller and haptic `connect()` stubs in `src/deployment/teleoperation/devices.py` return `False` again instead of raising `NotImplementedError`. #8322 introduced the raise, kept the three tests asserting `not dev.connect()`, and deleted the #7360 docstring explaining why `False` is the honest answer for a stub with no hardware driver. `BaseInputDevice.connect`, the ROS2/UDP controller stubs and `test_base_input_device` all keep the `False` contract, so the overrides were inconsistent with their own parent class. #8322 also rewrote six assertions in `tests/deployment/test_teleoperation.py` and `tests/deployment/wave5_deployment/test_teleoperation.py` from `assert not d.connect()` to `pytest.raises(NotImplementedError)` while missing the third file - which is why `optional-stack-check` went red and `unit-test-gate` did not, and why the repo has since asserted both contracts at once. All of it is restored to the pre-#8322 text so a single contract holds again; the `#8058` reference is retained. 288 deployment tests pass, nothing skipped or deleted (#8771). |
+| 2026-08-18 | 1.0.543 | Added a "Load Private Corpus" button to the Launch Monitor Analytics Sessions tab and a matching File-menu action, backed by `MainWidget.load_private_corpus_sessions()`: one session per corpus source (261,666 shots across 27 sources in ~3 s), repeatable without duplicates, failing closed with a dialog when no authorized checkout or Parquet reader is available. Five regression tests cover the success, idempotence, fail-closed, and both UI-affordance paths over synthetic fixtures. Trends and Dispersion stay inert against corpus data pending capture-timestamp and lateral-carry extraction, tracked as data-authority issues #18/#19. |
 | 2026-08-18 | 1.0.542 | Added `launch_monitor.corpus.load_private_corpus()`: reads the private data authority's source-partitioned Parquet shot corpus into the canonical launch-monitor schema (importer unit tables, source/metric pushdown, lazy pyarrow, fail-closed `LAUNCH_MONITOR_DATA_ROOT` convention, `apex_native` excluded as unit-ambiguous), exported from the facade with synthetic-fixture tests. Fixed the bare `flight_models` import in `kaggle_validation.compare_all_models_to_dataset()` that only resolved under pytest's `pythonpath`, so installed consumers no longer hit `ModuleNotFoundError`. |
 | 2026-08-16 | 1.0.540 | Repaired four CI Standard gates that had never been evaluated: `quality-gate` was pinned to the self-hosted fleet, so no run in the last 30 reached a conclusion and every gate below it was unobserved (routing fixed in #8729). `alembic.ini` now anchors `script_location` with `%(here)s` like `version_locations` already did, because Alembic resolves a relative script path against the current working directory and the autouse `_prevent_repo_root_io` fixture chdirs every test into `tmp_path` (#7935), which made the migration round-trip report a missing `src/api/migrations` that is in fact fully tracked. Restored the `tornado==6.5.8` pin dropped from `requirements.lock` and `requirements-dev.lock` by #8322, which deleted the pin line but left its `# via` comment block orphaned, leaving both locks structurally invalid rather than merely stale. Renewed the 44 mypy exclusion and 6 coverage-gate re-attestation dates from 2026-08-01 to 2026-10-01, aligned with the next `schedule` step where the cap drops to 36 against 44 exclusions; the ratchet `schedule` itself is unchanged and no exclusion was added (#8731). Split the DRY duplication ratchet: `scripts/config/dry_duplication_quarantine.json` records the 511 historical fingerprints with an owner and issue #8695, each capped at its observed count, and the gate now enforces `max(baseline, quarantine)` so newly introduced duplication still fails at its first repeat while historical debt is tracked explicitly instead of being folded invisibly into the baseline by a wholesale regeneration; the gate additionally reports quarantined fingerprints whose count has dropped so the ledger can be tightened. Raised the runtime security floors that `pip-audit` flagged once the lock repair let the audit steps run at all - `pillow>=12.3.0`, `cryptography>=50.0.0` and a newly direct `click>=8.3.3` - clearing PYSEC-2026-2132, PYSEC-2026-3552/3553/3554 and thirteen pillow advisories; `scripts/config/pip_audit_waivers.json` remains empty, so nothing was waived (#8738). `unit-test-gate` (#8735) and `shared-tools-consumer-contracts` (#8732) remain red with root-caused tracking issues rather than being suppressed. |
 | 2026-08-16 | 1.0.539 | Added the passive articulated-shaft qualification: a frozen 24-element bending basis and declared tapered-section torsion extend the distributed-grip authority through rigid, bending, torsion, and coupled activations. The registered 384-trajectory, two-engine, two-step atlas passes domain, activation, power, work--energy, refinement, and parity gates; retained coarse steps fail the linear-domain screen. Among 126 load/work-matched coupled-versus-rigid cells, delivery-speed differences have both signs (-0.0285 to +0.0212 m/s), rejecting a universal passive-shaft speed benefit. The result remains a planar structural reference, not equipment calibration, human validation, physiology, or coaching guidance. |
-| 2026-08-16 | 1.0.541 | Bumped `vendor/ud-tools` from `4744422d3` (2026-07-26) to Tools `main` `6472d0307`, and added `tests/unit/test_gui_launcher_manifest_targets.py`, which resolves every `pyqt6.module` declared in `src/shared/python/gui_launcher/tool_manifest.yaml` to a file in a reachable Tools source tree. The manifest advertised "Rate of Closure Impact Explorer" at `rate_of_closure.ui.pyqt6.main_window` while no Tools checkout the launcher searches contained that module: the tool had not yet landed on Tools `main`, and the vendored pin predated it. Nothing failed, because nothing checked — clicking the entry was the only way to discover it. The new sweep resolves by path tail rather than assuming a flat import root, because Tools nests some tools (`src/signal_processing_studio/python/signal_processing_studio/`) and not others (`src/rate_of_closure/`). Verified against the previous pin: `rate_of_closure` is the only entry that fails, with no false positives across the remaining entries. The check skips when no Tools checkout is present rather than passing vacuously. |
+| 2026-08-16 | 1.0.541 | Bumped `vendor/ud-tools` from `4744422d3` (2026-07-26) to Tools `main` `6472d0307`, and added `tests/unit/test_gui_launcher_manifest_targets.py`, which resolves every `pyqt6.module` declared in `src/shared/python/gui_launcher/tool_manifest.yaml` to a file in a reachable Tools source tree. The manifest advertised "Rate of Closure Impact Explorer" at `rate_of_closure.ui.pyqt6.main_window` while no Tools checkout the launcher searches contained that module: the tool had not yet landed on Tools `main`, and the vendored pin predated it. Nothing failed, because nothing checked — clicking the entry was the only way to discover it. The new sweep resolves by path tail rather than assuming a flat import root, because Tools nests some tools (`signal_processing_studio` sits under an extra python level in the Tools tree) and not others (`rate_of_closure` sits directly under the Tools src root). Verified against the previous pin: `rate_of_closure` is the only entry that fails, with no false positives across the remaining entries. The check skips when no Tools checkout is present rather than passing vacuously. |
 | 2026-08-15 | 1.0.538 | Added the distributed-grip contact-discretization gate: one, three, and five tension fibers per hand preserve total stiffness and damping across 12 articulated states, two initial velocity signs, two time steps, two native engines, and nested 4/10/25/50 ms observations from 288 trajectories. Geometry null/reversal, virtual-power, passivity, work--energy, time-refinement, station-refinement, active-set, and cross-engine gates pass. The result is synthetic and right-censored; it does not establish physical grip pressure, shaft response, timing economy, delivery benefit, human transfer, or technique. |
 | 2026-08-15 | 1.0.537 | Added the typed unilateral articulated-attachment falsification gate: bilateral, tension-only, and dead-zone tension laws are evaluated across common-displacement and matched-extension comparisons, velocity-sign branches, isolated opening/reattachment probes, three time steps, and native MuJoCo/Pinocchio dynamics. The passive-law, virtual-power, work--energy, refinement, trajectory-parity, force-parity, and active-set-parity contracts pass. Natural five-millisecond branches do not produce opening or reattachment transitions, so event-probe results qualify the implementation only and do not establish a human or coaching strategy. |
 | 2026-08-15 | 1.0.536 | Added the bounded articulated bilateral-attachment forward gate: 18 selected closed states, seven nominal/adverse branches, three time steps, and native MuJoCo/Pinocchio dynamics produce 756 five-millisecond trajectories. Attachment-retention, power, work--energy, refinement, and parity gates pass; the result is explicitly right-censored and does not model unilateral slack, calibrated distributed grip/shaft, ground coupling, late downswing, impact, muscle action, human transfer, or coaching strategy. |
