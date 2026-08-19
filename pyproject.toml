@@ -429,8 +429,6 @@ max-complexity = 10
 "src/shared/python/codemap/mcp_server.py" = ["T201"]
 # programmatic_pid CLI: generate-pid command intentionally writes to stdout as a command-line tool.
 "src/shared/python/programmatic_pid/cli.py" = ["T201"]
-# humanoid_character_builder CLI entry point: stdout is the user interface.
-"src/shared/python/humanoid_character_builder/__main__.py" = ["T201"]
 
 
 [tool.mypy]
