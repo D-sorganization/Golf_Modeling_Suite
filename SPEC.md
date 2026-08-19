@@ -485,8 +485,8 @@ inventory and reopen adjudication until every new candidate is reviewed.
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
 
-| **Spec Version**        | 1.0.551                                            |
-| **Last Spec Update**    | 2026-08-19                                         |
+| **Spec Version** | 1.0.551 |
+| **Last Spec Update** | 2026-08-19 |
 
 ## 2. Purpose & Mission
 
@@ -549,7 +549,7 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
   importing a submodule executes every parent package `__init__` first: once
   `src/shared/python/__init__.py` grew an eager `from . import ai`, and `ai/`
   is not in the slice, every modular image build died at `ImportError: cannot
-  import name 'ai' from partially initialized module`. The script now loads
+import name 'ai' from partially initialized module`. The script now loads
   `features.py` from its path with no parent package, which is what its own
   comment always claimed ("read the features module in isolation") and what
   makes the builder slice self-sufficient regardless of what any package
