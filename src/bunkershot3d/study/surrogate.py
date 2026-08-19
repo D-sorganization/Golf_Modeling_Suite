@@ -575,7 +575,7 @@ class GaussianProcess:
         best_value = np.inf
         for theta0 in starts:
             result = minimize(
-                lambda t: self._negative_lml_and_grad(t, y_norm),
+                lambda t: self._negative_lml_and_grad(t, y_norm),  # type: ignore[arg-type]
                 theta0,
                 method="L-BFGS-B",
                 jac=True,
