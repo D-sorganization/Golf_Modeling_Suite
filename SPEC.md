@@ -4049,3 +4049,5 @@ Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linal
 - Updated norm calculations in `src/tools/bunker_shot_gui/crosstier.py` to use `math.sqrt(np.vdot)` and `np.sqrt(np.einsum)` for improved performance. (spec-exempt: micro-optimization)
 
 * `bunkershot3d/metrics/trace.py`: Replaced `np.linalg.norm(..., axis=1)` with `np.sqrt(np.einsum(...))` for multi-dimensional array norm, and replaced `float(np.linalg.norm)` with `math.sqrt(np.vdot)` for 1D array norm to improve performance. (spec-exempt: micro-optimization)
+
+* (spec-exempt: micro-optimization) Replaced `np.sum` with `np.vdot` and `ndarray.sum()` across simulation files for faster execution
