@@ -45,7 +45,14 @@ CORPUS_COLUMN_MAP: dict[str, tuple[str, str]] = {
     "carry_yd": ("carry_distance", "yd"),
     "total_yd": ("total_distance", "yd"),
     "descent_angle_deg": ("descent_angle", "deg"),
+    "lateral_carry_yd": ("lateral_carry", "yd"),
+    "flight_time_s": ("flight_time", "s"),
 }
+
+# Identity columns carried straight through when the corpus provides them.
+# captured_at is what the Trends analysis binds to; a corpus built before the
+# data authority added it simply lacks the column.
+OPTIONAL_IDENTITY_COLUMNS: tuple[str, ...] = ("captured_at",)
 
 
 def corpus_dataset_path(root: str | Path | None = None) -> Path:
@@ -108,6 +115,7 @@ def load_private_corpus(
     dataset = pyarrow_dataset.dataset(
         dataset_dir, format="parquet", partitioning="hive"
     )
+    available_columns = set(dataset.schema.names)
     filter_expression = None
     if sources is not None:
         available = {
@@ -121,14 +129,28 @@ def load_private_corpus(
                 f"Unknown corpus sources requested: {sorted(unknown_sources)}"
             )
         filter_expression = pyarrow_dataset.field("source_id").isin(sources)
+    requested = [
+        "source_id",
+        "monitor",
+        "club",
+        "file",
+        "row_index",
+        *OPTIONAL_IDENTITY_COLUMNS,
+        *selected_map,
+    ]
     table = dataset.to_table(
-        columns=["source_id", "monitor", "club", "file", "row_index", *selected_map],
+        columns=[name for name in requested if name in available_columns],
         filter=filter_expression,
     )
     frame = table.to_pandas()
 
     from src.shared.python.launch_monitor.schema import METRICS
 
+    selected_map = {
+        column: value
+        for column, value in selected_map.items()
+        if column in available_columns
+    }
     for column, (name, unit) in selected_map.items():
         frame[column] = _convert(frame[column], unit, METRICS[name].canonical_unit)
     frame = frame.rename(
