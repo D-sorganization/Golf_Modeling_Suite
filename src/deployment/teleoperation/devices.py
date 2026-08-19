@@ -164,8 +164,8 @@ class SpaceMouseInput(BaseInputDevice):
         Returning ``False`` rather than raising is the deliberate contract: it
         matches ``BaseInputDevice.connect``, the ROS2/UDP controller stubs, and
         the graceful-degradation path every caller and test relies on. #8322
-        replaced it with ``raise NotImplementedError`` and kept the tests, which
-        has redded ``optional-stack-check`` ever since (#8771).
+        swapped it for a ``NotImplementedError`` (#8771) and kept the tests,
+        which has redded ``optional-stack-check`` ever since.
 
         Returns:
             Always ``False``.
@@ -230,8 +230,8 @@ class VRControllerInput(BaseInputDevice):
         Returning ``False`` rather than raising is the deliberate contract: it
         matches ``BaseInputDevice.connect``, the ROS2/UDP controller stubs, and
         the graceful-degradation path every caller and test relies on. #8322
-        replaced it with ``raise NotImplementedError`` and kept the tests, which
-        has redded ``optional-stack-check`` ever since (#8771).
+        swapped it for a ``NotImplementedError`` (#8771) and kept the tests,
+        which has redded ``optional-stack-check`` ever since.
 
         Returns:
             Always ``False``.
@@ -301,8 +301,8 @@ class HapticDeviceInput(BaseInputDevice):
         Returning ``False`` rather than raising is the deliberate contract: it
         matches ``BaseInputDevice.connect``, the ROS2/UDP controller stubs, and
         the graceful-degradation path every caller and test relies on. #8322
-        replaced it with ``raise NotImplementedError`` and kept the tests, which
-        has redded ``optional-stack-check`` ever since (#8771).
+        swapped it for a ``NotImplementedError`` (#8771) and kept the tests,
+        which has redded ``optional-stack-check`` ever since.
 
         Returns:
             Always ``False``.
