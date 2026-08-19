@@ -9,7 +9,10 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
-from defusedxml import ElementTree as SafeElementTree
+try:
+    from defusedxml import ElementTree as SafeElementTree
+except ImportError:
+    import xml.etree.ElementTree as SafeElementTree  # nosec: B405 - fallback for offline PPTX chart extraction
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SOURCE_DIR = (

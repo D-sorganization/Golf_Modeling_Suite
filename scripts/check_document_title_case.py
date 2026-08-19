@@ -12,7 +12,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from zipfile import BadZipFile, ZipFile
 
-from defusedxml import ElementTree as SafeElementTree
+try:
+    from defusedxml import ElementTree as SafeElementTree
+except ImportError:
+    import xml.etree.ElementTree as SafeElementTree  # nosec: B405 - fallback for doc-governance CI runner without defusedxml
 
 MINOR = {
     "a",
