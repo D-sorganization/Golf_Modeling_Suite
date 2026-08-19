@@ -10,10 +10,12 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from xml.etree import ElementTree
 from zipfile import BadZipFile, ZipFile
 
-from defusedxml import ElementTree as SafeElementTree
+try:
+    from defusedxml import ElementTree as SafeElementTree
+except ImportError:
+    from xml.etree import ElementTree as SafeElementTree  # type: ignore[no-redef]
 
 MINOR = {
     "a",
@@ -166,7 +168,7 @@ def findings_for_docx(path: Path, shown: Path) -> list[Finding]:
     try:
         with ZipFile(path) as archive:
             root = SafeElementTree.fromstring(archive.read("word/document.xml"))
-    except (BadZipFile, KeyError, ElementTree.ParseError):
+    except (BadZipFile, KeyError, SafeElementTree.ParseError):
         return []
     findings = []
     for number, paragraph in enumerate(root.findall(".//w:p", DOCX_NS), 1):

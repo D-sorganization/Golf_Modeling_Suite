@@ -7,9 +7,12 @@ import hashlib
 import json
 import zipfile
 from pathlib import Path
-from xml.etree import ElementTree
+from xml.etree.ElementTree import Element
 
-from defusedxml import ElementTree as SafeElementTree
+try:
+    from defusedxml import ElementTree as SafeElementTree
+except ImportError:
+    from xml.etree import ElementTree as SafeElementTree  # type: ignore[no-redef]
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SOURCE_DIR = (
@@ -57,7 +60,7 @@ def verify_sources() -> dict[str, str]:
     return observed
 
 
-def _cache_values(node: ElementTree.Element, path: str) -> list[float]:
+def _cache_values(node: Element, path: str) -> list[float]:
     points = node.findall(path, CHART_NS)
     indexed = sorted(
         (
