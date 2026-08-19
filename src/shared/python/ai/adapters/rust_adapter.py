@@ -5,15 +5,15 @@ import queue
 from collections.abc import Iterator
 from typing import Any
 
-from src.shared.python.ai.adapters.base import BaseAgentAdapter, ToolDeclaration
-from src.shared.python.ai.types import (
+from shared.python.ai.adapters.base import BaseAgentAdapter, ToolDeclaration
+from shared.python.ai.types import (
     AgentChunk,
     AgentResponse,
     ConversationContext,
     ProviderCapabilities,
     ProviderCapability,
 )
-from src.shared.python.contracts import precondition
+from shared.python.contracts import precondition
 
 logger = logging.getLogger(__name__)
 

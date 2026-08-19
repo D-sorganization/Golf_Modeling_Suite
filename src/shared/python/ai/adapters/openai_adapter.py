@@ -23,8 +23,8 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, Any
 
-from src.shared.python.ai.adapters.base import BaseAgentAdapter, ToolDeclaration
-from src.shared.python.ai.config import (
+from shared.python.ai.adapters.base import BaseAgentAdapter, ToolDeclaration
+from shared.python.ai.config import (
     DEFAULT_OPENAI_MAX_TOKENS,
     DEFAULT_OPENAI_MODEL,
     DEFAULT_OPENAI_TIMEOUT,
@@ -32,10 +32,10 @@ from src.shared.python.ai.config import (
     get_openai_organization,
     get_openai_timeout,
 )
-from src.shared.python.ai.exceptions import (
+from shared.python.ai.exceptions import (
     AIProviderError,
 )
-from src.shared.python.ai.types import (
+from shared.python.ai.types import (
     AgentChunk,
     AgentResponse,
     ConversationContext,
@@ -43,8 +43,8 @@ from src.shared.python.ai.types import (
     ProviderCapability,
     ToolCall,
 )
-from src.shared.python.contracts import precondition
-from src.shared.python.logging_pkg.logging_config import get_logger
+from shared.python.contracts import precondition
+from shared.python.logging_pkg.logging_config import get_logger
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -441,13 +441,19 @@ class OpenAIAdapter(BaseAgentAdapter):
 
             messages.append(formatted)
 
-        # Add current message
-        messages.append(
-            {
-                "role": "user",
-                "content": current_message,
-            }
-        )
+        # Add current message.
+        #
+        # `chat_service` calls with `current_message=""` when the message the
+        # user just sent is already the tail of `context.messages`. Appending
+        # an empty trailing user turn there corrupts the request: providers
+        # either reject it or answer the blank turn instead of the real one.
+        if current_message.strip():
+            messages.append(
+                {
+                    "role": "user",
+                    "content": current_message,
+                }
+            )
 
         return messages
 

@@ -485,8 +485,8 @@ inventory and reopen adjudication until every new candidate is reviewed.
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
 
-| **Spec Version** | 1.0.551 |
-| **Last Spec Update** | 2026-08-19 |
+| **Spec Version**        | 1.0.551                                            |
+| **Last Spec Update**    | 2026-08-19                                         |
 
 ## 2. Purpose & Mission
 
@@ -539,6 +539,25 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
   Tools PR #4574, arriving here through a `vendor/ud-tools` bump - the
   adapters are Tools-owned child copies and
   `test_tools_child_copy_contract.py` correctly refuses direct edits.
+
+- **2026-08-19** - Repaired all five `profile-size-matrix` Docker builds
+  (issue #8771). `Dockerfile.modular`'s builder stage copies a deliberate
+  minimal slice - `src/shared/python/__init__.py`, `engine_core/` and
+  `feature_registry/` - so resolving a profile does not invalidate the layer
+  cache on every source change. `scripts/docker/install_features.py` then did
+  `from src.shared.python.feature_registry.features import get_feature`, and
+  importing a submodule executes every parent package `__init__` first: once
+  `src/shared/python/__init__.py` grew an eager `from . import ai`, and `ai/`
+  is not in the slice, every modular image build died at `ImportError: cannot
+  import name 'ai' from partially initialized module`. The script now loads
+  `features.py` from its path with no parent package, which is what its own
+  comment always claimed ("read the features module in isolation") and what
+  makes the builder slice self-sufficient regardless of what any package
+  `__init__` later imports. `features.py` depends only on `dataclasses` and
+  `typing`. The module is registered in `sys.modules` before execution
+  because `@dataclass` resolves `cls.__module__` through it while processing
+  the class body. `src/shared/python/__init__.py` is a Tools-owned child copy
+  and is deliberately left untouched.
 
 - **2026-08-19** - Git-ignored the test-run artefacts that have twice been
   committed at the repository root (issue #8771). The autouse
@@ -2998,6 +3017,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-19 | 1.0.549 | Repaired all five `profile-size-matrix` Docker builds. `scripts/docker/install_features.py` reached the feature registry through `from src.shared.python.feature_registry.features import ...`, which executes every parent package `__init__`; `Dockerfile.modular`'s builder stage deliberately copies only `__init__.py`, `engine_core/` and `feature_registry/` so profile resolution does not invalidate the layer cache, so an eager `from . import ai` in that `__init__` broke every modular build with `ImportError: cannot import name 'ai' from partially initialized module`. The script now loads `features.py` by path with no parent package - what its own comment always claimed - making the builder slice self-sufficient regardless of what any package `__init__` imports later; the module is registered in `sys.modules` before execution because `@dataclass` resolves `cls.__module__` through it. Verified against a reconstructed builder slice: all five profiles resolve with `src/shared/python/__init__.py` left exactly as it is on `main`, since it is a Tools-owned child copy (#8771). |
 | 2026-08-19 | 1.0.548 | Git-ignored the root-level test-run artefacts (`base.csv`, `base.json`, `base.mat`, `base.h5`, `base.*.provenance.json`, `pytest_report*.txt`, `golf_modeling_suite.db`). `_prevent_repo_root_io` stops tests producing them (#7935) but nothing stopped them being staged: #8322 committed nine such files at the root and #8747 deleted them again. Patterns are root-anchored, so the tracked `docs/research/proximal_distal_energy_transfer/data/wscg_two_hand_raw/base.csv` fixture is not affected; verified no tracked path is newly ignored (#8771). |
 | 2026-08-19 | 1.0.547 | Restored `optional-stack-check (3.11)`: the SpaceMouse, VR-controller and haptic `connect()` stubs in `src/deployment/teleoperation/devices.py` return `False` again instead of raising `NotImplementedError`. #8322 introduced the raise, kept the three tests asserting `not dev.connect()`, and deleted the #7360 docstring explaining why `False` is the honest answer for a stub with no hardware driver. `BaseInputDevice.connect`, the ROS2/UDP controller stubs and `test_base_input_device` all keep the `False` contract, so the overrides were inconsistent with their own parent class. #8322 also rewrote six assertions in `tests/deployment/test_teleoperation.py` and `tests/deployment/wave5_deployment/test_teleoperation.py` from `assert not d.connect()` to `pytest.raises(NotImplementedError)` while missing the third file - which is why `optional-stack-check` went red and `unit-test-gate` did not, and why the repo has since asserted both contracts at once. All of it is restored to the pre-#8322 text so a single contract holds again; the `#8058` reference is retained. 288 deployment tests pass, nothing skipped or deleted (#8771). |
 | 2026-08-19 | 1.0.551 | Corrected ten AI provider-adapter tests that had not followed deliberate implementation changes: the base test double missing the `list_models`/`thinking_capabilities` methods #5635 made abstract, provider-specific token keys superseded by #2763's canonical usage triple, and Gemini error and streaming expectations superseded by #3179's typed raises and #2763's stream-finality guarantee. Pinned `test_gemini_adapter.py` to the SDK path it claims to test: its bare `MagicMock` stub auto-created a `Client` attribute, so `HAS_GEMINI_CLIENT` came out true and nine tests exercised a branch they never asserted against; the other branch now has its own test. `tests/unit/shared_python/ai/adapters/` goes from 19 failed / 43 passed to 9 failed / 62 passed; the remaining nine need canonical Tools source (Tools PR #4574) and arrive via a `vendor/ud-tools` bump, because the adapters are Tools-owned child copies. Nothing skipped or deleted (#8771). |
