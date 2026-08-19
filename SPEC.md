@@ -4054,4 +4054,4 @@ Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linal
 
 * `bunkershot3d/metrics/trace.py`: Replaced `np.linalg.norm(..., axis=1)` with `np.sqrt(np.einsum(...))` for multi-dimensional array norm, and replaced `float(np.linalg.norm)` with `math.sqrt(np.vdot)` for 1D array norm to improve performance. (spec-exempt: micro-optimization)
 
-- `spec-exempt`: Replaced `np.sum(A * B)` with `np.vdot(A, B)` in `src/bunkershot3d/study/surrogate.py` to optimize 2D array dot product without changing logic.
+- `spec-exempt`: Replaced `np.sum(A * B)` with `np.dot(A.ravel(), B.ravel())` in `src/bunkershot3d/study/surrogate.py` to optimize 2D array dot product without changing logic.
