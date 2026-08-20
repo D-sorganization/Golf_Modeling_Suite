@@ -580,7 +580,7 @@ class GaussianProcess:
                 method="L-BFGS-B",
                 jac=True,
                 bounds=bounds,
-            )
+            )  # type: ignore[call-overload]
             value = float(result.fun)
             if np.isfinite(value) and value < best_value:
                 best_value = value
