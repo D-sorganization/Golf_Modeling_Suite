@@ -102,7 +102,7 @@ def test_v2_analyze_returns_traceable_contract_without_changing_v1(
                 "authority": {
                     "dataset_id": "api-fixture",
                     "repository": "D-sorganization/UpstreamDrift",
-                    "commit": "4b898d237",
+                    "commit": "4b898d237" + "0" * 31,
                 },
                 "player_identity": {"trust_level": "not_provided"},
                 "sources": [
@@ -114,6 +114,14 @@ def test_v2_analyze_returns_traceable_contract_without_changing_v1(
                     }
                 ],
             },
+            "model_provenance": [
+                {
+                    "model_id": "penner-flight",
+                    "version": "1.0.0",
+                    "code_commit": "a" * 40,
+                    "relationship_to_vendor": "independent_physics",
+                }
+            ],
         },
     )
     assert response.status_code == 200
@@ -124,6 +132,26 @@ def test_v2_analyze_returns_traceable_contract_without_changing_v1(
     assert payload["lineage"]["sources"][0]["source_id"] == "fixture-records"
     assert len(payload["lineage"]["backing_records"]) == 30
     assert payload["units"]["ball_speed"]["canonical_unit"] == "m/s"
+    assert payload["model_provenance"][0]["code_commit"] == "a" * 40
+
+
+def test_v2_analyze_reports_missing_selected_column_as_contract_error(
+    client: TestClient,
+) -> None:
+    response = client.post(
+        "/tools/launch-monitor-analytics/v2/analyze",
+        json={
+            "records": _records(),
+            "analysis": {
+                "outcome": "ball_speed",
+                "predictors": ["missing_metric"],
+                "analysis_mode": "correlation",
+            },
+        },
+    )
+    assert response.status_code == 400
+    assert "Columns not present" in response.json()["detail"]
+    assert "missing_metric" in response.json()["detail"]
 
 
 def test_analyze_rejects_aggregate_regression(client: TestClient) -> None:

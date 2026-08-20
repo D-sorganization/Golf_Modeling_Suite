@@ -161,6 +161,13 @@ directory structure, or row order. Vendor names remain vendor-comparable
 labels; no result claims firmware reproduction, device emulation, or device
 certification.
 
+All canonical metrics and retained numeric source fields remain available for
+selection. Canonical fields use the metric registry's units. A retained source
+field is labeled `source_declared` only when its unit is explicitly supplied in
+the v2 context; otherwise the unit and authority are `unknown`. An unknown unit
+is never silently treated as canonical. Backing rows similarly name their
+declared content-addressed source or state why no source link is available.
+
 ### Public Reference Data
 
 The source-traceable public dataset is maintained in the separate

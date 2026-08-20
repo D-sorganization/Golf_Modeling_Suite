@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+from pydantic import ValidationError
 
 from src.shared.python.launch_monitor import (
     CONTRACT_VERSION,
@@ -15,6 +16,7 @@ from src.shared.python.launch_monitor import (
     AnalysisContextV2,
     DatasetAuthorityV2,
     FlexibleAnalysisRequest,
+    ModelProvenanceV2,
     PlayerIdentityV2,
     SourceFileReferenceV2,
     TransformRecordV2,
@@ -64,7 +66,7 @@ def _context() -> AnalysisContextV2:
         authority=DatasetAuthorityV2(
             dataset_id="private-shot-corpus",
             repository="D-sorganization/Launch-Monitor-Flight-Model-Campaign",
-            commit="97f3ecf",
+            commit="9" * 40,
             dataset_path="data/authority/database/shot_corpus_parquet",
         ),
         player_identity=PlayerIdentityV2(
@@ -87,6 +89,7 @@ def _context() -> AnalysisContextV2:
                 rights_status="restricted_internal",
             ),
         ),
+        source_units={"source::custom_metric": "source-unit"},
     )
 
 
@@ -109,10 +112,11 @@ def test_v2_envelope_covers_units_lineage_missingness_and_provenance() -> None:
     assert payload["units"]["ball_speed"] == {
         "canonical_unit": "m/s",
         "display_unit": "mph",
+        "authority": "canonical_registry",
     }
     assert payload["missingness"]["missing_by_variable"]["attack_angle"] == 1
     assert payload["missingness"]["excluded_by_reason"]["regression_incomplete"] == 1
-    assert payload["lineage"]["authority"]["commit"] == "97f3ecf"
+    assert payload["lineage"]["authority"]["commit"] == "9" * 40
     assert len(payload["lineage"]["backing_records"]) == 12
     assert all(
         len(reference["record_sha256"]) == 64
@@ -122,6 +126,10 @@ def test_v2_envelope_covers_units_lineage_missingness_and_provenance() -> None:
         "canonical-unit-normalization"
     )
     assert payload["lineage"]["sources"][0]["file_sha256"] == "b" * 64
+    assert payload["lineage"]["backing_records"][0]["source_id"] == ("trackman-study")
+    assert payload["lineage"]["backing_records"][6]["unlinked_reason"] == (
+        "session_not_linked_to_source_reference"
+    )
     assert payload["player_identity"]["trust_level"] == "pseudonymous_stable"
     assert {item["vendor"] for item in payload["vendor_provenance"]} == {
         "TrackMan",
@@ -190,6 +198,79 @@ def test_v2_player_grouping_requires_explicit_trusted_identity() -> None:
                 min_samples=5,
             ),
         )
+
+
+def test_v2_accepts_only_full_commit_shas() -> None:
+    with pytest.raises(ValidationError, match="commit"):
+        DatasetAuthorityV2(dataset_id="corpus", commit="97f3ecf")
+    with pytest.raises(ValidationError, match="code_commit"):
+        ModelProvenanceV2(model_id="penner", version="1", code_commit="deadbee")
+    with pytest.raises(ValidationError, match="trust_level"):
+        PlayerIdentityV2(trust_level="explicit_session_label")  # type: ignore[arg-type]
+    attested = PlayerIdentityV2(
+        trust_level="explicit_user_attested",
+        identifier_column="player",
+        evidence="The user explicitly assigned this player label.",
+    )
+    assert attested.trust_level == "explicit_user_attested"
+
+
+def test_v2_rejects_undeclared_backing_source_reference() -> None:
+    frame = _shots()
+    frame["source_id"] = "not-declared"
+    with pytest.raises(ValueError, match="not declared in context.sources"):
+        analyze_variables_v2(
+            frame,
+            FlexibleAnalysisRequest(
+                outcome="ball_speed",
+                predictors=("club_speed",),
+                analysis_mode="correlation",
+                min_samples=5,
+            ),
+            context=_context(),
+        )
+
+
+def test_v2_missing_selected_column_is_a_contract_error() -> None:
+    with pytest.raises(ValueError, match="Columns not present.*missing_metric"):
+        analyze_variables_v2(
+            _shots(),
+            FlexibleAnalysisRequest(
+                outcome="ball_speed",
+                predictors=("missing_metric",),
+                analysis_mode="correlation",
+                min_samples=5,
+            ),
+        )
+
+
+def test_v2_unknown_units_are_explicitly_source_declared_or_unknown() -> None:
+    frame = _shots().iloc[:6].copy()
+    frame["source::custom_metric"] = np.linspace(1.0, 2.0, 6)
+    declared = analyze_variables_v2(
+        frame,
+        FlexibleAnalysisRequest(
+            outcome="ball_speed",
+            predictors=("source::custom_metric",),
+            analysis_mode="correlation",
+            min_samples=5,
+        ),
+        context=_context(),
+    )
+    assert declared.units["source::custom_metric"].authority == "source_declared"
+    assert declared.units["source::custom_metric"].canonical_unit == "source-unit"
+
+    unknown = analyze_variables_v2(
+        frame,
+        FlexibleAnalysisRequest(
+            outcome="ball_speed",
+            predictors=("source::custom_metric",),
+            analysis_mode="correlation",
+            min_samples=5,
+        ),
+    )
+    assert unknown.units["source::custom_metric"].authority == "unknown"
+    assert unknown.units["source::custom_metric"].canonical_unit == "unknown"
 
 
 def test_v1_adapter_remains_unchanged() -> None:

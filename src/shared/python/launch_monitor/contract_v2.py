@@ -28,7 +28,7 @@ from src.shared.python.launch_monitor.schema import METRICS
 CONTRACT_VERSION_V2 = "2.0.0"
 PlayerIdentityTrust = Literal[
     "not_provided",
-    "explicit_session_label",
+    "explicit_user_attested",
     "pseudonymous_stable",
     "verified_external",
     "untrusted_inferred",
@@ -47,7 +47,7 @@ class DatasetAuthorityV2(_ContractModel):
 
     dataset_id: str = Field(min_length=1)
     repository: str | None = None
-    commit: str | None = None
+    commit: str | None = Field(default=None, pattern=r"^[0-9a-f]{40}$")
     dataset_path: str | None = None
     manifest_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
 
@@ -62,7 +62,7 @@ class PlayerIdentityV2(_ContractModel):
     @model_validator(mode="after")
     def require_explicit_evidence(self) -> PlayerIdentityV2:
         if self.trust_level in {
-            "explicit_session_label",
+            "explicit_user_attested",
             "pseudonymous_stable",
             "verified_external",
         } and (not self.identifier_column or not self.evidence):
@@ -102,11 +102,32 @@ class AnalysisContextV2(_ContractModel):
     player_identity: PlayerIdentityV2 = Field(default_factory=PlayerIdentityV2)
     transformations: tuple[TransformRecordV2, ...] = ()
     sources: tuple[SourceFileReferenceV2, ...] = ()
+    source_units: dict[str, str] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def validate_source_links(self) -> AnalysisContextV2:
+        source_ids = [source.source_id for source in self.sources]
+        if len(source_ids) != len(set(source_ids)):
+            raise ValueError("context source_id values must be unique")
+        session_ids = [
+            session for source in self.sources for session in source.session_ids
+        ]
+        if len(session_ids) != len(set(session_ids)):
+            raise ValueError("a session_id cannot link to multiple source references")
+        invalid_units = [
+            name
+            for name, unit in self.source_units.items()
+            if not name or not unit.strip()
+        ]
+        if invalid_units:
+            raise ValueError("source_units keys and values must be non-empty")
+        return self
 
 
 class MetricUnitsV2(_ContractModel):
     canonical_unit: str
     display_unit: str
+    authority: Literal["canonical_registry", "source_declared", "unknown"]
 
 
 class BackingRecordV2(_ContractModel):
@@ -116,6 +137,22 @@ class BackingRecordV2(_ContractModel):
     shot_id: str | None = None
     session_id: str | None = None
     source_row: int | str | None = None
+    source_id: str | None = None
+    unlinked_reason: (
+        Literal[
+            "no_source_reference_declared",
+            "session_not_linked_to_source_reference",
+        ]
+        | None
+    ) = None
+
+    @model_validator(mode="after")
+    def require_link_or_reason(self) -> BackingRecordV2:
+        if (self.source_id is None) == (self.unlinked_reason is None):
+            raise ValueError(
+                "backing record requires exactly one source_id or unlinked_reason"
+            )
+        return self
 
 
 class AnalysisLineageV2(_ContractModel):
@@ -163,7 +200,7 @@ class VendorProvenanceV2(_ContractModel):
 class ModelProvenanceV2(_ContractModel):
     model_id: str
     version: str
-    code_commit: str | None = None
+    code_commit: str | None = Field(default=None, pattern=r"^[0-9a-f]{40}$")
     configuration_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     relationship_to_vendor: Literal[
         "independent_physics",
@@ -234,18 +271,43 @@ def _optional_text(value: Any) -> str | None:
     return text or None
 
 
-def _backing_records(frame: pd.DataFrame) -> tuple[BackingRecordV2, ...]:
+def _backing_records(
+    frame: pd.DataFrame, context: AnalysisContextV2
+) -> tuple[BackingRecordV2, ...]:
+    declared_sources = {source.source_id for source in context.sources}
+    source_by_session = {
+        session_id: source.source_id
+        for source in context.sources
+        for session_id in source.session_ids
+    }
     records: list[BackingRecordV2] = []
     for raw in frame.to_dict(orient="records"):
         source_row = _json_value(raw.get("source_row"))
         if source_row is not None and not isinstance(source_row, (int, str)):
             source_row = str(source_row)
+        session_id = _optional_text(raw.get("session_id"))
+        source_id = _optional_text(raw.get("source_id"))
+        if source_id is not None and source_id not in declared_sources:
+            raise ValueError(
+                f"backing source_id {source_id!r} is not declared in context.sources"
+            )
+        source_id = source_id or (
+            source_by_session.get(session_id) if session_id is not None else None
+        )
+        if source_id is not None:
+            unlinked_reason = None
+        elif context.sources:
+            unlinked_reason = "session_not_linked_to_source_reference"
+        else:
+            unlinked_reason = "no_source_reference_declared"
         records.append(
             BackingRecordV2(
                 record_sha256=_record_digest(raw),
                 shot_id=_optional_text(raw.get("shot_id")),
-                session_id=_optional_text(raw.get("session_id")),
+                session_id=session_id,
                 source_row=source_row,
+                source_id=source_id,
+                unlinked_reason=unlinked_reason,
             )
         )
     return tuple(records)
@@ -372,6 +434,28 @@ def _assert_identity_safe(
         raise ValueError("group_by must match the declared player identifier_column")
 
 
+def _metric_units(metric: str, context: AnalysisContextV2) -> MetricUnitsV2:
+    if metric in METRICS:
+        definition = METRICS[metric]
+        return MetricUnitsV2(
+            canonical_unit=definition.canonical_unit,
+            display_unit=definition.display_unit,
+            authority="canonical_registry",
+        )
+    source_unit = context.source_units.get(metric)
+    if source_unit:
+        return MetricUnitsV2(
+            canonical_unit=source_unit,
+            display_unit=source_unit,
+            authority="source_declared",
+        )
+    return MetricUnitsV2(
+        canonical_unit="unknown",
+        display_unit="unknown",
+        authority="unknown",
+    )
+
+
 def analyze_variables_v2(
     frame: pd.DataFrame,
     request: FlexibleAnalysisRequest,
@@ -434,15 +518,7 @@ def analyze_variables_v2(
         else:
             analysis_payload = None
     selected = (request.outcome, *request.predictors)
-    units = {
-        metric: MetricUnitsV2(
-            canonical_unit=METRICS[metric].canonical_unit,
-            display_unit=METRICS[metric].display_unit,
-        )
-        if metric in METRICS
-        else MetricUnitsV2(canonical_unit="source", display_unit="source")
-        for metric in selected
-    }
+    units = {metric: _metric_units(metric, resolved_context) for metric in selected}
     return LaunchMonitorAnalysisResultV2(
         status=_overall_status(availability),
         analysis=analysis_payload,
@@ -452,7 +528,7 @@ def analyze_variables_v2(
             authority=resolved_context.authority,
             transformations=resolved_context.transformations,
             sources=resolved_context.sources,
-            backing_records=_backing_records(frame),
+            backing_records=_backing_records(frame, resolved_context),
         ),
         missingness=missingness,
         availability=availability,

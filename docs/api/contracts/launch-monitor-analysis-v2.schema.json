@@ -147,6 +147,18 @@
           "default": null,
           "title": "Shot Id"
         },
+        "source_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Id"
+        },
         "source_row": {
           "anyOf": [
             {
@@ -161,6 +173,22 @@
           ],
           "default": null,
           "title": "Source Row"
+        },
+        "unlinked_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "no_source_reference_declared",
+                "session_not_linked_to_source_reference"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unlinked Reason"
         }
       },
       "required": ["record_sha256"],
@@ -202,6 +230,7 @@
         "commit": {
           "anyOf": [
             {
+              "pattern": "^[0-9a-f]{40}$",
               "type": "string"
             },
             {
@@ -261,6 +290,11 @@
     "MetricUnitsV2": {
       "additionalProperties": false,
       "properties": {
+        "authority": {
+          "enum": ["canonical_registry", "source_declared", "unknown"],
+          "title": "Authority",
+          "type": "string"
+        },
         "canonical_unit": {
           "title": "Canonical Unit",
           "type": "string"
@@ -270,7 +304,7 @@
           "type": "string"
         }
       },
-      "required": ["canonical_unit", "display_unit"],
+      "required": ["canonical_unit", "display_unit", "authority"],
       "title": "MetricUnitsV2",
       "type": "object"
     },
@@ -331,6 +365,7 @@
         "code_commit": {
           "anyOf": [
             {
+              "pattern": "^[0-9a-f]{40}$",
               "type": "string"
             },
             {
@@ -409,7 +444,7 @@
           "default": "not_provided",
           "enum": [
             "not_provided",
-            "explicit_session_label",
+            "explicit_user_attested",
             "pseudonymous_stable",
             "verified_external",
             "untrusted_inferred"

@@ -25,7 +25,8 @@ payload when analysis is available and adds:
 
 1. canonical and display units;
 2. commit-addressed dataset authority, content-addressed source references,
-   versioned transformations, exact input-record hashes, and source row IDs;
+   versioned transformations, exact input-record hashes, source row IDs, and a
+   declared source join or explicit unlinked reason for every backing record;
 3. per-variable missing/non-numeric counts and per-analysis exclusions;
 4. structured result availability instead of ambiguous null values;
 5. uncertainty and multiplicity methods with assumptions;
@@ -44,6 +45,14 @@ level, the exact identifier column, and evidence. Session, club, row order,
 filename, and file layout are never identity evidence. Insufficient complete
 rows and rank-deficient OLS designs are explicit unavailable results. Invalid
 requests and unsafe aggregation remain errors.
+
+Commit identifiers are full 40-character lowercase hexadecimal SHAs. The safe
+explicit identity level is `explicit_user_attested`; a session label is not an
+identity level. All canonical metrics and retained numeric source fields remain
+selectable, but only registry metrics receive registry-authoritative units.
+Non-canonical units must be declared by the source context and are labeled
+`source_declared`; absent declarations remain `unknown` rather than receiving a
+silently authoritative unit.
 
 ## Consequences
 

@@ -129,7 +129,7 @@ result = analyze_variables_v2(
         authority=DatasetAuthorityV2(
             dataset_id="qualified-corpus",
             repository="D-sorganization/Launch-Monitor-Flight-Model-Campaign",
-            commit="<exact commit>",
+            commit="0123456789abcdef0123456789abcdef01234567",
         )
     ),
 )
@@ -156,3 +156,15 @@ layout, and row order are never accepted as player identity. Insufficient or
 rank-deficient regression is returned as an explicit unavailable result rather
 than an apparently successful null result. Invalid columns, unsafe pooling, and
 other request-contract violations still fail with a descriptive error.
+
+Every canonical metric and retained numeric `source::<header>` field remains
+selectable. Registry metrics carry registry-authoritative canonical/display
+units. A retained source field carries a unit only when the caller declares it
+in `AnalysisContextV2.source_units`; that unit is labeled `source_declared`, not
+canonical. Without a declaration both units and their authority are `unknown`.
+The contract never promotes an unknown source unit into an authoritative unit.
+
+Dataset and analytical-model commits, when present, are full 40-character
+lowercase hexadecimal SHAs. Each backing record either joins to a declared
+content-addressed source by `source_id` or carries an explicit unlinked reason.
+An undeclared `source_id` is a contract error.

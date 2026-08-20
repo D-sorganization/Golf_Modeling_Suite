@@ -104,9 +104,13 @@ async def analyze(payload: AnalyzePayload) -> dict[str, object]:
     return {"contract_version": CONTRACT_VERSION, "result": result.to_dict()}
 
 
-@router.post("/v2/analyze", response_model=LaunchMonitorAnalysisResultV2)
+@router.post(
+    "/v2/analyze",
+    response_model=LaunchMonitorAnalysisResultV2,
+    response_model_exclude_none=True,
+)
 @handle_api_errors
-async def analyze_v2(payload: AnalyzePayloadV2) -> dict[str, object]:
+async def analyze_v2(payload: AnalyzePayloadV2) -> LaunchMonitorAnalysisResultV2:
     """Analyze inline records with the evidence-bearing v2 contract."""
 
     frame = pd.DataFrame.from_records(payload.records)
@@ -116,7 +120,7 @@ async def analyze_v2(payload: AnalyzePayloadV2) -> dict[str, object]:
         context=payload.context,
         model_provenance=payload.model_provenance,
     )
-    return result.model_dump(mode="json", exclude_none=True)
+    return result
 
 
 __all__ = ["CONTRACT_VERSION", "router"]
