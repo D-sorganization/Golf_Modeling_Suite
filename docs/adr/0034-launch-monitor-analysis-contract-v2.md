@@ -1,4 +1,4 @@
-# ADR 0032: Launch Monitor Analysis Contract V2
+# ADR 0034: Launch Monitor Analysis Contract V2
 
 - Status: Accepted
 - Date: 2026-08-19
