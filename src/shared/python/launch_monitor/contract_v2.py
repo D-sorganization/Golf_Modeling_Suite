@@ -25,7 +25,7 @@ from src.shared.python.launch_monitor.flexible_analysis import (
 )
 from src.shared.python.launch_monitor.schema import METRICS
 
-CONTRACT_VERSION_V2 = "2.0.0"
+CONTRACT_VERSION_V2: Literal["2.0.0"] = "2.0.0"
 PlayerIdentityTrust = Literal[
     "not_provided",
     "explicit_user_attested",
@@ -34,6 +34,10 @@ PlayerIdentityTrust = Literal[
     "untrusted_inferred",
 ]
 AvailabilityState = Literal["available", "partial", "unavailable"]
+UnlinkedReason = Literal[
+    "no_source_reference_declared",
+    "session_not_linked_to_source_reference",
+]
 
 
 class _ContractModel(BaseModel):
@@ -138,13 +142,7 @@ class BackingRecordV2(_ContractModel):
     session_id: str | None = None
     source_row: int | str | None = None
     source_id: str | None = None
-    unlinked_reason: (
-        Literal[
-            "no_source_reference_declared",
-            "session_not_linked_to_source_reference",
-        ]
-        | None
-    ) = None
+    unlinked_reason: UnlinkedReason | None = None
 
     @model_validator(mode="after")
     def require_link_or_reason(self) -> BackingRecordV2:
@@ -294,6 +292,7 @@ def _backing_records(
         source_id = source_id or (
             source_by_session.get(session_id) if session_id is not None else None
         )
+        unlinked_reason: UnlinkedReason | None
         if source_id is not None:
             unlinked_reason = None
         elif context.sources:
