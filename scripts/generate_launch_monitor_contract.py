@@ -16,8 +16,13 @@ def main() -> None:
         root / "docs" / "api" / "contracts" / "launch-monitor-analysis-v2.schema.json"
     )
     destination.parent.mkdir(parents=True, exist_ok=True)
+    schema = contract_v2_json_schema()
+    if destination.is_file():
+        existing = json.loads(destination.read_text(encoding="utf-8"))
+        if existing == schema:
+            return
     destination.write_text(
-        json.dumps(contract_v2_json_schema(), indent=2, sort_keys=True) + "\n",
+        json.dumps(schema, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
 
