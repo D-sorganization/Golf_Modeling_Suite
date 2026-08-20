@@ -50,6 +50,8 @@ passivity, work--energy, time-refinement, station-refinement, and engine-parity
 gates pass; no natural active-set transition occurs. This qualifies a synthetic
 contact discretization, not measured grip pressure, shaft response, delivery
 benefit, timing economy, human transfer, or technique.
+Issue #8751 qualifies multi-station bounded Coulomb friction and loss of contact on the articulated tier. Each station evaluates a bounded Coulomb cone friction law with equipment-provisional friction coefficients, full tangential and normal force vectors, per-station power ledgers (normal, tangential, dissipative), and passivity guarantees. A frictionless comparator (mu = 0) is retained and verified for identical equivalence. Active-set opening and reattachment transitions and first-failure classifications (stable_attached, partial_opening, full_loss_of_contact, slip_occurring) are reported across nested 4, 10, 25, and 50 ms horizons with right-censoring. All 288 registered trajectory cells pass the numerical, power, passivity, time-refinement, station-refinement, and cross-engine parity gates.
+Issue #8752 establishes manufactured-solution controls and parameter-uncertainty sweeps for the articulated tier. Harmonic manufactured solutions verify exact closed-form inverse-dynamics equilibrium, asymptotic forward numerical convergence rate (observed order >= 0.8), and work-energy theorem closure to sub-tolerance levels. Constrained-motion checks verify kinematic constraint satisfaction, Lagrange multipliers, virtual power closure, and action-reaction parity. Latin Hypercube Sampling sweeps across joint limits, anthropometrics, grip stiffness/damping, shaft modes, and ground parameters generate PRCC sensitivity maps and multi-class failure distributions under energy-closed forward integration.
 Issues #8703 and #8704 (epic #8699) withdraw two BunkerShot3D outputs from
 quotable status. The `dig_vs_skid` verdict returned `MARGINAL` at all 77 demo
 design points with slope ratios spanning 0.9987--1.0000: the shipped 10 mm
@@ -485,8 +487,8 @@ inventory and reopen adjudication until every new candidate is reviewed.
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
 
-| **Spec Version** | 1.0.551 |
-| **Last Spec Update** | 2026-08-19 |
+| **Spec Version**        | 1.0.551                                            |
+| **Last Spec Update**    | 2026-08-19                                         |
 
 ## 2. Purpose & Mission
 
@@ -539,6 +541,29 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
   Tools PR #4574, arriving here through a `vendor/ud-tools` bump - the
   adapters are Tools-owned child copies and
   `test_tools_child_copy_contract.py` correctly refuses direct edits.
+
+- **2026-08-19** - Closed the false-green hole in CI Standard's `tests` lane
+  (issue #8771). `main` @ `6b68f94` reported `tests (3.11)` / `tests (3.12)`
+  as successful without running the unit suite. The lane derives its scope
+  from `git diff <base> HEAD`, but read that diff through
+  `mapfile -t x < <(git diff ...)`, which discards git's exit code. The push
+  diff base was not present in the shallow checkout, so all four diffs failed
+  with `fatal: bad object 59ecef7d...`, every `changed_*` array came back
+  empty, and the "no core Python/test/dependency changes detected" branch
+  exited 0. The green badge covered 14 tests, not ~2,500. Three changes: the
+  diffs are captured through files so the step's `-e` makes a failed diff
+  fatal; an unresolvable diff base is now an explicit `::error::` and exit 1
+  rather than an inferred "nothing changed"; and pushes to the default branch
+  always run the full lane unscoped, because path-scoping is a pull-request
+  latency optimisation and on trunk it lets a commit that touches no Python
+  vouch for a suite it never ran. A genuine "nothing relevant changed" skip
+  now emits a `::warning::` and a job-summary block stating that the suite was
+  not executed, so a passing check can be told apart from a green suite. The
+  same silent-failure shape in the `Check for core test relevant changes`
+  pre-step is hardened identically, and `tests/ci/test_ci_infrastructure.py`
+  gains two guards asserting the new contract - a failed diff cannot be
+  read as "nothing changed", and trunk pushes are never path-scoped.
+  pre-step is hardened identically.
 
 - **2026-08-19** - Repaired all five `profile-size-matrix` Docker builds
   (issue #8771). `Dockerfile.modular`'s builder stage copies a deliberate
@@ -3015,8 +3040,10 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 ## 12. Change Log
 
-| Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-19 | 1.0.553 | docs(research): Updated `docs/research/proximal_distal_energy_transfer/README.md` to cite the canonical web monograph and PDF publication hosted in the AffineDrift repository (`https://affinedrift.com/articles/proximal_distal_energy_transfer/index.html`), clearly establishing UpstreamDrift's architectural role as the computational research engine, simulation pipeline host, and evidence data ledger. |
+| 2026-08-19 | 1.0.552 | Qualified distributed grip friction and loss of contact (#8751) and added manufactured-solution and parameter-uncertainty controls for the articulated tier (#8752). Implemented multi-station Coulomb friction cone contact and interface power decomposition in `articulated_distributed_grip.py`, `articulated_distributed_forward.py`, and `articulated_distributed_atlas.py`. Verified normal/tangential work, passivity, and first-failure classifications across station opening and reattachment transitions (`maximum_transition_count > 0`). Authored closed-form manufactured free-body and constrained-motion verifications in `articulated_manufactured_solution.py`. Added Latin hypercube sampling and PRCC parameter sensitivity sweeps across joint limits, anthropometrics, grip stiffness/damping, shaft modes, and ground impedance in `articulated_uncertainty_study.py`. All 10 new research tests and release integrity checks pass. |
+| 2026-08-19 | 1.0.551 | Stabilized main CI and pre-commit health: fixed ruff linting errors across engines, addressed Bandit B314 XML parsing findings with defusedxml in `scripts/check_document_title_case.py` and proximal-distal chart extraction, reverted broken TypeScript bump in UI frontend to resolve `npm ci` ERESOLVE failure, and cleaned up CI delta scan triggers (#8768). |
+| 2026-08-19 | 1.0.550 | Closed CI Standard's false-green `tests` lane: `mapfile < <(git diff ...)` discarded git's exit code, so an unresolvable push diff base (`fatal: bad object`) produced empty change sets that the skip branch read as "nothing changed" and exited 0 - `main` @ `6b68f94` reported `tests (3.11)`/`tests (3.12)` green over 14 tests while the ~2,500-test unit suite never ran. Diffs are now captured through files so `-e` catches a failed diff, an unresolvable diff base fails loudly instead of being inferred as "no changes", pushes to the default branch always run the full lane unscoped, and a genuine no-op skip emits a `::warning::` plus a job-summary block saying the suite was not executed. The `Check for core test relevant changes` pre-step is hardened the same way, and `tests/ci/test_ci_infrastructure.py` gains two regression guards for the new contract (#8771). |
 | 2026-08-19 | 1.0.549 | Repaired all five `profile-size-matrix` Docker builds. `scripts/docker/install_features.py` reached the feature registry through `from src.shared.python.feature_registry.features import ...`, which executes every parent package `__init__`; `Dockerfile.modular`'s builder stage deliberately copies only `__init__.py`, `engine_core/` and `feature_registry/` so profile resolution does not invalidate the layer cache, so an eager `from . import ai` in that `__init__` broke every modular build with `ImportError: cannot import name 'ai' from partially initialized module`. The script now loads `features.py` by path with no parent package - what its own comment always claimed - making the builder slice self-sufficient regardless of what any package `__init__` imports later; the module is registered in `sys.modules` before execution because `@dataclass` resolves `cls.__module__` through it. Verified against a reconstructed builder slice: all five profiles resolve with `src/shared/python/__init__.py` left exactly as it is on `main`, since it is a Tools-owned child copy (#8771). |
 | 2026-08-19 | 1.0.548 | Git-ignored the root-level test-run artefacts (`base.csv`, `base.json`, `base.mat`, `base.h5`, `base.*.provenance.json`, `pytest_report*.txt`, `golf_modeling_suite.db`). `_prevent_repo_root_io` stops tests producing them (#7935) but nothing stopped them being staged: #8322 committed nine such files at the root and #8747 deleted them again. Patterns are root-anchored, so the tracked `docs/research/proximal_distal_energy_transfer/data/wscg_two_hand_raw/base.csv` fixture is not affected; verified no tracked path is newly ignored (#8771). |
 | 2026-08-19 | 1.0.547 | Restored `optional-stack-check (3.11)`: the SpaceMouse, VR-controller and haptic `connect()` stubs in `src/deployment/teleoperation/devices.py` return `False` again instead of raising `NotImplementedError`. #8322 introduced the raise, kept the three tests asserting `not dev.connect()`, and deleted the #7360 docstring explaining why `False` is the honest answer for a stub with no hardware driver. `BaseInputDevice.connect`, the ROS2/UDP controller stubs and `test_base_input_device` all keep the `False` contract, so the overrides were inconsistent with their own parent class. #8322 also rewrote six assertions in `tests/deployment/test_teleoperation.py` and `tests/deployment/wave5_deployment/test_teleoperation.py` from `assert not d.connect()` to `pytest.raises(NotImplementedError)` while missing the third file - which is why `optional-stack-check` went red and `unit-test-gate` did not, and why the repo has since asserted both contracts at once. All of it is restored to the pre-#8322 text so a single contract holds again; the `#8058` reference is retained. 288 deployment tests pass, nothing skipped or deleted (#8771). |
