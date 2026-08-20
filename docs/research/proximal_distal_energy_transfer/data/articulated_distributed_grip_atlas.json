@@ -131,7 +131,7 @@
     "docs/research/proximal_distal_energy_transfer/data/subject_scaled_closed_contact.npz": "9fa4364571ba5535995c63226289c0711ee1ebf37c58b7a3b4e4d14a98561779",
     "scripts/research/proximal_distal_energy/articulated_distributed_grip.py": "1d25ac5dbbb27d2bf67240c3cab18aa7c0a988f68cbb24fcf305bb5b2b37cca2",
     "scripts/research/proximal_distal_energy/articulated_distributed_forward.py": "3422db8884ecdba7938f7100253b0d261c4cd51a5d1c052ac65ae57586d16d63",
-    "scripts/research/proximal_distal_energy/articulated_distributed_atlas.py": "319287914e33714d1ef4a86cc0396d3d7c8d382fbf6400849d08e5401c27b884",
+    "scripts/research/proximal_distal_energy/articulated_distributed_atlas.py": "cb8882b32a532bed1ed4fc8c927a2020f89f38990ed583c52dd7b1d7c52c0359",
     "scripts/research/proximal_distal_energy/articulated_slack_contact.py": "79ad8644029ff8d447eae2e697a5ed7deceb173c000e5ef2b4f53be6c791ad69",
     "scripts/research/proximal_distal_energy/articulated_forward_integration.py": "3942fe624a4ed4642a61e68f2fd5029eb92df9dc0fff08617a2f62883e443b9a",
     "scripts/research/proximal_distal_energy/articulated_forward_contract.py": "c2f2a89bbb90da5e41488e4763327afe126f6be6be70da73c41c74adca52349a",

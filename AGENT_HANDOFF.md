@@ -71,10 +71,15 @@ PR #8768 cleared main's ruff, bandit, XML security, and frontend lock debt.
     The event probe begins disengaged, but #8751 requires event direction and a
     reported first-failure class rather than an attached-to-open start. Its
     complete local acceptance set now passes: 18 focused scientific tests, all
-    atlas gates, claim audit (1,068/1,068 candidates; 295 claims), 568-artifact
+    atlas gates, claim audit (1,068/1,068 candidates; 295 claims), 571-artifact
     release integrity, document governance/title case, file-size, architecture,
     and scoped Ruff checks. The optimized paper is 232 pages, 1.77 MB, with 192
-    URI links and 246 outline entries. Only commit, protected PR/CI, remote-main
+    URI links and 246 outline entries. PR #8797 is open with protected squash
+    auto-merge enabled. Its first hosted run exposed one actionable architecture
+    budget failure (`_record`, 125 > 100 lines); the record construction is now
+    split into focused helpers, and the exact architecture gate, scoped Ruff,
+    governed regeneration, release validation, and 18 focused scientific tests
+    pass locally. Commit/push of that correction, replacement CI, remote-main
     verification, and issue closure remain for #8751.
   - #8796 is **OPEN** under #8557/#8684 for the stronger attached-to-open and
     stateful finite-static-friction extension. It owns static-cone feasibility,
@@ -92,7 +97,7 @@ PR #8768 cleared main's ruff, bandit, XML security, and frontend lock debt.
   while keeping binary evidence byte-exact. This closes the hosted-checkout
   mismatch without weakening content identity; #8789 retains its separate
   Docker/quarantine/baseline scope.
-- Release-manifest validation for the #8751 worktree currently passes with 568
+- Release-manifest validation for the #8751 worktree currently passes with 571
   artifacts and zero mismatches after canonical regeneration. #8789 still owns
   the broader portable canonical-byte and cross-repository truth-recovery gate;
   revalidate from a clean checkout after merge before declaring that gate done.

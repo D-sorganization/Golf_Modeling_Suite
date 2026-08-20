@@ -440,7 +440,7 @@
       "bytes": 69621
     },
     "docs/research/proximal_distal_energy_transfer/data/articulated_distributed_grip_atlas.json": {
-      "sha256": "74aa4133c6c7ee21891840a57a879c66ad425eecb8c72adbf9fe1a9331a69792",
+      "sha256": "4f5eca517ca61ca2a7894fa8b8f3b334f72622f7e27651284938759e418b8ba8",
       "bytes": 6307
     },
     "docs/research/proximal_distal_energy_transfer/data/articulated_distributed_grip_atlas.npz": {
@@ -1764,8 +1764,8 @@
       "bytes": 21143
     },
     "scripts/research/proximal_distal_energy/articulated_distributed_atlas.py": {
-      "sha256": "319287914e33714d1ef4a86cc0396d3d7c8d382fbf6400849d08e5401c27b884",
-      "bytes": 37256
+      "sha256": "cb8882b32a532bed1ed4fc8c927a2020f89f38990ed583c52dd7b1d7c52c0359",
+      "bytes": 37637
     },
     "scripts/research/proximal_distal_energy/articulated_distributed_forward.py": {
       "sha256": "3422db8884ecdba7938f7100253b0d261c4cd51a5d1c052ac65ae57586d16d63",

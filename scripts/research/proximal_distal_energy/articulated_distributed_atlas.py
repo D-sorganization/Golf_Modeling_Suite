@@ -706,16 +706,14 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _record(
-    states: tuple[tuple[int, int], ...],
+def _all_gates_pass(
     buffers: _Buffers,
     event_buffers: _EventBuffers,
     stick_buffers: _StickBuffers,
     config: DistributedAtlasConfig,
     gates: dict[str, Any],
-    versions: dict[str, str],
-) -> dict[str, Any]:
-    all_passed = bool(
+) -> bool:
+    return bool(
         np.all(gates["numerical"])
         and np.all(gates["parity"])
         and gates["time_refinement_passed"]
@@ -728,93 +726,118 @@ def _record(
         <= config.forward.trajectory_relative_tolerance
         and np.all(stick_buffers.active_set_parity)
     )
+
+
+def _design_record(
+    states: tuple[tuple[int, int], ...],
+    config: DistributedAtlasConfig,
+    versions: dict[str, str],
+) -> dict[str, Any]:
+    return {
+        "engine_versions": versions,
+        "state_count": len(states),
+        "station_counts_per_hand": list(config.station_counts),
+        "friction_coefficients": list(config.friction_coefficients),
+        "velocity_branch_count": 2,
+        "time_step_count": len(config.forward.time_steps_s),
+        "engine_count": 2,
+        "trajectory_count": len(states)
+        * len(config.station_counts)
+        * len(config.friction_coefficients)
+        * 2
+        * len(config.forward.time_steps_s)
+        * 2,
+        "horizons_s": list(config.horizons_s),
+        "active_driver_or_joint_torque": "none; motion is an initial condition",
+        "velocity_reversal": "the complete registered generalized velocity and added club perturbation are sign-reversed",
+    }
+
+
+def _result_record(
+    buffers: _Buffers,
+    event_buffers: _EventBuffers,
+    stick_buffers: _StickBuffers,
+    gates: dict[str, Any],
+    all_passed: bool,
+) -> dict[str, Any]:
+    station_refinement = gates["station_refinement"]
+    return {
+        "maximum_peak_station_force_n": float(np.max(buffers.peak_force)),
+        "maximum_peak_force_couple_nm": float(np.max(buffers.peak_couple)),
+        "maximum_open_fraction": float(np.max(buffers.open_fraction)),
+        "maximum_transition_count": int(np.max(buffers.transition_count)),
+        "maximum_registered_event_transition_count": int(
+            np.max(event_buffers.transition_count)
+        ),
+        "registered_event_opening_count": int(np.sum(event_buffers.opening_count)),
+        "registered_event_reattachment_count": int(
+            np.sum(event_buffers.reattachment_count)
+        ),
+        "event_active_set_parity_failures": int(
+            np.count_nonzero(~event_buffers.active_set_parity)
+        ),
+        "maximum_stick_projection_residual_m_s": float(
+            np.max(stick_buffers.residual_m_s)
+        ),
+        "maximum_stick_velocity_relative_error": float(
+            np.max(stick_buffers.velocity_parity)
+        ),
+        "stick_active_set_parity_failures": int(
+            np.count_nonzero(~stick_buffers.active_set_parity)
+        ),
+        "stick_capture_energy_range_j": [
+            float(np.min(stick_buffers.capture_energy_j)),
+            float(np.max(stick_buffers.capture_energy_j)),
+        ],
+        "maximum_station_load_concentration": float(np.max(buffers.concentration)),
+        "maximum_coincident_couple_residual_nm": float(
+            np.max(buffers.coincident_couple)
+        ),
+        "maximum_reversed_couple_sign_residual_nm": float(
+            np.max(buffers.reversal_residual)
+        ),
+        "maximum_virtual_power_residual_w": float(
+            np.max(buffers.maximum_virtual_power)
+        ),
+        "maximum_positive_dissipation_power_w": float(
+            np.max(buffers.maximum_dissipation)
+        ),
+        "maximum_normalized_work_energy_residual": float(
+            np.max(buffers.normalized_energy_residual)
+        ),
+        "maximum_trajectory_relative_error": float(np.max(buffers.trajectory_parity)),
+        "maximum_force_relative_error": float(np.max(buffers.force_parity)),
+        "active_set_parity_failures": int(np.count_nonzero(~buffers.active_set_parity)),
+        "failed_numerical_cell_count": int(np.count_nonzero(~gates["numerical"])),
+        "failed_parity_cell_count": int(np.count_nonzero(~gates["parity"])),
+        "time_refinement_worst_normalized_residual": gates["time_refinement"].tolist(),
+        "time_refinement_passed": gates["time_refinement_passed"],
+        "maximum_fine_step_three_to_five_station_error": (
+            float(np.max(station_refinement[:, -1])) if station_refinement.size else 0.0
+        ),
+        "station_refinement_passed": gates["station_refinement_passed"],
+        "all_registered_gates_passed": all_passed,
+    }
+
+
+def _record(
+    states: tuple[tuple[int, int], ...],
+    buffers: _Buffers,
+    event_buffers: _EventBuffers,
+    stick_buffers: _StickBuffers,
+    config: DistributedAtlasConfig,
+    gates: dict[str, Any],
+    versions: dict[str, str],
+) -> dict[str, Any]:
+    all_passed = _all_gates_pass(buffers, event_buffers, stick_buffers, config, gates)
     return {
         "schema_version": "articulated-distributed-grip-atlas/v3",
         "study_id": "distributed-grip-friction-contact-atlas",
-        "design": {
-            "engine_versions": versions,
-            "state_count": len(states),
-            "station_counts_per_hand": list(config.station_counts),
-            "friction_coefficients": list(config.friction_coefficients),
-            "velocity_branch_count": 2,
-            "time_step_count": len(config.forward.time_steps_s),
-            "engine_count": 2,
-            "trajectory_count": len(states)
-            * len(config.station_counts)
-            * len(config.friction_coefficients)
-            * 2
-            * len(config.forward.time_steps_s)
-            * 2,
-            "horizons_s": list(config.horizons_s),
-            "active_driver_or_joint_torque": "none; motion is an initial condition",
-            "velocity_reversal": "the complete registered generalized velocity and added club perturbation are sign-reversed",
-        },
+        "design": _design_record(states, config, versions),
         "configuration": asdict(config),
-        "results": {
-            "maximum_peak_station_force_n": float(np.max(buffers.peak_force)),
-            "maximum_peak_force_couple_nm": float(np.max(buffers.peak_couple)),
-            "maximum_open_fraction": float(np.max(buffers.open_fraction)),
-            "maximum_transition_count": int(np.max(buffers.transition_count)),
-            "maximum_registered_event_transition_count": int(
-                np.max(event_buffers.transition_count)
-            ),
-            "registered_event_opening_count": int(np.sum(event_buffers.opening_count)),
-            "registered_event_reattachment_count": int(
-                np.sum(event_buffers.reattachment_count)
-            ),
-            "event_active_set_parity_failures": int(
-                np.count_nonzero(~event_buffers.active_set_parity)
-            ),
-            "maximum_stick_projection_residual_m_s": float(
-                np.max(stick_buffers.residual_m_s)
-            ),
-            "maximum_stick_velocity_relative_error": float(
-                np.max(stick_buffers.velocity_parity)
-            ),
-            "stick_active_set_parity_failures": int(
-                np.count_nonzero(~stick_buffers.active_set_parity)
-            ),
-            "stick_capture_energy_range_j": [
-                float(np.min(stick_buffers.capture_energy_j)),
-                float(np.max(stick_buffers.capture_energy_j)),
-            ],
-            "maximum_station_load_concentration": float(np.max(buffers.concentration)),
-            "maximum_coincident_couple_residual_nm": float(
-                np.max(buffers.coincident_couple)
-            ),
-            "maximum_reversed_couple_sign_residual_nm": float(
-                np.max(buffers.reversal_residual)
-            ),
-            "maximum_virtual_power_residual_w": float(
-                np.max(buffers.maximum_virtual_power)
-            ),
-            "maximum_positive_dissipation_power_w": float(
-                np.max(buffers.maximum_dissipation)
-            ),
-            "maximum_normalized_work_energy_residual": float(
-                np.max(buffers.normalized_energy_residual)
-            ),
-            "maximum_trajectory_relative_error": float(
-                np.max(buffers.trajectory_parity)
-            ),
-            "maximum_force_relative_error": float(np.max(buffers.force_parity)),
-            "active_set_parity_failures": int(
-                np.count_nonzero(~buffers.active_set_parity)
-            ),
-            "failed_numerical_cell_count": int(np.count_nonzero(~gates["numerical"])),
-            "failed_parity_cell_count": int(np.count_nonzero(~gates["parity"])),
-            "time_refinement_worst_normalized_residual": gates[
-                "time_refinement"
-            ].tolist(),
-            "time_refinement_passed": gates["time_refinement_passed"],
-            "maximum_fine_step_three_to_five_station_error": (
-                float(np.max(gates["station_refinement"][:, -1]))
-                if gates["station_refinement"].size
-                else 0.0
-            ),
-            "station_refinement_passed": gates["station_refinement_passed"],
-            "all_registered_gates_passed": all_passed,
-        },
+        "results": _result_record(
+            buffers, event_buffers, stick_buffers, gates, all_passed
+        ),
         "interpretation": {
             "stiffness_control": "total grip stiffness and damping are held constant while station count changes",
             "preload_control": "each fiber free length is registered at the unperturbed closed state; sub-tolerance closure residuals are zeroed",
