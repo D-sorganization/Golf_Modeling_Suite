@@ -53,6 +53,7 @@ class TrajectoryFunnelBenchmark:
         self.mode = mode
         self.phase_window = phase_window
         self.learning_curve: list[float] = []
+        self._features_buffer: np.ndarray | None = None
 
     def setpoint_reward(
         self, current_state: np.ndarray, target_state: np.ndarray
@@ -230,7 +231,7 @@ class TrajectoryFunnelBenchmark:
     ) -> np.ndarray:
         """Linear policy: action = theta @ [state, phase, 1]."""
         if (
-            not hasattr(self, "_features_buffer")
+            self._features_buffer is None
             or self._features_buffer.shape[0] != state.shape[0] + 2
         ):
             self._features_buffer = np.zeros(state.shape[0] + 2)
