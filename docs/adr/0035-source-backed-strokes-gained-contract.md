@@ -1,8 +1,9 @@
 # ADR 0035: Source-Backed Strokes-Gained Contract
 
-## Status
-
-Accepted
+- Status: Accepted
+- Date: 2026-08-20
+- Decision Makers: UpstreamDrift Maintainers
+- Related Issues/PRs: #8803, #8804
 
 ## Context
 
@@ -39,3 +40,14 @@ an independent legal or methodological endorsement. Baseline standard errors
 are propagated when supplied; otherwise benchmark uncertainty is reported as
 unavailable. No causal, device-emulation, or device-certification claim is
 created.
+
+## Validation
+
+- Domain tests verify baseline provenance and canonical hashing, exact-stratum
+  interpolation, fail-closed extrapolation, identity trust, grouped summaries,
+  exclusions, and uncertainty availability.
+- API tests verify schema publication, OpenAPI registration, source-backed SG,
+  and the separately typed outcome proxy that cannot claim strokes gained.
+- `scripts/generate_launch_monitor_contract.py --check` and
+  `scripts/generate_ui_api_types.py --check` keep the checked-in JSON Schema and
+  React API declarations synchronized with the canonical Python models.
