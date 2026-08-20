@@ -13,6 +13,10 @@ from pathlib import Path
 from xml.etree import ElementTree
 from zipfile import BadZipFile, ZipFile
 
+try:
+    from defusedxml import ElementTree as SafeElementTree
+except ImportError:
+    from xml.etree import ElementTree as SafeElementTree  # type: ignore[no-redef]
 MINOR = {
     "a",
     "an",
