@@ -456,6 +456,32 @@ def _metric_units(metric: str, context: AnalysisContextV2) -> MetricUnitsV2:
     )
 
 
+def _uncertainty(request: FlexibleAnalysisRequest) -> UncertaintyV2:
+    """Describe the uncertainty methods requested by the analysis contract."""
+
+    correlation_requested = request.analysis_mode != "regression"
+    regression_requested = request.analysis_mode != "correlation"
+    return UncertaintyV2(
+        confidence_level=request.confidence_level,
+        correlation_interval=(
+            "fisher-z"
+            if correlation_requested and request.correlation_method == "pearson"
+            else "unavailable"
+            if correlation_requested
+            else "not_requested"
+        ),
+        regression_interval="student-t" if regression_requested else "not_requested",
+        multiplicity_adjustment=(
+            "benjamini-hochberg" if correlation_requested else "not_requested"
+        ),
+        assumptions=(
+            "Correlation does not establish causality.",
+            "OLS intervals assume an adequate linear model and independent errors.",
+            "Unmatched vendor samples are descriptive, not calibration evidence.",
+        ),
+    )
+
+
 def analyze_variables_v2(
     frame: pd.DataFrame,
     request: FlexibleAnalysisRequest,
@@ -532,31 +558,7 @@ def analyze_variables_v2(
         ),
         missingness=missingness,
         availability=availability,
-        uncertainty=UncertaintyV2(
-            confidence_level=request.confidence_level,
-            correlation_interval=(
-                "not_requested"
-                if request.analysis_mode == "regression"
-                else "fisher-z"
-                if request.correlation_method == "pearson"
-                else "unavailable"
-            ),
-            regression_interval=(
-                "student-t"
-                if request.analysis_mode in {"regression", "comprehensive"}
-                else "not_requested"
-            ),
-            multiplicity_adjustment=(
-                "benjamini-hochberg"
-                if request.analysis_mode in {"correlation", "comprehensive"}
-                else "not_requested"
-            ),
-            assumptions=(
-                "Correlation does not establish causality.",
-                "OLS intervals assume an adequate linear model and independent errors.",
-                "Unmatched vendor samples are descriptive, not calibration evidence.",
-            ),
-        ),
+        uncertainty=_uncertainty(request),
         player_identity=resolved_context.player_identity,
         vendor_provenance=_vendor_provenance(frame, selected),
         model_provenance=model_provenance,
