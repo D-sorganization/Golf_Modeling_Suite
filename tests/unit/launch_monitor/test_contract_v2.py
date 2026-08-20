@@ -18,6 +18,7 @@ from src.shared.python.launch_monitor import (
     PlayerIdentityV2,
     SourceFileReferenceV2,
     TransformRecordV2,
+    adapt_v2_to_v1,
     analyze_variables,
     analyze_variables_v2,
     contract_v2_json_schema,
@@ -203,6 +204,21 @@ def test_v1_adapter_remains_unchanged() -> None:
     )
     assert CONTRACT_VERSION == "1.0.0"
     assert result.to_dict()["contract_version"] == "1.0.0"
+
+    v2 = analyze_variables_v2(
+        _shots(),
+        FlexibleAnalysisRequest(
+            outcome="ball_speed",
+            predictors=("club_speed",),
+            analysis_mode="correlation",
+            min_samples=5,
+        ),
+    )
+    adapted = adapt_v2_to_v1(v2)
+    assert adapted["contract_version"] == "1.0.0"
+    assert adapted["dataset"]["fingerprint_sha256"] == (
+        v2.lineage.dataset_fingerprint_sha256
+    )
 
 
 def test_published_schema_matches_the_python_authority() -> None:
