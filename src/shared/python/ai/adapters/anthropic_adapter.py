@@ -23,18 +23,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from shared.python.ai.adapters.base import BaseAgentAdapter, ToolDeclaration
-from shared.python.ai.config import (
+from src.shared.python.ai.adapters.base import BaseAgentAdapter, ToolDeclaration
+from src.shared.python.ai.config import (
     DEFAULT_ANTHROPIC_MAX_TOKENS,
     DEFAULT_ANTHROPIC_MODEL,
     DEFAULT_ANTHROPIC_TIMEOUT,
     get_anthropic_model,
     get_anthropic_timeout,
 )
-from shared.python.ai.exceptions import (
+from src.shared.python.ai.exceptions import (
     AIProviderError,
 )
-from shared.python.ai.types import (
+from src.shared.python.ai.types import (
     AgentChunk,
     AgentResponse,
     ConversationContext,
@@ -42,8 +42,8 @@ from shared.python.ai.types import (
     ProviderCapability,
     ToolCall,
 )
-from shared.python.contracts import precondition
-from shared.python.logging_pkg.logging_config import get_logger
+from src.shared.python.contracts import precondition
+from src.shared.python.logging_pkg.logging_config import get_logger
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -417,19 +417,13 @@ class AnthropicAdapter(BaseAgentAdapter):
                 }
             )
 
-        # Add current message.
-        #
-        # `chat_service` calls with `current_message=""` when the message the
-        # user just sent is already the tail of `context.messages`. Appending
-        # an empty trailing user turn there corrupts the request: providers
-        # either reject it or answer the blank turn instead of the real one.
-        if current_message.strip():
-            messages.append(
-                {
-                    "role": "user",
-                    "content": current_message,
-                }
-            )
+        # Add current message
+        messages.append(
+            {
+                "role": "user",
+                "content": current_message,
+            }
+        )
 
         # Ensure alternating roles (Anthropic requirement)
         messages = self._ensure_alternating_roles(messages)
