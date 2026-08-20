@@ -99,6 +99,11 @@ required `quality-gate`. A missing dependency or skipped PDF inspection can no
 longer produce a protected green result. Cross-repository promotion must then
 verify all of the following on the same candidate:
 
+The claim-evidence authority hashes valid UTF-8 evidence after canonical CRLF
+to LF normalization and hashes binary evidence byte-for-byte. The contract is
+therefore stable across Windows and Linux checkouts while still failing closed
+on semantic text changes and every binary-byte change.
+
 1. UpstreamDrift's computational publication profile passes on an exact clean
    revision, and the release manifest and PDF digests are captured.
 2. AffineDrift records that revision and both digests in generated publication

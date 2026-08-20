@@ -6,7 +6,7 @@ This is current operational state. Historical detail belongs in git/GitHub.
 
 ## Active Publication-Quality Slice (#8451)
 
-Branch `feat/proximal-distal-publication-release` owns the PDF quality contract;
+PR #8793 (`feat/proximal-distal-publication-release`) owns the PDF quality contract;
 UpstreamDrift is authoritative, AffineDrift is its pinned publisher, and Tools/Sidekick only link.
 The web-linearized 231-page candidate passes full-page inspection; archival release remains
 blocked on missing tags, 110 Type 3 resources, and two unembedded resources. Phase 0 landed as
@@ -77,10 +77,10 @@ PR #8768 cleared main's ruff, bandit, XML security, and frontend lock debt.
 - The release has 295 atomic claims and 40 reviewed release claims; all 40
   retain at least one scientifically open gate. #8724 still owns normalized
   four-way adjudication and independent review.
-- Release-manifest validation on Windows exposed line-ending dependence plus
-  genuinely stale hashes from post-release edits. #8789 owns the portable
-  canonical-byte fix and manifest regeneration; do not report zero mismatches
-  until `qualify_open_release validate` passes from a clean checkout.
+- PR #8793 canonicalizes UTF-8 claim evidence from CRLF to LF before hashing
+  while keeping binary evidence byte-exact. This closes the hosted-checkout
+  mismatch without weakening content identity; #8789 retains its separate
+  Docker/quarantine/baseline scope.
 - #8556 remains open: no governed participant dataset contains synchronized
   bilateral six-axis grip wrenches. Synthetic traces cannot replace it.
 

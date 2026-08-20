@@ -493,7 +493,7 @@ inventory and reopen adjudication until every new candidate is reviewed.
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.557                                            |
+| **Spec Version**        | 1.0.558                                            |
 | **Last Spec Update**    | 2026-08-20                                         |
 
 ## 2. Purpose & Mission
@@ -3052,6 +3052,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-20 | 1.0.558 | Closed PR #8793's first protected publication run failures without weakening either gate. Claim-evidence schema v2 hashes valid UTF-8 evidence after canonical CRLF-to-LF normalization while preserving byte-exact binary hashes, so identical committed evidence validates across Windows and Linux checkouts. A focused regression pins both newline forms to one digest and canonical byte count. The PDF finding helper now owns expected metadata as one parameter object, bringing the changed production function back within the repository's eight-parameter architecture budget. |
 | 2026-08-20 | 1.0.557 | Added the release-bound proximal-to-distal publication-quality contract for #8451. The exact UpstreamDrift revision and release-manifest digest now bind a full-PDF inspection covering metadata, outline and link validity, per-page rendering, extractable text, tagging, font resources, and web optimization. CI Standard runs the validator in a dedicated path-scoped job aggregated into the sole required `quality-gate`, so missing optional tooling cannot silently skip protected inspection. The current 231-page candidate passes the computational profile and is losslessly linearized, while the stricter archival profile remains fail-closed on the disclosed untagged, Type 3, and unembedded-font gaps. The contract preserves UpstreamDrift as scientific source authority, AffineDrift as a revision-pinned generated publisher, and human qualification as a separate governed gate. |
 | 2026-08-20 | 1.0.556 | ⚡ Bolt: Fast NumPy reductions and norm computations across motion matching, physics engines, and visualization modules (issue #8782). |
 | 2026-08-20 | 1.0.554 | Recovered BunkerShot3D cross-tier plumbing and MPM code verification inside CI architecture and file budgets (issue #8743, #8741). Verified 177 tests across conservation, analytic elastic column, GCI mesh convergence, and F0 cross-check cases without regressions. |
@@ -4100,6 +4101,10 @@ Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linal
 - Publication readiness shall not qualify governed human evidence, equipment
   calibration, a universal transfer strategy, or coaching guidance. Those
   scientific gates remain separate and fail closed.
+- Claim-evidence integrity shall normalize CRLF to LF only for valid UTF-8
+  evidence before computing its SHA-256 digest and canonical byte count.
+  Binary evidence shall remain byte-exact; platform checkout policy shall not
+  change the scientific content identity.
 - Protected promotion shall verify the deployed canonical HTML/PDF routes and
   their exposed source revision and PDF digest against the UpstreamDrift
   authority. CI Standard's path-scoped `publication-quality` job shall validate

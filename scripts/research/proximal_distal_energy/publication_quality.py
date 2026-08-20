@@ -135,8 +135,7 @@ def _render_pages(document: Any, fitz: Any, zoom: float) -> tuple[dict[str, Any]
 def _findings(
     *,
     metadata: dict[str, str],
-    expected_title: str,
-    expected_author: str,
+    expected_metadata: dict[str, str],
     navigation: dict[str, Any],
     rendering: dict[str, Any],
     text_pages: int,
@@ -149,13 +148,13 @@ def _findings(
     def add(code: str, message: str, level: str) -> None:
         findings.append({"code": code, "level": level, "message": message})
 
-    if metadata.get("title") != expected_title:
+    if metadata.get("title") != expected_metadata["title"]:
         add(
             "metadata-title-mismatch",
             "PDF title does not match the source title.",
             "blocker",
         )
-    if metadata.get("author") != expected_author:
+    if metadata.get("author") != expected_metadata["author"]:
         add(
             "metadata-author-mismatch",
             "PDF author does not match the source author.",
@@ -247,8 +246,7 @@ def inspect_publication_pdf(
         pages = document.page_count
     findings = _findings(
         metadata=metadata,
-        expected_title=expected_title,
-        expected_author=expected_author,
+        expected_metadata={"title": expected_title, "author": expected_author},
         navigation=navigation,
         rendering=rendering,
         text_pages=text_pages,
