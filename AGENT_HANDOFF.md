@@ -6,52 +6,43 @@ This is current operational state. Historical detail belongs in git/GitHub.
 
 ## Active Publication-Quality Slice (#8451)
 
-PR #8793 (`feat/proximal-distal-publication-release`) owns the PDF quality contract;
-UpstreamDrift is authoritative, AffineDrift is its pinned publisher, and Tools/Sidekick only link.
-The web-linearized 231-page candidate passes full-page inspection; archival release remains
-blocked on missing tags, 110 Type 3 resources, and two unembedded resources. Phase 0 landed as
-UpstreamDrift #8791, AffineDrift #3884, and Tools #4586; this branch is rebased on #8791 and
-regenerates cleanly. CI Standard's `publication-quality` job now feeds the sole required gate.
-After protected merge, advance the final revision and PDF/manifest digests through AffineDrift.
-#8789 owns remaining Docker/quarantine/baseline work. This does not qualify
-#8556, equipment calibration, or archival/PID release. Exact details are in
+PR #8793 owns the PDF quality contract: UpstreamDrift is authoritative,
+AffineDrift is its pinned publisher, and Tools/Sidekick only link. The
+web-linearized 231-page candidate passes full-page inspection; missing tags,
+110 Type 3 resources, and two unembedded resources block archival release.
+Phase 0 landed in UpstreamDrift #8791, AffineDrift #3884, and Tools #4586.
+After the protected merge, sync the exact revision and PDF/manifest digests to
+AffineDrift. #8789 owns Docker/quarantine/baseline; #8556, equipment calibration,
+and archival/PID release remain open. Details:
 `docs/research/proximal_distal_energy_transfer/PUBLICATION_QUALITY.md`.
 
 ## Read This First — How Merging Works Now
 
-Three workflows used to publish the required `quality-gate` status, so whichever
-reported first satisfied branch protection and PRs merged while the real
-aggregate was failing. #8747 fixed this and #8754 is closed. Consequences:
+Three workflows used to publish `quality-gate`; the first could satisfy
+protection while the real aggregate failed. #8747 fixed this; #8754 is closed.
 
-- The **only** required check is `quality-gate`, published solely by the
-  aggregate job in `.github/workflows/ci-standard.yml`. The LoD gate publishes
-  `lod-quality-gate`; docs CI publishes `docs-quality-gate`. **Never rename a
-  job back to `quality-gate`** — that recreates the collision.
+- The **only** required check is `quality-gate`, published by the aggregate in
+  `ci-standard.yml`; LoD/docs publish `lod-quality-gate`/`docs-quality-gate`.
+  **Never rename another job to `quality-gate`** — that recreates the collision.
 - If your run sits in `action_required`, wait: `approve-same-repo-runs.yml`
   approves same-repository runs every five minutes (fork PRs keep the manual
   gate). Do not disable it — branch updates come from a bot GitHub treats as a
   first-time contributor forever.
-- `repo-structure-gates` runs its steps **sequentially and fail-fast**, so a red
-  step hides every later one. Run the battery below first rather than spending
-  a CI cycle per hidden failure. `check_architecture_budget.py` enforces a
-  maximum of 100 lines per changed production Python function.
+- `repo-structure-gates` is **sequential/fail-fast**. Run the battery below;
+  `check_architecture_budget.py` limits changed production functions to 100 lines.
 
 ### Two Debt Ledgers — Remove-Only Ratchets
 
-`scripts/config/unit_gate_quarantine.json` (520 node IDs, #8766) skips tests
-that fail deterministically on main from the hollow-merge era, applied by
-`_apply_unit_gate_quarantine` in `tests/conftest.py` only when
-`UNIT_GATE_QUARANTINE=1` — which only the unit gate and `tests` job set.
-`scripts/config/dry_duplication_quarantine.json` (#8763) tracks duplicate
-fingerprints. **Entries may only be removed, never added**.
+`unit_gate_quarantine.json` (520 node IDs, #8766) applies through
+`_apply_unit_gate_quarantine` only when CI sets `UNIT_GATE_QUARANTINE=1`.
+`dry_duplication_quarantine.json` (#8763) tracks duplicate fingerprints.
+**Entries may only be removed, never added**.
 PR #8768 cleared main's ruff, bandit, XML security, and frontend lock debt.
 
 ### Traps That Cost Real Time
 
-- **Committed evidence records hash-pin their sources.** Fourteen files under
-  `tests/research/` are frozen by `source_sha256` maps in
-  `docs/research/proximal_distal_energy_transfer/data/`. Never edit without
-  updating the evidence manifest via `qualify_open_release write`.
+- **Committed evidence hash-pins its sources.** Fourteen `tests/research/` files
+  are frozen by `source_sha256` maps; edit only with `qualify_open_release write`.
 - **Phantom Guard Scope Rules:** Conventional commit prefix for PR titles
   touching only `scripts/research/`, `docs/research/`, and `tests/research/`
   must use `test:`, `docs:`, or `chore:` rather than `feat:` (which requires
@@ -86,14 +77,11 @@ PR #8768 cleared main's ruff, bandit, XML security, and frontend lock debt.
 
 ## Launch-Monitor Analytics Authority
 
-- Tools epic #4583 and UpstreamDrift issue #8790 govern contract v2.
-- `LaunchMonitorAnalysisResultV2` (`2.0.0`) is the canonical evidence envelope;
-  the v1 endpoint remains available for compatibility.
-- Use `/tools/launch-monitor-analytics/v2/analyze` for unit authority, lineage,
-  missingness, backing-source links, unavailable states, uncertainty, identity
-  trust, and bounded vendor/model claims.
-- Player grouping requires an explicit trusted identity declaration. Never infer
-  identity from session, club, filename, source layout, or row order.
+- Tools #4583 and UpstreamDrift #8790 govern `LaunchMonitorAnalysisResultV2`
+  (`2.0.0`); v1 remains compatible. Use `/tools/launch-monitor-analytics/v2/analyze`
+  for unit/lineage/missingness/source/uncertainty/identity authority and bounded
+  vendor/model claims. Player grouping requires an explicit trusted identity;
+  never infer it from session, club, filename, source layout, or row order.
 
 ## Qualified Baseline — And Its Limits
 
@@ -126,16 +114,16 @@ child copies under `src/shared/python/`.
 1. Publish #8451, then sync its exact revision and digests through AffineDrift.
 2. Continue #8789's remaining Docker/quarantine/baseline work without overlap.
 3. Complete #8751/#8752 and burn down #8766 without widening either contract.
-4. Advance calibrated contact, full-delivery uncertainty, and #8556; begin the
-   Sidekick epic only after those scientific and Tools boundaries are stable.
+4. Advance calibrated contact, full-delivery uncertainty, and #8556; defer
+   Sidekick until the scientific and Tools boundaries are stable.
 
 ## Gate Commands
 
 Run this locally before pushing; it mirrors the sequential CI steps:
 
 ```bash
-python scripts/check_spec_paths.py && python scripts/check_root_clutter.py
-python scripts/check_test_layout.py && python scripts/check_pytest_intree_testpaths.py
+python scripts/check_spec_paths.py && python scripts/check_root_clutter.py && \
+  python scripts/check_test_layout.py && python scripts/check_pytest_intree_testpaths.py
 python scripts/ci/check_suite_marker_ratchet.py && python scripts/ci/check_dry_duplication_gate.py
 python scripts/ci/check_architecture_budget.py
 python scripts/check_module_size_budget.py --max-lines 1500 --include src
