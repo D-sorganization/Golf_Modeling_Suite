@@ -1,8 +1,21 @@
 # Agent Handoff — UpstreamDrift
 
-Last updated: 2026-08-19
+Last updated: 2026-08-20
 
 This is current operational state. Historical detail belongs in git/GitHub.
+
+## Active Publication-Quality Slice (#8451)
+
+Branch `feat/proximal-distal-publication-release` owns the PDF quality contract;
+UpstreamDrift is authoritative, AffineDrift is its pinned publisher, and Tools/Sidekick only link.
+The web-linearized 231-page candidate passes full-page inspection; archival release remains
+blocked on missing tags, 110 Type 3 resources, and two unembedded resources. Phase 0 landed as
+UpstreamDrift #8791, AffineDrift #3884, and Tools #4586; this branch is rebased on #8791 and
+regenerates cleanly. CI Standard's `publication-quality` job now feeds the sole required gate.
+After protected merge, advance the final revision and PDF/manifest digests through AffineDrift.
+#8789 owns remaining Docker/quarantine/baseline work. This does not qualify
+#8556, equipment calibration, or archival/PID release. Exact details are in
+`docs/research/proximal_distal_energy_transfer/PUBLICATION_QUALITY.md`.
 
 ## Read This First — How Merging Works Now
 
@@ -99,14 +112,11 @@ child copies under `src/shared/python/`.
 
 ## Immediate Next Steps
 
-1. Complete #8789 Phase 0: portable release integrity, truthful handoffs,
-   release-blocking CI, and synchronized AffineDrift publication metadata.
-2. Complete #8751 and #8752 against their unchanged acceptance criteria.
-3. Burn down #8766 by removing unit quarantine ledger entries as clusters are fixed.
-4. Advance toward calibrated unilateral 3D contact, full-delivery matching and
-   uncertainty, and a governed human holdout (#8556/#8557).
-5. Implement the Sidekick integration epic after the scientific release gates
-   and Tools ownership boundaries are stable.
+1. Publish #8451, then sync its exact revision and digests through AffineDrift.
+2. Continue #8789's remaining Docker/quarantine/baseline work without overlap.
+3. Complete #8751/#8752 and burn down #8766 without widening either contract.
+4. Advance calibrated contact, full-delivery uncertainty, and #8556; begin the
+   Sidekick epic only after those scientific and Tools boundaries are stable.
 
 ## Gate Commands
 
@@ -128,12 +138,13 @@ Research validation:
 python -m scripts.research.proximal_distal_energy.claim_audit validate
 python -m scripts.research.proximal_distal_energy.claim_evidence_integrity validate
 python -m scripts.research.proximal_distal_energy.momentum_question_readiness validate
-python -m scripts.research.proximal_distal_energy.qualify_open_release validate
+python -m scripts.research.proximal_distal_energy.qualify_open_release validate \
+  --source-revision "$(git rev-parse HEAD)" \
+  --publication-profile computational
 pytest tests/research -q
 ```
 
-Do not infer human technique, physiology, injury, timing demand, or coaching
-advice; close #8556/#8557 without governed evidence; bypass branch protection;
-force-push; admin-merge; add ledger entries; edit hash-pinned or Tools-owned
-files without regenerating their authorities; or rerun unchanged
-runner-capacity failures.
+Do not infer human technique/physiology/injury/coaching; close #8556/#8557
+without evidence; bypass protection; force-push/admin-merge; add ledger entries;
+edit hash-pinned or Tools-owned files without regeneration; or rerun unchanged
+capacity failures.
