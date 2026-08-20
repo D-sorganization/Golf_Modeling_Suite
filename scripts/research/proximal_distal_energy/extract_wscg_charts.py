@@ -8,10 +8,7 @@ import json
 import zipfile
 from pathlib import Path
 
-try:
-    from defusedxml import ElementTree
-except ImportError:
-    from xml.etree import ElementTree  # type: ignore[no-redef]
+from defusedxml import ElementTree
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SOURCE_DIR = (
