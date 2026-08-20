@@ -10,13 +10,12 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from xml.etree import ElementTree
 from zipfile import BadZipFile, ZipFile
 
 try:
-    from defusedxml import ElementTree as SafeElementTree
+    from defusedxml import ElementTree
 except ImportError:
-    from xml.etree import ElementTree as SafeElementTree  # type: ignore[no-redef]
+    from xml.etree import ElementTree  # type: ignore[no-redef]
 MINOR = {
     "a",
     "an",
