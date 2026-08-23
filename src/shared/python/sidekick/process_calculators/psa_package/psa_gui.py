@@ -456,12 +456,12 @@ class ResultsPanel(QWidget):  # noqa: F811, F821
         self.flows_table.setItem(n_comp, 0, QTableWidgetItem("TOTAL"))  # noqa: F821
         totals = [
             results.total_feed_scfm,
-            np.sum(results.flows.mixed_feed),  # noqa: F821
+            results.flows.mixed_feed.sum(),  # noqa: F821
             results.total_exhaust_scfm,
-            np.sum(results.flows.interstage),  # noqa: F821
-            np.sum(results.flows.s2_tail),  # noqa: F821
-            np.sum(results.flows.s2_tail_recycle),  # noqa: F821
-            np.sum(results.flows.gross_product),  # noqa: F821
+            results.flows.interstage.sum(),  # noqa: F821
+            results.flows.s2_tail.sum(),  # noqa: F821
+            results.flows.s2_tail_recycle.sum(),  # noqa: F821
+            results.flows.gross_product.sum(),  # noqa: F821
             results.total_net_product_scfm,
         ]
         for col_idx, total in enumerate(totals):
