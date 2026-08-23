@@ -163,7 +163,7 @@ class PSAModel:
         r_tail = self.s2_tail_recycle_frac
         r_prod = self.product_recycle_frac
 
-        fresh_feed = self.total_feed_scfm * feed_pct / feed_pct.sum()
+        fresh_feed = self.total_feed_scfm * feed_pct / np.sum(feed_pct)
         denominator = 1.0 - (1.0 - r1) * (r2 * r_tail + (1.0 - r2) * r_prod)
         mixed_feed = fresh_feed / denominator
         exhaust = mixed_feed * r1
@@ -189,9 +189,7 @@ class PSAModel:
         )
 
         def calc_composition(flow_array: NDArray[np.float64]) -> NDArray[np.float64]:
-            total: float = float(
-                flow_array.sum()
-            )  # ⚡ Bolt: ndarray.sum() is ~3x faster than np.sum()
+            total: float = float(np.sum(flow_array))
             if total == 0:
                 return np.zeros(n_components, dtype=np.float64)
             return flow_array / total * 100.0
@@ -219,14 +217,14 @@ class PSAModel:
             h2_recovery_pct=float(net_product[h2_idx] / fresh_feed[h2_idx] * 100.0),
             h2_purity_pct=float(compositions.net_product[h2_idx]),
             total_feed_scfm=self.total_feed_scfm,
-            total_net_product_scfm=float(net_product.sum()),
-            total_exhaust_scfm=float(exhaust.sum()),
-            total_s2_tail_vent_scfm=float(s2_tail_vent.sum()),
+            total_net_product_scfm=float(np.sum(net_product)),
+            total_exhaust_scfm=float(np.sum(exhaust)),
+            total_s2_tail_vent_scfm=float(np.sum(s2_tail_vent)),
             mass_balance_error=float(
-                fresh_feed.sum()
-                - exhaust.sum()
-                - s2_tail_vent.sum()
-                - net_product.sum()
+                np.sum(fresh_feed)
+                - np.sum(exhaust)
+                - np.sum(s2_tail_vent)
+                - np.sum(net_product)
             ),
             s2_tail_h2_pct=float(compositions.s2_tail[h2_idx]),
             s2_tail_o2_pct=float(compositions.s2_tail[o2_idx]),
@@ -410,9 +408,9 @@ def _render_results_tab(results: PSAResults) -> None:
                     "value": [
                         results.total_feed_scfm,
                         results.total_exhaust_scfm,
-                        float(results.flows.interstage.sum()),
+                        float(np.sum(results.flows.interstage)),
                         results.total_net_product_scfm,
-                        float(results.flows.s2_tail_recycle.sum()),
+                        float(np.sum(results.flows.s2_tail_recycle)),
                     ],
                 },
             )

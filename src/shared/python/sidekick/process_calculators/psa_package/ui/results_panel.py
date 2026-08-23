@@ -1,3 +1,4 @@
+import numpy as np
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
     QGridLayout,
@@ -197,12 +198,12 @@ class ResultsPanel(QWidget):
         self.flows_table.setItem(n_comp, 0, QTableWidgetItem("TOTAL"))
         totals = [
             results.total_feed_scfm,
-            results.flows.mixed_feed.sum(),
+            np.sum(results.flows.mixed_feed),
             results.total_exhaust_scfm,
-            results.flows.interstage.sum(),
-            results.flows.s2_tail.sum(),
-            results.flows.s2_tail_recycle.sum(),
-            results.flows.gross_product.sum(),
+            np.sum(results.flows.interstage),
+            np.sum(results.flows.s2_tail),
+            np.sum(results.flows.s2_tail_recycle),
+            np.sum(results.flows.gross_product),
             results.total_net_product_scfm,
         ]
         for col_idx, total in enumerate(totals):
