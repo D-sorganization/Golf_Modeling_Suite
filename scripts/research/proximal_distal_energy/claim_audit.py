@@ -20,6 +20,10 @@ import subprocess
 from typing import Any
 from urllib.parse import urlparse
 
+from scripts.research.proximal_distal_energy.claim_numeric_audit import (
+    audit_registry_numeric_evidence,
+)
+
 SCHEMA_VERSION = "proximal-distal-claim-audit-v2"
 ADJUDICATION_OUTCOMES = frozenset(
     {"supported", "contradicted", "inconclusive", "untested"}
@@ -747,6 +751,9 @@ def main() -> None:
     inventory_parser = subparsers.add_parser("inventory", help="Write claim candidates")
     inventory_parser.add_argument("--output", type=Path)
     subparsers.add_parser("validate", help="Validate the claim registry")
+    subparsers.add_parser(
+        "numeric", help="Validate numeric literals against declared JSON pointers"
+    )
     args = parser.parse_args()
 
     root = _repository_root()
@@ -760,8 +767,15 @@ def main() -> None:
                 {"output": output.as_posix(), "candidates": result["candidate_count"]}
             )
         )
-    else:
+    elif args.command == "validate":
         print(json.dumps(validate_registry(registry, repository_root=root), indent=2))
+    else:
+        print(
+            json.dumps(
+                audit_registry_numeric_evidence(registry, repository_root=root),
+                indent=2,
+            )
+        )
 
 
 if __name__ == "__main__":

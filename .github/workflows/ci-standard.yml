@@ -1123,6 +1123,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python -m scripts.research.proximal_distal_energy.build_claim_numeric_comparison_evidence check
+          python -m scripts.research.proximal_distal_energy.register_numeric_claim_evidence check
+          python -m scripts.research.proximal_distal_energy.claim_audit numeric
           python -m scripts.research.proximal_distal_energy.qualify_open_release validate \
             --source-revision "$(git rev-parse HEAD)" \
             --publication-profile computational
