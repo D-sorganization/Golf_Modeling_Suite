@@ -38,6 +38,7 @@ def _copy_reviewed_snapshot(root: Path, target_root: Path) -> Path:
     return target_data
 
 
+@pytest.mark.unit
 def test_candidate_inventory_writer_preserves_scientific_unicode(
     tmp_path: Path,
 ) -> None:

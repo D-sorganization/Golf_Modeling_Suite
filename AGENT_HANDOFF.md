@@ -25,7 +25,7 @@ history. Epic #8557 is the canonical proximal-to-distal completion authority.
   protected run passed 11,816 tests except the deterministic adjudication
   freshness gate. The canonical summary, 1,100-candidate inventory, reviewed
   migration lock, integrity records, and release hashes are now refreshed;
-  72 focused tests pass serially.
+  73 focused tests pass serially.
 - All 303 material claims are covered. The 124 numeric claims contain 380
   numeric literals, each bound to a reviewed JSON Pointer, transform, scope,
   and tolerance. Exact statement digests and literal inventories fail closed.
