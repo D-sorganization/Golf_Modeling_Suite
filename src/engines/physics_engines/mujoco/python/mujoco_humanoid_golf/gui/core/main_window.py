@@ -80,7 +80,7 @@ class AdvancedGolfAnalysisWindow(SimulationGUIBase, AdvancedGuiMethodsMixin):
             theme_mgr = SharedThemeManager.instance()
             self.setStyleSheet(theme_mgr.get_current_stylesheet())
             theme_mgr.themeChanged.connect(self._on_shared_theme_changed)
-        except Exception:  # noqa: BLE001
+        except Exception:
             try:
                 style_path = Path(__file__).parent.parent / "styles" / "dark_theme.qss"
                 if style_path.exists():
@@ -100,7 +100,7 @@ class AdvancedGolfAnalysisWindow(SimulationGUIBase, AdvancedGuiMethodsMixin):
 
             theme_mgr = SharedThemeManager.instance()
             self.setStyleSheet(theme_mgr.get_current_stylesheet())
-        except Exception:  # noqa: BLE001
+        except Exception:
             pass
 
     def _create_main_tabs(self) -> None:

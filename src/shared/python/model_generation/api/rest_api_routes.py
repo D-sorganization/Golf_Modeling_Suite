@@ -782,10 +782,6 @@ class ModelGenerationAPI:
             # Save to temp file; delete=False so trimesh can re-open it by path.
             # The finally block below guarantees cleanup on every exit path.
             with tempfile.NamedTemporaryFile(suffix=_suffix, delete=False) as f:
-                # False positive (not Django): path is a random tempfile
-                # name, never attacker-controlled; only the validated
-                # (_validate_mesh_upload) upload bytes are written.
-                # nosemgrep: python.django.security.injection.request-data-write.request-data-write
                 f.write(mesh_content)
                 temp_path = f.name
 
@@ -832,7 +828,7 @@ class ModelGenerationAPI:
             )
         except (PermissionError, OSError, ValueError, TypeError) as e:
             return APIResponse.error(f"Mesh processing failed: {e}")
-        except Exception:  # noqa: BLE001
+        except Exception:
             logger.warning("Mesh parser failed", exc_info=True)
             return APIResponse.error("Mesh processing failed")
         finally:
