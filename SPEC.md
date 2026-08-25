@@ -547,8 +547,8 @@ inventory and reopen adjudication until every new candidate is reviewed.
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.582                                            |
-| **Last Spec Update**    | 2026-08-22                                         |
+| **Spec Version**        | 1.0.584                                            |
+| **Last Spec Update**    | 2026-08-25                                         |
 
 ## 2. Purpose & Mission
 
@@ -3235,6 +3235,10 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-25 | 1.0.586 | Vectorized the motion_pipeline preprocessing Kalman smoother for issue #8923: `_kalman_filter_python` in `filter.py` initialized its covariance at the DARE steady-state fixed point, which makes the forward Kalman gain and backward RTS gain constant across every timestep and series — collapsing the 750k-iteration `for marker: for axis: for frame:` scalar-update double loop into two `scipy.signal.lfilter` calls (forward IIR, then the same IIR run on the reversed array for the RTS pass) applied to the whole `(n_frames, n_points, n_dims)` array at once. Numerically identical to the prior loop implementation (parity tests at rtol=atol=1e-10 on realistic 1250x50x3 data plus short-sequence and varied-noise-parameter cases), zero behavior change; the old loop reimplementation is preserved as a private reference in the parity test file rather than in production code. |
+| 2026-08-25 | 1.0.585 | Vectorized motion_pipeline preprocessing for issues #8925 and #8924: normalize.py's per-frame transform/center/units/up-axis-detection passes now run as a single fused array expression via markers_to_array/keypoints_to_array, reconstructing frames once with model_construct; filtfilt/savgol_filter/median_filter/moving-average and the resample np.interp loops in _filter_pure_python.py and _resample_pure_python.py/resample.py now operate on whole (N, M, 3) arrays instead of per-marker/per-axis Python loops, deduplicated into a shared vectorized_interp_axes helper. Numerically identical to the prior implementations (parity tests at rtol=atol=1e-12), zero behavior change. |
+| 2026-08-24 | 1.0.584 | Kept the Pendulum Simulator module version probe independent of GUI initialization. Runtime imports of diagnostics and `MainWindow` now occur only on docked or standalone GUI launch, so `python -m shared.python.pendulum_simulator --version` does not transitively load MuJoCo/OpenGL on headless systems. A subprocess regression deliberately blocks `gui.main_window` and requires the version command to succeed; normal launcher behavior remains covered on Python 3.11 and 3.13. |
+| 2026-08-24 | 1.0.583 | Added the #8358 immutable Tools variation-consumer boundary. UpstreamDrift now delegates deterministic sampling, canonical JSON/CSV/HDF5 persistence, scalar and noncausal rank/OAT summaries, common-grid dispersion, and quiet-zone mathematics to protected Tools commit `17474249b9267d0e73a779c1d72f231e7b8de39c`. Host-owned adapters retain complete typed hit, no-impact, numerical-failure, and partial-trace rows across serial and batched execution; analytical double-pendulum and articulated MuJoCo mappings preserve stable marker, frame, unit, plan, seed, model, source, and bilateral shoulder/wrist allocation evidence. Cross-engine ranking fails closed on semantic or tolerance mismatch, and current architecture budgets pass without exceptions. This is reusable model evidence, not participant or coaching validation. |
 | 2026-08-24 | 1.0.582 | Added issue #8918's executable numeric-claim authority. All 380 numeric literals across 124 of the 303 material claims are bound to exact statement digests, JSON Pointers, transforms, scopes, and tolerances. The audit distinguishes 172 local JSON values, 144 registered values not independently recomputed, 57 externally reported values, and seven protocol or notation values. Representative planar, spatial, articulated-shaft, and finite-ground headlines are recomputed from committed raw arrays; a cross-engine control must remain close but nonidentical. Claim integrity and the 600-artifact computational release fail closed on numeric drift without promoting pointer agreement to physical or human validation. |
 | 2026-08-23 | 1.0.581 | Reconciled issue #8724's normalized adjudication checkpoint with the current 303-claim paper. The migration is locked to the exact paper digest and contains an exhaustive explicit claim-ID authority, so an unfamiliar claim cannot inherit `supported`. The reviewer JSON/CSV and generated paper tables now separate outcome, evidence tier, source independence, model tier, unresolved replication, and claim-family concentration. Typed evidence locators, local anchors, bibliography keys, deterministic source digest, exact candidate reciprocity, falsifiers, adjudication reasons, and human-data boundaries remain fail-closed. Source and evidence-file caches remove repeated validation I/O without weakening resolution. |
 | 2026-08-23 | 1.0.580 | Closed participant-holdout and executable-mapping authority gaps in #9004's governed ingestion boundary. Each trial now binds an immutable `measured-trajectory-participant-split/v1` manifest that freezes sorted, disjoint training, held-out, and adverse cohorts before outcomes. The loader verifies the split digest, source, registered deterministic assignment method, UTC freeze-before-artifact ordering, minimum cohort counts, adverse cohort, unique participant membership, cohort label, and intended-use eligibility before invoking a parser. It also contains and verifies the exact acquisition-processing authority, four frame-transform records, and two event-detector configurations by relative path and SHA-256 before payload parsing. Returned artifacts expose the split, cohort, processing, transform, and detector provenance while retaining false human-inference and bilateral-wrench gates. UTC timestamps, format hints, and channel identifiers are also validated structurally. |
@@ -4347,6 +4351,31 @@ Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linal
   numerical-formulation evidence. It shall not establish anatomy, tissue
   mechanics, equipment calibration, human transfer, or coaching strategy.
 
+### F-8557.29: Canonical Ensemble Variation Consumer Boundary
+
+- UpstreamDrift shall consume plan sampling, execution-document metadata,
+  producer provenance, persisted-plan and dataset bindings, scalar summaries,
+  noncausal rank attribution, one-at-a-time sensitivity normalization, common-
+  grid geometry dispersion, and quiet-zone detection only through the public
+  Tools variation modules pinned to an immutable protected `main` commit.
+- Capability discovery shall validate the exact supported plan, execution-
+  document, provenance, and plan-binding schema versions. Missing Tools shall
+  remain an actionable optional capability; available but incompatible schemas
+  shall fail closed and shall not silently fall back to local algorithms.
+- The consumer shall return canonical Tools plans, samples, datasets, metadata,
+  persisted-plan resolutions, and analysis records without wrapping,
+  relabeling, copying numerical algorithms, or inventing provenance.
+  UpstreamDrift remains responsible only for engine-specific
+  parameter mapping, execution, stable-marker traces, typed trial outcomes,
+  and cross-engine orchestration.
+- Subsequent trial evidence shall retain hit, no-impact, numerical-failure,
+  and partial-valid-trace outcomes, with explicit engine, model, frame, units,
+  stable marker IDs, seed, plan, and source-revision identity. Misses shall
+  never receive fabricated impact or shot coordinates.
+- Serial and batched execution, editable and vendored Tools providers,
+  pendulum and non-pendulum adapters, and cross-engine topology/frame/unit
+  rejection shall pass deterministic parity tests before R15 is promoted.
+
 - Use `np.vdot` instead of `np.sum(x**2)` and `np.sqrt(np.einsum("ij,ij->i", x, x))` instead of `np.linalg.norm(x, axis=1)` when performing critical numerical calculation in Python to avoid temporary intermediate array allocation. (spec-exempt: micro-optimization)
 - Use `np.einsum('ij,ij->j', x, x)` instead of `np.sum(x * x, axis=0)` when performing critical numerical calculation in Python to avoid temporary intermediate array allocation. (spec-exempt: micro-optimization)
 - (spec-exempt: micro-optimization) Replaced `.iterrows()` with `.to_dict('records')` in `data_processor_widget.py`, `kaggle_validation.py`, and `launch_monitor_analytics/widgets.py` to optimize UI and validation performance.
@@ -4373,6 +4402,8 @@ Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linal
 - Vectorized batch swing optimizer effort sum-of-squares computation across environments via `np.einsum("nij,nij->n", controls, controls)` in `src/shared/python/optimization/batch_swing_optimizer.py` (#8958). (spec-exempt: micro-optimization)
 
 - (spec-exempt: micro-optimization) Replaced `np.sum(condition)` and `np.sum(np.isnan(arr))` with `np.count_nonzero` in python analytics and motion matching codebase for faster array evaluation.
-
 - Starting pose matcher: `on_clear_overrides_clicked` prompts for confirmation and unconditionally restores original mocap events state on confirm (#8889).
 - Pose studio actions: initialize undo/redo QActions on MainWidget and guard action refresh against uninitialized state (#8879).
+- GUI exception handling: catch and log unexpected slot exceptions in terrain engine and model explorer GUI tools (#8890).
+- Model Explorer: propagate load_model boolean success status to caller slots and guard status bar updates against failed loads (#9041).
+- Decomposed 13 oversized proximal-distal research registration, authority, and study orchestrator functions below 100 lines and <= 8 parameters without altering numerical outputs or claim evidence (#8963).
