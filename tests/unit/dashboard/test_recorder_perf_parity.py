@@ -12,6 +12,8 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+
+pytestmark = pytest.mark.unit
 from src.shared.python.dashboard._recorder_analysis import _AnalysisMixin
 from src.shared.python.dashboard._recorder_recording import _RecordingMixin
 from src.shared.python.spatial_algebra.reference_frames import (

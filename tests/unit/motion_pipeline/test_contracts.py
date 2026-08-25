@@ -861,6 +861,7 @@ class TestMarkerTrajectory:
         assert traj.num_frames == 2
         assert traj.duration > 0
 
+    @pytest.mark.unit
     def test_non_monotonic_timestamps_raise(self):
         """Non-monotonic timestamps must still raise after the single-pass
         rewrite of check_monotonic_timestamps (issue #8926)."""
@@ -877,6 +878,7 @@ class TestMarkerTrajectory:
         with pytest.raises(ValueError, match="monotonically increasing"):
             MarkerTrajectory(id="traj_bad", frames=frames)
 
+    @pytest.mark.unit
     def test_monotonic_timestamps_with_ties_allowed(self):
         """Equal consecutive timestamps are allowed (a <= b, not a < b)."""
         frames = [
@@ -892,6 +894,7 @@ class TestMarkerTrajectory:
         traj = MarkerTrajectory(id="traj_ties", frames=frames)
         assert traj.num_frames == 2
 
+    @pytest.mark.unit
     def test_inconsistent_marker_sets_no_longer_enforced(self):
         """check_consistent_markers was a dead no-op (its result was always
         discarded via `pass`) and has been deleted per issue #8926 rather
