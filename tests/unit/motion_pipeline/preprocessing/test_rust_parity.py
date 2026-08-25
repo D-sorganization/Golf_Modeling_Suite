@@ -155,3 +155,91 @@ def test_linear_gap_fill_reproduces_python_logic() -> None:
         t = k / (8 - 5 + 1)
         expected = v_before + t * (v_after - v_before)
         np.testing.assert_allclose(out[frame_idx, 1], expected, atol=1e-12)
+
+
+# ── Gap fill: LINEAR marker dispatch, Rust vs Python (issue #8927) ──────────
+#
+# The default GapFillStep.strategy is LINEAR (pipeline.py:95); prior to
+# #8927, gap_fill.py never called the Rust linear_gap_fill/cubic_gap_fill
+# kernels even though they were exported. This compares the two code paths
+# through the public gap_fill() -> _gap_fill_markers() dispatch (not the raw
+# binding), using the same rtol/atol precedent as the other vectorize/Rust
+# parity suites in this directory (test_filter_resample_vectorize_parity.py,
+# test_kalman_vectorize_parity.py): rtol=1e-10, atol=1e-10.
+
+
+def _make_gappy_marker_trajectory(
+    seed: int, num_frames: int = 60, num_markers: int = 6
+):
+    """Build a MarkerTrajectory with random per-marker occlusion windows."""
+    from src.shared.python.motion_pipeline.contracts import (
+        Marker,
+        MarkerFrame,
+        MarkerTrajectory,
+    )
+
+    rng = np.random.default_rng(seed)
+    marker_names = [f"M{j}" for j in range(num_markers)]
+    coords = rng.standard_normal((num_frames, num_markers, 3))
+
+    # Carve a handful of short (fillable) and one long (unfillable) gap per
+    # marker so both the "filled" and "left occluded" branches are exercised.
+    occluded = np.zeros((num_frames, num_markers), dtype=bool)
+    for j in range(num_markers):
+        start = 5 + j * 3
+        occluded[start : start + 3, j] = True  # short gap, within max_gap=10
+    occluded[40:55, 0] = True  # long gap on marker 0, exceeds max_gap=10
+
+    frames = []
+    for i in range(num_frames):
+        markers = {
+            marker_names[j]: Marker(
+                name=marker_names[j],
+                x=float(coords[i, j, 0]),
+                y=float(coords[i, j, 1]),
+                z=float(coords[i, j, 2]),
+                occluded=bool(occluded[i, j]),
+            )
+            for j in range(num_markers)
+        }
+        frames.append(MarkerFrame(timestamp=i / 30.0, markers=markers, frame_index=i))
+    return MarkerTrajectory(id="gappy", frames=frames), marker_names
+
+
+def test_gap_fill_markers_linear_rust_matches_python_fallback(monkeypatch) -> None:
+    """Rust-dispatched LINEAR marker fill matches the pure-Python fallback."""
+    from src.shared.python.motion_pipeline.preprocessing import (
+        gap_fill as gap_fill_module,
+    )
+    from src.shared.python.motion_pipeline.preprocessing.gap_fill import (
+        GapFillStrategy,
+        gap_fill as gap_fill_fn,
+    )
+
+    traj, marker_names = _make_gappy_marker_trajectory(seed=11)
+
+    # Rust path: the module already has _RUST_AVAILABLE=True since `ump`
+    # imported successfully above (module-level import happens at gap_fill.py
+    # import time, before this test runs).
+    assert gap_fill_module._RUST_AVAILABLE is True
+    rust_out = gap_fill_fn(traj, strategy=GapFillStrategy.LINEAR, max_gap=10)
+
+    # Python fallback path, forced via monkeypatch.
+    monkeypatch.setattr(gap_fill_module, "_RUST_AVAILABLE", False)
+    python_out = gap_fill_fn(traj, strategy=GapFillStrategy.LINEAR, max_gap=10)
+
+    for i in range(traj.num_frames):
+        for name in marker_names:
+            r = rust_out.frames[i].markers[name]
+            p = python_out.frames[i].markers[name]
+            assert r.occluded == p.occluded
+            np.testing.assert_allclose(r.x, p.x, rtol=1e-10, atol=1e-10)
+            np.testing.assert_allclose(r.y, p.y, rtol=1e-10, atol=1e-10)
+            np.testing.assert_allclose(r.z, p.z, rtol=1e-10, atol=1e-10)
+
+    # Sanity: the long gap on marker 0 stayed occluded on both paths.
+    assert rust_out.frames[45].markers["M0"].occluded is True
+    assert python_out.frames[45].markers["M0"].occluded is True
+    # And a short, fillable gap actually got filled on both paths.
+    assert rust_out.frames[6].markers["M0"].occluded is False
+    assert python_out.frames[6].markers["M0"].occluded is False
