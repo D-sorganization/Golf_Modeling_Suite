@@ -64,9 +64,7 @@ def _t201_exempt_paths(repo_root: Path) -> frozenset[str]:
         data.get("tool", {}).get("ruff", {}).get("lint", {}).get("per-file-ignores", {})
     )
     return frozenset(
-        path
-        for path, rules in per_file.items()
-        if "T201" in rules and "*" not in path
+        path for path, rules in per_file.items() if "T201" in rules and "*" not in path
     )
 
 
