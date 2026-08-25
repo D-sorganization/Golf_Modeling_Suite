@@ -283,6 +283,14 @@ def build_candidate_inventory(
     }
 
 
+def write_candidate_inventory(output: Path, inventory: dict[str, Any]) -> None:
+    """Write the canonical inventory without escaping scientific Unicode."""
+    output.write_text(
+        json.dumps(inventory, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+
+
 def _require_list(record: dict[str, Any], field: str, claim_id: str) -> None:
     value = record.get(field)
     if not isinstance(value, list) or not value:
@@ -761,7 +769,7 @@ def main() -> None:
     if args.command == "inventory":
         output = args.output or default_output
         result = build_candidate_inventory(master, repository_root=root)
-        output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+        write_candidate_inventory(output, result)
         print(
             json.dumps(
                 {"output": output.as_posix(), "candidates": result["candidate_count"]}

@@ -21,8 +21,11 @@ history. Epic #8557 is the canonical proximal-to-distal completion authority.
 
 - Worktree: `UpstreamDrift-worktrees/8918-numeric-claim-audit`; branch:
   `fix/8918-numeric-claim-audit`; base: exact remote `main` above.
-- Status: protected PR #9042 is open for required human review; exact branch
-  HEAD passed local and fresh-export validation before publication.
+- Status: protected PR #9042 is open for required human review. Its first full
+  protected run passed 11,816 tests except the deterministic adjudication
+  freshness gate. The canonical summary, 1,100-candidate inventory, reviewed
+  migration lock, integrity records, and release hashes are now refreshed;
+  72 focused tests pass serially.
 - All 303 material claims are covered. The 124 numeric claims contain 380
   numeric literals, each bound to a reviewed JSON Pointer, transform, scope,
   and tolerance. Exact statement digests and literal inventories fail closed.
@@ -95,11 +98,12 @@ python -m scripts.research.proximal_distal_energy.build_claim_numeric_comparison
 python -m scripts.research.proximal_distal_energy.register_numeric_claim_evidence check
 python -m scripts.research.proximal_distal_energy.claim_audit numeric
 python -m scripts.research.proximal_distal_energy.claim_audit validate
+python -m scripts.research.proximal_distal_energy.claim_adjudication_summary validate
 python -m scripts.research.proximal_distal_energy.claim_evidence_integrity validate
 python -m scripts.research.proximal_distal_energy.release_claim_review validate
 python -m scripts.research.proximal_distal_energy.external_source_review validate
 python -m scripts.research.proximal_distal_energy.qualify_open_release validate --source-revision (git rev-parse HEAD) --publication-profile computational
-python -m pytest tests/unit/research/test_claim_numeric_audit.py tests/unit/research/test_register_numeric_claim_evidence.py tests/unit/research/test_scaffold_numeric_claim_contracts.py tests/research/test_claim_numeric_registry.py tests/research/test_claim_headline_recomputation.py -q -n 0 --timeout=120
+python -m pytest tests/unit/research/test_proximal_distal_claim_audit.py tests/unit/research/test_claim_adjudication_summary.py tests/unit/research/test_claim_numeric_audit.py tests/unit/research/test_register_numeric_claim_evidence.py tests/unit/research/test_scaffold_numeric_claim_contracts.py tests/research/test_claim_numeric_registry.py tests/research/test_claim_headline_recomputation.py -q -n 0 --timeout=120
 python scripts/check_document_title_case.py --changed-from origin/main
 python scripts/ci/check_file_size_budget.py
 ```

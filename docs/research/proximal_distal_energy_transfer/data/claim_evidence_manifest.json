@@ -2,7 +2,7 @@
   "schema_version": "proximal-distal-claim-evidence-integrity-v2",
   "registry": {
     "path": "docs/research/proximal_distal_energy_transfer/data/claim_audit_registry.json",
-    "sha256": "9f952f1ca276ad71239341a9e7786347d58d2061e5d3560a5cc44e59b90051a8"
+    "sha256": "871b8d1e422ac37f8247c9e570845e55cc8ea78cb167887cd0715415a4925357"
   },
   "scope": {
     "local_artifact_semantics": "content_integrity_not_independent_validation",
@@ -5591,7 +5591,7 @@
       ]
     },
     "docs/research/proximal_distal_energy_transfer/release_manifest.json": {
-      "sha256": "36c6768ffe0176d8713ac0a060e71590c88744d079de71d5e574dc8698c9efc6",
+      "sha256": "5dd24fe54d8405dc30f9f6701aabc709f95cf9093a7e4a566204d7df09c06b66",
       "bytes": 135191,
       "referenced_by": [
         "PD-CLAIM-241"
