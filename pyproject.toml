@@ -448,6 +448,15 @@ max-complexity = 10
 # file never enters that diff. Follow-up: clean the dependency-graph mypy
 # debt, then replace this with an inline `# noqa: BLE001` like its peers.
 "src/engines/physics_engines/mujoco/python/humanoid_launcher.py" = ["BLE001"]
+# Deferred: these are Tools-owned child copies (mirrored under
+# src/shared/python/sidekick/ -- see tests/unit/repo_hygiene/
+# test_tools_child_copy_contract.py). BLE001 grandfathering for their
+# bare except-Exception sites must land in D-sorganization/Tools first,
+# then flow here via a vendor/ud-tools pin bump -- issue #8813.
+"src/shared/python/sidekick/latex_renderer.py" = ["BLE001"]
+"src/shared/python/sidekick/ui/tools_sidebar/os_terminal.py" = ["BLE001"]
+"src/shared/python/sidekick/ui/tools_sidebar/visibility_persistence.py" = ["BLE001"]
+"src/shared/python/sidekick/tests/process_calculators/test_multi_param_analysis.py" = ["BLE001"]
 
 
 [tool.mypy]

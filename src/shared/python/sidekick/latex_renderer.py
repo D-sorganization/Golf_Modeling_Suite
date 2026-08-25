@@ -201,7 +201,7 @@ def render_latex_label(
                 label.setPixmap(pm)
                 _log.debug("render_latex_label(%r) rendered as QPixmap", latex_str)
                 return label
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             _log.warning(
                 "Could not render LaTeX %r as QPixmap, falling back: %s",
                 latex_str,
