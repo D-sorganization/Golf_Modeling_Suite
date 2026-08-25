@@ -21,7 +21,8 @@ history. Epic #8557 is the canonical proximal-to-distal completion authority.
 
 - Worktree: `UpstreamDrift-worktrees/8918-numeric-claim-audit`; branch:
   `fix/8918-numeric-claim-audit`; base: exact remote `main` above.
-- Status: implemented and validated locally; protected PR not yet created.
+- Status: protected PR #9042 is open for required human review; exact branch
+  HEAD passed local and fresh-export validation before publication.
 - All 303 material claims are covered. The 124 numeric claims contain 380
   numeric literals, each bound to a reviewed JSON Pointer, transform, scope,
   and tolerance. Exact statement digests and literal inventories fail closed.
