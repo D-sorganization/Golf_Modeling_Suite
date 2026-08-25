@@ -413,15 +413,6 @@
       "issue": 9014,
       "reason": "Issue #9014: pre-existing function exceeds budget due to logic layout; PR only optimizes array summation via count_nonzero.",
       "expires_on": "2026-10-31"
-    },
-    {
-      "path": "src/shared/python/ai/tools/agent_control.py",
-      "symbol": "create_agent_tools_for_registry",
-      "rule": "function-lines",
-      "owner": "@dieterolson @D-sorganization/core-maintainers",
-      "issue": 8813,
-      "reason": "Issue #8813: pre-existing tool-registration factory exceeds the changed-file budget; PR #9053 only adds a `# noqa: BLE001` annotation elsewhere in this file to restore the global lint gate.",
-      "expires_on": "2026-10-31"
     }
   ]
 }

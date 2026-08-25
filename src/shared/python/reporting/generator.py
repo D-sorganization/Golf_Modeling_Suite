@@ -34,5 +34,5 @@ class ReportGenerator:
 
         try:
             return await self.insights_provider.generate_insights(prompt)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             return f"Agentic Insights Error: {e}"

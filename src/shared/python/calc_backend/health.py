@@ -96,7 +96,7 @@ class HealthChecker:
                 if result.error:
                     results[name]["error"] = result.error
                 statuses.append(result.status)
-            except Exception as e:  # noqa: BLE001
+            except Exception as e:
                 logger.error(f"Health check failed for {name}: {e}")
                 results[name] = {
                     "status": CheckStatus.UNHEALTHY.value,
@@ -140,7 +140,7 @@ def check_python_runtime() -> HealthCheckResult:
                 "implementation": sys.implementation.name,
             },
         )
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         return HealthCheckResult("python_runtime", CheckStatus.UNHEALTHY, error=str(e))
 
 
@@ -192,7 +192,7 @@ def check_application_state() -> HealthCheckResult:
             CheckStatus.OK,
             details={"initialized": True},
         )
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         return HealthCheckResult(
             "application_state",
             CheckStatus.UNHEALTHY,

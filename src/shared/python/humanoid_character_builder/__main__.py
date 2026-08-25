@@ -48,7 +48,7 @@ def main():
                 f.write(urdf_xml)
 
             print(f"Successfully built character and saved to {args.output}")
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             print(f"Error building character: {e}", file=sys.stderr)
             sys.exit(1)
 
@@ -60,7 +60,7 @@ def main():
                 print("Available presets:")
                 for preset in presets:
                     print(f"  - {preset}")
-            except Exception as e:  # noqa: BLE001
+            except Exception as e:
                 print(f"Error listing presets: {e}", file=sys.stderr)
                 sys.exit(1)
 

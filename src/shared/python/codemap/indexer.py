@@ -37,7 +37,7 @@ def _hash_bytes(data: bytes) -> str:
         import blake3
 
         return str(blake3.blake3(data).hexdigest())
-    except Exception:  # noqa: BLE001
+    except Exception:
         return hashlib.blake2b(data, digest_size=16).hexdigest()
 
 
@@ -72,11 +72,10 @@ _DEFAULT_SKIP_DIRS = {
 
 def _load_gitignore(repo_root: Path) -> Any:
     """Return a callable ``is_ignored(rel_path) -> bool``."""
-    pathspec: Any = None
     try:
         import pathspec
-    except Exception:  # noqa: BLE001
-        pass
+    except Exception:
+        pathspec = None
 
     patterns: list[str] = []
     gi = repo_root / ".gitignore"
@@ -321,7 +320,7 @@ def rebuild(
         for abs_p, rel in iterator:
             try:
                 _process_file(abs_p, rel, repo, conn, stats)
-            except Exception as exc:  # pragma: no cover - defensive  # noqa: BLE001
+            except Exception as exc:  # pragma: no cover - defensive
                 logger.warning("codemap: failed to index %s: %s", rel, exc)
                 stats.errors.append(f"{rel}: {exc}")
 

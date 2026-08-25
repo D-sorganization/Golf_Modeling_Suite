@@ -64,7 +64,7 @@ def get_parser(lang_id: str) -> Any:
         try:
             mod = __import__(module_name)
             from tree_sitter import Language, Parser
-        except Exception as exc:  # pragma: no cover  # noqa: BLE001
+        except Exception as exc:  # pragma: no cover
             if module_name not in _MISSING_WARNED:
                 _MISSING_WARNED.add(module_name)
                 logger.warning(
@@ -78,7 +78,7 @@ def get_parser(lang_id: str) -> Any:
             raw = getattr(mod, attr)()
             language = Language(raw)
             parser = Parser(language)
-        except Exception as exc:  # pragma: no cover  # noqa: BLE001
+        except Exception as exc:  # pragma: no cover
             if module_name not in _MISSING_WARNED:
                 _MISSING_WARNED.add(module_name)
                 logger.warning(
