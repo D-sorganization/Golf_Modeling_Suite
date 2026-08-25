@@ -195,18 +195,13 @@ class _AnalysisMixin:
     ) -> dict[str, np.ndarray]:
         if forces is None:
             raise ValueError("forces must be provided")
-
-        decomp_keys = [
-            "force_in_plane",
-            "force_out_of_plane",
-            "force_along_grip",
-            "torque_in_plane",
-            "torque_out_of_plane",
-            "torque_about_grip",
-        ]
+        from src.shared.python.spatial_algebra.reference_frames import (
+            WRENCH_DECOMPOSITION_KEYS,
+            build_wrench_decomposition,
+        )
 
         if fsp is None:
-            return {k: np.zeros(n) for k in decomp_keys}
+            return {k: np.zeros(n) for k in WRENCH_DECOMPOSITION_KEYS}
 
         # Vectorized swing-plane decomposition: replaces a per-frame
         # WrenchInFrame + get_swing_plane_decomposition() loop with whole-array
@@ -228,14 +223,14 @@ class _AnalysisMixin:
         torque_in_plane = np.sqrt(torque_x**2 + torque_y**2)
         torque_about_grip = tau @ fsp.grip_axis
 
-        return {
-            "force_in_plane": force_in_plane,
-            "force_out_of_plane": force_out_of_plane,
-            "force_along_grip": force_along_grip,
-            "torque_in_plane": torque_in_plane,
-            "torque_out_of_plane": torque_out_of_plane,
-            "torque_about_grip": torque_about_grip,
-        }
+        return build_wrench_decomposition(
+            force_in_plane,
+            force_out_of_plane,
+            force_along_grip,
+            torque_in_plane,
+            torque_out_of_plane,
+            torque_about_grip,
+        )
 
     @staticmethod
     def _build_grf_wrench_result(
