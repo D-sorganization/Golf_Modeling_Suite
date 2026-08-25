@@ -72,10 +72,11 @@ _DEFAULT_SKIP_DIRS = {
 
 def _load_gitignore(repo_root: Path) -> Any:
     """Return a callable ``is_ignored(rel_path) -> bool``."""
+    pathspec: Any = None
     try:
         import pathspec
     except Exception:  # noqa: BLE001
-        pathspec = None
+        pass
 
     patterns: list[str] = []
     gi = repo_root / ".gitignore"
