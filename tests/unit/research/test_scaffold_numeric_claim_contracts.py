@@ -2,16 +2,29 @@
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from scripts.research.proximal_distal_energy.scaffold_numeric_claim_contracts import (
+    ARTICLE,
+    CONTRACT_PATH,
+    REPORTED_PATH,
     _has_semantic_pointer_match,
     _pointer_matches_declared_quantity,
     _scale_is_semantically_valid,
+    build_scaffold,
 )
 
 
 pytestmark = pytest.mark.unit
+
+
+def test_scaffold_reproduces_registered_documents() -> None:
+    contracts, reported = build_scaffold(ARTICLE.parents[2])
+
+    assert contracts == json.loads(CONTRACT_PATH.read_text(encoding="utf-8"))
+    assert reported == json.loads(REPORTED_PATH.read_text(encoding="utf-8"))
 
 
 def test_delivery_event_context_matches_time_pointer() -> None:
