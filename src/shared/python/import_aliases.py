@@ -190,7 +190,7 @@ class SharedImportAliasFinder(MetaPathFinder):
             for alias in aliases:
                 try:
                     spec = importlib.util.find_spec(alias)
-                except Exception:
+                except Exception:  # noqa: BLE001
                     continue
                 if spec is not None and spec.loader is not None:
                     return spec

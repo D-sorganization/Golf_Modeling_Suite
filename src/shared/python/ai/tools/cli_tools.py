@@ -99,7 +99,7 @@ class CLIToolBase:
                 return_code=-1,
                 command=" ".join(full_command),
             )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             return CLIExecutionResult(
                 success=False,
                 error=str(e),
@@ -368,7 +368,7 @@ class ShellTool(CLIToolBase):
                         val = clean_token.split("=", 1)[1].strip()
                         if val in dangerous or Path(val).name in dangerous:
                             return False
-                except Exception:
+                except Exception:  # noqa: BLE001
                     logger.warning(
                         "Could not validate token %r; rejecting command",
                         clean_token,

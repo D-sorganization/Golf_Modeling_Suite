@@ -240,7 +240,7 @@ class HumanoidLauncher(UISetupMixin, SimulationMixin, AnalysisMixin, QMainWindow
         # Ensure standard humanoid is downloaded
         try:
             StandardModelManager().get_standard_humanoid_path()
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Failed to download or locate standard humanoid: {e}")
 
         self.simulation_thread: ProcessWorker | None = None

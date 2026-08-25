@@ -101,7 +101,7 @@ class VisibilityPersistence:
                 loaded = json.loads(raw)
                 if isinstance(loaded, list):
                     return [str(tid) for tid in loaded if str(tid) in known_ids]
-            except Exception:
+            except Exception:  # noqa: BLE001
                 _logger.debug(
                     "VisibilityPersistence.load: could not parse JSON value %r",
                     raw,

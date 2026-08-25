@@ -138,7 +138,7 @@ class ClineAdapter(BaseAgentAdapter):
             resp.raise_for_status()
             data = resp.json()
             return self._parse_response(data)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             return self._handle_error(e)
 
     def stream_response(
