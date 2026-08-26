@@ -19,7 +19,8 @@ from src.shared.python.core.error_utils import (
     ModelLoadError,
 )
 from src.shared.python.dashboard.recorder import GenericPhysicsRecorder
-from src.shared.python.data_io.output_manager import OutputFormat, OutputManager
+from src.shared.python.data_io._format_handlers import OutputFormat
+from src.shared.python.data_io.output_manager import OutputManager
 from src.shared.python.engine_core.engine_registry import EngineType
 from src.shared.python.logging_pkg.logging_config import get_logger
 
