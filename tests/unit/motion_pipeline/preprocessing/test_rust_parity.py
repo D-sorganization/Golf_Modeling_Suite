@@ -208,12 +208,20 @@ def _make_gappy_marker_trajectory(
 
 def test_gap_fill_markers_linear_rust_matches_python_fallback(monkeypatch) -> None:
     """Rust-dispatched LINEAR marker fill matches the pure-Python fallback."""
-    from src.shared.python.motion_pipeline.preprocessing import (
-        gap_fill as gap_fill_module,
-    )
+    from importlib import import_module
+
     from src.shared.python.motion_pipeline.preprocessing.gap_fill import (
         GapFillStrategy,
         gap_fill as gap_fill_fn,
+    )
+
+    # NOTE: `preprocessing/__init__.py` re-exports the `gap_fill` *function*
+    # into the package namespace, shadowing the `gap_fill` *submodule*
+    # attribute — `from ...preprocessing import gap_fill` would therefore
+    # bind the function, not the module. Use import_module for the real
+    # module object (same pattern as test_gap_fill.py).
+    gap_fill_module = import_module(
+        "src.shared.python.motion_pipeline.preprocessing.gap_fill"
     )
 
     traj, marker_names = _make_gappy_marker_trajectory(seed=11)
