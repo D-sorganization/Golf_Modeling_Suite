@@ -454,12 +454,13 @@ def _interp_reconstruct_markers(
     back to the pure-Python per-gap interpolation in ``_fill_gaps_markers``.
     """
     if _RUST_AVAILABLE and frames:
-        return _interp_reconstruct_markers_rust(frames, strategy, max_gap)
+        return _interp_reconstruct_markers_rust(frames, gap_indices, strategy, max_gap)
     return _fill_gaps_markers(list(frames), gap_indices, strategy, max_gap)
 
 
 def _interp_reconstruct_markers_rust(
     frames: list[MarkerFrame],
+    gap_indices: list[tuple[int, int]],
     strategy: GapFillStrategy,
     max_gap: int,
 ) -> list[MarkerFrame]:
@@ -469,6 +470,18 @@ def _interp_reconstruct_markers_rust(
     ``(n_frames, n_markers)`` occlusion mask via ``_stack_marker_matrix``,
     calls the matching Rust kernel, then unstacks the result back into
     ``MarkerFrame`` objects via ``_unstack_marker_matrix``.
+
+    The Rust kernel enforces ``max_gap`` per marker column independently
+    (each point's own contiguous occluded run). The pre-Rust Python
+    ``_fill_gaps_markers``/``_find_gaps_markers`` path is more conservative:
+    it unions occlusion across *all* markers into shared gap windows first
+    (``gap_indices``) and skips a window entirely if that combined window
+    exceeds ``max_gap``, even for a marker whose own run within it is short.
+    To keep the Rust dispatch behaviorally identical to that existing
+    fallback (issue #8927 is a performance change, not a semantics change),
+    frames belonging to an oversized combined window are excluded from the
+    unstack step via ``_large_gap_frames``, the same helper
+    ``_pca_reconstruct_markers`` already uses for this purpose.
     """
     marker_names = list(frames[0].markers.keys())
     n_frames = len(frames)
@@ -485,7 +498,12 @@ def _interp_reconstruct_markers_rust(
     )
     filled, filled_mask = kernel(data, mask, int(max_gap))
     filled_matrix = np.asarray(filled).reshape(n_frames, n_markers * 3)
-    filled_mask = np.asarray(filled_mask)
+    filled_mask = np.asarray(filled_mask).copy()
+
+    skip_frames = _large_gap_frames(gap_indices, max_gap)
+    if skip_frames:
+        skip_idx = np.fromiter(skip_frames, dtype=np.intp, count=len(skip_frames))
+        filled_mask[skip_idx, :] = True  # treat as "kernel could not fill"
 
     return _unstack_marker_matrix(frames, marker_names, filled_matrix, filled_mask)
 

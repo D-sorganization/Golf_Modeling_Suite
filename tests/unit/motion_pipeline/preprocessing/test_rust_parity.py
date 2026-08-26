@@ -169,9 +169,26 @@ def test_linear_gap_fill_reproduces_python_logic() -> None:
 
 
 def _make_gappy_marker_trajectory(
-    seed: int, num_frames: int = 60, num_markers: int = 6
+    seed: int, num_frames: int = 90, num_markers: int = 6
 ):
-    """Build a MarkerTrajectory with random per-marker occlusion windows."""
+    """Build a MarkerTrajectory with well-separated per-marker occlusion windows.
+
+    Each marker's occluded run is isolated in its own time slot (12 frames
+    apart) rather than staggered/overlapping with other markers'. This keeps
+    every gap's "combined window" (what ``_find_gaps_markers`` sees, unioned
+    across all markers) identical to that single marker's own occluded run.
+
+    That distinction matters for parity: the pre-Rust Python path
+    (``_linear_interp_markers``) anchors its interpolation ``t`` fraction to
+    the *combined* window's start/end, while the Rust kernel fills each
+    marker column using its *own* contiguous run. When gaps from different
+    markers overlap/touch, those two boundaries diverge and the two paths
+    would legitimately compute different (both "correct", but non-identical)
+    interpolated values for a pre-existing reason unrelated to #8927 dispatch
+    wiring. Isolating each marker's gap sidesteps that so this test verifies
+    the actual regression surface: that the Rust dispatch reproduces the
+    Python fallback's values and its skip-when-oversized behavior.
+    """
     from src.shared.python.motion_pipeline.contracts import (
         Marker,
         MarkerFrame,
@@ -182,13 +199,14 @@ def _make_gappy_marker_trajectory(
     marker_names = [f"M{j}" for j in range(num_markers)]
     coords = rng.standard_normal((num_frames, num_markers, 3))
 
-    # Carve a handful of short (fillable) and one long (unfillable) gap per
-    # marker so both the "filled" and "left occluded" branches are exercised.
+    # Carve one short (fillable) gap per marker, well separated so the
+    # windows never merge, plus one long (unfillable) gap on marker 0 in its
+    # own isolated slot too.
     occluded = np.zeros((num_frames, num_markers), dtype=bool)
     for j in range(num_markers):
-        start = 5 + j * 3
+        start = 5 + j * 12
         occluded[start : start + 3, j] = True  # short gap, within max_gap=10
-    occluded[40:55, 0] = True  # long gap on marker 0, exceeds max_gap=10
+    occluded[70:85, 0] = True  # long gap on marker 0, exceeds max_gap=10
 
     frames = []
     for i in range(num_frames):
@@ -246,8 +264,8 @@ def test_gap_fill_markers_linear_rust_matches_python_fallback(monkeypatch) -> No
             np.testing.assert_allclose(r.z, p.z, rtol=1e-10, atol=1e-10)
 
     # Sanity: the long gap on marker 0 stayed occluded on both paths.
-    assert rust_out.frames[45].markers["M0"].occluded is True
-    assert python_out.frames[45].markers["M0"].occluded is True
+    assert rust_out.frames[75].markers["M0"].occluded is True
+    assert python_out.frames[75].markers["M0"].occluded is True
     # And a short, fillable gap actually got filled on both paths.
     assert rust_out.frames[6].markers["M0"].occluded is False
     assert python_out.frames[6].markers["M0"].occluded is False
