@@ -195,10 +195,9 @@ class TestEngineDashboardsSurfaceLoadFailure:
             "MuJoCoPhysicsEngine",
             instance,
         )
-        monkeypatch.setattr(
-            "src.shared.python.config.model_source_providers.mujoco_models_source",
-            lambda: tmp_path,
-        )
+        import src.shared.python.config.model_source_providers as _msp
+
+        monkeypatch.setattr(_msp, "mujoco_models_source", lambda: tmp_path)
 
         from src.launchers.mujoco_dashboard import MuJoCoDashboard
 
@@ -231,10 +230,9 @@ class TestEngineDashboardsSurfaceLoadFailure:
             "PinocchioPhysicsEngine",
             instance,
         )
-        monkeypatch.setattr(
-            "src.shared.python.config.model_source_providers.pinocchio_models_source",
-            lambda: tmp_path,
-        )
+        import src.shared.python.config.model_source_providers as _msp
+
+        monkeypatch.setattr(_msp, "pinocchio_models_source", lambda: tmp_path)
 
         from src.launchers.pinocchio_dashboard import PinocchioDashboard
 
@@ -285,10 +283,9 @@ class TestEngineDashboardsSurfaceLoadFailure:
             "MuJoCoPhysicsEngine",
             instance,
         )
-        monkeypatch.setattr(
-            "src.shared.python.config.model_source_providers.mujoco_models_source",
-            lambda: tmp_path,
-        )
+        import src.shared.python.config.model_source_providers as _msp
+
+        monkeypatch.setattr(_msp, "mujoco_models_source", lambda: tmp_path)
 
         from src.launchers.mujoco_dashboard import MuJoCoDashboard
 
@@ -357,10 +354,9 @@ class TestIdentityStripSurvivesEmbedding:
             "MuJoCoPhysicsEngine",
             instance,
         )
-        monkeypatch.setattr(
-            "src.shared.python.config.model_source_providers.mujoco_models_source",
-            lambda: tmp_path,
-        )
+        import src.shared.python.config.model_source_providers as _msp
+
+        monkeypatch.setattr(_msp, "mujoco_models_source", lambda: tmp_path)
         monkeypatch.setattr(
             "src.launchers.exercise_dashboard.discover_exercise",
             lambda x: ["MuJoCo_Models"],
