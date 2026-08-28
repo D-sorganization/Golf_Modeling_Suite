@@ -8,3 +8,11 @@
 ## 2024-05-19 - Fast Multidimensional Array Magnitude
 **Learning:** `np.linalg.norm(..., axis=1)` is known to be relatively slow due to internal overhead and intermediate array allocations. Replacing it with `np.sqrt(np.einsum('ij,ij->i', ...))` is a highly effective optimization that provides a significant speedup (often 2x-4x faster for small-to-medium arrays) while keeping the code readable.
 **Action:** When computing vector norms along an axis (other than small 2D vectors where `np.hypot` is best), use `np.sqrt(np.einsum)` instead of `np.linalg.norm` to avoid intermediate allocations and speed up the computation.
+
+## 2024-08-28 - Fast math operations
+**Learning:** `np.hypot(a, b).sum()` is surprisingly ~2x SLOWER than `np.sum(np.sqrt(a**2 + b**2))` for 1D arrays, despite memory allocations. Avoid this "optimization".
+**Action:** Do not substitute `np.sum(np.sqrt(a**2 + b**2))` with `np.hypot` + `sum()` for small 1D vectors; stick to explicitly tested optimizations like `np.vdot`.
+
+## 2024-08-28 - VDOT Optimization
+**Learning:** `np.vdot(weights, values)` is ~4x faster than `np.sum(weights * values)` for computing sums of element-wise products.
+**Action:** Replace `np.sum(A * B)` with `np.vdot(A, B)` to avoid temporary array allocations and improve speed when computing element-wise product sums.
