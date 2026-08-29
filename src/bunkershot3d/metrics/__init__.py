@@ -17,7 +17,7 @@ Entry point / distance behind ball    m                     :mod:`.divot`
 Maximum divot depth                   m                     :mod:`.divot`
 Exit point, divot length              m                     :mod:`.divot`
 Divot section area / volume / mass    m^2 / m^3 / kg        :mod:`.divot`
-Dig-vs-skid slope ratio and verdict   dimensionless         :mod:`.divot`
+Dig-vs-skid descent return, verdict   dimensionless         :mod:`.divot`
 Vertical impulse balance              N.s                   :mod:`.divot`
 Club KE loss, work on sand, ball      J, and fractions      :mod:`.energy`
 Peak / mean head deceleration         m/s^2 (also g)        :mod:`.loads`
