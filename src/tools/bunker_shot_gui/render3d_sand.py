@@ -132,7 +132,6 @@ class SandVolumeArtists:
         volume: SandVolume,
         scale: SandVolumeScale,
         *,
-        height_m: float,
         quantity: FieldQuantity = FieldQuantity.VELOCITY,
     ) -> None:
         """Add the empty sand artists to a 3-D axes.
@@ -144,8 +143,6 @@ class SandVolumeArtists:
                 :func:`~.sandvolume.sand_volume_scale`. Injected, never
                 inferred here: two designs each normalised to their own
                 peak are issue #8728's defect.
-            height_m: World ``z`` of the free surface [m], used only to
-                place the arrow legend clear of the bed.
             quantity: Which channel to paint.
 
         Raises:
@@ -154,7 +151,6 @@ class SandVolumeArtists:
         self._axes = axes
         self._volume = volume
         self._scale = scale
-        self._height_m = float(height_m)
         self._quantity = quantity
         self._colormap = colormaps[scale.colormap_name(quantity)]
         self._frame = 0
@@ -306,8 +302,7 @@ class SandVolumeArtists:
         # would paint it as the ramp's floor -- still sand where there is
         # no sand at all.
         painted = np.nan_to_num(normalised, nan=-1.0)
-        keep = np.repeat((painted >= PAINT_FLOOR).ravel(), 1)
-        keep_all = np.tile(keep, volume.n_sheets)
+        keep_all = np.tile((painted >= PAINT_FLOOR).ravel(), volume.n_sheets)
 
         self._sheets.set_verts(self._quads_mm[keep_all])
         strength = np.tile(painted.ravel(), volume.n_sheets)[keep_all]

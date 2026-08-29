@@ -580,7 +580,6 @@ class ShotSceneArtists:
             self._axes,
             volume,
             sand_volume_scale((volume,)) if scale is None else scale,
-            height_m=self._scene.surface.height_m,
             quantity=FieldQuantity.VELOCITY,
         )
 

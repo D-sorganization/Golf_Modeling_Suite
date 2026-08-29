@@ -95,9 +95,7 @@ class TestSandReadsAsMovingMaterial:
         volume = f1_volume()
         figure = Figure(figsize=(6.0, 5.0))
         axes = figure.add_subplot(111, projection="3d")
-        artists = SandVolumeArtists(
-            axes, volume, sand_volume_scale((volume,)), height_m=0.0
-        )
+        artists = SandVolumeArtists(axes, volume, sand_volume_scale((volume,)))
         artists.update(volume.n_frames - 1)
         segments = np.asarray(artists.arrow_segments)
         assert segments.size > 0
@@ -109,9 +107,7 @@ class TestSandReadsAsMovingMaterial:
         volume = f1_volume()
         figure = Figure(figsize=(6.0, 5.0))
         axes = figure.add_subplot(111, projection="3d")
-        artists = SandVolumeArtists(
-            axes, volume, sand_volume_scale((volume,)), height_m=0.0
-        )
+        artists = SandVolumeArtists(axes, volume, sand_volume_scale((volume,)))
         artists.update(0)
         first = artists.n_painted
         artists.update(volume.n_frames - 1)
@@ -121,9 +117,7 @@ class TestSandReadsAsMovingMaterial:
         volume = f1_volume()
         figure = Figure(figsize=(6.0, 5.0))
         axes = figure.add_subplot(111, projection="3d")
-        artists = SandVolumeArtists(
-            axes, volume, sand_volume_scale((volume,)), height_m=0.0
-        )
+        artists = SandVolumeArtists(axes, volume, sand_volume_scale((volume,)))
         artists.update(volume.n_frames - 1)
         drawn = np.asarray(artists.painted_across_m)
         assert np.unique(np.round(drawn, 9)).size == volume.n_sheets
@@ -136,7 +130,6 @@ class TestSandReadsAsMovingMaterial:
             axes,
             volume,
             sand_volume_scale((volume,)),
-            height_m=0.0,
             quantity=FieldQuantity.DENSITY,
         )
         artists.update(0)
@@ -270,7 +263,7 @@ class TestNothingAutoScales:
         shared = sand_volume_scale((slow, fast))
         figure = Figure(figsize=(6.0, 5.0))
         axes = figure.add_subplot(111, projection="3d")
-        artists = SandVolumeArtists(axes, slow, shared, height_m=0.0)
+        artists = SandVolumeArtists(axes, slow, shared)
         assert artists.scale == shared
 
     def test_two_designs_on_one_scale_paint_differently(self) -> None:
@@ -282,7 +275,7 @@ class TestNothingAutoScales:
         for volume in (slow, fast):
             figure = Figure(figsize=(6.0, 5.0))
             axes = figure.add_subplot(111, projection="3d")
-            artists = SandVolumeArtists(axes, volume, shared, height_m=0.0)
+            artists = SandVolumeArtists(axes, volume, shared)
             artists.update(volume.n_frames - 1)
             colours.append(float(np.nanmean(artists.painted_values)))
         assert colours[0] < colours[1]
@@ -291,9 +284,7 @@ class TestNothingAutoScales:
         volume = f1_volume()
         figure = Figure(figsize=(6.0, 5.0))
         axes = figure.add_subplot(111, projection="3d")
-        artists = SandVolumeArtists(
-            axes, volume, sand_volume_scale((volume,)), height_m=0.0
-        )
+        artists = SandVolumeArtists(axes, volume, sand_volume_scale((volume,)))
         with pytest.raises(ValueError, match="outside"):
             artists.update(volume.n_frames)
 
