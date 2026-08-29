@@ -81,13 +81,18 @@ from numpy.typing import NDArray
 
 from src.shared.python.visualization.viewport import ViewportOverlayPayload
 
+from bunkershot3d.fields.schema import FieldQuantity
+
 from .render import (
     ViewportFallback,
     stamp_axes,
     validity_stamp,
     viewport_fallback,
 )
+from .render3d_sand import SandVolumeArtists
+from .sandvolume import SandVolumeScale, sand_volume_scale
 from .shot3d import CameraPreset, ShotScene, viewport_payload
+from .slices import CursorMap
 from .traces import ValidityBand
 
 __all__ = [
@@ -414,6 +419,7 @@ class ShotSceneArtists:
         *,
         camera: CameraPreset = CameraPreset.DOWN_THE_LINE,
         band: ValidityBand | None = None,
+        sand_scale: SandVolumeScale | None = None,
     ) -> None:
         """Build the axes for one scene.
 
@@ -422,6 +428,11 @@ class ShotSceneArtists:
             scene: The scene to draw.
             scale: The fixed world box and depth ramp.
             camera: Which named view to open on.
+            sand_scale: The fixed colour ramp for the sand field, when the
+                scene carries one. Defaults to this field's own coverage,
+                which is right for a single design and **wrong** for a
+                comparison -- pass a merged ramp there, the same way
+                ``scale`` is merged (issue #8728).
             band: The per-sample validity band, when there is one. With it
                 the stamp shows the verdict *at the drawn moment*; without
                 it, the one verdict the whole scene carries.
@@ -450,6 +461,7 @@ class ShotSceneArtists:
         axes = figure.add_subplot(111, projection="3d")
         self._axes: Axes3D = axes
         self._build_surface()
+        self._sand = self._build_sand(sand_scale)
         self._floor = self._build_floor()
         self._trail = self._new_line(_PATH_COLOUR, 1.2, "sole reference path")
         self._head_mesh = self._build_head_mesh()
@@ -497,6 +509,39 @@ class ShotSceneArtists:
     def scale(self) -> SceneScale:
         """The fixed world box in force."""
         return self._scale
+
+    @property
+    def sand(self) -> SandVolumeArtists | None:
+        """The sand field's artists, or ``None`` when the tier solved none.
+
+        ``None`` is the honest answer at F0, which moves no sand at all:
+        its flat plane is a boundary condition and the caption says so.
+        """
+        return self._sand
+
+    def _build_sand(self, scale: SandVolumeScale | None) -> SandVolumeArtists | None:
+        """Add the sand volume's artists, when this scene carries one.
+
+        The cursor map is built here rather than passed in because the two
+        clocks are a property of this pairing: the shot is sampled every
+        CFL step and the field every stride block, so the sand has far
+        fewer frames than the pose does and one has to be mapped onto the
+        other. :class:`~.slices.CursorMap` is the same mapping the 2-D
+        slice view already uses, so both views land on the same moment.
+        """
+        volume = self._scene.sand
+        if volume is None:
+            return None
+        self._cursor = CursorMap(
+            n_transport=self._scene.n_frames, n_field=volume.n_frames
+        )
+        return SandVolumeArtists(
+            self._axes,
+            volume,
+            sand_volume_scale((volume,)) if scale is None else scale,
+            height_m=self._scene.surface.height_m,
+            quantity=FieldQuantity.VELOCITY,
+        )
 
     # ------------------------------------------------------------- building
 
@@ -693,8 +738,8 @@ class ShotSceneArtists:
         scene = self._scene
         lines = (
             f"{self._camera.label} - {self._camera.description}",
-            scene.surface.describe(),
-            scene.divot.describe(),
+            *scene.sand_note(),
+            *((self._sand.legend_label(),) if self._sand is not None else ()),
         )
         axes = self._axes
         figure = axes.figure
@@ -778,6 +823,10 @@ class ShotSceneArtists:
         trail = scene.sole_reference_world_m[: index + 1] * _MM_PER_M
         self._trail.set_data_3d(trail[:, 0], trail[:, 1], trail[:, 2])
         self._floor.set_data_3d(*self._floor_track(index))
+        if self._sand is not None:
+            # Mapped, not used directly: the sand's clock is the capture's
+            # stride and the pose's is the CFL step.
+            self._sand.update(self._cursor.field_frame(index))
 
         moment_ms = float(scene.time_s[index]) * 1e3
         depth_mm = float(scene.sole_depth_m[index]) * 1e3
@@ -806,6 +855,7 @@ def draw_scene_frame(
     scale: SceneScale | None = None,
     camera: CameraPreset = CameraPreset.DOWN_THE_LINE,
     band: ValidityBand | None = None,
+    sand_scale: SandVolumeScale | None = None,
 ) -> ShotSceneArtists:
     """Draw one sample of one scene into an existing figure.
 
@@ -823,6 +873,8 @@ def draw_scene_frame(
             **wrong** for a comparison -- pass the merged scale there.
         camera: Which named view to open on.
         band: The per-sample validity band, when there is one.
+        sand_scale: The fixed sand colour ramp; see
+            :class:`ShotSceneArtists`.
 
     Returns:
         The built artists, ready to be updated to another frame.
@@ -832,7 +884,9 @@ def draw_scene_frame(
             describe the same shot as the scene.
     """
     limits = scene_scale((scene,)) if scale is None else scale
-    artists = ShotSceneArtists(figure, scene, limits, camera=camera, band=band)
+    artists = ShotSceneArtists(
+        figure, scene, limits, camera=camera, band=band, sand_scale=sand_scale
+    )
     artists.update(frame)
     return artists
 
@@ -844,6 +898,7 @@ def shot_scene_still(
     scale: SceneScale | None = None,
     camera: CameraPreset = CameraPreset.DOWN_THE_LINE,
     band: ValidityBand | None = None,
+    sand_scale: SandVolumeScale | None = None,
     figsize: tuple[float, float] = (8.0, 6.0),
 ) -> Figure:
     """Render one frame as a standalone figure -- the ADR-0027 fallback.
@@ -855,6 +910,8 @@ def shot_scene_still(
         scale: The fixed world box; see :func:`draw_scene_frame`.
         camera: Which named view.
         band: The per-sample validity band, when there is one.
+        sand_scale: The fixed sand colour ramp; see
+            :class:`ShotSceneArtists`.
         figsize: Figure size in inches.
 
     Returns:
@@ -865,5 +922,13 @@ def shot_scene_still(
     """
     chosen = int(np.argmax(scene.sole_depth_m)) if frame is None else frame
     figure = Figure(figsize=figsize)
-    draw_scene_frame(figure, scene, frame=chosen, scale=scale, camera=camera, band=band)
+    draw_scene_frame(
+        figure,
+        scene,
+        frame=chosen,
+        scale=scale,
+        camera=camera,
+        band=band,
+        sand_scale=sand_scale,
+    )
     return figure
