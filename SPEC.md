@@ -871,11 +871,8 @@ inventory and reopen adjudication until every new candidate is reviewed.
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.624                                            |
+| **Spec Version**        | 1.0.629                                            |
 | **Last Spec Update**    | 2026-08-28                                         |
-| **Spec Version**        | 1.0.626                                            |
-| **Last Spec Update**    | 2026-08-28                                         |
-| **Last Spec Update**    | 2026-08-27                                         |
 
 ## 2. Purpose & Mission
 
