@@ -1,15 +1,16 @@
 # Agent Handoff: Proximal–Distal Research Program
 
-Updated: 2026-08-28
+Updated: 2026-08-29
 
 Epic #8557 is the canonical completion authority. Issue state, local files, and
 partial campaign checkpoints are not completion evidence.
 
 ## Protected Authority
 
-- UpstreamDrift remote `main` is
-  `85cce4d3307bb7ad3953d9fc6e583e370803515c`, the protected squash of
-  #9152 for #9151.
+- UpstreamDrift protected `main` was
+  `4775edb23f1438b8851d2c9d450691ac1adb15e6` at the latest #9192
+  reconciliation. Branch `feat/9192-companion-release` includes it through
+  this ordinary merge; re-check remote authority before push or merge.
 - The qualified paper has 252 pages and SHA-256
   `0527465cd0bf6b69c4ae4c541986b0aecad28d5c05dfdabdbda0d493433e19ec`.
 - Its 328 claims, 498/498 governed literals, 702 release artifacts, 2,495
@@ -78,6 +79,38 @@ partial campaign checkpoints are not completion evidence.
   and a recoverability plan.
 - DeskComputer remains runner-drained. Keep local tests serial and web tests at
   no more than two workers.
+
+## Active AffineDrift Companion Provider Slice: #9174
+
+- Foundation PR #9180 protected-merged as
+  `1af18489e8755933a0d189aa8edafe787fa94d0f`; issue #9174 was reopened and
+  remains the completion authority. PR #9214 / issue #9192 is the active child.
+- Lease/worktree: `worktrees/UpstreamDrift-9174-b1`; branch
+  `feat/9192-companion-release`. Do not use the dirty primary checkout.
+- ADR-0043 and the strict v1 schema are one-way UpstreamDrift software-fact
+  authority for AffineDrift #4010; #9064 remains design-manual authority and
+  #9070 remains typed calculation-manifest authority.
+- `scripts/companion_catalog.py` owns local-only discovery and exact source
+  provenance. `scripts/companion_publication.py` is the sole protected-main/tag
+  delivery wrapper and must refuse dirty or non-authoritative state.
+- #9192 packages the manifest, both schemas, compatibility policy, and detached
+  hashes as one commit-named 30-day Actions artifact; separate attested evidence
+  records exact run/artifact identity and explicitly says no durable URL exists.
+- Schema 1.0.0 is current and `previous_supported` is empty; declare a prior
+  version only with a validating fixture. The tag path is implemented, but no
+  tag or release is authorized in this slice.
+- Exact-head gates must include the 24 `pytest.mark.unit` publication cases,
+  architecture/suite-marker ratchets, workflow inventory/routing/action pins,
+  docs/spec/ADR checks, ruff, mypy, Bandit, and the protected hosted matrix.
+  `build_actions_acquisition` takes one validated metadata mapping; do not add
+  an architecture exception, rewrite the marker baseline, retry a real failure,
+  add dummy `src/` code, force-push, or bypass protection.
+- The unscoped full pytest command has a pre-existing Sidekick `utils` collection
+  failure. Do not treat that as #9192 evidence or waive the hosted Linux matrix.
+- Merge only when exact head/base/current protected main match and every required
+  check is green. Then verify the protected-main payload/evidence artifacts,
+  attestation, acquisition identity, embedded commit, and exact bytes before
+  closing #9192. Keep #9174 open for #9190, #9191, and #9193.
 
 ## Validation
 
