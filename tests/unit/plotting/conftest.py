@@ -10,13 +10,15 @@ from unittest.mock import MagicMock
 import pytest
 
 
-@pytest.fixture(autouse=True, scope="session")
+@pytest.fixture(autouse=True)
 def _mock_pyqt6():
     """Inject mock PyQt6 modules so plotting imports don't crash.
 
     This is only needed because PyQt6 DLLs may be broken in headless
     CI or when the Qt binaries are incomplete.  The plotting renderers
-    themselves only use matplotlib (not Qt).
+    themselves only use matplotlib (not Qt).  Function scope is deliberate:
+    a session-scoped subtree fixture leaked these mocks into unrelated tests
+    later assigned to the same pytest-xdist worker.
     """
     mocked_modules = [
         "PyQt6",

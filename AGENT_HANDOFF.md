@@ -1,6 +1,6 @@
 # Agent Handoff: Proximal–Distal Research Program
 
-Updated: 2026-08-28
+Updated: 2026-08-29
 
 Epic #8557 is the canonical completion authority. Issue state, local files, and
 partial campaign checkpoints are not completion evidence.
@@ -93,6 +93,10 @@ partial campaign checkpoints are not completion evidence.
   state. `dist/companion` JSON/SHA outputs are ignored release artifacts.
 - The first slice remains draft/blocked for capability evidence and governed
   documentation, workflow, screenshot, and protected publication follow-ups.
+- The reconciled exact-head unit gate exposed a plotting-subtree fixture that
+  kept PyQt/UI mocks for an entire xdist worker session. Its scope is now per
+  test; preserve the plotting-then-GUI/UI order regression gate and do not add
+  a quarantine entry or retry in place of module-state isolation.
 
 ## Validation
 
