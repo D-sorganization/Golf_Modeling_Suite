@@ -241,20 +241,21 @@ class TestTheOrderingIsPhysicallySensible:
     def test_more_bounce_reads_as_more_skid_where_the_head_buries(self, sweep) -> None:
         """At -10 deg the 5 deg sole buries and the 14.4 deg sole does not."""
         for condition in _CONDITIONS:
-            by_preset = {
-                row["preset"]: float(row["ratio"])
-                for row in sweep
-                if row["attack_deg"] == 10.0 and row["condition"] == condition
-            }
-            low, high = (
-                by_preset["tour_shaved_heel_lob"],
-                by_preset["acushnet_example_3"],
+            burying = sorted(
+                (
+                    row
+                    for row in sweep
+                    if row["attack_deg"] == 10.0 and row["condition"] == condition
+                ),
+                key=lambda row: row["bounce_deg"],
             )
-            if high <= low:
+            low, high = burying[0], burying[-1]
+            if high["ratio"] <= low["ratio"]:
                 raise AssertionError(
-                    f"in {condition} at -10 deg the 14.42 deg bounce sole returns "
-                    f"{high:.4f} of its descent and the 5.0 deg sole {low:.4f}; "
-                    "more bounce must read as more skid"
+                    f"in {condition} at -10 deg the {high['bounce_deg']:.2f} deg "
+                    f"bounce sole returns {high['ratio']:.4f} of its descent "
+                    f"and the {low['bounce_deg']:.2f} deg sole "
+                    f"{low['ratio']:.4f}; more bounce must read as more skid"
                 )
 
     def test_the_shallowest_delivery_never_reads_as_a_dig(self, sweep) -> None:
