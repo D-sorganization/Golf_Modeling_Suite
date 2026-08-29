@@ -2,6 +2,9 @@
 
 ## Current Scientific Audit State (2026-08-27)
 
+## Performance Enhancements (#9161)
+- Replaced instances of `np.linalg.norm` with faster mathematical equivalents (`math.hypot`, `np.vdot`, and `np.einsum`) for small vectors and multidimensional arrays in telemetry logging, screw kinematics, and bunker shot traces.
+
 ## Articulated Same-State Drift and Contact Attribution (#9151)
 
 Issue #9151 qualifies a pointwise articulated decomposition across all 234
@@ -17,6 +20,14 @@ result takes no forward step and supplies no biological source, human
 performance, timing, slack, coaching, or safety inference. Its next gate is
 matched forward impulse/work attribution through contact transitions,
 shaft/base coupling, uncertainty, and adverse loads.
+
+## Qt/Sip Worker-Poisoning & Segmentation Fault Prevention (#9099)
+
+Issue #9099 fixes worker-poisoning access violations and segmentation faults occurring during test suite execution with pytest and PyQt6.
+The launcher entry point `run_launcher` in `src/launchers/base.py` (and launcher scripts `src/launchers/upstream_drift_launcher_main.py`,
+`src/launchers/exercise_dashboard.py`, `src/launchers/_shot_tracer_gui.py`) now verifies `QApplication.instance()` before creating a new
+`QApplication(sys.argv)` instance. When an active Qt application context already exists (such as pytest's `qapp` session fixture),
+the existing application instance is safely reused, preventing double-initialization memory corruption and C++ access violations.
 
 ## Tools Green-Surface Adapter Consumption (#9143)
 
@@ -730,7 +741,7 @@ inventory and reopen adjudication until every new candidate is reviewed.
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.622                                            |
+| **Spec Version**        | 1.0.623                                            |
 | **Last Spec Update**    | 2026-08-27                                         |
 
 ## 2. Purpose & Mission
@@ -3419,6 +3430,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-28 | 1.0.623 | Fixed CI offline determinism, Docker buildx rehydration, and dependency lock provenance (#9120, #9121, #9122). Added `bootstrap_conformance_deps.py` for deterministic offline install of pinned conformance dependencies across cross-engine workflows; added `rehydrate_docker_context.py` to ensure Dockerfile is rehydrated before Buildx smoke gates; and made dependency lock provenance invariant to offline environments with canonical compilation headers. |
 | 2026-08-27 | 1.0.622 | Emit portable source links for claim-adjudication data (#9142). `claim_adjudication_summary.py` now builds absolute `blob/main` links for `claim_adjudication_summary.json` and `claim_adjudication_summary.csv`; AffineDrift rewrites that declared form to the protected source SHA. The explicit editorial-only claim-census migration verifies that the candidate count remains 1,180 and replaces only the generated reviewer candidate whose URL text changed. |
 | 2026-08-27 | 1.0.621 | Consumed the Tools green-surface adapter across the vendor boundary (issue #9143, Tools #4800 P9). Bumped the `vendor/ud-tools` submodule to the latest Tools main squash (`b46f58df52df86b6c5a3db44460b26ac8919da70`), pulling in `shared.python.swing_sim.putting.ud_adapter`, `UdGreenTopography`, `green_surface_from_ud_json`, and `green_surface_to_ud_json` alongside recent variation fixes (#4692/#4693/#4694/#4697). Added consumer integration tests in `tests/unit/putting/test_putting_green_consumer.py` covering vendor boundary import resolution, bi-directional topography JSON serialization/deserialization between Tools heightfields and UpstreamDrift `GreenSurface`, fail-closed rejection of scattered contours/slopes/unknown fields, and roll physics consistency on imported flat and sloped green surfaces. |
 | 2026-08-27 | 1.0.620 | Established UpstreamDrift engineering design-manual authority (UP-D0, issue #9066). `manuals/upstreamdrift` QMD is the sole editable authority; existing user, ADR, and research products remain separate; generated HTML, LaTeX, PDF, and DOCX remain non-editable and unapproved. The versioned policy, fail-closed empty registry, agent guidance, contract tests, and offline CI/pre-commit verifier enforce program-contract ownership, safe paths, Ruff formatting, TDD/DbC/DRY/LoD, impacted-path/freshness rules, immutable release evidence, visual and semantic review, and human approval. UP-D1 through UP-D8 remain explicit blockers, and this governance scaffold makes no calculation-coverage or publication claim. |
