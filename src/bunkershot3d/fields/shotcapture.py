@@ -50,7 +50,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from ..exceptions import BunkerShot3DValueError
-from ..solvers.envelope import RefusalPolicy
+from ..solvers.envelope import RefusalPolicy, ValidityVerdict
 from ..solvers.mpm.body import RigidSection
 from ..solvers.mpm.envelope import RefusedQuantity
 from ..solvers.mpm.grid import PlaneStrainGrid
@@ -265,7 +265,7 @@ def _series(
     solver: PlaneStrainMPMSolver,
     state: IntrusionState,
     settings: F1ShotSettings,
-    verdict: object,
+    verdict: ValidityVerdict,
     policy: RetentionPolicy,
     geometry: GridGeometry,
     recorder: WholeShotRecorder,
@@ -339,7 +339,7 @@ def _provenance(
     solver: PlaneStrainMPMSolver,
     state: IntrusionState,
     settings: F1ShotSettings,
-    verdict: object,
+    verdict: ValidityVerdict,
     recorder: WholeShotRecorder,
 ) -> FieldProvenance:
     """Everything needed to trace this field to its shot and regenerate it.
@@ -369,12 +369,12 @@ def _provenance(
     }
     return FieldProvenance(
         fidelity_tier=solver.fidelity_tier,
-        envelope_status=verdict.status,  # type: ignore[attr-defined]
+        envelope_status=verdict.status,
         solver_name=f"{type(solver).__module__}.{type(solver).__name__}",
         kinematics=WHOLE_SHOT_KINEMATICS_NOTE,
         peak_speed_m_s=float(state.speed_m_s),
-        caveats=tuple(caveat.value for caveat in verdict.caveats),  # type: ignore[attr-defined]
-        reasons=tuple(verdict.reasons),  # type: ignore[attr-defined]
+        caveats=tuple(caveat.value for caveat in verdict.caveats),
+        reasons=tuple(verdict.reasons),
         refused=tuple(quantity.value for quantity in RefusedQuantity),
         settings=entries,
         seeds=(),
