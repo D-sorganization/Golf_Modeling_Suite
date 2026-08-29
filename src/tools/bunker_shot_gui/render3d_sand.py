@@ -56,11 +56,16 @@ from bunkershot3d.fields.schema import FieldQuantity
 
 from .sandvolume import ArrowLattice, SandVolume, SandVolumeScale
 
-__all__ = ["SandVolumeArtists"]
+__all__ = [
+    "PAINT_FLOOR",
+    "SandVolumeArtists",
+    "arrow_segments_mm",
+    "sheet_quads_mm",
+]
 
 _MM_PER_M = 1e3
 
-_PAINT_FLOOR = 0.05
+PAINT_FLOOR = 0.05
 """Normalised value below which a cell is not drawn at all.
 
 A fraction of the *injected* ramp, so the same physical speed is painted
@@ -101,15 +106,6 @@ near-black slow sand to bright ejecta and the panel behind it is pale, so
 a light arrow vanishes on the plume and a dark one vanishes in the bed.
 The first render of a captured field showed no arrows at all for exactly
 this reason. An outlined stroke reads on all three."""
-
-_EDGE_ON_COSINE = 0.5
-"""How square to the solved plane the eye must be to see the section.
-
-The sheets span the swing plane, so an eye sighting *along* the target
-line looks straight down them and sees five lines rather than five
-sections. That is the extrusion seen end-on and is worth saying, because
-a viewer who does not know it is looking at an edge-on plane will read
-the stripes as structure."""
 
 _ARROW_FLOOR = 0.04
 _ARROW_LIFT_MM = 0.6
@@ -167,7 +163,7 @@ class SandVolumeArtists:
         self._painted_across_m: NDArray[np.float64] = np.zeros(0, dtype=np.float64)
         self._arrow_segments: NDArray[np.float64] = np.zeros((0, 2, 3))
 
-        self._quads_mm, self._across_mm = _sheet_quads(volume)
+        self._quads_mm, self._across_mm = sheet_quads_mm(volume)
         self._sheets = Poly3DCollection(
             np.zeros((0, 4, 3), dtype=np.float64),
             edgecolor=_SHEET_EDGE,
@@ -263,26 +259,14 @@ class SandVolumeArtists:
     def viewing_note(self) -> str:
         """How this camera is cutting the extrusion, in words.
 
-        The sheets span the solved swing plane. An eye square to that
-        plane sees the section; an eye sighting along the target line
-        looks straight down the sheets and sees them end-on, as a row of
-        lines. Both are honest pictures of the same field and they look
-        nothing alike, so the frame says which one it is showing.
+        Delegated to the volume, which both backends ask, so the fallback
+        and the VTK upgrade cannot drift into qualifying the same picture
+        differently.
 
         Returns:
             One line for the caption.
         """
-        squareness = abs(float(self._eye[1]))
-        if squareness >= _EDGE_ON_COSINE:
-            return (
-                "view: square to the solved plane, so this is the section "
-                "itself; the sheets behind it are copies of it"
-            )
-        return (
-            "view: sighting along the solved plane, so the sheets are "
-            "edge-on -- the stripes are one section seen end-on, repeated "
-            f"across {self._volume.n_sheets} sheets, not across-width structure"
-        )
+        return self._volume.viewing_note(self._eye)
 
     def legend_label(self) -> str:
         """What the colour ramp means, with its fixed limits.
@@ -322,7 +306,7 @@ class SandVolumeArtists:
         # would paint it as the ramp's floor -- still sand where there is
         # no sand at all.
         painted = np.nan_to_num(normalised, nan=-1.0)
-        keep = np.repeat((painted >= _PAINT_FLOOR).ravel(), 1)
+        keep = np.repeat((painted >= PAINT_FLOOR).ravel(), 1)
         keep_all = np.tile(keep, volume.n_sheets)
 
         self._sheets.set_verts(self._quads_mm[keep_all])
@@ -346,7 +330,7 @@ class SandVolumeArtists:
         """
         volume = self._volume
         lattice = volume.arrows(frame, n_along=_ARROW_COLUMNS, n_up=_ARROW_ROWS)
-        segments = _arrow_segments(
+        segments = arrow_segments_mm(
             lattice,
             across_mm=self._arrow_across_mm(),
             span_mm=self._arrow_span_mm(),
@@ -374,10 +358,14 @@ class SandVolumeArtists:
         return max(span, _MIN_SPAN_M) * _MM_PER_M * _ARROW_SPAN_FRACTION
 
 
-def _sheet_quads(
+def sheet_quads_mm(
     volume: SandVolume,
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Every sheet's quads, in millimetres, and the ``y`` of each.
+
+    Shared by both backends: the sheets a PyVista frame draws are the
+    same quads at the same coordinates the matplotlib frame draws, so the
+    upgrade cannot quietly show a different volume from the fallback.
 
     The lattice never moves, so this is built once. Each quad is centred
     on a lattice node and spans a fraction of a cell, leaving a hairline
@@ -418,7 +406,7 @@ def _half_cell(axis_mm: NDArray[np.float64]) -> float:
     return 0.5 * _CELL_FILL * float(np.abs(np.diff(axis_mm)).min())
 
 
-def _arrow_segments(
+def arrow_segments_mm(
     lattice: ArrowLattice,
     *,
     across_mm: float,
@@ -427,11 +415,15 @@ def _arrow_segments(
 ) -> NDArray[np.float64]:
     """Arrow polylines for one frame, as ``(3n, 2, 3)`` segments in mm.
 
-    Three segments per arrow -- a shaft and two barbs -- because a
-    :class:`~mpl_toolkits.mplot3d.art3d.Line3DCollection` can be mutated
-    through the public ``set_segments`` and a 3-D quiver cannot. The
-    length is set by the *injected* peak, so an arrow of a given length
-    means the same speed in every frame and every compared design.
+    Three segments per arrow -- a shaft and two barbs -- rather than a
+    quiver primitive, so both backends draw the *same* arrows from the
+    same numbers: matplotlib can mutate a
+    :class:`~mpl_toolkits.mplot3d.art3d.Line3DCollection` through the
+    public ``set_segments`` where a 3-D quiver has no equivalent, and
+    PyVista takes line segments directly.
+
+    The length is set by the *injected* peak, so an arrow of a given
+    length means the same speed in every frame and every compared design.
     """
     speed = lattice.speed_m_s
     live = lattice.occupied & (speed > _ARROW_FLOOR * max(peak_m_s, _MIN_SPAN_M))

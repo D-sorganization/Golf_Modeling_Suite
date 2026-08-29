@@ -100,6 +100,16 @@ new quantities."""
 _MIN_SHEETS = 2
 _DIMENSION = 2
 _MIN_LATTICE = 2
+EDGE_ON_COSINE = 0.5
+"""How square to the solved plane an eye must be to see the section.
+
+The sheets span the swing plane, so an eye sighting *along* the target
+line looks straight down them and sees a row of lines rather than a row
+of sections. That is the extrusion seen end-on and is worth saying,
+because a viewer who does not know it is looking at an edge-on plane
+reads the stripes as across-width structure -- the one thing a
+plane-strain solve has none of."""
+
 _ARROWS_ALONG = 16
 _ARROWS_UP = 10
 _EPSILON = 1e-12
@@ -430,6 +440,34 @@ class SandVolume:
         return np.asarray(self.body_outline_m[index], dtype=np.float64)
 
     # ---------------------------------------------------------------- words
+
+    def viewing_note(self, eye_direction: NDArray[np.float64]) -> str:
+        """How one camera is cutting this extrusion, in words.
+
+        Shared by both backends rather than composed in each: a fallback
+        and an upgrade that qualified the same picture differently would
+        be worse than either qualifying it alone.
+
+        Args:
+            eye_direction: Unit vector from the subject toward the eye,
+                world axes. :attr:`~.shot3d.CameraPreset.eye_direction`
+                supplies it backend-neutrally, so no matplotlib or VTK
+                camera maths is needed here.
+
+        Returns:
+            One line for the caption.
+        """
+        squareness = abs(float(np.asarray(eye_direction, dtype=np.float64)[1]))
+        if squareness >= EDGE_ON_COSINE:
+            return (
+                "view: square to the solved plane, so this is the section "
+                "itself; the sheets behind it are copies of it"
+            )
+        return (
+            "view: sighting along the solved plane, so the sheets are "
+            "edge-on -- the stripes are one section seen end-on, repeated "
+            f"across {self.n_sheets} sheets, not across-width structure"
+        )
 
     def describe(self) -> str:
         """The sentence drawn in the frame beside the volume.
