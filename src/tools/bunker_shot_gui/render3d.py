@@ -274,20 +274,42 @@ def _scale_for(scene: ShotScene) -> SceneScale:
     surface = scene.surface
     along = surface.along_extent_m
     across = surface.across_extent_m
+    sand_x, sand_y, sand_z = _sand_bounds(scene)
     return SceneScale(
         x_m=_padded(
-            min(along[0], float(corners[:, 0].min())),
-            max(along[1], float(corners[:, 0].max())),
+            min(along[0], float(corners[:, 0].min()), sand_x[0]),
+            max(along[1], float(corners[:, 0].max()), sand_x[1]),
         ),
         y_m=_padded(
-            min(across[0], float(corners[:, 1].min())),
-            max(across[1], float(corners[:, 1].max())),
+            min(across[0], float(corners[:, 1].min()), sand_y[0]),
+            max(across[1], float(corners[:, 1].max()), sand_y[1]),
         ),
         z_m=_padded(
-            float(corners[:, 2].min()),
-            max(float(corners[:, 2].max()), surface.height_m),
+            min(float(corners[:, 2].min()), sand_z[0]),
+            max(float(corners[:, 2].max()), surface.height_m, sand_z[1]),
         ),
         depth_m=(0.0, max(scene.divot.max_depth_m, 1e-4)),
+    )
+
+
+def _sand_bounds(
+    scene: ShotScene,
+) -> tuple[tuple[float, float], tuple[float, float], tuple[float, float]]:
+    """The world span the sand volume occupies, or a span that changes nothing.
+
+    A box framed on the head alone crops the sand thrown past it, and
+    material drawn outside the axes is simply drawn wrong -- the first
+    real render of a captured field put half the plume beyond the
+    right-hand wall. Infinities are the identity here: at F0 there is no
+    sand, and this must widen nothing.
+    """
+    sand = scene.sand
+    if sand is None:
+        return ((np.inf, -np.inf), (np.inf, -np.inf), (np.inf, -np.inf))
+    return (
+        (float(sand.along_m.min()), float(sand.along_m.max())),
+        (float(sand.across_m.min()), float(sand.across_m.max())),
+        (float(sand.up_m.min()), float(sand.up_m.max())),
     )
 
 
@@ -717,6 +739,12 @@ class ShotSceneArtists:
         chosen = CameraPreset(camera)
         self._camera = chosen
         self._axes.view_init(elev=chosen.elevation_deg, azim=chosen.azimuth_deg)
+        if self._sand is not None:
+            # The flow arrows ride one sheet of the extrusion; which one has
+            # to follow the eye, or the sheets in front hide them. The
+            # preset already states a backend-neutral eye direction, so
+            # this needs no matplotlib-specific camera maths.
+            self._sand.set_eye_direction(chosen.eye_direction)
         self._set_y_label()
         self._recompute_note()
         self._refresh_note()
@@ -739,7 +767,11 @@ class ShotSceneArtists:
         lines = (
             f"{self._camera.label} - {self._camera.description}",
             *scene.sand_note(),
-            *((self._sand.legend_label(),) if self._sand is not None else ()),
+            *(
+                (self._sand.viewing_note(), self._sand.legend_label())
+                if self._sand is not None
+                else ()
+            ),
         )
         axes = self._axes
         figure = axes.figure

@@ -144,6 +144,67 @@ class TestSandReadsAsMovingMaterial:
         assert artists.n_painted > 0
 
 
+class TestTheFrameSaysHowItIsCuttingTheExtrusion:
+    """Square-on and edge-on are the same field and look nothing alike."""
+
+    def test_a_square_on_camera_says_it_shows_the_section(
+        self, nominal_scene: ShotScene
+    ) -> None:
+        figure = Figure(figsize=(8.0, 6.0))
+        artists = draw_scene_frame(
+            figure, f1_scene(nominal_scene), frame=0, camera=CameraPreset.FACE_ON
+        )
+        assert artists.sand is not None
+        assert "square to the solved plane" in artists.sand.viewing_note()
+
+    def test_sighting_along_the_line_says_the_sheets_are_edge_on(
+        self, nominal_scene: ShotScene
+    ) -> None:
+        """Otherwise the stripes read as across-width structure."""
+        figure = Figure(figsize=(8.0, 6.0))
+        artists = draw_scene_frame(
+            figure,
+            f1_scene(nominal_scene),
+            frame=0,
+            camera=CameraPreset.DOWN_THE_LINE,
+        )
+        assert artists.sand is not None
+        assert "edge-on" in artists.sand.viewing_note()
+
+    def test_the_note_reaches_the_frame(self, nominal_scene: ShotScene) -> None:
+        figure = Figure(figsize=(8.0, 6.0))
+        artists = draw_scene_frame(
+            figure,
+            f1_scene(nominal_scene),
+            frame=0,
+            camera=CameraPreset.DOWN_THE_LINE,
+        )
+        assert "edge-on" in _stamp_and_note(artists)
+
+    def test_changing_camera_changes_the_note(self, nominal_scene: ShotScene) -> None:
+        figure = Figure(figsize=(8.0, 6.0))
+        artists = draw_scene_frame(
+            figure, f1_scene(nominal_scene), frame=0, camera=CameraPreset.FACE_ON
+        )
+        assert artists.sand is not None
+        before = artists.sand.viewing_note()
+        artists.set_camera(CameraPreset.DOWN_THE_LINE)
+        assert artists.sand.viewing_note() != before
+
+    def test_the_arrow_sheet_follows_the_eye(self, nominal_scene: ShotScene) -> None:
+        """The sheets in front would otherwise hide the one with arrows."""
+        figure = Figure(figsize=(8.0, 6.0))
+        artists = draw_scene_frame(
+            figure, f1_scene(nominal_scene), frame=0, camera=CameraPreset.FACE_ON
+        )
+        assert artists.sand is not None
+        segments = np.asarray(artists.sand.arrow_segments)
+        assert segments.size > 0
+        volume = artists.sand.volume
+        nearest_mm = float(volume.across_m.min()) * 1e3
+        assert float(np.mean(segments[:, 0, 1])) < nearest_mm + 1.0
+
+
 class TestNothingAutoScales:
     """Issue #8728, in the volume."""
 

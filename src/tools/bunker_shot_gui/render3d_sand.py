@@ -90,10 +90,34 @@ every compared design."""
 
 _ARROW_HEAD_FRACTION = 0.34
 _ARROW_HEAD_ANGLE_RAD = 0.42
-_ARROW_COLOUR = "#f7f7f7"
-_ARROW_EDGE = "#1b1b1b"
-_ARROW_WIDTH = 0.9
+_ARROW_COLOUR = "#ffffff"
+_ARROW_EDGE = "#101010"
+_ARROW_WIDTH = 1.0
+_ARROW_EDGE_WIDTH = 2.6
+"""Arrows are drawn twice: a dark wide stroke, then a light narrow one.
+
+A single colour is unreadable here whatever it is. The ramp runs from
+near-black slow sand to bright ejecta and the panel behind it is pale, so
+a light arrow vanishes on the plume and a dark one vanishes in the bed.
+The first render of a captured field showed no arrows at all for exactly
+this reason. An outlined stroke reads on all three."""
+
+_EDGE_ON_COSINE = 0.5
+"""How square to the solved plane the eye must be to see the section.
+
+The sheets span the swing plane, so an eye sighting *along* the target
+line looks straight down them and sees five lines rather than five
+sections. That is the extrusion seen end-on and is worth saying, because
+a viewer who does not know it is looking at an edge-on plane will read
+the stripes as structure."""
+
 _ARROW_FLOOR = 0.04
+_ARROW_LIFT_MM = 0.6
+"""How far in front of the nearest sheet the arrows sit.
+
+mplot3d sorts whole collections rather than individual faces, so arrows
+sharing a sheet's plane are as likely to be drawn behind it as in front.
+Lifting them clear toward the eye is what makes them reliably visible."""
 
 _SHEET_EDGE = "#00000000"
 _MIN_SPAN_M = 1e-6
@@ -153,7 +177,8 @@ class SandVolumeArtists:
             # corner puts whole sheets in front of material they are
             # behind.
             zsort="average",
-            label=f"sand {quantity.label} ({volume.fidelity.label})",
+            # ``FieldQuantity.label`` already reads "sand speed [m/s]".
+            label=f"{quantity.label}, {volume.fidelity.label}",
         )
         # ``autolim=False``: the world box is injected from SceneScale and
         # autoscale is off, so a collection that re-ranged the axes would
@@ -161,14 +186,23 @@ class SandVolumeArtists:
         # An empty collection cannot be auto-limited at all.
         axes.add_collection3d(self._sheets, autolim=False)
 
+        # Drawn twice for legibility; see _ARROW_EDGE_WIDTH.
+        self._arrow_edge = Line3DCollection(
+            [],
+            colors=_ARROW_EDGE,
+            linewidths=_ARROW_EDGE_WIDTH,
+            zorder=6.0,
+        )
+        axes.add_collection3d(self._arrow_edge, autolim=False)
         self._arrows = Line3DCollection(
             [],
             colors=_ARROW_COLOUR,
             linewidths=_ARROW_WIDTH,
-            zorder=6.0,
+            zorder=7.0,
             label="sand flow direction (in the solved plane only)",
         )
         axes.add_collection3d(self._arrows, autolim=False)
+        self._eye = np.array([0.0, -1.0, 0.0], dtype=np.float64)
 
     # ----------------------------------------------------------- accessors
 
@@ -211,6 +245,44 @@ class SandVolumeArtists:
     def arrow_segments(self) -> NDArray[np.float64]:
         """``(n, 2, 3)`` arrow shafts of the current frame, in millimetres."""
         return self._arrow_segments
+
+    def set_eye_direction(self, eye: NDArray[np.float64]) -> None:
+        """Point the arrow sheet at the camera.
+
+        The arrows live on one sheet, not all five: the same vectors drawn
+        five times over is true to the extrusion and unreadable. Which
+        sheet has to follow the eye, or the four in front of it hide the
+        one carrying the direction.
+
+        Args:
+            eye: Unit vector from the subject toward the eye, world axes.
+        """
+        self._eye = np.asarray(eye, dtype=np.float64).reshape(3)
+        self._update_arrows(self._frame)
+
+    def viewing_note(self) -> str:
+        """How this camera is cutting the extrusion, in words.
+
+        The sheets span the solved swing plane. An eye square to that
+        plane sees the section; an eye sighting along the target line
+        looks straight down the sheets and sees them end-on, as a row of
+        lines. Both are honest pictures of the same field and they look
+        nothing alike, so the frame says which one it is showing.
+
+        Returns:
+            One line for the caption.
+        """
+        squareness = abs(float(self._eye[1]))
+        if squareness >= _EDGE_ON_COSINE:
+            return (
+                "view: square to the solved plane, so this is the section "
+                "itself; the sheets behind it are copies of it"
+            )
+        return (
+            "view: sighting along the solved plane, so the sheets are "
+            "edge-on -- the stripes are one section seen end-on, repeated "
+            f"across {self._volume.n_sheets} sheets, not across-width structure"
+        )
 
     def legend_label(self) -> str:
         """What the colour ramp means, with its fixed limits.
@@ -265,26 +337,35 @@ class SandVolumeArtists:
         self._update_arrows(frame)
 
     def _update_arrows(self, frame: int) -> None:
-        """Redraw the direction arrows on the mid sheet.
+        """Redraw the direction arrows on the sheet nearest the eye.
 
         Drawn on one sheet only. An arrow field repeated on every sheet
         is the same vectors five times over -- true to the extrusion, and
-        unreadable -- so the middle sheet carries them and the label says
-        the flow is in the solved plane.
+        unreadable -- so one sheet carries them and the label says the
+        flow is in the solved plane.
         """
         volume = self._volume
         lattice = volume.arrows(frame, n_along=_ARROW_COLUMNS, n_up=_ARROW_ROWS)
-        across_mm = float(np.median(volume.across_m)) * _MM_PER_M
         segments = _arrow_segments(
             lattice,
-            across_mm=across_mm,
+            across_mm=self._arrow_across_mm(),
             span_mm=self._arrow_span_mm(),
             peak_m_s=self._scale.speed_m_s[1],
         )
-        self._arrows.set_segments(list(segments))
+        listed = list(segments)
+        self._arrows.set_segments(listed)
+        self._arrow_edge.set_segments(listed)
         # Only the shafts are reported: the barbs are decoration, and a
         # test that measured them would be measuring the arrowhead angle.
         self._arrow_segments = segments[::3] if segments.size else segments
+
+    def _arrow_across_mm(self) -> float:
+        """World ``y`` of the arrow sheet: the one nearest the eye [mm]."""
+        across = self._volume.across_m * _MM_PER_M
+        toward_viewer = float(self._eye[1]) >= 0.0
+        nearest = float(across.max()) if toward_viewer else float(across.min())
+        lift = _ARROW_LIFT_MM if toward_viewer else -_ARROW_LIFT_MM
+        return nearest + lift
 
     def _arrow_span_mm(self) -> float:
         """The longest arrow this lattice draws, in millimetres."""

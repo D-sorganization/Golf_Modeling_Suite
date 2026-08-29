@@ -40,9 +40,26 @@ from src.tools.bunker_shot_gui.sandvolume import (
 )
 from src.tools.bunker_shot_gui.slices import SliceFidelity
 
-from .test_slices import EFFECTIVE_WIDTH_M, analytic_field
+from .test_slices import BULK_DENSITY, EFFECTIVE_WIDTH_M, analytic_field
 
 pytestmark = [pytest.mark.unit, pytest.mark.headless_safe]
+
+
+def field_with_ejecta():  # type: ignore[no-untyped-def]
+    """The analytic field plus a detached patch of sand up in the air.
+
+    A real F1 bed throws ejecta clear of the free surface, so the lattice
+    lines between the bed and the plume hold air that the crop must keep:
+    cropping to the *span* of occupied lines rather than to the set of
+    them is what stops the lattice going ragged.
+    """
+    field = analytic_field()
+    density = np.array(field.density_kg_m3)
+    shape = field.geometry.shape
+    block = density.reshape(field.n_frames, shape[0], shape[1])
+    block[:, 2:5, -2:] = BULK_DENSITY
+    object.__setattr__(field, "density_kg_m3", density)
+    return field
 
 
 class TestTheExtrusionAnnouncesItself:
@@ -113,9 +130,13 @@ class TestVelocityKeepsItsDirection:
 
     def test_empty_cells_are_nan_not_zero(self) -> None:
         """Zero speed asserts still sand; there is no sand there at all."""
-        volume = sand_volume(analytic_field())
+        volume = sand_volume(field_with_ejecta(), max_cells=100_000)
         assert np.any(~volume.occupied)
         assert np.all(np.isnan(volume.speed_m_s[~volume.occupied]))
+
+    def test_occupied_cells_always_carry_a_number(self) -> None:
+        volume = sand_volume(field_with_ejecta(), max_cells=100_000)
+        assert np.all(np.isfinite(volume.speed_m_s[volume.occupied]))
 
     def test_arrow_samples_are_a_decimated_lattice(self) -> None:
         """Direction is drawn from a coarser lattice than the colour is."""
@@ -222,8 +243,36 @@ class TestTheLatticeIsWorldSpace:
         expected = field.geometry.axis_coordinates_m(0)
         np.testing.assert_allclose(volume.along_m, expected)
 
-    def test_the_up_axis_is_world_z(self) -> None:
+    def test_lattice_lines_empty_for_the_whole_record_are_dropped(self) -> None:
+        """An F1 bed's run-in and ejecta headroom are mostly air.
+
+        The first render of a real capture framed the scene around the
+        whole bed and shrank the impact zone to a smudge.
+        """
         field = analytic_field()
+        volume = sand_volume(field, max_cells=100_000)
+        assert volume.n_up < field.geometry.shape[1]
+
+    def test_the_kept_lines_stay_a_uniform_lattice(self) -> None:
+        """A ragged crop forces every view into scattered interpolation."""
+        volume = sand_volume(field_with_ejecta(), max_cells=100_000)
+        np.testing.assert_allclose(
+            np.diff(volume.up_m), np.diff(volume.up_m)[0], atol=1e-12
+        )
+
+    def test_the_crop_is_reported(self) -> None:
+        volume = sand_volume(analytic_field(), max_cells=100_000)
+        assert "hold sand" in volume.decimation_note
+
+    def test_a_field_with_no_sand_anywhere_keeps_its_whole_lattice(self) -> None:
+        """An empty field is a real answer, not a crash."""
+        field = analytic_field()
+        object.__setattr__(field, "density_kg_m3", np.zeros_like(field.density_kg_m3))
+        volume = sand_volume(field, max_cells=100_000)
+        assert volume.n_up == field.geometry.shape[1]
+
+    def test_the_up_axis_is_world_z(self) -> None:
+        field = field_with_ejecta()
         volume = sand_volume(field, max_cells=100_000)
         expected = field.geometry.axis_coordinates_m(1)
         np.testing.assert_allclose(volume.up_m, expected)

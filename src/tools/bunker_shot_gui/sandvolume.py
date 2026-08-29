@@ -99,6 +99,7 @@ new quantities."""
 
 _MIN_SHEETS = 2
 _DIMENSION = 2
+_MIN_LATTICE = 2
 _ARROWS_ALONG = 16
 _ARROWS_UP = 10
 _EPSILON = 1e-12
@@ -634,6 +635,24 @@ def _scale_for(volume: SandVolume) -> SandVolumeScale:
     )
 
 
+def _occupied_lines(live: NDArray[np.bool_], *, axis: int) -> NDArray[np.intp]:
+    """Lattice indices on one axis that hold sand in at least one frame.
+
+    Returned as a contiguous span from the first to the last such line
+    rather than as the sparse set of them, because a decimated lattice
+    has to stay uniform: a ragged one would force every renderer into
+    scattered interpolation for no saving worth having.
+    """
+    other = 1 if axis == 2 else 2
+    anywhere = np.any(live, axis=(0, other))
+    found = np.flatnonzero(anywhere)
+    if found.size < _MIN_LATTICE:
+        # A field with no sand anywhere is a real answer, not a crash, and
+        # the whole lattice is as good a frame for nothing as any other.
+        return np.arange(live.shape[axis], dtype=np.intp)
+    return np.arange(int(found[0]), int(found[-1]) + 1, dtype=np.intp)
+
+
 def _stride_index(count: int, wanted: int) -> NDArray[np.intp]:
     """Evenly strided indices into an axis, never more than it holds."""
     if wanted < 1:
@@ -698,8 +717,10 @@ def sand_volume(
         n_sheets: Sheets drawn across the declared effective width. At
             least two, because one sheet is a cross-section rather than a
             volume and :mod:`.render_slice` already draws that honestly.
-        max_cells: Lattice cells kept per sheet per frame; the lattice is
-            strided down to fit.
+        max_cells: Lattice cells kept per sheet per frame. Lattice lines
+            empty for the whole record are dropped first -- an F1 bed's
+            run-in and ejecta headroom are mostly air -- and what remains
+            is strided down to fit.
 
     Returns:
         The volume, labelled ``EXTRUDED`` and carrying its own tier,
@@ -728,15 +749,25 @@ def sand_volume(
         )
 
     count_x, count_z = int(geometry.shape[0]), int(geometry.shape[1])
-    stride_x, stride_z = _lattice_strides((count_x, count_z), max_cells)
-    columns = np.arange(0, count_x, stride_x, dtype=np.intp)
-    rows = np.arange(0, count_z, stride_z, dtype=np.intp)
-
     frames = series.n_frames
     velocity = series.velocity_m_s.reshape(frames, count_x, count_z, _DIMENSION)
     density = series.density_kg_m3.reshape(frames, count_x, count_z)
+    live = series.occupied().reshape(frames, count_x, count_z)
+
+    # An F1 bed carries a long run-in and a tall ejecta headroom that hold
+    # no sand in any frame. Framing the scene around them shrinks the
+    # impact zone to a smudge, so lattice lines that are empty for the
+    # whole record are dropped first. This hides nothing: a line with no
+    # sand in it at any time carries no information at all, and the note
+    # below reports exactly how many went.
+    keep_x = _occupied_lines(live, axis=1)
+    keep_z = _occupied_lines(live, axis=2)
+    stride_x, stride_z = _lattice_strides((keep_x.size, keep_z.size), max_cells)
+    columns = keep_x[::stride_x]
+    rows = keep_z[::stride_z]
+
     picked = np.ix_(np.arange(frames, dtype=np.intp), columns, rows)
-    occupied = series.occupied().reshape(frames, count_x, count_z)[picked]
+    occupied = live[picked]
 
     outline = (
         None if series.body_outline_m is None else np.asarray(series.body_outline_m)
@@ -744,7 +775,8 @@ def sand_volume(
     kept = columns.size * rows.size
     note = (
         f"kept {kept} of {count_x * count_z} lattice cells "
-        f"(every {stride_x} along, every {stride_z} up)"
+        f"(every {stride_x} along, every {stride_z} up, over the "
+        f"{keep_x.size} x {keep_z.size} lines that hold sand at some point)"
     )
     return SandVolume(
         time_s=series.time_s,
