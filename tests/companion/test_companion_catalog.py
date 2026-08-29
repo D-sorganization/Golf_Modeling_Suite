@@ -146,8 +146,11 @@ def test_catalog_compatibility_contract_is_exact() -> None:
     }
 
 
-def test_authoritative_export_refuses_dirty_tree(tmp_path: Path) -> None:
+def test_authoritative_export_refuses_dirty_tree(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     companion_catalog = _catalog_module()
+    monkeypatch.delenv("GITHUB_SHA", raising=False)
     subprocess.run(["git", "init", "-q", str(tmp_path)], check=True, shell=False)
     subprocess.run(
         ["git", "-C", str(tmp_path), "config", "user.email", "test@example.invalid"],

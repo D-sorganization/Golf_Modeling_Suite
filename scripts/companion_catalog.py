@@ -15,7 +15,7 @@ import subprocess
 import sys
 import tomllib
 from collections.abc import Iterable, Mapping, Sequence
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any
 
 from src.shared.python.config.model_registry import ModelConfig, ModelRegistry
@@ -65,7 +65,12 @@ def validate_repo_relative(value: Path) -> PurePosixPath:
     """Validate and normalize a repository-relative contract path."""
     text = value.as_posix()
     candidate = PurePosixPath(text)
-    if value.is_absolute() or candidate.is_absolute() or ".." in candidate.parts:
+    if (
+        value.is_absolute()
+        or candidate.is_absolute()
+        or PureWindowsPath(text).is_absolute()
+        or ".." in candidate.parts
+    ):
         raise ValueError(f"path must be repo-relative and contained: {value}")
     if not candidate.parts or candidate.parts == (".",):
         raise ValueError(f"path must be repo-relative and non-empty: {value}")
@@ -390,6 +395,100 @@ def _source_provenance(
     }
 
 
+def _catalog_payload(
+    *,
+    launcher: Mapping[str, Any],
+    parity: Mapping[str, Any],
+    payloads: Mapping[Path, bytes],
+    source: Mapping[str, Any],
+    tools_commit: str,
+    programs: Sequence[Mapping[str, Any]],
+    features: Sequence[Mapping[str, Any]],
+    summary: Mapping[str, int],
+) -> dict[str, Any]:
+    """Assemble the strict schema shape from already validated facts."""
+    project = tomllib.loads(payloads[Path("pyproject.toml")].decode("utf-8"))["project"]
+    providers = [
+        {
+            "id": "tools",
+            "repository": "https://github.com/D-sorganization/Tools",
+            "relationship": "vendored-provider",
+            "pin_kind": "gitlink",
+            "vendor_path": "vendor/ud-tools",
+            "pinned_commit": tools_commit,
+        },
+        {
+            "id": "upstreamdrift",
+            "repository": source["repository"],
+            "relationship": "authority",
+            "pin_kind": "source-commit",
+            "vendor_path": None,
+            "pinned_commit": source["commit"],
+        },
+    ]
+    registries = [
+        {
+            "id": "feature_parity",
+            "path": "src/config/feature_parity.json",
+            "version": str(parity["version"]),
+            "discovery_mode": "local-only",
+        },
+        {
+            "id": "launcher_manifest",
+            "path": "src/config/launcher_manifest.json",
+            "version": str(launcher["version"]),
+            "discovery_mode": "local-only",
+        },
+        {
+            "id": "model_registry",
+            "path": "src/config/models.yaml",
+            "version": None,
+            "discovery_mode": "local-only",
+        },
+    ]
+    engines = [
+        {
+            "id": engine_id,
+            "name": _ENGINE_DISPLAY_NAMES[engine_id],
+            "support_tier": _ENGINE_TIERS[engine_id],
+            "scientific_qualification": _qualification(
+                "Installation/support tier only; no numerical capability claim"
+            ),
+        }
+        for engine_id in sorted(_ENGINE_TIERS)
+    ]
+    return {
+        "$schema": SCHEMA_ID,
+        "schema_version": SCHEMA_VERSION,
+        "manifest_id": "upstreamdrift-companion",
+        "publication": {
+            "state": "draft",
+            "blockers": [
+                "Engine capability claims require qualification evidence.",
+                "Workflow and screenshot inventories are scheduled for later slices.",
+            ],
+        },
+        "source": dict(source),
+        "providers": providers,
+        "registries": registries,
+        "compatibility": {
+            "requires_python": str(project["requires-python"]),
+            "supported_python_minors": ["3.11", "3.12"],
+            "verification_command": {
+                "executable": "python",
+                "arguments": ["scripts/ci/verify_installation.py"],
+            },
+        },
+        "engines": engines,
+        "programs": list(programs),
+        "features": list(features),
+        "documentation": [],
+        "workflows": [],
+        "screenshots": [],
+        "summary": dict(summary),
+    }
+
+
 def build_catalog(repo_root: Path, *, require_clean: bool = True) -> dict[str, Any]:
     """Build a canonical catalog from committed, repository-local inputs.
 
@@ -426,92 +525,23 @@ def build_catalog(repo_root: Path, *, require_clean: bool = True) -> dict[str, A
     programs = _merge_programs(launcher["tiles"], models, feature_ids_by_program)
     source = _source_provenance(root, payloads)
     tools_commit = _tools_gitlink(root)
-    return {
-        "$schema": SCHEMA_ID,
-        "schema_version": SCHEMA_VERSION,
-        "manifest_id": "upstreamdrift-companion",
-        "publication": {
-            "state": "draft",
-            "blockers": [
-                "Engine capability claims require qualification evidence.",
-                "Workflow and screenshot inventories are scheduled for later slices.",
-            ],
-        },
-        "source": source,
-        "providers": [
-            {
-                "id": "tools",
-                "repository": "https://github.com/D-sorganization/Tools",
-                "relationship": "vendored-provider",
-                "pin_kind": "gitlink",
-                "vendor_path": "vendor/ud-tools",
-                "pinned_commit": tools_commit,
-            },
-            {
-                "id": "upstreamdrift",
-                "repository": source["repository"],
-                "relationship": "authority",
-                "pin_kind": "source-commit",
-                "vendor_path": None,
-                "pinned_commit": source["commit"],
-            },
-        ],
-        "registries": [
-            {
-                "id": "feature_parity",
-                "path": "src/config/feature_parity.json",
-                "version": str(parity["version"]),
-                "discovery_mode": "local-only",
-            },
-            {
-                "id": "launcher_manifest",
-                "path": "src/config/launcher_manifest.json",
-                "version": str(launcher["version"]),
-                "discovery_mode": "local-only",
-            },
-            {
-                "id": "model_registry",
-                "path": "src/config/models.yaml",
-                "version": None,
-                "discovery_mode": "local-only",
-            },
-        ],
-        "compatibility": {
-            "requires_python": str(
-                tomllib.loads(payloads[Path("pyproject.toml")].decode("utf-8"))[
-                    "project"
-                ]["requires-python"]
-            ),
-            "supported_python_minors": ["3.11", "3.12"],
-            "verification_command": {
-                "executable": "python",
-                "arguments": ["scripts/ci/verify_installation.py"],
-            },
-        },
-        "engines": [
-            {
-                "id": engine_id,
-                "name": _ENGINE_DISPLAY_NAMES[engine_id],
-                "support_tier": _ENGINE_TIERS[engine_id],
-                "scientific_qualification": _qualification(
-                    "Installation/support tier only; no numerical capability claim"
-                ),
-            }
-            for engine_id in sorted(_ENGINE_TIERS)
-        ],
-        "programs": programs,
-        "features": features,
-        "documentation": [],
-        "workflows": [],
-        "screenshots": [],
-        "summary": {
-            "raw_launcher_records": len(launcher["tiles"]),
-            "local_model_records": len(models),
-            "program_records": len(programs),
-            "feature_records": len(features),
-            "feature_surface_paths": surface_count,
-        },
+    summary = {
+        "raw_launcher_records": len(launcher["tiles"]),
+        "local_model_records": len(models),
+        "program_records": len(programs),
+        "feature_records": len(features),
+        "feature_surface_paths": surface_count,
     }
+    return _catalog_payload(
+        launcher=launcher,
+        parity=parity,
+        payloads=payloads,
+        source=source,
+        tools_commit=tools_commit,
+        programs=programs,
+        features=features,
+        summary=summary,
+    )
 
 
 def render_catalog(catalog: Mapping[str, Any]) -> bytes:
