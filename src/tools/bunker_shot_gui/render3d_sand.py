@@ -48,8 +48,8 @@ from __future__ import annotations
 
 import numpy as np
 from matplotlib import colormaps
-from matplotlib.axes import Axes
 from mpl_toolkits.mplot3d.art3d import Line3DCollection, Poly3DCollection
+from mpl_toolkits.mplot3d.axes3d import Axes3D
 from numpy.typing import NDArray
 
 from bunkershot3d.fields.schema import FieldQuantity
@@ -128,7 +128,7 @@ class SandVolumeArtists:
 
     def __init__(
         self,
-        axes: Axes,
+        axes: Axes3D,
         volume: SandVolume,
         scale: SandVolumeScale,
         *,

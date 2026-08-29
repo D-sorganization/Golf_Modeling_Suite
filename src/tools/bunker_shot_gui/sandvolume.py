@@ -778,7 +778,7 @@ def sand_volume(
             f"volume, got {n_sheets}; one sheet is a cross-section, and the "
             "2-D slice view already draws that honestly"
         )
-    width = float(series.provenance.settings.get("effective_width_m", 0.0))
+    width = float(series.provenance.setting("effective_width_m", 0.0))
     if not (math.isfinite(width) and width > 0.0):
         raise ValueError(
             "this field declares no effective width, so there is nothing to "
@@ -820,7 +820,7 @@ def sand_volume(
         time_s=series.time_s,
         along_m=geometry.axis_coordinates_m(0)[columns],
         up_m=geometry.axis_coordinates_m(1)[rows],
-        across_m=np.linspace(-0.5 * width, 0.5 * width, n_sheets),
+        across_m=np.linspace(-0.5 * width, 0.5 * width, n_sheets, dtype=np.float64),
         velocity_along_m_s=velocity[..., 0][picked],
         velocity_up_m_s=velocity[..., 1][picked],
         density_kg_m3=density[picked],
