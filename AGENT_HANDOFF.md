@@ -104,6 +104,12 @@ partial campaign checkpoints are not completion evidence.
   kept PyQt/UI mocks for an entire xdist worker session. Its scope is now per
   test; preserve the plotting-then-GUI/UI order regression gate and do not add
   a quarantine entry or retry in place of module-state isolation.
+- The next exact-head unit gate exposed the same lifetime defect in the
+  embeddable-tool registry: launcher/UI subtree fixtures cleared cached
+  canonical-core registrations after their tests. They now snapshot and
+  restore incoming registry state, and the canonical-core regression forces a
+  cached-module/cleared-registry reload. Preserve that deterministic ordering
+  gate; do not replace it with a retry or quarantine entry.
 
 ## Validation
 
