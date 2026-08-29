@@ -205,6 +205,62 @@ class TestTheFrameSaysHowItIsCuttingTheExtrusion:
         assert float(np.mean(segments[:, 0, 1])) < nearest_mm + 1.0
 
 
+class TestTheCaptionFitsTheFrame:
+    """A qualifier that is drawn over the axis label is not a qualifier."""
+
+    def test_the_caption_clears_the_x_axis_label(
+        self, nominal_scene: ShotScene
+    ) -> None:
+        """Issue #8729 took the caption from three lines to eight."""
+        from matplotlib.backends.backend_agg import FigureCanvasAgg
+
+        figure = shot_scene_still(f1_scene(nominal_scene), figsize=(9.5, 7.0))
+        canvas = FigureCanvasAgg(figure)
+        canvas.draw()
+        renderer = canvas.get_renderer()
+        axes = figure.get_axes()[0]
+        note = next(
+            text
+            for text in axes.texts
+            if "extruded from the solved plane" in text.get_text()
+            or "sand:" in text.get_text()
+        )
+        note_top = note.get_window_extent(renderer=renderer).y1
+        label_bottom = axes.xaxis.label.get_window_extent(renderer=renderer).y0
+        assert note_top <= label_bottom
+
+    def test_the_caption_stays_inside_the_figure(
+        self, nominal_scene: ShotScene
+    ) -> None:
+        from matplotlib.backends.backend_agg import FigureCanvasAgg
+
+        figure = shot_scene_still(f1_scene(nominal_scene), figsize=(9.5, 7.0))
+        canvas = FigureCanvasAgg(figure)
+        canvas.draw()
+        renderer = canvas.get_renderer()
+        axes = figure.get_axes()[0]
+        for text in axes.texts:
+            assert text.get_window_extent(renderer=renderer).y0 >= -1.0
+
+    def test_a_short_f0_caption_keeps_close_to_the_original_band(
+        self, nominal_scene: ShotScene
+    ) -> None:
+        """An F0 frame must not lose plot area to a band it does not need."""
+        figure = shot_scene_still(nominal_scene, figsize=(9.5, 7.0))
+        assert 0.21 <= figure.subplotpars.bottom <= 0.24
+
+    def test_a_sand_caption_is_given_more_room(self, nominal_scene: ShotScene) -> None:
+        """The extra lines have to come from somewhere."""
+        plain = shot_scene_still(nominal_scene, figsize=(9.5, 7.0))
+        sandy = shot_scene_still(f1_scene(nominal_scene), figsize=(9.5, 7.0))
+        assert sandy.subplotpars.bottom > plain.subplotpars.bottom
+
+    def test_the_band_is_capped(self, nominal_scene: ShotScene) -> None:
+        """Better a caption slightly tight than a picture with nowhere to be."""
+        figure = shot_scene_still(f1_scene(nominal_scene), figsize=(9.5, 7.0))
+        assert figure.subplotpars.bottom <= 0.34
+
+
 class TestNothingAutoScales:
     """Issue #8728, in the volume."""
 

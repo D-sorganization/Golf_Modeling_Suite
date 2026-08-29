@@ -173,6 +173,25 @@ white border but the caption's own reserved band -- see
 _NOTE_WIDTH_FRACTION = 0.97
 """Fraction of the axes width the wrapped footer caption may use."""
 
+_NOTE_LINE_SPACING = 1.35
+"""Baseline-to-baseline spacing as a multiple of the font size."""
+
+_LABEL_BAND_FRACTION = 0.14
+"""Figure fraction reserved above the caption for the x-axis furniture.
+
+``mplot3d`` hangs the x label and its ticks below the panel it squared to
+the frame's width, so this is the room they need over and above the
+caption's own height."""
+
+_MIN_BOTTOM_MARGIN = 0.21
+_MAX_BOTTOM_MARGIN = 0.34
+"""Bounds on the caption band, as a figure fraction.
+
+The floor is what issue #8706 reserved for a three-line caption. The
+ceiling stops a pathological wrap from squeezing the scene out of its own
+frame -- better a caption that runs slightly long than a picture with
+nowhere to be."""
+
 _NOTE_TOP_MARGIN_FIG_FRACTION = 0.02
 """How far the caption's *last* line sits above the physical bottom of the
 figure, in figure fraction. The caption is anchored here and grows
@@ -798,9 +817,47 @@ class ShotSceneArtists:
         # rectangle subplots_adjust was given, an axes-fraction anchor
         # would put the caption back under the tick labels the reserved
         # bottom margin exists to clear.
+        # Reserve the band from the caption's own height rather than from a
+        # constant. Issue #8729 added three lines to it -- the extrusion
+        # sentence, how the camera is cutting it, and the ramp's fixed
+        # range -- and a band sized for the old three-line caption put the
+        # first of them straight through the x-axis label.
+        self._reserve_caption_band(len(wrapped))
+        axes.apply_aspect()
+        axes_bbox = axes.get_window_extent(renderer=renderer)
         target_px = _NOTE_TOP_MARGIN_FIG_FRACTION * figure.bbox.height
         anchor_y = (target_px - axes_bbox.y0) / axes_bbox.height
         self._note_position = (0.02, anchor_y)
+
+    def _reserve_caption_band(self, n_lines: int) -> None:
+        """Give the caption band the height this caption actually needs.
+
+        Issue #8729 took the caption from three lines to eight -- the
+        extrusion sentence, how the camera is cutting it, and the ramp's
+        fixed range -- and the band #8706 sized for three put the first of
+        them straight through the x-axis label.
+
+        Computed rather than measured. ``mplot3d`` positions its axis
+        labels during a draw, so asking one where it is beforehand
+        answers for wherever it was last, and a corrective loop fed by
+        that measurement drives the panel to its stop on the first pass.
+        The line count is known here and the pad above the caption is the
+        one free parameter, so the arithmetic is the honest way round.
+
+        The floor is #8706's own band, so a short caption -- an F0 shot's
+        three lines -- lays out exactly as it did before.
+
+        Args:
+            n_lines: Wrapped lines the caption will draw.
+        """
+        figure = self._axes.figure
+        line_px = _NOTE_FONTSIZE * _NOTE_LINE_SPACING * figure.dpi / 72.0
+        caption = (n_lines * line_px) / max(float(figure.bbox.height), 1.0)
+        bottom = min(
+            max(caption + _LABEL_BAND_FRACTION, _MIN_BOTTOM_MARGIN),
+            _MAX_BOTTOM_MARGIN,
+        )
+        figure.subplots_adjust(**{**_FIGURE_MARGINS, "bottom": bottom})
 
     def _refresh_note(self) -> None:
         """Re-apply the caption :meth:`_recompute_note` last wrapped."""

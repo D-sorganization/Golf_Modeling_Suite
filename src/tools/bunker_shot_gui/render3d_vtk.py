@@ -909,7 +909,6 @@ def draw_scene_frame_vtk(
     camera: CameraPreset | str | None = None,
     band: ValidityBand | None = None,
     sand_scale: SandVolumeScale | None = None,
-    off_screen: bool = True,
     window_size: tuple[int, int] = _DEFAULT_WINDOW_SIZE,
 ) -> VtkSceneArtists:
     """Draw one sample of one scene through PyVista.
@@ -929,8 +928,16 @@ def draw_scene_frame_vtk(
         camera: Which named view to open on; ``None`` (the default) opens
             the down-the-line view.
         band: The per-sample validity band, when there is one.
-        off_screen: Whether the plotter renders headless.
+        sand_scale: The fixed sand colour ramp, from
+            :func:`~.sandvolume.sand_volume_scale`; see
+            :class:`VtkSceneArtists`.
         window_size: Pixel size of the render target.
+
+    Note:
+        Rendering is always headless here. A caller that genuinely wants
+        an on-screen plotter -- interactive debugging, and nothing that
+        ships -- builds a :class:`VtkSceneArtists` directly, which still
+        takes ``off_screen``.
 
     Returns:
         The built artists, ready to be updated to another frame or rendered.
@@ -956,7 +963,6 @@ def draw_scene_frame_vtk(
         camera=camera,
         band=band,
         sand_scale=sand_scale,
-        off_screen=off_screen,
         window_size=window_size,
     )
     artists.update(frame)
@@ -1008,6 +1014,5 @@ def shot_scene_still_vtk(
         camera=camera,
         band=band,
         sand_scale=sand_scale,
-        off_screen=True,
         window_size=window_size,
     )
