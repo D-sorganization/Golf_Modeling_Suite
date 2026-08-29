@@ -81,6 +81,8 @@ partial campaign checkpoints are not completion evidence.
 
 ## Active AffineDrift Companion Provider Slice: #9174
 
+- Non-draft PR #9180 owns this slice; do not open a competing PR or merge it
+  outside protected review/checks.
 - Lease/worktree: `worktrees/UpstreamDrift-9174-b1`; branch
   `feat/9174-companion-manifest`. Do not use the dirty primary checkout.
 - ADR-0043 and the strict companion v1 schema define one-way UpstreamDrift
