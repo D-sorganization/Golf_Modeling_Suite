@@ -644,10 +644,15 @@ def _incoming_path_slope(
 ) -> float:
     """Return the chord slope of the last free-flight step before entry.
 
+    Reported as context beside the verdict -- it is the delivered attack angle
+    the shot was set up with -- and **nothing is divided by it**. Normalising
+    the discriminant by this slope is what made the metric of issue #8703
+    saturate, so it is kept as a reading rather than as a denominator.
+
     A **backward** difference across the two samples preceding entry, not a
     centred one at the last free-flight sample: a centred difference there
     straddles the entry and would average the delivered slope with the first
-    submerged one, hiding exactly the change the discriminator is looking for.
+    submerged one, so it would report the strike rather than the delivery.
 
     Args:
         profile: Sole depth profile.
