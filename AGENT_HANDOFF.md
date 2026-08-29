@@ -8,8 +8,8 @@ partial campaign checkpoints are not completion evidence.
 ## Protected Authority
 
 - UpstreamDrift remote `main` is
-  `85cce4d3307bb7ad3953d9fc6e583e370803515c`, the protected squash of
-  #9152 for #9151.
+  `0205591cad6edab869fc8fbfb20f386a1eb2a056`. The #9174 companion slice
+  branches from this exact protected authority.
 - The qualified paper has 252 pages and SHA-256
   `0527465cd0bf6b69c4ae4c541986b0aecad28d5c05dfdabdbda0d493433e19ec`.
 - Its 328 claims, 498/498 governed literals, 702 release artifacts, 2,495
@@ -78,6 +78,19 @@ partial campaign checkpoints are not completion evidence.
   and a recoverability plan.
 - DeskComputer remains runner-drained. Keep local tests serial and web tests at
   no more than two workers.
+
+## Active AffineDrift Companion Provider Slice: #9174
+
+- Lease/worktree: `worktrees/UpstreamDrift-9174-b1`; branch
+  `feat/9174-companion-manifest`. Do not use the dirty primary checkout.
+- ADR-0043 and the strict companion v1 schema define one-way UpstreamDrift
+  software-fact authority for AffineDrift #4010. They do not duplicate #9064's
+  design-manual authority or #9070's typed calculation manifest.
+- `scripts/companion_catalog.py` uses explicit local-only discovery and exact
+  committed inputs/provider pins. Its CLI must refuse dirty/non-authoritative
+  state. `dist/companion` JSON/SHA outputs are ignored release artifacts.
+- The first slice remains draft/blocked for capability evidence and governed
+  documentation, workflow, screenshot, and protected publication follow-ups.
 
 ## Validation
 

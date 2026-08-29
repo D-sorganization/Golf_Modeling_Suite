@@ -2,7 +2,27 @@
 
 ## Current Scientific Audit State (2026-08-27)
 
+## Deterministic AffineDrift Companion Authority (#9174)
+
+ADR-0043 establishes UpstreamDrift as the one-way provider of the strict v1
+software-fact catalog consumed by AffineDrift #4010. The local-only exporter
+reconciles the current 49 raw launcher entries and 56 repository-local model
+entries into a 70-program union, plus all 41 feature-parity records and their
+79 declared shell-source paths. These are migration baselines in tests and
+summary metadata, not permanent schema limits. Exact UpstreamDrift commit,
+committed-input SHA-256 values, package/Python compatibility, verification
+command, support tiers, and the `vendor/ud-tools` gitlink commit are explicit.
+Maturity, availability, engine support, shell parity, and scientific
+qualification remain separate. The fail-closed CLI rejects dirty trees,
+mismatched CI commits, mutable/external input paths, and non-gitlink Tools
+authority; discovery never depends on sibling repositories or provider-root
+environment variables. Publication remains draft while capability evidence and
+governed documentation, workflow, and screenshot inventories are incomplete.
+This catalog does not copy or supersede #9064's design-manual authority or
+#9070's typed calculation-manifest authority.
+
 ## Performance Enhancements (#9161)
+
 - Replaced instances of `np.linalg.norm` with faster mathematical equivalents (`math.hypot`, `np.vdot`, and `np.einsum`) for small vectors and multidimensional arrays in telemetry logging, screw kinematics, and bunker shot traces.
 
 ## Articulated Same-State Drift and Contact Attribution (#9151)
@@ -3430,6 +3450,7 @@ blocks Python package publication on the built-wheel smoke matrix.
 
 | Date       | Version | Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-28 | 1.0.624 | Established the first UpstreamDrift provider-authority slice for AffineDrift #4010 (issue #9174). ADR-0043, a strict v1 JSON Schema, and a deterministic local-only exporter reconcile the current 49 raw launcher/56 local model/70 union and 41 feature/79 surface-path baselines without freezing those counts as schema invariants. Exact source commit, committed-input hashes, package/Python compatibility, verification command, engine support tiers, and the `vendor/ud-tools` gitlink are explicit; maturity, availability, support, parity, and scientific qualification remain separate. RED-to-GREEN tests enforce environment independence, reference integrity, strict fields, clean-tree/CI-commit refusal, safe paths, canonical bytes, and the detached digest. Publication remains draft and the companion does not duplicate #9064/#9070 manual or calculation authority. |
 | 2026-08-28 | 1.0.623 | Fixed CI offline determinism, Docker buildx rehydration, and dependency lock provenance (#9120, #9121, #9122). Added `bootstrap_conformance_deps.py` for deterministic offline install of pinned conformance dependencies across cross-engine workflows; added `rehydrate_docker_context.py` to ensure Dockerfile is rehydrated before Buildx smoke gates; and made dependency lock provenance invariant to offline environments with canonical compilation headers. |
 | 2026-08-27 | 1.0.622 | Emit portable source links for claim-adjudication data (#9142). `claim_adjudication_summary.py` now builds absolute `blob/main` links for `claim_adjudication_summary.json` and `claim_adjudication_summary.csv`; AffineDrift rewrites that declared form to the protected source SHA. The explicit editorial-only claim-census migration verifies that the candidate count remains 1,180 and replaces only the generated reviewer candidate whose URL text changed. |
 | 2026-08-27 | 1.0.621 | Consumed the Tools green-surface adapter across the vendor boundary (issue #9143, Tools #4800 P9). Bumped the `vendor/ud-tools` submodule to the latest Tools main squash (`b46f58df52df86b6c5a3db44460b26ac8919da70`), pulling in `shared.python.swing_sim.putting.ud_adapter`, `UdGreenTopography`, `green_surface_from_ud_json`, and `green_surface_to_ud_json` alongside recent variation fixes (#4692/#4693/#4694/#4697). Added consumer integration tests in `tests/unit/putting/test_putting_green_consumer.py` covering vendor boundary import resolution, bi-directional topography JSON serialization/deserialization between Tools heightfields and UpstreamDrift `GreenSurface`, fail-closed rejection of scattered contours/slopes/unknown fields, and roll physics consistency on imported flat and sloped green surfaces. |
