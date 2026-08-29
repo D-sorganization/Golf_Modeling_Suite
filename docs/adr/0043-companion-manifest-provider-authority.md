@@ -90,7 +90,8 @@ Postconditions require unique, deterministically sorted program and feature
 IDs, exact input hashes, exact provider pins, resolvable feature/program
 references, a strict-schema-valid document, and a detached digest over the
 rendered bytes. Publication remains `draft` while capability evidence,
-workflow/document inventories, and screenshot qualification are incomplete.
+workflow/document inventories, screenshot qualification, and immutable
+release acquisition are incomplete.
 
 ### Provider and Consumer Boundary
 
@@ -138,8 +139,31 @@ depend on AffineDrift.
   without schema churn; DbC rejects ambiguous publication inputs.
 - Negative: a clean committed checkout is required to generate an authoritative
   artifact, so local drafts cannot be presented as publishable output.
-- Negative: v1 initially publishes empty documentation, workflow, and screenshot
-  inventories and remains explicitly blocked/draft until follow-up slices.
+- Negative: this foundation emits empty documentation, workflow, and screenshot
+  inventories. Those empty arrays are explicit negative evidence, not #9174
+  completion or a publishable companion.
+
+### Foundation Boundary and Remaining Provider Ownership
+
+PR #9180 implements migration gates 1 through 4 below only. Issue #9174 must
+remain open after that protected merge. The complete provider contract is owned
+by four linked children:
+
+- #9190: at least ten exact-revision structured workflows, four governed
+  failure fixtures, safe execution, expected-artifact verification, and
+  provider CI evidence for AffineDrift #4024/#4028;
+- #9191: the full capture/workflow/step/dimensions/viewport/theme/environment/
+  checksum/alt/caption/visible-limitations screenshot authority for
+  AffineDrift #4025;
+- #9192: protected exact-commit manifest/schema/hash artifacts, attestations,
+  current/previous compatibility fixtures, rollback-safe acquisition, and
+  immutable release assets for AffineDrift #4022/#4030; and
+- #9193: documentation freshness plus engine support, qualification, evidence,
+  gap, and promotion authority for AffineDrift #4023/#4026/#4027.
+
+The local ignored files produced by #9180 validate deterministic generation;
+they have no durable release acquisition URL and must not be represented as a
+released provider artifact. No ad hoc tag or release is part of this slice.
 
 ## Migration and Acceptance Gates
 
@@ -151,9 +175,9 @@ depend on AffineDrift.
 4. Validate schema strictness, reference integrity, compatibility/support facts,
    clean-tree refusal, CI commit equality, immutable gitlink provenance, byte
    determinism, and detached digest generation.
-5. In later provider PRs, add governed documentation/workflow records, engine
-   capability evidence, screenshot capture/qualification, and protected CI
-   artifact publication without changing calculation/manual authority.
+5. Deliver #9190, #9191, #9192, and #9193 through separate protected provider
+   PRs without changing calculation/manual authority; keep #9174 open until all
+   four satisfy their downstream completeness gates.
 6. AffineDrift #4010 pins a protected provider artifact and implements one
    validating adapter plus generated views. Consumer release remains blocked
    until digest, provenance, freshness, and qualification gates pass.

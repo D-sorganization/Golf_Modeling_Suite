@@ -90,9 +90,16 @@ partial campaign checkpoints are not completion evidence.
   design-manual authority or #9070's typed calculation manifest.
 - `scripts/companion_catalog.py` uses explicit local-only discovery and exact
   committed inputs/provider pins. Its CLI must refuse dirty/non-authoritative
-  state. `dist/companion` JSON/SHA outputs are ignored release artifacts.
-- The first slice remains draft/blocked for capability evidence and governed
-  documentation, workflow, screenshot, and protected publication follow-ups.
+  state. `dist/companion` JSON/SHA outputs are ignored local build artifacts,
+  not released authority and not a durable acquisition URL.
+- PR #9180 is the foundation only and must not close #9174. Keep #9174 open
+  behind #9190 (ten workflows/four failure fixtures/provider CI), #9191 (full
+  screenshot/capture authority), #9192 (protected artifacts, attestation,
+  compatibility fixtures, rollback-safe release acquisition), and #9193
+  (documentation freshness plus engine capability evidence/promotion).
+- The foundation remains draft/blocked. Empty documentation/workflow/screenshot
+  arrays are negative evidence, not completion; do not invent a tag or release
+  in this slice.
 - The reconciled exact-head unit gate exposed a plotting-subtree fixture that
   kept PyQt/UI mocks for an entire xdist worker session. Its scope is now per
   test; preserve the plotting-then-GUI/UI order regression gate and do not add
