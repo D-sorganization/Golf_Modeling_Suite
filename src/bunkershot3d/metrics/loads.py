@@ -277,7 +277,7 @@ def _free_face_response(
     Returns:
         ``(rate_radps, rotation_rad)``.
     """
-    rate = cumulative_trapezoid(moment, times, initial=0.0) / inertia_kg_m2
+    rate = cumulative_trapezoid(moment, times, initial=0) / inertia_kg_m2  # type: ignore[call-overload]
     rotation = float(np.trapezoid(rate, times))
     return float(rate[-1]), rotation
 
