@@ -983,7 +983,7 @@ inventory and reopen adjudication until every new candidate is reviewed.
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
 | **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.679                                            |
+| **Spec Version**        | 1.0.680                                            |
 | **Last Spec Update**    | 2026-08-30                                         |
 
 ## 2. Purpose & Mission
@@ -5079,3 +5079,4 @@ Per Issue #3474, 3D vector operations must use `math.hypot` instead of `np.linal
 - Performance: Optimized 2D vector norm calculation in `drift_control_transfer.py` using `np.hypot` to avoid intermediate array allocations and improve speed. (spec-exempt: micro-optimization)
 - Replaced `np.mean(..., axis=1)` with `np.einsum` in the Sobol first-order and total-order index calculations in `src/bunkershot3d/study/sensitivity.py` to avoid temporary array allocation and speed up computation. (spec-exempt: micro-optimization)
 - Replaced `np.linalg.norm` with `math.hypot` for contact force slices in humanoid_golf visualization. (spec-exempt: micro-optimization)
+- Replaced `np.linalg.norm` over multi-dimensional arrays with `np.sqrt(np.einsum)` in `src/bunkershot3d/metrics/loads.py` to optimize array magnitude calculation. (spec-exempt: micro-optimization)
