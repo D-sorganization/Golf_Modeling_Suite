@@ -1069,9 +1069,9 @@ inventory and reopen adjudication until every new candidate is reviewed.
 | **Owner**               | D-sorganization                                    |
 | **Primary Language(s)** | Python 3.11+, Rust, TypeScript                     |
 | **License**             | MIT                                                |
-| **Current Version**     | 2.1.1                                              |
-| **Spec Version**        | 1.0.709                                            |
-| **Last Spec Update**    | 2026-09-02                                         |
+| **Current Version**     | 2.1.2                                              |
+| **Spec Version**        | 1.0.718                                            |
+| **Last Spec Update**    | 2026-09-03                                         |
 
 ## 2. Purpose & Mission
 
@@ -1101,6 +1101,21 @@ UpstreamDrift is a multi-physics golf swing biomechanical simulation platform th
 ## 4. Architecture Overview
 
 ### Recent Spec Updates
+
+- **2026-09-03** - Made the tag-driven release able to produce a wheel at all
+  (issue #9449). `build_hooks.py` refuses to package once `CI` is set and
+  `ui/dist` is absent, but `release.yml`'s `build` job never compiled the
+  frontend, so the PEP 517 backend failed and tag `v2.1.1` published no
+  release, wheel, SBOM, or PyPI distribution. The `build` job now installs
+  Node 24 with an `ui/package-lock.json`-keyed npm cache, runs `npm ci` and
+  `npm run build` in `ui/`, and asserts `ui/dist/index.html` before
+  `python -m build`. Because `_register_ui_bundle` only warns when the bundle
+  is missing, the release-blocking wheel smoke suite now asserts that the
+  published wheel carries the `ui/dist` payload including a compiled
+  `ui/dist/assets/*.js` bundle, and that the wheel version equals the
+  `pyproject.toml` version and, on a tag run, the tag itself. A failed tag is
+  recovered by fixing forward to the next patch version rather than moving a
+  published tag; `docs/operations/release-runbook.md` carries the procedure.
 
 - **2026-08-22** - Made the modular Docker build boundary independently
   verifiable for issue #8996. Reusable pinned-Tools setup emits the exact
@@ -3758,6 +3773,7 @@ Rows are keyed by pull request, not by a serial spec version: `| YYYY-MM-DD | #<
 
 | Date       | PR         | Changes    |
 | ---------- | ---------- | ---------- |
+| 2026-09-03 | #9449 | Bumped the release version 2.1.1 -> 2.1.2 across every surface `scripts/check_version_consistency.py` audits (`pyproject.toml`, `src/api/_version.py`, `ui/package.json` + `ui/package-lock.json`, root `Cargo.toml`, `rust_core/upstream-physics/pyproject.toml`, `VERSION`, `ui/src-tauri/tauri.conf.json`, `scripts/config/sbom_baseline.json`) plus this Identity table and SECURITY.md's footer. This is the fix-forward release for #9449: the pushed `v2.1.1` tag's `release.yml` run failed in `build` (`build_hooks.py` requires `ui/dist`, CI set `SKIP_UI_BUILD`) and published no wheel, SBOM, checksums, PyPI distribution, or GitHub release. Per `docs/operations/release-runbook.md` "Failed Release Recovery -- Fix Forward, Never Move a Tag", `v2.1.1` is retained where it is and superseded by 2.1.2; CHANGELOG entries moved from `[2.1.1]` to `[2.1.2] - 2026-09-03` with a retained-and-superseded note. No tag is created by this change -- tagging is the release operator's signed step. (spec 1.0.718) |
 | 2026-09-03 | #1520 | Migrated the Section 12 change log to rows keyed by pull request (date, `#<pr>`, summary) instead of a serial spec version, and stopped requiring a `Spec Version` bump per pull request. 590 rows rewritten with each original serial preserved inline as `(spec X.Y.Z)`; row count and every row summary unchanged. `scripts/ci/check_spec_changelog_duplicates.py` now enforces the PR-keyed row contract and key uniqueness for rows dated on or after the cutover, delegating to the fleet-shared `shared_scripts/spec_changelog.py`; its duplicate-*body* ratchet is kept unchanged because a copied row is a different defect from a key collision, and its baseline shrank from 3 recorded pairs to 2. The 54 serial-collision allowances are removed, describing a defect that can no longer occur. `SPEC.md` is now in `.prettierignore` so a new row cannot re-pad the whole table. Governed campaign for Repository_Management#1520 (program #1505). |
 | 2026-09-03 | #9446 | Closed the `EngineSrcPivot` restore asymmetry PR #9446 documented as latent. When a third-party cleanup pops a `src.*` parent package's `sys.modules` key while its child's key stays cached, the pivot's snapshot captures a child-without-parent; exit used to restore the child orphaned-by-key, so the next fresh import of the parent produced a childless parent module that the import system never re-links (the cached child short-circuits `_find_and_load`), and every dotted-string patch target under it (`monkeypatch.setattr("src.x.y.attr", ...)`, `mock.patch("src.x.y.f")`) raised `AttributeError` while the module-object form worked -- the exact CI failure #9446 worked around in the myosuite adapter test. `_relink_to_parent` now re-imports the missing parent and links the restored child onto it, parents-first; the `src.shared` keep-set is exempt because the import-alias machinery deliberately seeds child-only entries there and the pivot never evicts that subtree. Regression-covered in `tests/unit/repo_hygiene/test_no_permanent_src_module_shadow.py` by reproducing the popped-parent state through a full enter/exit cycle and asserting the dotted-string form patches the identical child object. (spec 1.0.717) |
 | 2026-09-03 | n/a | **ADR-0046 Stage 2's launch-monitor module retirement is complete.** Wave 3b retires the last eight -- `strokes_gained_types` and `_scoring_statistics` (P12), `outcome_proxy` (P13), `strokes_gained` (P14), `conformance_bundle` (P17) and the `player_covariation` trio (P18) -- onto the canonical launch-monitor layer vendored from Tools, deleting 2,425 lines. Across the four waves all 28 `port-up`/`merge` modules are gone; `src/tools/launch_monitor_model/` now holds only the re-export facade, the app-local `project`, and `strokes_gained_baseline`. That third file is ADR-0048 step P12's documented exclusion, not a leftover: the canonical layer types its `baseline` argument against runtime-checkable protocols because `rate_of_closure.launch_monitor_strokes_gained_baseline` is already the authority for loading and digest-verifying that artifact, but a protocol validates nothing at a trust boundary and the analytics API parses a baseline off the wire, so the hash-verifying pydantic model stays here and is pinned `isinstance`-compatible with both protocols. Behaviour deltas, each under an owner ruling and re-pinned with old and new values: **G1-D2** makes the session cell the canonical strokes-gained inference unit, so a per-player longitudinal fit reports sample_count 5 rather than 40 and P4's r_squared moves 0.15450437016457175 -> 0.5682576505731145 with p 0.012104880151308768 -> 0.1410798565763777 -- the slope is unchanged to 15 significant figures (0.075881035543697128), so what the decision corrected is a significance claim built on pseudo-replication, not a measurement; UpstreamDrift's shot-level fit survives as the named variant `shot-level-sg-trend/1` and every summary names its estimand. **G1-D3** (exclude-and-audit) was already this module's posture and needed no edit. **D22/D23** adopted UpstreamDrift's postures, so no UpstreamDrift number moves; the P18 union adds `method_description` (D26's field count 19 -> 20, leaving `backing_data` as the only legacy-only field, by design), a typed `interval_withheld_reason`, and the documented `BETWEEN_PLAYER_INTERVAL_MIN_GROUPS` threshold. The drift gates stay at 71 with no unruled pin moved. (spec 1.0.716) |
@@ -4349,7 +4365,6 @@ Rows are keyed by pull request, not by a serial spec version: `| YYYY-MM-DD | #<
 | 2026-03-29 | n/a | Performance optimization: Replaced `np.linalg.norm(..., axis=1)` with explicit element-wise arithmetic (`np.sqrt` and `np.hypot`) in physics ground reaction forces calculations for a ~5-10x speedup (spec 1.0.1) |
 | 2026-04-29 | n/a | Initial specification for UpstreamDrift v2.1.0; documented all 14 features, architecture, testing strategy, and CI/CD pipeline (spec 1.0.0) |
 | 2026-05-03 | n/a | Hardened security CI by isolating `pip-audit` in a dedicated virtualenv, keeping waiver policy in `scripts/config/pip_audit_waivers.json`, and preserving the 45% PR coverage floor. (spec 1.0.94) |
-
 <!-- prettier-ignore-end -->
 ---
 
