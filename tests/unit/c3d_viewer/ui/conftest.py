@@ -16,9 +16,13 @@ same worker -- most visibly ``tests/scripts/test_validate_suite.py``, whose
 collected first in a given worker, that bare ``import src`` silently
 resolved to this engine's package instead, which lacks the attribute.
 
-The fix: only the single ``sys.modules["src"]`` key is saved/rebound, and
-only for the duration of collecting or running an item that lives under
-this directory. ``pytest_make_collect_report``, ``pytest_runtest_setup``,
+The fix: every piece of process-global state the pivot touches -- the
+``src``/``src.*`` and top-level ``shared``/``shared.*`` entries in
+``sys.modules`` (including the unrelated ``src.<sub>`` modules the pivot
+*evicts*) plus its ``sys.path`` additions -- is snapshotted on the
+outermost enter and restored verbatim on the outermost exit, so the pivot
+is only active while collecting or running an item that lives under this
+directory. ``pytest_make_collect_report``, ``pytest_runtest_setup``,
 and ``pytest_runtest_teardown`` are all directory-scoped by pytest itself
 (a conftest's hooks are only consulted for collectors/items at or below its
 own directory -- see the hookspec docs), so entering/exiting the pivot here
@@ -32,6 +36,7 @@ import contextlib
 import os
 import sys
 from pathlib import Path
+from types import ModuleType
 
 import pytest
 
@@ -120,35 +125,57 @@ def _pivot_sys_path() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Directory-scoped pivot lifecycle. Only the bare ``sys.modules["src"]`` key
-# is saved and restored -- ``src.shared.*`` and ``src.apps.*`` submodule
-# caching is left exactly as ``_pivot_sys_path`` already manages it (its own
-# keep/drop logic above), since those names never collide with anything
-# outside this engine's tests. A depth counter makes entry/exit reentrant
-# safe across nested collectors (Package -> Module -> Class -> Function).
+# Directory-scoped pivot lifecycle. ``_pivot_sys_path`` mutates three pieces
+# of process-global state: the ``src``/``src.*`` entries in ``sys.modules``
+# (including *evicting* unrelated ``src.<sub>`` modules loaded by earlier
+# tests in the same worker), the top-level ``shared``/``shared.*`` namespace
+# (importable only while ``<repo>/src`` is on ``sys.path``), and ``sys.path``
+# itself. The outermost enter snapshots those namespaces and records the
+# ``sys.path`` entries the pivot adds; the outermost exit deletes whatever
+# the pivot left in the namespaces, reinstates the snapshot verbatim
+# (preserving module identity for ``importlib.reload`` and string-target
+# ``monkeypatch.setattr`` in unrelated tests), and removes the added path
+# entries. A depth counter makes entry/exit reentrant-safe across nested
+# collectors (Package -> Module -> Class -> Function).
 # ---------------------------------------------------------------------------
-_SAVED_TOP_LEVEL_SRC: object | None = None
+_PIVOT_NAMESPACES = ("src", "shared")
+_SAVED_PIVOT_MODULES: dict[str, ModuleType] | None = None
+_ADDED_SYS_PATH_ENTRIES: list[str] = []
 _PIVOT_DEPTH = 0
 
 
+def _in_pivot_namespace(modname: str) -> bool:
+    return any(
+        modname == ns or modname.startswith(ns + ".") for ns in _PIVOT_NAMESPACES
+    )
+
+
 def _enter_pivot() -> None:
-    global _SAVED_TOP_LEVEL_SRC, _PIVOT_DEPTH
+    global _SAVED_PIVOT_MODULES, _PIVOT_DEPTH
     if _PIVOT_DEPTH == 0:
-        _SAVED_TOP_LEVEL_SRC = sys.modules.get("src")
+        _SAVED_PIVOT_MODULES = {
+            name: mod for name, mod in sys.modules.items() if _in_pivot_namespace(name)
+        }
+        path_before = set(sys.path)
         _pivot_sys_path()
+        _ADDED_SYS_PATH_ENTRIES[:] = [p for p in sys.path if p not in path_before]
     _PIVOT_DEPTH += 1
 
 
 def _exit_pivot() -> None:
-    global _SAVED_TOP_LEVEL_SRC, _PIVOT_DEPTH
+    global _SAVED_PIVOT_MODULES, _PIVOT_DEPTH
     _PIVOT_DEPTH -= 1
     if _PIVOT_DEPTH <= 0:
         _PIVOT_DEPTH = 0
-        if _SAVED_TOP_LEVEL_SRC is not None:
-            sys.modules["src"] = _SAVED_TOP_LEVEL_SRC
-        else:
-            sys.modules.pop("src", None)
-        _SAVED_TOP_LEVEL_SRC = None
+        saved = _SAVED_PIVOT_MODULES if _SAVED_PIVOT_MODULES is not None else {}
+        for modname in [name for name in sys.modules if _in_pivot_namespace(name)]:
+            del sys.modules[modname]
+        sys.modules.update(saved)
+        for entry in _ADDED_SYS_PATH_ENTRIES:
+            with contextlib.suppress(ValueError):
+                sys.path.remove(entry)
+        _ADDED_SYS_PATH_ENTRIES.clear()
+        _SAVED_PIVOT_MODULES = None
 
 
 @pytest.hookimpl(hookwrapper=True)
