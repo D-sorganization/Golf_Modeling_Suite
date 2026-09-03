@@ -10,6 +10,8 @@ import pytest
 from src.shared.python.ai.cli_providers import base as base_mod
 from src.shared.python.ai.cli_providers.cline_provider import ClineProvider
 
+pytestmark = pytest.mark.unit
+
 
 def _find_free_port() -> int:
     s = socket.socket()
