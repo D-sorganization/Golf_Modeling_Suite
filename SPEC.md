@@ -3754,6 +3754,8 @@ blocks Python package publication on the built-wheel smoke matrix.
 Rows are keyed by pull request, not by a serial spec version: `| YYYY-MM-DD | #<pr> | summary |`. Add exactly one row for your own pull request and do not renumber anybody else's; the `Spec Version` field in section 1 is release-derived and is never bumped by an individual pull request. See [Repository_Management#1520](https://github.com/D-sorganization/Repository_Management/issues/1520).
 
 
+<!-- prettier-ignore-start -->
+
 | Date       | PR         | Changes    |
 | ---------- | ---------- | ---------- |
 | 2026-09-03 | #1520 | Migrated the Section 12 change log to rows keyed by pull request (date, `#<pr>`, summary) instead of a serial spec version, and stopped requiring a `Spec Version` bump per pull request. 590 rows rewritten with each original serial preserved inline as `(spec X.Y.Z)`; row count and every row summary unchanged. `scripts/ci/check_spec_changelog_duplicates.py` now enforces the PR-keyed row contract and key uniqueness for rows dated on or after the cutover, delegating to the fleet-shared `shared_scripts/spec_changelog.py`; its duplicate-*body* ratchet is kept unchanged because a copied row is a different defect from a key collision, and its baseline shrank from 3 recorded pairs to 2. The 54 serial-collision allowances are removed, describing a defect that can no longer occur. `SPEC.md` is now in `.prettierignore` so a new row cannot re-pad the whole table. Governed campaign for Repository_Management#1520 (program #1505). |
@@ -4347,6 +4349,8 @@ Rows are keyed by pull request, not by a serial spec version: `| YYYY-MM-DD | #<
 | 2026-03-29 | n/a | Performance optimization: Replaced `np.linalg.norm(..., axis=1)` with explicit element-wise arithmetic (`np.sqrt` and `np.hypot`) in physics ground reaction forces calculations for a ~5-10x speedup (spec 1.0.1) |
 | 2026-04-29 | n/a | Initial specification for UpstreamDrift v2.1.0; documented all 14 features, architecture, testing strategy, and CI/CD pipeline (spec 1.0.0) |
 | 2026-05-03 | n/a | Hardened security CI by isolating `pip-audit` in a dedicated virtualenv, keeping waiver policy in `scripts/config/pip_audit_waivers.json`, and preserving the 45% PR coverage floor. (spec 1.0.94) |
+
+<!-- prettier-ignore-end -->
 ---
 
 SPEC MAINTENANCE RULES:

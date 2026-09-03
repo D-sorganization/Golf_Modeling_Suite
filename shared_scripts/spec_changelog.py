@@ -385,6 +385,34 @@ def ensure_policy_note(text: str, *, include_frozen_note: bool) -> str:
     return text[:insert_at] + "\n" + note.lstrip("\n") + text[insert_at:]
 
 
+#: Prettier pads markdown table cells to the width of the widest row, so with
+#: the change-log table in its scope a single new row re-pads every other row --
+#: turning a one-line addition into a whole-table diff that conflicts with every
+#: concurrent pull request, which is the exact failure #1520 removes. The fence
+#: is narrower than putting all of SPEC.md in `.prettierignore`: Prettier keeps
+#: formatting the rest of the specification. (Tools already carried this fence;
+#: the migration now gives it to every repository.)
+PRETTIER_FENCE_START = "<!-- prettier-ignore-start -->"
+PRETTIER_FENCE_END = "<!-- prettier-ignore-end -->"
+
+
+def ensure_prettier_fence(text: str) -> str:
+    """Wrap the change-log table in Prettier ignore markers. Idempotent."""
+    changelog = parse_changelog(text)
+    before = text[: changelog.start]
+    if before.rstrip().endswith(PRETTIER_FENCE_START):
+        return text
+    table = text[changelog.start : changelog.end]
+    after = text[changelog.end :]
+    if not before.endswith("\n"):
+        before += "\n"
+    fenced = f"{PRETTIER_FENCE_START}\n\n{table}"
+    if not fenced.endswith("\n"):
+        fenced += "\n"
+    fenced += f"\n{PRETTIER_FENCE_END}\n"
+    return before + fenced + after.removeprefix("\n")
+
+
 def migrate_text(text: str) -> tuple[str, int]:
     """Migrate the change log in ``text``. Returns ``(text, n_rows_rewritten)``.
 
@@ -392,12 +420,15 @@ def migrate_text(text: str) -> tuple[str, int]:
 
     1. ``Current X.Y.Z entry:`` prose paragraphs become
        ``Archived entry (spec X.Y.Z):`` — frozen, not deleted.
-    2. A policy note naming the new row format is inserted under the heading.
+    2. A policy note naming the new row format is inserted under the heading,
+       and the table is wrapped in Prettier ignore markers so a new row can
+       never re-pad the whole table.
     3. Every serial-versioned table row is rewritten to a PR key, with the old
        serial appended to its summary as ``(spec X.Y.Z)``.
     """
     text, prose_count = migrate_prose_entries(text)
     text = ensure_policy_note(text, include_frozen_note=prose_count > 0)
+    text = ensure_prettier_fence(text)
     changelog = parse_changelog(text)
     rows, changed = migrate_rows(changelog.rows)
     header = list(changelog.header)
