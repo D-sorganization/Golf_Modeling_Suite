@@ -206,8 +206,15 @@ SUITE_CHECKS: tuple[str, ...] = (
     "src.shared.python.engine_core.engine_manager",
     "src.shared.python.engine_core.engine_registry",
     "src.shared.python.validation_pkg.statistical_analysis",
-    "src.shared.python.plotting",
     "src.api.server",
+)
+
+# Suite modules that only import with an optional extra installed. They are
+# reported but never fail the run: the always-on CI lane (#9409) runs this
+# script against a bare requirements.lock install, which has no matplotlib
+# (the `dev` extra) and therefore no plotting package.
+OPTIONAL_SUITE_CHECKS: tuple[str, ...] = (
+    "src.shared.python.plotting",  # needs matplotlib (extra: dev)
 )
 
 
@@ -248,6 +255,12 @@ def _run_suite_checks() -> list[bool]:
         else:
             logger.warning("✗ %s: Import failed", module_name)
         results.append(success)
+    for module_name in OPTIONAL_SUITE_CHECKS:
+        success, _message = check_import(module_name, None, "__version__")
+        if success:
+            logger.info("✓ %s (optional)", module_name)
+        else:
+            logger.info("- %s not importable (needs an optional extra)", module_name)
     return results
 
 
