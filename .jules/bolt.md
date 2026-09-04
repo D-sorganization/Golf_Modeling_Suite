@@ -32,3 +32,7 @@
 **Action:** Replace `np.linalg.norm(..., axis=1)` with `np.sqrt(np.einsum("ij,ij->i", diff, diff))` in `src/bunkershot3d/study/morris.py` to optimize trajectory distance calculations.
 
 ## 2024-05-19 - [Optimize Sum of Squares]
+
+## 2024-05-19 - [Optimize Max Array Magnitude]
+**Learning:** Calculating the maximum vector magnitude (e.g., `np.max(np.linalg.norm(arr, axis=1))`) incurs significant overhead due to intermediate array creations in `np.linalg.norm` and unnecessary square root calculations. Since square root is monotonically increasing, the maximum magnitude is strictly the same as the square root of the maximum squared magnitude. Using `np.einsum('ij,ij->i', arr, arr)` to directly compute the array of squared magnitudes yields the maximum value efficiently, and then taking the square root once provides a measurable speedup.
+**Action:** Replace `np.max(np.linalg.norm(arr, axis=1))` with `np.sqrt(np.max(np.einsum('ij,ij->i', arr, arr)))` to safely and efficiently optimize. Coerce `arr` with `np.asarray` first if it might not natively be a NumPy ndarray.
