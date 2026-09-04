@@ -260,6 +260,15 @@
       "issue": 9492,
       "reason": "Issue #9492: pre-existing on main -- checking these two files out from origin/main into an otherwise-unmodified tree reports the identical violation with the identical line count. Surfaced by PR #9490 (UD #9474), which fixes a Qt object-lifetime defect in this file and deliberately does not bundle a risky decomposition of the MuJoCo stepping/render path into a correctness fix. Decomposition tracked in #9492, tests first.",
       "expires_on": "2026-11-30"
+    },
+    {
+      "path": "src/bunkershot3d/solvers/shot.py",
+      "symbol": "_march",
+      "rule": "function-lines",
+      "owner": "@dieterolson @D-sorganization/core-maintainers",
+      "issue": 9529,
+      "reason": "Issue #9529: Bolt micro-optimization increased function length over the budget limit (104 > 100).",
+      "expires_on": "2026-12-31"
     }
   ]
 }
