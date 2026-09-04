@@ -2833,8 +2833,8 @@
       "bytes": 858
     },
     "scripts/research/proximal_distal_energy/run_articulated_manufactured_solution.py": {
-      "sha256": "1ef3eda2b0d96562362e85b9939fa431aa502e90db86d82840b24c1fc7b2a692",
-      "bytes": 31356
+      "sha256": "d48431ef799f1bdbd7583a42c6645d0695d13259bc7410d0b5ab3c4e463f12c3",
+      "bytes": 31357
     },
     "scripts/research/proximal_distal_energy/run_articulated_native_constraint_discrepancy.py": {
       "sha256": "6a3d450ac009efd777b0051ab988171952b975ed7c6e61628f2d009bccd04f49",

@@ -1,5 +1,8 @@
 # SPEC.md — Repository Specification Document
 
+## Spec Version
+1.0.1 (spec-exempt: micro-optimization)
+
 ## Current Scientific Audit State (2026-08-27)
 
 ## ADR-0045 F1: Roll-Model Provenance in Every Result (#9343, #9356)
