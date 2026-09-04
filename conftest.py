@@ -34,16 +34,8 @@ import os as _os
 
 _WATCHDOG_SRC = "\n".join(
     [
-        "import os,sys,time,signal,threading",
+        "import os,sys,time,signal",
         "pid=int(sys.argv[1])",
-        "def _pump():",
-        "    while True:",
-        "        line=sys.stdin.readline()",
-        "        if not line: break",
-        "        sys.stderr.write('[hang-watchdog] '+line)",
-        "        sys.stderr.flush()",
-        "t=threading.Thread(target=_pump,daemon=True)",
-        "t.start()",
         "deadline=time.monotonic()+480",
         "shots=0",
         "while shots<4:",
@@ -77,18 +69,15 @@ def _arm_hang_forensics(config) -> None:
                 real_fd = _os.dup(2)
         else:
             real_fd = _os.dup(2)
-        pipe_r, pipe_w = _os.pipe()
-        dump_file = _os.fdopen(pipe_w, "w")
+        dump_file = _os.fdopen(real_fd, "w")
         _faulthandler.register(_signal.SIGUSR1, file=dump_file, all_threads=True)
-        dump_dest = _os.fdopen(real_fd, "w")
         _subprocess.Popen(
             [_sys.executable, "-c", _WATCHDOG_SRC, str(_os.getpid())],
-            stdin=pipe_r,
+            stdin=_subprocess.DEVNULL,
             stdout=_subprocess.DEVNULL,
-            stderr=dump_dest,
+            stderr=dump_file,
             close_fds=True,
         )
-        _os.close(pipe_r)
 
 
 def pytest_configure(config) -> None:

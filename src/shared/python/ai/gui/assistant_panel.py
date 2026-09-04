@@ -138,9 +138,10 @@ class AIAssistantPanel(QWidget):
         self._refresh_prompt_memory()
         self._mcp_pool: Any = None  # McpClientPool — wired in after setup
 
-        # --- Session manager --------------------------------------------
+        # --- Session manager + history ----------------------------------
         self._session_manager = ChatSessionManager()
         self._session_manager.session_loaded.connect(self._on_session_loaded)
+        self._load_history()
 
         self._init_tools()
 
@@ -153,9 +154,6 @@ class AIAssistantPanel(QWidget):
 
         self._wire_controllers()
         self._setup_ui()
-
-        # Load latest active session history if present, then sync messages
-        self._load_history()
         self._messages.restore_from_context(self._context)
 
     # ------------------------------------------------------------------
