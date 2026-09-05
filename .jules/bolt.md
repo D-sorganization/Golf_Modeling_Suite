@@ -32,3 +32,7 @@
 **Action:** Replace `np.linalg.norm(..., axis=1)` with `np.sqrt(np.einsum("ij,ij->i", diff, diff))` in `src/bunkershot3d/study/morris.py` to optimize trajectory distance calculations.
 
 ## 2024-05-19 - [Optimize Sum of Squares]
+
+## 2026-09-04 - [Avoid Vendored Files in Governance Regimes]
+**Learning:** Optimizing vendored files (e.g. `collision_generator.py` tracked by `upstream_drift_tools`) triggers strict CI divergence guards that reject PRs even if mathematically sound. Bypassing these tests with ad-hoc ignore rules violates the project's architectural boundaries.
+**Action:** When searching for optimization targets, ALWAYS verify that the file is not vendored or explicitly synced from an upstream repository.
