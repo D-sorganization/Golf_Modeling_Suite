@@ -83,7 +83,7 @@ jobs:
           python-version: "3.11"
 
       - name: Purge pip cache
-        run: python3 -m pip cache purge
+        run: python3 -m pip cache purge || true
       - name: Install build tools
         run: |
           python3 -m pip install build
@@ -162,8 +162,6 @@ jobs:
         with:
           submodules: false
           persist-credentials: false
-          sparse-checkout: tests/fixtures/wgs.json
-          sparse-checkout-cone-mode: false
       - name: Isolate Python tool cache (prevent shared-cache races)
         if: runner.os != 'Windows'
         shell: bash
@@ -180,7 +178,7 @@ jobs:
           python-version: ${{ matrix.python }}
 
       - name: Purge pip cache
-        run: python3 -m pip cache purge
+        run: python3 -m pip cache purge || true
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: sidekick-wheel

@@ -1,15 +1,9 @@
 from __future__ import annotations
 
 import os
-import shutil
 import subprocess
-import sys
 import textwrap
 from pathlib import Path
-
-import pytest
-
-pytestmark = pytest.mark.unit
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 INSTALL_SCRIPT = REPO_ROOT / "install.sh"
@@ -56,26 +50,15 @@ exit 0
             encoding="utf-8",
         )
 
-    bash_bin = "bash"
-    script_path = str(INSTALL_SCRIPT)
     env = os.environ.copy()
-    if sys.platform == "win32":
-        git_bash = Path("C:/Program Files/Git/bin/bash.exe")
-        if git_bash.is_file():
-            bash_bin = str(git_bash)
-            script_path = INSTALL_SCRIPT.resolve().as_posix()
-        env["PATH"] = f"{bin_dir};{env.get('PATH', '')}"
-    else:
-        env["PATH"] = f"{bin_dir}:/usr/bin:/bin"
+    env["PATH"] = f"{bin_dir}:/usr/bin:/bin"
 
     result = subprocess.run(
-        [bash_bin, script_path],
+        ["bash", str(INSTALL_SCRIPT)],
         cwd=cwd,
         env=env,
         capture_output=True,
         text=True,
-        encoding="utf-8",
-        errors="replace",
         check=True,
     )
 

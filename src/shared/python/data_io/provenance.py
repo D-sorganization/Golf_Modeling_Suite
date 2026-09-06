@@ -117,18 +117,12 @@ class ProvenanceInfo:
 
         # MuJoCo version (if available)
         mujoco_version = None
-        if "mujoco" in sys.modules:
-            mod = sys.modules["mujoco"]
-            mujoco_version = (
-                str(getattr(mod, "__version__", "unknown")) if mod is not None else None
-            )
-        else:
-            try:
-                from importlib.metadata import PackageNotFoundError, version
+        try:
+            import mujoco
 
-                mujoco_version = version("mujoco")
-            except (PackageNotFoundError, ImportError):
-                pass
+            mujoco_version = str(getattr(mujoco, "__version__", "unknown"))
+        except ImportError:
+            pass
 
         return cls(
             timestamp_utc=now_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),

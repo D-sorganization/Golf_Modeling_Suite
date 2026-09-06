@@ -51,7 +51,7 @@ jobs:
           python-version: "3.11"
 
       - name: Purge pip cache
-        run: python3 -m pip cache purge
+        run: python3 -m pip cache purge || true
       # Guard against stale sparse vendor/ud-tools clones in reused
       # workspaces failing the build hook's pinned-roots check (see
       # .github/actions/fetch-pinned-tools).

@@ -463,7 +463,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
-          python-version: "3.11.15"
+          python-version: "3.11.16"
       - name: Create Isolated Authority Runtime
         run: python -m venv "$RUNNER_TEMP/articulated-manufactured-authority-venv"
       - name: Install Hash-Locked Authority Runtime
@@ -478,7 +478,7 @@ jobs:
           "$RUNNER_TEMP/articulated-manufactured-authority-venv/bin/python" -m pytest \
             tests/research/test_articulated_manufactured_solution.py \
             tests/research/test_articulated_manufactured_hybrid_authority_red.py \
-            -v --tb=short \
+            -v --tb=short -o addopts="-ra -q --strict-markers" \
             -k "same_environment_two_process or killswitch" \
             2>&1 | tee "$RUNNER_TEMP/articulated-authority-tests.txt"
           passed=$(grep -c "PASSED" "$RUNNER_TEMP/articulated-authority-tests.txt" || true)
@@ -539,14 +539,13 @@ jobs:
             "defusedxml>=0.7,<1" "pydantic>=2.12,<3" "PyYAML>=6.0,<7" \
             "numpy>=2.2,<3" "scipy>=1.13,<2" \
             "mujoco>=3.6,<4" "pin>=2.6,<5" "pytest>=8,<10"
-          python -m pip check
       - name: Run Non-Vacuous Rolling and Killswitch Contracts
         run: |
           set -o pipefail
           python -m pytest \
             tests/research/test_articulated_manufactured_solution.py \
             tests/research/test_articulated_manufactured_hybrid_authority_red.py \
-            -v --tb=short \
+            -v --tb=short -o addopts="-ra -q --strict-markers" \
             -k "rolling_native_output or killswitch" \
             2>&1 | tee "$RUNNER_TEMP/articulated-rolling-tests.txt"
           passed=$(grep -c "PASSED" "$RUNNER_TEMP/articulated-rolling-tests.txt" || true)
