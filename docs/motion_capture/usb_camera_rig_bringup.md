@@ -15,14 +15,14 @@ next person does not re-derive it.
 
 ## Hardware
 
-| Item    | Detail                                                                                                                  |
-| ------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Cameras | 3 x ELP 2 MP USB 2.0, AR0234 global shutter; enumerate as "Global Shutter Camera", `VID_32E4&PID_5234`                  |
-| Dock    | CalDigit TS4 (USB4 router `VID_8087&PID_0B26`, firmware 39.1, Microsoft inbox USB4 driver 10.0.26100.8972)              |
-| eGPU    | Sonnet eGPU Breakaway Box 750ex; exposes two tunneled xHCIs (Fresco Logic `1B73:1100`, Intel `15C1`) and an I210 NIC    |
-| Host    | HP laptop, i7-13700H (20 logical cores), Windows 11 26200; xHCIs `DEV_51ED` and `DEV_A71E`; two USB4 host routers      |
-| Cable   | one 30 ft powered USB cable (contains a Realtek `0BDA:5411/0411` hub pair, i.e. two hub tiers)                          |
-| Serials | `2605160001`, `2601240001`, and one unit that exposes no `iSerial` (identity falls back to its USB port path)           |
+| Item    | Detail                                                                                                               |
+| ------- | -------------------------------------------------------------------------------------------------------------------- |
+| Cameras | 3 x ELP 2 MP USB 2.0, AR0234 global shutter; enumerate as "Global Shutter Camera", `VID_32E4&PID_5234`               |
+| Dock    | CalDigit TS4 (USB4 router `VID_8087&PID_0B26`, firmware 39.1, Microsoft inbox USB4 driver 10.0.26100.8972)           |
+| eGPU    | Sonnet eGPU Breakaway Box 750ex; exposes two tunneled xHCIs (Fresco Logic `1B73:1100`, Intel `15C1`) and an I210 NIC |
+| Host    | HP laptop, i7-13700H (20 logical cores), Windows 11 26200; xHCIs `DEV_51ED` and `DEV_A71E`; two USB4 host routers    |
+| Cable   | one 30 ft powered USB cable (contains a Realtek `0BDA:5411/0411` hub pair, i.e. two hub tiers)                       |
+| Serials | `2605160001`, `2601240001`, and one unit that exposes no `iSerial` (identity falls back to its USB port path)        |
 
 ## Findings
 
@@ -78,15 +78,15 @@ root port, so the rule is one camera per root port. The TS4 is one root port.
 
 ## Evidence
 
-| Test                                                   | Result                                                    |
-| ------------------------------------------------------ | --------------------------------------------------------- |
-| A: three cameras on the TS4, 1920x1200 at 60           | 1 of 3 streams                                            |
-| B: two cameras, 640x480 at 5 fps (under 1 MB/s)        | 1 of 2 streams; rules out throughput                      |
+| Test                                                   | Result                                                      |
+| ------------------------------------------------------ | ----------------------------------------------------------- |
+| A: three cameras on the TS4, 1920x1200 at 60           | 1 of 3 streams                                              |
+| B: two cameras, 640x480 at 5 fps (under 1 MB/s)        | 1 of 2 streams; rules out throughput                        |
 | Sweep 1920x1200 down to 640x480, at 60 and 30 fps      | 1 of 2 at every mode; the winner is whichever commits first |
-| C: staggered open, then the winner closes              | the loser never recovers on the same handle               |
-| D: built-in webcam (root `A71E`) plus one ELP (`51ED`) | both stream; the conflict is bus-level, not software      |
-| E: ELP on root port 4 plus ELP on root port 13         | 59.7 and 60.2 fps                                         |
-| Solo, each unit, fresh open                            | 59.9 to 60.2 fps, no failed reads                         |
+| C: staggered open, then the winner closes              | the loser never recovers on the same handle                 |
+| D: built-in webcam (root `A71E`) plus one ELP (`51ED`) | both stream; the conflict is bus-level, not software        |
+| E: ELP on root port 4 plus ELP on root port 13         | 59.7 and 60.2 fps                                           |
+| Solo, each unit, fresh open                            | 59.9 to 60.2 fps, no failed reads                           |
 
 ## Validated Topologies
 
@@ -94,10 +94,10 @@ Both configurations below streamed all three cameras concurrently at
 1920x1200 MJPEG with no failed reads, and the diagnostic script's prediction
 matched its measurement in every run.
 
-| Topology                                     | Placement                                                                                   | Measured fps       |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------ |
-| TS4 plus Sonnet                              | one camera on the TS4; two on Sonnet root ports 1 and 6 of root hub `9&1d291187`            | 60.0 / 59.9 / 59.5 |
-| All on the Sonnet (recommended)              | root ports 4, 5, and 6 of root hub `9&1d291187`; one via the 30 ft cable                    | 59.7 / 59.9 / 60.1 |
+| Topology                        | Placement                                                                        | Measured fps       |
+| ------------------------------- | -------------------------------------------------------------------------------- | ------------------ |
+| TS4 plus Sonnet                 | one camera on the TS4; two on Sonnet root ports 1 and 6 of root hub `9&1d291187` | 60.0 / 59.9 / 59.5 |
+| All on the Sonnet (recommended) | root ports 4, 5, and 6 of root hub `9&1d291187`; one via the 30 ft cable         | 59.7 / 59.9 / 60.1 |
 
 The second topology leaves the TS4 free for networking and displays, keeps all
 camera cabling on one box, and leaves the Sonnet's second controller unused for
@@ -106,14 +106,14 @@ three cameras on distinct root ports of one controller coexist.
 
 ## Long-Term Options
 
-| Option                                     | Effect                                             | Verdict                                                          |
-| ------------------------------------------ | -------------------------------------------------- | ---------------------------------------------------------------- |
-| One camera per root port (TS4 or laptop)   | proven on root port 13                             | works today; ties cable runs to the laptop                       |
-| Sonnet on the second Thunderbolt port      | two more controllers, plus a GPU for pose inference | recommended; never chain it behind the TS4                       |
-| USB 3.0 variants of the AR0234 module      | many cameras per bus                               | hardware purchase; avoids the reservation model entirely         |
-| Linux `uvcvideo quirks=0x80`               | recomputes the reservation from the real format    | not available on Windows; WSL2 cannot pass isochronous traffic   |
-| Any hub behind the TS4                     | none                                               | fails silently at the five-hub limit                             |
-| Lower resolution or frame rate             | none                                               | the reservation is format-independent                            |
+| Option                                   | Effect                                              | Verdict                                                        |
+| ---------------------------------------- | --------------------------------------------------- | -------------------------------------------------------------- |
+| One camera per root port (TS4 or laptop) | proven on root port 13                              | works today; ties cable runs to the laptop                     |
+| Sonnet on the second Thunderbolt port    | two more controllers, plus a GPU for pose inference | recommended; never chain it behind the TS4                     |
+| USB 3.0 variants of the AR0234 module    | many cameras per bus                                | hardware purchase; avoids the reservation model entirely       |
+| Linux `uvcvideo quirks=0x80`             | recomputes the reservation from the real format     | not available on Windows; WSL2 cannot pass isochronous traffic |
+| Any hub behind the TS4                   | none                                                | fails silently at the five-hub limit                           |
+| Lower resolution or frame rate           | none                                                | the reservation is format-independent                          |
 
 ## Recording Strategy
 
