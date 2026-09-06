@@ -27,10 +27,7 @@ def available_models() -> dict[str, ModelSpec]:
             description="Bio tools",
             type="special_app",
             path="p2",
-            launcher={
-                "category": "biomechanics",
-                "categories": ["biomechanics", "tool"],
-            },
+            launcher={"category": "biomechanics"},
         ),
         "library_tool": ModelSpec(
             id="library_tool",
