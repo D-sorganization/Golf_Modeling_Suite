@@ -162,8 +162,6 @@ jobs:
         with:
           submodules: false
           persist-credentials: false
-          sparse-checkout: tests/fixtures/wgs.json
-          sparse-checkout-cone-mode: false
       - name: Isolate Python tool cache (prevent shared-cache races)
         if: runner.os != 'Windows'
         shell: bash
