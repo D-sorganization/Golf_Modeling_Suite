@@ -96,6 +96,9 @@ jobs:
         python-version: ["3.11"]
 
     steps:
+      - name: Clean workspace to prevent sparse-checkout poisoning
+        run: rm -rf .git || true
+
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
@@ -254,6 +257,9 @@ jobs:
             marker: "not requires_pinocchio and not requires_drake and not requires_jaxsim and not requires_mujoco and not slow and not live_simulation"
 
     steps:
+      - name: Clean workspace to prevent sparse-checkout poisoning
+        run: rm -rf .git || true
+
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 

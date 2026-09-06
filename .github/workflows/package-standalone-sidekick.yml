@@ -41,6 +41,9 @@ jobs:
       wheel_filename: ${{ steps.build-dist.outputs.wheel_filename }}
 
     steps:
+      - name: Clean workspace to prevent sparse-checkout poisoning
+        run: rm -rf .git || true
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           submodules: recursive
@@ -158,6 +161,9 @@ jobs:
         python: ["3.11", "3.12"]
 
     steps:
+      - name: Clean workspace to prevent sparse-checkout poisoning
+        run: rm -rf .git || true
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           submodules: false
