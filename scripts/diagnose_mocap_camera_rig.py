@@ -256,22 +256,16 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def main(argv: list[str] | None = None) -> int:
-    """Run topology, prediction, solo, and concurrent checks; return exit code."""
-    args = _parse_args(argv)
-    try:
-        import cv2  # noqa: F401 - probe availability before touching hardware
-    except ImportError:
-        print("OpenCV (cv2) is not installed; nothing to test.")
-        return 2
-    args.out_dir.mkdir(parents=True, exist_ok=True)
-    spec = (args.width, args.height, args.fps)
+Results = dict[int, dict[str, Any]]
 
+
+def _enumerate(vendor: str) -> list[Camera]:
+    """Query PnP, attach capture indices, and print one line per camera."""
     print("== PnP topology (slow: one PowerShell property query per hub tier) ==")
-    cams = query_topology(args.vendor)
+    cams = query_topology(vendor)
     if not cams:
-        print(f"  no cameras with VID_{args.vendor} enumerated by Windows PnP.")
-        return 2
+        print(f"  no cameras with VID_{vendor} enumerated by Windows PnP.")
+        return cams
     index_by_path = {path: i for i, (_, path) in enumerate(dshow_order())}
     for cam in cams:
         cam.index = index_by_path.get(cam.camera.upper())
@@ -282,7 +276,10 @@ def main(argv: list[str] | None = None) -> int:
             f"serial={'yes' if cam.serial else 'NO '} root_port={cam.root_port}  "
             f"hubs={cam.hub_depth}/5  root_hub={cam.root_hub}"
         )
+    return cams
 
+
+def _print_prediction(cams: list[Camera]) -> int:
     expected, lines = predict(cams)
     print(
         f"\n== Prediction ({RESERVE_BYTES} B reserved per camera, "
@@ -290,33 +287,36 @@ def main(argv: list[str] | None = None) -> int:
     )
     print("\n".join(lines))
     print(f"  expected streaming: {expected}/{len(cams)}")
+    return expected
 
-    live = [cam for cam in cams if cam.index is not None]
+
+def _run_solo(live: list[Camera], args: argparse.Namespace) -> Results:
+    """Open each camera on its own, with a settle pause between opens."""
     print("\n== Solo health check ==")
-    solo: dict[int, dict[str, Any]] = {}
+    solo: Results = {}
+    spec = (args.width, args.height, args.fps)
     for cam in live:
         assert cam.index is not None
-        capture(
-            cam.index,
-            spec,
-            args.solo_seconds,
-            None,
-            solo,
-            args.out_dir / f"frame_solo_{cam.identity}.png",
-        )
+        frame = args.out_dir / f"frame_solo_{cam.identity}.png"
+        capture(cam.index, spec, args.solo_seconds, None, solo, frame)
         result = solo[cam.index]
         print(
             f"  {cam.identity:<22} {result['fps']:5.1f} fps  {result['size']}  "
             f"failed={result['failed']}"
         )
         time.sleep(SETTLE_SECONDS)
+    return solo
 
+
+def _run_concurrent(live: list[Camera], args: argparse.Namespace) -> Results:
+    """Start every camera behind one barrier so reservations compete for real."""
     print(
         f"\n== Concurrent capture: {len(live)} cameras, "
         f"{args.width}x{args.height}@{args.fps} MJPG, {args.concurrent_seconds:.0f}s =="
     )
-    concurrent: dict[int, dict[str, Any]] = {}
+    concurrent: Results = {}
     barrier = threading.Barrier(len(live))
+    spec = (args.width, args.height, args.fps)
     threads = [
         threading.Thread(
             target=capture,
@@ -335,12 +335,16 @@ def main(argv: list[str] | None = None) -> int:
         thread.start()
     for thread in threads:
         thread.join()
+    return concurrent
 
+
+def _count_streaming(live: list[Camera], concurrent: Results, fps: int) -> int:
+    """Print one verdict line per camera; a camera streams at >= 90 % of target."""
     streaming = 0
     for cam in live:
         assert cam.index is not None
         result = concurrent[cam.index]
-        ok = result["fps"] >= 0.9 * args.fps
+        ok = result["fps"] >= 0.9 * fps
         streaming += int(ok)
         state = "OK" if ok else ("NO STREAM" if result["fps"] < 1 else "DEGRADED")
         print(
@@ -348,34 +352,62 @@ def main(argv: list[str] | None = None) -> int:
             f"failed={result['failed']:>8}  worst_gap={result['worst_gap_ms']:.0f}ms  "
             f"{state}"
         )
+    return streaming
+
+
+def _write_report(
+    args: argparse.Namespace,
+    cams: list[Camera],
+    solo: Results,
+    concurrent: Results,
+    expected: int,
+    streaming: int,
+    verdict: str,
+) -> None:
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    report = args.out_dir / f"rig_report_{stamp}.json"
+    payload = {
+        "timestamp": stamp,
+        "spec": {"w": args.width, "h": args.height, "fps": args.fps},
+        "reserve_bytes": RESERVE_BYTES,
+        "budget_bytes": PERIODIC_BUDGET_BYTES,
+        "cameras": [asdict(cam) for cam in cams],
+        "solo": {str(k): v for k, v in solo.items()},
+        "concurrent": {str(k): v for k, v in concurrent.items()},
+        "expected_streaming": expected,
+        "measured_streaming": streaming,
+        "verdict": verdict,
+    }
+    report.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    print(f"  wrote {report}")
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run topology, prediction, solo, and concurrent checks; return exit code."""
+    args = _parse_args(argv)
+    try:
+        import cv2  # noqa: F401 - probe availability before touching hardware
+    except ImportError:
+        print("OpenCV (cv2) is not installed; nothing to test.")
+        return 2
+    args.out_dir.mkdir(parents=True, exist_ok=True)
+
+    cams = _enumerate(args.vendor)
+    if not cams:
+        return 2
+    expected = _print_prediction(cams)
+    live = [cam for cam in cams if cam.index is not None]
+    solo = _run_solo(live, args)
+    concurrent = _run_concurrent(live, args)
+    streaming = _count_streaming(live, concurrent, args.fps)
+
     verdict = "PASS" if streaming == len(live) else "FAIL"
     note = "" if streaming == expected else "   [prediction mismatch - investigate]"
     print(
         f"\n  streaming {streaming}/{len(live)}  "
         f"(predicted {expected}/{len(cams)})  -> {verdict}{note}"
     )
-
-    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    report = args.out_dir / f"rig_report_{stamp}.json"
-    report.write_text(
-        json.dumps(
-            {
-                "timestamp": stamp,
-                "spec": {"w": args.width, "h": args.height, "fps": args.fps},
-                "reserve_bytes": RESERVE_BYTES,
-                "budget_bytes": PERIODIC_BUDGET_BYTES,
-                "cameras": [asdict(cam) for cam in cams],
-                "solo": {str(k): v for k, v in solo.items()},
-                "concurrent": {str(k): v for k, v in concurrent.items()},
-                "expected_streaming": expected,
-                "measured_streaming": streaming,
-                "verdict": verdict,
-            },
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
-    print(f"  wrote {report}")
+    _write_report(args, cams, solo, concurrent, expected, streaming, verdict)
     return 0 if verdict == "PASS" else 1
 
 
